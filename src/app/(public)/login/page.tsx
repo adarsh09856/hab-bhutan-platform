@@ -90,6 +90,44 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Quick Demo Logins */}
+            <div className="bg-[#F8F5EE] border border-[#E3D9C9] rounded-[8px] p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#8B2E24] font-bold">
+                  Demo Quick Logins
+                </span>
+                <span className="text-[10px] text-[#6B5A4C]">Click to auto-fill</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIdentifier('admin@handicraftsbhutan.org');
+                    setPassword('AdminSecure2026!');
+                  }}
+                  className="px-2.5 py-2 text-left rounded bg-white border border-[#D5C9B5] hover:border-[#8B2E24] hover:shadow-sm transition-all cursor-pointer"
+                >
+                  <p className="text-[12px] font-bold text-[#33261F]">
+                    👑 Admin Staff
+                  </p>
+                  <p className="text-[10px] text-[#6B5A4C] font-mono mt-0.5">AdminSecure2026!</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIdentifier('member@handicraftsbhutan.org');
+                    setPassword('ArtisanMember2026!');
+                  }}
+                  className="px-2.5 py-2 text-left rounded bg-white border border-[#D5C9B5] hover:border-[#8B2E24] hover:shadow-sm transition-all cursor-pointer"
+                >
+                  <p className="text-[12px] font-bold text-[#33261F]">
+                    🧵 Artisan Member
+                  </p>
+                  <p className="text-[10px] text-[#6B5A4C] font-mono mt-0.5">ArtisanMember2026!</p>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="font-figtree font-bold text-[14px] text-[#33261F] block mb-2">
                 Membership number or email

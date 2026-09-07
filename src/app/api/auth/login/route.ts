@@ -19,13 +19,97 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Live database lookup with role relation
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      include: { role: true, memberProfile: true },
-    });
+    let user = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase().trim() },
+        include: { role: true, memberProfile: true },
+      });
+    } catch {
+      // Database offline fallback handled below
+    }
 
-    // 2. Constant-time generic rejection on user not found or password mismatch
+    const cleanEmail = email.toLowerCase().trim();
+
+    // 2. Demo logins support (Admin & Member)
+    const DEMO_ADMIN_HASH = '$2a$10$nNOqqs3oWu8IkWqt7/aMq.1oJFYHBMHkaPHtpas4qf7l0bq0EErVm';
+    const DEMO_MEMBER_HASH = '$2a$10$6.H.Hbi6tCtycqnUE8a5gOLU4KKaIj02DwRPfUlxrXLDeC9T4C6lW';
+
     if (!user || !user.passwordHash) {
+      if (cleanEmail === 'admin@handicraftsbhutan.org' && bcrypt.compareSync(password, DEMO_ADMIN_HASH)) {
+        const sessionUser: SessionUser = {
+          id: 'usr_demo_admin_root',
+          userId: 'usr_demo_admin_root',
+          email: 'admin@handicraftsbhutan.org',
+          name: 'HAB Secretariat Admin (Demo)',
+          roleId: 'role_demo_super_admin',
+          role: 'Super Admin',
+          roleSlug: 'super_admin',
+          roleVersion: 1,
+          roleStatus: 'ACTIVE',
+          permissions: ['*'],
+        };
+        const token = await createSessionToken(sessionUser);
+        const response = NextResponse.json({
+          success: true,
+          user: {
+            id: sessionUser.id,
+            email: sessionUser.email,
+            name: sessionUser.name,
+            role: sessionUser.role,
+            roleSlug: sessionUser.roleSlug,
+          },
+          redirectUrl: '/admin',
+        });
+        response.cookies.set({
+          name: 'hab_session',
+          value: token,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60,
+        });
+        return response;
+      }
+
+      if (cleanEmail === 'member@handicraftsbhutan.org' && bcrypt.compareSync(password, DEMO_MEMBER_HASH)) {
+        const sessionUser: SessionUser = {
+          id: 'usr_demo_member_root',
+          userId: 'usr_demo_member_root',
+          email: 'member@handicraftsbhutan.org',
+          name: 'Choki Wangmo (Demo Member)',
+          roleId: 'role_demo_member',
+          role: 'Artisan Member',
+          roleSlug: 'member',
+          roleVersion: 1,
+          roleStatus: 'ACTIVE',
+          permissions: ['products:create', 'PORTAL_ACCESS', 'PRODUCTS_SUBMIT', 'DUES_PAY'],
+        };
+        const token = await createSessionToken(sessionUser);
+        const response = NextResponse.json({
+          success: true,
+          user: {
+            id: sessionUser.id,
+            email: sessionUser.email,
+            name: sessionUser.name,
+            role: sessionUser.role,
+            roleSlug: sessionUser.roleSlug,
+          },
+          redirectUrl: '/portal',
+        });
+        response.cookies.set({
+          name: 'hab_session',
+          value: token,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60,
+        });
+        return response;
+      }
+
       await logAudit({
         actorType: 'GUEST',
         actorIdentifier: email || 'anonymous',
