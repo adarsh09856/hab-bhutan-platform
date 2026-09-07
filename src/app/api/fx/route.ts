@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEffectiveFxRate, setManualFxOverride } from '@/lib/fx';
-import { requirePermission } from '@/lib/rbac';
+import { getEffectiveFxRate, setManualFxOverride, clearManualFxOverride } from '@/lib/fx';
+import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +10,7 @@ export async function GET() {
     const fxInfo = await getEffectiveFxRate();
     return NextResponse.json({
       success: true,
-      data: fxInfo
+      data: fxInfo,
     });
   } catch (err: any) {
     return NextResponse.json(
@@ -22,8 +22,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    // Check staff permissions
-    const session = await requirePermission(req, 'FX_OVERRIDE');
+    const session = await requirePermission(req, 'fx:override');
     const body = await req.json();
     const { rate, reason } = body;
 
@@ -41,29 +40,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const ip = req.headers.get('x-forwarded-for') || req.ip || '127.0.0.1';
-
-    const record = await setManualFxOverride(rate, reason, session.userId);
-
-    await logAudit({
-      actorType: 'STAFF',
-      actorId: session.userId,
-      action: 'FX_MANUAL_OVERRIDE_APPLIED',
-      entityType: 'FxRateRecord',
-      entityId: record.id,
-      ipAddress: ip,
-      metadata: { newRate: rate, reason }
-    });
+    const ip = getClientIp(req);
+    const record = await setManualFxOverride(rate, reason, session.id, ip);
 
     return NextResponse.json({
       success: true,
       message: `Manual FX rate 1 USD = ${rate} BTN successfully engaged.`,
-      record
+      record,
     });
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: err.message.includes('Forbidden') ? 403 : 500 }
+      { status: err.statusCode || 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await requirePermission(req, 'fx:override');
+    const ip = getClientIp(req);
+
+    await clearManualFxOverride(session, ip);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Manual FX override cleared. Automated currency feed restored.',
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: err.statusCode || 500 }
     );
   }
 }

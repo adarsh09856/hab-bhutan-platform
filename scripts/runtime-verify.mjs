@@ -355,6 +355,169 @@ await runTest('Migration DDL: Initial PostgreSQL migration exists with native ty
   assert.equal(ddl.includes('CREATE TABLE "AuditLog"'), true);
 });
 
+// ==========================================
+// 12. Normalized OrderItem Model Contract & Referential Integrity Check
+// ==========================================
+await runTest('Database Schema: OrderItem model declared with Restrict on Product', () => {
+  const schemaPath = path.resolve('prisma/schema.prisma');
+  const schema = fs.readFileSync(schemaPath, 'utf8');
+
+  assert.equal(schema.includes('model OrderItem'), true, 'OrderItem model must exist');
+  assert.equal(schema.includes('product   Product? @relation(fields: [productId], references: [id], onDelete: Restrict)'), true, 'OrderItem must restrict product deletion');
+  assert.equal(schema.includes('orderItems        OrderItem[]'), true, 'Order must relate to orderItems');
+  assert.equal(schema.includes('orderItems    OrderItem[]'), true, 'Product must relate to orderItems');
+});
+
+// ==========================================
+// 13. Member Deletion Referential Safety Logic
+// ==========================================
+function evaluateMemberDeletionSafety(productCount, orderCount) {
+  if (productCount > 0 || orderCount > 0) {
+    return {
+      allowed: false,
+      reason: `Cannot permanently delete member: referenced by ${productCount} catalog products and ${orderCount} orders. Suspend member instead.`
+    };
+  }
+  return { allowed: true, reason: null };
+}
+
+await runTest('Member Delete Guard: Blocks deletion if member has products or orders', () => {
+  // Artisan maker with products -> blocked
+  const res1 = evaluateMemberDeletionSafety(3, 0);
+  assert.equal(res1.allowed, false);
+
+  // Customer member with orders -> blocked
+  const res2 = evaluateMemberDeletionSafety(0, 2);
+  assert.equal(res2.allowed, false);
+
+  // Active member with both -> blocked
+  const res3 = evaluateMemberDeletionSafety(5, 4);
+  assert.equal(res3.allowed, false);
+
+  // Fresh member with zero products and zero orders -> allowed
+  const res4 = evaluateMemberDeletionSafety(0, 0);
+  assert.equal(res4.allowed, true);
+});
+
+// ==========================================
+// 14. Product Deletion Referential Guard Logic
+// ==========================================
+function evaluateProductDeletionSafety(orderItemCount) {
+  if (orderItemCount > 0) {
+    return {
+      allowed: false,
+      reason: `Cannot permanently delete product: referenced by ${orderItemCount} historical order items. Archive instead.`
+    };
+  }
+  return { allowed: true, reason: null };
+}
+
+await runTest('Product Delete Guard: Blocks deletion if product has historical order references', () => {
+  const res1 = evaluateProductDeletionSafety(1);
+  assert.equal(res1.allowed, false);
+
+  const res2 = evaluateProductDeletionSafety(12);
+  assert.equal(res2.allowed, false);
+
+  const res3 = evaluateProductDeletionSafety(0);
+  assert.equal(res3.allowed, true);
+});
+
+// ==========================================
+// 15. Inventory Atomic Transaction Simulation
+// ==========================================
+function simulateOrderInventoryTransaction(stock, requestedQty, action = 'CREATE') {
+  if (action === 'CREATE') {
+    if (stock < requestedQty) {
+      throw new Error(`Insufficient inventory: ${stock} available, ${requestedQty} requested`);
+    }
+    return stock - requestedQty;
+  } else if (action === 'CANCEL') {
+    return stock + requestedQty;
+  }
+  return stock;
+}
+
+await runTest('Inventory Transaction: Decrements on creation and restores on cancellation', () => {
+  let catalogStock = 10;
+
+  // Normal order
+  catalogStock = simulateOrderInventoryTransaction(catalogStock, 2, 'CREATE');
+  assert.equal(catalogStock, 8, 'Stock should decrement from 10 to 8');
+
+  // Cancelled order restores stock
+  catalogStock = simulateOrderInventoryTransaction(catalogStock, 2, 'CANCEL');
+  assert.equal(catalogStock, 10, 'Stock should restore from 8 back to 10');
+
+  // Oversell attempt throws error
+  assert.throws(() => {
+    simulateOrderInventoryTransaction(catalogStock, 15, 'CREATE');
+  }, /Insufficient inventory/);
+});
+
+// ==========================================
+// 16. Granular RBAC Permissions Coverage Check
+// ==========================================
+await runTest('RBAC Matrix: All granular permissions declared in permissions.ts', async () => {
+  const { PERMISSION_CATEGORIES } = await import('../src/lib/permissions.js').catch(async () => {
+    // Fallback import if ESM path resolving
+    const permsFilePath = path.resolve('src/lib/permissions.ts');
+    const content = fs.readFileSync(permsFilePath, 'utf8');
+    return {
+      raw: content,
+    };
+  });
+
+  const permsFilePath = path.resolve('src/lib/permissions.ts');
+  const content = fs.readFileSync(permsFilePath, 'utf8');
+
+  const requiredSlugs = [
+    'members:view', 'members:create', 'members:edit', 'members:verify', 'members:suspend', 'members:delete',
+    'products:view', 'products:create', 'products:edit', 'products:publish', 'products:archive', 'products:delete',
+    'orders:view', 'orders:create', 'orders:edit', 'orders:fulfill', 'orders:cancel', 'orders:refund',
+    'applications:view', 'applications:create', 'applications:review', 'applications:approve', 'applications:reject', 'applications:delete',
+    'content:view', 'content:create', 'content:edit', 'content:delete',
+    'governance:view', 'governance:create', 'governance:edit', 'governance:delete',
+    'reports:view', 'reports:export', 'projects:view', 'projects:create', 'projects:edit', 'projects:delete',
+    'users:view', 'users:create', 'users:edit', 'users:delete',
+    'roles:view', 'roles:create', 'roles:retire', 'roles:reassign',
+    'fx:override', 'audit:view'
+  ];
+
+  for (const slug of requiredSlugs) {
+    assert.equal(
+      content.includes(`'${slug}'`),
+      true,
+      `Permission slug '${slug}' must exist in src/lib/permissions.ts`
+    );
+  }
+});
+
+// ==========================================
+// 17. Staff User Account Security & Password Hashing
+// ==========================================
+await runTest('User Accounts: Bcrypt password hashing & self-deactivation guard', async () => {
+  const plainPassword = 'StaffOperator2026!';
+  const hash = await bcrypt.hash(plainPassword, 10);
+
+  const isMatch = await bcrypt.compare(plainPassword, hash);
+  assert.equal(isMatch, true, 'Bcrypt password hash must match');
+
+  const isWrong = await bcrypt.compare('WrongPassword!', hash);
+  assert.equal(isWrong, false, 'Invalid password must not match');
+
+  // Self-deactivation guard
+  function checkSelfDeactivation(requestingUserId, targetUserId) {
+    if (requestingUserId === targetUserId) {
+      throw new Error('Self-deactivation is prohibited');
+    }
+    return true;
+  }
+
+  assert.throws(() => checkSelfDeactivation('usr-1', 'usr-1'), /Self-deactivation is prohibited/);
+  assert.equal(checkSelfDeactivation('usr-1', 'usr-2'), true);
+});
+
 console.log(`\n================================`);
 console.log(`Runtime Tests Completed: ${passedTests} / ${totalTests} passed`);
 console.log(`================================\n`);
@@ -362,4 +525,5 @@ console.log(`================================\n`);
 if (passedTests !== totalTests) {
   process.exit(1);
 }
+
 

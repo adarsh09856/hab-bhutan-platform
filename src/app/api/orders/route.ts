@@ -69,31 +69,75 @@ export async function POST(req: NextRequest) {
     const customerEmail = email || shippingAddress?.email || 'guest@handicraftsbhutan.org';
     const customerFullName = customerName || shippingAddress?.fullName || 'Guest Collector';
 
-    // Persist real order row in PostgreSQL via Prisma
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        customerType: 'GUEST',
-        customerName: customerFullName,
-        customerEmail,
-        customerPhone: phone || shippingAddress?.phone || null,
-        shippingAddress: shippingAddress || {},
-        shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
-        shippingFeeUSD: shippingCostUsd,
-        paymentMethod: 'CARD',
-        paymentStatus: 'PENDING',
-        orderStatus: 'PENDING_PAYMENT',
-        currencyUsed: currency || 'USD',
-        fxRateAtPurchase: rateApplied,
-        totalUSD: totalUsd,
-        totalPaidCurrency,
-        items: items.map((item: any) => ({
+    // Persist real order and line-items in PostgreSQL with atomic stock decrement
+    const order = await prisma.$transaction(async (tx) => {
+      // Resolve each product and decrement stock
+      const resolvedItems: any[] = [];
+      for (const item of items) {
+        const qty = Math.max(1, Number(item.quantity || 1));
+        const product = await tx.product.findUnique({
+          where: { code: item.code },
+        });
+
+        if (product) {
+          if (product.stock < qty) {
+            throw new Error(`Insufficient stock for ${product.name}: only ${product.stock} remaining.`);
+          }
+          await tx.product.update({
+            where: { id: product.id },
+            data: { stock: { decrement: qty } },
+          });
+        }
+
+        resolvedItems.push({
+          productId: product?.id || null,
           code: item.code,
-          name: item.name,
-          priceUSD: Number(item.priceUsd || item.price || 0),
-          quantity: Number(item.quantity || 1),
-        })),
-      },
+          name: item.name || product?.name || 'Handcrafted Craft',
+          priceUSD: Number(item.priceUsd || item.price || product?.priceUSD || 0),
+          quantity: qty,
+        });
+      }
+
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber,
+          customerType: 'GUEST',
+          customerName: customerFullName,
+          customerEmail,
+          customerPhone: phone || shippingAddress?.phone || null,
+          shippingAddress: shippingAddress || {},
+          shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
+          shippingFeeUSD: shippingCostUsd,
+          paymentMethod: 'CARD',
+          paymentStatus: 'PENDING',
+          orderStatus: 'PENDING_PAYMENT',
+          currencyUsed: currency || 'USD',
+          fxRateAtPurchase: rateApplied,
+          totalUSD: totalUsd,
+          totalPaidCurrency,
+          items: resolvedItems.map((ri) => ({
+            code: ri.code,
+            name: ri.name,
+            priceUSD: ri.priceUSD,
+            quantity: ri.quantity,
+          })),
+        },
+      });
+
+      for (const ri of resolvedItems) {
+        await tx.orderItem.create({
+          data: {
+            orderId: newOrder.id,
+            productId: ri.productId,
+            code: ri.code,
+            name: ri.name,
+            priceUSD: ri.priceUSD,
+            quantity: ri.quantity,
+          },
+        });
+      }
+
+      return newOrder;
     });
 
     // Polymorphic audit log

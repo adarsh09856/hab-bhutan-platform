@@ -136,6 +136,7 @@ model Product {
   images        Json          // [{ url, role: "primary"|"angle2"|"angle3" }]
   stock         Int           @default(10)
   status        ProductStatus @default(PUBLISHED)
+  orderItems    OrderItem[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -166,11 +167,29 @@ model Order {
   totalUSD          Float
   totalPaidCurrency Float
   items             Json           // Snapshot of items [{ code, name, priceUSD, quantity }]
+  orderItems        OrderItem[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
   @@index([customerEmail])
   @@index([orderStatus])
+}
+
+// Normalized line-items with foreign-key referential integrity to Product
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Restrict)
+  code      String
+  name      String
+  priceUSD  Float
+  quantity  Int
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 // Membership onboarding approval queue

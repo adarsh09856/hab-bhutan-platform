@@ -19,48 +19,11 @@ export async function verifyToken(token: string): Promise<SessionUser | null> {
   }
 }
 
-export type Permission =
-  | '*'
-  | 'AUDIT_VIEW'
-  | 'ROLES_MANAGE'
-  | 'FX_OVERRIDE'
-  | 'MEMBERS_VIEW'
-  | 'MEMBERS_EDIT'
-  | 'APPLICATIONS_REVIEW'
-  | 'PORTAL_ACCESS'
-  | 'PRODUCTS_SUBMIT'
-  | 'DUES_PAY'
-  // Applications
-  | 'applications:view'
-  | 'applications:review'
-  | 'applications:approve'
-  | 'applications:reject'
-  // Members
-  | 'members:view'
-  | 'members:verify'
-  | 'members:suspend'
-  | 'members:edit'
-  // Products
-  | 'products:create'
-  | 'products:review'
-  | 'products:publish'
-  | 'products:archive'
-  // Orders
-  | 'orders:view'
-  | 'orders:fulfill'
-  | 'orders:cancel'
-  | 'orders:refund'
-  // Finance & Governance
-  | 'dues:view'
-  | 'dues:record'
-  | 'reports:view'
-  | 'content:edit'
-  | 'governance:edit'
-  // System Administration
-  | 'roles:create'
-  | 'roles:retire'
-  | 'roles:reassign'
-  | 'fx:override';
+import { Permission, PERMISSION_CATEGORIES, PermissionCategory } from './permissions';
+export * from './permissions';
+
+
+
 
 export interface SessionUser {
   id: string;

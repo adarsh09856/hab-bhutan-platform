@@ -1,50 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requirePermission, createRoleRevision, reassignUsersToRole, retireRole } from '@/lib/rbac';
+import prisma from '@/lib/prisma';
+import { requirePermission, getClientIp, createRoleRevision, reassignUsersToRole, retireRole } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
-    const session = await requirePermission(req, 'ROLES_MANAGE');
-    const body = await req.json();
-    const { baseRoleName, permissions, description } = body;
+    await requirePermission(req, 'roles:view');
 
-    if (!baseRoleName || !permissions || !Array.isArray(permissions)) {
-      return NextResponse.json(
-        { success: false, error: 'baseRoleName and permissions array are required.' },
-        { status: 400 }
-      );
-    }
-
-    const newRole = await createRoleRevision(baseRoleName, permissions, description);
-    const ip = req.headers.get('x-forwarded-for') || req.ip || '127.0.0.1';
-
-    await logAudit({
-      actorType: 'STAFF',
-      actorId: session.userId,
-      action: 'ROLE_REVISION_CREATED',
-      entityType: 'Role',
-      entityId: newRole.id,
-      ipAddress: ip,
-      metadata: { roleName: baseRoleName, revision: newRole.revision }
+    const roles = await prisma.role.findMany({
+      include: {
+        _count: {
+          select: { users: true },
+        },
+      },
+      orderBy: [{ name: 'asc' }, { version: 'desc' }],
     });
 
     return NextResponse.json({
       success: true,
-      role: newRole
+      roles: roles.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        version: r.version,
+        status: r.status,
+        permissions: r.permissions,
+        userCount: r._count.users,
+        createdAt: r.createdAt,
+        retiredAt: r.retiredAt,
+      })),
     });
   } catch (err: any) {
+    console.error('Error fetching roles:', err);
     return NextResponse.json(
-      { success: false, error: err.message },
-      { status: err.message.includes('Forbidden') ? 403 : 500 }
+      { success: false, error: err.message || 'Error fetching roles.' },
+      { status: err.statusCode || 500 }
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await requirePermission(req, 'roles:create');
+    const body = await req.json();
+    const { name, baseRoleName, slug, permissions, description } = body;
+
+    const roleName = name || baseRoleName;
+    if (!roleName || !permissions || !Array.isArray(permissions)) {
+      return NextResponse.json(
+        { success: false, error: 'Role name and permissions array are required.' },
+        { status: 400 }
+      );
+    }
+
+    const roleSlug = slug || roleName.toLowerCase().replace(/\s+/g, '_');
+    const ip = getClientIp(req);
+
+    const newRole = await createRoleRevision({
+      name: roleName,
+      slug: roleSlug,
+      permissions,
+      actor: session,
+      clientIp: ip,
+    });
+
+    return NextResponse.json({
+      success: true,
+      role: newRole,
+    });
+  } catch (err: any) {
+    console.error('Error creating role revision:', err);
+    return NextResponse.json(
+      { success: false, error: err.message || 'Error creating role revision.' },
+      { status: err.statusCode || 500 }
     );
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
-    const session = await requirePermission(req, 'ROLES_MANAGE');
+    const session = await requirePermission(req, 'roles:reassign');
     const body = await req.json();
     const { oldRoleId, newRoleId } = body;
 
@@ -55,33 +92,34 @@ export async function PUT(req: NextRequest) {
       );
     }
 
+    const ip = getClientIp(req);
+
     // Step 1: Reassign active users
-    const reassignedCount = await reassignUsersToRole(oldRoleId, newRoleId);
+    const reassignedCount = await reassignUsersToRole({
+      fromRoleId: oldRoleId,
+      toRoleId: newRoleId,
+      actor: session,
+      clientIp: ip,
+    });
 
     // Step 2: Retire previous role
-    const retiredRole = await retireRole(oldRoleId);
-
-    const ip = req.headers.get('x-forwarded-for') || req.ip || '127.0.0.1';
-
-    await logAudit({
-      actorType: 'STAFF',
-      actorId: session.userId,
-      action: 'ROLE_SUPERSEDED_AND_RETIRED',
-      entityType: 'Role',
-      entityId: oldRoleId,
-      ipAddress: ip,
-      metadata: { newRoleId, reassignedCount }
+    const retiredRole = await retireRole({
+      roleId: oldRoleId,
+      actor: session,
+      clientIp: ip,
     });
 
     return NextResponse.json({
       success: true,
-      message: `Role ${oldRoleId} retired. ${reassignedCount} users migrated to ${newRoleId}.`,
-      retiredRole
+      message: `Role retired. ${reassignedCount} user(s) migrated to new revision.`,
+      retiredRole,
+      migratedCount: reassignedCount,
     });
   } catch (err: any) {
+    console.error('Error retiring and reassigning role:', err);
     return NextResponse.json(
-      { success: false, error: err.message },
-      { status: err.message.includes('Forbidden') ? 403 : 500 }
+      { success: false, error: err.message || 'Error reassigning role.' },
+      { status: err.statusCode || 500 }
     );
   }
 }

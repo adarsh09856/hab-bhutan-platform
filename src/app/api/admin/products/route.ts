@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { requirePermission } from '@/lib/rbac';
+import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    await requirePermission(req, 'products:review');
+    await requirePermission(req, 'products:view');
 
     const products = await prisma.product.findMany({
       include: {
         craft: true,
         maker: {
-          select: { id: true, name: true, regNumber: true },
+          select: { id: true, name: true, regNumber: true, status: true },
+        },
+        orderItems: {
+          select: { id: true, orderId: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -44,35 +47,51 @@ export async function POST(req: NextRequest) {
       region,
       makerMemberId,
       description,
-      inventoryCount,
       stock,
+      status,
+      imageUrl,
+      images,
     } = body;
 
-    if (!code || !name || !priceUSD || !craftKey) {
+    if (!code || !name || priceUSD === undefined || !craftKey) {
       return NextResponse.json(
-        { success: false, error: 'code, name, priceUSD, and craftKey are required.' },
+        { success: false, error: 'Product code, name, priceUSD, and craft tradition are required.' },
         { status: 400 }
       );
     }
 
-    const product = await prisma.product.create({
+    // Check code uniqueness
+    const existing = await prisma.product.findUnique({ where: { code } });
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: `Product with code '${code}' already exists.` },
+        { status: 400 }
+      );
+    }
+
+    // Prepare images array
+    let imageList = images || [];
+    if (imageUrl && imageList.length === 0) {
+      imageList = [{ url: imageUrl, role: 'primary' }];
+    }
+
+    const newProduct = await prisma.product.create({
       data: {
-        code,
-        name,
-        priceUSD: Number(priceUSD),
+        code: code.trim().toUpperCase(),
+        name: name.trim(),
+        priceUSD: Math.max(0, Number(priceUSD)),
         craftKey,
         region: region || 'Bhutan',
         makerMemberId: makerMemberId || null,
-        description: description || 'Masterpiece curated by HAB Secretariat.',
-        images: [],
-        stock: Number(inventoryCount ?? stock) || 10,
-        status: 'PUBLISHED',
+        description: description || 'Authentic artisan handicraft curated by HAB.',
+        images: imageList,
+        stock: stock !== undefined ? Math.max(0, Number(stock)) : 10,
+        status: status || 'PUBLISHED',
       },
       include: { craft: true, maker: true },
     });
 
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || '127.0.0.1';
-
+    const ip = getClientIp(req);
     await logAudit({
       actorType: 'STAFF',
       actorId: session.id,
@@ -80,18 +99,19 @@ export async function POST(req: NextRequest) {
       actorIp: ip,
       action: 'PRODUCT_CREATED',
       entityType: 'Product',
-      entityId: product.id,
+      entityId: newProduct.id,
       details: {
-        code: product.code,
-        name: product.name,
-        priceUSD: product.priceUSD,
-        craftKey: product.craftKey,
+        code: newProduct.code,
+        name: newProduct.name,
+        priceUSD: newProduct.priceUSD,
+        craftKey: newProduct.craftKey,
+        stock: newProduct.stock,
       },
     });
 
     return NextResponse.json({
       success: true,
-      product,
+      product: newProduct,
     });
   } catch (err: any) {
     console.error('Error creating product:', err);
@@ -104,9 +124,23 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await requirePermission(req, 'products:review');
+    const session = await requirePermission(req, 'products:edit');
     const body = await req.json();
-    const { id, code, priceUSD, inventoryCount, stock, status, name, description } = body;
+    const {
+      id,
+      code,
+      name,
+      priceUSD,
+      craftKey,
+      region,
+      makerMemberId,
+      description,
+      stock,
+      inventoryCount,
+      status,
+      imageUrl,
+      images,
+    } = body;
 
     const where = id ? { id } : code ? { code } : null;
     if (!where) {
@@ -124,22 +158,30 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const dataToUpdate: any = {};
-    if (priceUSD !== undefined) dataToUpdate.priceUSD = Number(priceUSD);
-    if (inventoryCount !== undefined) dataToUpdate.stock = Math.max(0, Number(inventoryCount));
-    if (stock !== undefined) dataToUpdate.stock = Math.max(0, Number(stock));
-    if (status) dataToUpdate.status = status;
-    if (name) dataToUpdate.name = name;
-    if (description) dataToUpdate.description = description;
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name.trim();
+    if (priceUSD !== undefined) updateData.priceUSD = Math.max(0, Number(priceUSD));
+    if (stock !== undefined) updateData.stock = Math.max(0, Number(stock));
+    if (inventoryCount !== undefined) updateData.stock = Math.max(0, Number(inventoryCount));
+    if (craftKey !== undefined) updateData.craftKey = craftKey;
+    if (region !== undefined) updateData.region = region;
+    if (makerMemberId !== undefined) updateData.makerMemberId = makerMemberId || null;
+    if (description !== undefined) updateData.description = description;
+    if (status !== undefined) updateData.status = status;
+
+    if (images !== undefined) {
+      updateData.images = images;
+    } else if (imageUrl !== undefined) {
+      updateData.images = [{ url: imageUrl, role: 'primary' }];
+    }
 
     const updated = await prisma.product.update({
       where,
-      data: dataToUpdate,
+      data: updateData,
       include: { craft: true, maker: true },
     });
 
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || '127.0.0.1';
-
+    const ip = getClientIp(req);
     await logAudit({
       actorType: 'STAFF',
       actorId: session.id,
@@ -150,7 +192,12 @@ export async function PATCH(req: NextRequest) {
       entityId: updated.id,
       details: {
         code: updated.code,
-        changes: dataToUpdate,
+        previous: {
+          priceUSD: previous.priceUSD,
+          stock: previous.stock,
+          status: previous.status,
+        },
+        changes: updateData,
       },
     });
 
@@ -162,6 +209,89 @@ export async function PATCH(req: NextRequest) {
     console.error('Error updating product:', err);
     return NextResponse.json(
       { success: false, error: err.message || 'Error updating product.' },
+      { status: err.statusCode || 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await requirePermission(req, 'products:delete');
+    const { searchParams } = new URL(req.url);
+    let id = searchParams.get('id');
+    let code = searchParams.get('code');
+
+    if (!id && !code) {
+      try {
+        const body = await req.json();
+        id = body.id;
+        code = body.code;
+      } catch {
+        // query params empty, body not JSON
+      }
+    }
+
+    const where = id ? { id } : code ? { code } : null;
+    if (!where) {
+      return NextResponse.json(
+        { success: false, error: 'Product id or code is required for deletion.' },
+        { status: 400 }
+      );
+    }
+
+    const product = await prisma.product.findUnique({
+      where,
+      include: {
+        orderItems: { select: { id: true, orderId: true } },
+      },
+    });
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, error: 'Product not found.' },
+        { status: 404 }
+      );
+    }
+
+    // Referential integrity check using normalized OrderItem model
+    const orderItemCount = product.orderItems.length;
+    if (orderItemCount > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Cannot permanently delete product '${product.name}' (${product.code}). It is referenced by ${orderItemCount} historical order line-item(s). To preserve order integrity and financial audit history, set the product status to ARCHIVED instead.`,
+          code: 'REFERENTIAL_INTEGRITY_VIOLATION',
+          details: { orderItemCount },
+        },
+        { status: 400 }
+      );
+    }
+
+    await prisma.product.delete({ where: { id: product.id } });
+
+    const ip = getClientIp(req);
+    await logAudit({
+      actorType: 'STAFF',
+      actorId: session.id,
+      actorIdentifier: session.email,
+      actorIp: ip,
+      action: 'PRODUCT_DELETED',
+      entityType: 'Product',
+      entityId: product.id,
+      details: {
+        code: product.code,
+        name: product.name,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Product '${product.name}' (${product.code}) permanently deleted from catalog.`,
+    });
+  } catch (err: any) {
+    console.error('Error deleting product:', err);
+    return NextResponse.json(
+      { success: false, error: err.message || 'Error deleting product.' },
       { status: err.statusCode || 500 }
     );
   }
