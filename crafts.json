@@ -1,0 +1,18 @@
+{
+  "note": "Zorig Chusum — the 13 arts and crafts of Bhutan. Reference data for the HAB website; the set does not change. Order is canonical and drives the 01/13 … 13/13 badges on the landing page cards.",
+  "crafts": [
+    { "key": "shingzo",  "name": "Shingzo",  "english": "Carpentry",                "description": "Timber joinery for dzongs, temples and houses — beams, brackets and window frames cut without nails." },
+    { "key": "dozo",     "name": "Dozo",     "english": "Masonry",                  "description": "Stone and rammed-earth walls, the load-bearing craft behind every dzong and farmhouse." },
+    { "key": "parzo",    "name": "Parzo",    "english": "Carving",                  "description": "Carving in wood, slate and stone: masks, altar panels, printing blocks and mani walls." },
+    { "key": "lhazo",    "name": "Lhazo",    "english": "Painting",                 "description": "Thangka scrolls, murals and decorative motifs painted to classical proportion in mineral pigment." },
+    { "key": "jinzo",    "name": "Jinzo",    "english": "Clay & sculpture",         "description": "Clay statues, ritual objects and moulded ornament, built up over a wooden armature." },
+    { "key": "lugzo",    "name": "Lugzo",    "english": "Bronze casting",           "description": "Casting in bronze, brass and iron — bells, statues, cymbals and household vessels." },
+    { "key": "garzo",    "name": "Garzo",    "english": "Blacksmithing",            "description": "Forged tools, knives, chains and farm implements, a craft centred on eastern Bhutan." },
+    { "key": "troezo",   "name": "Troezo",   "english": "Gold & silversmithing",    "description": "Chased and filigreed silver and gold: koma clasps, jewellery, ritual vessels." },
+    { "key": "tshazo",   "name": "Tshazo",   "english": "Bamboo & cane",            "description": "Split bamboo and cane woven into baskets, bangchungs, mats and quivers." },
+    { "key": "thagzo",   "name": "Thagzo",   "english": "Weaving",                  "description": "Backstrap and pedal-loom textiles — kira, gho, kisuthara silk and yathra wool." },
+    { "key": "tshemzo",  "name": "Tshemzo",  "english": "Tailoring & embroidery",   "description": "Tailoring, appliqué and embroidery, including the giant thongdrel banners." },
+    { "key": "shagzo",   "name": "Shagzo",   "english": "Wood turning",             "description": "Bowls and cups turned from burl wood and lacquered, associated with healing properties." },
+    { "key": "dezo",     "name": "Dezo",     "english": "Paper making",             "description": "Desho paper made by hand from daphne and edgeworthia bark, dried on frames in the sun." }
+  ]
+}

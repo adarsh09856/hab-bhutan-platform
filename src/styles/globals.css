@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Marcellus&family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #33261F;
+  --ink-2: #4A3C33;
+  --muted: #6B5A4C;
+  --bg: #F4F0E7;
+  --surface: #FFFCF8;
+  --line: #E4DDD1;
+  --line-soft: #EFE9DE;
+  --field-border: #CDBEA8;
+  --accent: #8B2E24;
+  --accent-hover: #6E241C;
+  --brass: #C9A46A;
+  --on-dark: #F1ECE2;
+  --on-dark-body: #D2C2AE;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: Lora, Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* CMS safety: authored content of any length or aspect ratio must not break the blueprint */
+body, p, h1, h2, h3, h4, span, div, a, li, td {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+[data-cms-img] {
+  overflow: hidden;
+  position: relative;
+}
+
+[data-cms-img] > img,
+[data-cms-img] > picture > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+[data-cms-avatar] {
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+[data-cms-avatar] > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* CMS Clamping Contract */
+.cms-1, .cms-2, .cms-3, .cms-4, .cms-5 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cms-1 { -webkit-line-clamp: 1; }
+.cms-2 { -webkit-line-clamp: 2; }
+.cms-3 { -webkit-line-clamp: 3; }
+.cms-4 { -webkit-line-clamp: 4; }
+.cms-5 { -webkit-line-clamp: 5; }
+
+[data-cms-repeat] {
+  align-items: stretch;
+}
+
+[data-cms-item] {
+  min-width: 0;
+}
+
+::selection {
+  background: #8B2E24;
+  color: #ffffff;
+}
+
+/* Prototype Placeholder fills */
+.ph-light {
+  background: repeating-linear-gradient(135deg, #E8E1D4 0 9px, #F0EBE0 9px 18px);
+}
+
+.ph-dark {
+  background: repeating-linear-gradient(135deg, #42332A 0 9px, #463629 9px 18px);
+}
+
+/* Accessibility: respect user preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}

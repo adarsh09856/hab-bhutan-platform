@@ -1,0 +1,336 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MemberStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum MemberTier {
+  ACTIVE_SECTOR_MEMBER
+  ASSOCIATE_SECTOR_MEMBER
+  INSTITUTIONAL
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING_APPROVAL
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum ShippingMethod {
+  EMS
+  EXPRESS
+}
+
+enum PaymentMethod {
+  CARD
+  MBOB
+  BANK
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum RoleStatus {
+  ACTIVE
+  RETIRED
+}
+
+enum ActorType {
+  STAFF
+  MEMBER
+  GUEST
+  SYSTEM
+}
+
+enum FxStatus {
+  FRESH
+  STALE
+  MANUAL_OVERRIDE
+}
+
+// 13 canonical arts and crafts of Bhutan (Zorig Chusum)
+model Craft {
+  id          String    @id @default(uuid())
+  key         String    @unique
+  name        String
+  english     String
+  description String
+  products    Product[]
+  members     Member[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Artisan enterprise / member profile
+model Member {
+  id              String         @id @default(uuid())
+  name            String
+  craftKey        String
+  craft           Craft          @relation(fields: [craftKey], references: [key])
+  dzongkhag       String
+  joinYear        Int
+  regNumber       String         @unique
+  tier            MemberTier     @default(ACTIVE_SECTOR_MEMBER)
+  status          MemberStatus   @default(PENDING)
+  bio             String         @db.Text
+  portraitUrl     String?
+  cidNumber       String
+  businessLicense String?
+  duesExpiryDate  DateTime
+  products        Product[]
+  orders          Order[]
+  userId          String?        @unique
+  user            User?          @relation(fields: [userId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([craftKey])
+  @@index([dzongkhag])
+  @@index([status])
+}
+
+// Catalog product
+model Product {
+  id            String        @id @default(uuid())
+  code          String        @unique // e.g. MAS01
+  name          String
+  priceUSD      Float         // Canonical price
+  craftKey      String
+  craft         Craft         @relation(fields: [craftKey], references: [key])
+  region        String
+  makerMemberId String?
+  maker         Member?       @relation(fields: [makerMemberId], references: [id])
+  description   String        @db.Text
+  images        Json          // [{ url, role: "primary"|"angle2"|"angle3" }]
+  stock         Int           @default(10)
+  status        ProductStatus @default(PUBLISHED)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([craftKey])
+  @@index([makerMemberId])
+  @@index([status])
+}
+
+// Order management with guest and member support
+model Order {
+  id                String         @id @default(uuid())
+  orderNumber       String         @unique // e.g. HAB-S-88214
+  customerType      ActorType      @default(GUEST)
+  customerMemberId  String?
+  customerMember    Member?        @relation(fields: [customerMemberId], references: [id])
+  customerName      String
+  customerEmail     String
+  customerPhone     String?
+  shippingAddress   Json
+  shippingMethod    ShippingMethod @default(EMS)
+  shippingFeeUSD    Float
+  trackingNumber    String?
+  paymentMethod     PaymentMethod  @default(CARD)
+  paymentStatus     PaymentStatus  @default(PENDING)
+  orderStatus       OrderStatus    @default(PENDING_PAYMENT)
+  currencyUsed      String         @default("USD")
+  fxRateAtPurchase  Float          @default(84.0)
+  totalUSD          Float
+  totalPaidCurrency Float
+  items             Json           // Snapshot of items [{ code, name, priceUSD, quantity }]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([customerEmail])
+  @@index([orderStatus])
+}
+
+// Membership onboarding approval queue
+model MembershipApplication {
+  id                String            @id @default(uuid())
+  applicantName     String
+  email             String
+  phone             String
+  cidNumber         String
+  businessLicense   String?
+  craftKey          String
+  dzongkhag         String
+  villageGewog      String
+  yearsPractising   Int
+  planTier          MemberTier
+  uploadedCidUrl    String?
+  uploadedDocUrl    String?
+  paymentMethod     PaymentMethod     @default(CARD)
+  status            ApplicationStatus @default(PENDING)
+  reviewerId        String?
+  reviewer          User?             @relation(fields: [reviewerId], references: [id])
+  reviewerNotes     String?           @db.Text
+  rejectionReason   String?           @db.Text
+  submittedAt       DateTime          @default(now())
+  reviewedAt        DateTime?
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status])
+  @@index([email])
+}
+
+// Publications and reports
+model Publication {
+  id          String   @id @default(uuid())
+  kind        String   // Annual report, Strategy, Sector study, etc.
+  title       String
+  year        Int
+  metaDetails String   // PDF · 4.2 MB · English & Dzongkha
+  fileUrl     String?
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([kind])
+  @@index([year])
+}
+
+// Donor-funded and association projects
+model ProjectRecord {
+  id              String   @id @default(uuid())
+  status          String   // current | past
+  name            String
+  partner         String
+  period          String
+  budget          String
+  progressPercent Int?
+  summary         String   @db.Text
+  activities      Json     // string[]
+  results         Json     // [{ n: string, l: string }]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+// Newsroom articles
+model NewsArticle {
+  id          String   @id @default(uuid())
+  kind        String   // Programs, Artisan support, Events, Publications, Projects
+  title       String
+  dateString  String   // e.g. "28 Aug 2026"
+  blurb       String   @db.Text
+  content     String?  @db.Text
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Calendar events
+model CalendarEvent {
+  id        String   @id @default(uuid())
+  day       String   // "12"
+  mon       String   // "SEP"
+  title     String
+  place     String
+  createdAt DateTime @default(now())
+}
+
+// Governance records aligned with AoA 2026
+model GovernanceRecord {
+  id               String   @id @default(uuid())
+  category         String   // BOARD_OF_TRUSTEES | SECRETARIAT | DZONGKHAG_CHAPTER | ENDOWMENT_COMMITTEE
+  roleTitle        String
+  individualName   String
+  chapterOrNote    String
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// Immutable Roles System (Create-only; no in-place mutation)
+model Role {
+  id          String     @id @default(uuid())
+  name        String     // e.g. "Staff Operator"
+  slug        String     // e.g. "staff_operator"
+  version     Int        @default(1)
+  status      RoleStatus @default(ACTIVE)
+  permissions Json       // string[] e.g. ["applications:view", "orders:fulfill"]
+  users       User[]
+  createdAt   DateTime   @default(now())
+  retiredAt   DateTime?
+
+  @@unique([slug, version])
+  @@index([status])
+}
+
+// System user accounts
+model User {
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  passwordHash           String
+  name                   String
+  roleId                 String
+  role                   Role                    @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  status                 String                  @default("ACTIVE") // ACTIVE | SUSPENDED
+  memberProfile          Member?
+  reviewedApplications   MembershipApplication[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  @@index([roleId])
+}
+
+// Polymorphic Audit Log
+model AuditLog {
+  id              String    @id @default(uuid())
+  actorType       ActorType // STAFF | MEMBER | GUEST | SYSTEM
+  actorId         String?   // User ID or Member ID if authenticated
+  actorIdentifier String    // Staff email, member name, guest email, or system process
+  actorIp         String?
+  action          String    // e.g. ORDER_PLACED_GUEST, ORDER_FULFILLED_STAFF, ROLE_SUPERSEDED
+  entityType      String    // Order, Member, Product, Role, FxRate
+  entityId        String
+  details         Json?     // Diff snapshot: { before, after } or metadata
+  createdAt       DateTime  @default(now())
+
+  @@index([actorType])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// RMA Exchange Rate Record with Staleness & Override tracking
+model FxRateRecord {
+  id               String   @id @default(uuid())
+  rate             Float    // BTN per 1 USD
+  source           String   // "RMA_FEED" | "OPEN_EXCHANGE" | "MANUAL_OVERRIDE"
+  status           FxStatus @default(FRESH)
+  isManualOverride Boolean  @default(false)
+  notes            String?
+  fetchedAt        DateTime @default(now())
+
+  @@index([fetchedAt])
+}

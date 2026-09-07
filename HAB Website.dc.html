@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Marcellus&family=Lora:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F4F0E7;color:#33261F;font-family:Lora,Georgia,serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  a{color:#8B2E24;text-decoration:none}
+  a:hover{color:#6E241C}
+  input,select,button,textarea{font-family:inherit}
+  /* CMS safety: authored content of any length or aspect ratio must not break the blueprint */
+  body,p,h1,h2,h3,h4,span,div,a,li,td{overflow-wrap:break-word;word-break:break-word;hyphens:auto}
+  img{display:block;max-width:100%}
+  [data-cms-img]{overflow:hidden;position:relative}
+  [data-cms-img] > img,[data-cms-img] > picture > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+  [data-cms-avatar]{overflow:hidden}
+  [data-cms-avatar] > img{width:100%;height:100%;object-fit:cover;object-position:center}
+  .cms-1,.cms-2,.cms-3,.cms-4,.cms-5{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+  .cms-1{-webkit-line-clamp:1}
+  .cms-2{-webkit-line-clamp:2}
+  .cms-3{-webkit-line-clamp:3}
+  .cms-4{-webkit-line-clamp:4}
+  .cms-5{-webkit-line-clamp:5}
+  [data-cms-repeat]{align-items:stretch}
+  [data-cms-item]{min-width:0}
+  ::selection{background:#8B2E24;color:#fff}
+</style>
+</helmet>
+
+<div style="min-height:100vh;min-width:1200px">
+
+  <sc-if value="{{ showAnnouncementBar }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#33261F;color:#D2C2AE">
+      <div style="max-width:1280px;margin:0 auto;padding:0 40px;min-width:1200px;min-height:38px;display:flex;align-items:center;gap:22px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em">
+        <span style="color:#F4F0E7;white-space:nowrap">Registered Civil Society Organization · CSO Act of Bhutan 2007</span>
+        <div style="flex:1"></div>
+        <sc-for data-cms-repeat list="{{ utilityLinks }}" as="ul" hint-placeholder-count="4">
+          <div onClick="{{ ul.go }}" style="color:#D2C2AE;white-space:nowrap;cursor:pointer" style-hover="color:#fff">{{ ul.label }}</div>
+        </sc-for>
+        <div style="width:1px;height:15px;background:#4E3D2E"></div>
+        <span style="white-space:nowrap"><a href="#about" style="color:#F4F0E7">EN</a> <span style="opacity:.5">/</span> <a href="#about" style="color:#D2C2AE">རྫོང་ཁ</a></span>
+      </div>
+    </div>
+  </sc-if>
+
+  <header style="position:sticky;top:0;z-index:50;background:rgba(247,246,242,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E4DDD1">
+    <div style="max-width:1280px;min-width:1200px;margin:0 auto;padding:0 40px;min-height:74px;display:flex;align-items:center;gap:10px">
+      <div onClick="{{ goHome }}" style="display:flex;align-items:center;gap:11px;cursor:pointer;flex:none">
+        <div style="width:38px;height:38px;border-radius:50%;background:#8B2E24;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Figtree,sans-serif;font-weight:800;font-size:14px;letter-spacing:-.02em">HAB</div>
+        <div style="font-family:Figtree,sans-serif;line-height:1.15">
+          <div style="font-weight:700;font-size:14.5px;letter-spacing:-.01em">Handicrafts Association</div>
+          <div style="font-size:11px;color:#6B5A4C;letter-spacing:.04em">OF BHUTAN · EST. 2005</div>
+        </div>
+      </div>
+
+      <nav style="display:flex;align-items:center;gap:0;margin-left:0;font-family:Figtree,sans-serif;font-size:13px;font-weight:500;white-space:nowrap;flex:none">
+        <div onClick="{{ goAbout }}" style="color:#33261F;padding:9px 9px;border-radius:6px;cursor:pointer;white-space:nowrap" style-hover="background:#EDE5D6">About Us</div>
+        <div onClick="{{ goPrograms }}" style="color:#33261F;padding:9px 9px;border-radius:6px;cursor:pointer;white-space:nowrap" style-hover="background:#EDE5D6">Programmes</div>
+        <div onClick="{{ goProjects }}" style="color:#33261F;padding:9px 9px;border-radius:6px;cursor:pointer;white-space:nowrap" style-hover="background:#EDE5D6">Projects</div>
+        <div onClick="{{ goNews }}" style="color:#33261F;padding:9px 9px;border-radius:6px;cursor:pointer;white-space:nowrap" style-hover="background:#EDE5D6">News &amp; Events</div>
+        <div data-menu onMouseEnter="{{ openMembersMenu }}" onMouseLeave="{{ closeMenu }}" style="position:relative">
+          <div onClick="{{ toggleMembersMenu }}" style="color:#33261F;padding:9px 9px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px" style-hover="background:#EDE5D6">Members<span style="font-size:9px;color:#6B5A4C">▼</span></div>
+          <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:100%;left:0;padding-top:10px;width:250px;z-index:60"><div style="width:100%;background:#FFFCF8;border:1px solid #E4DDD1;border-radius:10px;box-shadow:0 14px 34px rgba(27,26,24,.12);padding:8px;font-size:13.5px">
+              <div onClick="{{ goMembers }}" style="padding:10px 12px;border-radius:7px;cursor:pointer" style-hover="background:#F1EADC">Directory by category</div>
+              <div onClick="{{ goPublications }}" style="padding:10px 12px;border-radius:7px;cursor:pointer" style-hover="background:#F1EADC">Publications &amp; downloads</div>
+              <div onClick="{{ goShop }}" style="padding:10px 12px;border-radius:7px;cursor:pointer" style-hover="background:#F1EADC">Member shops &amp; outlets</div>
+              <div style="height:1px;background:#E4DDD1;margin:6px 10px"></div>
+              <div onClick="{{ goLogin }}" style="padding:10px 12px;border-radius:7px;cursor:pointer;color:#8B2E24;font-weight:600" style-hover="background:#F1EADC">Members-only login</div>
+            </div></div>
+          </sc-if>
+        </div>
+      </nav>
+
+      <div style="flex:1"></div>
+
+      <div style="display:flex;align-items:center;gap:8px;background:#FFFCF8;border:1px solid #E4DDD1;border-radius:7px;padding:0 11px;height:42px;width:128px;flex:none">
+        <span style="font-size:13px;color:#8A7767">⌕</span>
+        <input value="{{ searchTerm }}" onChange="{{ onSearchTerm }}" onKeyDown="{{ goSearch }}" placeholder="Search" style="border:none;background:transparent;outline:none;font-family:Figtree,sans-serif;font-size:13px;width:100%;color:#8B2E24">
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;flex:none;white-space:nowrap">
+        <div onClick="{{ toggleCurrency }}" title="Switch currency" style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;border:1px solid #E4DDD1;border-radius:6px;padding:7px 9px;cursor:pointer;background:#FFFCF8;white-space:nowrap">{{ curLabel }}</div>
+        <div onClick="{{ goMembership }}" style="font-family:Figtree,sans-serif;font-size:13.5px;font-weight:600;border:1px solid #33261F;color:#8B2E24;border-radius:7px;padding:10px 13px;cursor:pointer;white-space:nowrap" style-hover="background:#33261F;color:#F4F0E7">Membership</div>
+        <div data-menu onMouseEnter="{{ openShopMenu }}" onMouseLeave="{{ closeShopMenu }}" style="position:relative">
+          <div onClick="{{ toggleShopMenu }}" style="font-family:Figtree,sans-serif;font-size:13.5px;font-weight:600;background:#8B2E24;color:#fff;border-radius:7px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px" style-hover="background:#6E241C">Shop<span style="font-size:9px;opacity:.75">▼</span></div>
+          <sc-if value="{{ shopMenuOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:100%;right:0;padding-top:10px;width:660px;background:transparent;border:none;box-shadow:none;border-radius:0;z-index:60"><div style="width:100%;background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;box-shadow:0 18px 44px rgba(58,42,33,.16);padding:20px;z-index:60">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6B5A4C;margin-bottom:14px">Shop by craft category</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+                <sc-for data-cms-repeat list="{{ craftChips }}" as="c" hint-placeholder-count="13">
+                  <div onClick="{{ c.open }}" style="padding:9px 11px;border-radius:7px;cursor:pointer" style-hover="background:#F1EADC">
+                    <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14px">{{ c.name }}</div>
+                    <div style="font-size:12.5px;color:#6B5A4C">{{ c.en }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:16px;border-top:1px solid #EFE9DE;padding-top:16px">
+                <div onClick="{{ goShop }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;background:#33261F;color:#F4F0E7;padding:11px 16px;border-radius:7px;cursor:pointer">Shop home →</div>
+                <div onClick="{{ goShopGrid }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;border:1px solid #CDBEA8;padding:11px 16px;border-radius:7px;cursor:pointer">All products</div>
+                <div onClick="{{ goCart }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;border:1px solid #CDBEA8;padding:11px 16px;border-radius:7px;cursor:pointer">Your basket</div>
+                <div style="flex:1"></div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C;align-self:center">Free EMS over $200</div>
+              </div>
+            </div></div>
+          </sc-if>
+        </div>
+        <div onClick="{{ goCart }}" style="position:relative;width:42px;height:42px;border-radius:7px;border:1px solid #E4DDD1;background:#FFFCF8;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px" style-hover="border-color:#33261F">
+          🧺
+          <sc-if value="{{ hasCart }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#8B2E24;color:#fff;font-family:Figtree,sans-serif;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ cartCount }}</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HOME ================= -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <main>
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:64px 40px 20px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:20px">Civil Society Organization · Bhutan</div>
+        <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:60px;line-height:1.03;letter-spacing:-.008em;margin:0 0 22px;text-wrap:balance">Towards a vibrant &amp; sustainable handicrafts sector</h1>
+        <p style="font-size:18.5px;line-height:1.62;color:#4A3C33;margin:0 0 30px;max-width:52ch;text-wrap:pretty">Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports skills development and capacity building of the craftspeople.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div onClick="{{ goAbout }}" style="cursor:pointer;font-family:Figtree,sans-serif;font-size:15px;font-weight:600;background:#33261F;color:#F4F0E7;padding:15px 24px;border-radius:8px;white-space:nowrap" style-hover="background:#8B2E24;color:#fff">Our mission</div>
+          <div onClick="{{ goShop }}" style="font-family:Figtree,sans-serif;font-size:15px;font-weight:600;border:1px solid #CDBEA8;color:#8B2E24;padding:15px 24px;border-radius:8px;cursor:pointer;background:#FFFCF8;white-space:nowrap" style-hover="border-color:#33261F">Shop the crafts →</div>
+          <div onClick="{{ goMembers }}" style="font-family:Figtree,sans-serif;font-size:15px;font-weight:600;color:#8B2E24;padding:15px 12px;cursor:pointer;white-space:nowrap">Find a member</div>
+        </div>
+      </div>
+      <div data-cms-img style="aspect-ratio:4/3.4;border-radius:14px;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);border:1px solid #E4DDD1;display:flex;align-items:flex-end;padding:18px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#86745F;background:#FFFCF8;padding:6px 10px;border-radius:5px">hero photo — artisan at the loom, Khoma</span>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:34px 40px 72px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #E4DDD1;border-bottom:1px solid #E4DDD1">
+        <sc-for data-cms-repeat list="{{ stats }}" as="s" hint-placeholder-count="4">
+          <div style="padding:26px 24px 26px 0">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:38px;letter-spacing:-.03em;line-height:1">{{ s.n }}</div>
+            <div style="font-size:14.5px;color:#6B5A4C;margin-top:7px">{{ s.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="about" style="background:#8B2E24;color:#efeae1;padding:86px 0">
+      <div style="max-width:1280px;min-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#d99a91;margin-bottom:18px">About us</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:40px;line-height:1.1;letter-spacing:-.008em;margin:0 0 24px">A network built for the artisans, not the middlemen</h2>
+          <p style="font-size:17px;line-height:1.66;color:#D2C2AE;margin:0 0 18px;text-wrap:pretty">HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.</p>
+          <p style="font-size:17px;line-height:1.66;color:#D2C2AE;margin:0 0 28px;text-wrap:pretty">HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and 195 affiliated stores exhibiting more than 100 unique handcrafted products.</p>
+          <div onClick="{{ goPrograms }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;color:#F4F0E7;border-bottom:2px solid #C9A46A;padding-bottom:3px;display:inline-block;cursor:pointer" style-hover="color:#C9A46A">Read about our programmes</div>
+        </div>
+        <div data-cms-img style="aspect-ratio:1/1;border-radius:14px;background:repeating-linear-gradient(135deg,#42332A 0 9px,#463629 9px 18px);border:1px solid #4E3D2E;display:flex;align-items:flex-end;padding:18px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#b8b0a5;background:#33261F;padding:6px 10px;border-radius:5px">photo — HAB training workshop</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px">
+        <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:32px;letter-spacing:-.008em;margin:0">New in the shop</h2>
+        <div onClick="{{ goShop }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer">All products →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ featured }}" as="p" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;display:flex;flex-direction:column" style-hover="border-color:#CDBEA8">
+            <div data-cms-img onClick="{{ p.open }}" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ p.code }}</span>
+            </div>
+            <div style="padding:15px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B2E24">{{ p.craftName }}</div>
+              <div onClick="{{ p.open }}" class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;cursor:pointer">{{ p.name }}</div>
+              <div class="cms-1" style="font-size:13.5px;color:#6B5A4C">{{ p.region }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+                <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px">{{ p.priceLabel }}</div>
+                <div onClick="{{ p.add }}" style="font-family:Figtree,sans-serif;font-size:13px;font-weight:600;border:1px solid #33261F;border-radius:6px;padding:7px 12px;cursor:pointer" style-hover="background:#33261F;color:#F4F0E7">Add</div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;display:grid;grid-template-columns:repeat(4,1fr)">
+        <sc-for data-cms-repeat list="{{ trustItems }}" as="ti" hint-placeholder-count="4" data-screen-label="assurance">
+          <div style="padding:26px 26px;border-right:1px solid #EFE9DE">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:15.5px;letter-spacing:-.01em;margin-bottom:7px">{{ ti.t }}</div>
+            <p class="cms-4" style="font-size:14px;line-height:1.55;color:#6B5A4C;margin:0">{{ ti.d }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:26px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Visit us in person</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:40px;letter-spacing:-.008em;margin:0 0 10px">Our physical outlets &amp; clusters</h2>
+          <p style="font-size:17px;color:#6B5A4C;margin:0;max-width:66ch">Buy directly from the artisans, at the markets and clusters the association runs or validates.</p>
+        </div>
+        <div onClick="{{ goShop }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap;flex:none">Or shop online →</div>
+      </div>
+
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr;margin-bottom:20px">
+        <div data-cms-img style="background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);min-height:340px;display:flex;align-items:flex-end;padding:18px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#86745F;background:#FFFCF8;padding:5px 9px;border-radius:5px">{{ outletLead.slot }}</span>
+        </div>
+        <div style="padding:38px 40px">
+          <div style="display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:#33261F;color:#F4F0E7;padding:6px 10px;border-radius:4px;margin-bottom:16px">★ {{ outletLead.badge }}</div>
+          <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;line-height:1.12;letter-spacing:-.008em;margin:0 0 8px">{{ outletLead.name }}</h3>
+          <div style="font-size:15px;color:#8B2E24;margin-bottom:16px">{{ outletLead.place }}</div>
+          <p style="font-size:16px;line-height:1.6;color:#4A3C33;margin:0 0 22px;text-wrap:pretty">{{ outletLead.desc }}</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:10px;overflow:hidden;margin-bottom:24px">
+            <sc-for data-cms-repeat list="{{ outletLead.facts }}" as="of" hint-placeholder-count="4">
+              <div data-cms-item style="background:#FFFCF8;padding:14px 16px">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4C;margin-bottom:5px">{{ of.k }}</div>
+                <div class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;line-height:1.35">{{ of.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#8B2E24;color:#fff;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#6E241C">Get directions</div>
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #CDBEA8;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="border-color:#33261F">Plan a group visit</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <sc-for data-cms-repeat list="{{ outlets }}" as="ol" hint-placeholder-count="3">
+          <div data-cms-item style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;cursor:pointer;height:100%" style-hover="border-color:#33261F">
+            <div data-cms-img style="aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);display:flex;align-items:flex-end;padding:11px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#86745F;background:#FFFCF8;padding:3px 7px;border-radius:4px">{{ ol.slot }}</span>
+            </div>
+            <div style="padding:18px 20px 20px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:#F1E9DB;color:#8B2E24;padding:4px 8px;border-radius:4px">{{ ol.type }}</span>
+              <div class="cms-2" style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;margin:11px 0 3px">{{ ol.name }}</div>
+              <div class="cms-1" style="font-size:13.5px;color:#6B5A4C;margin-bottom:9px">{{ ol.place }}</div>
+              <p class="cms-3" style="font-size:14.5px;line-height:1.5;color:#6B5A4C;margin:0">{{ ol.note }}</p>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A7767;margin-top:16px">{{ outletNote }}</div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:34px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Zorig Chusum</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:40px;letter-spacing:-.008em;margin:0 0 10px">The 13 arts &amp; crafts of Bhutan</h2>
+          <p style="font-size:17px;color:#6B5A4C;margin:0;max-width:62ch">First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.</p>
+        </div>
+        <div onClick="{{ goShop }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap;flex:none">Browse all crafts →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(286px,1fr));gap:22px">
+        <sc-for data-cms-repeat list="{{ crafts }}" as="c" hint-placeholder-count="13">
+          <div onClick="{{ c.open }}" style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column" style-hover="border-color:#33261F">
+            <div data-cms-img style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);position:relative;display:flex;align-items:flex-end;padding:12px">
+              <span style="position:absolute;top:12px;left:12px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;background:#33261F;color:#F4F0E7;padding:4px 7px;border-radius:4px">{{ c.num }}/13</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F;background:#FFFCF8;padding:4px 8px;border-radius:4px">{{ c.slot }}</span>
+            </div>
+            <div style="padding:18px 20px 20px;display:flex;flex-direction:column;flex:1">
+              <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+                <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.015em">{{ c.name }}</div>
+                <div style="font-size:14.5px;color:#6B5A4C">{{ c.en }}</div>
+              </div>
+              <p class="cms-4" style="font-size:15px;line-height:1.55;color:#4A3C33;margin:9px 0 0;flex:1;text-wrap:pretty">{{ c.desc }}</p>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;border-top:1px solid #EFE9DE;padding-top:13px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ c.countLabel }}</span>
+                <span style="font-family:Figtree,sans-serif;font-weight:600;font-size:13px;color:#8B2E24;white-space:nowrap">{{ c.shopLabel }}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="programs" style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Programmes &amp; projects</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin:0 0 34px"><h2 style="font-family:Marcellus,serif;font-weight:400;font-size:40px;letter-spacing:-.008em;margin:0">Change lives, build a better community</h2><div onClick="{{ goPrograms }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap">All eleven programme areas →</div></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ programs }}" as="pr" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+            <div data-cms-img style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ pr.slot }}</span>
+            </div>
+            <div style="padding:18px 18px 20px">
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;margin-bottom:7px">{{ pr.title }}</div>
+              <p style="font-size:14.5px;line-height:1.55;color:#6B5A4C;margin:0 0 12px">{{ pr.desc }}</p>
+              <div onClick="{{ goPrograms }}" style="font-family:Figtree,sans-serif;font-size:13.5px;font-weight:600;color:#8B2E24;cursor:pointer">Read more →</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:38px 36px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B5A4C;margin-bottom:14px">Membership database</div>
+          <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:27px;letter-spacing:-.008em;margin:0 0 12px">Find a member</h3>
+          <p style="font-size:15.5px;line-height:1.6;color:#6B5A4C;margin:0 0 20px">Search 7,500 registered artisans and enterprises by craft category, dzongkhag, or name.</p>
+          <div style="display:flex;gap:10px">
+            <input value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search weavers, Lhuentse, Tshazo…" style="flex:1;font-size:15px;padding:13px 15px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;outline:none">
+            <div onClick="{{ goMembers }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#33261F;color:#F4F0E7;padding:13px 20px;border-radius:8px;cursor:pointer;white-space:nowrap">Search</div>
+          </div>
+        </div>
+        <div style="background:#8B2E24;color:#fff;border-radius:14px;padding:38px 36px;display:flex;flex-direction:column">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#f0c4bd;margin-bottom:14px">Join HAB</div>
+          <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:27px;letter-spacing:-.008em;margin:0 0 12px">Become a member</h3>
+          <p style="font-size:15.5px;line-height:1.6;color:#f6ded9;margin:0 0 22px;flex:1">Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory within five working days.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div onClick="{{ goMembership }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#FFFCF8;color:#8B2E24;padding:13px 20px;border-radius:8px;cursor:pointer">Apply for membership</div>
+            <div onClick="{{ goLogin }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid rgba(255,255,255,.5);color:#fff;padding:13px 20px;border-radius:8px;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">Member login</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px">
+        <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:32px;letter-spacing:-.008em;margin:0">News &amp; events</h2>
+        <div onClick="{{ goNews }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer">All updates →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ newsTop }}" as="n" hint-placeholder-count="3">
+          <div onClick="{{ goNews }}" style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px;cursor:pointer" style-hover="border-color:#CDBEA8">
+            <div style="display:flex;gap:10px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C;margin-bottom:14px">
+              <span style="background:#F0E9DC;padding:4px 8px;border-radius:4px;color:#8B2E24">{{ n.kind }}</span><span>{{ n.date }}</span>
+            </div>
+            <div class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:18px;line-height:1.32;letter-spacing:-.01em">{{ n.title }}</div>
+            <p class="cms-4" style="font-size:14.5px;line-height:1.55;color:#6B5A4C;margin:10px 0 0">{{ n.blurb }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:86px 40px 0">
+      <div style="border-top:1px solid #E4DDD1;padding-top:40px;display:grid;grid-template-columns:.85fr 1.15fr;gap:52px;align-items:start">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Accountability</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:32px;letter-spacing:-.008em;margin:0 0 14px">Reports &amp; publications</h2>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0 0 20px">HAB publishes its programme outcomes, sector research and audited accounts every year, in English and Dzongkha. Board minutes and procurement notices are available on request from the secretariat.</p>
+          <div onClick="{{ goPublications }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;color:#8B2E24;cursor:pointer">All publications →</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <sc-for data-cms-repeat list="{{ reports }}" as="rp" hint-placeholder-count="4">
+            <div onClick="{{ rp.open }}" style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:11px;padding:20px;display:flex;flex-direction:column;gap:8px;color:#8B2E24;cursor:pointer" style-hover="border-color:#33261F">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#8B2E24">{{ rp.kind }}</span>
+              <span class="cms-3" style="font-family:Figtree,sans-serif;font-weight:600;font-size:16px;line-height:1.3">{{ rp.title }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C;margin-top:auto">{{ rp.meta }} ↓</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 90px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B5A4C;margin-bottom:20px">Partners &amp; funders</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:10px;overflow:hidden">
+        <sc-for data-cms-repeat list="{{ partners }}" as="pt" hint-placeholder-count="12">
+          <div style="background:#FFFCF8;min-height:78px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A7767;text-align:center;padding:0 8px">{{ pt }}</div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ================= PROGRAMS ================= -->
+  <sc-if value="{{ isPrograms }}" hint-placeholder-val="{{ false }}">
+  <main>
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:26px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / Programmes</div>
+      <div style="display:grid;grid-template-columns:1.08fr .92fr;gap:56px;align-items:end;padding-bottom:60px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:20px">Programmes</div>
+          <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:54px;line-height:1.06;letter-spacing:-.008em;margin:0 0 20px;text-wrap:balance">Eleven objects, one mandate</h1>
+          <p style="font-size:18.5px;line-height:1.62;color:#4A3C33;margin:0 0 16px;max-width:58ch;text-wrap:pretty">HAB operates as the national apex Public Benefit Organisation for Bhutan's handicrafts sector, advancing the productive, economic, cultural and social well-being of all actors across the handicrafts value chain.</p>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0;max-width:58ch">Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association. Activity outside those objects is <em>ultra vires</em> and of no effect.</p>
+        </div>
+        <div style="background:#8B2E24;color:#FFFFFF;border-radius:16px;padding:34px 36px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#F0D2C9;margin-bottom:16px">Governing principles</div>
+          <p style="font-size:17px;line-height:1.62;color:#F6E7E2;margin:0 0 20px">Public Benefit · Integrity · Inclusivity · Cultural Stewardship · Compliance · Independence</p>
+          <div style="border-top:1px solid #A85246;padding-top:18px;font-size:14.5px;line-height:1.55;color:#EBC9C2">Constituted under the Civil Society Organizations Act of Bhutan 2007 (as amended 2022). National scope across all twenty dzongkhags. Non-political by constitution.</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:0 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:26px">
+        <div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 10px">Programme types</h2>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0;max-width:74ch">The objects are construed broadly: each is a standing programme area, not a fixed project. Article 3.2 (a)–(k).</p>
+        </div>
+        <div onClick="{{ goProjects }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap">See current projects →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <sc-for data-cms-repeat list="{{ programObjects }}" as="po" hint-placeholder-count="11">
+          <div data-cms-item style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px;display:flex;flex-direction:column;min-height:210px;height:100%">
+            <div style="display:flex;align-items:baseline;gap:11px;margin-bottom:10px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:#33261F;color:#F4F0E7;padding:4px 8px;border-radius:4px;flex:none">{{ po.ref }}</span>
+              <span class="cms-3" style="font-family:Figtree,sans-serif;font-weight:700;font-size:17.5px;letter-spacing:-.015em">{{ po.t }}</span>
+            </div>
+            <sc-if value="{{ po.collapsed }}" hint-placeholder-val="{{ true }}">
+              <p class="cms-3" style="font-size:15px;line-height:1.55;color:#6B5A4C;margin:0;flex:1">{{ po.d }}</p>
+            </sc-if>
+            <sc-if value="{{ po.expanded }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1">
+                <p style="font-size:15px;line-height:1.55;color:#6B5A4C;margin:0 0 16px">{{ po.d }}</p>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4C;margin-bottom:10px">How it is delivered</div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <sc-for data-cms-repeat list="{{ po.activities }}" as="oa" hint-placeholder-count="3">
+                    <div style="display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45;color:#33261F">
+                      <span style="color:#8B2E24;flex:none">—</span><span>{{ oa }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <div onClick="{{ po.toggle }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;color:#8B2E24;cursor:pointer;margin-top:16px;padding-top:13px;border-top:1px solid #EFE9DE">{{ po.moreLabel }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Scope of activities</div>
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 10px">What that looks like in practice</h2>
+      <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0 0 28px;max-width:74ch">Nine categories of activity implement the objects. Article 3A.1 — the Board may resolve that further activity falls within scope.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <sc-for data-cms-repeat list="{{ activityScope }}" as="ac" hint-placeholder-count="9">
+          <div data-cms-item style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px;min-height:200px;height:100%">
+            <div class="cms-3" style="font-family:Figtree,sans-serif;font-weight:700;font-size:16.5px;letter-spacing:-.01em;margin-bottom:14px">{{ ac.t }}</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for data-cms-repeat list="{{ ac.items }}" as="ai" hint-placeholder-count="4">
+                <div style="display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45;color:#6B5A4C">
+                  <span style="color:#8B2E24;flex:none">—</span><span class="cms-3">{{ ai }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="background:#8B2E24;color:#FFFFFF;padding:76px 0;margin-top:80px">
+      <div style="max-width:1280px;min-width:1200px;margin:0 auto;padding:0 40px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F0D2C9;margin-bottom:14px">Delivery</div>
+        <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 30px;color:#FFFFFF">From strategy to reported result</h2>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+          <sc-for data-cms-repeat list="{{ deliveryChain }}" as="dc" hint-placeholder-count="4">
+            <div data-cms-item style="background:#7A2820;border-radius:12px;padding:24px;min-height:170px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#F0D2C9;margin-bottom:12px">STEP {{ dc.n }}</div>
+              <div class="cms-2" style="font-family:Figtree,sans-serif;font-weight:700;font-size:18px;letter-spacing:-.015em;margin-bottom:9px">{{ dc.t }}</div>
+              <p style="font-size:14.5px;line-height:1.5;color:#F6E7E2;margin:0">{{ dc.d }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="display:grid;grid-template-columns:.85fr 1.15fr;gap:52px;align-items:start">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Beneficiaries</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;line-height:1.2;letter-spacing:-.008em;margin:0 0 14px">Who the programmes serve</h2>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0">Programmes are delivered on a public benefit basis and without discrimination, to sector actors across all twenty dzongkhags.</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:6px">
+          <sc-for data-cms-repeat list="{{ beneficiaryGroups }}" as="bg" hint-placeholder-count="10">
+            <span data-cms-item style="font-family:Figtree,sans-serif;font-size:14px;font-weight:500;background:#FFFCF8;border:1px solid #E4DDD1;color:#33261F;padding:11px 16px;border-radius:22px">{{ bg }}</span>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:76px 40px 90px">
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:16px;padding:40px 44px;display:grid;grid-template-columns:1fr auto;gap:44px;align-items:center">
+        <div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:30px;line-height:1.2;letter-spacing:-.008em;margin:0 0 10px">Access these programmes</h2>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0;max-width:74ch">Active Sector Members receive preferential access to training, trade fair participation and market linkage services. Associate members receive general sector benefits. Both are administered through the Sector Membership programme.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex:none">
+          <div onClick="{{ goMembership }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#8B2E24;color:#fff;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#6E241C">Become a member</div>
+          <div onClick="{{ goPublications }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #CDBEA8;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="border-color:#33261F">Articles &amp; reports</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ================= ABOUT US ================= -->
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+  <main>
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:26px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / About us</div>
+      <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:end;padding-bottom:44px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:20px">Who we are</div>
+          <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:56px;line-height:1.06;letter-spacing:-.008em;margin:0 0 20px;text-wrap:balance">A pioneer centre for Bhutanese handicrafts</h1>
+          <p style="font-size:18.5px;line-height:1.62;color:#4A3C33;margin:0;max-width:56ch;text-wrap:pretty">Handicrafts Association of Bhutan (HAB) was established in 2005 and got formally registered as Civil Society Organization in 2011 under the CSO act of Bhutan 2007 as a pioneer centre for the promotion of vibrant and sustainable Bhutanese handicrafts.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+          <sc-for data-cms-repeat list="{{ aboutFacts }}" as="af" hint-placeholder-count="4">
+            <div style="background:#FFFCF8;padding:20px 22px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4C;margin-bottom:7px">{{ af.k }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:19px;letter-spacing:-.01em">{{ af.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div data-cms-img style="aspect-ratio:24/7;border-radius:16px;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);border:1px solid #E4DDD1;display:flex;align-items:flex-end;padding:20px;margin-bottom:80px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#86745F;background:#FFFCF8;padding:6px 10px;border-radius:5px">wide photo — artisans and secretariat, group shot or workshop floor</span>
+      </div>
+    </section>
+
+    <section style="background:#33261F;color:#F1ECE2;padding:80px 0">
+      <div style="max-width:1280px;min-width:1200px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:1fr 1fr;gap:56px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#D2C2AE;margin-bottom:18px">Vision</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:36px;line-height:1.18;letter-spacing:-.008em;margin:0 0 16px;color:#F1ECE2">Towards a vibrant &amp; sustainable handicrafts sector</h2>
+          <p style="font-size:17px;line-height:1.62;color:#D2C2AE;margin:0;max-width:46ch">A Bhutan where the thirteen crafts remain in daily practice, and where making them is a livelihood a young person would choose.</p>
+        </div>
+        <div style="border-left:1px solid #4E3D2E;padding-left:56px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#D2C2AE;margin-bottom:18px">Mission</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:36px;line-height:1.18;letter-spacing:-.008em;margin:0 0 16px;color:#F1ECE2">Promoting sustainability, inclusiveness and resilience</h2>
+          <p style="font-size:17px;line-height:1.62;color:#D2C2AE;margin:0;max-width:46ch">HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:start">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Objectives</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;line-height:1.2;letter-spacing:-.008em;margin:0 0 14px">What we set out to do</h2>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0">Six objectives carried in the strategic plan 2026–2030, against which the Board reviews performance each year.</p>
+        </div>
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;overflow:hidden">
+          <sc-for data-cms-repeat list="{{ objectives }}" as="ob" hint-placeholder-count="6">
+            <div style="display:flex;gap:18px;align-items:flex-start;padding:20px 24px;border-bottom:1px solid #EFE9DE">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8B2E24;flex:none;padding-top:4px">{{ ob.n }}</span>
+              <span style="font-size:16.5px;line-height:1.5;color:#33261F">{{ ob.t }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Values</div>
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 28px">How we work</h2>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:14px;overflow:hidden">
+        <sc-for data-cms-repeat list="{{ values }}" as="vl" hint-placeholder-count="5">
+          <div style="background:#FFFCF8;padding:26px 22px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16.5px;letter-spacing:-.01em;margin-bottom:9px">{{ vl.t }}</div>
+            <p style="font-size:14.5px;line-height:1.55;color:#6B5A4C;margin:0">{{ vl.d }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:28px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Governance</div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 10px">How HAB is governed</h2>
+          <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0;max-width:74ch">Authority runs from the members upward: the General Assembly elects the Board, the Board appoints and oversees the Executive Director, and the secretariat delivers. Committees sit between Board and secretariat for finance, ethics and procurement.</p>
+        </div>
+        <div onClick="{{ goPublications }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap">Constitution &amp; reports →</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <sc-for data-cms-repeat list="{{ govTiers }}" as="gt" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px 26px;display:grid;grid-template-columns:230px 1fr 1fr;gap:30px;align-items:center;position:relative">
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8B2E24;margin-bottom:7px">TIER {{ gt.n }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:19px;letter-spacing:-.015em">{{ gt.tier }}</div>
+            </div>
+            <p class="cms-4" style="font-size:15px;line-height:1.55;color:#6B5A4C;margin:0">{{ gt.note }}</p>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <sc-for data-cms-repeat list="{{ gt.items }}" as="gi" hint-placeholder-count="4">
+                <span style="font-family:Figtree,sans-serif;font-size:12.5px;font-weight:500;background:#F1E9DB;color:#8B2E24;padding:6px 10px;border-radius:15px">{{ gi }}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Board of Directors</div>
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 28px">Elected by the members</h2>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:20px">
+        <sc-for data-cms-repeat list="{{ board }}" as="bd" hint-placeholder-count="5">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+            <div data-cms-img style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);display:flex;align-items:flex-end;padding:10px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#86745F;background:#FFFCF8;padding:3px 6px;border-radius:4px">portrait</span>
+            </div>
+            <div style="padding:16px 18px 18px">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B2E24;margin-bottom:6px">{{ bd.role }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:16px">{{ bd.name }}</div>
+              <div class="cms-3" style="font-size:13.5px;line-height:1.45;color:#6B5A4C;margin-top:5px">{{ bd.note }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:60px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Secretariat</div>
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 28px">Our team</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <sc-for data-cms-repeat list="{{ team }}" as="tm" hint-placeholder-count="6">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:20px;display:flex;gap:16px;align-items:center">
+            <div data-cms-avatar style="width:64px;height:64px;border-radius:50%;background:repeating-linear-gradient(135deg,#E8E1D4 0 6px,#F0EBE0 6px 12px);flex:none"></div>
+            <div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B2E24;margin-bottom:5px">{{ tm.role }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:16.5px">{{ tm.name }}</div>
+              <div style="font-size:13.5px;color:#6B5A4C;margin-top:3px">{{ tm.note }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A7767;margin-top:16px">Names and portraits to be supplied by the secretariat.</div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">Milestones</div>
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 28px">Twenty years of the association</h2>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:14px;overflow:hidden">
+        <sc-for data-cms-repeat list="{{ milestones }}" as="ms" hint-placeholder-count="6">
+          <div style="background:#FFFCF8;padding:24px 20px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:22px;letter-spacing:-.02em;color:#8B2E24;margin-bottom:10px">{{ ms.y }}</div>
+            <p style="font-size:14.5px;line-height:1.5;color:#6B5A4C;margin:0">{{ ms.t }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:80px 40px 90px">
+      <div style="background:#33261F;color:#F1ECE2;border-radius:16px;padding:44px 48px;display:grid;grid-template-columns:1fr auto;gap:44px;align-items:center">
+        <div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:32px;line-height:1.2;letter-spacing:-.008em;margin:0 0 10px;color:#F1ECE2">Work with the association</h2>
+          <p style="font-size:16px;line-height:1.6;color:#D2C2AE;margin:0;max-width:72ch">Artisans and enterprises can apply for membership online. Retailers, hotels and development partners can reach the secretariat directly at Metog Lam, Thimphu.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex:none">
+          <div onClick="{{ goMembership }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#F1ECE2;color:#8B2E24;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap">Apply for membership</div>
+          <div onClick="{{ goPublications }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #4E3D2E;color:#F1ECE2;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#42332A">Annual reports</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ================= PUBLICATIONS ================= -->
+  <sc-if value="{{ isPublications }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / Publications</div>
+    <div style="max-width:74ch;margin-bottom:38px">
+      <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:46px;letter-spacing:-.008em;margin:0 0 12px">Publications</h1>
+      <p style="font-size:17.5px;line-height:1.6;color:#4A3C33;margin:0;text-wrap:pretty">Annual reports, audited accounts, sector research, guidelines and training material — published by HAB and free to download. {{ pubTotalLabel }}.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.25fr .75fr;gap:22px;margin-bottom:64px">
+      <div style="background:#33261F;color:#F1ECE2;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr .8fr">
+        <div style="padding:40px 40px 36px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;background:#8B2E24;color:#fff;padding:5px 9px;border-radius:4px">Latest</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#D2C2AE">{{ pubLead.kind }} · {{ pubLead.year }}</span>
+          </div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:38px;line-height:1.1;letter-spacing:-.008em;margin:0 0 14px;text-wrap:balance;color:#F1ECE2">{{ pubLead.title }}</h2>
+          <p style="font-size:16.5px;line-height:1.6;color:#D2C2AE;margin:0 0 26px;max-width:44ch">Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.</p>
+          <div style="margin-top:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;background:#8B2E24;color:#fff;padding:14px 22px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#6E241C">Download ↓</div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#A8947F">{{ pubLead.meta }}</span>
+          </div>
+        </div>
+        <div data-cms-img style="background:repeating-linear-gradient(135deg,#42332A 0 9px,#463629 9px 18px);display:flex;align-items:flex-end;padding:18px;min-height:300px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#D2C2AE;background:#33261F;padding:4px 8px;border-radius:4px">cover — annual report</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4C">Also essential</div>
+        <sc-for data-cms-repeat list="{{ pubSecondary }}" as="ps" hint-placeholder-count="3">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:20px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;flex:1" style-hover="border-color:#33261F">
+            <div data-cms-avatar style="width:44px;height:56px;border-radius:4px;background:repeating-linear-gradient(135deg,#E8E1D4 0 6px,#F0EBE0 6px 12px);border:1px solid #E4DDD1;flex:none"></div>
+            <div style="flex:1">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8B2E24;margin-bottom:5px">{{ ps.kind }} · {{ ps.year }}</div>
+              <div class="cms-3" style="font-family:Figtree,sans-serif;font-weight:600;font-size:16px;line-height:1.32">{{ ps.title }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B5A4C;margin-top:7px">{{ ps.meta }} ↓</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:18px;display:grid;grid-template-columns:1.6fr 1fr 1fr auto;gap:12px;align-items:center;margin-bottom:14px">
+      <input value="{{ pubQ }}" onChange="{{ onPubQ }}" placeholder="Search publications by title" style="font-size:15px;padding:12px 14px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;outline:none">
+      <select value="{{ pubKind }}" onChange="{{ onPubKind }}" style="font-size:14.5px;padding:12px;border:1px solid #CDBEA8;border-radius:8px;background:#FFFCF8">
+        <option value="">All types</option>
+        <sc-for data-cms-repeat list="{{ pubKinds }}" as="pk" hint-placeholder-count="8">
+          <option value="{{ pk }}">{{ pk }}</option>
+        </sc-for>
+      </select>
+      <select value="{{ pubYear }}" onChange="{{ onPubYear }}" style="font-size:14.5px;padding:12px;border:1px solid #CDBEA8;border-radius:8px;background:#FFFCF8">
+        <option value="">All years</option>
+        <sc-for data-cms-repeat list="{{ pubYears }}" as="py" hint-placeholder-count="10">
+          <option value="{{ py }}">{{ py }}</option>
+        </sc-for>
+      </select>
+      <div onClick="{{ resetPubs }}" style="font-family:Figtree,sans-serif;font-size:14px;font-weight:600;color:#6B5A4C;padding:12px 14px;cursor:pointer;white-space:nowrap">Reset</div>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:20px">{{ pubCountLabel }}</div>
+
+    <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+      <sc-for data-cms-repeat list="{{ pubList }}" as="pb" hint-placeholder-count="10">
+        <div style="display:grid;grid-template-columns:150px 1fr 220px 130px;gap:20px;align-items:center;padding:17px 22px;border-bottom:1px solid #EFE9DE;cursor:pointer" style-hover="background:#F4F0E7">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B2E24">{{ pb.kind }}</span>
+          <span class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:16px;line-height:1.35">{{ pb.title }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ pb.meta }}</span>
+          <span style="display:flex;align-items:center;justify-content:flex-end;gap:14px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ pb.year }}</span>
+            <span style="font-family:Figtree,sans-serif;font-weight:600;font-size:13px;color:#8B2E24;white-space:nowrap">Download ↓</span>
+          </span>
+        </div>
+      </sc-for>
+      <sc-if value="{{ pubEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:44px 24px;text-align:center">
+          <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:17px;margin-bottom:8px">No publications match these filters</div>
+          <div onClick="{{ resetPubs }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14px;color:#8B2E24;cursor:pointer">Clear filters</div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center;background:#33261F;color:#F1ECE2;border-radius:14px;padding:36px 40px;margin-top:34px">
+      <div>
+        <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:24px;letter-spacing:-.008em;margin:0 0 9px">Looking for something not listed here?</h3>
+        <p style="font-size:15.5px;line-height:1.6;color:#D2C2AE;margin:0;max-width:70ch">Board minutes, procurement notices and project evaluations are available from the secretariat on request. Members can also download training material from the members-only area.</p>
+      </div>
+      <div style="display:flex;gap:12px;flex:none">
+        <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#8B2E24;color:#fff;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#6E241C">Contact the secretariat</div>
+        <div onClick="{{ goLogin }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #4E3D2E;color:#F1ECE2;padding:14px 20px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#42332A">Member login</div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= PROJECTS ================= -->
+  <sc-if value="{{ isProjects }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / Projects</div>
+    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:end;margin-bottom:40px">
+      <div>
+        <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:46px;letter-spacing:-.008em;margin:0 0 12px">Projects</h1>
+        <p style="font-size:17.5px;line-height:1.6;color:#4A3C33;margin:0;max-width:62ch;text-wrap:pretty">HAB delivers its programmes as funded projects, each with an agreed workplan, budget and reporting cycle. Below are the projects currently in hand and those already completed, with their key activities and what they achieved.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+        <sc-for data-cms-repeat list="{{ projectTotals }}" as="pt" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;padding:18px 20px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:24px;letter-spacing:-.02em">{{ pt.n }}</div>
+            <div style="font-size:13px;line-height:1.4;color:#6B5A4C;margin-top:4px">{{ pt.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:28px;border-bottom:1px solid #E4DDD1;padding-bottom:22px">
+      <sc-for data-cms-repeat list="{{ projTabs }}" as="tb" hint-placeholder-count="2">
+        <div onClick="{{ tb.pick }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;padding:12px 20px;border:1px solid #E4DDD1;border-radius:8px;cursor:pointer;background:{{ tb.bg }};color:{{ tb.fg }};display:flex;gap:9px;align-items:center">{{ tb.label }}<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;opacity:.7">{{ tb.count }}</span></div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:26px">
+      <sc-for data-cms-repeat list="{{ projects }}" as="pj" hint-placeholder-count="3">
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;overflow:hidden;display:grid;grid-template-columns:300px 1fr">
+          <div data-cms-img style="background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);display:flex;align-items:flex-end;padding:16px;min-height:260px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F;background:#FFFCF8;padding:4px 8px;border-radius:4px">{{ pj.slot }}</span>
+          </div>
+          <div style="padding:28px 30px 30px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:{{ pj.statusBg }};color:{{ pj.statusFg }};padding:5px 9px;border-radius:4px">{{ pj.statusLabel }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ pj.period }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">·</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ pj.budget }}</span>
+            </div>
+            <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:26px;line-height:1.2;letter-spacing:-.008em;margin:0 0 6px">{{ pj.name }}</h2>
+            <div class="cms-1" style="font-size:14.5px;color:#8B2E24;margin-bottom:14px">{{ pj.partner }}</div>
+            <p class="cms-5" style="font-size:16px;line-height:1.6;color:#4A3C33;margin:0 0 24px;max-width:78ch;text-wrap:pretty">{{ pj.summary }}</p>
+
+            <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:34px">
+              <div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4C;margin-bottom:12px">Key activities</div>
+                <sc-for data-cms-repeat list="{{ pj.activityList }}" as="ac" hint-placeholder-count="4">
+                  <div style="display:flex;gap:13px;align-items:flex-start;padding:9px 0;border-top:1px solid #EFE9DE">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8B2E24;flex:none;padding-top:3px">{{ ac.n }}</span>
+                    <span style="font-size:15.5px;line-height:1.45;color:#8B2E24">{{ ac.t }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B5A4C;margin-bottom:12px">Achievements to date</div>
+                <div style="background:#F4F0E7;border-radius:11px;padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+                  <sc-for data-cms-repeat list="{{ pj.results }}" as="rs" hint-placeholder-count="3">
+                    <div>
+                      <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:23px;letter-spacing:-.02em;line-height:1">{{ rs.n }}</div>
+                      <div style="font-size:13.5px;color:#6B5A4C;margin-top:4px">{{ rs.l }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:16px">
+                  <div style="height:6px;border-radius:3px;background:#EFE9DE;overflow:hidden">
+                    <div style="height:6px;background:#8B2E24;width:{{ pj.barWidth }}"></div>
+                  </div>
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B5A4C;margin-top:8px">{{ pj.progressLabel }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="background:#33261F;color:#F1ECE2;border-radius:14px;padding:40px 44px;margin-top:34px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center">
+      <div>
+        <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:26px;letter-spacing:-.008em;margin:0 0 10px">Partner with us on the next one</h3>
+        <p style="font-size:16px;line-height:1.6;color:#D2C2AE;margin:0;max-width:70ch">HAB implements with government, development partners and private funders, and reports against agreed indicators. Project concept notes and past evaluations are available from the secretariat.</p>
+      </div>
+      <div style="display:flex;gap:12px;flex:none">
+        <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#8B2E24;color:#fff;padding:14px 20px;border-radius:8px;cursor:pointer" style-hover="background:#6E241C">Contact the secretariat</div>
+        <div onClick="{{ goPublications }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #4E3D2E;color:#F1ECE2;padding:14px 20px;border-radius:8px;cursor:pointer" style-hover="background:#42332A">Project reports</div>
+      </div>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A7767;margin-top:18px">Sample project records — replace with the secretariat's actual project register.</div>
+  </main>
+  </sc-if>
+
+  <!-- ================= SHOP LANDING ================= -->
+  <sc-if value="{{ isShopHome }}" hint-placeholder-val="{{ false }}">
+  <main>
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:32px 40px 0">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:24px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / E-shop</div>
+      <div style="background:#33261F;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1.02fr .98fr">
+        <div style="padding:64px 56px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#D2C2AE;margin-bottom:18px">The HAB e-shop</div>
+          <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:52px;line-height:1.04;letter-spacing:-.008em;color:#F1ECE2;margin:0 0 18px;text-wrap:balance">Handmade in Bhutan, bought fairly, shipped worldwide</h1>
+          <p style="font-size:17.5px;line-height:1.62;color:#D2C2AE;margin:0 0 30px;max-width:48ch">Every piece is purchased from a registered member at an agreed price before it is listed. Browse the whole catalogue, or start with one of the thirteen crafts.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div onClick="{{ goShopGrid }}" style="font-family:Figtree,sans-serif;font-size:15px;font-weight:600;background:#8B2E24;color:#fff;padding:15px 24px;border-radius:8px;cursor:pointer;white-space:nowrap" style-hover="background:#6E241C">Shop all products</div>
+            <a href="#shop-crafts" style="font-family:Figtree,sans-serif;font-size:15px;font-weight:600;border:1px solid #4E3D2E;color:#F1ECE2;padding:15px 24px;border-radius:8px;white-space:nowrap" style-hover="background:#42332A;color:#fff">Shop by craft ↓</a>
+          </div>
+        </div>
+        <div data-cms-img style="background:repeating-linear-gradient(135deg,#42332A 0 9px,#463629 9px 18px);display:flex;align-items:flex-end;padding:22px;min-height:420px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#D2C2AE;background:#33261F;padding:6px 10px;border-radius:5px">shop hero — seasonal collection, styled</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:22px 40px 0">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#E4DDD1;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+        <sc-for data-cms-repeat list="{{ shopServices }}" as="sv" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;padding:20px 22px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:14.5px;margin-bottom:5px">{{ sv.t }}</div>
+            <div class="cms-4" style="font-size:13.5px;line-height:1.5;color:#6B5A4C">{{ sv.d }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:76px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px">
+        <div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 8px">New arrivals</h2>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C">Added to the catalogue this month</div>
+        </div>
+        <div onClick="{{ goShopGrid }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap">All products →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ newArrivals }}" as="p" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;display:flex;flex-direction:column" style-hover="border-color:#CDBEA8">
+            <div data-cms-img onClick="{{ p.open }}" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);cursor:pointer;display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ p.code }}</span>
+            </div>
+            <div style="padding:15px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B2E24">{{ p.craftName }}</div>
+              <div onClick="{{ p.open }}" class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;cursor:pointer">{{ p.name }}</div>
+              <div class="cms-1" style="font-size:13.5px;color:#6B5A4C">{{ p.maker }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+                <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px">{{ p.priceLabel }}</div>
+                <div onClick="{{ p.add }}" style="font-family:Figtree,sans-serif;font-size:13px;font-weight:600;border:1px solid #33261F;border-radius:6px;padding:7px 12px;cursor:pointer" style-hover="background:#33261F;color:#F4F0E7">Add</div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="shop-crafts" style="max-width:1280px;min-width:1200px;margin:0 auto;padding:76px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px">
+        <div>
+          <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 8px">Shop by craft</h2>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C">Zorig Chusum — the thirteen arts and crafts of Bhutan</div>
+        </div>
+        <div onClick="{{ goShopGrid }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap">Browse everything →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px">
+        <sc-for data-cms-repeat list="{{ crafts }}" as="c" hint-placeholder-count="13">
+          <div onClick="{{ c.open }}" style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:11px;overflow:hidden;cursor:pointer" style-hover="border-color:#33261F">
+            <div data-cms-img style="aspect-ratio:3/2;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);display:flex;align-items:flex-end;padding:10px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#86745F;background:#FFFCF8;padding:3px 6px;border-radius:4px">{{ c.slot }}</span>
+            </div>
+            <div style="padding:14px 15px 15px">
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px;letter-spacing:-.01em">{{ c.name }}</div>
+              <div class="cms-1" style="font-size:13.5px;color:#6B5A4C;margin-top:2px">{{ c.en }}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8B2E24;margin-top:11px">{{ c.productLabel }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:76px 40px 0">
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0 0 26px">Collections</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ collections }}" as="cl" hint-placeholder-count="3">
+          <div onClick="{{ cl.open }}" style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;overflow:hidden;cursor:pointer" style-hover="border-color:#33261F">
+            <div data-cms-img style="aspect-ratio:16/9;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);display:flex;align-items:flex-end;padding:14px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F;background:#FFFCF8;padding:4px 8px;border-radius:4px">{{ cl.slot }}</span>
+            </div>
+            <div style="padding:22px 24px 24px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+                <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:21px;letter-spacing:-.02em">{{ cl.name }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6B5A4C;white-space:nowrap">{{ cl.count }}</div>
+              </div>
+              <p class="cms-4" style="font-size:15px;line-height:1.55;color:#6B5A4C;margin:9px 0 14px">{{ cl.desc }}</p>
+              <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;color:#8B2E24">Shop the collection →</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:76px 40px 0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px">
+        <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:34px;letter-spacing:-.008em;margin:0">Most bought</h2>
+        <div onClick="{{ goShopGrid }}" style="font-family:Figtree,sans-serif;font-size:14.5px;font-weight:600;color:#8B2E24;cursor:pointer;white-space:nowrap">All products →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ bestSellers }}" as="p" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;display:flex;flex-direction:column" style-hover="border-color:#CDBEA8">
+            <div data-cms-img onClick="{{ p.open }}" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);cursor:pointer;display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ p.code }}</span>
+            </div>
+            <div style="padding:15px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B2E24">{{ p.craftName }}</div>
+              <div onClick="{{ p.open }}" class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;cursor:pointer">{{ p.name }}</div>
+              <div class="cms-1" style="font-size:13.5px;color:#6B5A4C">{{ p.region }}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+                <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px">{{ p.priceLabel }}</div>
+                <div onClick="{{ p.add }}" style="font-family:Figtree,sans-serif;font-size:13px;font-weight:600;border:1px solid #33261F;border-radius:6px;padding:7px 12px;cursor:pointer" style-hover="background:#33261F;color:#F4F0E7">Add</div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1280px;min-width:1200px;margin:0 auto;padding:76px 40px 90px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:36px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B5A4C;margin-bottom:14px">Behind every piece</div>
+          <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:26px;letter-spacing:-.008em;margin:0 0 12px">Meet the makers</h3>
+          <p style="font-size:15.5px;line-height:1.6;color:#6B5A4C;margin:0 0 22px">Every product page names the member who made it, their village and their registration. Open the directory to browse by craft or dzongkhag.</p>
+          <div onClick="{{ goMembers }}" style="display:inline-block;font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#33261F;color:#F4F0E7;padding:14px 20px;border-radius:8px;cursor:pointer">Open the membership database</div>
+        </div>
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:36px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B5A4C;margin-bottom:14px">Trade &amp; wholesale</div>
+          <h3 style="font-family:Marcellus,serif;font-weight:400;font-size:26px;letter-spacing:-.008em;margin:0 0 12px">Buying in volume?</h3>
+          <p style="font-size:15.5px;line-height:1.6;color:#6B5A4C;margin:0 0 22px">Retailers, hotels and gift programmes can order at wholesale rates with lead times agreed against production capacity. The secretariat handles export paperwork.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #CDBEA8;padding:14px 20px;border-radius:8px;cursor:pointer" style-hover="border-color:#33261F">Request a quote</div>
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;color:#8B2E24;padding:14px 8px;cursor:pointer">Download the catalogue</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ================= SHOP ================= -->
+  <sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:26px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / <span onClick="{{ goShop }}" style="cursor:pointer">E-shop</span> / {{ activeCraftLabel }}</div>
+    <div style="display:grid;grid-template-columns:246px 1fr;gap:44px;align-items:start">
+      <aside style="position:sticky;top:100px">
+        <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:15px;margin-bottom:12px">Craft category</div>
+        <div style="border:1px solid #E4DDD1;border-radius:10px;background:#FFFCF8;overflow:hidden">
+          <div onClick="{{ clearCraft }}" style="padding:11px 14px;font-family:Figtree,sans-serif;font-size:14px;font-weight:600;cursor:pointer;border-bottom:1px solid #EFE9DE;display:flex;justify-content:space-between" style-hover="background:#F4F0E7">All crafts <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ totalCount }}</span></div>
+          <sc-for data-cms-repeat list="{{ crafts }}" as="c" hint-placeholder-count="13">
+            <div onClick="{{ c.filter }}" style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #EFE9DE;background:{{ c.rowBg }}" style-hover="background:#F4F0E7">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+                <div>
+                  <div style="font-family:Figtree,sans-serif;font-size:14px;font-weight:600">{{ c.name }}</div>
+                  <div style="font-size:12.5px;color:#6B5A4C">{{ c.en }}</div>
+                </div>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ c.count }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:22px;font-family:Figtree,sans-serif;font-weight:700;font-size:15px;margin-bottom:10px">Sort</div>
+        <select value="{{ sort }}" onChange="{{ onSort }}" style="width:100%;font-size:14px;padding:11px 12px;border:1px solid #CDBEA8;border-radius:8px;background:#FFFCF8">
+          <option value="new">Newest</option>
+          <option value="low">Price: low to high</option>
+          <option value="high">Price: high to low</option>
+        </select>
+        <div style="margin-top:22px;background:#FFFCF8;border:1px solid #E4DDD1;border-radius:10px;padding:16px">
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:14px;margin-bottom:8px">Shipping</div>
+          <p style="font-size:13.5px;line-height:1.55;color:#6B5A4C;margin:0">EMS / Bhutan Post worldwide, 7–14 days. Duties and customs are payable on arrival — see the notes at checkout.</p>
+        </div>
+      </aside>
+
+      <div>
+        <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:42px;letter-spacing:-.008em;margin:0 0 8px">{{ shopTitle }}</h1>
+        <p style="font-size:16.5px;line-height:1.6;color:#6B5A4C;margin:0 0 18px;max-width:70ch">{{ shopBlurb }}</p>
+        <sc-if value="{{ hasCollection }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ clearCollection }}" style="display:inline-flex;align-items:center;gap:9px;font-family:Figtree,sans-serif;font-size:13.5px;font-weight:600;background:#F1EADC;border:1px solid #CDBEA8;color:#8B2E24;padding:8px 13px;border-radius:20px;cursor:pointer;margin-bottom:22px">Collection: {{ collectionLabel }} <span style="color:#8B2E24">✕</span></div>
+        </sc-if>
+        <div style="height:8px"></div>
+        <sc-if value="{{ shopNoProducts }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFCF8;border:1px dashed #CDBEA8;border-radius:14px;padding:44px 40px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:22px;letter-spacing:-.015em;margin-bottom:10px">Nothing listed in {{ emptyCraftName }} right now</div>
+            <p style="font-size:16px;line-height:1.6;color:#6B5A4C;margin:0 0 24px;max-width:64ch">{{ shopEmptyLine }}</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#33261F;color:#F4F0E7;padding:14px 20px;border-radius:8px;cursor:pointer">Commission a piece</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;border:1px solid #CDBEA8;padding:14px 20px;border-radius:8px;cursor:pointer" style-hover="border-color:#33261F">Notify me when available</div>
+              <div onClick="{{ clearCraft }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;color:#8B2E24;padding:14px 8px;cursor:pointer">Browse all crafts →</div>
+            </div>
+          </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+          <sc-for data-cms-repeat list="{{ shopProducts }}" as="p" hint-placeholder-count="9">
+            <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;display:flex;flex-direction:column" style-hover="border-color:#CDBEA8">
+              <div data-cms-img onClick="{{ p.open }}" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);cursor:pointer;display:flex;align-items:center;justify-content:center">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ p.code }}</span>
+              </div>
+              <div style="padding:15px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B2E24">{{ p.craftName }}</div>
+                <div onClick="{{ p.open }}" class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;cursor:pointer">{{ p.name }}</div>
+                <div class="cms-1" style="font-size:13.5px;color:#6B5A4C">{{ p.maker }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+                  <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px">{{ p.priceLabel }}</div>
+                  <div onClick="{{ p.add }}" style="font-family:Figtree,sans-serif;font-size:13px;font-weight:600;border:1px solid #33261F;border-radius:6px;padding:7px 12px;cursor:pointer" style-hover="background:#33261F;color:#F4F0E7">Add</div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= PRODUCT ================= -->
+  <sc-if value="{{ isProduct }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:26px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / <span onClick="{{ goShop }}" style="cursor:pointer">E-shop</span> / {{ product.craftName }} / {{ product.code }}</div>
+    <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:start">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div data-cms-img style="grid-column:span 2;aspect-ratio:4/3;border-radius:12px;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);border:1px solid #E4DDD1;display:flex;align-items:flex-end;padding:16px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#86745F;background:#FFFCF8;padding:5px 9px;border-radius:5px">product shot 1 — {{ product.code }}</span>
+        </div>
+        <div data-cms-img style="aspect-ratio:1/1;border-radius:12px;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);border:1px solid #E4DDD1"></div>
+        <div data-cms-img style="aspect-ratio:1/1;border-radius:12px;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);border:1px solid #E4DDD1"></div>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8B2E24;margin-bottom:14px">{{ product.craftName }} · {{ product.craftEn }}</div>
+        <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:38px;letter-spacing:-.008em;line-height:1.08;margin:0 0 12px">{{ product.name }}</h1>
+        <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:26px;margin:0 0 6px">{{ product.priceLabel }}</div>
+        <div style="font-size:13.5px;color:#6B5A4C;margin-bottom:22px">{{ product.altPriceLabel }} · duties payable on arrival</div>
+        <p style="font-size:16.5px;line-height:1.65;color:#4A3C33;margin:0 0 24px">{{ product.desc }}</p>
+
+        <div style="display:flex;gap:12px;margin-bottom:22px">
+          <div onClick="{{ addActive }}" style="flex:1;text-align:center;font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;background:#8B2E24;color:#fff;padding:16px;border-radius:9px;cursor:pointer" style-hover="background:#6E241C">Add to basket</div>
+          <div onClick="{{ buyNow }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;border:1px solid #33261F;padding:16px 22px;border-radius:9px;cursor:pointer;background:#FFFCF8" style-hover="background:#33261F;color:#F4F0E7">Buy now</div>
+        </div>
+
+        <div style="border:1px solid #E4DDD1;border-radius:12px;background:#FFFCF8;overflow:hidden;margin-bottom:22px">
+          <sc-for data-cms-repeat list="{{ productSpecs }}" as="sp" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:20px;padding:13px 16px;border-bottom:1px solid #EFE9DE;font-size:14.5px">
+              <span style="color:#6B5A4C">{{ sp.k }}</span><span style="font-weight:500;text-align:right">{{ sp.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div onClick="{{ product.openMaker }}" style="border:1px solid #E4DDD1;border-radius:12px;background:#FFFCF8;padding:18px;display:flex;gap:14px;align-items:center;cursor:pointer" style-hover="border-color:#33261F">
+          <div data-cms-avatar style="width:54px;height:54px;border-radius:50%;background:repeating-linear-gradient(135deg,#E8E1D4 0 6px,#F0EBE0 6px 12px);flex:none"></div>
+          <div style="flex:1">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#6B5A4C">Made by</div>
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:16px">{{ product.maker }}</div>
+            <div style="font-size:13.5px;color:#6B5A4C">{{ product.region }} · HAB verified member</div>
+          </div>
+          <span style="color:#8B2E24">→</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:70px">
+      <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:26px;letter-spacing:-.008em;margin:0 0 22px">More from {{ product.craftName }}</h2>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+        <sc-for data-cms-repeat list="{{ related }}" as="p" hint-placeholder-count="4">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+            <div data-cms-img onClick="{{ p.open }}" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);cursor:pointer;display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ p.code }}</span>
+            </div>
+            <div style="padding:14px 16px 16px">
+              <div onClick="{{ p.open }}" class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;cursor:pointer">{{ p.name }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:15px;margin-top:6px">{{ p.priceLabel }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= MEMBER DIRECTORY ================= -->
+  <sc-if value="{{ isMembers }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / Members / Directory</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:28px;flex-wrap:wrap">
+      <div>
+        <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:44px;letter-spacing:-.008em;margin:0 0 10px">Membership database</h1>
+        <p style="font-size:17px;color:#6B5A4C;margin:0;max-width:66ch">7,500 registered artisans, enterprises and affiliated stores. Search by craft category or dzongkhag; every listing links to the member's products in the HAB shop.</p>
+      </div>
+      <div onClick="{{ goMembership }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14.5px;background:#8B2E24;color:#fff;padding:14px 20px;border-radius:8px;cursor:pointer;flex:none">Apply for membership</div>
+    </div>
+
+    <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:18px;display:grid;grid-template-columns:1.6fr 1fr 1fr auto;gap:12px;align-items:center;margin-bottom:14px">
+      <input value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search by name, craft or village" style="font-size:15px;padding:12px 14px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;outline:none">
+      <select value="{{ craftFilter }}" onChange="{{ onCraftSelect }}" style="font-size:14.5px;padding:12px 12px;border:1px solid #CDBEA8;border-radius:8px;background:#FFFCF8">
+        <option value="">All craft categories</option>
+        <sc-for data-cms-repeat list="{{ crafts }}" as="c" hint-placeholder-count="13">
+          <option value="{{ c.key }}">{{ c.name }} — {{ c.en }}</option>
+        </sc-for>
+      </select>
+      <select value="{{ region }}" onChange="{{ onRegion }}" style="font-size:14.5px;padding:12px 12px;border:1px solid #CDBEA8;border-radius:8px;background:#FFFCF8">
+        <option value="">All dzongkhags</option>
+        <sc-for data-cms-repeat list="{{ regions }}" as="r" hint-placeholder-count="8">
+          <option value="{{ r }}">{{ r }}</option>
+        </sc-for>
+      </select>
+      <div onClick="{{ resetFilters }}" style="font-family:Figtree,sans-serif;font-size:14px;font-weight:600;color:#6B5A4C;padding:12px 14px;cursor:pointer;white-space:nowrap">Reset</div>
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px">{{ memberCountLabel }}</div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px">
+      <sc-for data-cms-repeat list="{{ memberList }}" as="m" hint-placeholder-count="6">
+        <div onClick="{{ m.open }}" style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:22px;cursor:pointer;display:flex;flex-direction:column;gap:12px" style-hover="border-color:#33261F">
+          <div style="display:flex;gap:14px;align-items:center">
+            <div data-cms-avatar style="width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#E8E1D4 0 6px,#F0EBE0 6px 12px);flex:none"></div>
+            <div>
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em">{{ m.name }}</div>
+              <div style="font-size:13.5px;color:#6B5A4C">{{ m.dz }} · member since {{ m.since }}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:#F1E9DB;color:#8B2E24;padding:5px 8px;border-radius:4px">{{ m.craftName }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:#EFF0E4;color:#4C6B41;padding:5px 8px;border-radius:4px">{{ m.badge }}</span>
+          </div>
+          <p class="cms-3" style="font-size:14.5px;line-height:1.55;color:#6B5A4C;margin:0;flex:1">{{ m.blurb }}</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-family:Figtree,sans-serif;font-size:13.5px;font-weight:600;color:#8B2E24;border-top:1px solid #EFE9DE;padding-top:12px">
+            <span>{{ m.productLabel }}</span><span>View profile →</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= MEMBER PROFILE ================= -->
+  <sc-if value="{{ isMember }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:26px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / <span onClick="{{ goMembers }}" style="cursor:pointer">Members</span> / {{ member.name }}</div>
+    <div style="display:grid;grid-template-columns:.95fr 1.05fr;gap:52px;align-items:start;margin-bottom:64px">
+      <div data-cms-img style="aspect-ratio:1/1;border-radius:14px;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);border:1px solid #E4DDD1;display:flex;align-items:flex-end;padding:18px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#86745F;background:#FFFCF8;padding:5px 9px;border-radius:5px">portrait — {{ member.name }} at work</span>
+      </div>
+      <div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:#F1E9DB;color:#8B2E24;padding:6px 9px;border-radius:4px">{{ member.craftName }} · {{ member.craftEn }}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:#EFF0E4;color:#4C6B41;padding:6px 9px;border-radius:4px">{{ member.badge }}</span>
+        </div>
+        <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:44px;letter-spacing:-.008em;line-height:1.05;margin:0 0 12px">{{ member.name }}</h1>
+        <div style="font-size:16px;color:#6B5A4C;margin-bottom:24px">{{ member.dz }}, Bhutan · HAB member since {{ member.since }} · Reg. {{ member.reg }}</div>
+        <p style="font-size:17px;line-height:1.65;color:#4A3C33;margin:0 0 28px">{{ member.story }}</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #E4DDD1;border-bottom:1px solid #E4DDD1;margin-bottom:26px">
+          <sc-for data-cms-repeat list="{{ memberStats }}" as="s" hint-placeholder-count="3">
+            <div style="padding:18px 16px 18px 0">
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:24px;letter-spacing:-.02em">{{ s.n }}</div>
+              <div style="font-size:13.5px;color:#6B5A4C;margin-top:3px">{{ s.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div onClick="{{ goShop }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;background:#33261F;color:#F4F0E7;padding:14px 20px;border-radius:8px;cursor:pointer">Shop this member's work</div>
+          <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;border:1px solid #CDBEA8;background:#FFFCF8;padding:14px 20px;border-radius:8px;cursor:pointer" style-hover="border-color:#33261F">Request a wholesale quote</div>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:28px;letter-spacing:-.008em;margin:0 0 22px">In the HAB shop</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:22px">
+      <sc-for data-cms-repeat list="{{ memberProducts }}" as="p" hint-placeholder-count="4">
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden">
+          <div data-cms-img onClick="{{ p.open }}" style="aspect-ratio:1/1;background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);cursor:pointer;display:flex;align-items:center;justify-content:center">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#86745F">{{ p.code }}</span>
+          </div>
+          <div style="padding:14px 16px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div>
+              <div onClick="{{ p.open }}" class="cms-2" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;cursor:pointer">{{ p.name }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:15px;margin-top:5px">{{ p.priceLabel }}</div>
+            </div>
+            <div onClick="{{ p.add }}" style="font-family:Figtree,sans-serif;font-size:13px;font-weight:600;border:1px solid #33261F;border-radius:6px;padding:7px 11px;cursor:pointer" style-hover="background:#33261F;color:#F4F0E7">Add</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= MEMBERSHIP APPLICATION ================= -->
+  <sc-if value="{{ isMembership }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1080px;min-width:1080px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / Membership / Apply</div>
+    <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:44px;letter-spacing:-.008em;margin:0 0 10px">Apply for HAB membership</h1>
+    <p style="font-size:17px;color:#6B5A4C;margin:0 0 34px;max-width:70ch">Three steps, about five minutes. Dues are annual and can be paid by card, mBoB or bank transfer.</p>
+
+    <div style="display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap">
+      <sc-for data-cms-repeat list="{{ joinSteps }}" as="st" hint-placeholder-count="3">
+        <div style="flex:1;min-width:190px;border-top:3px solid {{ st.bar }};padding-top:12px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">STEP {{ st.n }}</div>
+          <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;margin-top:3px">{{ st.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ joinStep1 }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:26px">
+        <sc-for data-cms-repeat list="{{ plans }}" as="pl" hint-placeholder-count="3">
+          <div onClick="{{ pl.pick }}" style="background:#FFFCF8;border:2px solid {{ pl.border }};border-radius:12px;padding:24px;cursor:pointer">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.02em">{{ pl.name }}</div>
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;color:#8B2E24">{{ pl.price }}</div>
+            </div>
+            <p style="font-size:14.5px;line-height:1.55;color:#6B5A4C;margin:10px 0 12px">{{ pl.who }}</p>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C">{{ pl.perks }}</div>
+          </div>
+        </sc-for>
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px">
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px;margin-bottom:12px">Primary craft category</div>
+          <select value="{{ joinCraft }}" onChange="{{ onJoinCraft }}" style="width:100%;font-size:14.5px;padding:12px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;margin-bottom:14px">
+            <option value="">Select one of the 13 crafts…</option>
+            <sc-for data-cms-repeat list="{{ crafts }}" as="c" hint-placeholder-count="13">
+              <option value="{{ c.key }}">{{ c.name }} — {{ c.en }}</option>
+            </sc-for>
+          </select>
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:16px;margin-bottom:12px">Dzongkhag</div>
+          <select value="{{ joinRegion }}" onChange="{{ onJoinRegion }}" style="width:100%;font-size:14.5px;padding:12px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7">
+            <option value="">Select your dzongkhag…</option>
+            <sc-for data-cms-repeat list="{{ regions }}" as="r" hint-placeholder-count="8">
+              <option value="{{ r }}">{{ r }}</option>
+            </sc-for>
+          </select>
+        </div>
+      </div>
+      <div onClick="{{ joinNext }}" style="display:inline-block;font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;background:#8B2E24;color:#fff;padding:15px 26px;border-radius:9px;cursor:pointer" style-hover="background:#6E241C">Continue to details →</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-top:12px">{{ joinSummary }}</div>
+    </sc-if>
+
+    <sc-if value="{{ joinStep2 }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:30px;display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <sc-for data-cms-repeat list="{{ joinFields }}" as="f" hint-placeholder-count="6">
+          <div style="grid-column:span {{ f.span }}">
+            <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;margin-bottom:7px">{{ f.label }}</div>
+            <input placeholder="{{ f.ph }}" style="width:100%;font-size:15px;padding:13px 14px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;outline:none">
+          </div>
+        </sc-for>
+        <div style="grid-column:span 2;background:#F4F0E7;border-radius:9px;padding:16px;font-size:14px;color:#6B5A4C;line-height:1.55">Upload your citizenship ID and a business licence if you have one. Files up to 5 MB — a drag-and-drop upload area sits here.</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:22px">
+        <div onClick="{{ joinBack }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;border:1px solid #CDBEA8;background:#FFFCF8;padding:15px 22px;border-radius:9px;cursor:pointer">← Back</div>
+        <div onClick="{{ joinNext }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;background:#8B2E24;color:#fff;padding:15px 26px;border-radius:9px;cursor:pointer" style-hover="background:#6E241C">Continue to payment →</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ joinStep3 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:26px">
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:26px">
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:18px;margin-bottom:16px">Pay your annual dues</div>
+          <sc-for data-cms-repeat list="{{ payMethods }}" as="pm" hint-placeholder-count="3">
+            <div onClick="{{ pm.pick }}" style="border:2px solid {{ pm.border }};border-radius:10px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;gap:14px;align-items:center">
+              <div style="width:20px;height:20px;border-radius:50%;border:2px solid #CDBEA8;background:{{ pm.dot }};flex:none"></div>
+              <div>
+                <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px">{{ pm.name }}</div>
+                <div style="font-size:13.5px;color:#6B5A4C">{{ pm.note }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#8B2E24;color:#efeae1;border-radius:12px;padding:26px;height:fit-content">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#d99a91;margin-bottom:16px">Summary</div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding-bottom:12px;border-bottom:1px solid #4E3D2E"><span style="color:#D2C2AE">Membership</span><span>{{ joinPlanName }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding:12px 0;border-bottom:1px solid #4E3D2E"><span style="color:#D2C2AE">Craft</span><span>{{ joinCraftName }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding:12px 0;border-bottom:1px solid #4E3D2E"><span style="color:#D2C2AE">Dzongkhag</span><span>{{ joinRegionName }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-family:Figtree,sans-serif;font-weight:700;font-size:20px;padding:16px 0 20px"><span>Due today</span><span>{{ joinPlanPrice }}</span></div>
+          <div onClick="{{ joinSubmit }}" style="text-align:center;font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;background:#8B2E24;color:#fff;padding:15px;border-radius:9px;cursor:pointer" style-hover="background:#6E241C">Submit application</div>
+          <div onClick="{{ joinBack }}" style="text-align:center;font-size:13.5px;color:#D2C2AE;margin-top:12px;cursor:pointer">← Back to details</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ joinDone }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:52px;text-align:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#EFF0E4;color:#4C6B41;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px">✓</div>
+        <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:30px;letter-spacing:-.008em;margin:0 0 12px">Application received</h2>
+        <p style="font-size:16.5px;line-height:1.6;color:#6B5A4C;margin:0 auto 26px;max-width:52ch">Reference HAB-2026-0417. The secretariat verifies documents within five working days; you will be listed in the public directory once approved.</p>
+        <div style="display:flex;gap:12px;justify-content:center">
+          <div onClick="{{ goLogin }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;background:#33261F;color:#F4F0E7;padding:14px 22px;border-radius:8px;cursor:pointer">Go to member area</div>
+          <div onClick="{{ goHome }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px;border:1px solid #CDBEA8;padding:14px 22px;border-radius:8px;cursor:pointer">Back to home</div>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+  </sc-if>
+
+  <!-- ================= MEMBER LOGIN ================= -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1080px;min-width:1080px;margin:0 auto;padding:64px 40px 110px;display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8B2E24;margin-bottom:16px">Members-only area</div>
+      <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:42px;letter-spacing:-.008em;line-height:1.06;margin:0 0 18px">Sign in to your member account</h1>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px">
+        <sc-for data-cms-repeat list="{{ memberPerks }}" as="mp" hint-placeholder-count="5">
+          <div style="display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.5;color:#4A3C33">
+            <span style="color:#8B2E24;flex:none">—</span><span>{{ mp }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:34px">
+      <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;margin-bottom:7px">Membership number or email</div>
+      <input placeholder="HAB-2026-0417" style="width:100%;font-size:15px;padding:13px 14px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;outline:none;margin-bottom:16px">
+      <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:13.5px;margin-bottom:7px">Password</div>
+      <input type="password" placeholder="••••••••" style="width:100%;font-size:15px;padding:13px 14px;border:1px solid #CDBEA8;border-radius:8px;background:#F4F0E7;outline:none;margin-bottom:20px">
+      <div onClick="{{ goHome }}" style="text-align:center;font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;background:#8B2E24;color:#fff;padding:15px;border-radius:9px;cursor:pointer" style-hover="background:#6E241C">Log in</div>
+      <div style="display:flex;justify-content:space-between;margin-top:16px;font-size:14px">
+        <a href="#about">Forgot password</a>
+        <span onClick="{{ goMembership }}" style="color:#8B2E24;cursor:pointer;font-weight:500">Not a member yet?</span>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= NEWS ================= -->
+  <sc-if value="{{ isNews }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1280px;min-width:1200px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / News &amp; events</div>
+    <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:44px;letter-spacing:-.008em;margin:0 0 10px">News &amp; events</h1>
+    <p style="font-size:17px;color:#6B5A4C;margin:0 0 34px">Stay informed, stay empowered.</p>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:26px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <sc-for data-cms-repeat list="{{ news }}" as="n" hint-placeholder-count="5">
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;display:grid;grid-template-columns:200px 1fr">
+            <div data-cms-img style="background:repeating-linear-gradient(135deg,#E8E1D4 0 9px,#F0EBE0 9px 18px);min-height:150px"></div>
+            <div style="padding:22px 24px">
+              <div style="display:flex;gap:10px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B5A4C;margin-bottom:12px">
+                <span style="background:#F0E9DC;padding:4px 8px;border-radius:4px;color:#8B2E24">{{ n.kind }}</span><span>{{ n.date }}</span>
+              </div>
+              <div class="cms-2" style="font-family:Figtree,sans-serif;font-weight:700;font-size:20px;line-height:1.28;letter-spacing:-.015em">{{ n.title }}</div>
+              <p class="cms-3" style="font-size:15px;line-height:1.6;color:#6B5A4C;margin:10px 0 12px">{{ n.blurb }}</p>
+              <a href="#about" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14px">Continue reading →</a>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;position:sticky;top:100px">
+        <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px">
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;margin-bottom:14px">Upcoming events</div>
+          <sc-for data-cms-repeat list="{{ events }}" as="ev" hint-placeholder-count="3">
+            <div style="display:flex;gap:14px;padding:13px 0;border-top:1px solid #EFE9DE">
+              <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:13px;text-align:center;flex:none;width:44px;line-height:1.2">{{ ev.day }}<br><span style="font-size:11px;color:#6B5A4C">{{ ev.mon }}</span></div>
+              <div>
+                <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px">{{ ev.title }}</div>
+                <div style="font-size:13.5px;color:#6B5A4C">{{ ev.place }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#8B2E24;color:#efeae1;border-radius:12px;padding:24px">
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;margin-bottom:8px">Publications</div>
+          <p style="font-size:14.5px;line-height:1.55;color:#D2C2AE;margin:0 0 16px">Annual reports, craft studies and the Zorig Chusum catalogue, free to download.</p>
+          <div onClick="{{ goPublications }}" style="font-family:Figtree,sans-serif;font-weight:600;font-size:14px;color:#fff;border-bottom:2px solid #C9A46A;padding-bottom:3px;display:inline-block;cursor:pointer">Browse downloads</div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8A7767;line-height:1.6">Sample copy — replace with real posts from the HAB newsroom.</div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ================= CART / CHECKOUT ================= -->
+  <sc-if value="{{ isCart }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1180px;min-width:1180px;margin:0 auto;padding:40px 40px 90px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6B5A4C;margin-bottom:22px"><span onClick="{{ goHome }}" style="cursor:pointer">Home</span> / Basket &amp; checkout</div>
+    <h1 style="font-family:Marcellus,serif;font-weight:400;font-size:42px;letter-spacing:-.008em;margin:0 0 30px">Your basket</h1>
+
+    <sc-if value="{{ orderPlaced }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:52px;text-align:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:#EFF0E4;color:#4C6B41;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px">✓</div>
+        <h2 style="font-family:Marcellus,serif;font-weight:400;font-size:30px;letter-spacing:-.008em;margin:0 0 12px">Order confirmed</h2>
+        <p style="font-size:16.5px;line-height:1.6;color:#6B5A4C;margin:0 auto 26px;max-width:52ch">Order HAB-S-88214. You will receive an EMS tracking number from Bhutan Post when the parcel leaves Thimphu, usually within two working days.</p>
+        <div onClick="{{ goShop }}" style="display:inline-block;font-family:Figtree,sans-serif;font-weight:600;font-size:15px;background:#33261F;color:#F4F0E7;padding:14px 22px;border-radius:8px;cursor:pointer">Continue shopping</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:14px;padding:56px;text-align:center">
+        <p style="font-size:17px;color:#6B5A4C;margin:0 0 22px">Nothing in the basket yet.</p>
+        <div onClick="{{ goShop }}" style="display:inline-block;font-family:Figtree,sans-serif;font-weight:600;font-size:15px;background:#8B2E24;color:#fff;padding:14px 22px;border-radius:8px;cursor:pointer">Browse the 13 crafts</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ cartActive }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:1.35fr .65fr;gap:26px;align-items:start">
+        <div>
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;overflow:hidden;margin-bottom:22px">
+            <sc-for data-cms-repeat list="{{ cartLines }}" as="l" hint-placeholder-count="2">
+              <div style="display:flex;gap:18px;padding:20px;border-bottom:1px solid #EFE9DE;align-items:center">
+                <div style="width:86px;height:86px;border-radius:9px;background:repeating-linear-gradient(135deg,#E8E1D4 0 8px,#F0EBE0 8px 16px);flex:none"></div>
+                <div style="flex:1">
+                  <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8B2E24">{{ l.craftName }}</div>
+                  <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:16.5px;margin:3px 0 3px">{{ l.name }}</div>
+                  <div style="font-size:13.5px;color:#6B5A4C">{{ l.maker }} · {{ l.region }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:2px;border:1px solid #CDBEA8;border-radius:8px;overflow:hidden;background:#F4F0E7">
+                  <div onClick="{{ l.dec }}" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:Figtree,sans-serif;font-weight:600" style-hover="background:#EDE5D6">−</div>
+                  <div style="width:32px;text-align:center;font-family:Figtree,sans-serif;font-weight:600;font-size:15px">{{ l.qty }}</div>
+                  <div onClick="{{ l.inc }}" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:Figtree,sans-serif;font-weight:600" style-hover="background:#EDE5D6">+</div>
+                </div>
+                <div style="width:96px;text-align:right;font-family:Figtree,sans-serif;font-weight:700;font-size:16px">{{ l.lineLabel }}</div>
+                <div onClick="{{ l.remove }}" style="cursor:pointer;color:#6B5A4C;font-size:13.5px">Remove</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px;margin-bottom:22px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;margin-bottom:14px">Shipping</div>
+            <sc-for data-cms-repeat list="{{ shipOptions }}" as="so" hint-placeholder-count="2">
+              <div onClick="{{ so.pick }}" style="border:2px solid {{ so.border }};border-radius:10px;padding:15px;margin-bottom:11px;cursor:pointer;display:flex;gap:14px;align-items:center">
+                <div style="width:19px;height:19px;border-radius:50%;border:2px solid #CDBEA8;background:{{ so.dot }};flex:none"></div>
+                <div style="flex:1">
+                  <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px">{{ so.name }}</div>
+                  <div style="font-size:13.5px;color:#6B5A4C">{{ so.note }}</div>
+                </div>
+                <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:15px">{{ so.priceLabel }}</div>
+              </div>
+            </sc-for>
+            <div style="font-size:13.5px;line-height:1.55;color:#6B5A4C;background:#F4F0E7;border-radius:8px;padding:14px;margin-top:6px">Import duty and local taxes are not included and are collected by your customs authority on arrival. HAB provides a commercial invoice and craft certificate in every parcel.</div>
+          </div>
+
+          <div style="background:#FFFCF8;border:1px solid #E4DDD1;border-radius:12px;padding:24px">
+            <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:17px;margin-bottom:14px">Payment</div>
+            <sc-for data-cms-repeat list="{{ payMethods }}" as="pm" hint-placeholder-count="3">
+              <div onClick="{{ pm.pick }}" style="border:2px solid {{ pm.border }};border-radius:10px;padding:15px;margin-bottom:11px;cursor:pointer;display:flex;gap:14px;align-items:center">
+                <div style="width:19px;height:19px;border-radius:50%;border:2px solid #CDBEA8;background:{{ pm.dot }};flex:none"></div>
+                <div>
+                  <div style="font-family:Figtree,sans-serif;font-weight:600;font-size:15px">{{ pm.name }}</div>
+                  <div style="font-size:13.5px;color:#6B5A4C">{{ pm.note }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#8B2E24;color:#efeae1;border-radius:12px;padding:26px;position:sticky;top:100px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#d99a91;margin-bottom:16px">Order summary</div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding-bottom:12px;border-bottom:1px solid #4E3D2E"><span style="color:#D2C2AE">Subtotal</span><span>{{ subtotalLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding:12px 0;border-bottom:1px solid #4E3D2E"><span style="color:#D2C2AE">Shipping</span><span>{{ shipLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;padding:12px 0;border-bottom:1px solid #4E3D2E"><span style="color:#D2C2AE">Paying with</span><span>{{ payLabel }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-family:Figtree,sans-serif;font-weight:700;font-size:22px;padding:16px 0 6px"><span>Total</span><span>{{ totalLabel }}</span></div>
+          <div style="font-size:13px;color:#A8947F;margin-bottom:20px">{{ altTotalLabel }}</div>
+          <div onClick="{{ placeOrder }}" style="text-align:center;font-family:Figtree,sans-serif;font-weight:600;font-size:15.5px;background:#8B2E24;color:#fff;padding:16px;border-radius:9px;cursor:pointer" style-hover="background:#6E241C">Place order</div>
+          <div onClick="{{ goShop }}" style="text-align:center;font-size:13.5px;color:#D2C2AE;margin-top:14px;cursor:pointer">← Keep shopping</div>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+  </sc-if>
+
+  <footer style="background:#33261F;color:#D2C2AE;padding:64px 0 34px;margin-top:0">
+    <div style="max-width:1280px;margin:0 auto;padding:0 40px;min-width:1200px;display:grid;grid-template-columns:1.35fr repeat(4,1fr);gap:34px">
+      <div>
+        <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px">
+          <div style="width:36px;height:36px;border-radius:50%;background:#8B2E24;color:#fff;display:flex;align-items:center;justify-content:center;font-family:Figtree,sans-serif;font-weight:800;font-size:13px">HAB</div>
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:14.5px;color:#efeae1">Handicrafts Association of Bhutan</div>
+        </div>
+        <p style="font-size:14.5px;line-height:1.6;margin:0 0 18px;max-width:38ch">A registered Civil Society Organization under the CSO Act of Bhutan 2007. Established 2005.</p>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.9">Metog Lam, Thimphu, Bhutan<br>Office +975-2-338089<br>officehab@gmail.com</div>
+      </div>
+      <sc-for data-cms-repeat list="{{ footerCols }}" as="fc" hint-placeholder-count="3">
+        <div>
+          <div style="font-family:Figtree,sans-serif;font-weight:700;font-size:13.5px;color:#efeae1;letter-spacing:.02em;margin-bottom:14px">{{ fc.title }}</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <sc-for data-cms-repeat list="{{ fc.links }}" as="lk" hint-placeholder-count="5">
+              <a href="#about" style="font-size:14.5px;color:#D2C2AE" style-hover="color:#fff">{{ lk }}</a>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="max-width:1280px;min-width:1200px;margin:34px auto 0;padding:22px 40px 0;border-top:1px solid #463629;display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;flex-wrap:wrap;gap:12px">
+      <span>© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043</span>
+      <span>Prices shown in {{ curLabel }} · Payments by card, mBoB and bank transfer</span>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAnnouncementBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+class Component extends DCLogic {
+  craftData = [
+    ["shingzo","Shingzo","Carpentry","Timber joinery for dzongs, temples and houses — beams, brackets and window frames cut without nails."],
+    ["dozo","Dozo","Masonry","Stone and rammed-earth walls, the load-bearing craft behind every dzong and farmhouse."],
+    ["parzo","Parzo","Carving","Carving in wood, slate and stone: masks, altar panels, printing blocks and mani walls."],
+    ["lhazo","Lhazo","Painting","Thangka scrolls, murals and decorative motifs painted to classical proportion in mineral pigment."],
+    ["jinzo","Jinzo","Clay & sculpture","Clay statues, ritual objects and moulded ornament, built up over a wooden armature."],
+    ["lugzo","Lugzo","Bronze casting","Casting in bronze, brass and iron — bells, statues, cymbals and household vessels."],
+    ["garzo","Garzo","Blacksmithing","Forged tools, knives, chains and farm implements, a craft centred on eastern Bhutan."],
+    ["troezo","Troezo","Gold & silversmithing","Chased and filigreed silver and gold: koma clasps, jewellery, ritual vessels."],
+    ["tshazo","Tshazo","Bamboo & cane","Split bamboo and cane woven into baskets, bangchungs, mats and quivers."],
+    ["thagzo","Thagzo","Weaving","Backstrap and pedal-loom textiles — kira, gho, kisuthara silk and yathra wool."],
+    ["tshemzo","Tshemzo","Tailoring & embroidery","Tailoring, appliqué and embroidery, including the giant thongdrel banners."],
+    ["shagzo","Shagzo","Wood turning","Bowls and cups turned from burl wood and lacquered, associated with healing properties."],
+    ["dezo","Dezo","Paper making","Desho paper made by hand from daphne and edgeworthia bark, dried on frames in the sun."]
+  ];
+  productData = [
+    ["MAS01","Ritual Mask",87,"parzo","Trashiyangtse","Kelzang Dorji Woodworks","Hand-carved and painted mask of the kind worn in tshechu dances, cut from a single block of seasoned wood."],
+    ["HHB01","Handheld Bag",40,"thagzo","Lhuentse","Khoma Weavers Group","Backstrap-loom cloth in yathra-inspired stripes, lined and finished with a wooden handle."],
+    ["FTB04","Fruits Basket",43,"tshazo","Zhemgang","Kheng Bamboo Collective","Split bamboo woven tight enough to hold water, in the Kheng technique passed down through generations."],
+    ["LUD01","Laundry Basket",50,"tshazo","Zhemgang","Kheng Bamboo Collective","Deep cane basket with a reinforced rim, sized for a household and light enough to carry full."],
+    ["HHB10","Handheld Bag",40,"thagzo","Lhuentse","Khoma Weavers Group","A narrower cut of the handheld bag with a plain-weave body and patterned panel."],
+    ["SAD03","Saddle Bag",158,"thagzo","Bumthang","Chumey Yathra House","Yathra wool woven in Chumey valley, sewn into a two-pocket saddle bag with leather straps."],
+    ["CAM01","Camera Bag",50,"tshemzo","Thimphu","Norzin Tailoring","Padded and quilted by hand, with an adjustable strap and a water-resistant inner layer."],
+    ["CUS02","Cushion Cover",68,"tshemzo","Thimphu","Norzin Tailoring","Appliqué cushion cover in raw silk with hand-stitched borders."],
+    ["DAP02","Wooden Bowl (Dapa)",65,"shagzo","Trashiyangtse","Yangtse Turning Works","Turned from the burl of a maple, then lacquered — the bowl form long associated with healing properties."],
+    ["DEZ01","Daphne Paper Set",22,"dezo","Punakha","Jungshi Paper Works","Sheets of desho paper made from daphne bark, sun-dried on frames. Set of ten."],
+    ["TRO04","Silver Brooch (Koma)",120,"troezo","Thimphu","Zorig Silversmiths","Hand-chased silver koma, the clasp traditionally worn with a kira."],
+    ["LHA01","Thangka Scroll",340,"lhazo","Paro","Sonam Thangka Studio","Mineral pigments on cotton, brocade-mounted. Painted to the proportions set out in the classical treatises."]
+  ];
+  memberData = [
+    ["Khoma Weavers Group","thagzo","Lhuentse",2011,"Forty-two women weaving kisuthara silk patterns on backstrap looms in Khoma village.",["HHB01","HHB10"]],
+    ["Kheng Bamboo Collective","tshazo","Zhemgang",2013,"Bamboo and cane baskets, bangchungs and mats from the Kheng region.",["FTB04","LUD01"]],
+    ["Chumey Yathra House","thagzo","Bumthang",2009,"Yathra wool weaving in Chumey valley — blankets, jackets and saddle bags.",["SAD03"]],
+    ["Kelzang Dorji Woodworks","parzo","Trashiyangtse",2015,"Carving workshop producing masks, choesham panels and altar detail.",["MAS01"]],
+    ["Norzin Tailoring","tshemzo","Thimphu",2012,"Tailoring and appliqué studio working in raw silk and cotton.",["CAM01","CUS02"]],
+    ["Yangtse Turning Works","shagzo","Trashiyangtse",2010,"Lacquered dapa and phob turned from burl wood.",["DAP02"]],
+    ["Jungshi Paper Works","dezo","Punakha",2008,"Traditional desho paper from daphne and edgeworthia bark.",["DEZ01"]],
+    ["Zorig Silversmiths","troezo","Thimphu",2014,"Silver koma, jewellery and ritual objects, hand-chased.",["TRO04"]],
+    ["Sonam Thangka Studio","lhazo","Paro",2007,"Thangka painting to classical proportion, mineral pigments only.",["LHA01"]]
+  ];
+  publicationData = [
+    ["Annual report","Annual Report 2025",2026,"PDF · 4.2 MB · English & Dzongkha",1],
+    ["Strategy","Five-Year Strategic Plan 2026–2030",2026,"PDF · 3.6 MB · Board approved",1],
+    ["Sector study","Zorig Chusum Value Chain Assessment",2025,"PDF · 2.8 MB · 96 pages",1],
+    ["Accounts","Audited Financial Statements 2025",2026,"PDF · 1.1 MB · Independent auditor",1],
+    ["Catalogue","HAB Product Catalogue 2026",2026,"PDF · 18.4 MB · 120 products",0],
+    ["Policy brief","Craft Sector Tax and Licensing: A Note for Policymakers",2025,"PDF · 640 KB · 12 pages",0],
+    ["Guideline","Natural Dye Handbook for Weavers",2025,"PDF · 6.2 MB · Illustrated",0],
+    ["Training manual","Costing and Pricing for Craft Enterprises",2025,"PDF · 2.1 MB · Workbook",0],
+    ["Annual report","Annual Report 2024",2025,"PDF · 3.9 MB · English & Dzongkha",0],
+    ["Accounts","Audited Financial Statements 2024",2025,"PDF · 1.0 MB · Independent auditor",0],
+    ["Case study","Khoma Weavers: Fifteen Years of Kisuthara",2024,"PDF · 5.4 MB · Photo essay",0],
+    ["Sector study","Market Demand for Bhutanese Handicrafts in Japan",2024,"PDF · 2.2 MB · Buyer survey",0],
+    ["Guideline","Export Documentation Guide for Members",2024,"PDF · 1.4 MB · Checklists",0],
+    ["Newsletter","Zorig Bulletin — Issue 12",2024,"PDF · 900 KB · Quarterly",0],
+    ["Annual report","Annual Report 2023",2024,"PDF · 3.6 MB · English & Dzongkha",0],
+    ["Training manual","Bamboo Splitting and Weaving: Technique Notes",2023,"PDF · 4.8 MB · Illustrated",0],
+    ["Case study","Women in Craft Enterprise: Endline Evaluation",2023,"PDF · 3.1 MB · External evaluator",0],
+    ["Policy brief","Protecting Craft Origin: Options for Bhutan",2023,"PDF · 720 KB · 14 pages",0],
+    ["Newsletter","Zorig Bulletin — Issue 9",2023,"PDF · 880 KB · Quarterly",0],
+    ["Accounts","Audited Financial Statements 2022",2023,"PDF · 980 KB · Independent auditor",0],
+    ["Sector study","Craft Sector Employment and Income Baseline",2022,"PDF · 2.6 MB · 78 pages",0],
+    ["Guideline","Quality Standards for HAB-Listed Products",2022,"PDF · 1.2 MB · Inspection criteria",0],
+    ["Case study","COVID-19 Recovery: What Cash-for-Craft Achieved",2022,"PDF · 2.9 MB · Review",0],
+    ["Annual report","Annual Report 2021",2022,"PDF · 3.2 MB · English",0],
+    ["Training manual","Photographing Craft for Online Sale",2021,"PDF · 5.9 MB · Practical guide",0],
+    ["Catalogue","Zorig Chusum Reference Catalogue",2021,"PDF · 22.1 MB · 13 crafts",0],
+    ["Newsletter","Zorig Bulletin — Issue 5",2021,"PDF · 810 KB · Quarterly",0],
+    ["Policy brief","Craft in the Tourism Value Chain",2020,"PDF · 690 KB · 10 pages",0],
+    ["Sector study","Raw Material Supply Constraints in Eastern Bhutan",2019,"PDF · 1.9 MB · Field study",0],
+    ["Annual report","Annual Report 2018",2019,"PDF · 2.8 MB · English",0],
+    ["Guideline","Setting Up a Craft Producer Group",2017,"PDF · 1.1 MB · Handbook",0],
+    ["Case study","Chumey Yathra: From Household Loom to Retail",2016,"PDF · 2.4 MB · Photo essay",0]
+  ];
+  projectData = [
+    {status:"current", name:"Sustainable Bhutanese Handicrafts (SWITCH-Asia)", partner:"EU SWITCH-Asia · with GrAT and SHINE", period:"2024 – 2027", budget:"EUR 1.4 m", progress:62,
+      summary:"Shifting member enterprises to resource-efficient production: natural dyes, waste reduction and cleaner finishing, while holding craft quality.",
+      activities:["Cleaner-production audits in 240 workshops","Natural dye and low-waste finishing training","Green business plans and access to finance","Eco-label criteria drafted with RGoB"],
+      results:[{n:"240",l:"Enterprises audited"},{n:"1,180",l:"Artisans trained"},{n:"31%",l:"Average waste reduction"}]},
+    {status:"current", name:"Market Access for Rural Artisans", partner:"Enhanced Integrated Framework (EIF)", period:"2025 – 2027", budget:"USD 620,000", progress:38,
+      summary:"Connecting rural producer groups to export buyers through the HAB e-shop, trade fairs and consolidated EMS shipping.",
+      activities:["Product photography and cataloguing for 400 items","Export documentation clinics in six dzongkhags","Buyer missions to India, Thailand and Japan","Consolidated shipping desk at the secretariat"],
+      results:[{n:"400",l:"Products catalogued"},{n:"14",l:"Export buyers engaged"},{n:"6",l:"Dzongkhags covered"}]},
+    {status:"current", name:"Zorig Chusum Skills Transmission", partner:"UNDP GEF Small Grants Programme", period:"2026 – 2028", budget:"USD 180,000", progress:12,
+      summary:"Master-to-apprentice placements in the five crafts with the fewest practising members, to keep endangered techniques alive.",
+      activities:["Master craftspeople identified in Lugzo, Garzo, Jinzo, Dozo and Shingzo","Two-year paid apprenticeships for 40 young artisans","Technique documentation in video and print","Curriculum shared with the Institute of Zorig Chusum"],
+      results:[{n:"40",l:"Apprenticeships opened"},{n:"5",l:"Endangered crafts covered"},{n:"18",l:"Masters engaged"}]},
+    {status:"past", name:"Women in Craft Enterprise", partner:"Government of Canada · Helvetas Bhutan", period:"2021 – 2024", budget:"CAD 900,000",
+      summary:"Business and pricing capability for women-led craft enterprises, with a revolving fund for raw material purchase.",
+      activities:["Costing and pricing training for 2,100 women","Revolving raw-material fund in 9 dzongkhags","Producer groups formalised and registered","Childcare support at training venues"],
+      results:[{n:"2,100",l:"Women trained"},{n:"64%",l:"Reported income increase"},{n:"312",l:"New enterprises registered"}]},
+    {status:"past", name:"COVID-19 Craft Sector Recovery", partner:"UNDP Bhutan · RGoB", period:"2020 – 2022", budget:"USD 450,000",
+      summary:"Emergency income support and a first move to online selling when tourism arrivals stopped.",
+      activities:["Cash-for-craft procurement from 1,600 artisans","HAB e-shop launched with payment gateway","Domestic craft bazaars in four dzongkhags","Raw material bulk purchase to hold prices"],
+      results:[{n:"1,600",l:"Artisans supported"},{n:"Nu. 24 m",l:"Craft purchased directly"},{n:"195",l:"Stores kept trading"}]},
+    {status:"past", name:"Craft Product Innovation Lab", partner:"BCCI · Ernst & Young (pro bono)", period:"2019 – 2021", budget:"USD 210,000",
+      summary:"Pairing artisans with designers to develop contemporary lines from traditional technique for retail and hospitality.",
+      activities:["Six design–artisan cycles across four crafts","Prototyping grants and material sourcing","Hotel and retail buyer showcases","Design rights guidance for participants"],
+      results:[{n:"38",l:"New products launched"},{n:"11",l:"Hotel and retail accounts"},{n:"4",l:"Crafts represented"}]}
+  ];
+  news = [
+    {kind:"Programs",date:"28 Aug 2026",title:"Trade facilitation desk opens for the autumn export season",blurb:"Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu."},
+    {kind:"Artisan support",date:"14 Aug 2026",title:"Natural dye training concludes in Lhuentse",blurb:"Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation."},
+    {kind:"Events",date:"02 Aug 2026",title:"Zorig Chusum craft bazaar returns to Clock Tower Square",blurb:"Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts."},
+    {kind:"Publications",date:"19 Jul 2026",title:"Annual report 2025 available to download",blurb:"Sector figures, programme outcomes and audited accounts for the year, published in English and Dzongkha."},
+    {kind:"Projects",date:"30 Jun 2026",title:"Product innovation lab pairs six artisans with designers",blurb:"A six-month cycle developing new homeware lines from bamboo, yathra and desho paper for international retail."}
+  ];
+  events = [
+    {day:"12",mon:"SEP",title:"Craft bazaar, day one",place:"Clock Tower Square, Thimphu"},
+    {day:"27",mon:"SEP",title:"Export documentation clinic",place:"HAB office, Metog Lam"},
+    {day:"08",mon:"OCT",title:"Members' general assembly",place:"Thimphu"}
+  ];
+  state = {
+    screen:"home", cur:"USD", menu:false, craft:"", sort:"new", q:"", craftFilter:"", region:"",
+    productCode:"MAS01", memberName:"Khoma Weavers Group", cart:{HHB01:1,DAP02:1},
+    collection:"", projTab:"current", pubKind:"", pubYear:"", pubQ:"", objOpen:{},
+    joinStep:1, joinPlan:"artisan", joinCraft:"", joinRegion:"", pay:"card", ship:"ems", placed:false,
+    shopMenu:false
+  };
+
+  top(){ if (typeof window !== "undefined") window.scrollTo(0,0); }
+  go(screen, extra){ this.setState(Object.assign({screen, menu:false}, extra||{})); this.top(); }
+  fmt(v){ return this.state.cur === "USD" ? "$" + v.toLocaleString() : "Nu. " + Math.round(v*84).toLocaleString(); }
+  alt(v){ return this.state.cur === "USD" ? "Nu. " + Math.round(v*84).toLocaleString() : "$" + v.toLocaleString(); }
+  craft(key){ const c = this.craftData.find(x => x[0] === key) || ["","","",""]; return {key:c[0], name:c[1], en:c[2], desc:c[3]}; }
+  prod(code){ const p = this.productData.find(x => x[0] === code) || this.productData[0]; const c = this.craft(p[3]);
+    return {code:p[0], name:p[1], price:p[2], craftKey:p[3], craftName:c.name, craftEn:c.en, region:p[4], maker:p[5], desc:p[6]}; }
+  decorate(codes){ return codes.map(code => { const p = this.prod(code); return Object.assign({}, p, {
+      priceLabel:this.fmt(p.price), altPriceLabel:this.alt(p.price),
+      open:() => this.go("product", {productCode:p.code}),
+      add:(e) => { if (e && e.stopPropagation) e.stopPropagation(); this.addToCart(p.code); },
+      openMaker:() => this.go("member", {memberName:p.maker})
+    }); }); }
+  objectActivities = {
+    a:["Representation in national and subnational planning processes","Participation in legislative and regulatory consultations","Engagement with ministries, regulators and international forums"],
+    b:["Evidence-based policy positions submitted to competent authorities","Review of standards and incentive frameworks affecting the sector","Monitoring of sector-relevant policy commitments"],
+    c:["Domestic and international trade fairs and exhibitions","Export readiness programmes and trade facilitation tools","Buyer–seller linkages and market information systems","Certification and standards compliance support"],
+    d:["Design workshops and innovation programmes","Artisan–designer collaborations","Quality improvement initiatives","Product development guidelines and toolkits"],
+    e:["Sector brand assets and stewardship","Domestic and international marketing campaigns","Geographical indications and certification marks","Digital and physical promotional platforms"],
+    f:["Craft skills, business management and financial literacy training","Digital marketing and export procedure courses","Study tours, peer exchanges and mentorship","Support to training institutions and curricula"],
+    g:["Registry of authentic craft practices and producers","Documentation of traditional craft knowledge","Geographical indication and certification of origin","Cooperation with national and international heritage bodies"],
+    h:["Sector surveys, market studies and policy analyses","Sector data platform","Research reports and market intelligence briefs"],
+    i:["Targeted participation of rural artisans and women practitioners","Pathways for youth entering the crafts","Access for persons with disabilities and marginalised communities"],
+    j:["Access to grants, concessional credit and catalytic investment","Financial literacy and entrepreneurship programmes","Endowment Fund and resilience mechanisms"],
+    k:["Partnerships with government agencies and development partners","Linkages with research and educational institutions","Private sector and civil society collaboration"]
+  };
+  componentDidMount(){
+    this._closeMenus = (e) => {
+      const inMenu = e.target && e.target.closest && e.target.closest("[data-menu]");
+      if (!inMenu && (this.state.menu || this.state.shopMenu)) this.setState({menu:false, shopMenu:false});
+    };
+    document.addEventListener("mousedown", this._closeMenus, true);
+    document.addEventListener("keydown", this._escMenus = (e) => {
+      if (e.key === "Escape") this.setState({menu:false, shopMenu:false});
+    });
+  }
+  componentWillUnmount(){
+    document.removeEventListener("mousedown", this._closeMenus, true);
+    document.removeEventListener("keydown", this._escMenus);
+  }
+  collectionDefs = [
+    ["under50","Under $50","Gifts and smaller pieces, every one under fifty dollars.","photo — small gifts flat lay"],
+    ["textiles","Textiles & weaving","Cloth from the backstrap and pedal loom: bags, cushions, yathra wool.","photo — folded textiles"],
+    ["home","Home & table","Baskets, turned bowls and handmade paper for the house.","photo — table setting"]
+  ];
+  matchCollection(p){
+    const col = this.state.collection;
+    if (!col) return true;
+    if (col === "under50") return p[2] < 50;
+    if (col === "textiles") return ["thagzo","tshemzo"].indexOf(p[3]) >= 0;
+    if (col === "home") return ["tshazo","shagzo","dezo"].indexOf(p[3]) >= 0;
+    return true;
+  }
+  addToCart(code){ this.setState(s => { const cart = Object.assign({}, s.cart); cart[code] = (cart[code]||0)+1; return {cart}; }); }
+
+  renderVals(){
+    const s = this.state;
+    const counts = {};
+    this.productData.forEach(p => { counts[p[3]] = (counts[p[3]]||0)+1; });
+    const memberCounts = {};
+    this.memberData.forEach(m => { memberCounts[m[1]] = (memberCounts[m[1]]||0)+1; });
+
+    const crafts = this.craftData.map(c => ({
+      key:c[0], name:c[1], en:c[2], desc:c[3], count:(counts[c[0]]||0),
+      num:("0" + (this.craftData.indexOf(c) + 1)).slice(-2),
+      slot:"photo — " + c[2].toLowerCase(),
+      shopLabel:"Shop " + c[1] + " →",
+      productLabel:(counts[c[0]]||0) + ((counts[c[0]]||0) === 1 ? " product →" : " products →"),
+      countLabel:(function(m,p){ return m + (m === 1 ? " member · " : " members · ") + p + (p === 1 ? " product" : " products"); })(memberCounts[c[0]]||0, counts[c[0]]||0),
+      rowBg: s.craft === c[0] ? "#F1E9DB" : "#fff",
+      open:() => this.go("shop", {craft:c[0]}),
+      filter:() => this.setState({craft:c[0]})
+    }));
+
+    let shop = this.productData.filter(p => (!s.craft || p[3] === s.craft) && this.matchCollection(p)).map(p => p[0]);
+    if (s.sort === "low" || s.sort === "high") {
+      shop.sort((a,b) => { const d = this.prod(a).price - this.prod(b).price; return s.sort === "low" ? d : -d; });
+    }
+    const activeCraft = s.craft ? this.craft(s.craft) : null;
+    const product = this.prod(s.productCode);
+
+    const mem = this.memberData.find(m => m[0] === s.memberName) || this.memberData[0];
+    const memCraft = this.craft(mem[1]);
+    const qq = s.q.trim().toLowerCase();
+    const memberList = this.memberData.filter(m => {
+      const c = this.craft(m[1]);
+      const okQ = !qq || (m[0]+" "+m[2]+" "+c.name+" "+c.en+" "+m[4]).toLowerCase().indexOf(qq) >= 0;
+      return okQ && (!s.craftFilter || m[1] === s.craftFilter) && (!s.region || m[2] === s.region);
+    }).map(m => { const c = this.craft(m[1]); return {
+      name:m[0], craftName:c.name, craftEn:c.en, dz:m[2], since:m[3], blurb:m[4], badge:"HAB verified",
+      productLabel:m[5].length + " products in shop", open:() => this.go("member", {memberName:m[0]})
+    }; });
+
+    const cartCodes = Object.keys(s.cart).filter(k => s.cart[k] > 0);
+    const subtotal = cartCodes.reduce((t,k) => t + this.prod(k).price * s.cart[k], 0);
+    const shipCost = cartCodes.length === 0 ? 0 : (s.ship === "ems" ? (subtotal >= 200 ? 0 : 24) : 62);
+    const total = subtotal + shipCost;
+    const cartLines = cartCodes.map(k => { const p = this.prod(k); return {
+      code:k, name:p.name, craftName:p.craftName, maker:p.maker, region:p.region, qty:s.cart[k],
+      lineLabel:this.fmt(p.price * s.cart[k]),
+      inc:() => this.addToCart(k),
+      dec:() => this.setState(st => { const cart = Object.assign({}, st.cart); cart[k] = Math.max(0, (cart[k]||0)-1); return {cart}; }),
+      remove:() => this.setState(st => { const cart = Object.assign({}, st.cart); delete cart[k]; return {cart}; })
+    }; });
+
+    const sel = "#8B2E24", off = "#E4DDD1";
+    const payDefs = [
+      ["card","International card","Visa, Mastercard, Amex — 3-D Secure"],
+      ["mbob","Bhutan mobile pay","mBoB / RMA-approved wallets, in Nu."],
+      ["bank","Bank transfer","BNB / BOB account, invoice issued on order"]
+    ];
+    const payMethods = payDefs.map(p => ({
+      name:p[1], note:p[2], border: s.pay === p[0] ? sel : off, dot: s.pay === p[0] ? sel : "transparent",
+      pick:() => this.setState({pay:p[0]})
+    }));
+    const payLabel = (payDefs.find(p => p[0] === s.pay) || payDefs[0])[1];
+
+    const shipDefs = [
+      ["ems","EMS / Bhutan Post","7–14 days, tracked. Free over $200.", subtotal >= 200 ? 0 : 24],
+      ["exp","Express courier","3–5 days, tracked and insured.", 62]
+    ];
+    const shipOptions = shipDefs.map(o => ({
+      name:o[1], note:o[2], priceLabel: o[3] === 0 ? "Free" : this.fmt(o[3]),
+      border: s.ship === o[0] ? sel : off, dot: s.ship === o[0] ? sel : "transparent",
+      pick:() => this.setState({ship:o[0]})
+    }));
+
+    const planDefs = [
+      ["artisan","Individual artisan","Nu. 500 / year","For a craftsperson working on their own or with family.","Directory listing · training access · shop consignment"],
+      ["enterprise","Craft enterprise","Nu. 2,000 / year","For registered workshops, groups and cooperatives.","All artisan benefits · wholesale leads · trade fair slots"],
+      ["institution","Institutional","Nu. 5,000 / year","For schools, retailers and partner organisations.","Listing · publications · policy consultations"]
+    ];
+    const plans = planDefs.map(p => ({
+      name:p[1], price:p[2], who:p[3], perks:p[4],
+      border: s.joinPlan === p[0] ? sel : off, pick:() => this.setState({joinPlan:p[0]})
+    }));
+    const plan = planDefs.find(p => p[0] === s.joinPlan) || planDefs[0];
+
+    const joinSteps = [["1","Category & dues"],["2","Your details"],["3","Payment"]].map(st => ({
+      n:st[0], label:st[1], bar: Number(st[0]) <= s.joinStep ? "#8B2E24" : "#E4DDD1"
+    }));
+
+    return {
+      // nav / chrome
+      showAnnouncementBar: this.props.showAnnouncementBar !== false,
+      curLabel: s.cur === "USD" ? "USD $" : "BTN Nu.",
+      toggleCurrency:() => this.setState({cur: s.cur === "USD" ? "BTN" : "USD"}),
+      menuOpen: s.menu, closeMenu:() => this.setState({menu:false}),
+      openMembersMenu:() => { if (!s.menu) this.setState({menu:true, shopMenu:false}); },
+      openShopMenu:() => { if (!s.shopMenu) this.setState({shopMenu:true, menu:false}); },
+      toggleMembersMenu:(e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({menu:!s.menu, shopMenu:false}); },
+      shopMenuOpen: s.shopMenu, closeShopMenu:() => this.setState({shopMenu:false}),
+      toggleShopMenu:(e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState({shopMenu:!s.shopMenu, menu:false}); },
+      craftChips: crafts.slice(0,13),
+      goHome:() => this.go("home"),
+      goShop:() => this.go("shophome", {craft:"", collection:""}),
+      goShopGrid:() => this.go("shop", {craft:"", collection:""}),
+      goMembers:() => this.go("members"),
+      goMembership:() => this.go("membership", {joinStep:1}), goLogin:() => this.go("login"),
+      goNews:() => this.go("news"), goCart:() => this.go("cart", {placed:false}),
+      isHome: s.screen === "home", isShop: s.screen === "shop", isProduct: s.screen === "product",
+      isShopHome: s.screen === "shophome",
+      isProjects: s.screen === "projects",
+      goProjects:() => this.go("projects"),
+      isPrograms: s.screen === "programs",
+      goPrograms:() => this.go("programs"),
+      programObjects:[
+        {ref:"a",t:"Sector Representation and Advocacy",d:"Represent and advance the collective interests of all handicrafts sector stakeholders — artisans, producers, designers, traders and service providers — before governmental, legislative, regulatory, intergovernmental and private sector bodies."},
+        {ref:"b",t:"Policy Development and Intervention",d:"Engage with competent authorities on policies, laws, regulations, standards and incentive frameworks affecting the sector; submit evidence-based positions and monitor implementation of policy commitments."},
+        {ref:"c",t:"Trade Facilitation",d:"Facilitate domestic and international trade through trade infrastructure, standards compliance systems, market linkage mechanisms, export facilitation instruments and certification frameworks."},
+        {ref:"d",t:"Product Development",d:"Support innovation, quality enhancement, design evolution and product diversification through design interventions, technical upgradation and linkages between artisans, designers, institutions and markets."},
+        {ref:"e",t:"Branding and Market Development",d:"Steward a credible sector brand identity for Bhutanese handicrafts, promote authenticity and cultural value, and support distribution networks, retail channels and promotional platforms."},
+        {ref:"f",t:"Capacity Development",d:"Strengthen productive, entrepreneurial, managerial, technical and institutional capacity through training, professional development, knowledge exchange, mentorship and peer learning."},
+        {ref:"g",t:"Cultural Heritage Stewardship",d:"Protect, document, promote and transmit the intangible cultural heritage of the Zorig Chusum; maintain a registry of authentic craft practices and producers; pursue geographical indication and certification of origin."},
+        {ref:"h",t:"Research and Knowledge Management",d:"Undertake and disseminate research, sector data, market intelligence and policy analysis to inform advocacy, programme design and the evidence base for the sector."},
+        {ref:"i",t:"Social Inclusion and Equity",d:"Advance equitable participation of rural artisans, women practitioners, youth, persons with disabilities and marginalised communities in the sector and in HAB's programmes, governance and services."},
+        {ref:"j",t:"Financial Sustainability of the Sector",d:"Facilitate access to finance, grants, concessional credit and catalytic investment; develop financial literacy and entrepreneurship programmes; strengthen long-term viability."},
+        {ref:"k",t:"Partnerships and Institutional Linkages",d:"Establish and grow partnerships with national and international organisations, government agencies, development partners, research and educational institutions, the private sector and civil society."}
+      ].map((o) => {
+        const open = !!s.objOpen[o.ref];
+        return Object.assign({}, o, {
+          collapsed: !open, expanded: open,
+          moreLabel: open ? "Read less ↑" : "Read more ↓",
+          activities: (this.objectActivities[o.ref] || []),
+          toggle: () => this.setState((st) => {
+            const objOpen = Object.assign({}, st.objOpen);
+            objOpen[o.ref] = !objOpen[o.ref];
+            return {objOpen};
+          })
+        });
+      }),
+      activityScope:[
+        {t:"Advocacy and Representation",items:["Evidence-based policy advocacy","National and subnational planning processes","Legislative and regulatory consultations","Engagement with ministries and international forums"]},
+        {t:"Trade and Market Support",items:["Domestic and international trade fairs","Export readiness programmes","Buyer–seller linkages","Certification and standards compliance","Market information systems"]},
+        {t:"Product and Design Development",items:["Design workshops and innovation programmes","Artisan–designer collaborations","Quality improvement initiatives","Product development guidelines and toolkits"]},
+        {t:"Branding and Promotion",items:["Sector brand assets","Domestic and international campaigns","Digital and physical promotional platforms","Geographical indications and certification marks"]},
+        {t:"Capacity Building and Training",items:["Craft skills and business management","Financial literacy and digital marketing","Export procedures","Study tours, peer exchange, mentorship","Training institutions and curricula"]},
+        {t:"Research and Documentation",items:["Sector surveys and market studies","Sector data platform","Research reports and market intelligence briefs","Documentation of traditional craft knowledge"]},
+        {t:"Membership Services and Sector Engagement",items:["Sector Membership programme","Annual Sector Forum and SCC meetings","DHDC operations support","Targeted services to Active Sector Members"]},
+        {t:"Financial Resource Mobilisation",items:["Endowment Fund management","Grants and donations administration","Project-based programmes","Social enterprises under Authority approval"]},
+        {t:"Governance and Compliance",items:["Statutory registers and records","Reports and returns to the Authority","BCAS compliance","Subsidiary governance instruments"]}
+      ],
+      deliveryChain:[
+        {n:"1",t:"Strategic Plan",d:"Adopted by the Board and reported to the Authority. Sets the objects each programme serves."},
+        {n:"2",t:"Annual Workplans",d:"Board-approved workplans convert the strategy into the year's programme activity and budget."},
+        {n:"3",t:"Projects",d:"Funded projects with agreed indicators deliver the workplan, each reported against separately."},
+        {n:"4",t:"Review and reporting",d:"Internal review by the Board, external reporting to the Authority, published in the annual report."}
+      ],
+      beneficiaryGroups:["Artisans and craft practitioners","Producers and craft enterprises","Designers and product developers","Traders, retailers and exporters","Service providers to the sector","Rural and informal producers","Women practitioners","Youth entering the crafts","Persons with disabilities","Marginalised communities"],
+      isAbout: s.screen === "about",
+      goAbout:() => this.go("about"),
+      aboutFacts:[
+        {k:"Established",v:"2005"},
+        {k:"Registered CSO",v:"2011 · CSO/2011/043"},
+        {k:"Member enterprises",v:"7,500"},
+        {k:"Affiliated stores",v:"195"}
+      ],
+      objectives:[
+        "Improve market access for Bhutanese artisans at home, in the tourism sector and internationally.",
+        "Raise product quality and consistency through training, standards and inspection.",
+        "Guarantee fair compensation and prompt payment for handcrafted work.",
+        "Keep the thirteen crafts of Zorig Chusum in living practice, particularly those with few practitioners.",
+        "Represent the sector in policy dialogue with government and development partners.",
+        "Strengthen member enterprises as businesses — costing, licensing, export documentation and finance."
+      ].map(function(t,i){ return {n:("0" + (i+1)).slice(-2), t:t}; }),
+      values:[
+        {t:"Craft first",d:"Decisions are judged by whether they leave the craft, and the craftsperson, better off."},
+        {t:"Fairness",d:"Agreed prices, paid upfront. No consignment risk pushed onto the artisan."},
+        {t:"Inclusion",d:"Seventy percent of our network is women-led; rural and informal producers are members on equal terms."},
+        {t:"Accountability",d:"Audited accounts and programme results published every year, in English and Dzongkha."},
+        {t:"Sustainability",d:"Local materials, low-waste production and skills that outlive any single project."}
+      ],
+      govTiers:([
+        {tier:"General Assembly",note:"All registered members. Meets annually to approve accounts, elect the Board and set strategic direction.",items:["7,500 member enterprises","One vote per member","Annual General Meeting"]},
+        {tier:"Board of Directors",note:"Elected by the Assembly for a three-year term. Non-executive, unpaid, responsible for governance and oversight.",items:["Chairperson","Vice-Chairperson","Five elected directors","Two co-opted craft experts"]},
+        {tier:"Board committees",note:"Standing committees reporting to the Board.",items:["Audit & finance","Membership & ethics","Procurement","Programme review"]},
+        {tier:"Secretariat",note:"Led by the Executive Director, who is accountable to the Board for day-to-day operations.",items:["Executive Director","Programmes & projects","Marketing & e-shop","Finance & administration","Membership services"]}
+      ]).map(function(g,i){ return Object.assign({n:String(i+1)}, g); }),
+      board:[
+        {role:"Chairperson",name:"Name to confirm",note:"Elected 2024 · master weaver, Lhuentse"},
+        {role:"Vice-Chairperson",name:"Name to confirm",note:"Elected 2024 · craft enterprise owner, Thimphu"},
+        {role:"Director — Finance",name:"Name to confirm",note:"Chairs the audit & finance committee"},
+        {role:"Director — Membership",name:"Name to confirm",note:"Eastern dzongkhags representative"},
+        {role:"Director — Crafts",name:"Name to confirm",note:"Co-opted, Institute of Zorig Chusum"}
+      ],
+      team:[
+        {role:"Executive Director",name:"Name to confirm",note:"+975-77654508"},
+        {role:"Programmes & Projects",name:"Name to confirm",note:"Donor projects, training, M&E"},
+        {role:"Marketing & E-shop",name:"Name to confirm",note:"+975-17462636"},
+        {role:"Finance & Administration",name:"Name to confirm",note:"Accounts, procurement, payroll"},
+        {role:"Membership Services",name:"Name to confirm",note:"Applications, directory, dues"},
+        {role:"Trade Facilitation",name:"Name to confirm",note:"Export documentation, buyer liaison"}
+      ],
+      milestones:[
+        {y:"2005",t:"HAB founded by a group of Thimphu craft producers and retailers."},
+        {y:"2011",t:"Formally registered as a Civil Society Organization under the CSO Act of Bhutan 2007."},
+        {y:"2016",t:"Membership passes 3,000 enterprises; first national craft bazaar held."},
+        {y:"2020",t:"E-shop launched during the tourism shutdown; cash-for-craft procurement begins."},
+        {y:"2024",t:"EU SWITCH-Asia project starts, moving members to resource-efficient production."},
+        {y:"2026",t:"Five-year strategic plan 2026–2030 approved by the Board."}
+      ],
+      isPublications: s.screen === "publications",
+      goPublications:() => this.go("publications", {pubKind:"", pubYear:"", pubQ:""}),
+      pubLead: (() => { const p = this.publicationData.filter(x => x[4])[0]; return {kind:p[0], title:p[1], year:p[2], meta:p[3]}; })(),
+      pubSecondary: this.publicationData.filter(p => p[4]).slice(1,4).map(p => ({kind:p[0], title:p[1], year:p[2], meta:p[3]})),
+      pubKinds: Array.from(new Set(this.publicationData.map(p => p[0]))).sort(),
+      pubYears: Array.from(new Set(this.publicationData.map(p => String(p[2])))).sort().reverse(),
+      pubKind: s.pubKind, pubYear: s.pubYear, pubQ: s.pubQ,
+      onPubKind:(e) => this.setState({pubKind:e.target.value}),
+      onPubYear:(e) => this.setState({pubYear:e.target.value}),
+      onPubQ:(e) => this.setState({pubQ:e.target.value}),
+      resetPubs:() => this.setState({pubKind:"", pubYear:"", pubQ:""}),
+      pubList: (() => {
+        const q = (s.pubQ || "").trim().toLowerCase();
+        return this.publicationData.filter(p =>
+          (!s.pubKind || p[0] === s.pubKind) &&
+          (!s.pubYear || String(p[2]) === s.pubYear) &&
+          (!q || (p[1] + " " + p[0]).toLowerCase().indexOf(q) >= 0)
+        ).map(p => ({kind:p[0], title:p[1], year:String(p[2]), meta:p[3]}));
+      })(),
+      pubCountLabel: (() => {
+        const q = (s.pubQ || "").trim().toLowerCase();
+        const n = this.publicationData.filter(p =>
+          (!s.pubKind || p[0] === s.pubKind) &&
+          (!s.pubYear || String(p[2]) === s.pubYear) &&
+          (!q || (p[1] + " " + p[0]).toLowerCase().indexOf(q) >= 0)).length;
+        return n + (n === 1 ? " publication" : " publications") + " of " + this.publicationData.length + " · newest first";
+      })(),
+      pubEmpty: (() => {
+        const q = (s.pubQ || "").trim().toLowerCase();
+        return this.publicationData.filter(p =>
+          (!s.pubKind || p[0] === s.pubKind) &&
+          (!s.pubYear || String(p[2]) === s.pubYear) &&
+          (!q || (p[1] + " " + p[0]).toLowerCase().indexOf(q) >= 0)).length === 0;
+      })(),
+      projTabs:[
+        {key:"current", label:"Projects in hand", count:this.projectData.filter(p => p.status === "current").length,
+          bg: s.projTab !== "past" ? "#8B2E24" : "#fff", fg: s.projTab !== "past" ? "#F4F0E7" : "#8B2E24",
+          pick:() => this.setState({projTab:"current"})},
+        {key:"past", label:"Completed projects", count:this.projectData.filter(p => p.status === "past").length,
+          bg: s.projTab === "past" ? "#8B2E24" : "#fff", fg: s.projTab === "past" ? "#F4F0E7" : "#8B2E24",
+          pick:() => this.setState({projTab:"past"})}
+      ],
+      projectsCurrent: s.projTab !== "past",
+      projects: this.projectData.filter(p => p.status === (s.projTab === "past" ? "past" : "current")).map(p => Object.assign({}, p, {
+        statusLabel: p.status === "current" ? "In progress" : "Completed",
+        statusBg: p.status === "current" ? "#F1E9DB" : "#EFF0E4",
+        statusFg: p.status === "current" ? "#8B2E24" : "#4C6B41",
+        progressLabel: p.progress ? p.progress + "% of workplan delivered" : "Final report published",
+        barWidth: (p.progress || 100) + "%",
+        slot: "photo — " + p.name.split(" ").slice(0,3).join(" ").toLowerCase(),
+        activityList: p.activities.map((a,i) => ({n:("0" + (i+1)).slice(-2), t:a}))
+      })),
+      projectTotals:[
+        {n:"11",label:"Projects delivered since 2011"},
+        {n:"7,500",label:"Artisans in the network reached"},
+        {n:"USD 4.6 m",label:"Programme funding managed"},
+        {n:"9",label:"Funding partners"}
+      ],
+      isMembers: s.screen === "members", isMember: s.screen === "member", isMembership: s.screen === "membership",
+      isLogin: s.screen === "login", isNews: s.screen === "news", isCart: s.screen === "cart",
+      hasCart: cartCodes.length > 0, cartCount: cartCodes.reduce((t,k) => t + s.cart[k], 0),
+
+      // institutional chrome
+      searchTerm: s.q, onSearchTerm:(e) => this.setState({q:e.target.value}),
+      goSearch:(e) => { if (!e || e.key === "Enter") this.go("shop"); },
+      utilityLinks:[
+        {label:"Contact the secretariat", go:() => this.go("home")},
+        {label:"Tenders & vacancies", go:() => this.go("news")},
+        {label:"Publications", go:() => this.go("publications", {pubKind:"", pubYear:"", pubQ:""})},
+        {label:"Donate", go:() => this.go("membership", {joinStep:1})}
+      ],
+      trustItems:[
+        {t:"Verified members only",d:"Every seller is a registered HAB member with documented craft credentials."},
+        {t:"Fair price, paid upfront",d:"HAB buys from the artisan at an agreed price before the piece is listed."},
+        {t:"Secure payment",d:"3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum."},
+        {t:"Tracked worldwide",d:"EMS via Bhutan Post with commercial invoice and craft certificate."}
+      ],
+      reports: this.publicationData.filter(p => p[4]).slice(0,4).map((p,i) => ({
+        kind: i === 0 ? "Latest · " + p[0] : p[0], title:p[1], meta:p[3],
+        open:() => this.go("publications")
+      })),
+      pubTotalLabel: this.publicationData.length + " publications in the library",
+
+      // home
+      stats:[{n:"7,500",label:"Micro & small enterprises in the network"},{n:"5,250",label:"Women-led enterprises"},{n:"195",label:"Affiliated stores across Bhutan"},{n:"13",label:"Arts & crafts of Zorig Chusum"}],
+      crafts, featured: this.decorate(["MAS01","SAD03","LHA01","DEZ01"]),
+      programs:[
+        {title:"Trade facilitation",desc:"Trade infrastructure, market linkage, export facilitation and certification frameworks so members can compete in real markets.",slot:"photo — trade desk"},
+        {title:"Capacity development",desc:"Craft skills, business management, financial literacy and export procedures, through training, mentorship and peer exchange.",slot:"photo — dye training"},
+        {title:"Cultural heritage stewardship",desc:"Documenting and transmitting the Zorig Chusum, and protecting origin through geographical indication and certification.",slot:"photo — master and apprentice"},
+        {title:"Product development",desc:"Design interventions, technical upgradation and artisan–designer collaboration that diversify what the sector can sell.",slot:"photo — design lab"}
+      ],
+      outletLead:{
+        name:"Punakha Crafts Market", place:"Punakha · beside the Mo Chhu, on the Khuruthang road",
+        badge:"HAB validated & managed",
+        desc:"The only authentic crafts market validated and managed by HAB. Every stall is a registered member selling their own work, priced as agreed with the association — no resellers, no imported copies.",
+        facts:[{k:"Open",v:"Daily, 09:00 – 18:00"},{k:"Stalls",v:"32 member artisans"},{k:"Crafts on site",v:"Weaving, bamboo, wood turning, paper"},{k:"Payment",v:"Cash, mBoB, cards"}],
+        slot:"wide photo — Punakha Crafts Market, stalls and river"
+      },
+      outlets:[
+        {type:"Outlet",name:"HAB Craft Outlet, Thimphu",place:"Metog Lam, Thimphu",note:"Association showroom at the secretariat, with the full catalogue and export desk.",slot:"photo — Thimphu outlet"},
+        {type:"Cluster",name:"Khoma Weaving Cluster",place:"Khoma, Lhuentse",note:"Kisuthara silk weaving in the village where it is still taught to eight-year-olds.",slot:"photo — Khoma cluster"},
+        {type:"Cluster",name:"Kheng Bamboo Cluster",place:"Zhemgang",note:"Bangchung and cane basketry, open to visitors by arrangement with HAB.",slot:"photo — bamboo cluster"}
+      ],
+      outletNote:"195 affiliated stores across Bhutan also carry member work. Outlets and clusters are added here as they are validated.",
+      newsTop: this.news.slice(0,3), news: this.news, events: this.events,
+      partners:["RGoB","EU SWITCH-Asia","SHINE","GrAT","UNDP","SGP","EIF","Government of Canada","Ernst & Young","Helvetas Bhutan","BCCI","Bhutan Post"],
+      footerCols:[
+        {title:"Association",links:["About HAB","Programmes","Projects","Membership","News & events"]},
+        {title:"Shop & support",links:["E-shop","Shipping & delivery","Returns","Track your order","Duty & customs"]},
+        {title:"Members",links:["Directory by category","Publications","Member shops","Member login","Apply to join"]},
+        {title:"Governance",links:["Board of directors","Secretariat","Annual reports","Audited accounts","Tenders & vacancies"]}
+      ],
+
+      // shop landing
+      newArrivals: this.decorate(["LHA01","SAD03","TRO04","DAP02"]),
+      bestSellers: this.decorate(["HHB01","FTB04","MAS01","CUS02"]),
+      collections: this.collectionDefs.map(c => ({
+        key:c[0], name:c[1], desc:c[2], slot:c[3],
+        count: (function(n){ return n + (n === 1 ? " piece" : " pieces"); })(this.productData.filter(p => (c[0] === "under50" ? p[2] < 50 : c[0] === "textiles" ? ["thagzo","tshemzo"].indexOf(p[3]) >= 0 : ["tshazo","shagzo","dezo"].indexOf(p[3]) >= 0)).length),
+        open:() => this.go("shop", {craft:"", collection:c[0]})
+      })),
+      shopServices:[
+        {t:"Worldwide shipping",d:"EMS via Bhutan Post, tracked, 7–14 days. Free over $200."},
+        {t:"Duty made clear",d:"Customs charges are stated before you pay, never hidden."},
+        {t:"14-day returns",d:"Unused pieces returned within 14 days of delivery."},
+        {t:"Secure payment",d:"3-D Secure cards, mBoB and bank transfer, USD or Nu."}
+      ],
+      shopStats:[{n:"100+",label:"Products in the catalogue"},{n:"13",label:"Craft categories"},{n:"195",label:"Affiliated stores"},{n:"100%",label:"Bought from verified members"}],
+
+      // shop
+      shopProducts: this.decorate(shop),
+      collectionLabel: (this.collectionDefs.find(c => c[0] === s.collection) || ["","",""])[1],
+      hasCollection: !!s.collection,
+      clearCollection:() => this.setState({collection:""}),
+      shopHasProducts: shop.length > 0, shopNoProducts: shop.length === 0,
+      shopEmptyLine: activeCraft
+        ? "No " + activeCraft.en.toLowerCase() + " pieces are listed at the moment. HAB buys in batches from registered members, so stock in this category changes through the year — commission a piece directly, or ask us to notify you when new work arrives."
+        : "No products match this view.",
+      emptyCraftName: activeCraft ? activeCraft.name : "this craft",
+      totalCount: this.productData.length,
+      activeCraftLabel: activeCraft ? activeCraft.name : "All crafts",
+      shopTitle: activeCraft ? activeCraft.name + " — " + activeCraft.en
+        : s.collection ? (this.collectionDefs.find(c => c[0] === s.collection) || ["","All products"])[1]
+        : "All products",
+      shopBlurb: activeCraft
+        ? "Work in " + activeCraft.en.toLowerCase() + ", one of the thirteen crafts of Zorig Chusum, sold centrally by HAB on behalf of registered members."
+        : "Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category on the left.",
+      sort: s.sort, onSort:(e) => this.setState({sort:e.target.value}),
+      clearCraft:() => this.setState({craft:"", collection:""}),
+
+      // product
+      product, related: this.decorate(this.productData.filter(p => p[3] === product.craftKey && p[0] !== product.code).map(p => p[0]).concat(["MAS01","DAP02","TRO04"]).slice(0,4)),
+      productSpecs:[{k:"Reference",v:product.code},{k:"Craft",v:product.craftName + " · " + product.craftEn},{k:"Origin",v:product.region + ", Bhutan"},{k:"Made by",v:product.maker},{k:"Lead time",v:"Ships in 2 working days"}],
+      addActive:() => this.addToCart(product.code),
+      buyNow:() => { this.addToCart(product.code); this.go("cart", {placed:false}); },
+
+      // directory
+      q: s.q, onSearch:(e) => this.setState({q:e.target.value}),
+      craftFilter: s.craftFilter, onCraftSelect:(e) => this.setState({craftFilter:e.target.value}),
+      region: s.region, onRegion:(e) => this.setState({region:e.target.value}),
+      regions: Array.from(new Set(this.memberData.map(m => m[2]))).sort(),
+      resetFilters:() => this.setState({q:"", craftFilter:"", region:""}),
+      memberList, memberCountLabel: memberList.length + " of " + this.memberData.length + " listings shown · directory sample of the full 7,500-member database",
+
+      // member profile
+      member:{name:mem[0], craftName:memCraft.name, craftEn:memCraft.en, dz:mem[2], since:mem[3], story:mem[4], badge:"HAB verified", reg:"HAB-" + mem[3] + "-" + (100 + this.memberData.indexOf(mem))},
+      memberStats:[{n:mem[5].length,label:"Products in the HAB shop"},{n:(2026 - mem[3]) + " yrs",label:"Registered with HAB"},{n:mem[2],label:"Dzongkhag"}],
+      memberProducts: this.decorate(mem[5]),
+      memberPerks:["Order history and consignment statements","Submit new products for the HAB shop","Download training material and publications","Apply to trade fairs and buyer meetings","Renew annual dues online"],
+
+      // membership application
+      plans, joinSteps,
+      joinStep1: s.joinStep === 1, joinStep2: s.joinStep === 2, joinStep3: s.joinStep === 3, joinDone: s.joinStep === 4,
+      joinNext:() => { this.setState({joinStep: Math.min(3, s.joinStep + 1)}); this.top(); },
+      joinBack:() => { this.setState({joinStep: Math.max(1, s.joinStep - 1)}); this.top(); },
+      joinSubmit:() => { this.setState({joinStep:4}); this.top(); },
+      joinCraft: s.joinCraft, onJoinCraft:(e) => this.setState({joinCraft:e.target.value}),
+      joinRegion: s.joinRegion, onJoinRegion:(e) => this.setState({joinRegion:e.target.value}),
+      joinPlanName: plan[1], joinPlanPrice: plan[2],
+      joinCraftName: s.joinCraft ? this.craft(s.joinCraft).name : "Not selected",
+      joinRegionName: s.joinRegion || "Not selected",
+      joinSummary: plan[1] + " · " + plan[2] + (s.joinCraft ? " · " + this.craft(s.joinCraft).name : ""),
+      joinFields:[
+        {label:"Full name / enterprise name",ph:"Kelzang Dorji",span:"2"},
+        {label:"Citizenship ID (CID)",ph:"11 digits",span:"1"},
+        {label:"Business licence no. (optional)",ph:"BL-…",span:"1"},
+        {label:"Mobile",ph:"+975 17 …",span:"1"},
+        {label:"Email",ph:"you@example.bt",span:"1"},
+        {label:"Village / gewog",ph:"Khoma, Lhuentse",span:"1"},
+        {label:"Years practising the craft",ph:"12",span:"1"}
+      ],
+
+      // cart
+      cartLines, payMethods, payLabel, shipOptions,
+      subtotalLabel: this.fmt(subtotal), shipLabel: shipCost === 0 ? "Free (EMS)" : this.fmt(shipCost),
+      totalLabel: this.fmt(total), altTotalLabel: "≈ " + this.alt(total) + " at today's rate",
+      orderPlaced: s.placed, cartEmpty: !s.placed && cartCodes.length === 0, cartActive: !s.placed && cartCodes.length > 0,
+      placeOrder:() => { this.setState({placed:true}); this.top(); }
+    };
+  }
+}
+</script>
+</body>
+</html>
