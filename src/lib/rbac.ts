@@ -36,6 +36,7 @@ export interface SessionUser {
   roleVersion?: number;
   roleStatus?: 'ACTIVE' | 'RETIRED';
   permissions: string[];
+  mustChangePassword?: boolean;
 }
 
 export class AuthError extends Error {
@@ -65,6 +66,7 @@ export async function createSessionToken(user: Partial<SessionUser>): Promise<st
     roleVersion: user.roleVersion || 1,
     roleStatus: user.roleStatus || 'ACTIVE',
     permissions: user.permissions || ['*'],
+    mustChangePassword: !!user.mustChangePassword,
   };
 
   return new SignJWT({ user: normalizedUser })

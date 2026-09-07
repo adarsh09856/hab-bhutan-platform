@@ -9,6 +9,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import bcrypt from 'bcryptjs';
 import * as jose from 'jose';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 console.log('🧪 Starting HAB Platform Comprehensive Runtime Test Suite...\n');
 
@@ -517,6 +520,358 @@ await runTest('User Accounts: Bcrypt password hashing & self-deactivation guard'
   assert.throws(() => checkSelfDeactivation('usr-1', 'usr-1'), /Self-deactivation is prohibited/);
   assert.equal(checkSelfDeactivation('usr-1', 'usr-2'), true);
 });
+
+// ==========================================
+// 18. Database-Backed Live Roundtrip Tests (Fixes 1 - 4)
+// ==========================================
+
+let adminCookie = '';
+async function getAdminSessionCookie() {
+  if (adminCookie) return adminCookie;
+  const res = await fetch('http://localhost:3000/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: 'admin@handicraftsbhutan.org',
+      password: 'AdminSecure2026!',
+    }),
+  });
+  const setCookie = res.headers.get('set-cookie');
+  if (setCookie) {
+    adminCookie = setCookie.split(';')[0];
+  }
+  return adminCookie;
+}
+
+await runTest('Live DB Fix 1: OrderItem physical table roundtrip & cascade delete in PostgreSQL', async () => {
+  const product = await prisma.product.findFirst({ where: { status: 'PUBLISHED' } });
+  assert.ok(product, 'Must have at least one product in DB');
+
+  const testOrderNumber = `TEST-ORDER-${Date.now()}`;
+  const order = await prisma.order.create({
+    data: {
+      orderNumber: testOrderNumber,
+      customerName: 'Karma Tshering',
+      customerEmail: 'karma@example.com',
+      shippingAddress: { city: 'Thimphu', country: 'Bhutan' },
+      shippingFeeUSD: 24,
+      totalUSD: product.priceUSD * 2 + 24,
+      totalPaidCurrency: product.priceUSD * 2 + 24,
+      items: [
+        { code: product.code, name: product.name, priceUSD: product.priceUSD, quantity: 1 },
+        { code: product.code, name: product.name, priceUSD: product.priceUSD, quantity: 1 },
+      ],
+      orderItems: {
+        create: [
+          { productId: product.id, code: product.code, name: product.name, priceUSD: product.priceUSD, quantity: 1 },
+          { productId: product.id, code: product.code, name: product.name, priceUSD: product.priceUSD, quantity: 1 },
+        ],
+      },
+    },
+    include: { orderItems: true },
+  });
+
+  assert.equal(order.orderItems.length, 2, 'Order must have 2 orderItems created');
+
+  // Query physically from PostgreSQL
+  const dbItems = await prisma.orderItem.findMany({
+    where: { orderId: order.id },
+    include: { product: true },
+  });
+  assert.equal(dbItems.length, 2, 'Must fetch exactly 2 OrderItem rows from DB');
+  assert.equal(dbItems[0].productId, product.id, 'OrderItem productId must resolve to product');
+  assert.equal(dbItems[0].product.name, product.name, 'OrderItem foreign key relation to Product must resolve');
+
+  // Delete test order and verify cascade delete of OrderItem rows
+  await prisma.order.delete({ where: { id: order.id } });
+  const remainingItems = await prisma.orderItem.findMany({ where: { orderId: order.id } });
+  assert.equal(remainingItems.length, 0, 'Cascade delete must remove OrderItem rows when Order is deleted');
+});
+
+await runTest('Live DB Fix 2: Random temporary credentials, mustChangePassword, login enforcement, and change-password', async () => {
+  const cookie = await getAdminSessionCookie();
+
+  const testEmail1 = `artisan1-${Date.now()}@example.com`;
+  const testEmail2 = `artisan2-${Date.now()}@example.com`;
+
+  const app1 = await prisma.membershipApplication.create({
+    data: {
+      applicantName: 'Tenzin Norbu',
+      email: testEmail1,
+      phone: '+975-17112233',
+      cidNumber: '11502001928',
+      craftKey: 'shagzo',
+      dzongkhag: 'Trashiyangtse',
+      villageGewog: 'Yangtse',
+      yearsPractising: 8,
+      planTier: 'ACTIVE_SECTOR_MEMBER',
+      status: 'PENDING',
+    },
+  });
+
+  const app2 = await prisma.membershipApplication.create({
+    data: {
+      applicantName: 'Sonam Deki',
+      email: testEmail2,
+      phone: '+975-17223344',
+      cidNumber: '11502001929',
+      craftKey: 'thagzo',
+      dzongkhag: 'Lhuntse',
+      villageGewog: 'Khoma',
+      yearsPractising: 12,
+      planTier: 'ACTIVE_SECTOR_MEMBER',
+      status: 'PENDING',
+    },
+  });
+
+  // Approve app1 via API
+  const res1 = await fetch('http://localhost:3000/api/admin/applications', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({ id: app1.id, status: 'APPROVED', reviewerNotes: 'Test approval 1' }),
+  });
+  const data1 = await res1.json();
+  assert.equal(res1.status, 200);
+  assert.ok(data1.tempCredentials, 'tempCredentials must be returned in approval response');
+  const tempPass1 = data1.tempCredentials.temporaryPassword;
+  assert.ok(tempPass1.length >= 10, 'Temporary password must be at least 10 characters');
+
+  // Approve app2 via API
+  const res2 = await fetch('http://localhost:3000/api/admin/applications', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({ id: app2.id, status: 'APPROVED', reviewerNotes: 'Test approval 2' }),
+  });
+  const data2 = await res2.json();
+  assert.equal(res2.status, 200);
+  const tempPass2 = data2.tempCredentials.temporaryPassword;
+
+  // Randomness check: temp passwords must NOT be identical
+  assert.notEqual(tempPass1, tempPass2, 'Successive approvals must generate distinct random passwords');
+
+  // Check DB state for User 1
+  const user1 = await prisma.user.findUnique({ where: { email: testEmail1 } });
+  assert.ok(user1, 'User 1 must be created in DB');
+  assert.equal(user1.mustChangePassword, true, 'mustChangePassword must be true in DB upon creation');
+
+  // Verify credential issuance audit log (and verify plaintext password is NOT logged)
+  const auditLogs = await prisma.auditLog.findMany({
+    where: { action: 'MEMBER_CREDENTIALS_ISSUED', entityId: user1.id },
+  });
+  assert.ok(auditLogs.length >= 1, 'MEMBER_CREDENTIALS_ISSUED audit log must exist');
+  const logStr = JSON.stringify(auditLogs[0].details);
+  assert.equal(logStr.includes(tempPass1), false, 'Plaintext password must NEVER appear in AuditLog details');
+
+  // Test login with temp password
+  const loginRes = await fetch('http://localhost:3000/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: testEmail1, password: tempPass1 }),
+  });
+  const loginData = await loginRes.json();
+  assert.equal(loginRes.status, 200);
+  assert.equal(loginData.user.mustChangePassword, true, 'Login response must indicate mustChangePassword: true');
+  assert.equal(loginData.redirectUrl, '/portal/change-password', 'Redirect URL must be /portal/change-password');
+
+  const userCookie = loginRes.headers.get('set-cookie')?.split(';')[0];
+  assert.ok(userCookie, 'Login must issue session cookie');
+
+  // Test change-password endpoint: invalid current password fails
+  const badCurrentRes = await fetch('http://localhost:3000/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: userCookie },
+    body: JSON.stringify({
+      currentPassword: 'WrongTempPassword123!',
+      newPassword: 'PermMember2026!',
+      confirmPassword: 'PermMember2026!',
+    }),
+  });
+  assert.equal(badCurrentRes.status, 400);
+
+  // Test change-password endpoint: same as temp password fails
+  const samePassRes = await fetch('http://localhost:3000/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: userCookie },
+    body: JSON.stringify({
+      currentPassword: tempPass1,
+      newPassword: tempPass1,
+      confirmPassword: tempPass1,
+    }),
+  });
+  assert.equal(samePassRes.status, 400);
+
+  // Test change-password endpoint: successful change
+  const permPassword = 'PermMember2026!';
+  const changeRes = await fetch('http://localhost:3000/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: userCookie },
+    body: JSON.stringify({
+      currentPassword: tempPass1,
+      newPassword: permPassword,
+      confirmPassword: permPassword,
+    }),
+  });
+  const changeData = await changeRes.json();
+  assert.equal(changeRes.status, 200);
+  assert.equal(changeData.success, true);
+  assert.equal(changeData.redirectUrl, '/portal');
+
+  // Verify in DB: mustChangePassword is now false
+  const updatedUser1 = await prisma.user.findUnique({ where: { id: user1.id } });
+  assert.equal(updatedUser1.mustChangePassword, false, 'mustChangePassword must be set to false after change');
+  assert.equal(bcrypt.compareSync(permPassword, updatedUser1.passwordHash), true, 'New password hash must match');
+
+  // Verify PASSWORD_CHANGED in AuditLog
+  const pwAudit = await prisma.auditLog.findFirst({
+    where: { action: 'PASSWORD_CHANGED', entityId: user1.id },
+  });
+  assert.ok(pwAudit, 'PASSWORD_CHANGED audit log must be recorded');
+
+  // Clean up test users & applications
+  await prisma.member.deleteMany({ where: { cidNumber: { in: ['11502001928', '11502001929'] } } });
+  await prisma.membershipApplication.deleteMany({ where: { id: { in: [app1.id, app2.id] } } });
+  await prisma.user.deleteMany({ where: { email: { in: [testEmail1, testEmail2] } } });
+});
+
+await runTest('Live DB Fix 3: Cancelling SHIPPED/DELIVERED order is blocked with 400 & stock untouched', async () => {
+  const cookie = await getAdminSessionCookie();
+
+  const testProduct = await prisma.product.create({
+    data: {
+      code: `TEST-PROD-${Date.now()}`,
+      name: 'Test Inventory Carving',
+      priceUSD: 80,
+      craftKey: 'parzo',
+      region: 'Trashiyangtse',
+      description: 'Stock test item',
+      images: [],
+      stock: 5,
+      status: 'PUBLISHED',
+    },
+  });
+
+  const shippedOrder = await prisma.order.create({
+    data: {
+      orderNumber: `TEST-SHIP-${Date.now()}`,
+      customerName: 'Dorji Penjor',
+      customerEmail: 'dorji@example.com',
+      shippingAddress: { city: 'Paro' },
+      shippingFeeUSD: 24,
+      totalUSD: 104,
+      totalPaidCurrency: 104,
+      orderStatus: 'SHIPPED',
+      items: [{ code: testProduct.code, name: testProduct.name, priceUSD: 80, quantity: 1 }],
+      orderItems: {
+        create: [{ productId: testProduct.id, code: testProduct.code, name: testProduct.name, priceUSD: 80, quantity: 1 }],
+      },
+    },
+  });
+
+  // Attempt to cancel the SHIPPED order
+  const cancelRes = await fetch('http://localhost:3000/api/admin/orders', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      id: shippedOrder.id,
+      orderStatus: 'CANCELLED',
+      cancellationReason: 'Customer changed mind after dispatch',
+    }),
+  });
+
+  const cancelData = await cancelRes.json();
+  assert.equal(cancelRes.status, 400, 'Cancelling SHIPPED order must return HTTP 400');
+  assert.ok(
+    cancelData.error.includes('Cannot cancel an order that has already shipped or been delivered'),
+    'Must return clear error preventing restock of shipped items'
+  );
+
+  // Verify stock in database remains exactly 5
+  const productAfter = await prisma.product.findUnique({ where: { id: testProduct.id } });
+  assert.equal(productAfter.stock, 5, 'Product stock must NOT be restored when cancelling shipped order');
+
+  // Verify cancelling a PROCESSING order DOES restore stock
+  const processingOrder = await prisma.order.create({
+    data: {
+      orderNumber: `TEST-PROC-${Date.now()}`,
+      customerName: 'Pema Lhamo',
+      customerEmail: 'pema@example.com',
+      shippingAddress: { city: 'Thimphu' },
+      shippingFeeUSD: 0,
+      totalUSD: 80,
+      totalPaidCurrency: 80,
+      orderStatus: 'PROCESSING',
+      items: [{ code: testProduct.code, name: testProduct.name, priceUSD: 80, quantity: 1 }],
+      orderItems: {
+        create: [{ productId: testProduct.id, code: testProduct.code, name: testProduct.name, priceUSD: 80, quantity: 1 }],
+      },
+    },
+  });
+
+  const procCancelRes = await fetch('http://localhost:3000/api/admin/orders', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      id: processingOrder.id,
+      orderStatus: 'CANCELLED',
+      cancellationReason: 'Cancelled prior to dispatch',
+    }),
+  });
+  assert.equal(procCancelRes.status, 200);
+
+  const productRestored = await prisma.product.findUnique({ where: { id: testProduct.id } });
+  assert.equal(productRestored.stock, 6, 'Product stock must be incremented from 5 to 6 on valid cancellation');
+
+  // Attempt to cancel already cancelled order fails with 400
+  const reCancelRes = await fetch('http://localhost:3000/api/admin/orders', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      id: processingOrder.id,
+      orderStatus: 'CANCELLED',
+      cancellationReason: 'Double cancel attempt',
+    }),
+  });
+  assert.equal(reCancelRes.status, 400);
+
+  // Clean up test records
+  await prisma.order.delete({ where: { id: shippedOrder.id } });
+  await prisma.order.delete({ where: { id: processingOrder.id } });
+  await prisma.product.delete({ where: { id: testProduct.id } });
+});
+
+await runTest('Live DB Fix 4: Provisional 80/20 consignment split qualified in CSV & JSON', async () => {
+  const cookie = await getAdminSessionCookie();
+
+  // Fetch CSV report
+  const csvRes = await fetch('http://localhost:3000/api/admin/reports?format=csv', {
+    headers: { Cookie: cookie },
+  });
+  assert.equal(csvRes.status, 200);
+  const csvText = await csvRes.text();
+
+  assert.ok(
+    csvText.includes('Est. Artisan Share (80% Provisional)*'),
+    'CSV must contain "Est. Artisan Share (80% Provisional)*" header/row'
+  );
+  assert.ok(
+    csvText.includes('# Note: The 80% artisan / 20% association consignment revenue split is provisional and subject to formal HAB Secretariat ratification prior to commercial operations.'),
+    'CSV must contain the provisional consignment footnote'
+  );
+
+  // Fetch JSON report
+  const jsonRes = await fetch('http://localhost:3000/api/admin/reports', {
+    headers: { Cookie: cookie },
+  });
+  assert.equal(jsonRes.status, 200);
+  const jsonData = await jsonRes.json();
+  assert.ok(jsonData.metrics.artisanShareUSD !== undefined);
+  assert.ok(
+    jsonData.metrics.artisanShareDescription?.includes('provisional'),
+    'JSON metrics must qualify artisanShareDescription as provisional'
+  );
+});
+
+await prisma.$disconnect();
 
 console.log(`\n================================`);
 console.log(`Runtime Tests Completed: ${passedTests} / ${totalTests} passed`);

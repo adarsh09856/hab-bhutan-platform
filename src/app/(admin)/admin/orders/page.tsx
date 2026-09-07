@@ -738,37 +738,64 @@ export default function AdminOrdersPage() {
         <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <h3 className="font-bold text-slate-900 text-base">Cancel Order &amp; Restore Inventory</h3>
-            <p className="text-xs text-slate-600">
-              Cancelling order <strong className="text-slate-900">{cancellingOrder.orderNumber}</strong> will atomically return all line-item quantities back into active catalog stock.
-            </p>
 
-            <div>
-              <label className="block font-medium text-slate-700 text-xs mb-1">Cancellation Reason *</label>
-              <textarea
-                rows={3}
-                required
-                value={cancellationReason}
-                onChange={(e) => setCancellationReason(e.target.value)}
-                placeholder="e.g. Customer requested cancellation prior to international shipping."
-                className="w-full border border-slate-300 rounded px-3 py-2 text-xs outline-none focus:border-slate-500"
-              />
-            </div>
+            {['SHIPPED', 'DELIVERED'].includes(cancellingOrder.orderStatus) ? (
+              <div className="space-y-3">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 space-y-1.5">
+                  <p className="font-bold flex items-center gap-1.5 text-rose-900">
+                    <span>⛔</span> Cannot Cancel Shipped / Delivered Order
+                  </p>
+                  <p className="leading-relaxed">
+                    Order <strong>{cancellingOrder.orderNumber}</strong> has already been marked as <strong>{cancellingOrder.orderStatus}</strong>. Physical items have left the secretariat facility and cannot automatically be restored into catalog inventory without corrupting stock counts.
+                  </p>
+                  <p className="font-medium pt-1 text-rose-900">
+                    To handle customer returns or refunds, please use the <strong>Edit</strong> action and update the order status to <strong>REFUNDED</strong>.
+                  </p>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => setCancellingOrder(null)}
+                    className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-slate-600">
+                  Cancelling order <strong className="text-slate-900">{cancellingOrder.orderNumber}</strong> will atomically return all line-item quantities back into active catalog stock.
+                </p>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setCancellingOrder(null)}
-                className="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50"
-              >
-                Keep Order
-              </button>
-              <button
-                onClick={handleCancelOrder}
-                disabled={submitting}
-                className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold disabled:opacity-50"
-              >
-                {submitting ? 'Processing...' : 'Confirm Cancellation'}
-              </button>
-            </div>
+                <div>
+                  <label className="block font-medium text-slate-700 text-xs mb-1">Cancellation Reason *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                    placeholder="e.g. Customer requested cancellation prior to international shipping."
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-xs outline-none focus:border-slate-500"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    onClick={() => setCancellingOrder(null)}
+                    className="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    Keep Order
+                  </button>
+                  <button
+                    onClick={handleCancelOrder}
+                    disabled={submitting}
+                    className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold disabled:opacity-50"
+                  >
+                    {submitting ? 'Processing...' : 'Confirm Cancellation'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
-import { UserCheck, Search, CheckCircle, XCircle, Clock, Shield, AlertCircle, FileText, Plus, Edit2, Trash2 } from 'lucide-react';
+import { UserCheck, Search, CheckCircle, XCircle, Clock, Shield, AlertCircle, FileText, Plus, Edit2, Trash2, Copy, Check, CheckCircle2 } from 'lucide-react';
 
 const DZONGKHAGS = [
   'Thimphu', 'Paro', 'Punakha', 'Wangdue Phodrang', 'Chhukha', 'Haa', 'Samtse',
@@ -22,6 +22,12 @@ export default function AdminApplicationsPage() {
   const [editingApp, setEditingApp] = useState<any | null>(null);
   const [rejectingApp, setRejectingApp] = useState<any | null>(null);
   const [deletingApp, setDeletingApp] = useState<any | null>(null);
+  const [approvedCredentials, setApprovedCredentials] = useState<{
+    name: string;
+    email: string;
+    temporaryPassword: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Forms
   const [reviewNoteInput, setReviewNoteInput] = useState('');
@@ -179,6 +185,14 @@ export default function AdminApplicationsPage() {
       if (res.ok && data.success) {
         setActionSuccess(`✓ Approved! New member enrolled: ${data.member?.name} (${data.member?.regNumber}).`);
         setReviewNoteInput('');
+        if (data.tempCredentials) {
+          setApprovedCredentials({
+            name: data.member?.name || 'Artisan Member',
+            email: data.tempCredentials.email,
+            temporaryPassword: data.tempCredentials.temporaryPassword,
+          });
+          setCopied(false);
+        }
         await loadApplications();
       } else {
         setActionError(data.error || 'Failed to approve application.');
@@ -823,6 +837,81 @@ export default function AdminApplicationsPage() {
                 className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold disabled:opacity-50"
               >
                 {submitting ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Temporary Credentials Modal (Fix 2 - shown once upon approval) */}
+      {approvedCredentials && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Application Approved & Member Enrolled</h3>
+                <p className="text-xs text-slate-500">Temporary access credentials generated</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Applicant:</span>
+                <span className="font-semibold text-slate-900">{approvedCredentials.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Login Email:</span>
+                <span className="font-mono text-slate-900 font-semibold">{approvedCredentials.email}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 text-xs mb-1.5">
+                Temporary Password:
+              </label>
+              <div className="relative flex items-center">
+                <div className="w-full font-mono bg-stone-100 border border-stone-300 p-3 rounded-lg select-all text-stone-900 font-bold text-sm tracking-wider break-all pr-24">
+                  {approvedCredentials.temporaryPassword}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(approvedCredentials.temporaryPassword);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="absolute right-2 px-2.5 py-1.5 bg-white border border-stone-300 hover:bg-stone-50 rounded text-xs font-semibold text-stone-700 flex items-center gap-1 shadow-sm transition-all"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700 font-bold">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-stone-500" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 leading-relaxed">
+              <span className="font-bold block mb-0.5">Security Notice:</span>
+              This password will <strong className="underline">NOT</strong> be shown again. Share it with the member securely (SMS, WhatsApp, or phone call). They will be required to change it on their first login.
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setApprovedCredentials(null)}
+                className="w-full sm:w-auto px-5 py-2 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-lg shadow-sm transition-all"
+              >
+                Done
               </button>
             </div>
           </div>

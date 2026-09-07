@@ -249,9 +249,28 @@ export async function PATCH(req: NextRequest) {
       session = await requirePermission(req, 'orders:edit');
     }
 
-    // If cancelling, execute atomic stock restoration
+    // If cancelling, validate status transitions and execute atomic stock restoration
     let updated;
-    if (orderStatus === 'CANCELLED' && previous.orderStatus !== 'CANCELLED') {
+    let refundNote: string | undefined;
+
+    if (orderStatus === 'CANCELLED') {
+      if (previous.orderStatus === 'CANCELLED') {
+        return NextResponse.json(
+          { success: false, error: 'Order is already cancelled.' },
+          { status: 400 }
+        );
+      }
+
+      if (['SHIPPED', 'DELIVERED'].includes(previous.orderStatus)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Cannot cancel an order that has already shipped or been delivered. Process a return/refund instead, which does not automatically restock without a physical return confirmation.',
+          },
+          { status: 400 }
+        );
+      }
+
       if (!cancellationReason && !notes) {
         return NextResponse.json(
           { success: false, error: 'A cancellation reason or note is required when cancelling an order.' },
@@ -260,7 +279,7 @@ export async function PATCH(req: NextRequest) {
       }
 
       updated = await prisma.$transaction(async (tx) => {
-        // Return inventory for each order line item
+        // Return inventory for each order line item (only valid for PENDING_PAYMENT, PAID, or PROCESSING)
         if (previous.orderItems && previous.orderItems.length > 0) {
           for (const item of previous.orderItems) {
             if (item.productId) {
@@ -280,6 +299,40 @@ export async function PATCH(req: NextRequest) {
           },
         });
       });
+    } else if (orderStatus === 'REFUNDED' || paymentStatus === 'REFUNDED') {
+      const shouldRestock = body.restock === true;
+      if (shouldRestock) {
+        updated = await prisma.$transaction(async (tx) => {
+          if (previous.orderItems && previous.orderItems.length > 0) {
+            for (const item of previous.orderItems) {
+              if (item.productId) {
+                await tx.product.update({
+                  where: { id: item.productId },
+                  data: { stock: { increment: item.quantity } },
+                });
+              }
+            }
+          }
+
+          const updateData: any = {};
+          if (orderStatus) updateData.orderStatus = orderStatus;
+          if (paymentStatus) updateData.paymentStatus = paymentStatus;
+          return tx.order.update({
+            where: { id },
+            data: updateData,
+          });
+        });
+        refundNote = 'Order marked refunded and physical inventory restocked pursuant to verified secretariat return.';
+      } else {
+        const updateData: any = {};
+        if (orderStatus) updateData.orderStatus = orderStatus;
+        if (paymentStatus) updateData.paymentStatus = paymentStatus;
+        updated = await prisma.order.update({
+          where: { id },
+          data: updateData,
+        });
+        refundNote = 'Order marked refunded. Physical inventory has not been restocked (set restock: true once goods are physically verified at the secretariat).';
+      }
     } else {
       const updateData: any = {};
       if (orderStatus) updateData.orderStatus = orderStatus;
@@ -300,7 +353,7 @@ export async function PATCH(req: NextRequest) {
       actorId: session.id,
       actorIdentifier: session.email,
       actorIp: ip,
-      action: orderStatus === 'CANCELLED' ? 'ORDER_CANCELLED' : 'ORDER_UPDATED',
+      action: orderStatus === 'CANCELLED' ? 'ORDER_CANCELLED' : orderStatus === 'REFUNDED' || paymentStatus === 'REFUNDED' ? 'ORDER_REFUNDED' : 'ORDER_UPDATED',
       entityType: 'Order',
       entityId: id,
       details: {
@@ -309,12 +362,14 @@ export async function PATCH(req: NextRequest) {
         newStatus: updated.orderStatus,
         trackingNumber: updated.trackingNumber,
         reason: cancellationReason || notes || null,
+        refundPolicy: refundNote || null,
       },
     });
 
     return NextResponse.json({
       success: true,
       order: updated,
+      ...(refundNote ? { note: refundNote } : {}),
     });
   } catch (err: any) {
     console.error('Error updating order:', err);

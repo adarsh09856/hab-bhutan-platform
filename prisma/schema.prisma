@@ -315,6 +315,7 @@ model User {
   roleId                 String
   role                   Role                    @relation(fields: [roleId], references: [id], onDelete: Restrict)
   status                 String                  @default("ACTIVE") // ACTIVE | SUSPENDED
+  mustChangePassword     Boolean                 @default(false)
   memberProfile          Member?
   reviewedApplications   MembershipApplication[]
   createdAt              DateTime                @default(now())

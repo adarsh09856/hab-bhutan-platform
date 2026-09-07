@@ -28,6 +28,36 @@ const NAV_ITEMS = [
 
 export default function MemberPortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isChangePassword = pathname === '/portal/change-password';
+
+  if (isChangePassword) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-8 h-8 rounded bg-amber-700 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                HAB
+              </span>
+              <div>
+                <span className="font-bold text-slate-900 text-sm block leading-none">Member Security Center</span>
+                <span className="text-[11px] text-slate-500 font-medium">Handicrafts Association of Bhutan</span>
+              </div>
+            </div>
+            <Link 
+              href="/login"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium"
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </Link>
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center p-6">
+          {children}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">

@@ -249,7 +249,12 @@ export default function AdminReportsPage() {
               <p className="text-xl font-bold font-mono text-slate-900 mt-1">
                 ${metrics.artisanShareUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[11px] text-slate-500 mt-1">80% direct consignment pass-through</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-medium">
+                  Provisional — Pending Secretariat Sign-off
+                </span>
+                <p className="text-[11px] text-slate-500">80/20 consignment split (subject to formal ratification)</p>
+              </div>
             </div>
             <div className="p-2 bg-amber-50 text-amber-600 rounded">
               <TrendingUp className="w-5 h-5" />

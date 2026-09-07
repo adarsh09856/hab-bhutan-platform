@@ -196,12 +196,17 @@ export async function POST(req: NextRequest) {
       roleVersion: user.role.version,
       roleStatus: user.role.status as 'ACTIVE' | 'RETIRED',
       permissions: rolePermissions,
+      mustChangePassword: !!user.mustChangePassword,
     };
 
     const token = await createSessionToken(sessionUser);
 
     const isStaff = user.role.slug !== 'member';
-    const redirectUrl = isStaff ? '/admin' : '/portal';
+    const redirectUrl = user.mustChangePassword
+      ? '/portal/change-password'
+      : isStaff
+      ? '/admin'
+      : '/portal';
 
     // 5. Audit log
     await logAudit({
@@ -212,7 +217,7 @@ export async function POST(req: NextRequest) {
       action: isStaff ? 'STAFF_LOGIN_SUCCESS' : 'MEMBER_LOGIN_SUCCESS',
       entityType: 'User',
       entityId: user.id,
-      details: { role: user.role.name, roleSlug: user.role.slug },
+      details: { role: user.role.name, roleSlug: user.role.slug, mustChangePassword: user.mustChangePassword },
     });
 
     // 6. Return response with httpOnly session cookie
@@ -224,6 +229,7 @@ export async function POST(req: NextRequest) {
         name: user.name,
         role: user.role.name,
         roleSlug: user.role.slug,
+        mustChangePassword: !!user.mustChangePassword,
       },
       redirectUrl,
     });

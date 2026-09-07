@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       const rows = [
         ['Type', 'Identifier / Name', 'Amount USD', 'Amount BTN', 'Status', 'Date'],
         ['METRIC_SUMMARY', 'Gross E-Commerce Volume', grossVolumeUSD.toFixed(2), '', 'AGGREGATED', new Date().toISOString().slice(0, 10)],
-        ['METRIC_SUMMARY', 'Artisan 80% Payout Disbursed', artisanShareUSD.toFixed(2), '', 'AGGREGATED', new Date().toISOString().slice(0, 10)],
+        ['METRIC_SUMMARY', 'Est. Artisan Share (80% Provisional)*', artisanShareUSD.toFixed(2), '', 'AGGREGATED', new Date().toISOString().slice(0, 10)],
         ['METRIC_SUMMARY', 'Verified Member Dues', '', duesCollectedBTN.toString(), `${verifiedMembersCount} Members`, new Date().toISOString().slice(0, 10)],
         ...orders.map((o) => [
           'ORDER_TRANSACTION',
@@ -60,7 +60,8 @@ export async function GET(req: NextRequest) {
         ]),
       ];
 
-      const csvContent = rows.map((r) => r.join(',')).join('\n');
+      const footnote = '# Note: The 80% artisan / 20% association consignment revenue split is provisional and subject to formal HAB Secretariat ratification prior to commercial operations.';
+      const csvContent = `${rows.map((r) => r.join(',')).join('\n')}\n\n${footnote}\n`;
 
       return new NextResponse(csvContent, {
         headers: {
@@ -76,6 +77,7 @@ export async function GET(req: NextRequest) {
         totalOrdersCount: orders.length,
         grossVolumeUSD,
         artisanShareUSD,
+        artisanShareDescription: 'Estimated Artisan Share (80/20 split — provisional, pending Secretariat sign-off)',
         duesCollectedBTN,
         activeMembersCount: verifiedMembersCount,
       },

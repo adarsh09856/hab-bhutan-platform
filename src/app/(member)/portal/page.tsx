@@ -51,7 +51,7 @@ export default function MemberPortalDashboardPage() {
             <div>
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Consignment Payouts</p>
               <p className="text-2xl font-bold font-mono text-slate-900 mt-1">$1,936.00</p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-1">80% net pass-through received</p>
+              <p className="text-[11px] text-amber-700 font-medium mt-1">Est. 80% net pass-through (provisional)</p>
             </div>
             <div className="p-2 bg-emerald-50 text-emerald-700 rounded">
               <DollarSign className="w-5 h-5" />
@@ -90,7 +90,7 @@ export default function MemberPortalDashboardPage() {
                 <th className="py-2.5 px-4">Product Name</th>
                 <th className="py-2.5 px-4">Code</th>
                 <th className="py-2.5 px-4">Retail (USD)</th>
-                <th className="py-2.5 px-4">Your Share (80%)</th>
+                <th className="py-2.5 px-4">Est. Share (80% Provisional)*</th>
                 <th className="py-2.5 px-4">Inventory</th>
               </tr>
             </thead>
@@ -110,6 +110,9 @@ export default function MemberPortalDashboardPage() {
               ))}
             </tbody>
           </table>
+          <div className="p-2.5 bg-slate-50 border-t border-slate-200 text-[10px] text-slate-500">
+            * Note: The 80% artisan / 20% association consignment revenue split is provisional and subject to formal HAB Secretariat ratification prior to commercial operations.
+          </div>
         </div>
 
         {/* Right: HAB Announcements & Actions */}

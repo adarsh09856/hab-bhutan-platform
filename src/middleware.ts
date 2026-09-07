@@ -33,6 +33,18 @@ export async function middleware(req: NextRequest) {
     return response;
   }
 
+  // Password change enforcement on first login
+  if (sessionUser.mustChangePassword) {
+    if (pathname !== '/portal/change-password') {
+      return NextResponse.redirect(new URL('/portal/change-password', req.url));
+    }
+    return NextResponse.next();
+  } else if (pathname === '/portal/change-password') {
+    // If password change is not required, redirect away from change-password page
+    const dest = sessionUser.roleSlug === 'member' ? '/portal' : '/admin';
+    return NextResponse.redirect(new URL(dest, req.url));
+  }
+
   // Role routing enforcement
   if (isAdminRoute && sessionUser.roleSlug === 'member') {
     // Member attempting to access staff CRM -> redirect to member portal

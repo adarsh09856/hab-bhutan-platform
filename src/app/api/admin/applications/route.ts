@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
@@ -238,17 +239,21 @@ export async function PATCH(req: NextRequest) {
           throw new Error('Member role not found in system. Ensure roles are seeded.');
         }
 
-        // 3. Provision or link user account
-        const tempPasswordHash = bcrypt.hashSync('ArtisanMember2026!', 10);
+        // 3. Provision or link user account with unique random temporary password
+        const tempPassword = crypto.randomBytes(9).toString('base64url');
+        const tempPasswordHash = bcrypt.hashSync(tempPassword, 10);
         const user = await tx.user.upsert({
           where: { email: application.email },
-          update: {},
+          update: {
+            mustChangePassword: true,
+          },
           create: {
             email: application.email,
             name: application.applicantName,
             passwordHash: tempPasswordHash,
             roleId: memberRole.id,
             status: 'ACTIVE',
+            mustChangePassword: true,
           },
         });
 
@@ -273,10 +278,10 @@ export async function PATCH(req: NextRequest) {
           },
         });
 
-        return { updatedApp, newMember, user };
+        return { updatedApp, newMember, user, tempPassword };
       });
 
-      // 5. Audit Logging
+      // 5. Audit Logging (applicant approval + member creation + credential issuance)
       await logAudit({
         actorType: 'STAFF',
         actorId: session.id,
@@ -308,11 +313,31 @@ export async function PATCH(req: NextRequest) {
         },
       });
 
+      // Credential issuance audit log (NEVER log plaintext password)
+      await logAudit({
+        actorType: 'STAFF',
+        actorId: session.id,
+        actorIdentifier: session.email,
+        actorIp: ip,
+        action: 'MEMBER_CREDENTIALS_ISSUED',
+        entityType: 'User',
+        entityId: result.user.id,
+        details: {
+          memberId: result.newMember.id,
+          userEmail: result.user.email,
+          issuedAt: new Date().toISOString(),
+        },
+      });
+
       return NextResponse.json({
         success: true,
         message: 'Application approved and member enterprise successfully enrolled.',
         application: result.updatedApp,
         member: result.newMember,
+        tempCredentials: {
+          email: result.user.email,
+          temporaryPassword: result.tempPassword,
+        },
       });
     }
 

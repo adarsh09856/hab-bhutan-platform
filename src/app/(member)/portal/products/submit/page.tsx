@@ -149,7 +149,7 @@ export default function MemberSubmitProductPage() {
                   />
                 </div>
                 <span className="text-[10px] text-slate-500 mt-1 block">
-                  You receive 80% of final retail sale value.
+                  Est. 80% of final retail sale value (provisional, pending Secretariat ratification).
                 </span>
               </div>
 
@@ -161,7 +161,7 @@ export default function MemberSubmitProductPage() {
                   ${suggestedRetail.toFixed(2)} USD
                 </div>
                 <span className="text-[10px] text-slate-500 mt-1 block">
-                  Includes 20% HAB marketing, customs & insurance vault fee.
+                  Includes provisional 20% HAB marketing, customs &amp; insurance vault fee.
                 </span>
               </div>
             </div>

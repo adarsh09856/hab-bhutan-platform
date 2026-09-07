@@ -136,7 +136,7 @@ export default function MemberConsignmentsPage() {
               <th className="py-3 px-4">Item & SKU</th>
               <th className="py-3 px-4">Vault Status</th>
               <th className="py-3 px-4 text-right">Global Retail</th>
-              <th className="py-3 px-4 text-right">Your Share (80%)</th>
+              <th className="py-3 px-4 text-right">Est. Share (80% Provisional)*</th>
               <th className="py-3 px-4">Dispatch / Tracking</th>
               <th className="py-3 px-4 text-right">Remittance</th>
             </tr>
@@ -194,6 +194,9 @@ export default function MemberConsignmentsPage() {
             ))}
           </tbody>
         </table>
+        <div className="p-3 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500">
+          * Note: The 80% artisan / 20% association consignment revenue split is provisional and subject to formal HAB Secretariat ratification prior to commercial operations.
+        </div>
       </div>
     </div>
   );
