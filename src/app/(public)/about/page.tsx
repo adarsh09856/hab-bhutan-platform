@@ -47,9 +47,15 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="aspect-[24/7] rounded-[16px] ph-light border border-[#E4DDD1] flex items-end p-5 mb-20">
-          <span className="font-mono text-[11.5px] text-[#86745F] bg-[#FFFCF8] px-2.5 py-1.5 rounded-[5px]">
-            wide photo — artisans and secretariat, group shot or workshop floor
+        <div data-cms-img className="aspect-[24/7] rounded-[16px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative mb-20 shadow-sm">
+          <img
+            src="/images/about_hero.jpg"
+            alt="Artisans, Traditional Workshops, and Heritage of Bhutan"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          <span className="absolute bottom-4 left-5 z-10 font-mono text-[11.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-3 py-1.5 rounded-[5px] border border-white/20">
+            Artisans, traditional craft clusters, and communities across Bhutan
           </span>
         </div>
       </section>

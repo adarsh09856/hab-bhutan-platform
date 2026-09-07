@@ -140,6 +140,25 @@ export default function ShopGridPage() {
             </p>
           </div>
 
+          {currentCraft && (
+            <div data-cms-img className="aspect-[24/7] rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
+              <img
+                src={`/images/crafts/${currentCraft.key}.jpg`}
+                alt={`${currentCraft.name} — ${currentCraft.english}`}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-3 left-4 z-10 flex items-center gap-3">
+                <span className="font-figtree font-bold text-[17px] text-white">
+                  {currentCraft.name} ({currentCraft.dzongkha})
+                </span>
+                <span className="font-mono text-[11px] text-[#F4F0E7]/90 bg-[#33261F]/80 backdrop-blur-sm px-2.5 py-1 rounded">
+                  {currentCraft.english} · Living Zorig Chusum Tradition
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Product Grid or Empty State */}
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-3 gap-[22px]">

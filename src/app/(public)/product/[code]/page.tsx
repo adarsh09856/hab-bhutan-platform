@@ -41,19 +41,46 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-[1.1fr_0.9fr] gap-14 items-start mb-24">
         {/* Left: Gallery */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2 aspect-[4/3] rounded-[12px] ph-light border border-[#E4DDD1] flex items-end p-4">
-            <span className="font-mono text-[11px] text-[#86745F] bg-[#FFFCF8] px-2.5 py-1 rounded-[5px]">
-              product shot 1 — {product.code} primary angle
+          <div data-cms-img className="col-span-2 aspect-[4/3] rounded-[12px] bg-[#F5EFE6] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
+            <img
+              src={`/images/products/${product.code.toLowerCase()}.jpg`}
+              alt={`${product.name} — ${product.code}`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            <span className="absolute bottom-3 left-3 z-10 font-mono text-[11px] text-[#33261F] bg-[#FFFCF8]/90 backdrop-blur-sm px-2.5 py-1 rounded-[5px] border border-[#E4DDD1]">
+              {product.code} · Primary angle
             </span>
           </div>
-          <div className="aspect-square rounded-[12px] ph-light border border-[#E4DDD1] flex items-end p-3">
-            <span className="font-mono text-[10px] text-[#86745F] bg-[#FFFCF8] px-2 py-0.5 rounded">
-              shot 2 — craft detail
+          <div data-cms-img className="aspect-square rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative">
+            <img
+              src={`/images/crafts/${craft.key}.jpg`}
+              alt={`${craft.name} tradition`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-0.5 rounded">
+              {craft.english} detail
             </span>
           </div>
-          <div className="aspect-square rounded-[12px] ph-light border border-[#E4DDD1] flex items-end p-3">
-            <span className="font-mono text-[10px] text-[#86745F] bg-[#FFFCF8] px-2 py-0.5 rounded">
-              shot 3 — in use / context
+          <div data-cms-img className="aspect-square rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative">
+            <img
+              src="/images/training_workshop.jpg"
+              alt="Artisan studio in Bhutan"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-0.5 rounded">
+              Workshop context
             </span>
           </div>
         </div>
@@ -127,7 +154,13 @@ export default function ProductDetailPage() {
             href={`/members/${encodeURIComponent(product.maker)}`}
             className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-[18px] flex items-center gap-4 hover:border-[#33261F] transition-colors group"
           >
-            <div className="w-[54px] h-[54px] rounded-full ph-light border border-[#E4DDD1] flex-none" />
+            <div data-cms-avatar className="w-[54px] h-[54px] rounded-full bg-[#E8E1D4] border border-[#E4DDD1] flex-none overflow-hidden relative">
+              <img
+                src={`/images/crafts/${craft.key}.jpg`}
+                alt={product.maker}
+                className="w-full h-full object-cover"
+              />
+            </div>
             <div className="flex-1">
               <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6B5A4C]">
                 Made by

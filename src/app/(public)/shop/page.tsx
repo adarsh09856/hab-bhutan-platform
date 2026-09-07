@@ -15,7 +15,8 @@ export default function ShopLandingPage() {
       name: 'Under $50',
       desc: 'Gifts and everyday treasures, hand-carved, woven, or folded by verified artisans.',
       count: '4 pieces',
-      slot: 'photo — small gifts flat lay',
+      slot: 'Handmade Daphne Paper & Gifts',
+      image: '/images/products/dez01.jpg',
       filterParam: 'collection=under50',
     },
     {
@@ -23,7 +24,8 @@ export default function ShopLandingPage() {
       name: 'Textiles & weaving',
       desc: 'Yathra wool, kisuthara silk, and backstrap-loom heritage from Bumthang and Lhuentse.',
       count: '4 pieces',
-      slot: 'photo — folded textiles',
+      slot: 'Master Weaving & Textiles',
+      image: '/images/crafts/thagzo.jpg',
       filterParam: 'craft=thagzo',
     },
     {
@@ -31,7 +33,8 @@ export default function ShopLandingPage() {
       name: 'Home & table',
       desc: 'Turned maple dapa bowls, split bamboo baskets, and handmade daphne paper stationery.',
       count: '4 pieces',
-      slot: 'photo — table setting',
+      slot: 'Turned Maple Burl Tableware',
+      image: '/images/products/dap02.jpg',
       filterParam: 'collection=home',
     },
   ];
@@ -67,9 +70,15 @@ export default function ShopLandingPage() {
             </div>
           </div>
 
-          <div className="ph-dark min-h-[420px] flex items-end p-8 border-l border-[#4E3D2E]">
-            <span className="font-mono text-[11.5px] text-[#A8947F] bg-[#33261F] px-3 py-1.5 rounded border border-[#4E3D2E]">
-              shop hero — seasonal collection, styled
+          <div data-cms-img className="relative min-h-[420px] bg-[#42332A] flex items-end p-8 border-l border-[#4E3D2E] overflow-hidden">
+            <img
+              src="/images/outlets/thimphu.jpg"
+              alt="Authentic Bhutanese Crafts Exhibition and Market"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+            <span className="relative z-10 font-mono text-[11.5px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-3 py-1.5 rounded border border-white/20">
+              Authentic Bhutanese artisan crafts collection
             </span>
           </div>
         </div>
@@ -165,9 +174,18 @@ export default function ShopLandingPage() {
               href={`/shop/${c.key}`}
               className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] overflow-hidden p-4 flex flex-col hover:border-[#33261F] transition-colors group"
             >
-              <div className="aspect-[3/2] ph-light rounded-[6px] border border-[#E4DDD1] mb-3 p-2 flex items-end">
-                <span className="font-mono text-[10px] text-[#86745F] bg-[#FFFCF8] px-2 py-0.5 rounded">
-                  photo — {c.english.toLowerCase()}
+              <div data-cms-img className="aspect-[3/2] bg-[#E8E1D4] rounded-[6px] border border-[#E4DDD1] mb-3 overflow-hidden relative">
+                <img
+                  src={`/images/crafts/${c.key}.jpg`}
+                  alt={`${c.name} — ${c.english}`}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
+                <span className="absolute bottom-2 left-2 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/80 backdrop-blur-sm px-2 py-0.5 rounded">
+                  {c.english}
                 </span>
               </div>
               <div className="font-figtree font-bold text-[16px] text-[#33261F] group-hover:text-[#8B2E24] transition-colors">
@@ -201,8 +219,17 @@ export default function ShopLandingPage() {
               key={col.key}
               className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden flex flex-col p-6"
             >
-              <div className="aspect-[16/9] ph-light rounded-[8px] border border-[#E4DDD1] mb-5 p-3 flex items-end">
-                <span className="font-mono text-[10.5px] text-[#86745F] bg-[#FFFCF8] px-2 py-1 rounded">
+              <div data-cms-img className="aspect-[16/9] bg-[#E8E1D4] rounded-[8px] border border-[#E4DDD1] mb-5 overflow-hidden relative">
+                <img
+                  src={col.image}
+                  alt={col.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
+                <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2.5 py-1 rounded">
                   {col.slot}
                 </span>
               </div>

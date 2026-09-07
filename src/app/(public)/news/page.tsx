@@ -83,9 +83,15 @@ export default function NewsPage() {
               key={article.title}
               className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden grid grid-cols-[200px_1fr]"
             >
-              <div className="ph-light min-h-[150px] border-r border-[#E4DDD1] p-3 flex items-end">
-                <span className="font-mono text-[10px] text-[#86745F] bg-[#FFFCF8] px-2 py-0.5 rounded border border-[#E4DDD1]">
-                  news photo
+              <div data-cms-img className="relative min-h-[150px] bg-[#E8E1D4] border-r border-[#E4DDD1] overflow-hidden">
+                <img
+                  src={article.kind === 'Programs' ? '/images/programs/trade.jpg' : article.kind === 'Artisan support' ? '/images/programs/dye_training.jpg' : article.kind === 'Events' ? '/images/outlets/thimphu.jpg' : '/images/about_hero.jpg'}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                <span className="absolute bottom-2 left-2 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-0.5 rounded">
+                  {article.kind}
                 </span>
               </div>
 

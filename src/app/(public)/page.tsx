@@ -17,22 +17,26 @@ export default function HomePage() {
     {
       title: "Trade facilitation",
       desc: "Trade infrastructure, market linkage, export facilitation and certification frameworks so members can compete in real markets.",
-      slot: "photo — trade desk",
+      slot: "Trade facilitation & export",
+      image: "/images/programs/trade.jpg",
     },
     {
       title: "Artisan support",
       desc: "Craft skills, business management, financial literacy and export procedures, through training, mentorship and peer exchange.",
-      slot: "photo — dye training",
+      slot: "Natural dye & capacity training",
+      image: "/images/programs/dye_training.jpg",
     },
     {
       title: "Education & awareness",
       desc: "Documenting and transmitting the Zorig Chusum, and protecting origin through geographical indication and certification.",
-      slot: "photo — master and apprentice",
+      slot: "Heritage & apprenticeship",
+      image: "/images/programs/heritage.jpg",
     },
     {
       title: "Product innovation",
       desc: "Design interventions, technical upgradation and artisan–designer collaboration that diversify what the sector can sell.",
-      slot: "photo — design lab",
+      slot: "Product design laboratory",
+      image: "/images/programs/design_lab.jpg",
     },
   ];
 
@@ -100,10 +104,21 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="aspect-[4/3.4] rounded-[14px] ph-light border border-[#E4DDD1] flex items-end p-[18px]">
-          <span className="font-mono text-[11.5px] text-[#86745F] bg-[#FFFCF8] px-[10px] py-[6px] rounded-[5px] border border-[#E4DDD1]">
-            hero photo — artisan at the loom, Khoma
-          </span>
+        <div data-cms-img className="aspect-[4/3.4] rounded-[14px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
+          <img
+            src="/images/hero_artisan.jpg"
+            alt="Master artisan weaving on backstrap loom in Khoma, Bhutan"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-between">
+            <span className="font-mono text-[11px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-[10px] py-[5px] rounded-[5px] border border-white/15">
+              Master artisan at the loom · Khoma, Lhuentse
+            </span>
+            <span className="font-mono text-[10.5px] text-[#F4F0E7]/80 bg-black/40 backdrop-blur-sm px-[8px] py-[4px] rounded-[4px]">
+              Zorig Chusum
+            </span>
+          </div>
         </div>
       </section>
 
@@ -184,10 +199,18 @@ export default function HomePage() {
               Read about our programmes →
             </Link>
           </div>
-          <div className="aspect-square rounded-[14px] ph-dark border border-[#4E3D2E] flex items-end p-5">
-            <span className="font-mono text-[11px] text-[#A8947F] bg-[#33261F] px-3 py-1.5 rounded border border-[#4E3D2E]">
-              photo — HAB training workshop
-            </span>
+          <div data-cms-img className="aspect-square rounded-[14px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
+            <img
+              src="/images/training_workshop.jpg"
+              alt="HAB Traditional Craft Training Workshop in Thimphu"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+            <div className="absolute bottom-5 left-5 right-5 z-10">
+              <span className="font-mono text-[11px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-3 py-1.5 rounded border border-white/20 inline-block">
+                HAB artisan training workshop · Thimphu
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -281,8 +304,17 @@ export default function HomePage() {
               key={prog.title}
               className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col p-5 hover:border-[#33261F] transition-colors"
             >
-              <div className="aspect-[16/10] ph-light rounded-[8px] border border-[#E4DDD1] mb-4 flex items-end p-2.5">
-                <span className="font-mono text-[10px] text-[#86745F] bg-[#FFFCF8] px-2 py-1 rounded">
+              <div data-cms-img className="aspect-[16/10] bg-[#E8E1D4] rounded-[8px] border border-[#E4DDD1] mb-4 overflow-hidden relative">
+                <img
+                  src={prog.image}
+                  alt={prog.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
+                <span className="absolute bottom-2 left-2 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-1 rounded">
                   {prog.slot}
                 </span>
               </div>

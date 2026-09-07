@@ -149,7 +149,13 @@ export default function MemberDirectoryPage() {
                 className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-[22px] flex flex-col gap-3 hover:border-[#33261F] transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-[52px] h-[52px] rounded-full ph-light border border-[#E4DDD1] flex-none" />
+                  <div data-cms-avatar className="w-[52px] h-[52px] rounded-full bg-[#E8E1D4] border border-[#E4DDD1] flex-none overflow-hidden relative">
+                    <img
+                      src={`/images/crafts/${m.craftKey}.jpg`}
+                      alt={m.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   <div>
                     <h3 className="font-figtree font-bold text-[17px] text-[#33261F] group-hover:text-[#8B2E24] transition-colors">
                       {m.name}

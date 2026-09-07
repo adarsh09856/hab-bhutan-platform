@@ -30,12 +30,20 @@ export default function ProductCard({
 
   return (
     <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-colors duration-150 group">
-      <Link href={`/product/${code}`} className="block relative aspect-square ph-light border-b border-[#E4DDD1] flex items-center justify-center">
-        <span className="font-mono text-[10.5px] text-[#86745F] bg-[#FFFCF8] px-[10px] py-[5px] rounded-[5px] border border-[#E4DDD1]">
+      <Link href={`/product/${code}`} data-cms-img className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
+        <img
+          src={`/images/products/${code.toLowerCase()}.jpg`}
+          alt={name}
+          className="transition-transform duration-500 ease-out group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+        <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#33261F] bg-[#FFFCF8]/90 backdrop-blur-sm px-[8px] py-[3px] rounded-[4px] border border-[#E4DDD1]">
           {code}
         </span>
         {isOutOfStock && (
-          <div className="absolute top-3 right-3 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded">
+          <div className="absolute top-3 right-3 z-10 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded shadow-sm">
             Out of stock
           </div>
         )}

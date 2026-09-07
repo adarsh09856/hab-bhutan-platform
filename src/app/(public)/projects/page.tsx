@@ -221,10 +221,16 @@ export default function ProjectsPage() {
             key={proj.name}
             className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden grid grid-cols-[300px_1fr]"
           >
-            {/* Left image placeholder */}
-            <div className="ph-light min-h-[260px] border-r border-[#E4DDD1] p-5 flex items-end">
-              <span className="font-mono text-[10.5px] text-[#86745F] bg-[#FFFCF8] px-2.5 py-1.5 rounded-[5px] border border-[#E4DDD1]">
-                photo — {proj.name.split(' ').slice(0, 3).join(' ').toLowerCase()}
+            {/* Left image */}
+            <div data-cms-img className="relative min-h-[260px] bg-[#E8E1D4] border-r border-[#E4DDD1] overflow-hidden">
+              <img
+                src={proj.name.includes('SWITCH') ? '/images/programs/dye_training.jpg' : proj.name.includes('Rural') ? '/images/programs/trade.jpg' : '/images/programs/heritage.jpg'}
+                alt={proj.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <span className="absolute bottom-4 left-4 z-10 font-mono text-[10.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2.5 py-1.5 rounded-[5px] border border-white/20">
+                {proj.name.split(' ').slice(0, 3).join(' ')}
               </span>
             </div>
 

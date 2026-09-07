@@ -120,9 +120,15 @@ export default function PublicationsPage() {
           </div>
         </div>
 
-        <div className="ph-dark aspect-[4/3] rounded-[10px] border border-[#4E3D2E] p-4 flex items-end">
-          <span className="font-mono text-[10.5px] text-[#A8947F] bg-[#33261F] px-2.5 py-1 rounded">
-            cover — {leadReport.title}
+        <div data-cms-img className="aspect-[4/3] rounded-[10px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
+          <img
+            src="/images/crafts/dezo.jpg"
+            alt={leadReport.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+          <span className="absolute bottom-3 left-3 z-10 font-mono text-[10.5px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-2.5 py-1 rounded border border-white/15">
+            {leadReport.title} · Official Report
           </span>
         </div>
       </div>

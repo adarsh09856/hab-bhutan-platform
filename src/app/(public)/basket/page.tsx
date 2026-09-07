@@ -125,8 +125,16 @@ export default function BasketPage() {
             <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] divide-y divide-[#EFE9DE] overflow-hidden">
               {items.map((item) => (
                 <div key={item.code} className="p-5 flex items-center gap-5">
-                  <div className="w-[86px] h-[86px] rounded-[9px] ph-light border border-[#E4DDD1] flex items-center justify-center flex-none">
-                    <span className="font-mono text-[10px] text-[#86745F]">
+                  <div data-cms-img className="w-[86px] h-[86px] rounded-[9px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden flex-none relative">
+                    <img
+                      src={`/images/products/${item.code.toLowerCase()}.jpg`}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <span className="absolute bottom-1 right-1 font-mono text-[9px] text-[#33261F] bg-[#FFFCF8]/90 px-1 py-0.5 rounded border border-[#E4DDD1]">
                       {item.code}
                     </span>
                   </div>

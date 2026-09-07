@@ -29,12 +29,21 @@ export default function CraftCard({
       href={`/shop/${craftKey}`}
       className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#33261F] transition-colors duration-150 group"
     >
-      <div className="relative aspect-[16/10] ph-light border-b border-[#E4DDD1] p-3 flex flex-col justify-between">
-        <span className="self-start font-mono text-[10.5px] bg-[#33261F] text-[#F4F0E7] px-[6px] py-[3px] rounded-[4px]">
+      <div data-cms-img className="relative aspect-[16/10] bg-[#E8E1D4] border-b border-[#E4DDD1] p-3 flex flex-col justify-between overflow-hidden">
+        <img
+          src={`/images/crafts/${craftKey}.jpg`}
+          alt={`${name} — ${english}`}
+          className="transition-transform duration-500 ease-out group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25 pointer-events-none" />
+        <span className="relative z-10 self-start font-mono text-[10.5px] bg-[#33261F]/90 backdrop-blur-sm text-[#F4F0E7] px-[7px] py-[3px] rounded-[4px]">
           {numString}
         </span>
-        <span className="self-start font-mono text-[11px] text-[#86745F] bg-[#FFFCF8] px-[8px] py-[4px] rounded-[5px] border border-[#E4DDD1]">
-          photo — {english.toLowerCase()}
+        <span className="relative z-10 self-start font-mono text-[11px] text-[#F4F0E7] bg-[#33261F]/80 backdrop-blur-sm px-[8px] py-[3px] rounded-[4px] border border-white/20">
+          {english}
         </span>
       </div>
 

@@ -30,10 +30,16 @@ export default function MemberProfilePage() {
 
       {/* Profile Header */}
       <div className="grid grid-cols-[0.95fr_1.05fr] gap-[52px] items-start mb-20">
-        {/* Left: Portrait Placeholder */}
-        <div className="aspect-square rounded-[14px] ph-light border border-[#E4DDD1] flex items-end p-5">
-          <span className="font-mono text-[11px] text-[#86745F] bg-[#FFFCF8] px-3 py-1.5 rounded-[5px] border border-[#E4DDD1]">
-            portrait — {member.name} at work
+        {/* Left: Portrait */}
+        <div data-cms-img className="aspect-square rounded-[14px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
+          <img
+            src={`/images/crafts/${craft.key}.jpg`}
+            alt={`${member.name} — ${craft.name}`}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+          <span className="absolute bottom-4 left-4 z-10 font-mono text-[11px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-3 py-1.5 rounded-[5px] border border-white/20">
+            {member.name} · {craft.english}
           </span>
         </div>
 
