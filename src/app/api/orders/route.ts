@@ -4,6 +4,8 @@ import { calculateShipping } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { logAudit } from '@/lib/audit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const orders = await prisma.order.findMany({

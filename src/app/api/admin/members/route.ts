@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'members:view');
