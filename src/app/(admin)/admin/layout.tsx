@@ -429,7 +429,7 @@ export default function AdminLayout({
         </header>
 
         {/* Content Viewport */}
-        <div className="p-4 sm:p-8 flex-1 overflow-auto">{children}</div>
+        <div className="p-3 sm:p-6 lg:p-8 flex-1 overflow-x-hidden overflow-y-auto max-w-full">{children}</div>
       </div>
     </div>
   );

@@ -486,7 +486,7 @@ function AdminSettingsContent() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-slate-200 flex space-x-6 text-xs font-medium text-slate-600">
+      <div className="border-b border-slate-200 flex space-x-4 sm:space-x-6 text-xs font-medium text-slate-600 overflow-x-auto scrollbar-none whitespace-nowrap pb-px">
         <button
           onClick={() => setActiveTab('FX')}
           className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
