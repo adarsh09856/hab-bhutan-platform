@@ -3,6 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import '@/styles/globals.css';
 
 function AdminLoginForm() {
   const router = useRouter();
