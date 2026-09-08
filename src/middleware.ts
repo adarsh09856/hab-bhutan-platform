@@ -77,7 +77,11 @@ export async function middleware(req: NextRequest) {
       return applySecurityHeaders(NextResponse.redirect(adminLoginUrl));
     }
 
-    return applySecurityHeaders(NextResponse.next());
+    const res = applySecurityHeaders(NextResponse.next());
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   }
 
   return applySecurityHeaders(NextResponse.next());
