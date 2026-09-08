@@ -17,54 +17,16 @@ interface EventItem {
   place: string;
 }
 
-const NEWS_ARTICLES: NewsItem[] = [
-  {
-    kind: "Programs",
-    date: "28 Aug 2026",
-    title: "Trade facilitation desk opens for the autumn export season",
-    blurb: "Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.",
-  },
-  {
-    kind: "Artisan support",
-    date: "14 Aug 2026",
-    title: "Natural dye training concludes in Lhuentse",
-    blurb: "Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.",
-  },
-  {
-    kind: "Events",
-    date: "02 Aug 2026",
-    title: "Zorig Chusum craft bazaar returns to Clock Tower Square",
-    blurb: "Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.",
-  },
-  {
-    kind: "Publications",
-    date: "19 Jul 2026",
-    title: "Annual report 2025 available to download",
-    blurb: "Sector figures, programme outcomes and audited accounts for the year, published in English and Dzongkha.",
-  },
-  {
-    kind: "Projects",
-    date: "30 Jun 2026",
-    title: "Product innovation lab pairs six artisans with designers",
-    blurb: "A six-month cycle developing new homeware lines from bamboo, yathra and desho paper for international retail.",
-  },
-];
-
-const UPCOMING_EVENTS: EventItem[] = [
-  { day: "12", mon: "SEP", title: "Craft bazaar, day one", place: "Clock Tower Square, Thimphu" },
-  { day: "27", mon: "SEP", title: "Export documentation clinic", place: "HAB office, Metog Lam" },
-  { day: "08", mon: "OCT", title: "Members' annual sector forum", place: "Thimphu" },
-];
-
 export default function NewsPage() {
-  const [articles, setArticles] = React.useState<NewsItem[]>(NEWS_ARTICLES);
-  const [events, setEvents] = React.useState<EventItem[]>(UPCOMING_EVENTS);
+  const [articles, setArticles] = React.useState<NewsItem[]>([]);
+  const [events, setEvents] = React.useState<EventItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     fetch('/api/news')
       .then((r) => r.json())
       .then((data) => {
-        if (data?.articles && data.articles.length > 0) {
+        if (data?.articles && Array.isArray(data.articles)) {
           setArticles(
             data.articles.map((a: any) => ({
               kind: a.kind || 'News',
@@ -74,11 +36,12 @@ export default function NewsPage() {
             }))
           );
         }
-        if (data?.events && data.events.length > 0) {
+        if (data?.events && Array.isArray(data.events)) {
           setEvents(data.events);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
   return (
     <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">

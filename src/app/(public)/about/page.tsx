@@ -1,15 +1,49 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { OBJECTIVES, VALUES, AOA_GOVERNANCE } from '@/lib/data';
+import { OBJECTIVES, VALUES } from '@/lib/data';
 
 export default function AboutPage() {
+  const [siteSettings, setSiteSettings] = useState<any>(null);
+  const [governance, setGovernance] = useState<{
+    board: Array<{ role: string; name: string; note: string }>;
+    team: Array<{ role: string; name: string; note: string }>;
+    milestones: Array<{ y: string; t: string }>;
+  } | null>(null);
+
+  useEffect(() => {
+    // 1. Fetch live site settings
+    fetch('/api/site-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.settings) {
+          setSiteSettings(data.settings);
+        }
+      })
+      .catch((err) => console.error('Error fetching site settings:', err));
+
+    // 2. Fetch live governance records
+    fetch('/api/governance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setGovernance({
+            board: data.board || [],
+            team: data.team || [],
+            milestones: data.milestones || [],
+          });
+        }
+      })
+      .catch((err) => console.error('Error fetching governance records:', err));
+  }, []);
+
+  const s = siteSettings;
   const aboutFacts = [
-    { k: "Established", v: "2005" },
-    { k: "Registered CSO", v: "2011 · CSO/2011/043" },
-    { k: "Member enterprises", v: "7,500" },
-    { k: "Affiliated stores", v: "195" },
+    { k: 'Established', v: '2005' },
+    { k: 'Registered CSO', v: s?.csoRegistration?.split('·')[0]?.trim() || 'CSO/2011/043' },
+    { k: 'Member enterprises', v: s?.stat1Number || '7,500' },
+    { k: 'Affiliated stores', v: s?.stat3Number || '195' },
   ];
 
   return (
@@ -29,7 +63,8 @@ export default function AboutPage() {
               A pioneer centre for Bhutanese handicrafts
             </h1>
             <p className="font-lora text-base sm:text-[18.5px] leading-[1.62] text-[#4A3C33] max-w-[56ch] [text-wrap:pretty]">
-              Handicrafts Association of Bhutan (HAB) was established in 2005 and got formally registered as Civil Society Organization in 2011 under the CSO act of Bhutan 2007 as a pioneer centre for the promotion of vibrant and sustainable Bhutanese handicrafts.
+              {s?.footerAbout ||
+                'Handicrafts Association of Bhutan (HAB) was established in 2005 and got formally registered as Civil Society Organization in 2011 under the CSO act of Bhutan 2007 as a pioneer centre for the promotion of vibrant and sustainable Bhutanese handicrafts.'}
             </p>
           </div>
 
@@ -68,7 +103,7 @@ export default function AboutPage() {
               Vision
             </div>
             <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[36px] font-normal leading-[1.18] tracking-[-0.008em] mb-4 text-[#F1ECE2]">
-              Towards a vibrant &amp; sustainable handicrafts sector
+              {s?.tagline || 'Towards a vibrant & sustainable handicrafts sector'}
             </h2>
             <p className="font-lora text-sm sm:text-[17px] leading-[1.62] text-[#D2C2AE] max-w-[46ch]">
               A Bhutan where the thirteen crafts remain in daily practice, and where making them is a livelihood a young person would choose.
@@ -83,7 +118,8 @@ export default function AboutPage() {
               Promoting sustainability, inclusiveness and resilience
             </h2>
             <p className="font-lora text-sm sm:text-[17px] leading-[1.62] text-[#D2C2AE] max-w-[46ch]">
-              HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.
+              {s?.heroParagraph ||
+                'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.'}
             </p>
           </div>
         </div>
@@ -146,7 +182,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 5. Governance Overhaul (AoA 2026 Model) */}
+      {/* 5. Governance Overhaul (AoA 2026 Model - Live Database Driven) */}
       <section id="governance" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
         <div className="mb-8">
           <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
@@ -160,42 +196,15 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
-          {AOA_GOVERNANCE.tiers.map((tier) => (
-            <div
-              key={tier.tier}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col"
-            >
-              <span className="font-mono text-[11px] text-[#8B2E24] mb-1">
-                TIER 0{tier.n}
-              </span>
-              <h3 className="font-figtree font-bold text-lg sm:text-[19px] text-[#33261F] mb-2">
-                {tier.tier}
-              </h3>
-              <p className="font-lora text-xs sm:text-[14.5px] leading-[1.5] text-[#6B5A4C] mb-4 flex-1">
-                {tier.note}
-              </p>
-              <div className="pt-3 border-t border-[#EFE9DE] flex flex-col gap-1 text-[13px] font-figtree text-[#33261F]">
-                {tier.items.map((item) => (
-                  <div key={item} className="flex gap-2 items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#8B2E24]" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Board of Trustees and Secretariat roster */}
+        {/* Board of Trustees and Secretariat roster (Live from PostgreSQL) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
           <div>
             <h3 className="font-marcellus text-xl sm:text-[26px] font-normal text-[#33261F] mb-4">
               Board of Trustees
             </h3>
             <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] divide-y divide-[#EFE9DE]">
-              {AOA_GOVERNANCE.board.map((b) => (
-                <div key={b.role} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+              {(governance?.board || []).map((b) => (
+                <div key={b.role + b.name} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <div>
                     <div className="font-figtree font-bold text-[15.5px] text-[#33261F]">
                       {b.role}
@@ -217,8 +226,8 @@ export default function AboutPage() {
               Secretariat Team
             </h3>
             <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] divide-y divide-[#EFE9DE]">
-              {AOA_GOVERNANCE.team.map((t) => (
-                <div key={t.role} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+              {(governance?.team || []).map((t) => (
+                <div key={t.role + t.name} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                   <div>
                     <div className="font-figtree font-bold text-[15.5px] text-[#33261F]">
                       {t.role}
@@ -237,7 +246,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 6. Milestones */}
+      {/* 6. Milestones (Live from PostgreSQL) */}
       <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
         <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
           History
@@ -246,9 +255,9 @@ export default function AboutPage() {
           Milestones since founding
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {AOA_GOVERNANCE.milestones.map((m) => (
+          {(governance?.milestones || []).map((m) => (
             <div
-              key={m.y}
+              key={m.y + m.t}
               className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-4 sm:p-5 flex flex-col justify-between"
             >
               <div className="font-figtree font-bold text-xl sm:text-[24px] text-[#8B2E24] mb-2">
@@ -262,7 +271,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 7. Shipping, Customs & Returns Support */}
+      {/* 7. Shipping, Customs & Returns Support (Live from SiteSetting) */}
       <section id="support" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
         <div className="mb-8">
           <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
@@ -279,52 +288,55 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col">
             <span className="font-mono text-[11px] text-[#8B2E24] uppercase mb-2">
-              International Dispatch
+              {s?.supportDispatchTitle || 'International Dispatch'}
             </span>
             <h3 className="font-figtree font-bold text-lg sm:text-[18px] text-[#33261F] mb-2">
-              EMS &amp; Express Courier
+              {s?.supportDispatchHeading || 'EMS & Express Courier'}
             </h3>
             <p className="font-lora text-xs sm:text-[14.5px] leading-[1.6] text-[#4A3C33] mb-4 flex-1">
-              Orders are packaged at our Thimphu hub and dispatched via EMS Bhutan Post (7–14 days) or DHL Express (3–5 days). Orders over $200 qualify for free standard EMS shipping.
+              {s?.supportDispatchBody ||
+                'Orders are packaged at our Thimphu hub and dispatched via EMS Bhutan Post (7–14 days) or DHL Express (3–5 days). Orders over $200 qualify for free standard EMS shipping.'}
             </p>
             <div className="font-mono text-[12px] text-[#6B5A4C] pt-3 border-t border-[#EFE9DE]">
-              Live tracking available at /track-order
+              {s?.supportDispatchSubtext || 'Live tracking available at /track-order'}
             </div>
           </div>
 
           <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col">
             <span className="font-mono text-[11px] text-[#8B2E24] uppercase mb-2">
-              Heritage Certification
+              {s?.supportCustomsTitle || 'Heritage Certification'}
             </span>
             <h3 className="font-figtree font-bold text-lg sm:text-[18px] text-[#33261F] mb-2">
-              Duty &amp; Seal of Authenticity
+              {s?.supportCustomsHeading || 'Duty & Seal of Authenticity'}
             </h3>
             <p className="font-lora text-xs sm:text-[14.5px] leading-[1.6] text-[#4A3C33] mb-4 flex-1">
-              Each handicraft is officially certified under the 13 Traditional Arts &amp; Crafts of Bhutan with an authenticity seal and export declaration. Import duties and taxes are subject to destination country regulations.
+              {s?.supportCustomsBody ||
+                'Each handicraft is officially certified under the 13 Traditional Arts & Crafts of Bhutan with an authenticity seal and export declaration. Import duties and taxes are subject to destination country regulations.'}
             </p>
             <div className="font-mono text-[12px] text-[#6B5A4C] pt-3 border-t border-[#EFE9DE]">
-              Compliant with CSO Act 2007 Export Standards
+              {s?.supportCustomsSubtext || 'Compliant with CSO Act 2007 Export Standards'}
             </div>
           </div>
 
           <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col">
             <span className="font-mono text-[11px] text-[#8B2E24] uppercase mb-2">
-              Collector Guarantee
+              {s?.supportReturnsTitle || 'Collector Guarantee'}
             </span>
             <h3 className="font-figtree font-bold text-lg sm:text-[18px] text-[#33261F] mb-2">
-              Returns &amp; Replacements
+              {s?.supportReturnsHeading || 'Returns & Replacements'}
             </h3>
             <p className="font-lora text-xs sm:text-[14.5px] leading-[1.6] text-[#4A3C33] mb-4 flex-1">
-              Because items are handcrafted by community artisans, organic variations are celebrated. If a piece arrives damaged in transit or exhibits craft defects, we arrange replacement or refund within 14 days.
+              {s?.supportReturnsBody ||
+                'Because items are handcrafted by community artisans, organic variations are celebrated. If a piece arrives damaged in transit or exhibits craft defects, we arrange replacement or refund within 14 days.'}
             </p>
             <div className="font-mono text-[12px] text-[#6B5A4C] pt-3 border-t border-[#EFE9DE]">
-              Contact officehab@gmail.com for claims
+              {s?.supportReturnsSubtext || 'Contact officehab@gmail.com for claims'}
             </div>
           </div>
         </div>
       </section>
 
-      {/* 8. Secretariat Office & Chapter Contact */}
+      {/* 8. Secretariat Office & Chapter Contact (Live from SiteSetting) */}
       <section id="contact" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
         <div className="mb-8">
           <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
@@ -345,13 +357,13 @@ export default function AboutPage() {
             </h3>
             <div className="font-lora text-xs sm:text-[14.5px] leading-[1.7] text-[#4A3C33] space-y-1">
               <div>Handicrafts Association of Bhutan</div>
-              <div>Metog Lam, Post Box 1284</div>
-              <div>Thimphu, Kingdom of Bhutan</div>
+              <div>{s?.officeAddress || 'Metog Lam, Post Box 1284, Thimphu'}</div>
+              <div>Kingdom of Bhutan</div>
               <div className="font-mono text-[13px] text-[#8B2E24] pt-2">
-                Tel: +975-2-338089
+                Tel: {s?.officePhone || '+975-2-338089'}
               </div>
               <div className="font-mono text-[13px] text-[#8B2E24]">
-                Email: officehab@gmail.com
+                Email: {s?.officialEmail || 'officehab@gmail.com'}
               </div>
             </div>
           </div>
@@ -372,14 +384,13 @@ export default function AboutPage() {
 
           <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6">
             <h3 className="font-figtree font-bold text-base sm:text-[17px] text-[#33261F] mb-3">
-              Regional Dzongkhag Chapters
+              Regional Contacts
             </h3>
             <div className="font-lora text-xs sm:text-[14.5px] leading-[1.7] text-[#4A3C33] space-y-1">
-              <div>Western Cluster: Paro, Haa, Punakha</div>
-              <div>Central Cluster: Bumthang, Trongsa</div>
-              <div>Eastern Cluster: Trashiyangtse, Trashigang</div>
+              <div>Executive Director: {s?.edPhone || '+975-77654508'}</div>
+              <div>Marketing &amp; Consignments: {s?.marketingPhone || '+975-17462636'}</div>
               <div className="font-mono text-[12px] text-[#8B2E24] pt-2">
-                Liaison: chapters@handicraftsbhutan.org
+                CSO Registration: {s?.csoRegistration?.split('·')[0] || 'CSO/2011/043'}
               </div>
             </div>
           </div>

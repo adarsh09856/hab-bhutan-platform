@@ -173,6 +173,7 @@ model Order {
   totalPaidCurrency Float
   items             Json           // Snapshot of items [{ code, name, priceUSD, quantity }]
   orderItems        OrderItem[]
+  internalNotes     String?        @db.Text
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
@@ -402,7 +403,7 @@ model SiteSetting {
   heroParagraph        String   @db.Text
   heroCtaPrimaryText   String   @default("Our mission")
   heroCtaPrimaryLink   String   @default("/about")
-  heroCtaSecondaryText String   @default("Shop the crafts →")
+  heroCtaSecondaryText String   @default("Shop the crafts ->")
   heroCtaSecondaryLink String   @default("/shop")
   stat1Number          String   @default("7,500")
   stat1Label           String   @default("Micro & small enterprises in the network")
@@ -439,18 +440,38 @@ model SiteSetting {
   aboutBandPara2       String   @db.Text @default("Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.")
   aboutBandImageUrl    String   @default("/images/training_workshop.jpg")
   aboutBandImageCaption String  @default("HAB artisan training workshop · Thimphu")
-  aboutBandCtaText     String   @default("Read about our programmes →")
+  aboutBandCtaText     String   @default("Read about our programmes ->")
   aboutBandCtaLink     String   @default("/programmes")
 
   // Homepage Membership Callouts CMS
   membershipLeftTitle  String   @default("Find a member")
   membershipLeftText   String   @default("Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.")
-  membershipLeftCtaText String  @default("Search member directory →")
+  membershipLeftCtaText String  @default("Search member directory ->")
   membershipLeftCtaLink String  @default("/members")
   membershipRightTitle String   @default("Become a member")
   membershipRightText  String   @default("Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.")
   membershipRightCtaText String @default("Apply for membership")
   membershipRightCtaLink String @default("/membership/apply")
+
+  // Support & Logistics Band CMS (/about#support)
+  supportDispatchTitle    String   @default("International Dispatch")
+  supportDispatchHeading  String   @default("EMS & Express Courier")
+  supportDispatchBody     String   @db.Text @default("Orders are packaged at our Thimphu hub and dispatched via EMS Bhutan Post (7-14 days) or DHL Express (3-5 days). Orders over $200 qualify for free standard EMS shipping.")
+  supportDispatchSubtext  String   @default("Live tracking available at /track-order")
+
+  supportCustomsTitle     String   @default("Heritage Certification")
+  supportCustomsHeading   String   @default("Duty & Seal of Authenticity")
+  supportCustomsBody      String   @db.Text @default("Each handicraft is officially certified under the 13 Traditional Arts & Crafts of Bhutan with an authenticity seal and export declaration. Import duties and taxes are subject to destination country regulations.")
+  supportCustomsSubtext   String   @default("Compliant with CSO Act 2007 Export Standards")
+
+  supportReturnsTitle     String   @default("Collector Guarantee")
+  supportReturnsHeading   String   @default("Returns & Replacements")
+  supportReturnsBody      String   @db.Text @default("Because items are handcrafted by community artisans, organic variations are celebrated. If a piece arrives damaged in transit or exhibits craft defects, we arrange replacement or refund within 14 days.")
+  supportReturnsSubtext   String   @default("Contact officehab@gmail.com for claims")
+
+  // Gateways & Email Templates CMS
+  emailTemplates          Json?
+  paymentGateways         Json?
 
   updatedAt            DateTime @updatedAt
 }

@@ -11,43 +11,9 @@ interface PublicationItem {
   isFeatured: boolean;
 }
 
-const PUBLICATIONS_DATA: PublicationItem[] = [
-  { kind: "Annual report", title: "Annual Report 2025", year: 2026, meta: "PDF · 4.2 MB · English & Dzongkha", isFeatured: true },
-  { kind: "Strategy", title: "Five-Year Strategic Plan 2026–2030", year: 2026, meta: "PDF · 3.6 MB · Board approved", isFeatured: true },
-  { kind: "Sector study", title: "Zorig Chusum Value Chain Assessment", year: 2025, meta: "PDF · 2.8 MB · 96 pages", isFeatured: true },
-  { kind: "Accounts", title: "Audited Financial Statements 2025", year: 2026, meta: "PDF · 1.1 MB · Independent auditor", isFeatured: true },
-  { kind: "Catalogue", title: "HAB Product Catalogue 2026", year: 2026, meta: "PDF · 18.4 MB · 120 products", isFeatured: false },
-  { kind: "Policy brief", title: "Craft Sector Tax and Licensing: A Note for Policymakers", year: 2025, meta: "PDF · 640 KB · 12 pages", isFeatured: false },
-  { kind: "Guideline", title: "Natural Dye Handbook for Weavers", year: 2025, meta: "PDF · 6.2 MB · Illustrated", isFeatured: false },
-  { kind: "Training manual", title: "Costing and Pricing for Craft Enterprises", year: 2025, meta: "PDF · 2.1 MB · Workbook", isFeatured: false },
-  { kind: "Annual report", title: "Annual Report 2024", year: 2025, meta: "PDF · 3.9 MB · English & Dzongkha", isFeatured: false },
-  { kind: "Accounts", title: "Audited Financial Statements 2024", year: 2025, meta: "PDF · 1.0 MB · Independent auditor", isFeatured: false },
-  { kind: "Case study", title: "Khoma Weavers: Fifteen Years of Kisuthara", year: 2024, meta: "PDF · 5.4 MB · Photo essay", isFeatured: false },
-  { kind: "Sector study", title: "Market Demand for Bhutanese Handicrafts in Japan", year: 2024, meta: "PDF · 2.2 MB · Buyer survey", isFeatured: false },
-  { kind: "Guideline", title: "Export Documentation Guide for Members", year: 2024, meta: "PDF · 1.4 MB · Checklists", isFeatured: false },
-  { kind: "Newsletter", title: "Zorig Bulletin — Issue 12", year: 2024, meta: "PDF · 900 KB · Quarterly", isFeatured: false },
-  { kind: "Annual report", title: "Annual Report 2023", year: 2024, meta: "PDF · 3.6 MB · English & Dzongkha", isFeatured: false },
-  { kind: "Training manual", title: "Bamboo Splitting and Weaving: Technique Notes", year: 2023, meta: "PDF · 4.8 MB · Illustrated", isFeatured: false },
-  { kind: "Case study", title: "Women in Craft Enterprise: Endline Evaluation", year: 2023, meta: "PDF · 3.1 MB · External evaluator", isFeatured: false },
-  { kind: "Policy brief", title: "Protecting Craft Origin: Options for Bhutan", year: 2023, meta: "PDF · 720 KB · 14 pages", isFeatured: false },
-  { kind: "Newsletter", title: "Zorig Bulletin — Issue 9", year: 2023, meta: "PDF · 880 KB · Quarterly", isFeatured: false },
-  { kind: "Accounts", title: "Audited Financial Statements 2022", year: 2023, meta: "PDF · 980 KB · Independent auditor", isFeatured: false },
-  { kind: "Sector study", title: "Craft Sector Employment and Income Baseline", year: 2022, meta: "PDF · 2.6 MB · 78 pages", isFeatured: false },
-  { kind: "Guideline", title: "Quality Standards for HAB-Listed Products", year: 2022, meta: "PDF · 1.2 MB · Inspection criteria", isFeatured: false },
-  { kind: "Case study", title: "COVID-19 Recovery: What Cash-for-Craft Achieved", year: 2022, meta: "PDF · 2.9 MB · Review", isFeatured: false },
-  { kind: "Annual report", title: "Annual Report 2021", year: 2022, meta: "PDF · 3.2 MB · English", isFeatured: false },
-  { kind: "Training manual", title: "Photographing Craft for Online Sale", year: 2021, meta: "PDF · 5.9 MB · Practical guide", isFeatured: false },
-  { kind: "Catalogue", title: "Zorig Chusum Reference Catalogue", year: 2021, meta: "PDF · 22.1 MB · 13 crafts", isFeatured: false },
-  { kind: "Newsletter", title: "Zorig Bulletin — Issue 5", year: 2021, meta: "PDF · 810 KB · Quarterly", isFeatured: false },
-  { kind: "Policy brief", title: "Craft in the Tourism Value Chain", year: 2020, meta: "PDF · 690 KB · 10 pages", isFeatured: false },
-  { kind: "Sector study", title: "Raw Material Supply Constraints in Eastern Bhutan", year: 2019, meta: "PDF · 1.9 MB · Field study", isFeatured: false },
-  { kind: "Annual report", title: "Annual Report 2018", year: 2019, meta: "PDF · 2.8 MB · English", isFeatured: false },
-  { kind: "Guideline", title: "Setting Up a Craft Producer Group", year: 2017, meta: "PDF · 1.1 MB · Handbook", isFeatured: false },
-  { kind: "Case study", title: "Chumey Yathra: From Household Loom to Retail", year: 2016, meta: "PDF · 2.4 MB · Photo essay", isFeatured: false }
-];
-
 export default function PublicationsPage() {
-  const [publications, setPublications] = useState<PublicationItem[]>(PUBLICATIONS_DATA);
+  const [publications, setPublications] = useState<PublicationItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedKind, setSelectedKind] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +22,7 @@ export default function PublicationsPage() {
     fetch('/api/publications')
       .then((r) => r.json())
       .then((d) => {
-        if (d?.publications && d.publications.length > 0) {
+        if (d?.publications && Array.isArray(d.publications)) {
           setPublications(
             d.publications.map((p: any) => ({
               kind: p.kind || 'Report',
@@ -68,7 +34,8 @@ export default function PublicationsPage() {
           );
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const kinds = useMemo(() => {
@@ -89,7 +56,13 @@ export default function PublicationsPage() {
     });
   }, [publications, selectedKind, selectedYear, searchQuery]);
 
-  const leadReport = publications.find((p) => p.isFeatured) || publications[0];
+  const leadReport = publications.find((p) => p.isFeatured) || publications[0] || {
+    kind: "Annual report",
+    title: "Annual Report 2025",
+    year: 2026,
+    meta: "PDF · 4.2 MB · English & Dzongkha",
+    isFeatured: true,
+  };
 
   const resetFilters = () => {
     setSelectedKind('');
@@ -196,7 +169,7 @@ export default function PublicationsPage() {
         </div>
 
         <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] mt-3 pt-3 border-t border-[#EFE9DE]">
-          {filteredPublications.length} publications of {PUBLICATIONS_DATA.length} · newest first
+          {filteredPublications.length} publications of {publications.length} · newest first
         </div>
       </div>
 

@@ -13,12 +13,12 @@ ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandPara1" TEXT NOT NUL
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandPara2" TEXT NOT NULL DEFAULT 'Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandImageUrl" TEXT NOT NULL DEFAULT '/images/training_workshop.jpg';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandImageCaption" TEXT NOT NULL DEFAULT 'HAB artisan training workshop · Thimphu';
-ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandCtaText" TEXT NOT NULL DEFAULT 'Read about our programmes →';
+ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandCtaText" TEXT NOT NULL DEFAULT 'Read about our programmes ->';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "aboutBandCtaLink" TEXT NOT NULL DEFAULT '/programmes';
 
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipLeftTitle" TEXT NOT NULL DEFAULT 'Find a member';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipLeftText" TEXT NOT NULL DEFAULT 'Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.';
-ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipLeftCtaText" TEXT NOT NULL DEFAULT 'Search member directory →';
+ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipLeftCtaText" TEXT NOT NULL DEFAULT 'Search member directory ->';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipLeftCtaLink" TEXT NOT NULL DEFAULT '/members';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipRightTitle" TEXT NOT NULL DEFAULT 'Become a member';
 ALTER TABLE "SiteSetting" ADD COLUMN IF NOT EXISTS "membershipRightText" TEXT NOT NULL DEFAULT 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.';

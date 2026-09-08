@@ -43,6 +43,7 @@ export default function AdminOrdersPage() {
     paymentStatus: 'PAID',
     orderStatus: 'PROCESSING',
     currencyUsed: 'USD',
+    internalNotes: '',
     selectedItems: [] as Array<{ code: string; name: string; priceUSD: number; quantity: number }>,
   });
 
@@ -171,6 +172,7 @@ export default function AdminOrdersPage() {
           paymentStatus: 'PAID',
           orderStatus: 'PROCESSING',
           currencyUsed: 'USD',
+          internalNotes: '',
           selectedItems: [],
         });
         await loadData();
@@ -274,6 +276,7 @@ export default function AdminOrdersPage() {
           paymentStatus: editingOrder.paymentStatus,
           trackingNumber: editingOrder.trackingNumber,
           customerPhone: editingOrder.customerPhone,
+          internalNotes: editingOrder.internalNotes,
         }),
       });
 
@@ -673,6 +676,17 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">Staff Internal Notes (Optional)</label>
+                <textarea
+                  rows={2}
+                  value={orderForm.internalNotes}
+                  onChange={(e) => setOrderForm({ ...orderForm, internalNotes: e.target.value })}
+                  placeholder="Internal notes for this order..."
+                  className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                />
+              </div>
+
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
@@ -857,6 +871,17 @@ export default function AdminOrdersPage() {
                   value={editingOrder.customerPhone || ''}
                   onChange={(e) => setEditingOrder({ ...editingOrder, customerPhone: e.target.value })}
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">Staff Internal Notes</label>
+                <textarea
+                  rows={3}
+                  value={editingOrder.internalNotes || ''}
+                  onChange={(e) => setEditingOrder({ ...editingOrder, internalNotes: e.target.value })}
+                  placeholder="Notes for secretariat staff (e.g. buyer customs declaration, special packaging notes)..."
+                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 outline-none focus:border-slate-500"
                 />
               </div>
 

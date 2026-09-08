@@ -1,11 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save } from 'lucide-react';
 import { PERMISSION_CATEGORIES, Permission } from '@/lib/permissions';
 
-export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'AUDIT'>('FX');
+function AdminSettingsContent() {
+  const searchParams = useSearchParams();
+  const initialTabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'GATEWAYS' | 'AUDIT'>(
+    initialTabParam === 'RBAC' || initialTabParam === 'USERS' || initialTabParam === 'GATEWAYS' || initialTabParam === 'AUDIT'
+      ? (initialTabParam as any)
+      : 'FX'
+  );
   const [loading, setLoading] = useState(false);
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
@@ -43,6 +50,95 @@ export default function AdminSettingsPage() {
   // 4. AUDIT STATE
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [actorFilter, setActorFilter] = useState<'ALL' | 'STAFF' | 'MEMBER' | 'GUEST' | 'SYSTEM'>('ALL');
+
+  // 5. GATEWAYS & NOTIFICATIONS STATE
+  const [gatewayConfig, setGatewayConfig] = useState({
+    mode: 'test',
+    stripePublishableKey: 'pk_test_hab_bhutan_live_key_9824',
+    stripeSecretKey: '••••••••••••••••••••••••••••••••',
+    rmaMerchantId: 'RMA-MERCHANT-HAB-0941',
+    rmaApiSecret: '••••••••••••••••••••••••',
+  });
+  const [isUpdatingStripeSecret, setIsUpdatingStripeSecret] = useState(false);
+  const [newStripeSecret, setNewStripeSecret] = useState('');
+  const [isUpdatingRmaSecret, setIsUpdatingRmaSecret] = useState(false);
+  const [newRmaSecret, setNewRmaSecret] = useState('');
+
+  const [activeEmailTab, setActiveEmailTab] = useState<'order_confirmation' | 'order_shipped' | 'application_approved' | 'application_rejected'>('order_confirmation');
+  const [emailTemplates, setEmailTemplates] = useState<Record<string, { subject: string; body: string }>>({
+    order_confirmation: {
+      subject: 'Order Confirmation #{{orderNumber}} · Handicrafts Association of Bhutan',
+      body: 'Kuzuzangpo la {{customerName}},\n\nThank you for supporting community artisans through the Handicrafts Association of Bhutan. Your order #{{orderNumber}} has been placed and received by our fulfillment center in Thimphu.\n\nOrder Total: {{totalAmount}}\nPayment Method: {{paymentMethod}}\n\nWe will notify you with Bhutan Post EMS tracking once dispatched.',
+    },
+    order_shipped: {
+      subject: 'Your HAB Order #{{orderNumber}} Has Shipped via EMS Bhutan Post',
+      body: 'Kuzuzangpo la {{customerName}},\n\nYour order has departed our Thimphu hub and is en route via {{shippingMethod}}.\n\nEMS Tracking Number: {{trackingNumber}}\nTrack live anytime at: /track-order\n\nEach item is accompanied by an official Zorig Chusum certificate of authenticity.',
+    },
+    application_approved: {
+      subject: 'Welcome to HAB · Your Artisan Membership Application is Approved',
+      body: 'Kuzuzangpo la {{applicantName}},\n\nCongratulations! The HAB Secretariat has verified your citizenship credentials and craft background. Your membership has been approved under registration #{{regNumber}}.\n\nPlease set up your member portal access here:\n{{activationUrl}}',
+    },
+    application_rejected: {
+      subject: 'Update Regarding Your HAB Membership Application',
+      body: 'Kuzuzangpo la {{applicantName}},\n\nThank you for your interest in joining the Handicrafts Association of Bhutan. Following verification review, your application could not be approved at this time.\n\nReason: {{rejectionReason}}\n\nYou may submit an amended application or contact the secretariat at officehab@gmail.com.',
+    },
+  });
+
+  const loadGatewaysAndEmails = async () => {
+    try {
+      const res = await fetch('/api/admin/site-settings', { credentials: 'include' });
+      if (res.ok) {
+        const d = await res.json();
+        if (d?.setting?.paymentGateways) {
+          setGatewayConfig((prev) => ({ ...prev, ...d.setting.paymentGateways }));
+        }
+        if (d?.setting?.emailTemplates) {
+          setEmailTemplates((prev) => ({ ...prev, ...d.setting.emailTemplates }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching gateways & templates:', err);
+    }
+  };
+
+  const handleSaveGatewaysAndEmails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setActionError('');
+    setActionSuccess('');
+    try {
+      const payload: any = {
+        paymentGateways: {
+          ...gatewayConfig,
+          stripeSecretKey: isUpdatingStripeSecret && newStripeSecret ? newStripeSecret : gatewayConfig.stripeSecretKey,
+          rmaApiSecret: isUpdatingRmaSecret && newRmaSecret ? newRmaSecret : gatewayConfig.rmaApiSecret,
+        },
+        emailTemplates,
+      };
+
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      const d = await res.json();
+      if (res.ok && d.success) {
+        setActionSuccess('✓ Payment gateways and email notification templates saved successfully.');
+        setIsUpdatingStripeSecret(false);
+        setIsUpdatingRmaSecret(false);
+        setNewStripeSecret('');
+        setNewRmaSecret('');
+      } else {
+        setActionError(d.error || 'Failed to save gateway settings.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Network error saving settings.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const loadFX = async () => {
     try {
@@ -97,7 +193,7 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([loadFX(), loadUsers(), loadRoles(), loadAuditLogs()]).finally(() => setLoading(false));
+    Promise.all([loadFX(), loadUsers(), loadRoles(), loadAuditLogs(), loadGatewaysAndEmails()]).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -416,6 +512,14 @@ export default function AdminSettingsPage() {
           <Key className="w-4 h-4" /> Immutable RBAC Roles &amp; Revisions ({roles.length})
         </button>
         <button
+          onClick={() => setActiveTab('GATEWAYS')}
+          className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
+            activeTab === 'GATEWAYS' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent hover:text-slate-900'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" /> Gateways &amp; Notifications
+        </button>
+        <button
           onClick={() => setActiveTab('AUDIT')}
           className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
             activeTab === 'AUDIT' ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent hover:text-slate-900'
@@ -557,6 +661,7 @@ export default function AdminSettingsPage() {
                   <th className="py-3 px-4">Email Address</th>
                   <th className="py-3 px-4">Assigned Role &amp; Version</th>
                   <th className="py-3 px-4">Account Status</th>
+                  <th className="py-3 px-4">2FA Status</th>
                   <th className="py-3 px-4">Created Date</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -581,6 +686,17 @@ export default function AdminSettingsPage() {
                       >
                         {u.status}
                       </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      {u.twoFactorEnabled ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          <CheckCircle className="w-3 h-3" /> Enrolled
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                          Not Enrolled
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-500">
                       {new Date(u.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -708,7 +824,300 @@ export default function AdminSettingsPage() {
         </div>
       )}
 
-      {/* Tab 4: Cryptographic Audit Trail */}
+      {/* Tab: Gateways & Email Notifications */}
+      {activeTab === 'GATEWAYS' && (
+        <div className="space-y-6">
+          {/* Org Info Banner */}
+          <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div>
+              <div className="font-bold text-indigo-950 text-sm">Civil Society Organization Info &amp; Contact Registry</div>
+              <p className="text-indigo-800 mt-0.5">
+                Official CSO registration (CSO/2011/043), head office address, official phones, and contact emails are canonically maintained under Website &amp; Global CMS.
+              </p>
+            </div>
+            <a
+              href="/admin/site-settings"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shrink-0 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Manage Org Info
+            </a>
+          </div>
+
+          <form onSubmit={handleSaveGatewaysAndEmails} className="space-y-6">
+            {/* Payment Gateway Configuration */}
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-indigo-600" />
+                    Payment Gateways Configuration (Masked Credentials)
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Configure international card acquiring (Stripe 3-D Secure) and domestic RMA mBoB banking endpoints.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-slate-600">Gateway Mode:</span>
+                  <select
+                    value={gatewayConfig.mode}
+                    onChange={(e) => setGatewayConfig({ ...gatewayConfig, mode: e.target.value })}
+                    className="text-xs border border-slate-300 rounded px-2 py-1 bg-white font-semibold"
+                  >
+                    <option value="test">Sandbox / Test Mode</option>
+                    <option value="live">Production / Live Mode</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Stripe Publishable Key</label>
+                  <input
+                    type="text"
+                    value={gatewayConfig.stripePublishableKey}
+                    onChange={(e) => setGatewayConfig({ ...gatewayConfig, stripePublishableKey: e.target.value })}
+                    placeholder="pk_test_..."
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Stripe Secret API Key (Masked)</label>
+                  {isUpdatingStripeSecret ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={newStripeSecret}
+                        onChange={(e) => setNewStripeSecret(e.target.value)}
+                        placeholder="sk_test_..."
+                        className="flex-1 border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setIsUpdatingStripeSecret(false); setNewStripeSecret(''); }}
+                        className="px-2.5 py-1 text-slate-600 border border-slate-300 rounded hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        disabled
+                        value={gatewayConfig.stripeSecretKey}
+                        className="flex-1 border border-slate-200 bg-slate-50 rounded-lg px-3 py-2 font-mono text-xs text-slate-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsUpdatingStripeSecret(true)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium text-xs whitespace-nowrap"
+                      >
+                        Update Secret
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">RMA Merchant ID</label>
+                  <input
+                    type="text"
+                    value={gatewayConfig.rmaMerchantId}
+                    onChange={(e) => setGatewayConfig({ ...gatewayConfig, rmaMerchantId: e.target.value })}
+                    placeholder="RMA-MERCHANT-..."
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">RMA Gateway Secret (Masked)</label>
+                  {isUpdatingRmaSecret ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={newRmaSecret}
+                        onChange={(e) => setNewRmaSecret(e.target.value)}
+                        placeholder="New RMA secret..."
+                        className="flex-1 border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setIsUpdatingRmaSecret(false); setNewRmaSecret(''); }}
+                        className="px-2.5 py-1 text-slate-600 border border-slate-300 rounded hover:bg-slate-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        disabled
+                        value={gatewayConfig.rmaApiSecret}
+                        className="flex-1 border border-slate-200 bg-slate-50 rounded-lg px-3 py-2 font-mono text-xs text-slate-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsUpdatingRmaSecret(true)}
+                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium text-xs whitespace-nowrap"
+                      >
+                        Update Secret
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Email Notification Templates */}
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+              <div className="border-b border-slate-200 pb-3">
+                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-indigo-600" />
+                  Email Notification Templates (Customizable Subjects &amp; Bodies)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Manage automated transaction and onboarding notifications dispatched to customers and artisan applicants.
+                </p>
+              </div>
+
+              {/* Template Selectors */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'order_confirmation', label: 'Order Confirmation' },
+                  { key: 'order_shipped', label: 'Order Shipped / EMS' },
+                  { key: 'application_approved', label: 'Membership Approved' },
+                  { key: 'application_rejected', label: 'Membership Rejection' },
+                ].map((tpl) => (
+                  <button
+                    key={tpl.key}
+                    type="button"
+                    onClick={() => setActiveEmailTab(tpl.key as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      activeEmailTab === tpl.key
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Template Editor */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Email Subject Line</label>
+                    <input
+                      type="text"
+                      value={emailTemplates[activeEmailTab]?.subject || ''}
+                      onChange={(e) =>
+                        setEmailTemplates({
+                          ...emailTemplates,
+                          [activeEmailTab]: {
+                            ...emailTemplates[activeEmailTab],
+                            subject: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-semibold text-slate-700">Email Body (Markdown supported)</label>
+                      <span className="text-[10px] text-slate-400">Placeholders: &#123;&#123;variable&#125;&#125;</span>
+                    </div>
+                    <textarea
+                      rows={9}
+                      value={emailTemplates[activeEmailTab]?.body || ''}
+                      onChange={(e) =>
+                        setEmailTemplates({
+                          ...emailTemplates,
+                          [activeEmailTab]: {
+                            ...emailTemplates[activeEmailTab],
+                            body: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full border border-slate-300 rounded-lg p-3 font-mono text-xs leading-relaxed"
+                    />
+                  </div>
+
+                  {/* Available Variables Chips */}
+                  <div>
+                    <span className="text-[11px] font-semibold text-slate-600 block mb-1.5">Supported Variable Tags:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        '{{customerName}}',
+                        '{{orderNumber}}',
+                        '{{trackingNumber}}',
+                        '{{totalAmount}}',
+                        '{{shippingMethod}}',
+                        '{{applicantName}}',
+                        '{{regNumber}}',
+                        '{{rejectionReason}}',
+                        '{{activationUrl}}',
+                      ].map((tag) => (
+                        <span key={tag} className="font-mono text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Preview Box */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-3">
+                  <div className="font-bold text-slate-900 text-xs border-b border-slate-200 pb-2 flex items-center justify-between">
+                    <span>Live Message Preview</span>
+                    <span className="font-mono text-[10px] text-slate-500 font-normal">Recipient View</span>
+                  </div>
+                  <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-2xs space-y-2">
+                    <div className="text-slate-500 text-[11px]">
+                      <strong className="text-slate-700">Subject:</strong>{' '}
+                      {emailTemplates[activeEmailTab]?.subject
+                        ?.replace('{{orderNumber}}', 'HAB-S-88214')
+                        ?.replace('{{customerName}}', 'Karma Wangchuk')
+                        ?.replace('{{applicantName}}', 'Tshering Dema')
+                        ?.replace('{{rejectionReason}}', 'Incomplete citizenship verification document')}
+                    </div>
+                    <div className="border-t border-slate-100 pt-2 text-slate-700 text-xs whitespace-pre-line leading-relaxed">
+                      {emailTemplates[activeEmailTab]?.body
+                        ?.replace(/\{\{customerName\}\}/g, 'Karma Wangchuk')
+                        ?.replace(/\{\{orderNumber\}\}/g, 'HAB-S-88214')
+                        ?.replace(/\{\{totalAmount\}\}/g, '$185.00 USD')
+                        ?.replace(/\{\{paymentMethod\}\}/g, 'International Card')
+                        ?.replace(/\{\{shippingMethod\}\}/g, 'EMS Bhutan Post')
+                        ?.replace(/\{\{trackingNumber\}\}/g, 'BP-BT-982410-TH')
+                        ?.replace(/\{\{applicantName\}\}/g, 'Tshering Dema')
+                        ?.replace(/\{\{regNumber\}\}/g, 'HAB-2026-THA-042')
+                        ?.replace(/\{\{rejectionReason\}\}/g, 'Incomplete citizenship verification document')
+                        ?.replace(/\{\{activationUrl\}\}/g, 'https://hab.org.bt/auth/reset-password?token=act_9824fae10')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-lg text-xs font-semibold shadow-sm transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {submitting ? 'Saving Gateways & Templates...' : 'Save Gateways & Templates'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Tab: Cryptographic Audit Trail */}
       {activeTab === 'AUDIT' && (
         <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden space-y-4">
           <div className="p-4 border-b border-slate-200 flex justify-between items-center flex-wrap gap-3">
@@ -1175,5 +1584,13 @@ export default function AdminSettingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminSettingsPage() {
+  return (
+    <React.Suspense fallback={<div className="p-8 text-xs font-mono text-slate-500">Loading system settings...</div>}>
+      <AdminSettingsContent />
+    </React.Suspense>
   );
 }

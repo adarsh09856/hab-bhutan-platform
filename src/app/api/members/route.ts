@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
         { name: { contains: q, mode: 'insensitive' } },
         { bio: { contains: q, mode: 'insensitive' } },
         { dzongkhag: { contains: q, mode: 'insensitive' } },
-        { villageGewog: { contains: q, mode: 'insensitive' } },
+        { regNumber: { contains: q, mode: 'insensitive' } },
       ];
     }
 

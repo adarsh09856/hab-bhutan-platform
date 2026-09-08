@@ -15,138 +15,17 @@ interface Project {
   results: { n: string; l: string }[];
 }
 
-const PROJECTS: Project[] = [
-  {
-    status: "current",
-    name: "Sustainable Bhutanese Handicrafts (SWITCH-Asia)",
-    partner: "EU SWITCH-Asia · with GrAT and SHINE",
-    period: "2024 – 2027",
-    budget: "EUR 1.4 m",
-    progress: 62,
-    summary: "Shifting member enterprises to resource-efficient production: natural dyes, waste reduction and cleaner finishing, while holding craft quality.",
-    activities: [
-      "Cleaner-production audits in 240 workshops",
-      "Natural dye and low-waste finishing training",
-      "Green business plans and access to finance",
-      "Eco-label criteria drafted with RGoB"
-    ],
-    results: [
-      { n: "240", l: "Enterprises audited" },
-      { n: "1,180", l: "Artisans trained" },
-      { n: "31%", l: "Average waste reduction" }
-    ]
-  },
-  {
-    status: "current",
-    name: "Market Access for Rural Artisans",
-    partner: "Enhanced Integrated Framework (EIF)",
-    period: "2025 – 2027",
-    budget: "USD 620,000",
-    progress: 38,
-    summary: "Connecting rural producer groups to export buyers through the HAB e-shop, trade fairs and consolidated EMS shipping.",
-    activities: [
-      "Product photography and cataloguing for 400 items",
-      "Export documentation clinics in six dzongkhags",
-      "Buyer missions to India, Thailand and Japan",
-      "Consolidated shipping desk at the secretariat"
-    ],
-    results: [
-      { n: "400", l: "Products catalogued" },
-      { n: "14", l: "Export buyers engaged" },
-      { n: "6", l: "Dzongkhags covered" }
-    ]
-  },
-  {
-    status: "current",
-    name: "Zorig Chusum Skills Transmission",
-    partner: "UNDP GEF Small Grants Programme",
-    period: "2026 – 2028",
-    budget: "USD 180,000",
-    progress: 12,
-    summary: "Master-to-apprentice placements in the five crafts with the fewest practising members, to keep endangered techniques alive.",
-    activities: [
-      "Master craftspeople identified in Lugzo, Garzo, Jinzo, Dozo and Shingzo",
-      "Two-year paid apprenticeships for 40 young artisans",
-      "Technique documentation in video and print",
-      "Curriculum shared with the Institute of Zorig Chusum"
-    ],
-    results: [
-      { n: "40", l: "Apprenticeships opened" },
-      { n: "5", l: "Endangered crafts covered" },
-      { n: "18", l: "Masters engaged" }
-    ]
-  },
-  {
-    status: "past",
-    name: "Women in Craft Enterprise",
-    partner: "Government of Canada · Helvetas Bhutan",
-    period: "2021 – 2024",
-    budget: "CAD 900,000",
-    progress: 100,
-    summary: "Business and pricing capability for women-led craft enterprises, with a revolving fund for raw material purchase.",
-    activities: [
-      "Costing and pricing training for 2,100 women",
-      "Revolving raw-material fund in 9 dzongkhags",
-      "Producer groups formalised and registered",
-      "Childcare support at training venues"
-    ],
-    results: [
-      { n: "2,100", l: "Women trained" },
-      { n: "64%", l: "Reported income increase" },
-      { n: "312", l: "New enterprises registered" }
-    ]
-  },
-  {
-    status: "past",
-    name: "COVID-19 Craft Sector Recovery",
-    partner: "UNDP Bhutan · RGoB",
-    period: "2020 – 2022",
-    budget: "USD 450,000",
-    progress: 100,
-    summary: "Emergency income support and a first move to online selling when tourism arrivals stopped.",
-    activities: [
-      "Cash-for-craft procurement from 1,600 artisans",
-      "HAB e-shop launched with payment gateway",
-      "Domestic craft bazaars in four dzongkhags",
-      "Raw material bulk purchase to hold prices"
-    ],
-    results: [
-      { n: "1,600", l: "Artisans supported" },
-      { n: "Nu. 24 m", l: "Craft purchased directly" },
-      { n: "195", l: "Stores kept trading" }
-    ]
-  },
-  {
-    status: "past",
-    name: "Craft Product Innovation Lab",
-    partner: "BCCI · Ernst & Young (pro bono)",
-    period: "2019 – 2021",
-    budget: "USD 210,000",
-    progress: 100,
-    summary: "Pairing artisans with designers to develop contemporary lines from traditional technique for retail and hospitality.",
-    activities: [
-      "Six design–artisan cycles across four crafts",
-      "Prototyping grants and material sourcing",
-      "Hotel and retail buyer showcases",
-      "Design rights guidance for participants"
-    ],
-    results: [
-      { n: "38", l: "New products launched" },
-      { n: "11", l: "Hotel and retail accounts" },
-      { n: "4", l: "Crafts represented" }
-    ]
-  }
-];
-
 export default function ProjectsPage() {
-  const [projectsList, setProjectsList] = useState<Project[]>(PROJECTS);
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'current' | 'past'>('current');
 
   React.useEffect(() => {
+    setLoading(true);
     fetch('/api/projects')
       .then((r) => r.json())
       .then((data) => {
-        if (data?.projects && data.projects.length > 0) {
+        if (data?.projects && Array.isArray(data.projects)) {
           setProjectsList(
             data.projects.map((p: any) => ({
               status: (p.status === 'completed' || p.status === 'past') ? 'past' : 'current',
@@ -164,7 +43,8 @@ export default function ProjectsPage() {
           );
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error('Error fetching live projects:', err))
+      .finally(() => setLoading(false));
   }, []);
 
   const filteredProjects = projectsList.filter((p) => p.status === activeTab);

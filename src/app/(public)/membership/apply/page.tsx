@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CRAFTS } from '@/lib/data';
 
 interface ApplicationFormData {
   planTier: 'artisan' | 'enterprise' | 'institution';
@@ -18,8 +17,40 @@ interface ApplicationFormData {
   paymentMethod: 'card' | 'mbob' | 'bank';
 }
 
+interface CraftItem {
+  key: string;
+  name: string;
+  english: string;
+}
+
 export default function MembershipApplyPage() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+  const [membershipSettings, setMembershipSettings] = useState({
+    activeDuesBTN: 1200,
+    associateDuesBTN: 2500,
+    institutionalDuesBTN: 10000,
+    bankName: 'Bank of Bhutan (BoB)',
+    accountNumber: '200847291038',
+    accountTitle: 'Handicrafts Association of Bhutan',
+    mbobQrUrl: '/images/mbob_qr_placeholder.png',
+  });
+
+  const [craftsList, setCraftsList] = useState<CraftItem[]>([
+    { key: 'thagzo', name: 'Thagzo', english: 'Weaving' },
+    { key: 'shingzo', name: 'Shingzo', english: 'Woodwork & Joinery' },
+    { key: 'jimzo', name: 'Jimzo', english: 'Clay Sculpting' },
+    { key: 'lhazo', name: 'Lhazo', english: 'Painting & Thangka' },
+    { key: 'tshazo', name: 'Tshazo', english: 'Cane & Bamboo' },
+    { key: 'garzo', name: 'Garzo', english: 'Blacksmithing' },
+    { key: 'troeko', name: 'Troeko', english: 'Gold & Silversmithing' },
+    { key: 'parzo', name: 'Parzo', english: 'Woodcarving & Block Printing' },
+    { key: 'chuzo', name: 'Chuzo', english: 'Paper Making (Desho)' },
+    { key: 'dezo', name: 'Dezo', english: 'Leather Work' },
+    { key: 'tshemzo', name: 'Tshemzo', english: 'Tailoring & Embroidery' },
+    { key: 'dozo', name: 'Dozo', english: 'Masonry' },
+    { key: 'lugzo', name: 'Lugzo', english: 'Bronze Casting' },
+  ]);
+
   const [formData, setFormData] = useState<ApplicationFormData>({
     planTier: 'artisan',
     craftKey: 'thagzo',
@@ -36,28 +67,52 @@ export default function MembershipApplyPage() {
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [appRefNumber, setAppRefNumber] = useState('HAB-2026-0417');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    // Fetch dynamic membership settings & dues
+    fetch('/api/membership-settings')
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.setting) {
+          setMembershipSettings(d.setting);
+        }
+      })
+      .catch(() => {});
+
+    // Fetch dynamic crafts from DB
+    fetch('/api/crafts')
+      .then((res) => res.json())
+      .then((d) => {
+        if (d?.crafts && Array.isArray(d.crafts) && d.crafts.length > 0) {
+          setCraftsList(d.crafts);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const plans = [
     {
       key: 'artisan',
-      name: 'Individual artisan',
-      price: 'Nu. 500 / year',
-      who: 'For a craftsperson working on their own or with family.',
-      perks: 'Directory listing · training access · shop consignment',
+      name: 'Active Sector Member',
+      price: `Nu. ${membershipSettings.activeDuesBTN.toLocaleString()} / year`,
+      who: 'For an individual artisan or household workshop.',
+      perks: 'Directory listing · training access · shop consignment · certificate',
     },
     {
       key: 'enterprise',
-      name: 'Craft enterprise',
-      price: 'Nu. 2,000 / year',
-      who: 'For registered workshops, groups and cooperatives.',
-      perks: 'All artisan benefits · wholesale leads · trade fair slots',
+      name: 'Associate Sector Member',
+      price: `Nu. ${membershipSettings.associateDuesBTN.toLocaleString()} / year`,
+      who: 'For registered workshops, retail clusters and cooperatives.',
+      perks: 'All artisan benefits · wholesale leads · trade fair slots · export support',
     },
     {
       key: 'institution',
-      name: 'Institutional member',
-      price: 'Nu. 5,000 / year',
-      who: 'For schools, retailers and partner organisations.',
-      perks: 'Listing · publications · policy consultations',
+      name: 'Institutional Member',
+      price: `Nu. ${membershipSettings.institutionalDuesBTN.toLocaleString()} / year`,
+      who: 'For schools, commercial galleries, corporations and partner organisations.',
+      perks: 'Directory listing · annual publications · governance invitations',
     },
   ];
 
@@ -80,7 +135,7 @@ export default function MembershipApplyPage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 1) {
       setCurrentStep(2);
       window.scrollTo(0, 0);
@@ -90,11 +145,41 @@ export default function MembershipApplyPage() {
         window.scrollTo(0, 0);
       }
     } else if (currentStep === 3) {
-      // Submit application
-      const ref = `HAB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      setAppRefNumber(ref);
-      setCurrentStep(4);
-      window.scrollTo(0, 0);
+      // Real submission to /api/applications
+      setSubmitting(true);
+      setSubmitError('');
+      try {
+        const res = await fetch('/api/applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            applicantName: formData.fullName,
+            email: formData.email,
+            phone: formData.mobile,
+            cidNumber: formData.cidNumber,
+            businessLicense: formData.businessLicense,
+            craftKey: formData.craftKey,
+            dzongkhag: formData.dzongkhag,
+            villageGewog: formData.villageGewog,
+            yearsPractising: formData.yearsPractising,
+            planTier: formData.planTier,
+            paymentMethod: formData.paymentMethod,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setAppRefNumber(data.reference);
+          setCurrentStep(4);
+          window.scrollTo(0, 0);
+        } else {
+          setSubmitError(data.error || 'Failed to submit application. Please check your information.');
+        }
+      } catch (err: any) {
+        setSubmitError(err.message || 'Network error submitting application. Please try again.');
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -150,6 +235,13 @@ export default function MembershipApplyPage() {
             ))}
           </div>
 
+          {submitError && (
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-xl flex items-center justify-between">
+              <span>{submitError}</span>
+              <button onClick={() => setSubmitError('')} className="font-bold ml-2">✕</button>
+            </div>
+          )}
+
           {/* Step 1: Category & Dues */}
           {currentStep === 1 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -195,7 +287,7 @@ export default function MembershipApplyPage() {
                   onChange={(e) => setFormData({ ...formData, craftKey: e.target.value })}
                   className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-3 text-[14px] font-figtree outline-none"
                 >
-                  {CRAFTS.map((c) => (
+                  {craftsList.map((c) => (
                     <option key={c.key} value={c.key}>
                       {c.name} — {c.english}
                     </option>
@@ -345,21 +437,6 @@ export default function MembershipApplyPage() {
                 </div>
               </div>
 
-              {/* Document upload box */}
-              <div className="bg-[#F4F0E7] rounded-[10px] p-6 border border-[#CDBEA8] mb-8">
-                <div className="font-figtree font-bold text-[14.5px] text-[#33261F] mb-1">
-                  Upload verification documents (CID copy or craft license)
-                </div>
-                <p className="font-lora text-[13.5px] text-[#6B5A4C] mb-4">
-                  Accepts PDF, JPG or PNG up to 5 MB. Documents are securely reviewed by the secretariat.
-                </p>
-                <div className="border-2 border-dashed border-[#CDBEA8] bg-white rounded-[8px] p-6 text-center cursor-pointer hover:border-[#8B2E24] transition-colors">
-                  <span className="font-mono text-[12px] text-[#8B2E24]">
-                    Click or drag files here to attach (Max 5 MB)
-                  </span>
-                </div>
-              </div>
-
               <div className="flex justify-between items-center pt-4 border-t border-[#E4DDD1]">
                 <button
                   type="button"
@@ -383,16 +460,16 @@ export default function MembershipApplyPage() {
           {currentStep === 3 && (
             <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
               {/* Payment Methods */}
-              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-8">
-                <h3 className="font-marcellus text-xl sm:text-[24px] font-normal text-[#33261F] mb-6">
+              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-8 space-y-6">
+                <h3 className="font-marcellus text-xl sm:text-[24px] font-normal text-[#33261F]">
                   Pay your annual dues
                 </h3>
 
-                <div className="flex flex-col gap-4 mb-8">
+                <div className="flex flex-col gap-4">
                   {[
                     { key: 'card', name: 'International card', note: 'Visa, Mastercard, Amex — 3-D Secure' },
-                    { key: 'mbob', name: 'Bhutan mobile pay', note: 'mBoB / RMA-approved wallets, in Nu.' },
-                    { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
+                    { key: 'mbob', name: 'Bhutan mobile pay (mBoB)', note: 'mBoB / RMA-approved QR wallets, in Nu.' },
+                    { key: 'bank', name: 'Direct bank transfer', note: `${membershipSettings.bankName}, account ${membershipSettings.accountNumber}` },
                   ].map((pay) => {
                     const isSelected = formData.paymentMethod === pay.key;
                     return (
@@ -423,6 +500,19 @@ export default function MembershipApplyPage() {
                   })}
                 </div>
 
+                {/* Bank Instructions Banner if Bank or mBoB is chosen */}
+                {formData.paymentMethod === 'bank' && (
+                  <div className="p-4 bg-[#F4F0E7] border border-[#CDBEA8] rounded-[10px] text-xs space-y-1">
+                    <div className="font-bold text-[#33261F] text-sm mb-1">Official Bank Account Information</div>
+                    <div><span className="font-semibold text-[#6B5A4C]">Bank:</span> {membershipSettings.bankName}</div>
+                    <div><span className="font-semibold text-[#6B5A4C]">Account Title:</span> {membershipSettings.accountTitle}</div>
+                    <div><span className="font-semibold text-[#6B5A4C]">Account No:</span> <span className="font-mono font-bold text-[#8B2E24]">{membershipSettings.accountNumber}</span></div>
+                    <div className="text-[11px] text-[#6B5A4C] pt-2 border-t border-[#E4DDD1]">
+                      Please deposit the dues amount and retain your deposit slip or transaction reference.
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center pt-4 border-t border-[#E4DDD1]">
                   <button
                     type="button"
@@ -446,7 +536,7 @@ export default function MembershipApplyPage() {
                   </div>
                   <div className="py-3 flex justify-between">
                     <span className="text-[#D2C2AE]">Craft category</span>
-                    <span className="text-white font-figtree">{formData.craftKey}</span>
+                    <span className="text-white font-figtree capitalize">{formData.craftKey}</span>
                   </div>
                   <div className="py-3 flex justify-between">
                     <span className="text-[#D2C2AE]">Dzongkhag</span>
@@ -460,10 +550,11 @@ export default function MembershipApplyPage() {
 
                 <button
                   type="button"
+                  disabled={submitting}
                   onClick={handleNext}
-                  className="w-full font-figtree font-semibold text-[15.5px] bg-[#8B2E24] text-white py-3.5 sm:py-4 rounded-[8px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center"
+                  className="w-full font-figtree font-semibold text-[15.5px] bg-[#8B2E24] text-white py-3.5 sm:py-4 rounded-[8px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center disabled:opacity-50"
                 >
-                  Submit application
+                  {submitting ? 'Submitting Application...' : 'Submit application'}
                 </button>
               </div>
             </div>

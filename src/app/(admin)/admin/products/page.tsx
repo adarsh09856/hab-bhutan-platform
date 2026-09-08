@@ -2,8 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
-import { Package, Plus, Search, Filter, CheckCircle, Edit, Trash2, ExternalLink } from 'lucide-react';
+import { 
+  Package, 
+  Plus, 
+  Search, 
+  Download, 
+  Upload, 
+  CheckCircle, 
+  Edit, 
+  Trash2, 
+  ExternalLink,
+  Archive,
+  Image as ImageIcon,
+  X,
+  AlertTriangle
+} from 'lucide-react';
 import Link from 'next/link';
+import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -15,9 +30,11 @@ export default function AdminProductsPage() {
   
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<any | null>(null);
   
+  // Forms
   const [editForm, setEditForm] = useState<any>({});
   const [addForm, setAddForm] = useState<any>({
     code: '',
@@ -30,11 +47,18 @@ export default function AdminProductsPage() {
     status: 'PUBLISHED',
     description: '',
     imageUrl: '',
+    images: [] as { url: string; role: string }[],
   });
 
+  const [importCsvText, setImportCsvText] = useState('');
+  const [importError, setImportError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const loadData = async () => {
     setLoading(true);
@@ -50,7 +74,7 @@ export default function AdminProductsPage() {
         setProducts(prodData.products || []);
       } else {
         const errData = await prodRes.json();
-        setActionError(errData.error || 'Failed to load catalog products from PostgreSQL.');
+        setActionError(errData.error || 'Failed to load catalog products.');
       }
 
       if (memRes && memRes.ok) {
@@ -84,7 +108,7 @@ export default function AdminProductsPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setActionSuccess(`✓ Product "${data.product.name}" (${data.product.code}) successfully added to catalog.`);
+        setActionSuccess(`Product "${data.product.name}" (${data.product.code}) successfully added to catalog.`);
         setShowAddModal(false);
         setAddForm({
           code: '',
@@ -97,6 +121,7 @@ export default function AdminProductsPage() {
           status: 'PUBLISHED',
           description: '',
           imageUrl: '',
+          images: [],
         });
         await loadData();
       } else {
@@ -123,28 +148,32 @@ export default function AdminProductsPage() {
         body: JSON.stringify({ code, stock: qty }),
       });
     } catch (err) {
-      console.error('Failed to persist stock update:', err);
+      console.error('Failed to sync stock change to database:', err);
     }
   };
 
   const handleOpenEdit = (p: any) => {
     setEditingProduct(p);
+    const existingImages = Array.isArray(p.images) ? p.images : [];
+    const primaryImg = existingImages[0]?.url || p.images?.url || '';
     setEditForm({
+      id: p.id,
+      code: p.code,
       name: p.name,
       priceUSD: p.priceUSD,
-      stock: p.stock,
-      status: p.status,
       craftKey: p.craftKey,
       region: p.region,
       makerMemberId: p.makerMemberId || '',
-      description: p.description,
-      imageUrl: Array.isArray(p.images) && p.images[0]?.url ? p.images[0].url : '',
+      stock: p.stock ?? 0,
+      status: p.status,
+      description: p.description || '',
+      imageUrl: primaryImg,
+      images: existingImages,
     });
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingProduct) return;
     setSubmitting(true);
     setActionError('');
     setActionSuccess('');
@@ -154,24 +183,43 @@ export default function AdminProductsPage() {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: editingProduct.id,
-          code: editingProduct.code,
-          ...editForm,
-        }),
+        body: JSON.stringify(editForm),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setActionSuccess(`✓ Updated ${editingProduct.code} in PostgreSQL catalog.`);
+        setActionSuccess(`Product "${data.product.name}" (${data.product.code}) updated successfully.`);
         setEditingProduct(null);
         await loadData();
-        setTimeout(() => setActionSuccess(''), 4000);
       } else {
         setActionError(data.error || 'Failed to update product.');
       }
     } catch (err: any) {
-      setActionError(err.message || 'Error saving product edits.');
+      setActionError(err.message || 'Network error.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleArchiveInstead = async (product: any) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: product.id, status: 'ARCHIVED' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setActionSuccess(`Product "${product.name}" (${product.code}) safely archived.`);
+        setDeletingProduct(null);
+        await loadData();
+      } else {
+        setActionError(data.error || 'Failed to archive product.');
+      }
+    } catch (err: any) {
+      setActionError(err.message || 'Network error.');
     } finally {
       setSubmitting(false);
     }
@@ -188,15 +236,20 @@ export default function AdminProductsPage() {
         method: 'DELETE',
         credentials: 'include',
       });
-      const data = await res.json();
 
+      const data = await res.json();
       if (res.ok && data.success) {
-        setActionSuccess(data.message || `✓ Product deleted.`);
+        setActionSuccess(data.message || `Product ${deletingProduct.name} deleted.`);
         setDeletingProduct(null);
         await loadData();
       } else {
         setActionError(data.error || 'Failed to delete product.');
-        setDeletingProduct(null);
+        // If referential integrity violation, prompt user
+        if (data.code === 'REFERENTIAL_INTEGRITY_VIOLATION') {
+          // Keep modal open so they can click "Archive Instead"
+        } else {
+          setDeletingProduct(null);
+        }
       }
     } catch (err: any) {
       setActionError(err.message || 'Network error.');
@@ -206,8 +259,39 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleBulkImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importCsvText.trim()) return;
+    setSubmitting(true);
+    setImportError('');
+
+    try {
+      const res = await fetch('/api/admin/products/csv', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csvText: importCsvText }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setActionSuccess(data.message);
+        setShowImportModal(false);
+        setImportCsvText('');
+        await loadData();
+      } else {
+        setImportError(data.error || 'Failed to process import.');
+      }
+    } catch (err: any) {
+      setImportError(err.message || 'Network error.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const filtered = products.filter((p) => {
     const matchesSearch =
+      !search ||
       p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.code?.toLowerCase().includes(search.toLowerCase()) ||
       p.maker?.name?.toLowerCase().includes(search.toLowerCase());
@@ -224,63 +308,92 @@ export default function AdminProductsPage() {
     return matchesSearch && matchesCraft && matchesStock;
   });
 
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginatedProducts = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Package className="w-5 h-5 text-indigo-600" />
-            Product Catalog &amp; Consignments
+            <Package className="w-5 h-5 text-[#8B2E24]" />
+            Products &amp; Catalog Management
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Manage authenticated artisan inventory, USD retail list prices, and craft lineage.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Manage authenticated artisan inventory, canonical USD retail prices, and craft categories.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* CSV Export */}
+          <a
+            href="/api/admin/products/csv"
+            download
+            className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </a>
+
+          {/* CSV Import */}
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Import CSV</span>
+          </button>
+
+          {/* Add Product */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
+            className="px-3 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Add Product</span>
           </button>
         </div>
       </div>
 
       {actionSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-md flex justify-between items-center">
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-lg flex justify-between items-center">
           <span>{actionSuccess}</span>
           <button onClick={() => setActionSuccess('')} className="text-emerald-600 font-bold ml-2">✕</button>
         </div>
       )}
 
       {actionError && (
-        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-md flex justify-between items-center">
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-lg flex justify-between items-center">
           <span>{actionError}</span>
           <button onClick={() => setActionError('')} className="text-rose-600 font-bold ml-2">✕</button>
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      {/* Search & Filters */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search title, SKU code, artisan maker..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24] outline-none"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={craftFilter}
-            onChange={(e) => setCraftFilter(e.target.value)}
-            className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-700 outline-none"
+            onChange={(e) => {
+              setCraftFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 outline-none"
           >
-            <option value="ALL">All Zorig Chusum Crafts</option>
+            <option value="ALL">All Crafts</option>
             {CRAFTS.map((c) => (
               <option key={c.key} value={c.key}>
                 {c.name} ({c.english})
@@ -289,10 +402,13 @@ export default function AdminProductsPage() {
           </select>
           <select
             value={stockFilter}
-            onChange={(e) => setStockFilter(e.target.value as any)}
-            className="px-2.5 py-1.5 text-xs border border-slate-300 rounded bg-white text-slate-700 outline-none"
+            onChange={(e) => {
+              setStockFilter(e.target.value as any);
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 outline-none"
           >
-            <option value="ALL">All Stock Statuses</option>
+            <option value="ALL">All Stock Levels</option>
             <option value="IN_STOCK">In Stock (&gt;5)</option>
             <option value="LOW_STOCK">Low Stock (1–5)</option>
             <option value="OUT_OF_STOCK">Out of Stock (0)</option>
@@ -301,11 +417,19 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
         {loading ? (
-          <div className="py-12 text-center text-slate-500 text-xs font-mono">
-            Loading products from PostgreSQL...
+          <div className="p-6">
+            <AdminSkeleton rows={6} cols={6} />
           </div>
+        ) : filtered.length === 0 ? (
+          <AdminEmptyState
+            title="No products found"
+            description="No items match your selected filters. Adjust your search or add a new product."
+            icon={Package}
+            actionLabel="Add First Product"
+            onAction={() => setShowAddModal(true)}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
@@ -322,7 +446,7 @@ export default function AdminProductsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map((p) => {
+                {paginatedProducts.map((p) => {
                   const stockVal = p.stock ?? 0;
                   const primaryImg = Array.isArray(p.images) && p.images[0]?.url ? p.images[0].url : null;
 
@@ -330,7 +454,7 @@ export default function AdminProductsPage() {
                     <tr key={p.id || p.code} className="hover:bg-slate-50/75 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
                             {primaryImg ? (
                               <img src={primaryImg} alt={p.name} className="w-full h-full object-cover" />
                             ) : (
@@ -341,7 +465,7 @@ export default function AdminProductsPage() {
                             <Link
                               href={`/product/${p.code}`}
                               target="_blank"
-                              className="font-medium text-slate-900 hover:text-indigo-600 flex items-center gap-1"
+                              className="font-medium text-slate-900 hover:text-[#8B2E24] flex items-center gap-1"
                             >
                               {p.name}
                               <ExternalLink className="w-3 h-3 text-slate-400" />
@@ -369,37 +493,30 @@ export default function AdminProductsPage() {
                             min="0"
                             value={stockVal}
                             onChange={(e) => handleUpdateStock(p.code, parseInt(e.target.value) || 0)}
-                            className="w-16 px-2 py-1 border border-slate-300 rounded font-mono text-center text-xs outline-none focus:border-indigo-500"
+                            className="w-16 px-2 py-1 border border-slate-200 rounded font-mono text-center text-xs outline-none focus:border-[#8B2E24]"
                           />
-                          {stockVal > 5 && (
-                            <span className="inline-flex items-center text-[10px] text-emerald-700 font-medium bg-emerald-50 px-1.5 py-0.5 rounded">
-                              Available
-                            </span>
-                          )}
-                          {stockVal > 0 && stockVal <= 5 && (
-                            <span className="inline-flex items-center text-[10px] text-amber-700 font-medium bg-amber-50 px-1.5 py-0.5 rounded">
-                              Low Stock
-                            </span>
-                          )}
-                          {stockVal === 0 && (
-                            <span className="inline-flex items-center text-[10px] text-rose-700 font-medium bg-rose-50 px-1.5 py-0.5 rounded">
-                              Sold Out
-                            </span>
+                          {stockVal > 5 ? (
+                            <AdminBadge variant="success" size="sm" dot>In Stock</AdminBadge>
+                          ) : stockVal > 0 ? (
+                            <AdminBadge variant="warning" size="sm" dot>Low</AdminBadge>
+                          ) : (
+                            <AdminBadge variant="danger" size="sm" dot>Out</AdminBadge>
                           )}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                        <AdminBadge
+                          variant={
                             p.status === 'PUBLISHED'
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'success'
                               : p.status === 'ARCHIVED'
-                              ? 'bg-slate-100 text-slate-600'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
+                              ? 'slate'
+                              : 'warning'
+                          }
+                          size="sm"
                         >
                           {p.status}
-                        </span>
+                        </AdminBadge>
                       </td>
                       <td className="py-3 px-4 text-right space-x-2">
                         <button
@@ -418,350 +535,369 @@ export default function AdminProductsPage() {
                     </tr>
                   );
                 })}
-                {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-500">
-                      No products found in PostgreSQL catalog matching your filters.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         )}
+
+        <AdminPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filtered.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Add Product Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Add New Handcrafted Product</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      <AdminModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add New Handcrafted Product"
+        subtitle="Catalog additions will immediately reflect on the public online shop."
+        maxWidth="xl"
+      >
+        <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Product Code (SKU) *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. MAS02, THA03"
+                value={addForm.code}
+                onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono uppercase outline-none focus:border-[#8B2E24]"
+              />
             </div>
-
-            <form onSubmit={handleCreateProduct} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Product Code (SKU) *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. MAS02, THA03"
-                    value={addForm.code}
-                    onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono uppercase outline-none focus:border-slate-500"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">USD Price ($) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="120.00"
-                    value={addForm.priceUSD}
-                    onChange={(e) => setAddForm({ ...addForm, priceUSD: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono outline-none focus:border-slate-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 mb-1">Product Title *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Hand-Carved Wrathful Mahakala Mask"
-                  value={addForm.name}
-                  onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 outline-none focus:border-slate-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Craft Tradition *</label>
-                  <select
-                    value={addForm.craftKey}
-                    onChange={(e) => setAddForm({ ...addForm, craftKey: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
-                  >
-                    {CRAFTS.map((c) => (
-                      <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Origin Dzongkhag</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Paro or Punakha"
-                    value={addForm.region}
-                    onChange={(e) => setAddForm({ ...addForm, region: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Maker / Accredited Member</label>
-                  <select
-                    value={addForm.makerMemberId}
-                    onChange={(e) => setAddForm({ ...addForm, makerMemberId: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
-                  >
-                    <option value="">HAB Guild Artisans (General)</option>
-                    {members.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name} ({m.dzongkhag})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Initial Stock Count</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={addForm.stock}
-                    onChange={(e) => setAddForm({ ...addForm, stock: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 mb-1">Primary Image URL</label>
-                <input
-                  type="text"
-                  placeholder="/images/crafts/parzo.jpg"
-                  value={addForm.imageUrl}
-                  onChange={(e) => setAddForm({ ...addForm, imageUrl: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono text-[11px]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 mb-1">Curatorial Provenance &amp; Materials</label>
-                <textarea
-                  rows={3}
-                  placeholder="Carved from Himalayan pine wood, cured in natural oil pigments according to Zorig Chusum canons..."
-                  value={addForm.description}
-                  onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded font-semibold disabled:opacity-50"
-                >
-                  {submitting ? 'Adding...' : 'Create Product'}
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">USD Price ($) *</label>
+              <input
+                type="number"
+                step="0.01"
+                required
+                placeholder="120.00"
+                value={addForm.priceUSD}
+                onChange={(e) => setAddForm({ ...addForm, priceUSD: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono outline-none focus:border-[#8B2E24]"
+              />
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Edit Modal */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-bold text-slate-900 text-sm">Edit Catalog Item: {editingProduct.name}</h3>
-                <p className="text-xs text-slate-500 font-mono mt-0.5">{editingProduct.code}</p>
-              </div>
-              <button
-                onClick={() => setEditingProduct(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">Product Title *</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Hand-Carved Wrathful Mahakala Mask"
+              value={addForm.name}
+              onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#8B2E24]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Craft Tradition *</label>
+              <select
+                value={addForm.craftKey}
+                onChange={(e) => setAddForm({ ...addForm, craftKey: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
               >
-                ✕
-              </button>
+                {CRAFTS.map((c) => (
+                  <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
+                ))}
+              </select>
             </div>
-
-            <form onSubmit={handleSaveEdit} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-medium text-slate-700 mb-1">Product Title</label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">USD Retail Price</label>
-                  <div className="relative">
-                    <span className="absolute left-2.5 top-1.5 text-slate-400">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      required
-                      value={editForm.priceUSD}
-                      onChange={(e) => setEditForm({ ...editForm, priceUSD: parseFloat(e.target.value) || 0 })}
-                      className="w-full border border-slate-300 rounded pl-6 pr-2.5 py-1.5 outline-none focus:border-indigo-500 font-mono"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Stock Count</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editForm.stock}
-                    onChange={(e) => setEditForm({ ...editForm, stock: parseInt(e.target.value) || 0 })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 outline-none focus:border-indigo-500 font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Status</label>
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
-                  >
-                    <option value="PUBLISHED">Published (Catalog Active)</option>
-                    <option value="DRAFT">Draft / Under Review</option>
-                    <option value="ARCHIVED">Archived (Delisted)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Origin Dzongkhag</label>
-                  <input
-                    type="text"
-                    value={editForm.region}
-                    onChange={(e) => setEditForm({ ...editForm, region: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Craft Tradition</label>
-                  <select
-                    value={editForm.craftKey}
-                    onChange={(e) => setEditForm({ ...editForm, craftKey: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
-                  >
-                    {CRAFTS.map((c) => (
-                      <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-700 mb-1">Maker / Accredited Member</label>
-                  <select
-                    value={editForm.makerMemberId}
-                    onChange={(e) => setEditForm({ ...editForm, makerMemberId: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
-                  >
-                    <option value="">HAB Guild Artisans (General)</option>
-                    {members.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name} ({m.dzongkhag})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 mb-1">Image URL</label>
-                <input
-                  type="text"
-                  value={editForm.imageUrl}
-                  onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono text-[11px]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 mb-1">Curatorial Provenance Note</label>
-                <textarea
-                  rows={3}
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setEditingProduct(null)}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded border border-slate-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded shadow-sm disabled:opacity-50"
-                >
-                  {submitting ? 'Saving...' : 'Save Updates to PostgreSQL'}
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Origin Dzongkhag</label>
+              <input
+                type="text"
+                placeholder="e.g. Paro or Punakha"
+                value={addForm.region}
+                onChange={(e) => setAddForm({ ...addForm, region: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <h3 className="font-bold text-slate-900 text-base">Permanently Delete Product?</h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-slate-900">{deletingProduct.name}</strong> (<span className="font-mono">{deletingProduct.code}</span>)?
-            </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Maker / Accredited Member</label>
+              <select
+                value={addForm.makerMemberId}
+                onChange={(e) => setAddForm({ ...addForm, makerMemberId: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+              >
+                <option value="">HAB Guild Artisans (General)</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.dzongkhag})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Initial Stock Count</label>
+              <input
+                type="number"
+                min="0"
+                value={addForm.stock}
+                onChange={(e) => setAddForm({ ...addForm, stock: parseInt(e.target.value) || 0 })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+              />
+            </div>
+          </div>
 
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900 space-y-1">
-              <div className="font-bold flex items-center gap-1">
-                <span>⚠️</span> Referential Integrity Guard
-              </div>
-              <p>
-                Products referenced by historical customer orders cannot be deleted because foreign-key constraints protect order line items. If this product was ever purchased, change its status to <strong>ARCHIVED</strong> instead.
-              </p>
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">Primary Image URL</label>
+            <input
+              type="text"
+              placeholder="/images/crafts/parzo.jpg"
+              value={addForm.imageUrl}
+              onChange={(e) => setAddForm({ ...addForm, imageUrl: e.target.value })}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">Curatorial Provenance &amp; Materials</label>
+            <textarea
+              rows={3}
+              placeholder="Carved from Himalayan pine wood, cured in natural oil pigments according to Zorig Chusum canons..."
+              value={addForm.description}
+              onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white rounded-lg font-semibold disabled:opacity-50"
+            >
+              {submitting ? 'Adding...' : 'Create Product'}
+            </button>
+          </div>
+        </form>
+      </AdminModal>
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <AdminModal
+          isOpen={true}
+          onClose={() => setEditingProduct(null)}
+          title={`Edit Product: ${editingProduct.name}`}
+          subtitle={`SKU: ${editingProduct.code}`}
+          maxWidth="xl"
+        >
+          <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Product Title</label>
+              <input
+                type="text"
+                required
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">USD Retail Price ($)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={editForm.priceUSD}
+                  onChange={(e) => setEditForm({ ...editForm, priceUSD: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                />
+              </div>
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">Catalog Status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                >
+                  <option value="PUBLISHED">Published (Visible in Shop)</option>
+                  <option value="DRAFT">Draft</option>
+                  <option value="ARCHIVED">Archived (Safe for past orders)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">Craft Tradition</label>
+                <select
+                  value={editForm.craftKey}
+                  onChange={(e) => setEditForm({ ...editForm, craftKey: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                >
+                  {CRAFTS.map((c) => (
+                    <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">Stock Count</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editForm.stock}
+                  onChange={(e) => setEditForm({ ...editForm, stock: parseInt(e.target.value) || 0 })}
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Primary Image URL</label>
+              <input
+                type="text"
+                value={editForm.imageUrl}
+                onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px]"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium text-slate-700 mb-1">Description &amp; Cultural Context</label>
+              <textarea
+                rows={3}
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
               <button
-                onClick={() => setDeletingProduct(null)}
-                className="px-3 py-1.5 border border-slate-300 rounded text-xs font-medium text-slate-600 hover:bg-slate-50"
+                type="button"
+                onClick={() => setEditingProduct(null)}
+                className="px-4 py-2 text-xs text-slate-600 hover:bg-slate-50 rounded-lg border border-slate-200"
               >
                 Cancel
               </button>
               <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#8B2E24] hover:bg-[#72251D] rounded-lg shadow-xs disabled:opacity-50"
+              >
+                {submitting ? 'Saving...' : 'Save Updates'}
+              </button>
+            </div>
+          </form>
+        </AdminModal>
+      )}
+
+      {/* Delete Confirmation Modal with "Archive Instead" Option */}
+      {deletingProduct && (
+        <AdminModal
+          isOpen={true}
+          onClose={() => setDeletingProduct(null)}
+          title="Delete Product from Catalog"
+          subtitle={`SKU: ${deletingProduct.code}`}
+          maxWidth="md"
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete <strong className="text-slate-900">{deletingProduct.name}</strong>?
+            </p>
+
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-amber-800">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+                Referential Integrity Safeguard
+              </div>
+              <p className="leading-normal">
+                If this product is linked to existing customer orders, permanent deletion is prevented to maintain legal and financial audit logs. In that case, you should <strong>Archive</strong> it instead.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                onClick={() => setDeletingProduct(null)}
+                className="px-3 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 order-3 sm:order-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleArchiveInstead(deletingProduct)}
+                disabled={submitting}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold flex items-center justify-center gap-1.5 order-2"
+              >
+                <Archive className="w-3.5 h-3.5 text-slate-600" />
+                <span>Archive Instead</span>
+              </button>
+              <button
                 onClick={handleDeleteProduct}
                 disabled={submitting}
-                className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold disabled:opacity-50 order-1 sm:order-3"
               >
-                {submitting ? 'Deleting...' : 'Confirm Deletion'}
+                {submitting ? 'Deleting...' : 'Permanently Delete'}
               </button>
             </div>
           </div>
-        </div>
+        </AdminModal>
       )}
+
+      {/* CSV Bulk Import Modal */}
+      <AdminModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Bulk Import Products via CSV"
+        subtitle="Paste or upload CSV data with headers: Code, Name, PriceUSD, CraftKey, Stock, Region, Description"
+        maxWidth="xl"
+      >
+        <form onSubmit={handleBulkImport} className="space-y-4 text-xs">
+          {importError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg">
+              {importError}
+            </div>
+          )}
+
+          <div>
+            <label className="block font-medium text-slate-700 mb-1">CSV Content</label>
+            <textarea
+              rows={8}
+              required
+              placeholder={`Code,Name,PriceUSD,CraftKey,Stock,Region\nMAS05,Himalayan Mahakala Mask,145.00,parzo,8,Punakha\nTHA07,Yathra Wool Runner,95.00,thagzo,12,Bumthang`}
+              value={importCsvText}
+              onChange={(e) => setImportCsvText(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg p-3 font-mono text-[11px] leading-relaxed outline-none focus:border-[#8B2E24]"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowImportModal(false)}
+              className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !importCsvText.trim()}
+              className="px-4 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white rounded-lg font-semibold disabled:opacity-50"
+            >
+              {submitting ? 'Importing...' : 'Run Bulk Import'}
+            </button>
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 }

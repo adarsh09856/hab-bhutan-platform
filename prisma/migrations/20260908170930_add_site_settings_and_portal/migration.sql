@@ -14,7 +14,7 @@ CREATE TABLE "SiteSetting" (
     "heroParagraph" TEXT NOT NULL,
     "heroCtaPrimaryText" TEXT NOT NULL DEFAULT 'Our mission',
     "heroCtaPrimaryLink" TEXT NOT NULL DEFAULT '/about',
-    "heroCtaSecondaryText" TEXT NOT NULL DEFAULT 'Shop the crafts →',
+    "heroCtaSecondaryText" TEXT NOT NULL DEFAULT 'Shop the crafts ->',
     "heroCtaSecondaryLink" TEXT NOT NULL DEFAULT '/shop',
     "stat1Number" TEXT NOT NULL DEFAULT '7,500',
     "stat1Label" TEXT NOT NULL DEFAULT 'Micro & small enterprises in the network',

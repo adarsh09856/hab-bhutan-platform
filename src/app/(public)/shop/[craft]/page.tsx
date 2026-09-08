@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { CRAFTS } from '@/lib/data';
 import ProductCard from '@/components/public/ProductCard';
 
-export default function ShopGridPage() {
+function ShopGridContent() {
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -223,5 +223,13 @@ export default function ShopGridPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ShopGridPage() {
+  return (
+    <React.Suspense fallback={<div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-sm font-mono text-[#6B5A4C]">Loading craft collection...</div>}>
+      <ShopGridContent />
+    </React.Suspense>
   );
 }

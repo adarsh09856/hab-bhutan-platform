@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
       paymentStatus,
       orderStatus,
       currencyUsed,
+      internalNotes,
       items, // [{ code, quantity, priceUSD }]
     } = body;
 
@@ -179,6 +180,7 @@ export async function POST(req: NextRequest) {
           fxRateAtPurchase: fxRate,
           totalUSD,
           totalPaidCurrency,
+          internalNotes: internalNotes || null,
           items: resolvedItems.map((ri) => ({
             code: ri.code,
             name: ri.name,
@@ -250,6 +252,7 @@ export async function PATCH(req: NextRequest) {
       shippingAddress,
       cancellationReason,
       notes,
+      internalNotes,
     } = body;
 
     if (!id) {
@@ -374,6 +377,9 @@ export async function PATCH(req: NextRequest) {
       if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
       if (customerPhone !== undefined) updateData.customerPhone = customerPhone;
       if (shippingAddress) updateData.shippingAddress = shippingAddress;
+      if (internalNotes !== undefined || notes !== undefined) {
+        updateData.internalNotes = internalNotes !== undefined ? internalNotes : notes;
+      }
 
       updated = await prisma.order.update({
         where: { id },

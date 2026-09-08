@@ -235,8 +235,11 @@ export async function POST(req: NextRequest) {
     let redirectUrl = '/';
     if (isStaffRole && targetPortal !== 'member') {
       redirectUrl = '/admin';
-    } else if (user.memberProfile || user.role.slug === 'member' || user.role.slug === 'artisan') {
-      redirectUrl = '/portal';
+    } else if (user.memberProfile) {
+      const slug = encodeURIComponent(user.memberProfile.regNumber || user.memberProfile.name);
+      redirectUrl = `/members/${slug}`;
+    } else if (user.role.slug === 'member' || user.role.slug === 'artisan') {
+      redirectUrl = '/members';
     }
 
     // 6. Audit log

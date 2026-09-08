@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { CRAFTS, SAMPLE_MEMBERS } from '@/lib/data';
+import { CRAFTS } from '@/lib/data';
 
 export default function MemberDirectoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,18 +9,20 @@ export default function MemberDirectoryPage() {
   const [selectedDzongkhag, setSelectedDzongkhag] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [dbMembers, setDbMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const pageSize = 6;
 
   useEffect(() => {
+    setLoading(true);
     fetch('/api/members')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.members) && data.members.length > 0) {
+        if (data.success && Array.isArray(data.members)) {
           const mapped = data.members.map((m: any) => ({
             name: m.name,
             craftKey: m.craftKey,
             dz: m.dzongkhag,
-            village: m.villageGewog || 'Central',
+            village: m.dzongkhag || 'Central',
             year: m.joinYear || 2026,
             tier: m.tier || 'ACTIVE_SECTOR_MEMBER',
             productsCount: m.products?.length || 0,
@@ -31,12 +33,11 @@ export default function MemberDirectoryPage() {
           setDbMembers(mapped);
         }
       })
-      .catch((err) => console.error('Error fetching live members:', err));
+      .catch((err) => console.error('Error fetching live members:', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  const activeMemberList = useMemo(() => {
-    return dbMembers.length > 0 ? dbMembers : SAMPLE_MEMBERS;
-  }, [dbMembers]);
+  const activeMemberList = dbMembers;
 
   // Extract all unique dzongkhags
   const dzongkhags = useMemo(() => {
@@ -160,12 +161,34 @@ export default function MemberDirectoryPage() {
         </div>
 
         <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] mt-4 pt-3 border-t border-[#EFE9DE]">
-          {filteredMembers.length} of {SAMPLE_MEMBERS.length} listings shown · directory sample of the full 7,500-member database
+          {filteredMembers.length} of {activeMemberList.length} listings shown · directory of registered HAB artisan members
         </div>
       </div>
 
       {/* Results Grid */}
-      {paginatedMembers.length > 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px] mb-12">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-[22px] h-[220px] animate-pulse" />
+          ))}
+        </div>
+      ) : paginatedMembers.length === 0 ? (
+        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-16 text-center mb-12">
+          <h3 className="font-marcellus text-[26px] font-normal text-[#33261F] mb-3">
+            No members match these filters
+          </h3>
+          <p className="font-lora text-[15px] text-[#6B5A4C] mb-6 max-w-[48ch] mx-auto">
+            Try resetting your search query or selecting a different craft or dzongkhag.
+          </p>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="font-figtree font-semibold text-[14px] bg-[#33261F] text-white px-5 py-3 rounded-[7px] hover:bg-[#8B2E24] transition-colors cursor-pointer"
+          >
+            Clear all filters
+          </button>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px] mb-12">
           {paginatedMembers.map((m) => {
             const craft = CRAFTS.find((c) => c.key === m.craftKey);
@@ -208,7 +231,7 @@ export default function MemberDirectoryPage() {
 
                 <div className="pt-3 border-t border-[#EFE9DE] flex justify-between items-center text-[13.5px]">
                   <span className="font-mono text-[11px] text-[#6B5A4C]">
-                    {m.products.length} products in shop
+                    {m.productsCount || 0} products in shop
                   </span>
                   <span className="font-figtree font-semibold text-[#8B2E24] group-hover:translate-x-1 transition-transform">
                     View profile →
@@ -217,23 +240,6 @@ export default function MemberDirectoryPage() {
               </Link>
             );
           })}
-        </div>
-      ) : (
-        /* Empty State */
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-16 text-center mb-12">
-          <h3 className="font-marcellus text-[26px] font-normal text-[#33261F] mb-3">
-            No members match these filters
-          </h3>
-          <p className="font-lora text-[15px] text-[#6B5A4C] mb-6 max-w-[48ch] mx-auto">
-            Try resetting your search query or selecting a different craft or dzongkhag.
-          </p>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="font-figtree font-semibold text-[14px] bg-[#33261F] text-white px-5 py-3 rounded-[7px] hover:bg-[#8B2E24] transition-colors cursor-pointer"
-          >
-            Clear all filters
-          </button>
         </div>
       )}
 

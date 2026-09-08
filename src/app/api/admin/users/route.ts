@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
         roleId: u.roleId,
         role: u.role,
         status: u.status,
+        twoFactorEnabled: u.twoFactorEnabled,
         createdAt: u.createdAt,
       })),
     });
