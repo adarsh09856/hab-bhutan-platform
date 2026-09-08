@@ -102,6 +102,18 @@ async function main() {
     },
   });
 
+  const customerRole = await prisma.role.upsert({
+    where: { slug_version: { slug: 'customer', version: 1 } },
+    update: {},
+    create: {
+      name: 'Customer Buyer',
+      slug: 'customer',
+      version: 1,
+      status: 'ACTIVE',
+      permissions: ['orders:read_own', 'profile:edit'],
+    },
+  });
+
   // 3. Provision Initial Staff Administrator (Bootstrap only — never overwrite existing passwords)
   const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@handicraftsbhutan.org' } });
   if (!existingAdmin) {
@@ -653,6 +665,156 @@ async function main() {
       await (prisma as any).projectRecord.create({ data: proj });
     }
     console.log(`Seeded ${projects.length} verified donor and strategic projects.`);
+  }
+
+  // 7. Seed 11 Statutory Programme Pillars
+  const pillarCount = await prisma.programmePillar.count();
+  if (pillarCount === 0) {
+    const defaultPillars = [
+      {
+        ref: '3.2.1',
+        title: 'Collective Bargaining & Raw Material Supply',
+        description: 'Aggregating raw material demand across all twenty dzongkhags to bulk-purchase silk, wool, timber, copper, and vegetable dyes at fair wholesale prices, shielding grassroots craftspeople from predatory middlemen.',
+        activities: ['Centralized wool & yarn bank in Bumthang', 'Certified sustainable timber allocation with Department of Forests', 'Collective import facilitation for metalsmithing ingots'],
+        sortOrder: 1,
+      },
+      {
+        ref: '3.2.2',
+        title: 'Quality Assurance & Craft Certification',
+        description: 'Administering the national "Seal of Bhutan" handicrafts certification mark in accordance with strict authenticity benchmarks and traditional material purity standards.',
+        activities: ['Laboratory fiber testing and vegetable dye verification', 'Master artisan guild inspections', 'Tamper-proof holographic authenticity tagging'],
+        sortOrder: 2,
+      },
+      {
+        ref: '3.2.3',
+        title: 'Market Access & Digital E-Commerce',
+        description: 'Operating verified institutional outlets and this official digital trade platform connecting rural cooperatives directly to conscious global collectors with door-to-door worldwide logistics.',
+        activities: ['Direct artisan payment settlement in Bhutanese Ngultrum (Nu.)', 'Bhutan Post EMS and international courier integration', 'Direct-to-consumer digital provenance documentation'],
+        sortOrder: 3,
+      },
+      {
+        ref: '3.2.4',
+        title: 'Cultural Preservation & Traditional Knowledge Transfer',
+        description: 'Documenting endangered oral patterns, dyeing formulas, and metallurgical techniques of Bhutan’s Thirteen Traditional Arts & Crafts (Zorig Chusum) for generational continuity.',
+        activities: ['Master-to-apprentice living heritage video archives', 'Indigenous botanical dye formulation encyclopaedia', 'Preservation grants for rare cane, bamboo, and slate carving techniques'],
+        sortOrder: 4,
+      },
+      {
+        ref: '3.2.5',
+        title: 'Design Innovation & Sustainable Product Diversification',
+        description: 'Collaborating with contemporary Bhutanese designers and international ethical design studios to refine sizing, ergonomic utility, and contemporary aesthetics while preserving cultural sanctity.',
+        activities: ['Annual Bhutan Contemporary Craft Design Residency', 'Zero-waste upcycling workshops for textile scraps', 'Home decor and lifestyle collection incubation'],
+        sortOrder: 5,
+      },
+      {
+        ref: '3.2.6',
+        title: 'Youth Apprenticeship & Master Artisan Incubation',
+        description: 'Providing stipends, toolkits, and structured multi-year master apprenticeships to young Bhutanese school-leavers seeking dignified, viable careers in traditional craftsmanship.',
+        activities: ['12-month paid master-apprentice placements', 'Free starter toolsets for graduating craftspeople', 'Business literacy, bookkeeping, and pricing training'],
+        sortOrder: 6,
+      },
+      {
+        ref: '3.2.7',
+        title: 'Dzongkhag Chapter Development & Decentralized Outreach',
+        description: 'Establishing active regional artisan chapters across western, central, and eastern Bhutan to ensure equitable support reaches remote gewogs far from the capital.',
+        activities: ['Mobile craft clinics and technical workshops', 'Regional chapter grievance redressing and welfare support', 'Annual Dzongkhag Craft Exhibitions'],
+        sortOrder: 7,
+      },
+      {
+        ref: '3.2.8',
+        title: 'Financial Inclusion, Micro-Credit & Endowment Fund',
+        description: 'Partnering with Bhutan Development Bank (BDBL) and RENEW Microfinance to offer low-interest working capital loans for seasonal loom purchase and workshop expansion.',
+        activities: ['Emergency artisan health and relief grants', 'Low-interest equipment financing schemes', 'Long-term Craft Endowment Fund management'],
+        sortOrder: 8,
+      },
+      {
+        ref: '3.2.9',
+        title: 'Research, Sector Studies & Policy Advocacy',
+        description: 'Serving as the apex advisory voice to the Royal Government of Bhutan on tariffs, raw material quotas, copyright enforcement, and socioeconomic census data for the craft sector.',
+        activities: ['Annual National Handicrafts Economic Impact Survey', 'Policy position papers submitted to Ministry of Industry, Commerce and Employment', 'Intellectual property and GI (Geographical Indications) registration advocacy'],
+        sortOrder: 9,
+      },
+      {
+        ref: '3.2.10',
+        title: 'International Cultural Diplomacy & Trade Expos',
+        description: 'Representing the Kingdom of Bhutan at major international folk art markets, UNESCO world craft council assemblies, and bilateral trade expositions.',
+        activities: ['Bhutan delegation at Santa Fe International Folk Art Market', 'Curated cultural exhibits at international museum showcases', 'Direct artisan visa and travel grant support'],
+        sortOrder: 10,
+      },
+      {
+        ref: '3.2.11',
+        title: 'Ecological Stewardship & Green Craft Production',
+        description: 'Championing chemical-free organic vegetable dyes, sustainably harvested bamboo and daphne paper shrubs, and responsible clay and wood gathering aligned with Gross National Happiness.',
+        activities: ['Wild botanical harvesting permits compliance training', 'Solar-powered kiln and drying room installations', 'Plastic-free biodegradable packaging standard across all HAB shipments'],
+        sortOrder: 11,
+      },
+    ];
+
+    for (const pillar of defaultPillars) {
+      await prisma.programmePillar.create({ data: pillar });
+    }
+    console.log(`Seeded ${defaultPillars.length} statutory programme pillars.`);
+  }
+
+  // 8. Seed Legal and Institutional Policy Pages
+  const policyCount = await prisma.policyPage.count();
+  if (policyCount === 0) {
+    const defaultPolicies = [
+      {
+        slug: 'terms',
+        title: 'Terms & Conditions of Service',
+        content: `### 1. Statutory Mandate & Organization Status
+The Handicrafts Association of Bhutan (HAB) is registered as a Public Benefit Civil Society Organization under the Civil Society Organizations Act of Bhutan 2007 (Registration No. CSO/2011/043). All commercial operations, digital e-commerce, and membership services are conducted strictly in accordance with Article 3 of the Articles of Association (2026 Edition).
+
+### 2. Authentic Bhutanese Craft Guarantee
+Every craft sold on this platform is certified to have been handcrafted within the Kingdom of Bhutan by registered artisan members. Organic variations in natural vegetable dye shades, weave tension, hand-carved wood grain, and hammered metal textures are intrinsic hallmarks of authentic traditional crafts and do not constitute manufacturing defects.
+
+### 3. Pricing, Taxes & Currency
+Prices are quoted in United States Dollars (USD) and Bhutanese Ngultrum (BTN Nu.). Conversions are governed by the Royal Monetary Authority of Bhutan (RMA) official reference exchange rates. For domestic transactions within Bhutan, payment in Nu. via mBOB or Bank of Bhutan transfer is supported without foreign exchange surcharges.
+
+### 4. Intellectual Property & Cultural Sanctity
+All designs, photographs, archival patterns, and cultural narratives published on this platform are protected under the Copyright Act of the Kingdom of Bhutan. Unauthorized commercial reproduction of sacred Buddhist motifs or traditional textile patterns is strictly prohibited.`,
+      },
+      {
+        slug: 'privacy',
+        title: 'Privacy & Data Protection Policy',
+        content: `### 1. Commitment to Privacy
+The Handicrafts Association of Bhutan (HAB) respects the privacy of all artisans, members, customers, and donors. We collect and process personal data exclusively for order fulfillment, membership verification, and statutory CSO compliance reporting.
+
+### 2. Information We Collect
+- **Customer Information:** Name, email address, phone number, physical delivery address, and order transaction history.
+- **Member Information:** Citizenship Identity (CID) number, business license (if applicable), craft specialty, gewog and dzongkhag location, and artisan banking details for direct sales disbursement.
+- **Payment Information:** We do not store raw credit card numbers or banking passwords. Credit card processing is conducted via PCI-DSS compliant secure gateways, and mBOB transactions are verified via RMA bank transfer journals.
+
+### 3. Data Confidentiality & Disclosure
+We will never sell, rent, or trade your personal information to commercial marketing entities. Data may only be shared with:
+- Authorized logistics carriers (Bhutan Post EMS, DHL Express) strictly to facilitate package delivery.
+- The Civil Society Organizations Authority (CSOA) of Bhutan for statutory regulatory reporting.`,
+      },
+      {
+        slug: 'shipping',
+        title: 'Global Shipping, Customs & Returns Policy',
+        content: `### 1. Door-to-Door Worldwide Shipping
+We ship authentic Bhutanese handicrafts to over 140 countries directly from the HAB Central Logistics Depot in Thimphu, Bhutan.
+
+- **Bhutan Post EMS (Express Mail Service):** Standard insured air delivery, typically arriving within 10 to 18 business days with online tracking.
+- **DHL Express Courier:** Priority door-to-door courier service, typically arriving within 4 to 7 business days worldwide.
+
+### 2. Customs, Export Permits & Heritage Seals
+Every international shipment includes an official Bhutan Export Customs Declaration and the HAB Seal of Authenticity certifying that the handicraft is modern artisan work compliant with the Department of Culture & Heritage export standards. Any import duties, tariffs, or VAT levied by the destination country are the responsibility of the recipient in accordance with local regulations.
+
+### 3. Damage Guarantee & 14-Day Replacement
+Because each craft is irreplaceable and handcrafted by village artisans, we package each piece with multi-layer conservation-grade protective wrapping. If an item arrives damaged during transit:
+1. Photograph the exterior parcel packaging and the damaged item within 48 hours of receipt.
+2. Email your photos and order number to **officehab@gmail.com** or submit a ticket via our Contact page.
+3. HAB will arrange a complimentary replacement piece crafted by the same artisan guild or issue a full refund within 14 days.`,
+      },
+    ];
+
+    for (const policy of defaultPolicies) {
+      await prisma.policyPage.create({ data: policy });
+    }
+    console.log(`Seeded ${defaultPolicies.length} standard legal policy pages.`);
   }
 
   console.log('Database seeded successfully!');

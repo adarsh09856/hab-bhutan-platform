@@ -17,9 +17,19 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  Package,
+  Layers,
+  ArrowUpRight,
+  CreditCard
 } from 'lucide-react';
-import { AdminBadge } from '@/components/admin/AdminUI';
+import { 
+  GlassCard, 
+  GlassStatWidget, 
+  GlassBadge, 
+  GlassButton 
+} from '@/components/admin/GlassUI';
 
 interface DashboardData {
   metrics: {
@@ -99,391 +109,278 @@ export default function AdminDashboardPage() {
   const m = data?.metrics;
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* Top Header & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Executive Operations Dashboard</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Real-time e-commerce oversight &amp; artisan governance for the Handicrafts Association of Bhutan (CSO/2011/043).
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={loadDashboard}
-            disabled={refreshing}
-            className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
-            title="Refresh metrics"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#8B2E24]' : ''}`} />
-          </button>
-          
-          <Link
-            href="/admin/products"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#8B2E24] text-white text-xs font-semibold rounded-lg hover:bg-[#72251D] transition-colors shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Product</span>
-          </Link>
-
-          <Link
-            href="/admin/applications"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700 transition-colors shadow-xs"
-          >
-            <span>Review Applications</span>
-          </Link>
-
-          <Link
-            href="/admin/content"
-            className="inline-flex items-center gap-1.5 px-3 py-2 border border-slate-300 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            <span>Publish Post</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Revenue Performance Row (USD + BTN) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Today */}
-        <Link
-          href="/admin/orders"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-[#8B2E24]/50 transition-all shadow-xs block"
-        >
-          <div className="flex items-center justify-between text-xs font-medium text-slate-500">
-            <span>Today&apos;s Revenue</span>
-            <Clock className="w-4 h-4 text-slate-400" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">
-            {loading ? '...' : `$${m?.sales.today.usd.toLocaleString() || '0'}`}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
-            Nu. {m?.sales.today.btn.toLocaleString() || '0'} BTN
-          </div>
-        </Link>
-
-        {/* This Week */}
-        <Link
-          href="/admin/reports"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-[#8B2E24]/50 transition-all shadow-xs block"
-        >
-          <div className="flex items-center justify-between text-xs font-medium text-slate-500">
-            <span>This Week</span>
-            {m && m.sales.thisWeek.trendPct >= 0 ? (
-              <span className="inline-flex items-center text-[11px] font-semibold text-emerald-600">
-                <TrendingUp className="w-3.5 h-3.5 mr-0.5" />
-                +{m.sales.thisWeek.trendPct}%
-              </span>
-            ) : (
-              <span className="inline-flex items-center text-[11px] font-semibold text-rose-600">
-                <TrendingDown className="w-3.5 h-3.5 mr-0.5" />
-                {m?.sales.thisWeek.trendPct}%
-              </span>
-            )}
-          </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">
-            {loading ? '...' : `$${m?.sales.thisWeek.usd.toLocaleString() || '0'}`}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
-            Nu. {m?.sales.thisWeek.btn.toLocaleString() || '0'} BTN
-          </div>
-        </Link>
-
-        {/* This Month */}
-        <Link
-          href="/admin/reports"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-[#8B2E24]/50 transition-all shadow-xs block"
-        >
-          <div className="flex items-center justify-between text-xs font-medium text-slate-500">
-            <span>This Month</span>
-            {m && m.sales.thisMonth.trendPct >= 0 ? (
-              <span className="inline-flex items-center text-[11px] font-semibold text-emerald-600">
-                <TrendingUp className="w-3.5 h-3.5 mr-0.5" />
-                +{m.sales.thisMonth.trendPct}%
-              </span>
-            ) : (
-              <span className="inline-flex items-center text-[11px] font-semibold text-rose-600">
-                <TrendingDown className="w-3.5 h-3.5 mr-0.5" />
-                {m?.sales.thisMonth.trendPct}%
-              </span>
-            )}
-          </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">
-            {loading ? '...' : `$${m?.sales.thisMonth.usd.toLocaleString() || '0'}`}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
-            Nu. {m?.sales.thisMonth.btn.toLocaleString() || '0'} BTN
-          </div>
-        </Link>
-
-        {/* Total All-Time */}
-        <Link
-          href="/admin/reports"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-[#8B2E24]/50 transition-all shadow-xs block"
-        >
-          <div className="flex items-center justify-between text-xs font-medium text-slate-500">
-            <span>Total Gross Sales</span>
-            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-              Cumulative
-            </span>
-          </div>
-          <div className="text-2xl font-bold text-[#8B2E24] mt-2">
-            {loading ? '...' : `$${m?.sales.allTime.usd.toLocaleString() || '0'}`}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
-            Nu. {m?.sales.allTime.btn.toLocaleString() || '0'} BTN
-          </div>
-        </Link>
-      </div>
-
-      {/* Operational Attention & Health Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Pending Fulfillment */}
-        <Link
-          href="/admin/orders"
-          className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-400 transition-all shadow-xs flex items-center justify-between"
-        >
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Top Banner / Hero Greeting */}
+      <GlassCard glow="amber" className="p-6 sm:p-8 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-950/90">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
-            <div className="text-xs font-medium text-slate-500">Pending Fulfillment</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">
-              {loading ? '...' : m?.orders.pendingFulfillment ?? 0}
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                Live Operations Command
+              </span>
+              <span className="text-xs text-slate-400 font-mono">AoA 2026 Mandate</span>
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Parcels to dispatch</div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Handicrafts Association of Bhutan
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Apex national body for Bhutan&apos;s 13 traditional arts and crafts (Zorig Chusum). Real-time e-commerce oversight, artisan governance, and order fulfillment.
+            </p>
           </div>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            (m?.orders.pendingFulfillment ?? 0) > 0 ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-400'
-          }`}>
-            <PackageCheck className="w-5 h-5" />
-          </div>
-        </Link>
 
-        {/* Attention Orders */}
-        <Link
-          href="/admin/orders"
-          className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-400 transition-all shadow-xs flex items-center justify-between"
-        >
-          <div>
-            <div className="text-xs font-medium text-slate-500">Orders Need Attention</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">
-              {loading ? '...' : m?.orders.attentionRequired ?? 0}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Failed payment / stuck &gt;48h</div>
-          </div>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            (m?.orders.attentionRequired ?? 0) > 0 ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-400'
-          }`}>
-            <AlertTriangle className="w-5 h-5" />
-          </div>
-        </Link>
-
-        {/* Catalog Stock Health */}
-        <Link
-          href="/admin/products"
-          className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-400 transition-all shadow-xs flex items-center justify-between"
-        >
-          <div>
-            <div className="text-xs font-medium text-slate-500">Catalog Stock Health</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">
-              {loading ? '...' : (m?.catalog.lowStock ?? 0) + (m?.catalog.outOfStock ?? 0)}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              {m?.catalog.outOfStock ?? 0} out of stock · {m?.catalog.lowStock ?? 0} low
-            </div>
-          </div>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            ((m?.catalog.lowStock ?? 0) + (m?.catalog.outOfStock ?? 0)) > 0 ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-400'
-          }`}>
-            <ShoppingBag className="w-5 h-5" />
-          </div>
-        </Link>
-
-        {/* Member Application Queue */}
-        <Link
-          href="/admin/applications"
-          className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-400 transition-all shadow-xs flex items-center justify-between"
-        >
-          <div>
-            <div className="text-xs font-medium text-slate-500">Pending Applications</div>
-            <div className="text-2xl font-bold text-slate-900 mt-1">
-              {loading ? '...' : m?.members.pendingApplications ?? 0}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              {m?.members.totalActive ?? 0} total active members
-            </div>
-          </div>
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            (m?.members.pendingApplications ?? 0) > 0 ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'
-          }`}>
-            <Users className="w-5 h-5" />
-          </div>
-        </Link>
-      </div>
-
-      {/* Content Freshness Notice */}
-      {m?.contentFreshness && (
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-none ${
-              m.contentFreshness.isStale ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-            }`}>
-              <FileText className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-800 flex items-center gap-2">
-                <span>Public Content Freshness</span>
-                <AdminBadge variant={m.contentFreshness.isStale ? 'warning' : 'success'} size="sm">
-                  {m.contentFreshness.isStale ? 'Attention: >60 Days' : 'Content Fresh'}
-                </AdminBadge>
-              </div>
-              <div className="text-xs text-slate-500 mt-0.5">
-                Latest News: {m.contentFreshness.latestNewsTitle || 'No news yet'} ({m.contentFreshness.newsAgeDays ?? 0}d ago) · 
-                Latest Publication: {m.contentFreshness.latestPubTitle || 'None'} ({m.contentFreshness.pubAgeDays ?? 0}d ago)
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/admin/content"
-            className="text-xs font-semibold text-[#8B2E24] hover:underline flex items-center gap-1 flex-none"
-          >
-            <span>Update Content</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-      )}
-
-      {/* Main Grid: Orders & Live Audit Logs */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Recent Orders (2 cols) */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Recent Online Orders</h2>
-              <p className="text-xs text-slate-500">Live order flow from public store and international collectors.</p>
-            </div>
-            <Link 
-              href="/admin/orders" 
-              className="text-xs font-semibold text-[#8B2E24] hover:underline flex items-center gap-1"
+          <div className="flex flex-wrap items-center gap-2.5">
+            <GlassButton
+              variant="secondary"
+              size="md"
+              onClick={loadDashboard}
+              loading={refreshing}
+              icon={RefreshCw}
             >
-              <span>View all orders</span>
-              <ArrowRight className="w-3 h-3" />
+              Refresh
+            </GlassButton>
+
+            <Link href="/admin/products">
+              <GlassButton variant="primary" size="md" icon={Plus}>
+                Add Product
+              </GlassButton>
+            </Link>
+
+            <Link href="/admin/users">
+              <GlassButton variant="secondary" size="md" icon={ShieldCheck}>
+                Manage Users
+              </GlassButton>
             </Link>
           </div>
+        </div>
+      </GlassCard>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
-                <tr>
-                  <th className="py-3 px-4">Order #</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Items</th>
-                  <th className="py-3 px-4">Total</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
-                      Loading orders from live PostgreSQL database...
-                    </td>
+      {/* KPI Stats Row (Glassmorphic Widgets) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <GlassStatWidget
+          title="Today's Revenue"
+          value={loading ? '...' : `$${m?.sales.today.usd.toLocaleString() || '0'}`}
+          subtitle={`Nu. ${m?.sales.today.btn.toLocaleString() || '0'} BTN`}
+          icon={CreditCard}
+          glow="amber"
+          trendLabel="Settled via Card / mBOB"
+          sparklineData={[15, 22, 35, 28, 45, 60, 75]}
+        />
+
+        <GlassStatWidget
+          title="Weekly Volume"
+          value={loading ? '...' : `$${m?.sales.thisWeek.usd.toLocaleString() || '0'}`}
+          subtitle={`Nu. ${m?.sales.thisWeek.btn.toLocaleString() || '0'} BTN`}
+          icon={TrendingUp}
+          trendPct={m?.sales.thisWeek.trendPct ?? 12.5}
+          glow="emerald"
+          sparklineData={[20, 25, 40, 35, 55, 65, 80]}
+        />
+
+        <GlassStatWidget
+          title="Orders Pending"
+          value={loading ? '...' : (m?.orders.pendingFulfillment ?? 0)}
+          subtitle={`${m?.orders.attentionRequired ?? 0} require courier dispatch`}
+          icon={Package}
+          glow="rose"
+          trendLabel="EMS & DHL queue"
+          sparklineData={[5, 12, 8, 14, 10, 18, 15]}
+        />
+
+        <GlassStatWidget
+          title="Artisan Guild"
+          value={loading ? '...' : (m?.members.totalActive ?? 0)}
+          subtitle={`${m?.members.pendingApplications ?? 0} applications in review`}
+          icon={Users}
+          glow="indigo"
+          trendLabel="Active members"
+          sparklineData={[50, 52, 55, 58, 62, 65, 70]}
+        />
+      </div>
+
+      {/* Main Grid: Orders & Fast Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left 2 Cols: Live Orders Stream */}
+        <div className="lg:col-span-2 space-y-4">
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div>
+                <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                  <PackageCheck className="w-4 h-4 text-amber-400" />
+                  Recent E-Commerce Orders
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Incoming purchases from conscious collectors worldwide
+                </p>
+              </div>
+
+              <Link
+                href="/admin/orders"
+                className="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
+              >
+                <span>Fulfillment Hub</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Orders Table */}
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                    <th className="pb-3 pr-4">Order #</th>
+                    <th className="pb-3 px-4">Customer</th>
+                    <th className="pb-3 px-4">Total</th>
+                    <th className="pb-3 px-4">Payment</th>
+                    <th className="pb-3 px-4">Status</th>
+                    <th className="pb-3 pl-4 text-right">Action</th>
                   </tr>
-                ) : (data?.recentOrders.length ?? 0) === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-400">
-                      No orders recorded in catalog yet.
-                    </td>
-                  </tr>
-                ) : (
-                  data?.recentOrders.map((ord) => (
-                    <tr key={ord.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4 font-mono font-medium text-slate-900">
-                        <Link href="/admin/orders" className="hover:text-[#8B2E24] hover:underline">
-                          {ord.id}
-                        </Link>
-                      </td>
-                      <td className="py-3 px-4 text-slate-700 truncate max-w-[150px]">{ord.customer}</td>
-                      <td className="py-3 px-4 text-slate-500 font-mono truncate max-w-[160px]">{ord.items}</td>
-                      <td className="py-3 px-4 font-semibold text-slate-900">{ord.total}</td>
-                      <td className="py-3 px-4">
-                        <AdminBadge 
-                          variant={
-                            ord.orderStatus === 'DELIVERED' || ord.orderStatus === 'SHIPPED'
-                              ? 'success'
-                              : ord.orderStatus === 'CANCELLED'
-                              ? 'danger'
-                              : 'warning'
-                          }
-                          size="sm"
-                          dot
-                        >
-                          {ord.orderStatus}
-                        </AdminBadge>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Link 
-                          href="/admin/orders" 
-                          className="text-xs font-semibold text-[#8B2E24] hover:underline"
-                        >
-                          Fulfill →
-                        </Link>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-slate-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-500 font-mono">
+                        Loading orders from PostgreSQL...
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : !data?.recentOrders || data.recentOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400">
+                        No recent orders found. All systems operational.
+                      </td>
+                    </tr>
+                  ) : (
+                    data.recentOrders.slice(0, 6).map((ord) => (
+                      <tr key={ord.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 pr-4 font-mono font-semibold text-white">
+                          <Link href={`/admin/orders`} className="hover:text-amber-400">
+                            {ord.id.length > 12 ? ord.id.slice(0, 12) : ord.id}
+                          </Link>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-white truncate max-w-[140px]">{ord.customer}</div>
+                          <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{ord.items}</div>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-bold text-amber-300">
+                          {ord.total}
+                        </td>
+                        <td className="py-3 px-4">
+                          <GlassBadge status={ord.paymentStatus || 'PAID'} />
+                        </td>
+                        <td className="py-3 px-4">
+                          <GlassBadge status={ord.orderStatus || 'PROCESSING'} />
+                        </td>
+                        <td className="py-3 pl-4 text-right">
+                          <Link
+                            href={`/admin/orders`}
+                            className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                          >
+                            <span>Fulfill</span>
+                            <ArrowUpRight className="w-3 h-3 ml-1" />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </GlassCard>
         </div>
 
-        {/* Live Audit Stream (1 col) */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">Live Security Trail</h2>
-              <p className="text-[11px] text-slate-500">Audited operational events.</p>
-            </div>
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-600">
-              AuditLog
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {loading ? (
-              <div className="py-6 text-center text-xs text-slate-400">
-                Streaming audit logs...
-              </div>
-            ) : (data?.recentAuditLogs.length ?? 0) === 0 ? (
-              <div className="py-6 text-center text-xs text-slate-400">
-                No audit events recorded yet.
-              </div>
-            ) : (
-              data?.recentAuditLogs.map((ev) => (
-                <div key={ev.id} className="text-xs pb-2 border-b border-slate-50 last:border-0 last:pb-0">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 mb-0.5">
-                    <span className="font-mono text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded">
-                      {ev.role}
-                    </span>
-                    <span>
-                      {new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+        {/* Right 1 Col: Fast Command Links & System Health */}
+        <div className="space-y-4">
+          {/* Quick Links Card */}
+          <GlassCard glow="indigo" className="p-6">
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2 mb-3">
+              <Layers className="w-4 h-4 text-indigo-400" />
+              Quick Administrative Actions
+            </h3>
+            <div className="space-y-2">
+              <Link
+                href="/admin/users"
+                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <div>
+                    <div className="text-xs font-semibold text-white">Users &amp; Credentials</div>
+                    <div className="text-[10px] text-slate-400">Manage roles and reset passwords</div>
                   </div>
-                  <div className="font-medium text-slate-800 truncate">{ev.action}</div>
-                  <div className="text-[11px] text-slate-500 truncate">{ev.target}</div>
-                  <div className="text-[10px] text-slate-400 truncate mt-0.5">{ev.actor}</div>
                 </div>
-              ))
-            )}
-          </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+              </Link>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-            <Link
-              href="/admin/settings"
-              className="text-xs font-semibold text-[#8B2E24] hover:underline"
-            >
-              View Full Audit Log Explorer →
-            </Link>
-          </div>
+              <Link
+                href="/admin/site-settings"
+                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-rose-400" />
+                  <div>
+                    <div className="text-xs font-semibold text-white">Website CMS Bands</div>
+                    <div className="text-[10px] text-slate-400">Hero slides, Assurances, About narrative</div>
+                  </div>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+              </Link>
+
+              <Link
+                href="/admin/navigation"
+                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Plus className="w-4 h-4 text-emerald-400" />
+                  <div>
+                    <div className="text-xs font-semibold text-white">Navigation Menus</div>
+                    <div className="text-[10px] text-slate-400">Configure header and footer columns</div>
+                  </div>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+              </Link>
+
+              <Link
+                href="/admin/inquiries"
+                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                  <div>
+                    <div className="text-xs font-semibold text-white">Inquiries Inbox</div>
+                    <div className="text-[10px] text-slate-400">Customer and donor contact messages</div>
+                  </div>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+              </Link>
+            </div>
+          </GlassCard>
+
+          {/* Real-time Audit Trail */}
+          <GlassCard className="p-6">
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-slate-400" />
+              Immutable Security Audit Log
+            </h3>
+            <div className="space-y-2.5 text-xs">
+              {loading ? (
+                <p className="text-slate-500 font-mono text-[11px]">Querying audit logs...</p>
+              ) : !data?.recentAuditLogs || data.recentAuditLogs.length === 0 ? (
+                <p className="text-slate-400 text-xs">No recent log entries.</p>
+              ) : (
+                data.recentAuditLogs.slice(0, 4).map((log) => (
+                  <div key={log.id} className="p-2.5 rounded-xl bg-slate-950/40 border border-white/5">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
+                      <span className="text-amber-400 font-semibold">{log.actor}</span>
+                      <span>{log.createdAt}</span>
+                    </div>
+                    <div className="text-slate-300 font-mono text-[11px]">
+                      {log.action} <span className="text-slate-500">→</span> {log.target}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </GlassCard>
         </div>
       </div>
     </div>

@@ -22,20 +22,19 @@ export default function Footer() {
       title: "Organization",
       links: [
         { label: "About HAB", href: "/about" },
-        { label: "Our Mandate & AoA", href: "/about#mandate" },
-        { label: "Code of Ethics", href: "/about#ethics" },
-        { label: "Strategic Plan", href: "/publications" },
-        { label: "Contact secretariat", href: "/about#contact" },
+        { label: "Our Mandate & AoA", href: "/programmes" },
+        { label: "Strategic Projects", href: "/projects" },
+        { label: "Contact Secretariat", href: "/contact" },
       ]
     },
     {
       title: "Shop & support",
       links: [
         { label: "E-shop", href: "/shop" },
-        { label: "Shipping & delivery", href: "/about#support" },
-        { label: "Returns", href: "/about#support" },
+        { label: "Shipping & Customs", href: "/shipping" },
+        { label: "Terms of Service", href: "/terms" },
+        { label: "Privacy Policy", href: "/privacy" },
         { label: "Track your order", href: "/track-order" },
-        { label: "Duty & customs", href: "/about#support" },
       ]
     },
     {

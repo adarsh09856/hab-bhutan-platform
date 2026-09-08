@@ -1,89 +1,97 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff = user.roleSlug === 'super_admin' ||
-                  user.roleSlug === 'staff_operator' ||
-                  user.permissions?.includes('*') ||
-                  user.permissions?.includes('content:edit');
-  return isStaff ? user : null;
-}
-
 export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const pillars = await prisma.programmePillar.findMany({ orderBy: { sortOrder: 'asc' } });
-  return NextResponse.json({ success: true, pillars });
+  try {
+    await requirePermission(req, 'content:view');
+
+    const pillars = await prisma.programmePillar.findMany({
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    return NextResponse.json({ success: true, pillars });
+  } catch (err: any) {
+    console.error('Error fetching admin programme pillars:', err);
+    return NextResponse.json({ success: false, error: err.message || 'Error fetching programmes.' }, { status: err.statusCode || 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const body = await req.json();
-  const { ref, title, description, activities, sortOrder, isActive } = body;
-  if (!ref?.trim() || !title?.trim() || !description?.trim()) {
-    return NextResponse.json({ error: 'ref, title, and description are required' }, { status: 400 });
-  }
   try {
+    const session = await requirePermission(req, 'content:edit');
+    const body = await req.json();
+    const { ref, title, description, activities, sortOrder, isActive } = body;
+
+    if (!ref || !title || !description) {
+      return NextResponse.json({ success: false, error: 'Ref, title, and description are required.' }, { status: 400 });
+    }
+
     const pillar = await prisma.programmePillar.create({
       data: {
-        ref: ref.trim().toLowerCase(),
+        ref: ref.trim(),
         title: title.trim(),
         description: description.trim(),
         activities: Array.isArray(activities) ? activities : [],
         sortOrder: typeof sortOrder === 'number' ? sortOrder : 0,
-        isActive: typeof isActive === 'boolean' ? isActive : true,
+        isActive: isActive !== undefined ? isActive : true,
       },
     });
-    await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'PROGRAMME_PILLAR_CREATED', entityType: 'ProgrammePillar', entityId: pillar.id });
-    return NextResponse.json({ success: true, pillar }, { status: 201 });
+
+    return NextResponse.json({ success: true, pillar });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Creation failed' }, { status: 500 });
+    console.error('Error creating programme pillar:', err);
+    return NextResponse.json({ success: false, error: err.message || 'Failed to create programme.' }, { status: err.statusCode || 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const body = await req.json();
-  const { id, ref, title, description, activities, sortOrder, isActive } = body;
-  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
   try {
-    const pillar = await prisma.programmePillar.update({
+    const session = await requirePermission(req, 'content:edit');
+    const body = await req.json();
+    const { id, ref, title, description, activities, sortOrder, isActive } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Pillar ID is required.' }, { status: 400 });
+    }
+
+    const updated = await prisma.programmePillar.update({
       where: { id },
       data: {
-        ...(ref !== undefined && { ref: ref.trim().toLowerCase() }),
-        ...(title !== undefined && { title: title.trim() }),
-        ...(description !== undefined && { description: description.trim() }),
-        ...(activities !== undefined && { activities }),
-        ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) }),
-        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        ref: ref ? ref.trim() : undefined,
+        title: title ? title.trim() : undefined,
+        description: description ? description.trim() : undefined,
+        activities: Array.isArray(activities) ? activities : undefined,
+        sortOrder: typeof sortOrder === 'number' ? sortOrder : undefined,
+        isActive: isActive !== undefined ? isActive : undefined,
       },
     });
-    await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'PROGRAMME_PILLAR_UPDATED', entityType: 'ProgrammePillar', entityId: id });
-    return NextResponse.json({ success: true, pillar });
+
+    return NextResponse.json({ success: true, pillar: updated });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Update failed' }, { status: 500 });
+    console.error('Error updating programme pillar:', err);
+    return NextResponse.json({ success: false, error: err.message || 'Failed to update programme.' }, { status: err.statusCode || 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get('id');
-  if (!id) return NextResponse.json({ error: 'id parameter required' }, { status: 400 });
   try {
+    const session = await requirePermission(req, 'content:edit');
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Pillar ID is required.' }, { status: 400 });
+    }
+
     await prisma.programmePillar.delete({ where: { id } });
-    await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'PROGRAMME_PILLAR_DELETED', entityType: 'ProgrammePillar', entityId: id });
-    return NextResponse.json({ success: true });
+
+    return NextResponse.json({ success: true, message: 'Programme deleted.' });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Delete failed' }, { status: 500 });
+    console.error('Error deleting programme pillar:', err);
+    return NextResponse.json({ success: false, error: err.message || 'Failed to delete programme.' }, { status: err.statusCode || 500 });
   }
 }

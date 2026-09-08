@@ -4,6 +4,7 @@ import { calculateShipping } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
+import { getSessionUser } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,10 +134,16 @@ export async function POST(req: NextRequest) {
         ? Math.round(totalUSD * rateApplied)
         : totalUSD;
 
+      const session = await getSessionUser(req);
+      const isMember = Boolean(session && session.id);
+
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
-          customerType: 'GUEST',
+          customerType: isMember ? 'MEMBER' : 'GUEST',
+          userId: session?.id || null,
+          mBOBTransactionRef: body.mBOBTransactionRef || null,
+          proofUrl: body.proofUrl || null,
           customerName: customerFullName,
           customerEmail,
           customerPhone: phone || shippingAddress?.phone || null,
@@ -144,8 +151,8 @@ export async function POST(req: NextRequest) {
           shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
           shippingFeeUSD: shippingCostUSD,
           paymentMethod: paymentMethod || 'CARD',
-          paymentStatus: 'PENDING',
-          orderStatus: 'PENDING_PAYMENT',
+          paymentStatus: paymentMethod === 'CARD' ? 'PAID' : 'PENDING',
+          orderStatus: paymentMethod === 'CARD' ? 'PROCESSING' : 'PENDING_PAYMENT',
           currencyUsed: currency || 'USD',
           fxRateAtPurchase: rateApplied,
           totalUSD: totalUSD,

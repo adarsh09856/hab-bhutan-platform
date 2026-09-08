@@ -28,7 +28,12 @@ import {
   LogOut, 
   ExternalLink,
   Search,
-  UserCheck
+  Mail,
+  BookOpen,
+  Sparkles,
+  Command,
+  CheckCircle2,
+  Activity
 } from 'lucide-react';
 
 interface HealthData {
@@ -58,29 +63,22 @@ interface NavGroup {
   items: {
     label: string;
     href: string;
-    icon: React.ElementType;
+    icon: any;
     badge?: string;
   }[];
 }
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // Render standalone page for admin login without sidebar chrome
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
+  const isLoginPage = pathname === '/admin/login';
 
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickSearch, setQuickSearch] = useState('');
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,56 +103,71 @@ export default function AdminLayout({
     };
   }, []);
 
+  // Global keyboard shortcut for quick command launcher (Cmd/Ctrl + K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+      if (e.key === 'Escape') {
+        setCommandPaletteOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const navGroups: NavGroup[] = [
     {
       group: 'Overview',
       items: [
-        { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+        { label: 'Executive Dashboard', href: '/admin', icon: LayoutDashboard },
       ],
     },
     {
-      group: 'Catalog & Orders',
+      group: 'Commerce & Orders',
       items: [
-        { label: 'Products & Catalog', href: '/admin/products', icon: ShoppingBag },
         { label: 'Orders & Fulfillment', href: '/admin/orders', icon: Package },
+        { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
         { label: '13 Crafts CMS', href: '/admin/crafts', icon: Palette },
       ],
     },
     {
-      group: 'People',
+      group: 'People & Accounts',
       items: [
-        { label: 'Members Directory', href: '/admin/members', icon: Users },
-        { label: 'Application Queue', href: '/admin/applications', icon: ClipboardList },
+        { label: 'Users & Credentials', href: '/admin/users', icon: ShieldCheck, badge: 'RBAC' },
+        { label: 'Artisan Members', href: '/admin/members', icon: Users },
+        { label: 'Applications Queue', href: '/admin/applications', icon: ClipboardList },
         { label: 'Membership Dues & Tiers', href: '/admin/membership-settings', icon: BadgePercent },
       ],
     },
     {
-      group: 'Content & Site CMS',
+      group: 'Site CMS & Content',
       items: [
-        { label: 'Hero Slides', href: '/admin/hero', icon: ImageIcon },
-        { label: 'Content & Publications', href: '/admin/content', icon: FileText },
-        { label: 'Projects & Impact', href: '/admin/projects', icon: FolderKanban },
+        { label: 'Website CMS & Bands', href: '/admin/site-settings', icon: Globe },
         { label: 'Navigation & Menus', href: '/admin/navigation', icon: Navigation },
-        { label: 'Website & Global CMS', href: '/admin/site-settings', icon: Globe },
+        { label: 'Statutory Programmes', href: '/admin/programmes', icon: BookOpen },
+        { label: 'Inquiries Inbox', href: '/admin/inquiries', icon: Mail },
+        { label: 'Projects & Impact', href: '/admin/projects', icon: FolderKanban },
+        { label: 'Hero Slides', href: '/admin/hero', icon: ImageIcon },
+        { label: 'News & Publications', href: '/admin/content', icon: FileText },
       ],
     },
     {
       group: 'Finance & System',
       items: [
         { label: 'Financial Reports', href: '/admin/reports', icon: BarChart3 },
-        { label: 'Roles & RBAC', href: '/admin/settings?tab=RBAC', icon: ShieldCheck },
         { label: 'System Settings', href: '/admin/settings', icon: Settings },
       ],
     },
   ];
 
-  // Helper to generate dynamic breadcrumb labels
+  // Helper to generate dynamic breadcrumbs
   const getBreadcrumbs = () => {
-    if (pathname === '/admin') return [{ label: 'Dashboard', href: '/admin' }];
-    const parts = pathname.split('/').filter(Boolean);
+    if (pathname === '/admin') return [{ label: 'Executive Dashboard', href: '/admin' }];
     const crumbs = [{ label: 'Admin', href: '/admin' }];
     
-    // Find active item
     for (const group of navGroups) {
       for (const item of group.items) {
         if (pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))) {
@@ -168,269 +181,300 @@ export default function AdminLayout({
 
   const breadcrumbs = getBreadcrumbs();
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-crm flex">
-      {/* Mobile/Tablet Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+  if (isLoginPage) {
+    return <div className="min-h-screen bg-slate-950 text-slate-100">{children}</div>;
+  }
 
-      {/* Sidebar */}
-      <aside 
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#1E293B] text-white flex flex-col flex-none transition-transform duration-200 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        {/* Header */}
-        <div className="p-5 border-b border-slate-700/80 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#8B2E24] text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-sm">
-              HAB
-            </div>
-            <div>
-              <div className="font-bold text-sm tracking-wide text-white">HAB Operations</div>
-              <div className="text-[11px] text-slate-400">Secretariat Management</div>
-            </div>
-          </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-stone-950 text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
+      {/* Ambient background glows for glassmorphic depth */}
+      <div className="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-amber-600/10 blur-[130px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-rose-600/10 blur-[130px] pointer-events-none" />
+      <div className="fixed top-[40%] right-[20%] w-[30vw] h-[30vw] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
+
+      {/* Top Floating Glass Header */}
+      <header className="sticky top-0 z-40 h-16 bg-slate-900/60 backdrop-blur-2xl border-b border-white/10 px-4 sm:px-6 flex items-center justify-between gap-4">
+        {/* Left: Mobile hamburger & breadcrumbs */}
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-slate-400 hover:text-white p-1 rounded"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Toggle sidebar"
           >
-            <X className="w-5 h-5" />
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Breadcrumbs */}
+          <nav className="hidden sm:flex items-center gap-1.5 text-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1" />
+            {breadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={crumb.href}>
+                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-500" />}
+                <Link
+                  href={crumb.href}
+                  className={`transition-colors ${
+                    idx === breadcrumbs.length - 1
+                      ? 'text-white font-semibold'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {crumb.label}
+                </Link>
+              </React.Fragment>
+            ))}
+          </nav>
+        </div>
+
+        {/* Center: Command Palette Trigger */}
+        <div className="flex-1 max-w-md mx-auto hidden md:block">
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-slate-800/50 hover:bg-slate-800/80 border border-white/10 text-slate-400 text-xs transition-all backdrop-blur-md"
+          >
+            <div className="flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 text-slate-400" />
+              <span>Search modules or actions...</span>
+            </div>
+            <kbd className="px-1.5 py-0.5 rounded bg-slate-900/80 text-[10px] font-mono text-slate-400 border border-white/10">
+              Ctrl K
+            </kbd>
           </button>
         </div>
 
-        {/* Grouped Navigation */}
-        <nav className="p-3 flex-1 overflow-y-auto space-y-5">
-          {navGroups.map((group) => {
-            // If quick search is active, filter items
-            const visibleItems = group.items.filter((item) =>
-              !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
-            );
+        {/* Right: Quick actions, Live Status & User Profile */}
+        <div className="flex items-center gap-2.5">
+          {/* Public Storefront Link */}
+          <Link
+            href="/"
+            target="_blank"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 hover:text-white transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Storefront</span>
+          </Link>
 
-            if (visibleItems.length === 0) return null;
+          {/* FX Status Pill */}
+          {health?.fx && (
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-white/10 text-[11px] font-mono text-amber-300">
+              <span>USD/BTN: Nu. {health.fx.rate.toFixed(2)}</span>
+            </div>
+          )}
 
-            return (
-              <div key={group.group}>
-                <div className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  {group.group}
-                </div>
-                <div className="space-y-0.5">
-                  {visibleItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive =
-                      item.href === '/admin'
-                        ? pathname === '/admin'
-                        : item.href.includes('?tab=')
-                        ? pathname === '/admin/settings' && typeof window !== 'undefined' && window.location.search.includes('tab=RBAC')
-                        : pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setSidebarOpen(false)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-between group ${
-                          isActive
-                            ? 'bg-[#8B2E24] text-white shadow-sm font-semibold'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Icon className={`w-4 h-4 flex-none ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
-                          <span className="truncate">{item.label}</span>
-                        </div>
-                        {item.badge && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-200 font-mono">
-                            {item.badge}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
+          {/* User profile dropdown button */}
+          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B2E24] to-amber-500 flex items-center justify-center text-white font-bold text-xs shadow-md border border-white/20">
+              {health?.user?.name ? health.user.name[0].toUpperCase() : 'H'}
+            </div>
+            <div className="hidden xl:block text-left">
+              <div className="text-xs font-semibold text-white leading-tight">
+                {health?.user?.name || 'Administrator'}
               </div>
-            );
-          })}
-        </nav>
-
-        {/* Footer Admin User & Public Site Link */}
-        <div className="p-4 border-t border-slate-700/80 bg-slate-900/40 text-xs text-slate-400 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="truncate">
-              <div className="text-white font-medium truncate text-xs">
-                {health?.user?.name || 'Secretariat Staff'}
-              </div>
-              <div className="text-[11px] text-indigo-300 font-mono">
-                {health?.user?.role || 'Staff Operator'}
+              <div className="text-[10px] text-amber-400 font-mono">
+                {health?.user?.role || 'Super Admin'}
               </div>
             </div>
-            <button
-              onClick={() => {
-                document.cookie = 'hab_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                router.push('/admin/login');
-              }}
-              title="Sign out"
-              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="pt-1 flex items-center justify-between text-[11px]">
-            <Link 
-              href="/" 
-              className="text-[#F0C4BD] hover:underline flex items-center gap-1"
-            >
-              <span>Public Site</span>
-              <ExternalLink className="w-3 h-3" />
-            </Link>
-            <span className="text-slate-500">CSO/2011/043</span>
           </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar with breadcrumbs and live status badges */}
-        <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-          <div className="flex items-center gap-3">
-            {/* Mobile Drawer Toggle */}
+      {/* Main Layout Container */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Glassmorphic Sidebar */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Logo & Header */}
+          <div className="h-16 px-5 border-b border-white/10 flex items-center justify-between">
+            <Link href="/admin" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#8B2E24] to-[#B23E30] text-white flex items-center justify-center font-bold text-sm shadow-[0_0_20px_rgba(139,46,36,0.4)] border border-rose-400/30">
+                HAB
+              </div>
+              <div>
+                <span className="font-bold text-sm tracking-tight text-white block">HAB Secretariat</span>
+                <span className="text-[10px] text-amber-400/90 font-mono tracking-wider block">EXECUTIVE ADMIN</span>
+              </div>
+            </Link>
+
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
-              aria-label="Open navigation menu"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg"
             >
-              <Menu className="w-5 h-5" />
+              <X className="w-5 h-5" />
             </button>
-
-            {/* Breadcrumb Navigation */}
-            <nav className="flex items-center space-x-1 text-sm font-medium text-slate-600">
-              {breadcrumbs.map((crumb, idx) => (
-                <React.Fragment key={crumb.href + idx}>
-                  {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-none" />}
-                  {idx === breadcrumbs.length - 1 ? (
-                    <span className="text-slate-900 font-semibold truncate max-w-[200px] sm:max-w-xs">
-                      {crumb.label}
-                    </span>
-                  ) : (
-                    <Link href={crumb.href} className="text-slate-500 hover:text-slate-900 hover:underline transition-colors">
-                      {crumb.label}
-                    </Link>
-                  )}
-                </React.Fragment>
-              ))}
-            </nav>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Live PostgreSQL Status Badge */}
-            {loadingHealth ? (
-              <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                Pinging DB...
-              </span>
-            ) : health?.database.connected ? (
-              <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
-                PostgreSQL Connected ({health.database.latencyMs}ms)
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5" />
-                Database Disconnected
-              </span>
-            )}
-
-            {/* Live FX Status Badge */}
-            {!loadingHealth && health?.fx && (
-              health.fx.status === 'MANUAL_OVERRIDE' ? (
-                <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-800 border border-purple-200">
-                  Manual FX: 1 USD = {health.fx.rate.toFixed(2)} BTN
-                </span>
-              ) : health.fx.isBlocked ? (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200">
-                  FX Blocked (&gt;72h Stale)
-                </span>
-              ) : health.fx.status === 'STALE' ? (
-                <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                  FX Stale ({health.fx.stalenessHours}h old)
-                </span>
-              ) : (
-                <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200">
-                  1 USD = {health.fx.rate.toFixed(2)} BTN
-                </span>
-              )
-            )}
-
-            {/* Quick Admin Profile Menu */}
+          {/* Fast inline search */}
+          <div className="px-4 pt-3 pb-1">
             <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-                aria-label="User menu"
-              >
-                <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center font-bold text-slate-700 text-xs">
-                  {health?.user?.name ? health.user.name.charAt(0).toUpperCase() : 'S'}
-                </div>
-              </button>
-
-              {userMenuOpen && (
-                <div 
-                  className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
-                  onClick={() => setUserMenuOpen(false)}
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                value={quickSearch}
+                onChange={(e) => setQuickSearch(e.target.value)}
+                placeholder="Filter menu..."
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-900/60 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-amber-500/50"
+              />
+              {quickSearch && (
+                <button
+                  onClick={() => setQuickSearch('')}
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-white"
                 >
-                  <div className="px-4 py-2 border-b border-slate-100">
-                    <p className="text-xs font-semibold text-slate-900 truncate">
-                      {health?.user?.name || 'Secretariat Staff'}
-                    </p>
-                    <p className="text-[11px] text-slate-500 truncate">
-                      {health?.user?.email || 'Authenticated'}
-                    </p>
-                    <span className="mt-1 inline-block text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-mono font-medium">
-                      {health?.user?.role || 'Staff Operator'}
-                    </span>
-                  </div>
-
-                  <Link
-                    href="/admin/settings"
-                    className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-slate-400" />
-                    <span>System Settings</span>
-                  </Link>
-
-                  <Link
-                    href="/admin/settings?tab=RBAC"
-                    className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Roles & RBAC</span>
-                  </Link>
-
-                  <div className="border-t border-slate-100 mt-1 pt-1">
-                    <button
-                      onClick={() => {
-                        document.cookie = 'hab_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                        router.push('/admin/login');
-                      }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 text-left"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Sign out</span>
-                    </button>
-                  </div>
-                </div>
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
           </div>
-        </header>
 
-        {/* Content Viewport */}
-        <div className="p-3 sm:p-6 lg:p-8 flex-1 overflow-x-hidden overflow-y-auto max-w-full">{children}</div>
+          {/* Navigation Items */}
+          <nav className="p-3 flex-1 overflow-y-auto space-y-5 custom-scrollbar">
+            {navGroups.map((group) => {
+              const visibleItems = group.items.filter((item) =>
+                !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
+              );
+
+              if (visibleItems.length === 0) return null;
+
+              return (
+                <div key={group.group}>
+                  <div className="px-3 mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">
+                    {group.group}
+                  </div>
+                  <div className="space-y-1">
+                    {visibleItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive =
+                        item.href === '/admin'
+                          ? pathname === '/admin'
+                          : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between group ${
+                            isActive
+                              ? 'bg-gradient-to-r from-[#8B2E24]/90 to-[#B23E30]/80 text-white shadow-[0_0_20px_rgba(139,46,36,0.35)] border border-rose-400/30 font-semibold'
+                              : 'text-slate-300 hover:bg-white/5 hover:text-white border border-transparent'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Icon
+                              className={`w-4 h-4 flex-none transition-colors ${
+                                isActive ? 'text-white' : 'text-slate-400 group-hover:text-amber-400'
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {item.badge && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* Live System Health Footer */}
+          <div className="p-3.5 border-t border-white/10 bg-slate-950/60 text-xs space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${health?.database.connected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+                <span>PostgreSQL {health?.database.latencyMs ? `(${health.database.latencyMs}ms)` : 'Active'}</span>
+              </div>
+              <span className="text-[10px] text-slate-400">v2.4 LTS</span>
+            </div>
+
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+              <div className="truncate">
+                <div className="text-white font-medium text-xs truncate">
+                  {health?.user?.name || 'Staff Administrator'}
+                </div>
+                <div className="text-[10.5px] text-amber-400 font-mono">
+                  {health?.user?.role || 'Super Admin'}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  document.cookie = 'hab_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                  router.push('/admin/login');
+                }}
+                title="Sign out"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Backdrop for mobile drawer */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          />
+        )}
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
+          {children}
+        </main>
       </div>
+
+      {/* Command Palette Modal (Ctrl + K) */}
+      {commandPaletteOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-20 bg-black/70 backdrop-blur-md flex items-start justify-center">
+          <div className="relative w-full max-w-lg bg-slate-900/90 backdrop-blur-2xl rounded-2xl border border-white/15 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-4 border-b border-white/10 flex items-center gap-3">
+              <Search className="w-4 h-4 text-amber-400" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Type a command or jump to page..."
+                value={quickSearch}
+                onChange={(e) => setQuickSearch(e.target.value)}
+                className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-hidden"
+              />
+              <button
+                onClick={() => setCommandPaletteOpen(false)}
+                className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-white/5"
+              >
+                Esc
+              </button>
+            </div>
+
+            <div className="p-3 max-h-80 overflow-y-auto space-y-1">
+              {navGroups.flatMap(g => g.items).map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => {
+                      router.push(item.href);
+                      setCommandPaletteOpen(false);
+                    }}
+                    className="w-full px-3 py-2.5 rounded-xl text-left text-xs text-slate-200 hover:bg-white/10 flex items-center justify-between transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="w-4 h-4 text-amber-400" />
+                      <span>{item.label}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono">{item.href}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

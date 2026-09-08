@@ -171,6 +171,10 @@ model Order {
   fxRateAtPurchase  Float          @default(84.0)
   totalUSD          Float
   totalPaidCurrency Float
+  userId            String?
+  user              User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  mBOBTransactionRef String?
+  proofUrl          String?
   items             Json           // Snapshot of items [{ code, name, priceUSD, quantity }]
   orderItems        OrderItem[]
   internalNotes     String?        @db.Text
@@ -179,6 +183,7 @@ model Order {
 
   @@index([customerEmail])
   @@index([orderStatus])
+  @@index([userId])
 }
 
 // Normalized line-items with foreign-key referential integrity to Product
@@ -328,6 +333,11 @@ model User {
   resetTokenHash         String?
   resetTokenExpiry       DateTime?
   sessionVersion         Int                     @default(1)
+  phone                  String?
+  address                String?
+  city                   String?
+  country                String?                 @default("Bhutan")
+  orders                 Order[]
   memberProfile          Member?
   reviewedApplications   MembershipApplication[]
   createdAt              DateTime                @default(now())
@@ -521,3 +531,34 @@ model MembershipSetting {
   mbobQrUrl            String?  @default("/images/mbob_qr_placeholder.png")
   updatedAt            DateTime @updatedAt
 }
+
+// Customer inquiries and contact submissions
+model Inquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  status    String   @default("NEW") // NEW | IN_PROGRESS | RESOLVED | ARCHIVED
+  adminNotes String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+}
+
+// Institutional and legal policy pages
+model PolicyPage {
+  id        String   @id @default(uuid())
+  slug      String   @unique // "terms" | "privacy" | "shipping" | "conduct"
+  title     String
+  content   String   @db.Text
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS } from '@/lib/data';
-import { Menu, X, Search as SearchIcon } from 'lucide-react';
+import { Menu, X, Search as SearchIcon, User } from 'lucide-react';
 
 export default function Header() {
   const router = useRouter();
@@ -283,6 +283,16 @@ export default function Header() {
             )}
           </div>
 
+          {/* User Account Link */}
+          <Link
+            href="/account"
+            aria-label="Account"
+            title="My Account & Orders"
+            className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-[7px] border border-[#E4DDD1] bg-[#FFFCF8] flex items-center justify-center text-[#6B5A4C] hover:border-[#33261F] hover:text-[#33261F] transition-colors duration-150"
+          >
+            <User className="w-4 h-4" />
+          </Link>
+
           {/* Basket Icon with Count Badge */}
           <Link
             href="/basket"
@@ -345,6 +355,24 @@ export default function Header() {
                 className="font-figtree font-semibold text-[14px] border border-[#33261F] text-[#33261F] p-3 rounded-[8px] text-center"
               >
                 Apply Membership
+              </Link>
+            </div>
+
+            {/* Account & Register Quick Links */}
+            <div className="grid grid-cols-2 gap-2 pb-2">
+              <Link
+                href="/account"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-figtree font-semibold text-[13px] border border-[#E4DDD1] text-[#33261F] p-2.5 rounded-[8px] text-center bg-white"
+              >
+                My Account
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-figtree font-semibold text-[13px] border border-[#8B2E24] text-[#8B2E24] p-2.5 rounded-[8px] text-center bg-[#8B2E24]/5"
+              >
+                Register
               </Link>
             </div>
 
