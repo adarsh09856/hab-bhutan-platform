@@ -422,7 +422,55 @@ model SiteSetting {
   copyrightText        String   @default("© 2026 Handicrafts Association of Bhutan. All rights reserved.")
   punakhaMarketNotice  String   @default("The only authentic crafts market validated and managed by HAB")
   partnersList         Json
+
+  // Homepage Assurances Band CMS
+  assurance1Title      String   @default("Verified members only")
+  assurance1Text       String   @default("Every seller is a registered HAB member with documented craft credentials.")
+  assurance2Title      String   @default("Fair price, paid upfront")
+  assurance2Text       String   @default("HAB buys from the artisan at an agreed price before the piece is listed.")
+  assurance3Title      String   @default("Secure payment")
+  assurance3Text       String   @default("3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.")
+  assurance4Title      String   @default("Tracked worldwide")
+  assurance4Text       String   @default("EMS via Bhutan Post with commercial invoice and craft certificate.")
+
+  // Homepage About Band CMS
+  aboutBandTitle       String   @default("A network built for the artisans, not the middlemen")
+  aboutBandPara1       String   @db.Text @default("Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.")
+  aboutBandPara2       String   @db.Text @default("Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.")
+  aboutBandImageUrl    String   @default("/images/training_workshop.jpg")
+  aboutBandImageCaption String  @default("HAB artisan training workshop · Thimphu")
+  aboutBandCtaText     String   @default("Read about our programmes →")
+  aboutBandCtaLink     String   @default("/programmes")
+
+  // Homepage Membership Callouts CMS
+  membershipLeftTitle  String   @default("Find a member")
+  membershipLeftText   String   @default("Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.")
+  membershipLeftCtaText String  @default("Search member directory →")
+  membershipLeftCtaLink String  @default("/members")
+  membershipRightTitle String   @default("Become a member")
+  membershipRightText  String   @default("Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.")
+  membershipRightCtaText String @default("Apply for membership")
+  membershipRightCtaLink String @default("/membership/apply")
+
   updatedAt            DateTime @updatedAt
+}
+
+// Dynamic Header and Footer Navigation Links & Columns
+model NavigationItem {
+  id         String   @id @default(uuid())
+  menuType   String   // "HEADER" | "FOOTER"
+  column     String?  // For footer: "Organization", "Shop & support", "Members", "Governance"
+  label      String
+  href       String
+  parent     String?  // For header dropdowns e.g. "members" or null for top-level
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  isExternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([menuType])
+  @@index([sortOrder])
 }
 
 // Dynamic Programme Pillars and Mandates

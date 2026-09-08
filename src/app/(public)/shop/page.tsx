@@ -2,12 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CRAFTS, SAMPLE_PRODUCTS } from '@/lib/data';
+import { CRAFTS } from '@/lib/data';
 import ProductCard from '@/components/public/ProductCard';
 
 export default function ShopLandingPage() {
-  const newArrivals = SAMPLE_PRODUCTS.slice(0, 4);
-  const bestSellers = SAMPLE_PRODUCTS.slice(4, 8);
+  const [newArrivals, setNewArrivals] = React.useState<any[]>([]);
+  const [bestSellers, setBestSellers] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/products?limit=8')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.products && data.products.length > 0) {
+          setNewArrivals(data.products.slice(0, 4));
+          setBestSellers(data.products.slice(4, 8).length > 0 ? data.products.slice(4, 8) : data.products.slice(0, 4));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const collections = [
     {
@@ -141,19 +153,27 @@ export default function ShopLandingPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-          {newArrivals.map((p) => (
-            <ProductCard
-              key={p.code}
-              code={p.code}
-              name={p.name}
-              priceUSD={p.price}
-              craftKey={p.craftKey}
-              region={p.region}
-              maker={p.maker}
-            />
-          ))}
-        </div>
+        {newArrivals.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-[3/4] bg-slate-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
+            {newArrivals.map((p) => (
+              <ProductCard
+                key={p.code}
+                code={p.code}
+                name={p.name}
+                priceUSD={p.priceUSD || p.price}
+                craftKey={p.craftKey}
+                region={p.region}
+                maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 4. Shop by Craft Grid */}
@@ -274,19 +294,27 @@ export default function ShopLandingPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-          {bestSellers.map((p) => (
-            <ProductCard
-              key={p.code}
-              code={p.code}
-              name={p.name}
-              priceUSD={p.price}
-              craftKey={p.craftKey}
-              region={p.region}
-              maker={p.maker}
-            />
-          ))}
-        </div>
+        {bestSellers.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-[3/4] bg-slate-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
+            {bestSellers.map((p) => (
+              <ProductCard
+                key={p.code}
+                code={p.code}
+                name={p.name}
+                priceUSD={p.priceUSD || p.price}
+                craftKey={p.craftKey}
+                region={p.region}
+                maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 7. Closing Split Panels */}

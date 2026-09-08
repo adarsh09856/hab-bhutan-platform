@@ -139,11 +139,37 @@ const PROJECTS: Project[] = [
 ];
 
 export default function ProjectsPage() {
+  const [projectsList, setProjectsList] = useState<Project[]>(PROJECTS);
   const [activeTab, setActiveTab] = useState<'current' | 'past'>('current');
 
-  const filteredProjects = PROJECTS.filter((p) => p.status === activeTab);
-  const currentCount = PROJECTS.filter((p) => p.status === 'current').length;
-  const pastCount = PROJECTS.filter((p) => p.status === 'past').length;
+  React.useEffect(() => {
+    fetch('/api/projects')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.projects && data.projects.length > 0) {
+          setProjectsList(
+            data.projects.map((p: any) => ({
+              status: (p.status === 'completed' || p.status === 'past') ? 'past' : 'current',
+              name: p.name,
+              partner: p.partner,
+              period: p.period || '2026 – 2028',
+              budget: p.budget || 'Undisclosed',
+              progress: p.progressPercent || 50,
+              summary: p.summary,
+              activities: Array.isArray(p.activities) ? p.activities : [],
+              results: Array.isArray(p.results)
+                ? p.results.map((r: any) => (typeof r === 'string' ? { n: '✓', l: r } : r))
+                : [],
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const filteredProjects = projectsList.filter((p) => p.status === activeTab);
+  const currentCount = projectsList.filter((p) => p.status === 'current').length;
+  const pastCount = projectsList.filter((p) => p.status === 'past').length;
 
   const projectTotals = [
     { n: "11", label: "Projects delivered since 2011" },

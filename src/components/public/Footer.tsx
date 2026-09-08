@@ -17,21 +17,7 @@ export default function Footer() {
     footerAbout: 'A registered Civil Society Organization under the CSO Act of Bhutan 2007. Established 2005.',
   });
 
-  useEffect(() => {
-    fetch('/api/site-settings')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.setting) {
-          setSettings((prev) => ({
-            ...prev,
-            ...data.setting,
-          }));
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const footerCols = [
+  const [footerCols, setFooterCols] = useState([
     {
       title: "Organization",
       links: [
@@ -71,7 +57,39 @@ export default function Footer() {
         { label: "Tenders & vacancies", href: "/news" },
       ]
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.setting) {
+          setSettings((prev) => ({
+            ...prev,
+            ...data.setting,
+          }));
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/navigation')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.footer && typeof data.footer === 'object') {
+          const cols = Object.keys(data.footer).map((colTitle) => ({
+            title: colTitle,
+            links: data.footer[colTitle].map((l: any) => ({
+              label: l.label,
+              href: l.href,
+            })),
+          }));
+          if (cols.length > 0) {
+            setFooterCols(cols);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <footer className="bg-[#33261F] text-[#D2C2AE] pt-12 sm:pt-16 pb-[34px] mt-0">

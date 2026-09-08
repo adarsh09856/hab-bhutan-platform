@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
-import { CRAFTS, SAMPLE_PRODUCTS } from '@/lib/data';
+import { CRAFTS } from '@/lib/data';
 import ProductCard from '@/components/public/ProductCard';
 
 export default function ShopGridPage() {
@@ -15,34 +15,49 @@ export default function ShopGridPage() {
   const currentCraft = CRAFTS.find((c) => c.key === craftParam);
 
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
+  const [productsList, setProductsList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const collectionParam = searchParams.get('collection');
+
+  React.useEffect(() => {
+    fetch('/api/products')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.products && data.products.length > 0) {
+          setProductsList(data.products);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   // Filter products
   const filteredProducts = useMemo(() => {
-    let prods = SAMPLE_PRODUCTS.filter((p) => {
+    let prods = productsList.filter((p) => {
+      const price = p.priceUSD || p.price || 0;
       if (!isAll && p.craftKey !== craftParam) return false;
-      if (collectionParam === 'under50' && p.price >= 50) return false;
-      if (collectionParam === 'home' && !['tshazo', 'shagzo', 'dezo'].includes(p.craftKey)) return false;
+      if (collectionParam === 'under50' && price >= 50) return false;
+      if (collectionParam === 'home' && !['tsharo-zo', 'shag-zo', 'de-zo', 'tshazo', 'shagzo', 'dezo'].includes(p.craftKey)) return false;
       return true;
     });
 
     if (sortOrder === 'low') {
-      prods = [...prods].sort((a, b) => a.price - b.price);
+      prods = [...prods].sort((a, b) => (a.priceUSD || a.price) - (b.priceUSD || b.price));
     } else if (sortOrder === 'high') {
-      prods = [...prods].sort((a, b) => b.price - a.price);
+      prods = [...prods].sort((a, b) => (b.priceUSD || b.price) - (a.priceUSD || a.price));
     }
 
     return prods;
-  }, [craftParam, isAll, collectionParam, sortOrder]);
+  }, [productsList, craftParam, isAll, collectionParam, sortOrder]);
 
   // Craft counts
   const craftCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    SAMPLE_PRODUCTS.forEach((p) => {
+    productsList.forEach((p) => {
       counts[p.craftKey] = (counts[p.craftKey] || 0) + 1;
     });
     return counts;
-  }, []);
+  }, [productsList]);
 
   return (
     <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
@@ -71,7 +86,7 @@ export default function ShopGridPage() {
               >
                 <span>All crafts</span>
                 <span className="font-mono text-[10px] sm:text-[11px] text-[#6B5A4C] bg-white/70 px-1.5 py-0.5 rounded">
-                  {SAMPLE_PRODUCTS.length}
+                  {productsList.length}
                 </span>
               </Link>
 
@@ -160,17 +175,23 @@ export default function ShopGridPage() {
           )}
 
           {/* Product Grid or Empty State */}
-          {filteredProducts.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px]">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="aspect-[3/4] bg-slate-100 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px]">
               {filteredProducts.map((p) => (
                 <ProductCard
                   key={p.code}
                   code={p.code}
                   name={p.name}
-                  priceUSD={p.price}
+                  priceUSD={p.priceUSD || p.price}
                   craftKey={p.craftKey}
                   region={p.region}
-                  maker={p.maker}
+                  maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
                 />
               ))}
             </div>

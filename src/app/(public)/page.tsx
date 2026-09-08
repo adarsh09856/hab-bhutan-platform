@@ -5,14 +5,13 @@ import Link from 'next/link';
 import {
   CRAFTS,
   CLIENT_VERBATIM,
-  SAMPLE_PRODUCTS,
 } from '@/lib/data';
 import CraftCard from '@/components/public/CraftCard';
 import ProductCard from '@/components/public/ProductCard';
 import HeroSlider from '@/components/public/HeroSlider';
 
 export default function HomePage() {
-  const newInShop = SAMPLE_PRODUCTS.slice(0, 4);
+  const [newInShop, setNewInShop] = useState<any[]>([]);
 
   const [siteSettings, setSiteSettings] = useState({
     tagline: CLIENT_VERBATIM.tagline,
@@ -28,6 +27,35 @@ export default function HomePage() {
       { n: "13", label: "Arts & crafts of Zorig Chusum" },
     ],
     partnersList: CLIENT_VERBATIM.partners,
+
+    // Assurances band
+    assurance1Title: "Verified members only",
+    assurance1Text: "Every seller is a registered HAB member with documented craft credentials.",
+    assurance2Title: "Fair price, paid upfront",
+    assurance2Text: "HAB buys from the artisan at an agreed price before the piece is listed.",
+    assurance3Title: "Secure payment",
+    assurance3Text: "3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.",
+    assurance4Title: "Tracked worldwide",
+    assurance4Text: "EMS via Bhutan Post with commercial invoice and craft certificate.",
+
+    // About band
+    aboutBandTitle: "A network built for the artisans, not the middlemen",
+    aboutBandPara1: "Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.",
+    aboutBandPara2: "Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.",
+    aboutBandImageUrl: "/images/training_workshop.jpg",
+    aboutBandImageCaption: "HAB artisan training workshop · Thimphu",
+    aboutBandCtaText: "Read about our programmes →",
+    aboutBandCtaLink: "/programmes",
+
+    // Membership callouts
+    membershipLeftTitle: "Find a member",
+    membershipLeftText: "Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.",
+    membershipLeftCtaText: "Search member directory →",
+    membershipLeftCtaLink: "/members",
+    membershipRightTitle: "Become a member",
+    membershipRightText: "Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.",
+    membershipRightCtaText: "Apply for membership",
+    membershipRightCtaLink: "/membership/apply",
   });
 
   const [programs, setPrograms] = useState([
@@ -105,12 +133,48 @@ export default function HomePage() {
               { n: d.setting.stat4Number || "13", label: d.setting.stat4Label || "Arts & crafts of Zorig Chusum" },
             ],
             partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : CLIENT_VERBATIM.partners,
+
+            assurance1Title: d.setting.assurance1Title || "Verified members only",
+            assurance1Text: d.setting.assurance1Text || "Every seller is a registered HAB member with documented craft credentials.",
+            assurance2Title: d.setting.assurance2Title || "Fair price, paid upfront",
+            assurance2Text: d.setting.assurance2Text || "HAB buys from the artisan at an agreed price before the piece is listed.",
+            assurance3Title: d.setting.assurance3Title || "Secure payment",
+            assurance3Text: d.setting.assurance3Text || "3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.",
+            assurance4Title: d.setting.assurance4Title || "Tracked worldwide",
+            assurance4Text: d.setting.assurance4Text || "EMS via Bhutan Post with commercial invoice and craft certificate.",
+
+            aboutBandTitle: d.setting.aboutBandTitle || "A network built for the artisans, not the middlemen",
+            aboutBandPara1: d.setting.aboutBandPara1 || "Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.",
+            aboutBandPara2: d.setting.aboutBandPara2 || "Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.",
+            aboutBandImageUrl: d.setting.aboutBandImageUrl || "/images/training_workshop.jpg",
+            aboutBandImageCaption: d.setting.aboutBandImageCaption || "HAB artisan training workshop · Thimphu",
+            aboutBandCtaText: d.setting.aboutBandCtaText || "Read about our programmes →",
+            aboutBandCtaLink: d.setting.aboutBandCtaLink || "/programmes",
+
+            membershipLeftTitle: d.setting.membershipLeftTitle || "Find a member",
+            membershipLeftText: d.setting.membershipLeftText || "Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.",
+            membershipLeftCtaText: d.setting.membershipLeftCtaText || "Search member directory →",
+            membershipLeftCtaLink: d.setting.membershipLeftCtaLink || "/members",
+            membershipRightTitle: d.setting.membershipRightTitle || "Become a member",
+            membershipRightText: d.setting.membershipRightText || "Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.",
+            membershipRightCtaText: d.setting.membershipRightCtaText || "Apply for membership",
+            membershipRightCtaLink: d.setting.membershipRightCtaLink || "/membership/apply",
           });
         }
       })
       .catch(() => {});
 
-    // 2. Fetch dynamic programmes
+    // 2. Fetch dynamic products (New in the shop)
+    fetch('/api/products?limit=4')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.products && d.products.length > 0) {
+          setNewInShop(d.products);
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch dynamic programmes
     fetch('/api/programmes')
       .then((r) => r.json())
       .then((d) => {
@@ -127,7 +191,7 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // 3. Fetch dynamic news
+    // 4. Fetch dynamic news
     fetch('/api/news')
       .then((r) => r.json())
       .then((d) => {
@@ -144,7 +208,7 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // 4. Fetch dynamic publications
+    // 5. Fetch dynamic publications
     fetch('/api/publications')
       .then((r) => r.json())
       .then((d) => {
@@ -221,34 +285,34 @@ export default function HomePage() {
         <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-x divide-[#EFE9DE] p-5 sm:p-[26px] gap-4 sm:gap-0">
           <div className="sm:px-4 lg:px-5 first:pl-0 last:pr-0">
             <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              Verified members only
+              {siteSettings.assurance1Title}
             </div>
             <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              Every seller is a registered HAB member with documented craft credentials.
+              {siteSettings.assurance1Text}
             </div>
           </div>
           <div className="sm:px-4 lg:px-5 pt-3 sm:pt-0">
             <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              Fair price, paid upfront
+              {siteSettings.assurance2Title}
             </div>
             <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              HAB buys from the artisan at an agreed price before the piece is listed.
+              {siteSettings.assurance2Text}
             </div>
           </div>
           <div className="sm:px-4 lg:px-5 pt-3 sm:pt-0">
             <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              Secure payment
+              {siteSettings.assurance3Title}
             </div>
             <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.
+              {siteSettings.assurance3Text}
             </div>
           </div>
           <div className="sm:px-4 lg:px-5 pt-3 sm:pt-0">
             <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              Tracked worldwide
+              {siteSettings.assurance4Title}
             </div>
             <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              EMS via Bhutan Post with commercial invoice and craft certificate.
+              {siteSettings.assurance4Text}
             </div>
           </div>
         </div>
@@ -262,31 +326,31 @@ export default function HomePage() {
               About Us
             </div>
             <h2 className="font-marcellus text-[30px] sm:text-[40px] font-normal leading-[1.15] tracking-[-0.01em] text-[#F1ECE2] mb-4 sm:mb-6">
-              A network built for the artisans, not the middlemen
+              {siteSettings.aboutBandTitle}
             </h2>
             <p className="font-lora text-[15.5px] sm:text-[17px] leading-[1.62] text-[#D2C2AE] mb-4 sm:mb-5">
-              Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.
+              {siteSettings.aboutBandPara1}
             </p>
             <p className="font-lora text-[15.5px] sm:text-[17px] leading-[1.62] text-[#D2C2AE] mb-6 sm:mb-8">
-              Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.
+              {siteSettings.aboutBandPara2}
             </p>
             <Link
-              href="/programmes"
+              href={siteSettings.aboutBandCtaLink}
               className="font-figtree text-[14.5px] sm:text-[15px] font-semibold text-[#F1ECE2] border-b border-[#8B2E24] pb-1 hover:text-white transition-colors inline-block"
             >
-              Read about our programmes →
+              {siteSettings.aboutBandCtaText}
             </Link>
           </div>
           <div data-cms-img className="aspect-video sm:aspect-square rounded-[14px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
             <img
-              src="/images/training_workshop.jpg"
-              alt="HAB Traditional Craft Training Workshop in Thimphu"
+              src={siteSettings.aboutBandImageUrl}
+              alt={siteSettings.aboutBandImageCaption}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-4 left-4 right-4 z-10">
               <span className="font-mono text-[10.5px] sm:text-[11px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-3 py-1.5 rounded border border-white/20 inline-block">
-                HAB artisan training workshop · Thimphu
+                {siteSettings.aboutBandImageCaption}
               </span>
             </div>
           </div>
@@ -350,19 +414,27 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {newInShop.map((p) => (
-            <ProductCard
-              key={p.code}
-              code={p.code}
-              name={p.name}
-              priceUSD={p.price}
-              craftKey={p.craftKey}
-              region={p.region}
-              maker={p.maker}
-            />
-          ))}
-        </div>
+        {newInShop.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-square bg-slate-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {newInShop.map((p) => (
+              <ProductCard
+                key={p.code}
+                code={p.code}
+                name={p.name}
+                priceUSD={p.priceUSD || p.price}
+                craftKey={p.craftKey}
+                region={p.region}
+                maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 7. Programmes & Projects */}
@@ -423,17 +495,17 @@ export default function HomePage() {
                 Membership Database
               </div>
               <h3 className="font-marcellus text-[26px] sm:text-[30px] font-normal leading-[1.2] text-[#33261F] mb-3">
-                Find a member
+                {siteSettings.membershipLeftTitle}
               </h3>
               <p className="font-lora text-[14.5px] sm:text-[15.5px] text-[#4A3C33] leading-[1.6] mb-6">
-                Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.
+                {siteSettings.membershipLeftText}
               </p>
             </div>
             <Link
-              href="/members"
+              href={siteSettings.membershipLeftCtaLink}
               className="self-start font-figtree font-semibold text-[14px] sm:text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors"
             >
-              Search member directory →
+              {siteSettings.membershipLeftCtaText}
             </Link>
           </div>
 
@@ -444,18 +516,18 @@ export default function HomePage() {
                 Join HAB
               </div>
               <h3 className="font-marcellus text-[26px] sm:text-[30px] font-normal leading-[1.2] text-white mb-3">
-                Become a member
+                {siteSettings.membershipRightTitle}
               </h3>
               <p className="font-lora text-[14.5px] sm:text-[15.5px] text-[#F6DED9] leading-[1.6] mb-6">
-                Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.
+                {siteSettings.membershipRightText}
               </p>
             </div>
             <div className="flex gap-3 flex-wrap">
               <Link
-                href="/membership/apply"
+                href={siteSettings.membershipRightCtaLink}
                 className="font-figtree font-semibold text-[14px] sm:text-[14.5px] bg-white text-[#8B2E24] px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#F4F0E7] transition-colors"
               >
-                Apply for membership
+                {siteSettings.membershipRightCtaText}
               </Link>
               <Link
                 href="/login"

@@ -452,6 +452,29 @@ async function main() {
           'RGoB', 'EU SWITCH-Asia', 'SHINE', 'GrAT', 'UNDP', 'SGP',
           'EIF', 'Government of Canada', 'Ernst & Young', 'Helvetas Bhutan', 'BCCI', 'Bhutan Post'
         ],
+        assurance1Title: 'Verified members only',
+        assurance1Text: 'Every seller is a registered HAB member with documented craft credentials.',
+        assurance2Title: 'Fair price, paid upfront',
+        assurance2Text: 'HAB buys from the artisan at an agreed price before the piece is listed.',
+        assurance3Title: 'Secure payment',
+        assurance3Text: '3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.',
+        assurance4Title: 'Tracked worldwide',
+        assurance4Text: 'EMS via Bhutan Post with commercial invoice and craft certificate.',
+        aboutBandTitle: 'A network built for the artisans, not the middlemen',
+        aboutBandPara1: 'Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.',
+        aboutBandPara2: 'Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.',
+        aboutBandImageUrl: '/images/training_workshop.jpg',
+        aboutBandImageCaption: 'HAB artisan training workshop · Thimphu',
+        aboutBandCtaText: 'Read about our programmes →',
+        aboutBandCtaLink: '/programmes',
+        membershipLeftTitle: 'Find a member',
+        membershipLeftText: 'Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.',
+        membershipLeftCtaText: 'Search member directory →',
+        membershipLeftCtaLink: '/members',
+        membershipRightTitle: 'Become a member',
+        membershipRightText: 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.',
+        membershipRightCtaText: 'Apply for membership',
+        membershipRightCtaLink: '/membership/apply',
       },
     });
     console.log('Seeded default SiteSetting.');
@@ -506,6 +529,130 @@ async function main() {
       });
     }
     console.log(`Seeded ${pillars.length} programme pillars.`);
+  }
+
+  // 15. Seed Default Navigation Items (Header & Footer)
+  const existingNavCount = await (prisma as any).navigationItem.count();
+  if (existingNavCount === 0) {
+    const navItems = [
+      // HEADER LINKS
+      { menuType: 'HEADER', label: 'About HAB', href: '/about', sortOrder: 1, isActive: true },
+      { menuType: 'HEADER', label: '13 Crafts', href: '/crafts', sortOrder: 2, isActive: true },
+      { menuType: 'HEADER', label: 'E-Shop', href: '/shop', sortOrder: 3, isActive: true },
+      { menuType: 'HEADER', label: 'Members', href: '/members', sortOrder: 4, isActive: true },
+      { menuType: 'HEADER', label: 'Directory', href: '/members', parent: 'members', sortOrder: 1, isActive: true },
+      { menuType: 'HEADER', label: 'Apply for Membership', href: '/membership/apply', parent: 'members', sortOrder: 2, isActive: true },
+      { menuType: 'HEADER', label: 'Programmes & Pillars', href: '/programmes', sortOrder: 5, isActive: true },
+      { menuType: 'HEADER', label: 'Strategic Projects', href: '/projects', sortOrder: 6, isActive: true },
+      { menuType: 'HEADER', label: 'Governance & Charter', href: '/governance', sortOrder: 7, isActive: true },
+      { menuType: 'HEADER', label: 'Contact', href: '/contact', sortOrder: 8, isActive: true },
+
+      // FOOTER LINKS (4 Columns)
+      // Column: Organization
+      { menuType: 'FOOTER', column: 'Organization', label: 'About HAB & Apex Mandate', href: '/about', sortOrder: 1, isActive: true },
+      { menuType: 'FOOTER', column: 'Organization', label: '11 Programme Pillars', href: '/programmes', sortOrder: 2, isActive: true },
+      { menuType: 'FOOTER', column: 'Organization', label: 'Strategic Projects & Grants', href: '/projects', sortOrder: 3, isActive: true },
+      { menuType: 'FOOTER', column: 'Organization', label: 'Governance & Charter', href: '/governance', sortOrder: 4, isActive: true },
+      { menuType: 'FOOTER', column: 'Organization', label: 'Secretariat Directory', href: '/contact', sortOrder: 5, isActive: true },
+
+      // Column: Shop & Support
+      { menuType: 'FOOTER', column: 'Shop & support', label: 'Shop Zorig Chusum Crafts', href: '/shop', sortOrder: 1, isActive: true },
+      { menuType: 'FOOTER', column: 'Shop & support', label: 'Punakha Authentic Craft Market', href: '/punakha-market', sortOrder: 2, isActive: true },
+      { menuType: 'FOOTER', column: 'Shop & support', label: 'Craft Provenance & Certificates', href: '/about#authenticity', sortOrder: 3, isActive: true },
+      { menuType: 'FOOTER', column: 'Shop & support', label: 'Worldwide EMS Shipping Desk', href: '/shipping', sortOrder: 4, isActive: true },
+      { menuType: 'FOOTER', column: 'Shop & support', label: 'Track International Order', href: '/shop/track', sortOrder: 5, isActive: true },
+
+      // Column: Members
+      { menuType: 'FOOTER', column: 'Members', label: 'Master Artisan Directory', href: '/members', sortOrder: 1, isActive: true },
+      { menuType: 'FOOTER', column: 'Members', label: 'Membership Tiers & Dues', href: '/membership', sortOrder: 2, isActive: true },
+      { menuType: 'FOOTER', column: 'Members', label: 'Online Application Portal', href: '/membership/apply', sortOrder: 3, isActive: true },
+      { menuType: 'FOOTER', column: 'Members', label: 'Member Sign-In / CRM', href: '/login', sortOrder: 4, isActive: true },
+
+      // Column: Governance
+      { menuType: 'FOOTER', column: 'Governance', label: 'CSO Registration & Mandate', href: '/governance', sortOrder: 1, isActive: true },
+      { menuType: 'FOOTER', column: 'Governance', label: 'Code of Ethics & Fair Trade', href: '/governance', sortOrder: 2, isActive: true },
+      { menuType: 'FOOTER', column: 'Governance', label: 'Annual Financial Audit', href: '/governance', sortOrder: 3, isActive: true },
+      { menuType: 'FOOTER', column: 'Governance', label: 'Terms & Consumer Protection', href: '/terms', sortOrder: 4, isActive: true },
+    ];
+
+    for (const item of navItems) {
+      await (prisma as any).navigationItem.create({ data: item });
+    }
+    console.log(`Seeded ${navItems.length} dynamic navigation items (Header & Footer).`);
+  }
+
+  // 16. Seed Default Donor Projects
+  const existingProjectCount = await (prisma as any).projectRecord.count();
+  if (existingProjectCount === 0) {
+    const projects = [
+      {
+        status: 'current',
+        name: 'Sustainable Bhutanese Handicrafts (SWITCH-Asia)',
+        partner: 'EU SWITCH-Asia · with GrAT and SHINE',
+        period: '2024 – 2027',
+        budget: 'EUR 1.4 m',
+        progressPercent: 62,
+        summary: 'Shifting member enterprises to resource-efficient production: natural dyes, waste reduction and cleaner finishing, while preserving heritage craft quality.',
+        activities: [
+          'Cleaner-production audits in 240 workshops',
+          'Natural dye and low-waste finishing training',
+          'Green business plans and catalytic finance access',
+          'National Eco-label criteria drafted with RGoB',
+        ],
+        results: ['240 enterprises audited', '1,180 artisans trained', '31% average waste reduction'],
+      },
+      {
+        status: 'current',
+        name: 'Market Access for Rural Artisans',
+        partner: 'Enhanced Integrated Framework (EIF)',
+        period: '2025 – 2027',
+        budget: 'USD 620,000',
+        progressPercent: 38,
+        summary: 'Connecting rural producer groups to export buyers through the HAB digital catalog, international exhibitions, and consolidated EMS shipping.',
+        activities: [
+          'Product photography and cataloguing for 400 pieces',
+          'Export documentation clinics in six dzongkhags',
+          'Buyer trade missions to India, Thailand and Japan',
+          'Consolidated shipping desk at the Thimphu secretariat',
+        ],
+        results: ['400 products catalogued', '14 export buyers engaged', '6 dzongkhags covered'],
+      },
+      {
+        status: 'current',
+        name: 'Punakha Authentic Craft Market Cluster Upgradation',
+        partner: 'Royal Government of Bhutan (DoT / MoICE)',
+        period: '2024 – 2026',
+        budget: 'BTN 8.5 m',
+        progressPercent: 88,
+        summary: 'Infrastructure modernization and digital POS checkout rollout for the 40 artisan stalls at the official Punakha craft market.',
+        activities: [
+          'Digital payment and mBoB QR terminals for 40 stalls',
+          'Quality certification badges issued for authentic items',
+          'Artisan storytelling panels and signage installed',
+        ],
+        results: ['40 stalls upgraded', '100% authentic craft verification', '45% revenue increase in tourist season'],
+      },
+      {
+        status: 'completed',
+        name: 'Highland Yak-Hair & Wool Value Chain Enhancement',
+        partner: 'UNDP Small Grants Programme (SGP / GEF)',
+        period: '2022 – 2024',
+        budget: 'USD 150,000',
+        progressPercent: 100,
+        summary: 'Empowering semi-nomadic pastoralists of Laya and Lunana with carding equipment, scouring workshops, and direct market purchase agreements.',
+        activities: [
+          'Motorized carding and spinning machines delivered to highland cooperatives',
+          'Master weaver workshops on soft-finish yak wool blending',
+          'Long-term bulk procurement contracts signed with HAB shop',
+        ],
+        results: ['180 highland households supported', '2.5x increase in raw fiber value', '12 new textile collections launched'],
+      },
+    ];
+
+    for (const proj of projects) {
+      await (prisma as any).projectRecord.create({ data: proj });
+    }
+    console.log(`Seeded ${projects.length} verified donor and strategic projects.`);
   }
 
   console.log('Database seeded successfully!');

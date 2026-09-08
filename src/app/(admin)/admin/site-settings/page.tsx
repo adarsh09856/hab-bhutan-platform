@@ -3,10 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users } from 'lucide-react';
 
 export default function AdminSiteSettingsPage() {
-  const [tab, setTab] = useState<'ANNOUNCEMENT' | 'HOMEPAGE' | 'CONTACT' | 'FOOTER' | 'PARTNERS'>('HOMEPAGE');
+  const [tab, setTab] = useState<'HOMEPAGE' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS'>('HOMEPAGE');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -39,6 +39,32 @@ export default function AdminSiteSettingsPage() {
     copyrightText: '',
     punakhaMarketNotice: '',
     partnersList: [] as string[],
+    // Assurances Band CMS
+    assurance1Title: '',
+    assurance1Text: '',
+    assurance2Title: '',
+    assurance2Text: '',
+    assurance3Title: '',
+    assurance3Text: '',
+    assurance4Title: '',
+    assurance4Text: '',
+    // About Band CMS
+    aboutBandTitle: '',
+    aboutBandPara1: '',
+    aboutBandPara2: '',
+    aboutBandImageUrl: '',
+    aboutBandImageCaption: '',
+    aboutBandCtaText: '',
+    aboutBandCtaLink: '',
+    // Membership Callouts CMS
+    membershipLeftTitle: '',
+    membershipLeftText: '',
+    membershipLeftCtaText: '',
+    membershipLeftCtaLink: '',
+    membershipRightTitle: '',
+    membershipRightText: '',
+    membershipRightCtaText: '',
+    membershipRightCtaLink: '',
   });
 
   const [partnerInput, setPartnerInput] = useState('');
@@ -147,7 +173,37 @@ export default function AdminSiteSettingsPage() {
           }`}
         >
           <Home className="w-4 h-4" />
-          Homepage &amp; 4 Impact Metrics
+          Hero &amp; Impact Metrics
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('ASSURANCES')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'ASSURANCES' ? 'border-[#8B2E24] text-[#8B2E24]' : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Shield className="w-4 h-4" />
+          Assurances (4 Value Props)
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('ABOUT_BAND')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'ABOUT_BAND' ? 'border-[#8B2E24] text-[#8B2E24]' : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          About HAB Story Band
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('MEMBERSHIP')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'MEMBERSHIP' ? 'border-[#8B2E24] text-[#8B2E24]' : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          Membership Callouts
         </button>
         <button
           type="button"
@@ -157,7 +213,7 @@ export default function AdminSiteSettingsPage() {
           }`}
         >
           <Megaphone className="w-4 h-4" />
-          Header &amp; Notice Strip
+          Header Notice Strip
         </button>
         <button
           type="button"
@@ -345,6 +401,351 @@ export default function AdminSiteSettingsPage() {
                     placeholder="Arts & crafts of Zorig Chusum"
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs text-slate-700"
                   />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ASSURANCES TAB */}
+        {tab === 'ASSURANCES' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Homepage Assurances Band (4 Value Propositions)</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                These four trust badges appear directly under the main hero slider on the homepage to assure international and local buyers.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Card 1 */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-bold text-xs">1</span>
+                  <span className="text-xs font-bold text-slate-700 uppercase">Assurance Badge #1</span>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Badge Title</label>
+                  <input
+                    type="text"
+                    value={form.assurance1Title}
+                    onChange={(e) => setForm({ ...form, assurance1Title: e.target.value })}
+                    placeholder="Verified members only"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Subtext</label>
+                  <textarea
+                    rows={2}
+                    value={form.assurance1Text}
+                    onChange={(e) => setForm({ ...form, assurance1Text: e.target.value })}
+                    placeholder="Every seller is a registered HAB member with documented craft credentials."
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-bold text-xs">2</span>
+                  <span className="text-xs font-bold text-slate-700 uppercase">Assurance Badge #2</span>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Badge Title</label>
+                  <input
+                    type="text"
+                    value={form.assurance2Title}
+                    onChange={(e) => setForm({ ...form, assurance2Title: e.target.value })}
+                    placeholder="Fair price, paid upfront"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Subtext</label>
+                  <textarea
+                    rows={2}
+                    value={form.assurance2Text}
+                    onChange={(e) => setForm({ ...form, assurance2Text: e.target.value })}
+                    placeholder="HAB buys from the artisan at an agreed price before the piece is listed."
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-bold text-xs">3</span>
+                  <span className="text-xs font-bold text-slate-700 uppercase">Assurance Badge #3</span>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Badge Title</label>
+                  <input
+                    type="text"
+                    value={form.assurance3Title}
+                    onChange={(e) => setForm({ ...form, assurance3Title: e.target.value })}
+                    placeholder="Secure payment"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Subtext</label>
+                  <textarea
+                    rows={2}
+                    value={form.assurance3Text}
+                    onChange={(e) => setForm({ ...form, assurance3Text: e.target.value })}
+                    placeholder="3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum."
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Card 4 */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-bold text-xs">4</span>
+                  <span className="text-xs font-bold text-slate-700 uppercase">Assurance Badge #4</span>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Badge Title</label>
+                  <input
+                    type="text"
+                    value={form.assurance4Title}
+                    onChange={(e) => setForm({ ...form, assurance4Title: e.target.value })}
+                    placeholder="Tracked worldwide"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1">Description / Subtext</label>
+                  <textarea
+                    rows={2}
+                    value={form.assurance4Text}
+                    onChange={(e) => setForm({ ...form, assurance4Text: e.target.value })}
+                    placeholder="EMS via Bhutan Post with commercial invoice and craft certificate."
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ABOUT BAND TAB */}
+        {tab === 'ABOUT_BAND' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Homepage About HAB Story Band</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Configure the institutional story band on the homepage showcasing HAB&apos;s mission, training workshops, and impact.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Section Headline
+              </label>
+              <input
+                type="text"
+                value={form.aboutBandTitle}
+                onChange={(e) => setForm({ ...form, aboutBandTitle: e.target.value })}
+                placeholder="A network built for the artisans, not the middlemen"
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-900 focus:outline-none focus:border-[#8B2E24]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Narrative Paragraph 1
+              </label>
+              <textarea
+                rows={3}
+                value={form.aboutBandPara1}
+                onChange={(e) => setForm({ ...form, aboutBandPara1: e.target.value })}
+                placeholder="Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector..."
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Narrative Paragraph 2
+              </label>
+              <textarea
+                rows={3}
+                value={form.aboutBandPara2}
+                onChange={(e) => setForm({ ...form, aboutBandPara2: e.target.value })}
+                placeholder="Our nationwide network supports more than 7,500 micro and small craft enterprises..."
+                className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Featured Image URL or Path
+                </label>
+                <input
+                  type="text"
+                  value={form.aboutBandImageUrl}
+                  onChange={(e) => setForm({ ...form, aboutBandImageUrl: e.target.value })}
+                  placeholder="/images/training_workshop.jpg"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#8B2E24]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Image Caption
+                </label>
+                <input
+                  type="text"
+                  value={form.aboutBandImageCaption}
+                  onChange={(e) => setForm({ ...form, aboutBandImageCaption: e.target.value })}
+                  placeholder="HAB artisan training workshop · Thimphu"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#8B2E24]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Button Call-to-Action Text
+                </label>
+                <input
+                  type="text"
+                  value={form.aboutBandCtaText}
+                  onChange={(e) => setForm({ ...form, aboutBandCtaText: e.target.value })}
+                  placeholder="Read about our programmes →"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#8B2E24]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Button Link Destination
+                </label>
+                <input
+                  type="text"
+                  value={form.aboutBandCtaLink}
+                  onChange={(e) => setForm({ ...form, aboutBandCtaLink: e.target.value })}
+                  placeholder="/programmes"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#8B2E24]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MEMBERSHIP TAB */}
+        {tab === 'MEMBERSHIP' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Homepage Membership Callouts</h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Configure the side-by-side cards inviting artisans to apply and buyers to search the member directory.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Card: Member Directory */}
+              <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2">
+                  Left Card (Directory / Find a Member)
+                </h3>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Headline</label>
+                  <input
+                    type="text"
+                    value={form.membershipLeftTitle}
+                    onChange={(e) => setForm({ ...form, membershipLeftTitle: e.target.value })}
+                    placeholder="Find a member"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Narrative Blurb</label>
+                  <textarea
+                    rows={3}
+                    value={form.membershipLeftText}
+                    onChange={(e) => setForm({ ...form, membershipLeftText: e.target.value })}
+                    placeholder="Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan."
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Button Text</label>
+                    <input
+                      type="text"
+                      value={form.membershipLeftCtaText}
+                      onChange={(e) => setForm({ ...form, membershipLeftCtaText: e.target.value })}
+                      placeholder="Search member directory →"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Button Link</label>
+                    <input
+                      type="text"
+                      value={form.membershipLeftCtaLink}
+                      onChange={(e) => setForm({ ...form, membershipLeftCtaLink: e.target.value })}
+                      placeholder="/members"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Card: Apply for Membership */}
+              <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2">
+                  Right Card (Apply for Membership)
+                </h3>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Headline</label>
+                  <input
+                    type="text"
+                    value={form.membershipRightTitle}
+                    onChange={(e) => setForm({ ...form, membershipRightTitle: e.target.value })}
+                    placeholder="Become a member"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Narrative Blurb</label>
+                  <textarea
+                    rows={3}
+                    value={form.membershipRightText}
+                    onChange={(e) => setForm({ ...form, membershipRightText: e.target.value })}
+                    placeholder="Access product consignment in our central shop, participate in donor training programmes..."
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-700"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Button Text</label>
+                    <input
+                      type="text"
+                      value={form.membershipRightCtaText}
+                      onChange={(e) => setForm({ ...form, membershipRightCtaText: e.target.value })}
+                      placeholder="Apply for membership"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Button Link</label>
+                    <input
+                      type="text"
+                      value={form.membershipRightCtaLink}
+                      onChange={(e) => setForm({ ...form, membershipRightCtaLink: e.target.value })}
+                      placeholder="/membership/apply"
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -18,6 +18,26 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [headerLinks, setHeaderLinks] = useState<any[]>([
+    { id: '1', label: 'About Us', href: '/about', parent: null },
+    { id: '2', label: 'Programmes', href: '/programmes', parent: null },
+    { id: '3', label: 'Projects', href: '/projects', parent: null },
+    { id: '4', label: 'News & Events', href: '/news', parent: null },
+    { id: '5', label: 'Directory by category', href: '/members', parent: 'members' },
+    { id: '6', label: 'Publications & downloads', href: '/publications', parent: 'members' },
+    { id: '7', label: 'Member shops & outlets', href: '/shop', parent: 'members' },
+  ]);
+
+  useEffect(() => {
+    fetch('/api/navigation')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.header && data.header.length > 0) {
+          setHeaderLinks(data.header);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const membersWrapperRef = useRef<HTMLDivElement>(null);
   const shopWrapperRef = useRef<HTMLDivElement>(null);
@@ -80,83 +100,63 @@ export default function Header() {
 
         {/* 2. Primary Navigation (Desktop only) */}
         <nav className="hidden lg:flex items-center gap-0 font-figtree text-[13px] font-medium whitespace-nowrap flex-none">
-          <Link
-            href="/about"
-            className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
-          >
-            About Us
-          </Link>
-          <Link
-            href="/programmes"
-            className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
-          >
-            Programmes
-          </Link>
-          <Link
-            href="/projects"
-            className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
-          >
-            Projects
-          </Link>
-          <Link
-            href="/news"
-            className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
-          >
-            News &amp; Events
-          </Link>
+          {headerLinks
+            .filter((item) => !item.parent)
+            .map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
+              >
+                {item.label}
+              </Link>
+            ))}
 
           {/* Members Dropdown Wrapper */}
-          <div
-            ref={membersWrapperRef}
-            onMouseEnter={() => {
-              setMembersMenuOpen(true);
-              setShopMenuOpen(false);
-            }}
-            onMouseLeave={() => setMembersMenuOpen(false)}
-            className="relative"
-          >
+          {headerLinks.some((item) => item.parent === 'members') && (
             <div
-              onClick={() => {
-                setMembersMenuOpen((prev) => !prev);
+              ref={membersWrapperRef}
+              onMouseEnter={() => {
+                setMembersMenuOpen(true);
                 setShopMenuOpen(false);
               }}
-              className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] cursor-pointer flex items-center gap-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
+              onMouseLeave={() => setMembersMenuOpen(false)}
+              className="relative"
             >
-              Members
-              <span className="text-[9px] text-[#6B5A4C]">▼</span>
-            </div>
-
-            {membersMenuOpen && (
-              <div className="absolute top-full left-0 pt-[10px] w-[250px] z-60">
-                <div
-                  className="w-full bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-2 text-[13.5px]"
-                  style={{ boxShadow: '0 14px 34px rgba(27,26,24,.12)' }}
-                >
-                  <Link
-                    href="/members"
-                    onClick={() => setMembersMenuOpen(false)}
-                    className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
-                  >
-                    Directory by category
-                  </Link>
-                  <Link
-                    href="/publications"
-                    onClick={() => setMembersMenuOpen(false)}
-                    className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
-                  >
-                    Publications &amp; downloads
-                  </Link>
-                  <Link
-                    href="/shop"
-                    onClick={() => setMembersMenuOpen(false)}
-                    className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
-                  >
-                    Member shops &amp; outlets
-                  </Link>
-                </div>
+              <div
+                onClick={() => {
+                  setMembersMenuOpen((prev) => !prev);
+                  setShopMenuOpen(false);
+                }}
+                className="text-[#33261F] px-[9px] py-[9px] rounded-[6px] cursor-pointer flex items-center gap-[6px] hover:bg-[#EDE5D6] transition-colors duration-150"
+              >
+                Members
+                <span className="text-[9px] text-[#6B5A4C]">▼</span>
               </div>
-            )}
-          </div>
+
+              {membersMenuOpen && (
+                <div className="absolute top-full left-0 pt-[10px] w-[250px] z-60">
+                  <div
+                    className="w-full bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-2 text-[13.5px]"
+                    style={{ boxShadow: '0 14px 34px rgba(27,26,24,.12)' }}
+                  >
+                    {headerLinks
+                      .filter((item) => item.parent === 'members')
+                      .map((sub) => (
+                        <Link
+                          key={sub.id}
+                          href={sub.href}
+                          onClick={() => setMembersMenuOpen(false)}
+                          className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         {/* 3. Search Field (Desktop & Tablet) */}
