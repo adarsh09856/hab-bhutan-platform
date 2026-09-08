@@ -1,17 +1,16 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getSessionUser } from '@/lib/rbac';
 
 async function verifyAdmin(req: NextRequest) {
-  const token = req.cookies.get('hab_staff_token')?.value;
-  if (!token) return null;
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'dev-secret');
-    const { payload } = await jwtVerify(token, secret);
-    return payload;
-  } catch { return null; }
+  const user = await getSessionUser(req);
+  if (!user) return null;
+  const isStaff = user.roleSlug === 'super_admin' ||
+                  user.roleSlug === 'staff_operator' ||
+                  user.roleSlug === 'trustee_viewer' ||
+                  user.permissions?.includes('*') ||
+                  user.permissions?.includes('content:edit');
+  return isStaff ? user : null;
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {

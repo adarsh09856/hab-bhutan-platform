@@ -48,7 +48,7 @@ function AdminLoginForm() {
 
       if (res.ok) {
         const data = await res.json();
-        router.push(data.redirectUrl || redirectPath || '/admin');
+        window.location.href = data.redirectUrl || redirectPath || '/admin';
       } else {
         const err = await res.json();
         setErrorMsg(err.error || err.message || 'Invalid staff credentials. Please verify and try again.');

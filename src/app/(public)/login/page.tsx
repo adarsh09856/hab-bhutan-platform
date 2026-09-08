@@ -37,7 +37,7 @@ export default function MemberLoginPage() {
 
       if (res.ok) {
         const data = await res.json();
-        router.push(data.redirectUrl || '/members');
+        window.location.href = data.redirectUrl || '/members';
       } else {
         const err = await res.json();
         setErrorMsg(err.error || err.message || 'Invalid member credentials. Please verify and try again.');

@@ -29,13 +29,11 @@ export default function Footer() {
       ]
     },
     {
-      title: "Members & Staff",
+      title: "Members",
       links: [
         { label: "Directory by category", href: "/members" },
         { label: "Publications", href: "/publications" },
         { label: "Member shops", href: "/shop" },
-        { label: "Member Sign In", href: "/login" },
-        { label: "Staff Sign In", href: "/admin" },
         { label: "Apply to join", href: "/membership/apply" },
       ]
     },

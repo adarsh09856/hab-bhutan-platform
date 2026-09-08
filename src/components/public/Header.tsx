@@ -153,28 +153,6 @@ export default function Header() {
                   >
                     Member shops &amp; outlets
                   </Link>
-                  <div className="h-[1px] bg-[#E4DDD1] my-[6px] mx-[10px]" />
-                  <Link
-                    href="/track-order"
-                    onClick={() => setMembersMenuOpen(false)}
-                    className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
-                  >
-                    Track order status
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={() => setMembersMenuOpen(false)}
-                    className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
-                  >
-                    Member &amp; Artisan Sign In
-                  </Link>
-                  <Link
-                    href="/admin"
-                    onClick={() => setMembersMenuOpen(false)}
-                    className="block px-3 py-[10px] rounded-[7px] text-[#8B2E24] font-semibold hover:bg-[#F1EADC] transition-colors duration-150"
-                  >
-                    Staff &amp; Operations Sign In
-                  </Link>
                 </div>
               </div>
             )}
@@ -441,24 +419,6 @@ export default function Header() {
                   </Link>
                 ))}
               </div>
-            </div>
-
-            {/* Sign In Links */}
-            <div className="pt-4 border-t border-[#EFE9DE] flex flex-col gap-2">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2.5 rounded-[7px] text-[13.5px] text-[#33261F] bg-[#EDE5D6] font-medium"
-              >
-                Member &amp; Artisan Sign In
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2.5 rounded-[7px] text-[13.5px] text-[#8B2E24] border border-[#8B2E24] font-semibold"
-              >
-                Staff &amp; Operations Sign In
-              </Link>
             </div>
           </div>
         </div>

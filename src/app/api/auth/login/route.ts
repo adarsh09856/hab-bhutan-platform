@@ -156,13 +156,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Reject staff trying to log in at member portal unless they also hold an explicit member profile
-    if (targetPortal === 'member' && isStaffRole && !user.memberProfile && user.role.slug !== 'member') {
-      return NextResponse.json(
-        { success: false, error: 'Staff account detected. Please sign in via the Secretariat Staff Portal at /admin/login.' },
-        { status: 403 }
-      );
-    }
 
     // 5. Two-Factor Authentication (2FA) verification for enrolled accounts
     if (user.twoFactorEnabled && user.twoFactorSecret) {
