@@ -181,67 +181,75 @@ export default function BasketPage() {
             {/* 1. Line items */}
             <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] divide-y divide-[#EFE9DE] overflow-hidden">
               {items.map((item) => (
-                <div key={item.code} className="p-5 flex items-center gap-5">
-                  <div data-cms-img className="w-[86px] h-[86px] rounded-[9px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden flex-none relative">
-                    <img
-                      src={`/images/products/${item.code.toLowerCase()}.jpg`}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                    <span className="absolute bottom-1 right-1 font-mono text-[9px] text-[#33261F] bg-[#FFFCF8]/90 px-1 py-0.5 rounded border border-[#E4DDD1]">
-                      {item.code}
-                    </span>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="font-mono text-[10px] uppercase text-[#8B2E24]">
-                      {item.craftKey}
+                <div key={item.code} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+                  {/* Top row on mobile: image + product info */}
+                  <div className="flex items-start gap-3 sm:contents">
+                    <div data-cms-img className="w-[68px] h-[68px] sm:w-[86px] sm:h-[86px] rounded-[9px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden flex-none relative">
+                      <img
+                        src={`/images/products/${item.code.toLowerCase()}.jpg`}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                      <span className="absolute bottom-1 right-1 font-mono text-[9px] text-[#33261F] bg-[#FFFCF8]/90 px-1 py-0.5 rounded border border-[#E4DDD1]">
+                        {item.code}
+                      </span>
                     </div>
-                    <div className="font-figtree font-semibold text-[16.5px] text-[#33261F]">
-                      {item.name}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="font-mono text-[10px] uppercase text-[#8B2E24] tracking-wider mb-0.5">
+                        {item.craftKey}
+                      </div>
+                      <div className="font-figtree font-semibold text-[15px] sm:text-[16.5px] text-[#33261F] leading-[1.3] mb-1">
+                        {item.name}
+                      </div>
+                      <div className="font-lora text-[12px] sm:text-[13px] text-[#6B5A4C] truncate">
+                        {item.maker} · {item.region}
+                      </div>
                     </div>
-                    <div className="font-lora text-[13px] text-[#6B5A4C]">
-                      {item.maker} · {item.region}
+                  </div>
+
+                  {/* Bottom row on mobile: stepper + price + remove */}
+                  <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-5 pt-2.5 sm:pt-0 border-t border-[#EFE9DE] sm:border-t-0 sm:contents">
+                    {/* Quantity Stepper */}
+                    <div className="flex items-center border border-[#CDBEA8] rounded-[8px] bg-[#F4F0E7] overflow-hidden flex-none">
+                      <button
+                        type="button"
+                        onClick={() => decrementCart(item.code)}
+                        className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] flex items-center justify-center hover:bg-[#EDE5D6] transition-colors text-[16px] text-[#33261F] cursor-pointer"
+                      >
+                        −
+                      </button>
+                      <span className="w-[30px] sm:w-[32px] text-center font-figtree font-bold text-[13px] sm:text-[14px] text-[#33261F]">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => addToCart(item.code)}
+                        className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] flex items-center justify-center hover:bg-[#EDE5D6] transition-colors text-[16px] text-[#33261F] cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-3 sm:gap-5 sm:contents">
+                      {/* Line Total */}
+                      <div className="font-figtree font-bold text-[15px] sm:text-[16px] text-[#33261F] sm:w-[96px] sm:text-right">
+                        {fmt(item.lineTotalUSD)}
+                      </div>
+
+                      {/* Remove */}
+                      <button
+                        type="button"
+                        onClick={() => removeFromCart(item.code)}
+                        className="font-mono text-[11px] text-[#8B2E24] hover:underline cursor-pointer whitespace-nowrap px-1 py-1"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
-
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center border border-[#CDBEA8] rounded-[8px] bg-[#F4F0E7] overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => decrementCart(item.code)}
-                      className="w-[34px] h-[34px] flex items-center justify-center hover:bg-[#EDE5D6] transition-colors text-[16px] text-[#33261F] cursor-pointer"
-                    >
-                      −
-                    </button>
-                    <span className="w-[32px] text-center font-figtree font-bold text-[14px] text-[#33261F]">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => addToCart(item.code)}
-                      className="w-[34px] h-[34px] flex items-center justify-center hover:bg-[#EDE5D6] transition-colors text-[16px] text-[#33261F] cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* Line Total */}
-                  <div className="w-[96px] text-right font-figtree font-bold text-[16px] text-[#33261F]">
-                    {fmt(item.lineTotalUSD)}
-                  </div>
-
-                  {/* Remove */}
-                  <button
-                    type="button"
-                    onClick={() => removeFromCart(item.code)}
-                    className="font-mono text-[11px] text-[#8B2E24] hover:underline cursor-pointer"
-                  >
-                    Remove
-                  </button>
                 </div>
               ))}
             </div>

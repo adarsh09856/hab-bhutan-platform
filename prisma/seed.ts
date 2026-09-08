@@ -382,6 +382,40 @@ async function main() {
     },
   });
 
+  // 11. Seed default Hero Slides for homepage slider
+  const existingSlides = await prisma.heroSlide.count();
+  if (existingSlides === 0) {
+    await prisma.heroSlide.createMany({
+      data: [
+        {
+          imageUrl: '/images/hero_artisan.jpg',
+          caption: 'Master artisan at the loom · Khoma, Lhuentse',
+          altText: 'Master artisan weaving on backstrap loom in Khoma, Bhutan',
+          linkUrl: '/shop',
+          sortOrder: 1,
+          isActive: true,
+        },
+        {
+          imageUrl: '/images/training_workshop.jpg',
+          caption: 'HAB artisan training workshop · Thimphu',
+          altText: 'HAB Traditional Craft Training Workshop in Thimphu',
+          linkUrl: '/programmes',
+          sortOrder: 2,
+          isActive: true,
+        },
+        {
+          imageUrl: '/images/programs/trade.jpg',
+          caption: 'Trade facilitation & export support · Secretariat',
+          altText: 'HAB trade facilitation and export support programme',
+          linkUrl: '/projects',
+          sortOrder: 3,
+          isActive: true,
+        },
+      ],
+    });
+    console.log('Seeded 3 default hero slides.');
+  }
+
   console.log('Database seeded successfully!');
 }
 

@@ -9,6 +9,7 @@ import {
 } from '@/lib/data';
 import CraftCard from '@/components/public/CraftCard';
 import ProductCard from '@/components/public/ProductCard';
+import HeroSlider from '@/components/public/HeroSlider';
 
 export default function HomePage() {
   const newInShop = SAMPLE_PRODUCTS.slice(0, 4);
@@ -104,22 +105,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div data-cms-img className="aspect-[4/3] sm:aspect-[4/3.2] rounded-[14px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
-          <img
-            src="/images/hero_artisan.jpg"
-            alt="Master artisan weaving on backstrap loom in Khoma, Bhutan"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-          <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-10 flex items-center justify-between gap-2">
-            <span className="font-mono text-[10px] sm:text-[11px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-[8px] sm:px-[10px] py-[4px] sm:py-[5px] rounded-[5px] border border-white/15 truncate">
-              Master artisan at the loom · Khoma, Lhuentse
-            </span>
-            <span className="font-mono text-[9.5px] sm:text-[10.5px] text-[#F4F0E7]/80 bg-black/40 backdrop-blur-sm px-[6px] sm:px-[8px] py-[3px] sm:py-[4px] rounded-[4px] flex-none">
-              Zorig Chusum
-            </span>
-          </div>
-        </div>
+        <HeroSlider />
       </section>
 
       {/* 2. Stat Row */}

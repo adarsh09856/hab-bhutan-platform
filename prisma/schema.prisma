@@ -371,3 +371,19 @@ model RateLimitAttempt {
 
   @@index([key, createdAt])
 }
+
+// Admin-managed homepage hero image slider
+model HeroSlide {
+  id        String   @id @default(uuid())
+  imageUrl  String   // /images/hero/slide1.jpg or full URL
+  caption   String   // Short caption shown on slide
+  altText   String   // Accessibility alt text
+  linkUrl   String?  // Optional CTA link
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([isActive])
+}

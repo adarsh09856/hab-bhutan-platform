@@ -72,6 +72,7 @@ export default function AdminLayout({
     { label: 'Members Directory', href: '/admin/members' },
     { label: 'Application Queue', href: '/admin/applications' },
     { label: 'Content & CMS', href: '/admin/content' },
+    { label: '🖼️ Hero Slides', href: '/admin/hero' },
     { label: 'Roles & Permissions', href: '/admin/settings?tab=RBAC' },
     { label: 'Financial Reports', href: '/admin/reports' },
     { label: 'System Settings', href: '/admin/settings' },
