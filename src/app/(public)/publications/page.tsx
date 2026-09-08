@@ -47,29 +47,49 @@ const PUBLICATIONS_DATA: PublicationItem[] = [
 ];
 
 export default function PublicationsPage() {
+  const [publications, setPublications] = useState<PublicationItem[]>(PUBLICATIONS_DATA);
   const [selectedKind, setSelectedKind] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const kinds = useMemo(() => {
-    return Array.from(new Set(PUBLICATIONS_DATA.map((p) => p.kind))).sort();
+  React.useEffect(() => {
+    fetch('/api/publications')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.publications && d.publications.length > 0) {
+          setPublications(
+            d.publications.map((p: any) => ({
+              kind: p.kind || 'Report',
+              title: p.title,
+              year: p.year || new Date().getFullYear(),
+              meta: p.metaDetails || 'PDF Document',
+              isFeatured: Boolean(p.isFeatured),
+            }))
+          );
+        }
+      })
+      .catch(() => {});
   }, []);
 
+  const kinds = useMemo(() => {
+    return Array.from(new Set(publications.map((p) => p.kind))).sort();
+  }, [publications]);
+
   const years = useMemo(() => {
-    return Array.from(new Set(PUBLICATIONS_DATA.map((p) => String(p.year)))).sort().reverse();
-  }, []);
+    return Array.from(new Set(publications.map((p) => String(p.year)))).sort().reverse();
+  }, [publications]);
 
   const filteredPublications = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return PUBLICATIONS_DATA.filter((p) => {
+    return publications.filter((p) => {
       const matchKind = !selectedKind || p.kind === selectedKind;
       const matchYear = !selectedYear || String(p.year) === selectedYear;
       const matchQ = !q || p.title.toLowerCase().includes(q) || p.kind.toLowerCase().includes(q);
       return matchKind && matchYear && matchQ;
     });
-  }, [selectedKind, selectedYear, searchQuery]);
+  }, [publications, selectedKind, selectedYear, searchQuery]);
 
-  const leadReport = PUBLICATIONS_DATA.find((p) => p.isFeatured) || PUBLICATIONS_DATA[0];
+  const leadReport = publications.find((p) => p.isFeatured) || publications[0];
 
   const resetFilters = () => {
     setSelectedKind('');

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   CRAFTS,
@@ -14,7 +14,23 @@ import HeroSlider from '@/components/public/HeroSlider';
 export default function HomePage() {
   const newInShop = SAMPLE_PRODUCTS.slice(0, 4);
 
-  const programs = [
+  const [siteSettings, setSiteSettings] = useState({
+    tagline: CLIENT_VERBATIM.tagline,
+    heroParagraph: CLIENT_VERBATIM.heroPara,
+    heroCtaPrimaryText: 'Our mission',
+    heroCtaPrimaryLink: '/about',
+    heroCtaSecondaryText: 'Shop the crafts →',
+    heroCtaSecondaryLink: '/shop',
+    stats: [
+      { n: "7,500", label: "Micro & small enterprises in the network" },
+      { n: "5,250", label: "Women-led enterprises" },
+      { n: "195", label: "Affiliated stores across Bhutan" },
+      { n: "13", label: "Arts & crafts of Zorig Chusum" },
+    ],
+    partnersList: CLIENT_VERBATIM.partners,
+  });
+
+  const [programs, setPrograms] = useState([
     {
       title: "Trade facilitation",
       desc: "Trade infrastructure, market linkage, export facilitation and certification frameworks so members can compete in real markets.",
@@ -28,10 +44,10 @@ export default function HomePage() {
       image: "/images/programs/dye_training.jpg",
     },
     {
-      title: "Education & awareness",
-      desc: "Documenting and transmitting the Zorig Chusum, and protecting origin through geographical indication and certification.",
-      slot: "Heritage & apprenticeship",
-      image: "/images/programs/heritage.jpg",
+      title: "Punakha Market",
+      desc: "The only authentic crafts market validated and managed by HAB, guaranteeing genuine provenance for every object sold.",
+      slot: "Authentic provenance market",
+      image: "/images/programs/punakha.jpg",
     },
     {
       title: "Product innovation",
@@ -39,9 +55,9 @@ export default function HomePage() {
       slot: "Product design laboratory",
       image: "/images/programs/design_lab.jpg",
     },
-  ];
+  ]);
 
-  const newsItems = [
+  const [newsItems, setNewsItems] = useState([
     {
       kind: "Programs",
       date: "28 Aug 2026",
@@ -60,14 +76,90 @@ export default function HomePage() {
       title: "Zorig Chusum craft bazaar returns to Clock Tower Square",
       blurb: "Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.",
     },
-  ];
+  ]);
 
-  const publications = [
+  const [publications, setPublications] = useState([
     { kind: "Latest · Annual report", title: "Annual Report 2025", meta: "PDF · 4.2 MB · English & Dzongkha" },
     { kind: "Strategy", title: "Five-Year Strategic Plan 2026–2030", meta: "PDF · 3.6 MB · Board approved" },
     { kind: "Sector study", title: "Zorig Chusum Value Chain Assessment", meta: "PDF · 2.8 MB · 96 pages" },
     { kind: "Accounts", title: "Audited Financial Statements 2025", meta: "PDF · 1.1 MB · Independent auditor" },
-  ];
+  ]);
+
+  useEffect(() => {
+    // 1. Fetch site settings & partners
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.setting) {
+          setSiteSettings({
+            tagline: d.setting.tagline || CLIENT_VERBATIM.tagline,
+            heroParagraph: d.setting.heroParagraph || CLIENT_VERBATIM.heroPara,
+            heroCtaPrimaryText: d.setting.heroCtaPrimaryText || 'Our mission',
+            heroCtaPrimaryLink: d.setting.heroCtaPrimaryLink || '/about',
+            heroCtaSecondaryText: d.setting.heroCtaSecondaryText || 'Shop the crafts →',
+            heroCtaSecondaryLink: d.setting.heroCtaSecondaryLink || '/shop',
+            stats: [
+              { n: d.setting.stat1Number || "7,500", label: d.setting.stat1Label || "Micro & small enterprises in the network" },
+              { n: d.setting.stat2Number || "5,250", label: d.setting.stat2Label || "Women-led enterprises" },
+              { n: d.setting.stat3Number || "195", label: d.setting.stat3Label || "Affiliated stores across Bhutan" },
+              { n: d.setting.stat4Number || "13", label: d.setting.stat4Label || "Arts & crafts of Zorig Chusum" },
+            ],
+            partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : CLIENT_VERBATIM.partners,
+          });
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch dynamic programmes
+    fetch('/api/programmes')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.pillars && d.pillars.length > 0) {
+          setPrograms(
+            d.pillars.slice(0, 4).map((p: any) => ({
+              title: p.title,
+              desc: p.description,
+              slot: p.badge || p.subtitle || 'Programme Pillar',
+              image: p.imageUrl || '/images/programs/trade.jpg',
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch dynamic news
+    fetch('/api/news')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.articles && d.articles.length > 0) {
+          setNewsItems(
+            d.articles.slice(0, 3).map((a: any) => ({
+              kind: a.kind || 'News',
+              date: a.dateString || 'Recent',
+              title: a.title,
+              blurb: a.blurb || '',
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    // 4. Fetch dynamic publications
+    fetch('/api/publications')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.publications && d.publications.length > 0) {
+          setPublications(
+            d.publications.slice(0, 4).map((p: any) => ({
+              kind: p.kind || 'Report',
+              title: p.title,
+              meta: p.metaDetails || (p.year ? `${p.year} publication` : 'PDF'),
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <main className="w-full">
@@ -78,23 +170,23 @@ export default function HomePage() {
             Civil Society Organization · Bhutan
           </div>
           <h1 className="font-marcellus text-[36px] sm:text-[48px] lg:text-[58px] font-normal leading-[1.06] tracking-[-0.01em] mb-4 sm:mb-[22px] [text-wrap:balance] text-[#33261F]">
-            {CLIENT_VERBATIM.tagline}
+            {siteSettings.tagline}
           </h1>
           <p className="font-lora text-[16px] sm:text-[18px] leading-[1.62] text-[#4A3C33] mb-6 sm:mb-[30px] max-w-[52ch]">
-            {CLIENT_VERBATIM.heroPara}
+            {siteSettings.heroParagraph}
           </p>
           <div className="flex gap-3 flex-wrap">
             <Link
-              href="/about"
+              href={siteSettings.heroCtaPrimaryLink}
               className="font-figtree text-[14px] sm:text-[15px] font-semibold bg-[#33261F] text-[#F4F0E7] px-5 sm:px-6 py-3 sm:py-[15px] rounded-[8px] whitespace-nowrap hover:bg-[#8B2E24] hover:text-white transition-colors"
             >
-              Our mission
+              {siteSettings.heroCtaPrimaryText}
             </Link>
             <Link
-              href="/shop"
+              href={siteSettings.heroCtaSecondaryLink}
               className="font-figtree text-[14px] sm:text-[15px] font-semibold border border-[#CDBEA8] text-[#8B2E24] px-5 sm:px-6 py-3 sm:py-[15px] rounded-[8px] bg-[#FFFCF8] whitespace-nowrap hover:border-[#33261F] transition-colors"
             >
-              Shop the crafts →
+              {siteSettings.heroCtaSecondaryText}
             </Link>
             <Link
               href="/members"
@@ -111,7 +203,7 @@ export default function HomePage() {
       {/* 2. Stat Row */}
       <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-[34px]">
         <div className="grid grid-cols-2 md:grid-cols-4 border-t border-b border-[#E4DDD1] divide-y sm:divide-y-0 divide-[#EFE9DE]">
-          {CLIENT_VERBATIM.stats.map((s) => (
+          {siteSettings.stats.map((s) => (
             <div key={s.label} className="py-4 sm:py-[26px] pr-4 sm:pr-6 pl-0">
               <div className="font-figtree font-bold text-[28px] sm:text-[38px] tracking-[-0.03em] leading-none text-[#33261F]">
                 {s.n}
@@ -472,7 +564,7 @@ export default function HomePage() {
           Partners &amp; Funders
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[1px] bg-[#E4DDD1] border border-[#E4DDD1] rounded-[10px] overflow-hidden">
-          {CLIENT_VERBATIM.partners.map((partner) => (
+          {(siteSettings.partnersList || CLIENT_VERBATIM.partners).map((partner: string) => (
             <div
               key={partner}
               className="h-[68px] sm:h-[78px] bg-white flex items-center justify-center p-3 text-center"

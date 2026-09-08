@@ -84,6 +84,34 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
+  // 3. Protect /portal routes for authenticated members
+  if (pathname.startsWith('/portal')) {
+    const token = req.cookies.get('hab_session')?.value;
+
+    if (!token) {
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return applySecurityHeaders(NextResponse.redirect(loginUrl));
+    }
+
+    const sessionUser = await verifyToken(token);
+
+    if (!sessionUser) {
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      loginUrl.searchParams.set('reason', 'session_expired');
+      const response = NextResponse.redirect(loginUrl);
+      response.cookies.delete('hab_session');
+      return applySecurityHeaders(response);
+    }
+
+    const res = applySecurityHeaders(NextResponse.next());
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
+  }
+
   return applySecurityHeaders(NextResponse.next());
 }
 

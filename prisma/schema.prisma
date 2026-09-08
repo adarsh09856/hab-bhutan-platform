@@ -87,7 +87,11 @@ model Craft {
   key         String    @unique
   name        String
   english     String
-  description String
+  dzongkha    String?
+  description String    @db.Text
+  bannerUrl   String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
   products    Product[]
   members     Member[]
   createdAt   DateTime  @default(now())
@@ -386,4 +390,65 @@ model HeroSlide {
 
   @@index([sortOrder])
   @@index([isActive])
+}
+
+// Global Site & Dynamic Content Settings
+model SiteSetting {
+  id                   String   @id @default("default")
+  announcementText     String   @default("CSO/2011/043 · Handicrafts Association of Bhutan · Apex Civil Society Organization")
+  announcementLink     String?
+  isAnnouncementOn     Boolean  @default(true)
+  tagline              String   @default("Towards a vibrant & sustainable handicrafts sector")
+  heroParagraph        String   @db.Text
+  heroCtaPrimaryText   String   @default("Our mission")
+  heroCtaPrimaryLink   String   @default("/about")
+  heroCtaSecondaryText String   @default("Shop the crafts →")
+  heroCtaSecondaryLink String   @default("/shop")
+  stat1Number          String   @default("7,500")
+  stat1Label           String   @default("Micro & small enterprises in the network")
+  stat2Number          String   @default("5,250")
+  stat2Label           String   @default("Women-led enterprises")
+  stat3Number          String   @default("195")
+  stat3Label           String   @default("Affiliated stores across Bhutan")
+  stat4Number          String   @default("13")
+  stat4Label           String   @default("Arts & crafts of Zorig Chusum")
+  officeAddress        String   @default("Metog Lam, Thimphu, Bhutan")
+  officePhone          String   @default("+975-2-338089")
+  edPhone              String   @default("+975-77654508")
+  marketingPhone       String   @default("+975-17462636 / 17881111")
+  officialEmail        String   @default("officehab@gmail.com")
+  footerAbout          String   @db.Text
+  csoRegistration      String   @default("CSO Registration: CSO/2011/043 · Thimphu, Kingdom of Bhutan")
+  copyrightText        String   @default("© 2026 Handicrafts Association of Bhutan. All rights reserved.")
+  punakhaMarketNotice  String   @default("The only authentic crafts market validated and managed by HAB")
+  partnersList         Json
+  updatedAt            DateTime @updatedAt
+}
+
+// Dynamic Programme Pillars and Mandates
+model ProgrammePillar {
+  id          String   @id @default(uuid())
+  ref         String   @unique
+  title       String
+  description String   @db.Text
+  activities  Json
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+// Dynamic Membership Tiers & Annual Dues Configuration
+model MembershipSetting {
+  id                   String   @id @default("default")
+  activeDuesBTN        Int      @default(1200)
+  associateDuesBTN     Int      @default(2500)
+  institutionalDuesBTN Int      @default(10000)
+  bankName             String   @default("Bank of Bhutan (BoB)")
+  accountNumber        String   @default("200847291038")
+  accountTitle         String   @default("Handicrafts Association of Bhutan")
+  mbobQrUrl            String?  @default("/images/mbob_qr_placeholder.png")
+  updatedAt            DateTime @updatedAt
 }

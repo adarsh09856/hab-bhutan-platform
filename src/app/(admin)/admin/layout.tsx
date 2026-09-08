@@ -69,16 +69,19 @@ export default function AdminLayout({
   }, []);
 
   const navItems = [
-    { label: 'Dashboard', href: '/admin' },
-    { label: 'Products & Crafts', href: '/admin/products' },
-    { label: 'Orders & Fulfillment', href: '/admin/orders' },
-    { label: 'Members Directory', href: '/admin/members' },
-    { label: 'Application Queue', href: '/admin/applications' },
-    { label: 'Content & CMS', href: '/admin/content' },
+    { label: '📊 Dashboard', href: '/admin' },
+    { label: '🛍️ Products & Catalog', href: '/admin/products' },
+    { label: '📦 Orders & Fulfillment', href: '/admin/orders' },
+    { label: '👥 Members Directory', href: '/admin/members' },
+    { label: '📝 Application Queue', href: '/admin/applications' },
+    { label: '📰 Content & Publications', href: '/admin/content' },
     { label: '🖼️ Hero Slides', href: '/admin/hero' },
-    { label: 'Roles & Permissions', href: '/admin/settings?tab=RBAC' },
-    { label: 'Financial Reports', href: '/admin/reports' },
-    { label: 'System Settings', href: '/admin/settings' },
+    { label: '🌐 Website & Global CMS', href: '/admin/site-settings' },
+    { label: '🎨 13 Crafts CMS', href: '/admin/crafts' },
+    { label: '🏷️ Membership Dues & Tiers', href: '/admin/membership-settings' },
+    { label: '📈 Financial Reports', href: '/admin/reports' },
+    { label: '🔐 Roles & RBAC', href: '/admin/settings?tab=RBAC' },
+    { label: '⚙️ System Settings', href: '/admin/settings' },
   ];
 
   return (

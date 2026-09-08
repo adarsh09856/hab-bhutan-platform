@@ -416,6 +416,98 @@ async function main() {
     console.log('Seeded 3 default hero slides.');
   }
 
+  // 12. Seed default SiteSetting
+  const existingSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+  if (!existingSetting) {
+    await prisma.siteSetting.create({
+      data: {
+        id: 'default',
+        announcementText: 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex Civil Society Organization',
+        announcementLink: '/about',
+        isAnnouncementOn: true,
+        tagline: 'Towards a vibrant & sustainable handicrafts sector',
+        heroParagraph: 'Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports skills development and capacity building of the craftspeople.',
+        heroCtaPrimaryText: 'Our mission',
+        heroCtaPrimaryLink: '/about',
+        heroCtaSecondaryText: 'Shop the crafts →',
+        heroCtaSecondaryLink: '/shop',
+        stat1Number: '7,500',
+        stat1Label: 'Micro & small enterprises in the network',
+        stat2Number: '5,250',
+        stat2Label: 'Women-led enterprises',
+        stat3Number: '195',
+        stat3Label: 'Affiliated stores across Bhutan',
+        stat4Number: '13',
+        stat4Label: 'Arts & crafts of Zorig Chusum',
+        officeAddress: 'Metog Lam, Thimphu, Bhutan',
+        officePhone: '+975-2-338089',
+        edPhone: '+975-77654508',
+        marketingPhone: '+975-17462636 / 17881111',
+        officialEmail: 'officehab@gmail.com',
+        footerAbout: 'Handicrafts Association of Bhutan is the apex civil society organization stewarding Bhutan’s thirteen traditional arts and crafts (Zorig Chusum). We empower rural craftspeople, safeguard indigenous cultural heritage, and open international market access.',
+        csoRegistration: 'CSO Registration: CSO/2011/043 · Thimphu, Kingdom of Bhutan',
+        copyrightText: '© 2026 Handicrafts Association of Bhutan. All rights reserved.',
+        punakhaMarketNotice: 'The only authentic crafts market validated and managed by HAB',
+        partnersList: [
+          'RGoB', 'EU SWITCH-Asia', 'SHINE', 'GrAT', 'UNDP', 'SGP',
+          'EIF', 'Government of Canada', 'Ernst & Young', 'Helvetas Bhutan', 'BCCI', 'Bhutan Post'
+        ],
+      },
+    });
+    console.log('Seeded default SiteSetting.');
+  }
+
+  // 13. Seed default MembershipSetting
+  const existingMemberSetting = await prisma.membershipSetting.findUnique({ where: { id: 'default' } });
+  if (!existingMemberSetting) {
+    await prisma.membershipSetting.create({
+      data: {
+        id: 'default',
+        activeDuesBTN: 1200,
+        associateDuesBTN: 2500,
+        institutionalDuesBTN: 10000,
+        bankName: 'Bank of Bhutan (BoB)',
+        accountNumber: '200847291038',
+        accountTitle: 'Handicrafts Association of Bhutan',
+        mbobQrUrl: '/images/mbob_qr_placeholder.png',
+      },
+    });
+    console.log('Seeded default MembershipSetting.');
+  }
+
+  // 14. Seed 11 Programme Pillars
+  const existingPillars = await prisma.programmePillar.count();
+  if (existingPillars === 0) {
+    const pillars = [
+      { ref: "a", title: "Sector Representation and Advocacy", description: "Represent and advance the collective interests of all handicrafts sector stakeholders — artisans, producers, designers, traders and service providers — before governmental, legislative, regulatory, intergovernmental and private sector bodies.", activities: ["Representation in national and subnational planning processes", "Participation in legislative and regulatory consultations", "Engagement with ministries, regulators and international forums"] },
+      { ref: "b", title: "Policy Development and Intervention", description: "Engage with competent authorities on policies, laws, regulations, standards and incentive frameworks affecting the sector; submit evidence-based positions and monitor implementation of policy commitments.", activities: ["Evidence-based policy positions submitted to competent authorities", "Review of standards and incentive frameworks affecting the sector", "Monitoring of sector-relevant policy commitments"] },
+      { ref: "c", title: "Trade Facilitation", description: "Facilitate domestic and international trade through trade infrastructure, standards compliance systems, market linkage mechanisms, export facilitation instruments and certification frameworks.", activities: ["Domestic and international trade fairs and exhibitions", "Export readiness programmes and trade facilitation tools", "Buyer–seller linkages and market information systems", "Certification and standards compliance support"] },
+      { ref: "d", title: "Product Development", description: "Support innovation, quality enhancement, design evolution and product diversification through design interventions, technical upgradation and linkages between artisans, designers, institutions and markets.", activities: ["Design workshops and innovation programmes", "Artisan–designer collaborations", "Quality improvement initiatives", "Product development guidelines and toolkits"] },
+      { ref: "e", title: "Branding and Market Development", description: "Steward a credible sector brand identity for Bhutanese handicrafts, promote authenticity and cultural value, and support distribution networks, retail channels and promotional platforms.", activities: ["Sector brand assets and stewardship", "Domestic and international marketing campaigns", "Geographical indications and certification marks", "Digital and physical promotional platforms"] },
+      { ref: "f", title: "Capacity Development", description: "Strengthen productive, entrepreneurial, managerial, technical and institutional capacity through training, professional development, knowledge exchange, mentorship and peer learning.", activities: ["Craft skills, business management and financial literacy training", "Digital marketing and export procedure courses", "Study tours, peer exchanges and mentorship", "Support to training institutions and curricula"] },
+      { ref: "g", title: "Cultural Heritage Stewardship", description: "Protect, document, promote and transmit the intangible cultural heritage of the Zorig Chusum; maintain a registry of authentic craft practices and producers; pursue geographical indication and certification of origin.", activities: ["Registry of authentic craft practices and producers", "Documentation of traditional craft knowledge", "Geographical indication and certification of origin", "Cooperation with national and international heritage bodies"] },
+      { ref: "h", title: "Research and Knowledge Management", description: "Undertake and disseminate research, sector data, market intelligence and policy analysis to inform advocacy, programme design and the evidence base for the sector.", activities: ["Sector surveys, market studies and policy analyses", "Sector data platform", "Research reports and market intelligence briefs"] },
+      { ref: "i", title: "Social Inclusion and Equity", description: "Advance equitable participation of rural artisans, women practitioners, youth, persons with disabilities and marginalised communities in the sector and in HAB's programmes, governance and services.", activities: ["Targeted participation of rural artisans and women practitioners", "Pathways for youth entering the crafts", "Access for persons with disabilities and marginalised communities"] },
+      { ref: "j", title: "Financial Sustainability of the Sector", description: "Facilitate access to finance, grants, concessional credit and catalytic investment; develop financial literacy and entrepreneurship programmes; strengthen long-term viability.", activities: ["Access to grants, concessional credit and catalytic investment", "Financial literacy and entrepreneurship programmes", "Endowment Fund and resilience mechanisms"] },
+      { ref: "k", title: "Partnerships and Institutional Linkages", description: "Establish and grow partnerships with national and international organisations, government agencies, development partners, research and educational institutions, the private sector and civil society.", activities: ["Partnerships with government agencies and development partners", "Linkages with research and educational institutions", "Private sector and civil society collaboration"] }
+    ];
+
+    for (let i = 0; i < pillars.length; i++) {
+      const p = pillars[i];
+      await prisma.programmePillar.create({
+        data: {
+          ref: p.ref,
+          title: p.title,
+          description: p.description,
+          activities: p.activities,
+          sortOrder: i + 1,
+          isActive: true,
+        },
+      });
+    }
+    console.log(`Seeded ${pillars.length} programme pillars.`);
+  }
+
   console.log('Database seeded successfully!');
 }
 

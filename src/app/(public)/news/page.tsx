@@ -57,6 +57,29 @@ const UPCOMING_EVENTS: EventItem[] = [
 ];
 
 export default function NewsPage() {
+  const [articles, setArticles] = React.useState<NewsItem[]>(NEWS_ARTICLES);
+  const [events, setEvents] = React.useState<EventItem[]>(UPCOMING_EVENTS);
+
+  React.useEffect(() => {
+    fetch('/api/news')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.articles && data.articles.length > 0) {
+          setArticles(
+            data.articles.map((a: any) => ({
+              kind: a.kind || 'News',
+              date: a.dateString || 'Recent',
+              title: a.title,
+              blurb: a.blurb || '',
+            }))
+          );
+        }
+        if (data?.events && data.events.length > 0) {
+          setEvents(data.events);
+        }
+      })
+      .catch(() => {});
+  }, []);
   return (
     <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
       {/* Breadcrumb */}
@@ -78,7 +101,7 @@ export default function NewsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 items-start">
         {/* Left Column: Articles */}
         <div className="flex flex-col gap-5">
-          {NEWS_ARTICLES.map((article) => (
+          {articles.map((article) => (
             <div
               key={article.title}
               className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden grid grid-cols-1 sm:grid-cols-[200px_1fr]"
@@ -131,7 +154,7 @@ export default function NewsPage() {
               Upcoming events
             </h3>
             <div className="divide-y divide-[#EFE9DE]">
-              {UPCOMING_EVENTS.map((ev) => (
+              {events.map((ev) => (
                 <div key={ev.title} className="py-3.5 flex items-center gap-4 first:pt-0 last:pb-0">
                   <div className="w-[44px] h-[44px] bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] flex flex-col items-center justify-center flex-none">
                     <span className="font-figtree font-bold text-[14px] text-[#33261F] leading-none">

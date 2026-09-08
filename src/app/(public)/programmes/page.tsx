@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   PROGRAM_OBJECTS,
@@ -9,8 +9,41 @@ import {
   BENEFICIARY_GROUPS,
 } from '@/lib/data';
 
+interface Pillar {
+  ref: string;
+  t: string;
+  d: string;
+  activities: string[];
+}
+
 export default function ProgrammesPage() {
   const [expandedObjects, setExpandedObjects] = useState<Record<string, boolean>>({});
+  const [pillars, setPillars] = useState<Pillar[]>(
+    PROGRAM_OBJECTS.map((p) => ({
+      ref: p.ref,
+      t: p.t,
+      d: p.d,
+      activities: p.activities,
+    }))
+  );
+
+  useEffect(() => {
+    fetch('/api/programmes')
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d?.pillars) && d.pillars.length > 0) {
+          setPillars(
+            d.pillars.map((p: any) => ({
+              ref: p.ref,
+              t: p.title || p.t,
+              d: p.description || p.d,
+              activities: Array.isArray(p.activities) ? p.activities : [],
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const toggleObject = (ref: string) => {
     setExpandedObjects((prev) => ({
@@ -77,7 +110,7 @@ export default function ProgrammesPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {PROGRAM_OBJECTS.map((po) => {
+          {pillars.map((po) => {
             const isExpanded = !!expandedObjects[po.ref];
             return (
               <div

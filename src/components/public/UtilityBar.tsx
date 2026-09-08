@@ -1,15 +1,40 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function UtilityBar() {
+  const [announcement, setAnnouncement] = useState('Registered CSO · CSO Act of Bhutan 2007');
+  const [announcementLink, setAnnouncementLink] = useState<string | null>(null);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.setting) {
+          if (data.setting.announcementText) setAnnouncement(data.setting.announcementText);
+          if (data.setting.announcementLink) setAnnouncementLink(data.setting.announcementLink);
+          if (data.setting.isAnnouncementOn !== undefined) setVisible(Boolean(data.setting.isAnnouncementOn));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  if (!visible) return null;
+
   return (
     <div className="bg-[#33261F] text-[#D2C2AE]">
       <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 min-h-[36px] flex items-center justify-between gap-4 font-mono text-[10.5px] sm:text-[11px] tracking-[0.04em]">
-        <span className="text-[#F4F0E7] truncate text-[10px] sm:text-[11px]">
-          Registered CSO · CSO Act of Bhutan 2007
-        </span>
+        {announcementLink ? (
+          <Link href={announcementLink} className="text-[#F4F0E7] hover:underline truncate text-[10px] sm:text-[11px]">
+            {announcement}
+          </Link>
+        ) : (
+          <span className="text-[#F4F0E7] truncate text-[10px] sm:text-[11px]">
+            {announcement}
+          </span>
+        )}
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="hidden md:flex items-center gap-4">
             <Link href="/about#contact" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
