@@ -155,31 +155,31 @@ export default function ProjectsPage() {
   return (
     <main className="pb-24">
       {/* 1. Header & Summary Stats */}
-      <section className="max-w-[1280px] min-w-[1200px] mx-auto px-10 pt-10 pb-8">
+      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-8">
         <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6">
           <Link href="/" className="hover:underline">Home</Link> / Projects
         </div>
 
-        <div className="grid grid-cols-[1.1fr_0.9fr] gap-14 items-center mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-14 items-center mb-8 sm:mb-10">
           <div>
-            <div className="font-mono text-[11.5px] tracking-[0.16em] uppercase text-[#8B2E24] mb-4">
+            <div className="font-mono text-[11.5px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3 sm:mb-4">
               Donor &amp; Partner Delivery
             </div>
-            <h1 className="font-marcellus text-[46px] font-normal tracking-[-0.008em] mb-4 text-[#33261F]">
+            <h1 className="font-marcellus text-3xl sm:text-4xl lg:text-[46px] font-normal tracking-[-0.008em] mb-4 text-[#33261F]">
               Projects
             </h1>
-            <p className="font-lora text-[17.5px] leading-[1.62] text-[#4A3C33]">
+            <p className="font-lora text-sm sm:text-base lg:text-[17.5px] leading-[1.62] text-[#4A3C33]">
               Funded interventions delivering skills, market linkage, clean production, and craft transmission across Bhutan.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-[1px] bg-[#E4DDD1] border border-[#E4DDD1] rounded-[12px] overflow-hidden">
             {projectTotals.map((tot) => (
-              <div key={tot.label} className="bg-[#FFFCF8] p-5">
-                <div className="font-figtree font-bold text-[22px] text-[#33261F] mb-1">
+              <div key={tot.label} className="bg-[#FFFCF8] p-4 sm:p-5">
+                <div className="font-figtree font-bold text-lg sm:text-[22px] text-[#33261F] mb-1">
                   {tot.n}
                 </div>
-                <div className="font-lora text-[13.5px] text-[#6B5A4C]">
+                <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
                   {tot.label}
                 </div>
               </div>
@@ -188,11 +188,11 @@ export default function ProjectsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-3 border-b border-[#E4DDD1] pb-4">
+        <div className="flex gap-2 sm:gap-3 border-b border-[#E4DDD1] pb-4 overflow-x-auto">
           <button
             type="button"
             onClick={() => setActiveTab('current')}
-            className={`font-figtree font-semibold text-[14px] px-5 py-2.5 rounded-full transition-colors cursor-pointer ${
+            className={`font-figtree font-semibold text-xs sm:text-[14px] px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === 'current'
                 ? 'bg-[#33261F] text-[#F4F0E7]'
                 : 'bg-[#FFFCF8] border border-[#CDBEA8] text-[#33261F] hover:bg-[#EDE5D6]'
@@ -203,7 +203,7 @@ export default function ProjectsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('past')}
-            className={`font-figtree font-semibold text-[14px] px-5 py-2.5 rounded-full transition-colors cursor-pointer ${
+            className={`font-figtree font-semibold text-xs sm:text-[14px] px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === 'past'
                 ? 'bg-[#33261F] text-[#F4F0E7]'
                 : 'bg-[#FFFCF8] border border-[#CDBEA8] text-[#33261F] hover:bg-[#EDE5D6]'
@@ -215,30 +215,30 @@ export default function ProjectsPage() {
       </section>
 
       {/* 2. Projects List */}
-      <section className="max-w-[1280px] min-w-[1200px] mx-auto px-10 flex flex-col gap-8">
+      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 flex flex-col gap-8">
         {filteredProjects.map((proj) => (
           <div
             key={proj.name}
-            className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden grid grid-cols-[300px_1fr]"
+            className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden grid grid-cols-1 lg:grid-cols-[300px_1fr]"
           >
             {/* Left image */}
-            <div data-cms-img className="relative min-h-[260px] bg-[#E8E1D4] border-r border-[#E4DDD1] overflow-hidden">
+            <div data-cms-img className="relative min-h-[180px] lg:min-h-[260px] bg-[#E8E1D4] border-b lg:border-b-0 lg:border-r border-[#E4DDD1] overflow-hidden">
               <img
                 src={proj.name.includes('SWITCH') ? '/images/programs/dye_training.jpg' : proj.name.includes('Rural') ? '/images/programs/trade.jpg' : '/images/programs/heritage.jpg'}
                 alt={proj.name}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-              <span className="absolute bottom-4 left-4 z-10 font-mono text-[10.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2.5 py-1.5 rounded-[5px] border border-white/20">
+              <span className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 font-mono text-[10.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2.5 py-1.5 rounded-[5px] border border-white/20">
                 {proj.name.split(' ').slice(0, 3).join(' ')}
               </span>
             </div>
 
             {/* Right details */}
-            <div className="p-[28px_30px_30px]">
-              <div className="flex items-center justify-between mb-3">
+            <div className="p-5 sm:p-[28px_30px_30px]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                 <span
-                  className={`font-mono text-[11px] px-2.5 py-1 rounded ${
+                  className={`font-mono text-[11px] px-2.5 py-1 rounded self-start ${
                     proj.status === 'current'
                       ? 'bg-[#F1E9DB] text-[#8B2E24]'
                       : 'bg-[#EFF0E4] text-[#4C6B41]'
@@ -246,22 +246,22 @@ export default function ProjectsPage() {
                 >
                   {proj.status === 'current' ? 'In progress' : 'Completed'}
                 </span>
-                <span className="font-mono text-[11.5px] text-[#6B5A4C]">
+                <span className="font-mono text-xs sm:text-[11.5px] text-[#6B5A4C]">
                   {proj.period} · Budget: {proj.budget}
                 </span>
               </div>
 
-              <h2 className="font-marcellus text-[26px] font-normal leading-[1.2] text-[#33261F] mb-1.5">
+              <h2 className="font-marcellus text-xl sm:text-2xl lg:text-[26px] font-normal leading-[1.2] text-[#33261F] mb-1.5">
                 {proj.name}
               </h2>
-              <div className="font-figtree text-[14.5px] text-[#8B2E24] font-medium mb-3">
+              <div className="font-figtree text-xs sm:text-[14.5px] text-[#8B2E24] font-medium mb-3">
                 {proj.partner}
               </div>
-              <p className="font-lora text-[16px] leading-[1.6] text-[#4A3C33] max-w-[78ch] mb-6">
+              <p className="font-lora text-sm sm:text-[16px] leading-[1.6] text-[#4A3C33] max-w-[78ch] mb-6">
                 {proj.summary}
               </p>
 
-              <div className="grid grid-cols-[1.15fr_0.85fr] gap-8 border-t border-[#EFE9DE] pt-5">
+              <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-6 md:gap-8 border-t border-[#EFE9DE] pt-5">
                 {/* Activities */}
                 <div>
                   <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#6B5A4C] mb-3">
@@ -269,7 +269,7 @@ export default function ProjectsPage() {
                   </div>
                   <div className="flex flex-col divide-y divide-[#EFE9DE]">
                     {proj.activities.map((act, i) => (
-                      <div key={act} className="py-2 flex items-baseline gap-2.5 text-[14.5px] font-lora text-[#33261F]">
+                      <div key={act} className="py-2 flex items-baseline gap-2.5 text-xs sm:text-[14.5px] font-lora text-[#33261F]">
                         <span className="font-mono text-[11px] text-[#8B2E24]">
                           0{i + 1}
                         </span>
@@ -280,17 +280,17 @@ export default function ProjectsPage() {
                 </div>
 
                 {/* Achievements panel */}
-                <div className="bg-[#F4F0E7] rounded-[11px] p-5 flex flex-col justify-between">
+                <div className="bg-[#F4F0E7] rounded-[11px] p-4 sm:p-5 flex flex-col justify-between">
                   <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#6B5A4C] mb-3">
                     Achievements to date
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     {proj.results.map((res) => (
                       <div key={res.l}>
-                        <div className="font-figtree font-bold text-[22px] text-[#33261F]">
+                        <div className="font-figtree font-bold text-lg sm:text-[22px] text-[#33261F]">
                           {res.n}
                         </div>
-                        <div className="font-lora text-[12.5px] text-[#6B5A4C]">
+                        <div className="font-lora text-xs sm:text-[12.5px] text-[#6B5A4C]">
                           {res.l}
                         </div>
                       </div>
@@ -305,7 +305,7 @@ export default function ProjectsPage() {
                         style={{ width: `${proj.progress || 100}%` }}
                       />
                     </div>
-                    <div className="font-mono text-[11px] text-[#6B5A4C]">
+                    <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C]">
                       {proj.status === 'current'
                         ? `${proj.progress}% of workplan delivered`
                         : 'Final report published'}
@@ -319,19 +319,19 @@ export default function ProjectsPage() {
       </section>
 
       {/* 3. Partner closing band */}
-      <section className="max-w-[1280px] min-w-[1200px] mx-auto px-10 mt-16">
-        <div className="bg-[#33261F] text-[#F1ECE2] rounded-[14px] p-10 flex items-center justify-between">
+      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 mt-12 sm:mt-16">
+        <div className="bg-[#33261F] text-[#F1ECE2] rounded-[14px] p-6 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <h3 className="font-marcellus text-[28px] font-normal mb-2">
+            <h3 className="font-marcellus text-xl sm:text-[28px] font-normal mb-2">
               Partner with us on the next one
             </h3>
-            <p className="font-lora text-[16px] text-[#D2C2AE] max-w-[56ch]">
+            <p className="font-lora text-xs sm:text-[16px] text-[#D2C2AE] max-w-[56ch]">
               We work with bilateral donors, UN agencies, and foundations to deliver impactful, audited development projects for Bhutan&apos;s artisans.
             </p>
           </div>
           <Link
             href="/about#contact"
-            className="font-figtree font-semibold text-[14.5px] bg-[#8B2E24] text-white px-6 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors"
+            className="font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#8B2E24] text-white px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors whitespace-nowrap self-start sm:self-auto"
           >
             Contact the secretariat →
           </Link>

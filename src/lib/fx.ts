@@ -23,7 +23,7 @@ export const FX_CONFIG = {
 const FRESH_THRESHOLD_MS = 24 * 60 * 60 * 1000;      // 24 hours
 const STALE_CEILING_MS = 72 * 60 * 60 * 1000;        // 72 hours hard ceiling
 
-export async function getCurrentFxRate(): Promise<FxRateResult> {
+export async function getCurrentFxRate(options?: { simulateOffline?: boolean }): Promise<FxRateResult> {
   // Check for an active manual override first
   const manualOverride = await prisma.fxRateRecord.findFirst({
     where: { isManualOverride: true },
@@ -52,11 +52,13 @@ export async function getCurrentFxRate(): Promise<FxRateResult> {
 
   const now = new Date().getTime();
 
-  // If missing or older than 24 hours, attempt background refresh
+  // If missing or older than 24 hours, attempt background refresh (unless external feed offline simulation requested)
   if (!latest || (now - latest.fetchedAt.getTime() > FRESH_THRESHOLD_MS)) {
-    const refreshed = await refreshFxRateFromSource();
-    if (refreshed) {
-      latest = refreshed;
+    if (!options?.simulateOffline) {
+      const refreshed = await refreshFxRateFromSource();
+      if (refreshed) {
+        latest = refreshed;
+      }
     }
   }
 
@@ -117,29 +119,38 @@ export async function getCurrentFxRate(): Promise<FxRateResult> {
   }
 }
 
-export async function getEffectiveFxRate(): Promise<FxRateResult> {
-  return getCurrentFxRate();
+export async function getEffectiveFxRate(options?: { simulateOffline?: boolean }): Promise<FxRateResult> {
+  return getCurrentFxRate(options);
 }
 
 export async function refreshFxRateFromSource() {
   try {
-    let rate = 84.0;
+    let rate: number | null = null;
     let source = 'INR_PEG_PROXY';
 
     try {
+      if (process.env.SIMULATE_FX_FEED_OFFLINE === 'true') {
+        throw new Error('Simulated external RMA feed offline connection failure');
+      }
       // BTN is pegged 1:1 to INR; we do not have a direct RMA feed integration, so we read India's USD rate as a proxy.
       // If the peg is ever adjusted or a real RMA API becomes available, this needs to be replaced with a direct source —
       // do not assume this proxy is permanent.
       const res = await fetch('https://open.er-api.com/v6/latest/USD', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        if (data && data.rates && data.rates.INR) {
+        if (data && data.rates && typeof data.rates.INR === 'number') {
           rate = Number(data.rates.INR);
           source = 'INR_PEG_PROXY';
         }
       }
-    } catch {
-      // Fallback
+    } catch (fetchErr: any) {
+      console.warn('External FX feed unavailable:', fetchErr?.message || fetchErr);
+    }
+
+    // Fail-closed invariant: If external feed failed, do NOT create a fake "FRESH" record.
+    // Return null so the existing cached record ages towards STALE (24h) and CRITICAL_STALE / BLOCKED (72h).
+    if (!rate) {
+      return null;
     }
 
     const record = await prisma.fxRateRecord.create({

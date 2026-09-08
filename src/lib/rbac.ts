@@ -3,7 +3,11 @@ import { jwtVerify, SignJWT } from 'jose';
 import prisma from './prisma';
 import { logAudit } from './audit';
 
-const secretString = process.env.JWT_SECRET || 'e9a4f21b8c0d5e7a3f6b9c2d1e8a0f4b7c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f';
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)) {
+  throw new Error('CRITICAL CONFIGURATION ERROR: A high-entropy JWT_SECRET (minimum 32 characters) must be configured in production environment variables.');
+}
+
+const secretString = process.env.JWT_SECRET || '122e08790446e8ac0439219e4e508d8904792f81a061eacb8e58333a31261d46';
 const JWT_SECRET = new TextEncoder().encode(secretString);
 
 export async function verifyToken(token: string): Promise<SessionUser | null> {
@@ -37,6 +41,7 @@ export interface SessionUser {
   roleStatus?: 'ACTIVE' | 'RETIRED';
   permissions: string[];
   mustChangePassword?: boolean;
+  sessionVersion?: number;
 }
 
 export class AuthError extends Error {
@@ -67,6 +72,7 @@ export async function createSessionToken(user: Partial<SessionUser>): Promise<st
     roleStatus: user.roleStatus || 'ACTIVE',
     permissions: user.permissions || ['*'],
     mustChangePassword: !!user.mustChangePassword,
+    sessionVersion: user.sessionVersion || 1,
   };
 
   return new SignJWT({ user: normalizedUser })
@@ -118,17 +124,7 @@ export async function requirePermission(req: NextRequest, permission: Permission
       include: { role: true },
     });
   } catch (err) {
-    if (user.roleSlug === 'super_admin' && user.email === 'admin@handicraftsbhutan.org') {
-      return user;
-    }
-  }
-
-  // Gracefully authenticate verified demo admin session if DB is unseeded
-  if (!dbUser && user.roleSlug === 'super_admin' && user.email === 'admin@handicraftsbhutan.org') {
-    return user;
-  }
-  if (!dbUser && user.roleSlug === 'member' && user.email === 'member@handicraftsbhutan.org') {
-    return user;
+    throw new AuthError(503, 'Authentication database service currently unavailable');
   }
 
   if (!dbUser || dbUser.status !== 'ACTIVE') {
@@ -143,6 +139,21 @@ export async function requirePermission(req: NextRequest, permission: Permission
       details: { attemptedPermission: permission, userStatus: dbUser?.status || 'NOT_FOUND' },
     });
     throw new AuthError(403, 'Account is inactive or suspended');
+  }
+
+  // Session Revocation: If the user's session was revoked, token version will be lower than DB version
+  if (user.sessionVersion && dbUser.sessionVersion && user.sessionVersion < dbUser.sessionVersion) {
+    await logAudit({
+      actorType: 'STAFF',
+      actorId: user.id,
+      actorIdentifier: user.email,
+      actorIp: clientIp,
+      action: 'REVOKED_SESSION_BLOCKED',
+      entityType: 'User',
+      entityId: user.id,
+      details: { tokenVersion: user.sessionVersion, activeVersion: dbUser.sessionVersion },
+    });
+    throw new AuthError(401, 'Session has been revoked. Please sign in again.');
   }
 
   if (dbUser.role.status === 'RETIRED') {
@@ -360,3 +371,37 @@ export async function retireRole(
 
   return retiredRole;
 }
+
+/**
+ * Revoke all active sessions for a user by incrementing their sessionVersion in PostgreSQL.
+ * Instantly invalidates all outstanding JWTs held by that user.
+ */
+export async function revokeAllUserSessions(
+  userId: string,
+  actor?: SessionUser,
+  clientIp?: string
+) {
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      sessionVersion: { increment: 1 },
+    },
+  });
+
+  await logAudit({
+    actorType: 'STAFF',
+    actorId: actor?.id || userId,
+    actorIdentifier: actor?.email || updated.email,
+    actorIp: clientIp || null,
+    action: 'USER_SESSIONS_REVOKED',
+    entityType: 'User',
+    entityId: userId,
+    details: {
+      userEmail: updated.email,
+      newSessionVersion: updated.sessionVersion,
+    },
+  });
+
+  return updated;
+}
+

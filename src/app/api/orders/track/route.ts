@@ -8,20 +8,29 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const orderNumber = searchParams.get('order')?.trim();
     const email = searchParams.get('email')?.trim()?.toLowerCase();
+    const phone = searchParams.get('phone')?.trim()?.replace(/\D/g, '');
 
     if (!orderNumber) {
       return NextResponse.json(
-        { success: false, error: 'Order reference number is required (e.g. HAB-S-12345 or HAB-POS-12345).' },
+        { success: false, error: 'Order reference number is required (e.g. HAB-S-12345).' },
         { status: 400 }
       );
     }
 
+    if (!email && !phone) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'To protect customer privacy, please enter the email address or phone number used when placing this order.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Look up by official orderNumber ONLY — prevent enumeration by database internal UUID
     const order = await prisma.order.findFirst({
       where: {
-        OR: [
-          { orderNumber: { equals: orderNumber, mode: 'insensitive' } },
-          { id: orderNumber },
-        ],
+        orderNumber: { equals: orderNumber, mode: 'insensitive' },
       },
       include: {
         orderItems: {
@@ -38,15 +47,19 @@ export async function GET(req: NextRequest) {
 
     if (!order) {
       return NextResponse.json(
-        { success: false, error: `No order found for reference '${orderNumber}'. Please check the order ID on your receipt or email.` },
+        { success: false, error: `No order found for reference '${orderNumber}'. Please verify your order number and contact details.` },
         { status: 404 }
       );
     }
 
-    // If customer email was also supplied, verify match
-    if (email && order.customerEmail && order.customerEmail.toLowerCase() !== email) {
+    // Anti-enumeration identity match: verify customer email or phone
+    const emailMatches = email && order.customerEmail && order.customerEmail.toLowerCase() === email;
+    const cleanOrderPhone = (order.customerPhone || '').replace(/\D/g, '');
+    const phoneMatches = phone && cleanOrderPhone && (cleanOrderPhone === phone || cleanOrderPhone.endsWith(phone) || phone.endsWith(cleanOrderPhone));
+
+    if (!emailMatches && !phoneMatches) {
       return NextResponse.json(
-        { success: false, error: 'The email provided does not match the order record.' },
+        { success: false, error: 'The verification email or phone number does not match the order record.' },
         { status: 403 }
       );
     }

@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CRAFTS, SAMPLE_MEMBERS } from '@/lib/data';
 
@@ -9,17 +8,45 @@ export default function MemberDirectoryPage() {
   const [selectedCraft, setSelectedCraft] = useState('');
   const [selectedDzongkhag, setSelectedDzongkhag] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [dbMembers, setDbMembers] = useState<any[]>([]);
   const pageSize = 6;
+
+  useEffect(() => {
+    fetch('/api/members')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.members) && data.members.length > 0) {
+          const mapped = data.members.map((m: any) => ({
+            name: m.name,
+            craftKey: m.craftKey,
+            dz: m.dzongkhag,
+            village: m.villageGewog || 'Central',
+            year: m.joinYear || 2026,
+            tier: m.tier || 'ACTIVE_SECTOR_MEMBER',
+            productsCount: m.products?.length || 0,
+            bio: m.bio || `Master artisan practicing ${m.craftKey} in ${m.dzongkhag}.`,
+            verified: m.status === 'VERIFIED',
+            regNumber: m.regNumber,
+          }));
+          setDbMembers(mapped);
+        }
+      })
+      .catch((err) => console.error('Error fetching live members:', err));
+  }, []);
+
+  const activeMemberList = useMemo(() => {
+    return dbMembers.length > 0 ? dbMembers : SAMPLE_MEMBERS;
+  }, [dbMembers]);
 
   // Extract all unique dzongkhags
   const dzongkhags = useMemo(() => {
-    return Array.from(new Set(SAMPLE_MEMBERS.map((m) => m.dz))).sort();
-  }, []);
+    return Array.from(new Set(activeMemberList.map((m: any) => m.dz))).sort();
+  }, [activeMemberList]);
 
   // Filter members
   const filteredMembers = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return SAMPLE_MEMBERS.filter((m) => {
+    return activeMemberList.filter((m: any) => {
       const craft = CRAFTS.find((c) => c.key === m.craftKey);
       const matchQ =
         !q ||
@@ -34,7 +61,7 @@ export default function MemberDirectoryPage() {
 
       return matchQ && matchCraft && matchDz;
     });
-  }, [searchQuery, selectedCraft, selectedDzongkhag]);
+  }, [activeMemberList, searchQuery, selectedCraft, selectedDzongkhag]);
 
   // Pagination
   const totalPages = Math.ceil(filteredMembers.length / pageSize) || 1;
@@ -51,35 +78,35 @@ export default function MemberDirectoryPage() {
   };
 
   return (
-    <main className="max-w-[1280px] min-w-[1200px] mx-auto px-10 pt-10 pb-24">
+    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
       {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-8">
+      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
         <Link href="/about" className="hover:underline">Members</Link> /{' '}
         <span>Directory</span>
       </div>
 
       {/* Header Row */}
-      <div className="flex justify-between items-end gap-10 mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-10 mb-8">
         <div>
-          <h1 className="font-marcellus text-[44px] font-normal leading-[1.06] text-[#33261F] mb-3">
+          <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[44px] font-normal leading-[1.06] text-[#33261F] mb-3">
             Membership database
           </h1>
-          <p className="font-lora text-[17px] leading-[1.6] text-[#4A3C33] max-w-[66ch]">
+          <p className="font-lora text-sm sm:text-base lg:text-[17px] leading-[1.6] text-[#4A3C33] max-w-[66ch]">
             Browse registered master craftspeople, weaving clusters, and traditional workshops across Bhutan. Every listing connects directly to member-made work in our central e-shop.
           </p>
         </div>
         <Link
           href="/membership/apply"
-          className="font-figtree font-semibold text-[14.5px] bg-[#8B2E24] text-white px-6 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors whitespace-nowrap"
+          className="font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#8B2E24] text-white px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors whitespace-nowrap self-start sm:self-auto"
         >
           Apply for membership
         </Link>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-[18px] mb-8">
-        <div className="grid grid-cols-[1.6fr_1fr_1fr_auto] gap-3 items-center">
+      <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-4 sm:p-[18px] mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_auto] gap-3 items-center">
           <input
             type="text"
             value={searchQuery}
@@ -88,7 +115,7 @@ export default function MemberDirectoryPage() {
               setCurrentPage(1);
             }}
             placeholder="Search by name, craft or village"
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-3 text-[14px] font-figtree text-[#33261F] outline-none placeholder:text-[#8A7767]"
+            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 sm:p-3 text-xs sm:text-[14px] font-figtree text-[#33261F] outline-none placeholder:text-[#8A7767]"
           />
 
           <select
@@ -97,7 +124,7 @@ export default function MemberDirectoryPage() {
               setSelectedCraft(e.target.value);
               setCurrentPage(1);
             }}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-3 text-[14px] font-figtree text-[#33261F] outline-none"
+            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 sm:p-3 text-xs sm:text-[14px] font-figtree text-[#33261F] outline-none"
           >
             <option value="">All craft categories</option>
             {CRAFTS.map((c) => (
@@ -113,7 +140,7 @@ export default function MemberDirectoryPage() {
               setSelectedDzongkhag(e.target.value);
               setCurrentPage(1);
             }}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-3 text-[14px] font-figtree text-[#33261F] outline-none"
+            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 sm:p-3 text-xs sm:text-[14px] font-figtree text-[#33261F] outline-none"
           >
             <option value="">All dzongkhags</option>
             {dzongkhags.map((dz) => (
@@ -126,20 +153,20 @@ export default function MemberDirectoryPage() {
           <button
             type="button"
             onClick={resetFilters}
-            className="font-figtree font-semibold text-[14px] text-[#8B2E24] hover:underline px-3 py-2 cursor-pointer"
+            className="font-figtree font-semibold text-xs sm:text-[14px] text-[#8B2E24] hover:underline px-3 py-2 cursor-pointer text-left sm:text-center"
           >
             Reset
           </button>
         </div>
 
-        <div className="font-mono text-[11px] text-[#6B5A4C] mt-4 pt-3 border-t border-[#EFE9DE]">
+        <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] mt-4 pt-3 border-t border-[#EFE9DE]">
           {filteredMembers.length} of {SAMPLE_MEMBERS.length} listings shown · directory sample of the full 7,500-member database
         </div>
       </div>
 
       {/* Results Grid */}
       {paginatedMembers.length > 0 ? (
-        <div className="grid grid-cols-3 gap-[22px] mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px] mb-12">
           {paginatedMembers.map((m) => {
             const craft = CRAFTS.find((c) => c.key === m.craftKey);
             return (

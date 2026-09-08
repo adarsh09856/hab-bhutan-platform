@@ -112,9 +112,9 @@ export default function MembershipApplyPage() {
   ];
 
   return (
-    <main className="max-w-[1080px] min-w-[1080px] mx-auto px-10 pt-10 pb-24">
+    <main className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
       {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-8">
+      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
         <Link href="/about" className="hover:underline">Membership</Link> /{' '}
         <span>Apply</span>
@@ -122,28 +122,28 @@ export default function MembershipApplyPage() {
 
       {currentStep < 4 ? (
         <>
-          <div className="mb-10">
-            <h1 className="font-marcellus text-[42px] font-normal text-[#33261F] mb-3">
+          <div className="mb-8 sm:mb-10">
+            <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[42px] font-normal text-[#33261F] mb-3">
               Apply for HAB membership
             </h1>
-            <p className="font-lora text-[17px] text-[#6B5A4C] leading-[1.6]">
+            <p className="font-lora text-sm sm:text-[17px] text-[#6B5A4C] leading-[1.6]">
               Three steps, about five minutes. Dues are annual and can be paid by card, mBoB or bank transfer.
             </p>
           </div>
 
           {/* Step Indicators */}
-          <div className="grid grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 sm:mb-12">
             {stepLabels.map((st) => (
               <div
                 key={st.n}
-                className={`pt-3 border-t-[3px] transition-colors ${
+                className={`pt-2 sm:pt-3 border-t-[3px] transition-colors ${
                   st.n <= currentStep ? 'border-[#8B2E24]' : 'border-[#E4DDD1]'
                 }`}
               >
-                <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-[#8B2E24] mb-1">
+                <div className="font-mono text-[9.5px] sm:text-[10.5px] uppercase tracking-[0.14em] text-[#8B2E24] mb-1">
                   STEP {st.n}
                 </div>
-                <div className="font-figtree font-semibold text-[15.5px] text-[#33261F]">
+                <div className="font-figtree font-semibold text-xs sm:text-[15.5px] text-[#33261F] truncate">
                   {st.label}
                 </div>
               </div>
@@ -152,28 +152,28 @@ export default function MembershipApplyPage() {
 
           {/* Step 1: Category & Dues */}
           {currentStep === 1 && (
-            <div className="grid grid-cols-2 gap-6">
-              <div className="col-span-2 grid grid-cols-3 gap-5 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-4">
                 {plans.map((p) => {
                   const isSelected = formData.planTier === p.key;
                   return (
                     <div
                       key={p.key}
                       onClick={() => setFormData({ ...formData, planTier: p.key as any })}
-                      className={`p-6 rounded-[12px] border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                      className={`p-5 sm:p-6 rounded-[12px] border-2 cursor-pointer transition-all flex flex-col justify-between ${
                         isSelected
                           ? 'border-[#8B2E24] bg-[#FFFCF8]'
                           : 'border-[#E4DDD1] bg-[#FFFCF8] hover:border-[#CDBEA8]'
                       }`}
                     >
                       <div>
-                        <div className="font-figtree font-bold text-[20px] text-[#33261F] mb-1">
+                        <div className="font-figtree font-bold text-lg sm:text-[20px] text-[#33261F] mb-1">
                           {p.name}
                         </div>
-                        <div className="font-figtree font-bold text-[18px] text-[#8B2E24] mb-3">
+                        <div className="font-figtree font-bold text-base sm:text-[18px] text-[#8B2E24] mb-3">
                           {p.price}
                         </div>
-                        <p className="font-lora text-[14px] leading-[1.5] text-[#6B5A4C] mb-6">
+                        <p className="font-lora text-xs sm:text-[14px] leading-[1.5] text-[#6B5A4C] mb-6">
                           {p.who}
                         </p>
                       </div>
@@ -186,7 +186,7 @@ export default function MembershipApplyPage() {
               </div>
 
               {/* Craft and Dzongkhag Select */}
-              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-6 flex flex-col gap-4">
+              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col gap-4">
                 <label className="font-figtree font-bold text-[14.5px] text-[#33261F]">
                   Primary craft category
                 </label>
@@ -203,7 +203,7 @@ export default function MembershipApplyPage() {
                 </select>
               </div>
 
-              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-6 flex flex-col gap-4">
+              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col gap-4">
                 <label className="font-figtree font-bold text-[14.5px] text-[#33261F]">
                   Dzongkhag (District)
                 </label>
@@ -218,14 +218,14 @@ export default function MembershipApplyPage() {
                 </select>
               </div>
 
-              <div className="col-span-2 pt-6 flex justify-between items-center border-t border-[#E4DDD1]">
+              <div className="col-span-1 md:col-span-2 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-t border-[#E4DDD1]">
                 <div className="font-mono text-[12px] text-[#6B5A4C]">
                   Selected: {currentPlan.name} · {currentPlan.price}
                 </div>
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="font-figtree font-semibold text-[15px] bg-[#8B2E24] text-white px-7 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors cursor-pointer"
+                  className="w-full sm:w-auto font-figtree font-semibold text-[15px] bg-[#8B2E24] text-white px-7 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center"
                 >
                   Continue to details →
                 </button>
@@ -235,8 +235,8 @@ export default function MembershipApplyPage() {
 
           {/* Step 2: Your Details */}
           {currentStep === 2 && (
-            <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-8">
-              <div className="grid grid-cols-2 gap-5 mb-8">
+            <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
                 <div className="col-span-2">
                   <label className="font-figtree font-bold text-[14px] text-[#33261F] block mb-2">
                     Full name / enterprise name *
@@ -381,10 +381,10 @@ export default function MembershipApplyPage() {
 
           {/* Step 3: Payment */}
           {currentStep === 3 && (
-            <div className="grid grid-cols-[1.15fr_0.85fr] gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
               {/* Payment Methods */}
-              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-8">
-                <h3 className="font-marcellus text-[24px] font-normal text-[#33261F] mb-6">
+              <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-8">
+                <h3 className="font-marcellus text-xl sm:text-[24px] font-normal text-[#33261F] mb-6">
                   Pay your annual dues
                 </h3>
 
@@ -399,7 +399,7 @@ export default function MembershipApplyPage() {
                       <div
                         key={pay.key}
                         onClick={() => setFormData({ ...formData, paymentMethod: pay.key as any })}
-                        className={`p-5 rounded-[10px] border-2 cursor-pointer transition-all flex items-start gap-4 ${
+                        className={`p-4 sm:p-5 rounded-[10px] border-2 cursor-pointer transition-all flex items-start gap-4 ${
                           isSelected ? 'border-[#8B2E24] bg-[#FFFCF8]' : 'border-[#E4DDD1] hover:border-[#CDBEA8]'
                         }`}
                       >
@@ -411,10 +411,10 @@ export default function MembershipApplyPage() {
                           {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#8B2E24]" />}
                         </div>
                         <div>
-                          <div className="font-figtree font-bold text-[16px] text-[#33261F]">
+                          <div className="font-figtree font-bold text-base sm:text-[16px] text-[#33261F]">
                             {pay.name}
                           </div>
-                          <div className="font-lora text-[13.5px] text-[#6B5A4C]">
+                          <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
                             {pay.note}
                           </div>
                         </div>
@@ -435,11 +435,11 @@ export default function MembershipApplyPage() {
               </div>
 
               {/* Order Summary Panel (Ink) */}
-              <div className="bg-[#33261F] text-[#F1ECE2] rounded-[12px] p-8">
+              <div className="bg-[#33261F] text-[#F1ECE2] rounded-[12px] p-5 sm:p-8">
                 <div className="font-mono text-[10.5px] tracking-[0.16em] uppercase text-[#C9A46A] mb-4">
                   Summary
                 </div>
-                <div className="divide-y divide-[#4E3D2E] text-[14.5px] font-lora mb-6">
+                <div className="divide-y divide-[#4E3D2E] text-sm sm:text-[14.5px] font-lora mb-6">
                   <div className="py-3 flex justify-between">
                     <span className="text-[#D2C2AE]">Membership</span>
                     <span className="text-white font-figtree">{currentPlan.name}</span>
@@ -454,14 +454,14 @@ export default function MembershipApplyPage() {
                   </div>
                   <div className="pt-4 pb-2 flex justify-between items-baseline font-figtree">
                     <span className="text-[#D2C2AE]">Due today</span>
-                    <span className="text-[22px] font-bold text-white">{currentPlan.price}</span>
+                    <span className="text-xl sm:text-[22px] font-bold text-white">{currentPlan.price}</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="w-full font-figtree font-semibold text-[15.5px] bg-[#8B2E24] text-white py-4 rounded-[8px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center"
+                  className="w-full font-figtree font-semibold text-[15.5px] bg-[#8B2E24] text-white py-3.5 sm:py-4 rounded-[8px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center"
                 >
                   Submit application
                 </button>
@@ -471,7 +471,7 @@ export default function MembershipApplyPage() {
         </>
       ) : (
         /* Step 4: Confirmation Screen */
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-16 text-center max-w-[680px] mx-auto">
+        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-6 sm:p-16 text-center max-w-[680px] mx-auto">
           <div className="w-14 h-14 rounded-full bg-[#EFF0E4] text-[#4C6B41] text-[28px] font-bold flex items-center justify-center mx-auto mb-6">
             ✓
           </div>

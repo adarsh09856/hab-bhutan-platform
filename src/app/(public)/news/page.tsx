@@ -58,32 +58,32 @@ const UPCOMING_EVENTS: EventItem[] = [
 
 export default function NewsPage() {
   return (
-    <main className="max-w-[1280px] min-w-[1200px] mx-auto px-10 pt-10 pb-24">
+    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
       {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-8">
+      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
         <span>News &amp; events</span>
       </div>
 
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="font-marcellus text-[44px] font-normal leading-[1.06] text-[#33261F] mb-2">
+      <div className="mb-8 sm:mb-10">
+        <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[44px] font-normal leading-[1.06] text-[#33261F] mb-2">
           News &amp; events
         </h1>
-        <p className="font-lora text-[17px] text-[#6B5A4C]">
+        <p className="font-lora text-sm sm:text-base lg:text-[17px] text-[#6B5A4C]">
           Stay informed, stay empowered.
         </p>
       </div>
 
-      <div className="grid grid-cols-[1.4fr_1fr] gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 items-start">
         {/* Left Column: Articles */}
         <div className="flex flex-col gap-5">
           {NEWS_ARTICLES.map((article) => (
             <div
               key={article.title}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden grid grid-cols-[200px_1fr]"
+              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden grid grid-cols-1 sm:grid-cols-[200px_1fr]"
             >
-              <div data-cms-img className="relative min-h-[150px] bg-[#E8E1D4] border-r border-[#E4DDD1] overflow-hidden">
+              <div data-cms-img className="relative min-h-[180px] sm:min-h-[150px] bg-[#E8E1D4] border-b sm:border-b-0 sm:border-r border-[#E4DDD1] overflow-hidden">
                 <img
                   src={article.kind === 'Programs' ? '/images/programs/trade.jpg' : article.kind === 'Artisan support' ? '/images/programs/dye_training.jpg' : article.kind === 'Events' ? '/images/outlets/thimphu.jpg' : '/images/about_hero.jpg'}
                   alt={article.title}
@@ -95,26 +95,26 @@ export default function NewsPage() {
                 </span>
               </div>
 
-              <div className="p-[22px_24px] flex flex-col justify-between">
+              <div className="p-4 sm:p-[22px_24px] flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="font-mono text-[10.5px] bg-[#F1E9DB] text-[#8B2E24] px-2 py-0.5 rounded">
+                    <span className="font-mono text-[10px] sm:text-[10.5px] bg-[#F1E9DB] text-[#8B2E24] px-2 py-0.5 rounded">
                       {article.kind}
                     </span>
-                    <span className="font-mono text-[11px] text-[#6B5A4C]">
+                    <span className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C]">
                       {article.date}
                     </span>
                   </div>
-                  <h2 className="font-figtree font-bold text-[20px] leading-[1.28] text-[#33261F] mb-2">
+                  <h2 className="font-figtree font-bold text-base sm:text-[20px] leading-[1.28] text-[#33261F] mb-2">
                     {article.title}
                   </h2>
-                  <p className="font-lora text-[15px] leading-[1.55] text-[#6B5A4C]">
+                  <p className="font-lora text-xs sm:text-[15px] leading-[1.55] text-[#6B5A4C]">
                     {article.blurb}
                   </p>
                 </div>
 
                 <div className="pt-3 border-t border-[#EFE9DE] mt-4">
-                  <span className="font-figtree font-semibold text-[13.5px] text-[#8B2E24] hover:underline cursor-pointer">
+                  <span className="font-figtree font-semibold text-xs sm:text-[13.5px] text-[#8B2E24] hover:underline cursor-pointer">
                     Continue reading →
                   </span>
                 </div>
@@ -123,8 +123,8 @@ export default function NewsPage() {
           ))}
         </div>
 
-        {/* Right Column: Sticky Events & Downloads */}
-        <div className="sticky top-[100px] flex flex-col gap-6">
+        {/* Right Column: Events & Downloads */}
+        <div className="lg:sticky lg:top-[100px] flex flex-col gap-6">
           {/* Upcoming Events Card */}
           <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-6">
             <h3 className="font-figtree font-bold text-[18px] text-[#33261F] mb-4">

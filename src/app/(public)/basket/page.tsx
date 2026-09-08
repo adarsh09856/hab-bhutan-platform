@@ -7,7 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { CUSTOMS_NOTICE } from '@/lib/shipping';
 
 export default function BasketPage() {
-  const { fmt, alt } = useCurrency();
+  const { fmt, alt, currency } = useCurrency();
   const {
     items,
     cartCount,
@@ -26,6 +26,7 @@ export default function BasketPage() {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'mbob' | 'bank'>('card');
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [confirmedOrderNumber, setConfirmedOrderNumber] = useState('HAB-S-88214');
+  const [confirmedEmail, setConfirmedEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [customer, setCustomer] = useState({
@@ -57,6 +58,9 @@ export default function BasketPage() {
     let orderNum = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
 
     try {
+      const selectedCurrency = paymentMethod === 'mbob' ? 'BTN' : (currency || 'USD');
+      const selectedPaymentMethod = paymentMethod === 'card' ? 'CARD' : paymentMethod === 'mbob' ? 'MBOB' : 'BANK_TRANSFER';
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,7 +71,8 @@ export default function BasketPage() {
             quantity: i.quantity,
             priceUsd: i.priceUSD,
           })),
-          currency: 'USD',
+          currency: selectedCurrency,
+          paymentMethod: selectedPaymentMethod,
           shippingMethod: shippingMethod === 'express' ? 'EXPRESS' : 'EMS',
           customerName: customer.fullName.trim(),
           email: customer.email.trim(),
@@ -96,6 +101,7 @@ export default function BasketPage() {
     }
 
     setConfirmedOrderNumber(orderNum);
+    setConfirmedEmail(customer.email.trim());
     clearCart();
     setOrderConfirmed(true);
     setIsSubmitting(false);
@@ -109,43 +115,43 @@ export default function BasketPage() {
   ];
 
   return (
-    <main className="max-w-[1180px] min-w-[1180px] mx-auto px-10 pt-10 pb-24">
+    <main className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-24">
       {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-8">
+      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
         <span>Basket &amp; checkout</span>
       </div>
 
-      <h1 className="font-marcellus text-[42px] font-normal leading-[1.06] text-[#33261F] mb-8">
+      <h1 className="font-marcellus text-[28px] sm:text-[42px] font-normal leading-[1.06] text-[#33261F] mb-6 sm:mb-8">
         Your basket
       </h1>
 
       {/* State 1: Order Confirmed */}
       {orderConfirmed ? (
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-16 text-center max-w-[640px] mx-auto">
-          <div className="w-14 h-14 rounded-full bg-[#EFF0E4] text-[#4C6B41] text-[28px] font-bold flex items-center justify-center mx-auto mb-6">
+        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-6 sm:p-16 text-center max-w-[640px] mx-auto">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#EFF0E4] text-[#4C6B41] text-[24px] sm:text-[28px] font-bold flex items-center justify-center mx-auto mb-5 sm:mb-6">
             ✓
           </div>
-          <h2 className="font-marcellus text-[32px] font-normal text-[#33261F] mb-4">
+          <h2 className="font-marcellus text-[26px] sm:text-[32px] font-normal text-[#33261F] mb-4">
             Order confirmed
           </h2>
-          <p className="font-lora text-[16.5px] leading-[1.62] text-[#4A3C33] mb-4">
+          <p className="font-lora text-[15.5px] sm:text-[16.5px] leading-[1.62] text-[#4A3C33] mb-4">
             Thank you for supporting Bhutan&apos;s artisans. Your official order number is{' '}
             <strong className="font-mono text-[#8B2E24]">{confirmedOrderNumber}</strong>.
           </p>
-          <p className="font-lora text-[15px] leading-[1.6] text-[#6B5A4C] mb-8">
+          <p className="font-lora text-[14px] sm:text-[15px] leading-[1.6] text-[#6B5A4C] mb-6 sm:mb-8">
             Your consignment will be certified with an official seal of authenticity under the 13 Traditional Arts &amp; Crafts and dispatched via EMS Bhutan Post.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href={`/track-order?order=${confirmedOrderNumber}`}
-              className="font-figtree font-semibold text-[14.5px] bg-[#8B2E24] text-white px-7 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors inline-block"
+              href={`/track-order?order=${encodeURIComponent(confirmedOrderNumber)}${confirmedEmail ? `&email=${encodeURIComponent(confirmedEmail)}` : ''}`}
+              className="font-figtree font-semibold text-[14.5px] bg-[#8B2E24] text-white px-6 sm:px-7 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors inline-block text-center"
             >
               Track Order Status →
             </Link>
             <Link
               href="/shop"
-              className="font-figtree font-semibold text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-7 py-3.5 rounded-[7px] hover:bg-black transition-colors inline-block"
+              className="font-figtree font-semibold text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-6 sm:px-7 py-3 sm:py-3.5 rounded-[7px] hover:bg-black transition-colors inline-block text-center"
             >
               Continue shopping
             </Link>
@@ -153,23 +159,23 @@ export default function BasketPage() {
         </div>
       ) : cartCount === 0 ? (
         /* State 2: Empty Cart */
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-16 text-center max-w-[640px] mx-auto">
-          <h3 className="font-marcellus text-[26px] font-normal text-[#33261F] mb-3">
+        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-8 sm:p-16 text-center max-w-[640px] mx-auto">
+          <h3 className="font-marcellus text-[22px] sm:text-[26px] font-normal text-[#33261F] mb-3">
             Nothing in the basket yet.
           </h3>
-          <p className="font-lora text-[15.5px] text-[#6B5A4C] mb-8">
+          <p className="font-lora text-[14.5px] sm:text-[15.5px] text-[#6B5A4C] mb-6 sm:mb-8">
             Explore authentic hand-woven textiles, turned bowls, and traditional art in our collection.
           </p>
           <Link
             href="/shop"
-            className="font-figtree font-semibold text-[15px] bg-[#8B2E24] text-white px-7 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors inline-block"
+            className="font-figtree font-semibold text-[14.5px] sm:text-[15px] bg-[#8B2E24] text-white px-6 sm:px-7 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors inline-block"
           >
             Browse the 13 crafts →
           </Link>
         </div>
       ) : (
         /* State 3: Active Bag & Checkout */
-        <div className="grid grid-cols-[1.35fr_0.65fr] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_0.65fr] gap-8 items-start">
           {/* Left Column: Line Items, Shipping, Payment */}
           <div className="flex flex-col gap-6">
             {/* 1. Line items */}

@@ -239,13 +239,19 @@ export async function PATCH(req: NextRequest) {
           throw new Error('Member role not found in system. Ensure roles are seeded.');
         }
 
-        // 3. Provision or link user account with unique random temporary password
+        // 3. Provision or link user account with secure activation token + temporary credentials
         const tempPassword = crypto.randomBytes(9).toString('base64url');
         const tempPasswordHash = bcrypt.hashSync(tempPassword, 10);
+        const activationToken = crypto.randomBytes(32).toString('hex');
+        const activationTokenHash = crypto.createHash('sha256').update(activationToken).digest('hex');
+        const activationTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days onboarding link
+
         const user = await tx.user.upsert({
           where: { email: application.email },
           update: {
             mustChangePassword: true,
+            resetTokenHash: activationTokenHash,
+            resetTokenExpiry: activationTokenExpiry,
           },
           create: {
             email: application.email,
@@ -254,6 +260,8 @@ export async function PATCH(req: NextRequest) {
             roleId: memberRole.id,
             status: 'ACTIVE',
             mustChangePassword: true,
+            resetTokenHash: activationTokenHash,
+            resetTokenExpiry: activationTokenExpiry,
           },
         });
 
@@ -278,7 +286,7 @@ export async function PATCH(req: NextRequest) {
           },
         });
 
-        return { updatedApp, newMember, user, tempPassword };
+        return { updatedApp, newMember, user, tempPassword, activationToken };
       });
 
       // 5. Audit Logging (applicant approval + member creation + credential issuance)
@@ -334,9 +342,17 @@ export async function PATCH(req: NextRequest) {
         message: 'Application approved and member enterprise successfully enrolled.',
         application: result.updatedApp,
         member: result.newMember,
+        activation: {
+          email: result.user.email,
+          activationToken: result.activationToken,
+          activationLink: `/auth/reset-password?token=${result.activationToken}`,
+          validDays: 7,
+        },
         tempCredentials: {
           email: result.user.email,
           temporaryPassword: result.tempPassword,
+          activationToken: result.activationToken,
+          activationLink: `/auth/reset-password?token=${result.activationToken}`,
         },
       });
     }

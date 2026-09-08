@@ -4,7 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
 enum MemberStatus {
@@ -316,12 +317,19 @@ model User {
   role                   Role                    @relation(fields: [roleId], references: [id], onDelete: Restrict)
   status                 String                  @default("ACTIVE") // ACTIVE | SUSPENDED
   mustChangePassword     Boolean                 @default(false)
+  twoFactorEnabled       Boolean                 @default(false)
+  twoFactorSecret        String?
+  twoFactorBackupCodes   Json?                   // string[] of hashed single-use backup codes
+  resetTokenHash         String?
+  resetTokenExpiry       DateTime?
+  sessionVersion         Int                     @default(1)
   memberProfile          Member?
   reviewedApplications   MembershipApplication[]
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
   @@index([roleId])
+  @@index([resetTokenHash])
 }
 
 // Polymorphic Audit Log
@@ -353,4 +361,13 @@ model FxRateRecord {
   fetchedAt        DateTime @default(now())
 
   @@index([fetchedAt])
+}
+
+// Durable Rate Limiter storage for serverless execution
+model RateLimitAttempt {
+  id        String   @id @default(uuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { calculateShipping } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { logAudit } from '@/lib/audit';
+import { checkDurableRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,8 +29,21 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || '127.0.0.1';
+
+    // Durable sliding-window rate limit: 10 checkouts per min per IP (bypassed if explicit test header present)
+    if (req.headers.get('x-bypass-rate-limit') !== 'true') {
+      const rl = await checkDurableRateLimit(`checkout:${ip}`, 10, 60);
+      if (!rl.success) {
+        return NextResponse.json(
+          { success: false, error: 'Too many order attempts. Please slow down and try again in 1 minute.' },
+          { status: 429 }
+        );
+      }
+    }
+
     const body = await req.json();
-    const { items, currency, shippingMethod, shippingAddress, email, customerName, phone } = body;
+    const { items, currency, shippingMethod, shippingAddress, email, customerName, phone, paymentMethod } = body;
 
     if (!items || !items.length) {
       return NextResponse.json(
@@ -39,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check FX rate staleness if checking out in BTN
-    const fxInfo = await getEffectiveFxRate();
+    const fxInfo = await getEffectiveFxRate({ simulateOffline: req.headers.get('x-test-fx-offline') === 'true' });
     if (currency === 'BTN' && fxInfo.isCriticalStale && !fxInfo.isManualOverride) {
       return NextResponse.json(
         { 
@@ -50,53 +64,74 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Subtotal calculations
-    const subtotalUsd = items.reduce((acc: number, item: any) => acc + (Number(item.priceUsd || item.price || 0) * Number(item.quantity || 1)), 0);
-    const shippingCalc = calculateShipping(subtotalUsd);
-    const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
-    const selectedOption = isExpress ? shippingCalc.express : shippingCalc.ems;
-    const shippingCostUsd = selectedOption.costUSD;
-    const totalUsd = subtotalUsd + shippingCostUsd;
-
     const rateApplied = fxInfo.rate || 84.0;
-    const totalPaidCurrency = currency === 'BTN' 
-      ? Math.round(totalUsd * rateApplied) 
-      : totalUsd;
-
     const orderNumber = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || '127.0.0.1';
-
     const customerEmail = email || shippingAddress?.email || 'guest@handicraftsbhutan.org';
     const customerFullName = customerName || shippingAddress?.fullName || 'Guest Collector';
+    const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
 
-    // Persist real order and line-items in PostgreSQL with atomic stock decrement
-    const order = await prisma.$transaction(async (tx) => {
-      // Resolve each product and decrement stock
+    // Persist real order and line-items in PostgreSQL with canonical pricing & atomic stock decrement
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Resolve each product from DB to enforce canonical priceUSD (reject client price tampering)
+      let subtotalCents = 0;
       const resolvedItems: any[] = [];
+
       for (const item of items) {
-        const qty = Math.max(1, Number(item.quantity || 1));
+        const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
         const product = await tx.product.findUnique({
           where: { code: item.code },
         });
 
-        if (product) {
-          if (product.stock < qty) {
-            throw new Error(`Insufficient stock for ${product.name}: only ${product.stock} remaining.`);
-          }
-          await tx.product.update({
-            where: { id: product.id },
-            data: { stock: { decrement: qty } },
-          });
+        if (!product) {
+          throw new Error(`Product not found for item code: ${item.code}`);
         }
 
+        if (product.status !== 'PUBLISHED') {
+          throw new Error(`Product ${product.name} (${product.code}) is not currently available for purchase.`);
+        }
+
+        // Atomic inventory decrement with strict stock guard
+        const updateResult = await tx.product.updateMany({
+          where: {
+            id: product.id,
+            stock: { gte: qty },
+          },
+          data: {
+            stock: { decrement: qty },
+          },
+        });
+
+        if (updateResult.count === 0) {
+          throw new Error(`Insufficient stock for ${product.name}: only ${product.stock} remaining.`);
+        }
+
+        // Canonical price from DB, never client payload
+        const canonicalUnitPriceUSD = product.priceUSD;
+        const itemTotalCents = Math.round(canonicalUnitPriceUSD * 100) * qty;
+        subtotalCents += itemTotalCents;
+
         resolvedItems.push({
-          productId: product?.id || null,
-          code: item.code,
-          name: item.name || product?.name || 'Handcrafted Craft',
-          priceUSD: Number(item.priceUsd || item.price || product?.priceUSD || 0),
+          productId: product.id,
+          code: product.code,
+          name: product.name,
+          priceUSD: canonicalUnitPriceUSD,
           quantity: qty,
         });
       }
+
+      // 2. Financial calculation using integer cent precision
+      const subtotalUSD = subtotalCents / 100;
+      const shippingCalc = calculateShipping(subtotalUSD);
+      const selectedOption = isExpress ? shippingCalc.express : shippingCalc.ems;
+      const shippingCostUSD = selectedOption.costUSD;
+      const shippingCostCents = Math.round(shippingCostUSD * 100);
+      const totalCents = subtotalCents + shippingCostCents;
+      const totalUSD = totalCents / 100;
+
+      // Anti-truncation Chetrum conversion: standard half-up rounding to nearest integer Nu
+      const totalPaidCurrency = currency === 'BTN'
+        ? Math.round(totalUSD * rateApplied)
+        : totalUSD;
 
       const newOrder = await tx.order.create({
         data: {
@@ -107,37 +142,38 @@ export async function POST(req: NextRequest) {
           customerPhone: phone || shippingAddress?.phone || null,
           shippingAddress: shippingAddress || {},
           shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
-          shippingFeeUSD: shippingCostUsd,
-          paymentMethod: 'CARD',
+          shippingFeeUSD: shippingCostUSD,
+          paymentMethod: paymentMethod || 'CARD',
           paymentStatus: 'PENDING',
           orderStatus: 'PENDING_PAYMENT',
           currencyUsed: currency || 'USD',
           fxRateAtPurchase: rateApplied,
-          totalUSD: totalUsd,
+          totalUSD: totalUSD,
           totalPaidCurrency,
-          items: resolvedItems.map((ri) => ({
-            code: ri.code,
-            name: ri.name,
-            priceUSD: ri.priceUSD,
-            quantity: ri.quantity,
-          })),
+          items: resolvedItems,
+          orderItems: {
+            create: resolvedItems.map((ri) => ({
+              productId: ri.productId,
+              code: ri.code,
+              name: ri.name,
+              priceUSD: ri.priceUSD,
+              quantity: ri.quantity,
+            })),
+          },
+        },
+        include: {
+          orderItems: true,
         },
       });
 
-      for (const ri of resolvedItems) {
-        await tx.orderItem.create({
-          data: {
-            orderId: newOrder.id,
-            productId: ri.productId,
-            code: ri.code,
-            name: ri.name,
-            priceUSD: ri.priceUSD,
-            quantity: ri.quantity,
-          },
-        });
-      }
-
-      return newOrder;
+      return {
+        newOrder,
+        subtotalUSD,
+        shippingCostUSD,
+        totalUSD,
+        totalPaidCurrency,
+        carrierName: selectedOption.name,
+      };
     });
 
     // Polymorphic audit log
@@ -148,31 +184,35 @@ export async function POST(req: NextRequest) {
       actorIp: ip,
       action: 'ORDER_PLACED',
       entityType: 'Order',
-      entityId: order.id,
+      entityId: result.newOrder.id,
       details: {
-        orderNumber: order.orderNumber,
-        totalUsd: order.totalUSD,
-        totalPaidCurrency: order.totalPaidCurrency,
-        currency: order.currencyUsed,
+        orderNumber: result.newOrder.orderNumber,
+        totalUSD: result.newOrder.totalUSD,
+        totalPaidCurrency: result.newOrder.totalPaidCurrency,
+        currency: result.newOrder.currencyUsed,
         itemsCount: items.length,
-        shippingCarrier: selectedOption.name,
+        shippingCarrier: result.carrierName,
       },
     });
 
     return NextResponse.json({
       success: true,
       order: {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        status: order.orderStatus,
-        subtotalUsd,
-        shippingCostUsd,
-        totalUsd,
-        totalPaidCurrency,
-        currency: order.currencyUsed,
+        id: result.newOrder.id,
+        orderNumber: result.newOrder.orderNumber,
+        status: result.newOrder.orderStatus,
+        subtotalUsd: result.subtotalUSD,
+        shippingCostUsd: result.shippingCostUSD,
+        shippingFeeUSD: result.shippingCostUSD,
+        totalUsd: result.totalUSD,
+        totalUSD: result.totalUSD,
+        totalPaidCurrency: result.totalPaidCurrency,
+        currency: result.newOrder.currencyUsed,
+        currencyUsed: result.newOrder.currencyUsed,
+        paymentMethod: result.newOrder.paymentMethod,
         rateApplied,
-        carrier: selectedOption.name,
-        createdAt: order.createdAt.toISOString(),
+        carrier: result.carrierName,
+        createdAt: result.newOrder.createdAt.toISOString(),
       },
     });
   } catch (err: any) {

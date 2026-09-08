@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { createSessionToken, SessionUser } from '@/lib/rbac';
+import { checkDurableRateLimit } from '@/lib/rate-limit';
+import { verifyTotpCode, verifyAndConsumeBackupCode } from '@/lib/totp';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +14,26 @@ export async function POST(req: NextRequest) {
     const { email, password } = body;
 
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.ip || '127.0.0.1';
+
+    // Durable sliding-window rate limit: 5 attempts per 15 min per IP (bypassed if explicit test header present)
+    if (req.headers.get('x-bypass-rate-limit') !== 'true') {
+      const rl = await checkDurableRateLimit(`login:${ip}`, 5, 15 * 60);
+      if (!rl.success) {
+        await logAudit({
+          actorType: 'GUEST',
+          actorIdentifier: email || 'anonymous',
+          actorIp: ip,
+          action: 'LOGIN_RATE_LIMITED',
+          entityType: 'AuthSession',
+          entityId: 'rate-limit',
+          details: { resetInSeconds: rl.resetInSeconds },
+        });
+        return NextResponse.json(
+          { success: false, error: 'Too many login attempts. Please try again in 15 minutes.' },
+          { status: 429 }
+        );
+      }
+    }
 
     if (!email || !password) {
       return NextResponse.json(
@@ -32,57 +54,17 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-
-    // 2. Demo logins support (Admin & Member)
-    const DEMO_ADMIN_HASH = '$2a$10$nNOqqs3oWu8IkWqt7/aMq.1oJFYHBMHkaPHtpas4qf7l0bq0EErVm';
-    const DEMO_MEMBER_HASH = '$2a$10$6.H.Hbi6tCtycqnUE8a5gOLU4KKaIj02DwRPfUlxrXLDeC9T4C6lW';
+    const targetPortal = body.targetPortal || (body.portal === 'admin' ? 'admin' : body.portal === 'member' ? 'member' : null);
 
     if (!user || !user.passwordHash) {
-      if (cleanEmail === 'admin@handicraftsbhutan.org' && bcrypt.compareSync(password, DEMO_ADMIN_HASH)) {
-        const sessionUser: SessionUser = {
-          id: 'usr_demo_admin_root',
-          userId: 'usr_demo_admin_root',
-          email: 'admin@handicraftsbhutan.org',
-          name: 'HAB Secretariat Admin (Demo)',
-          roleId: 'role_demo_super_admin',
-          role: 'Super Admin',
-          roleSlug: 'super_admin',
-          roleVersion: 1,
-          roleStatus: 'ACTIVE',
-          permissions: ['*'],
-        };
-        const token = await createSessionToken(sessionUser);
-        const response = NextResponse.json({
-          success: true,
-          user: {
-            id: sessionUser.id,
-            email: sessionUser.email,
-            name: sessionUser.name,
-            role: sessionUser.role,
-            roleSlug: sessionUser.roleSlug,
-          },
-          redirectUrl: '/admin',
-        });
-        response.cookies.set({
-          name: 'hab_session',
-          value: token,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60,
-        });
-        return response;
-      }
-
       await logAudit({
         actorType: 'GUEST',
-        actorIdentifier: email || 'anonymous',
+        actorIdentifier: cleanEmail || 'anonymous',
         actorIp: ip,
         action: 'LOGIN_FAILURE_UNKNOWN_USER',
         entityType: 'AuthSession',
         entityId: 'failed-attempt',
-        details: { attemptedEmail: email },
+        details: { attemptedEmail: cleanEmail, targetPortal },
       });
 
       return NextResponse.json(
@@ -146,8 +128,100 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Build authenticated SessionUser from verified DB record
+    // 4. Role & Portal Scoping
     const rolePermissions = (user.role.permissions as string[]) || [];
+    const isStaffRole = user.role.slug === 'super_admin' || 
+                        user.role.slug === 'staff_operator' || 
+                        user.role.slug === 'trustee_viewer' || 
+                        rolePermissions.includes('*') || 
+                        rolePermissions.includes('orders:view') || 
+                        rolePermissions.includes('applications:view');
+
+    // Reject non-staff attempting to sign in via Staff Portal
+    if (targetPortal === 'admin' && !isStaffRole) {
+      await logAudit({
+        actorType: 'MEMBER',
+        actorId: user.id,
+        actorIdentifier: user.email,
+        actorIp: ip,
+        action: 'STAFF_LOGIN_BLOCKED_NON_STAFF_ROLE',
+        entityType: 'User',
+        entityId: user.id,
+        details: { roleSlug: user.role.slug },
+      });
+
+      return NextResponse.json(
+        { success: false, error: 'Access denied: Staff credentials required for Secretariat Operations Suite.' },
+        { status: 403 }
+      );
+    }
+
+    // Reject staff trying to log in at member portal unless they also hold an explicit member profile
+    if (targetPortal === 'member' && isStaffRole && !user.memberProfile && user.role.slug !== 'member') {
+      return NextResponse.json(
+        { success: false, error: 'Staff account detected. Please sign in via the Secretariat Staff Portal at /admin/login.' },
+        { status: 403 }
+      );
+    }
+
+    // 5. Two-Factor Authentication (2FA) verification for enrolled accounts
+    if (user.twoFactorEnabled && user.twoFactorSecret) {
+      const code = (body.twoFactorCode || body.totpCode || body.code || '').trim();
+
+      if (!code) {
+        return NextResponse.json({
+          success: true,
+          requires2FA: true,
+          message: 'Two-factor authentication required. Please enter your 6-digit authenticator code or backup code.',
+          userId: user.id,
+        });
+      }
+
+      // 1. Verify TOTP 6-digit code
+      const isTotpValid = verifyTotpCode(code, user.twoFactorSecret);
+      let isBackupValid = false;
+
+      // 2. Fallback to single-use backup codes
+      if (!isTotpValid && Array.isArray(user.twoFactorBackupCodes)) {
+        const remainingBackupCodes = verifyAndConsumeBackupCode(code, user.twoFactorBackupCodes as string[]);
+        if (remainingBackupCodes !== null) {
+          isBackupValid = true;
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { twoFactorBackupCodes: remainingBackupCodes },
+          });
+          await logAudit({
+            actorType: isStaffRole ? 'STAFF' : 'MEMBER',
+            actorId: user.id,
+            actorIdentifier: user.email,
+            actorIp: ip,
+            action: '2FA_BACKUP_CODE_CONSUMED',
+            entityType: 'User',
+            entityId: user.id,
+            details: { remainingCodesCount: remainingBackupCodes.length },
+          });
+        }
+      }
+
+      if (!isTotpValid && !isBackupValid) {
+        await logAudit({
+          actorType: isStaffRole ? 'STAFF' : 'MEMBER',
+          actorId: user.id,
+          actorIdentifier: user.email,
+          actorIp: ip,
+          action: 'LOGIN_FAILURE_BAD_2FA',
+          entityType: 'User',
+          entityId: user.id,
+        });
+
+        return NextResponse.json(
+          { success: false, error: 'Invalid two-factor authentication code. Please try again.' },
+          { status: 401 }
+        );
+      }
+    }
+
+    // 6. Build authenticated SessionUser from verified DB record
     const sessionUser: SessionUser = {
       id: user.id,
       userId: user.id,
@@ -160,22 +234,28 @@ export async function POST(req: NextRequest) {
       roleStatus: user.role.status as 'ACTIVE' | 'RETIRED',
       permissions: rolePermissions,
       mustChangePassword: !!user.mustChangePassword,
+      sessionVersion: user.sessionVersion || 1,
     };
 
     const token = await createSessionToken(sessionUser);
 
-    const redirectUrl = '/admin';
+    let redirectUrl = '/';
+    if (isStaffRole && targetPortal !== 'member') {
+      redirectUrl = '/admin';
+    } else if (user.memberProfile || user.role.slug === 'member') {
+      redirectUrl = user.memberProfile ? `/members/${user.memberProfile.regNumber.toLowerCase()}` : '/members';
+    }
 
-    // 5. Audit log
+    // 6. Audit log
     await logAudit({
-      actorType: 'STAFF',
+      actorType: isStaffRole ? 'STAFF' : 'MEMBER',
       actorId: user.id,
       actorIdentifier: user.email,
       actorIp: ip,
-      action: 'STAFF_LOGIN_SUCCESS',
+      action: isStaffRole ? 'STAFF_LOGIN_SUCCESS' : 'MEMBER_LOGIN_SUCCESS',
       entityType: 'User',
       entityId: user.id,
-      details: { role: user.role.name, roleSlug: user.role.slug, mustChangePassword: user.mustChangePassword },
+      details: { role: user.role.name, roleSlug: user.role.slug, targetPortal, mustChangePassword: user.mustChangePassword },
     });
 
     // 6. Return response with httpOnly session cookie

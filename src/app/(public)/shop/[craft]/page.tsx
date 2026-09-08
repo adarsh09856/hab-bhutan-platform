@@ -45,32 +45,32 @@ export default function ShopGridPage() {
   }, []);
 
   return (
-    <main className="max-w-[1280px] min-w-[1200px] mx-auto px-10 pt-10 pb-24">
+    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
       {/* Breadcrumbs */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-8">
+      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
         <Link href="/shop" className="hover:underline">E-shop</Link> /{' '}
         <span>{isAll ? 'All crafts' : currentCraft?.name}</span>
       </div>
 
-      <div className="grid grid-cols-[246px_1fr] gap-11 items-start">
-        {/* Left Sticky Filter Rail */}
-        <aside className="sticky top-[100px] flex flex-col gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[246px_1fr] gap-8 lg:gap-11 items-start">
+        {/* Left Filter Rail / Mobile Filter Bar */}
+        <aside className="lg:sticky lg:top-[100px] flex flex-col gap-4 sm:gap-6">
           <div>
-            <div className="font-figtree font-bold text-[13.5px] text-[#33261F] uppercase tracking-[0.05em] mb-3">
+            <div className="font-figtree font-bold text-xs sm:text-[13.5px] text-[#33261F] uppercase tracking-[0.05em] mb-2 sm:mb-3">
               Craft category
             </div>
-            <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] divide-y divide-[#EFE9DE] overflow-hidden">
+            <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 gap-1.5 lg:gap-0 bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-2 lg:p-0 lg:divide-y lg:divide-[#EFE9DE] no-scrollbar">
               <Link
                 href="/shop/all"
-                className={`p-[10px_14px] flex justify-between items-center text-[13.5px] font-figtree transition-colors ${
+                className={`p-2 sm:p-[10px_14px] flex-none lg:flex-initial flex items-center justify-between gap-2 text-xs sm:text-[13.5px] font-figtree rounded-lg lg:rounded-none transition-colors ${
                   isAll
                     ? 'bg-[#F1E9DB] font-bold text-[#8B2E24]'
                     : 'text-[#33261F] hover:bg-[#F4F0E7]'
                 }`}
               >
                 <span>All crafts</span>
-                <span className="font-mono text-[11px] text-[#6B5A4C]">
+                <span className="font-mono text-[10px] sm:text-[11px] text-[#6B5A4C] bg-white/70 px-1.5 py-0.5 rounded">
                   {SAMPLE_PRODUCTS.length}
                 </span>
               </Link>
@@ -82,21 +82,21 @@ export default function ShopGridPage() {
                   <Link
                     key={c.key}
                     href={`/shop/${c.key}`}
-                    className={`p-[10px_14px] flex justify-between items-center transition-colors ${
+                    className={`p-2 sm:p-[10px_14px] flex-none lg:flex-initial flex items-center justify-between gap-3 rounded-lg lg:rounded-none transition-colors ${
                       isActive
                         ? 'bg-[#F1E9DB] text-[#8B2E24]'
                         : 'text-[#33261F] hover:bg-[#F4F0E7]'
                     }`}
                   >
                     <div>
-                      <div className={`font-figtree text-[13.5px] ${isActive ? 'font-bold' : 'font-medium'}`}>
+                      <div className={`font-figtree text-xs sm:text-[13.5px] whitespace-nowrap lg:whitespace-normal ${isActive ? 'font-bold' : 'font-medium'}`}>
                         {c.name}
                       </div>
-                      <div className="font-lora text-[11.5px] text-[#6B5A4C]">
+                      <div className="hidden lg:block font-lora text-[11.5px] text-[#6B5A4C]">
                         {c.english}
                       </div>
                     </div>
-                    <span className="font-mono text-[11px] text-[#6B5A4C]">
+                    <span className="font-mono text-[10px] sm:text-[11px] text-[#6B5A4C] bg-white/70 px-1.5 py-0.5 rounded">
                       {count}
                     </span>
                   </Link>
@@ -106,14 +106,14 @@ export default function ShopGridPage() {
           </div>
 
           {/* Sort Select */}
-          <div>
-            <label className="font-figtree font-bold text-[13.5px] text-[#33261F] uppercase tracking-[0.05em] block mb-2">
+          <div className="flex sm:flex-col items-center sm:items-start justify-between gap-2">
+            <label className="font-figtree font-bold text-xs sm:text-[13.5px] text-[#33261F] uppercase tracking-[0.05em] block mb-0 sm:mb-2 flex-none">
               Sort by
             </label>
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as any)}
-              className="w-full bg-[#FFFCF8] border border-[#CDBEA8] rounded-[8px] p-2.5 font-figtree text-[13.5px] text-[#33261F] outline-none"
+              className="w-full sm:w-full max-w-[200px] sm:max-w-none bg-[#FFFCF8] border border-[#CDBEA8] rounded-[8px] p-2 sm:p-2.5 font-figtree text-xs sm:text-[13.5px] text-[#33261F] outline-none"
             >
               <option value="new">Newest additions</option>
               <option value="low">Price: low to high</option>
@@ -122,7 +122,7 @@ export default function ShopGridPage() {
           </div>
 
           {/* Shipping Policy Note */}
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-4 text-[13px] font-lora text-[#6B5A4C] leading-[1.5]">
+          <div className="hidden lg:block bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-4 text-[13px] font-lora text-[#6B5A4C] leading-[1.5]">
             EMS / Bhutan Post worldwide, 7–14 days. Duties and customs are payable on arrival — see the notes at checkout.
           </div>
         </aside>
@@ -130,30 +130,30 @@ export default function ShopGridPage() {
         {/* Right Catalog Content */}
         <div className="flex flex-col gap-6">
           <div>
-            <h1 className="font-marcellus text-[42px] font-normal leading-[1.06] text-[#33261F] mb-2">
+            <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[42px] font-normal leading-[1.1] text-[#33261F] mb-2">
               {isAll ? 'The HAB e-shop' : `${currentCraft?.name} — ${currentCraft?.english}`}
             </h1>
-            <p className="font-lora text-[16.5px] text-[#6B5A4C] max-w-[70ch] leading-[1.55]">
+            <p className="font-lora text-sm sm:text-base lg:text-[16.5px] text-[#6B5A4C] max-w-[70ch] leading-[1.55]">
               {isAll
-                ? 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category on the left.'
+                ? 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category.'
                 : currentCraft?.description}
             </p>
           </div>
 
           {currentCraft && (
-            <div data-cms-img className="aspect-[24/7] rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
+            <div data-cms-img className="aspect-[16/9] sm:aspect-[24/7] rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
               <img
                 src={`/images/crafts/${currentCraft.key}.jpg`}
                 alt={`${currentCraft.name} — ${currentCraft.english}`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute bottom-3 left-4 z-10 flex items-center gap-3">
-                <span className="font-figtree font-bold text-[17px] text-white">
+              <div className="absolute bottom-3 left-3 sm:left-4 z-10 flex flex-wrap items-center gap-2 sm:gap-3 max-w-[90%]">
+                <span className="font-figtree font-bold text-sm sm:text-[17px] text-white">
                   {currentCraft.name} ({currentCraft.dzongkha})
                 </span>
-                <span className="font-mono text-[11px] text-[#F4F0E7]/90 bg-[#33261F]/80 backdrop-blur-sm px-2.5 py-1 rounded">
-                  {currentCraft.english} · Living Zorig Chusum Tradition
+                <span className="font-mono text-[10px] sm:text-[11px] text-[#F4F0E7]/90 bg-[#33261F]/80 backdrop-blur-sm px-2 sm:px-2.5 py-0.5 sm:py-1 rounded truncate">
+                  {currentCraft.english} · Living Zorig Chusum
                 </span>
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function ShopGridPage() {
 
           {/* Product Grid or Empty State */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-3 gap-[22px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px]">
               {filteredProducts.map((p) => (
                 <ProductCard
                   key={p.code}
@@ -176,23 +176,23 @@ export default function ShopGridPage() {
             </div>
           ) : (
             /* Empty State Contract: Section 2.6.3 */
-            <div className="border-2 border-dashed border-[#CDBEA8] rounded-[14px] p-12 text-center flex flex-col items-center justify-center my-6">
-              <h3 className="font-marcellus text-[28px] font-normal text-[#33261F] mb-3">
+            <div className="border-2 border-dashed border-[#CDBEA8] rounded-[14px] p-6 sm:p-12 text-center flex flex-col items-center justify-center my-6">
+              <h3 className="font-marcellus text-xl sm:text-[28px] font-normal text-[#33261F] mb-3">
                 Nothing listed in {currentCraft?.name || 'this craft'} right now
               </h3>
-              <p className="font-lora text-[16px] text-[#6B5A4C] max-w-[58ch] mb-8 leading-[1.6]">
+              <p className="font-lora text-xs sm:text-[16px] text-[#6B5A4C] max-w-[58ch] mb-6 sm:mb-8 leading-[1.6]">
                 HAB buys in batches from registered master artisans, so stock in this category rotates throughout the year. You can commission a custom piece directly or register for restock notifications.
               </p>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link
                   href="/about#contact"
-                  className="font-figtree font-semibold text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-6 py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors"
+                  className="font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-6 py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors"
                 >
                   Commission a piece
                 </Link>
                 <Link
                   href="/shop/all"
-                  className="font-figtree font-semibold text-[14.5px] border border-[#CDBEA8] text-[#33261F] px-6 py-3.5 rounded-[7px] hover:border-[#33261F] transition-colors"
+                  className="font-figtree font-semibold text-xs sm:text-[14.5px] border border-[#CDBEA8] text-[#33261F] px-6 py-3.5 rounded-[7px] hover:border-[#33261F] transition-colors"
                 >
                   Browse all crafts →
                 </Link>

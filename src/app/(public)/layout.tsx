@@ -9,7 +9,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen min-w-[1200px] flex flex-col bg-[#F4F0E7] text-[#33261F]">
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col bg-[#F4F0E7] text-[#33261F]">
       <UtilityBar />
       <Header />
       <div className="flex-1">{children}</div>

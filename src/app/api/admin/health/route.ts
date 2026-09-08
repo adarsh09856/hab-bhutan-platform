@@ -33,29 +33,44 @@ export async function GET(req: NextRequest) {
     };
   }
 
+  const uptimeSeconds = Math.round(process.uptime());
+  const mem = process.memoryUsage();
   const sessionUser = await getSessionUser(req);
 
-  return NextResponse.json({
-    success: true,
-    timestamp: new Date().toISOString(),
-    database: {
-      connected: dbConnected,
-      latencyMs: dbLatencyMs,
-      provider: 'postgresql',
+  const isHealthy = dbConnected;
+  const statusCode = isHealthy ? 200 : 503;
+
+  return NextResponse.json(
+    {
+      success: isHealthy,
+      status: isHealthy ? 'HEALTHY' : 'DEGRADED',
+      timestamp: new Date().toISOString(),
+      uptimeSeconds,
+      database: {
+        connected: dbConnected,
+        latencyMs: dbLatencyMs,
+        provider: 'postgresql',
+      },
+      system: {
+        rssMb: Math.round(mem.rss / (1024 * 1024)),
+        heapUsedMb: Math.round(mem.heapUsed / (1024 * 1024)),
+        heapTotalMb: Math.round(mem.heapTotal / (1024 * 1024)),
+      },
+      fx: {
+        rate: fxInfo.rate,
+        status: fxInfo.status,
+        source: fxInfo.source,
+        stalenessHours: fxInfo.stalenessHours || 0,
+        isBlocked: fxInfo.blocked,
+      },
+      user: sessionUser ? {
+        id: sessionUser.id,
+        name: sessionUser.name,
+        email: sessionUser.email,
+        role: sessionUser.role || sessionUser.roleSlug,
+        roleSlug: sessionUser.roleSlug,
+      } : null,
     },
-    fx: {
-      rate: fxInfo.rate,
-      status: fxInfo.status,
-      source: fxInfo.source,
-      stalenessHours: fxInfo.stalenessHours || 0,
-      isBlocked: fxInfo.blocked,
-    },
-    user: sessionUser ? {
-      id: sessionUser.id,
-      name: sessionUser.name,
-      email: sessionUser.email,
-      role: sessionUser.role || sessionUser.roleSlug,
-      roleSlug: sessionUser.roleSlug,
-    } : null,
-  });
+    { status: statusCode }
+  );
 }

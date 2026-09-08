@@ -113,6 +113,15 @@ img {
   background: repeating-linear-gradient(135deg, #42332A 0 9px, #463629 9px 18px);
 }
 
+/* Hide scrollbar but keep scroll behaviour (used on mobile filter rails) */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/Opera */
+}
+
 /* Accessibility: respect user preferences for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

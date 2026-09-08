@@ -21,26 +21,31 @@ import {
 function TrackOrderContent() {
   const searchParams = useSearchParams();
   const initialOrder = searchParams.get('order') || '';
+  const initialContact = searchParams.get('email') || searchParams.get('phone') || '';
 
   const [orderQuery, setOrderQuery] = useState(initialOrder);
-  const [emailQuery, setEmailQuery] = useState('');
+  const [emailQuery, setEmailQuery] = useState(initialContact);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [orderData, setOrderData] = useState<any | null>(null);
 
-  const performSearch = async (orderId: string, email?: string) => {
+  const performSearch = async (orderId: string, contact?: string) => {
     if (!orderId.trim()) {
       setErrorMsg('Please enter a valid HAB order number (e.g. HAB-S-12345).');
+      return;
+    }
+
+    if (!contact?.trim()) {
+      setErrorMsg('To protect customer privacy, please enter the email address or phone number used at checkout.');
       return;
     }
 
     setLoading(true);
     setErrorMsg('');
     try {
-      let url = `/api/orders/track?order=${encodeURIComponent(orderId.trim())}`;
-      if (email?.trim()) {
-        url += `&email=${encodeURIComponent(email.trim())}`;
-      }
+      const isEmail = contact.includes('@');
+      const paramKey = isEmail ? 'email' : 'phone';
+      const url = `/api/orders/track?order=${encodeURIComponent(orderId.trim())}&${paramKey}=${encodeURIComponent(contact.trim())}`;
       const res = await fetch(url);
       const data = await res.json();
 
@@ -58,10 +63,10 @@ function TrackOrderContent() {
   };
 
   useEffect(() => {
-    if (initialOrder) {
-      performSearch(initialOrder);
+    if (initialOrder && initialContact) {
+      performSearch(initialOrder, initialContact);
     }
-  }, [initialOrder]);
+  }, [initialOrder, initialContact]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +90,7 @@ function TrackOrderContent() {
   };
 
   return (
-    <main className="max-w-[1180px] min-w-[1180px] mx-auto px-10 pt-10 pb-24 font-figtree">
+    <main className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24 font-figtree">
       {/* Breadcrumbs */}
       <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
@@ -98,10 +103,10 @@ function TrackOrderContent() {
         <span className="text-xs font-mono tracking-widest uppercase text-[#8B2E24] font-semibold">
           Authenticity &amp; Dispatch Tracking
         </span>
-        <h1 className="font-marcellus text-[38px] text-[#33261F] leading-tight mt-1 mb-3">
+        <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[38px] text-[#33261F] leading-tight mt-1 mb-3">
           Track Your Bhutanese Craft Parcel
         </h1>
-        <p className="text-slate-600 text-[15px] font-lora leading-relaxed">
+        <p className="text-slate-600 text-sm sm:text-[15px] font-lora leading-relaxed">
           Every parcel dispatched by the Handicrafts Association of Bhutan includes an official seal of origin certified under the 13 Traditional Arts &amp; Crafts (Zorig Chusum). Check real-time inspection, packing, and courier transit below.
         </p>
       </div>
@@ -122,10 +127,10 @@ function TrackOrderContent() {
 
           <div className="relative flex-1">
             <input
-              type="email"
+              type="text"
               value={emailQuery}
               onChange={(e) => setEmailQuery(e.target.value)}
-              placeholder="Purchaser Email (Optional verification)"
+              placeholder="Email address or phone number (Required)"
               className="w-full px-4 py-3 bg-white border border-[#CDBEA8] rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24] focus:border-transparent transition-all"
             />
           </div>
@@ -333,7 +338,7 @@ export default function TrackOrderPage() {
   return (
     <Suspense
       fallback={
-        <main className="max-w-[1180px] min-w-[1180px] mx-auto px-10 pt-20 pb-24 text-center font-figtree">
+        <main className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-10 pt-20 pb-24 text-center font-figtree">
           <div className="w-8 h-8 border-2 border-[#8B2E24] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-sm text-slate-600">Loading order tracking interface...</p>
         </main>

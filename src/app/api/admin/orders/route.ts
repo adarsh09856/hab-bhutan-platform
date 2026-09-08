@@ -117,11 +117,20 @@ export async function POST(req: NextRequest) {
           name: product.name,
         });
 
-        // Atomic inventory decrement
-        await tx.product.update({
-          where: { id: product.id },
-          data: { stock: { decrement: qty } },
+        // Atomic inventory decrement with concurrency protection
+        const updateResult = await tx.product.updateMany({
+          where: {
+            id: product.id,
+            stock: { gte: qty },
+          },
+          data: {
+            stock: { decrement: qty },
+          },
         });
+
+        if (updateResult.count === 0) {
+          throw new Error(`Insufficient stock for product '${product.name}': only ${product.stock} available.`);
+        }
       }
 
       // 2. Shipping calculation

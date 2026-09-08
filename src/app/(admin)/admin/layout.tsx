@@ -34,6 +34,11 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
 
+  // Render standalone page for admin login without sidebar chrome
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
 
@@ -62,12 +67,12 @@ export default function AdminLayout({
 
   const navItems = [
     { label: 'Dashboard', href: '/admin' },
-    { label: 'POS Terminal', href: '/admin/pos' },
-    { label: 'Members', href: '/admin/members' },
-    { label: 'Products', href: '/admin/products' },
+    { label: 'Products & Crafts', href: '/admin/products' },
     { label: 'Orders & Fulfillment', href: '/admin/orders' },
+    { label: 'Members Directory', href: '/admin/members' },
     { label: 'Application Queue', href: '/admin/applications' },
     { label: 'Content & CMS', href: '/admin/content' },
+    { label: 'Roles & Permissions', href: '/admin/settings?tab=RBAC' },
     { label: 'Financial Reports', href: '/admin/reports' },
     { label: 'System Settings', href: '/admin/settings' },
   ];
@@ -124,7 +129,7 @@ export default function AdminLayout({
             <button
               onClick={() => {
                 document.cookie = 'hab_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                router.push('/login');
+                router.push('/admin/login');
               }}
               className="text-slate-400 hover:text-rose-400 transition-colors"
             >

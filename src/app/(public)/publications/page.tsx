@@ -78,56 +78,56 @@ export default function PublicationsPage() {
   };
 
   return (
-    <main className="max-w-[1280px] min-w-[1200px] mx-auto px-10 pt-10 pb-24">
+    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
       {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-8">
+      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}
         <span>Publications &amp; downloads</span>
       </div>
 
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="font-marcellus text-[44px] font-normal leading-[1.06] text-[#33261F] mb-3">
+      <div className="mb-8 sm:mb-10">
+        <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[44px] font-normal leading-[1.06] text-[#33261F] mb-3">
           Publications &amp; downloads
         </h1>
-        <p className="font-lora text-[17px] text-[#6B5A4C] max-w-[68ch]">
+        <p className="font-lora text-sm sm:text-base lg:text-[17px] text-[#6B5A4C] max-w-[68ch]">
           The institutional memory, research, financial accounts, and craft development manuals published by the Handicrafts Association of Bhutan.
         </p>
       </div>
 
       {/* Lead Featured Report */}
-      <div className="bg-[#33261F] text-[#F1ECE2] rounded-[14px] p-8 grid grid-cols-[1.3fr_0.7fr] gap-10 items-center mb-12">
+      <div className="bg-[#33261F] text-[#F1ECE2] rounded-[14px] p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-8 lg:gap-10 items-center mb-8 sm:mb-12">
         <div>
           <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#C9A46A] mb-3">
             Featured release · {leadReport.year}
           </div>
-          <h2 className="font-marcellus text-[32px] font-normal text-white mb-3">
+          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[32px] font-normal text-white mb-3">
             {leadReport.title}
           </h2>
-          <p className="font-lora text-[15.5px] leading-[1.6] text-[#D2C2AE] mb-6">
+          <p className="font-lora text-sm sm:text-[15.5px] leading-[1.6] text-[#D2C2AE] mb-6">
             Sector statistics, financial health, strategic milestones, and capacity interventions delivered across Bhutan during the 2025 operating year.
           </p>
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
             <button
               type="button"
-              className="font-figtree font-semibold text-[14.5px] bg-[#8B2E24] text-white px-6 py-3 rounded-[7px] hover:bg-[#6E241C] transition-colors cursor-pointer"
+              className="w-full sm:w-auto font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#8B2E24] text-white px-6 py-3 rounded-[7px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center"
             >
               Download PDF ({leadReport.meta})
             </button>
-            <span className="font-mono text-[11.5px] text-[#A8947F]">
+            <span className="font-mono text-xs sm:text-[11.5px] text-[#A8947F]">
               English &amp; Dzongkha
             </span>
           </div>
         </div>
 
-        <div data-cms-img className="aspect-[4/3] rounded-[10px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
+        <div data-cms-img className="aspect-[16/9] sm:aspect-[4/3] rounded-[10px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
           <img
             src="/images/crafts/dezo.jpg"
             alt={leadReport.title}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
-          <span className="absolute bottom-3 left-3 z-10 font-mono text-[10.5px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-2.5 py-1 rounded border border-white/15">
+          <span className="absolute bottom-3 left-3 z-10 font-mono text-[10px] sm:text-[10.5px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-2.5 py-1 rounded border border-white/15 truncate max-w-[90%]">
             {leadReport.title} · Official Report
           </span>
         </div>
@@ -135,19 +135,19 @@ export default function PublicationsPage() {
 
       {/* Filter Bar */}
       <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-4 mb-8">
-        <div className="grid grid-cols-[1.5fr_1fr_1fr_auto] gap-3 items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_auto] gap-3 items-center">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search report titles or keywords"
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-[14px] font-figtree outline-none"
+            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-xs sm:text-[14px] font-figtree outline-none"
           />
 
           <select
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-[14px] font-figtree outline-none"
+            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-xs sm:text-[14px] font-figtree outline-none"
           >
             <option value="">All document types</option>
             {kinds.map((k) => (
@@ -158,7 +158,7 @@ export default function PublicationsPage() {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-[14px] font-figtree outline-none"
+            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-xs sm:text-[14px] font-figtree outline-none"
           >
             <option value="">All years</option>
             {years.map((y) => (
@@ -169,20 +169,20 @@ export default function PublicationsPage() {
           <button
             type="button"
             onClick={resetFilters}
-            className="font-figtree font-semibold text-[13.5px] text-[#8B2E24] hover:underline px-3 cursor-pointer"
+            className="font-figtree font-semibold text-xs sm:text-[13.5px] text-[#8B2E24] hover:underline px-3 py-2 cursor-pointer text-left sm:text-center"
           >
             Reset
           </button>
         </div>
 
-        <div className="font-mono text-[11px] text-[#6B5A4C] mt-3 pt-3 border-t border-[#EFE9DE]">
+        <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] mt-3 pt-3 border-t border-[#EFE9DE]">
           {filteredPublications.length} publications of {PUBLICATIONS_DATA.length} · newest first
         </div>
       </div>
 
       {/* Publications Grid */}
       {filteredPublications.length > 0 ? (
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredPublications.map((pub) => (
             <div
               key={pub.title}

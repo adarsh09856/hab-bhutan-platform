@@ -1,12 +1,22 @@
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database for HAB Digital Platform...');
+
+  // Production Safety Guard: Refuse to execute destructive re-seeds if users already exist
+  if (process.env.NODE_ENV === 'production') {
+    const existingUserCount = await prisma.user.count();
+    if (existingUserCount > 0) {
+      console.log('[Seed Guard] Production environment detected with existing user records. Aborting seed execution to safeguard data and credentials.');
+      return;
+    }
+  }
 
   // 1. Seed 13 Zorig Chusum Crafts from crafts.json
   const craftsRaw = fs.readFileSync(path.join(__dirname, '../crafts.json'), 'utf-8');
@@ -92,22 +102,24 @@ async function main() {
     },
   });
 
-  // 3. Seed Initial Staff User with real bcrypt hash
-  const adminPasswordHash = bcrypt.hashSync('AdminSecure2026!', 10);
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@handicraftsbhutan.org' },
-    update: {
-      passwordHash: adminPasswordHash,
-      status: 'ACTIVE',
-    },
-    create: {
-      email: 'admin@handicraftsbhutan.org',
-      name: 'HAB Secretariat Admin',
-      passwordHash: adminPasswordHash,
-      roleId: superAdminRole.id,
-      status: 'ACTIVE',
-    },
-  });
+  // 3. Provision Initial Staff Administrator (Bootstrap only — never overwrite existing passwords)
+  const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@handicraftsbhutan.org' } });
+  if (!existingAdmin) {
+    const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD || crypto.randomBytes(16).toString('hex');
+    const adminPasswordHash = bcrypt.hashSync(initialAdminPassword, 12);
+    await prisma.user.create({
+      data: {
+        email: 'admin@handicraftsbhutan.org',
+        name: 'HAB Secretariat Admin',
+        passwordHash: adminPasswordHash,
+        roleId: superAdminRole.id,
+        status: 'ACTIVE',
+      },
+    });
+    console.log('Seeded initial Secretariat administrator account.');
+  } else {
+    console.log('Admin user already exists. Existing credentials preserved without modification.');
+  }
 
   // 3b. Seed Demo Member User Account with real bcrypt hash
   // Note: Seed demo accounts maintain fixed demo credentials with mustChangePassword: false for evaluation testing,
