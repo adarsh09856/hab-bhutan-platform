@@ -149,11 +149,18 @@ export default function Header() {
                   </Link>
                   <div className="h-[1px] bg-[#E4DDD1] my-[6px] mx-[10px]" />
                   <Link
+                    href="/track-order"
+                    onClick={() => setMembersMenuOpen(false)}
+                    className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
+                  >
+                    Track order status
+                  </Link>
+                  <Link
                     href="/login"
                     onClick={() => setMembersMenuOpen(false)}
                     className="block px-3 py-[10px] rounded-[7px] text-[#8B2E24] font-semibold hover:bg-[#F1EADC] transition-colors duration-150"
                   >
-                    Members-only login
+                    Staff &amp; Operations Sign In
                   </Link>
                 </div>
               </div>
@@ -265,6 +272,13 @@ export default function Header() {
                       className="font-figtree font-semibold text-[13.5px] border border-[#CDBEA8] text-[#33261F] px-4 py-[11px] rounded-[7px] hover:border-[#33261F]"
                     >
                       Your basket
+                    </Link>
+                    <Link
+                      href="/track-order"
+                      onClick={() => setShopMenuOpen(false)}
+                      className="font-figtree font-semibold text-[13.5px] border border-[#CDBEA8] text-[#33261F] px-4 py-[11px] rounded-[7px] hover:border-[#33261F]"
+                    >
+                      Track order
                     </Link>
                     <div className="flex-1" />
                     <div className="font-mono text-[11px] text-[#6B5A4C]">

@@ -27,32 +27,75 @@ export default function BasketPage() {
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [confirmedOrderNumber, setConfirmedOrderNumber] = useState('HAB-S-88214');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [customer, setCustomer] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    country: 'Bhutan',
+    street: '',
+    city: 'Thimphu',
+    postalCode: '',
+  });
 
   const handlePlaceOrder = async () => {
-    setIsSubmitting(true);
-    const orderNum = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
-    setConfirmedOrderNumber(orderNum);
+    setFormError('');
+    if (!customer.fullName.trim()) {
+      setFormError('Please enter your full name.');
+      return;
+    }
+    if (!customer.email.trim() || !customer.email.includes('@')) {
+      setFormError('Please enter a valid email address for order tracking updates.');
+      return;
+    }
+    if (!customer.street.trim()) {
+      setFormError('Please enter your delivery street address.');
+      return;
+    }
 
-    // Call API order endpoint in background
+    setIsSubmitting(true);
+    let orderNum = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
+
     try {
-      await fetch('/api/orders', {
+      const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orderNumber: orderNum,
-          customerName: 'Guest Shopper',
-          customerEmail: 'shopper@example.com',
-          shippingMethod,
-          shippingFeeUSD,
-          paymentMethod,
-          totalUSD,
-          items,
+          items: items.map((i) => ({
+            code: i.code,
+            name: i.name,
+            quantity: i.quantity,
+            priceUsd: i.priceUSD,
+          })),
+          currency: 'USD',
+          shippingMethod: shippingMethod === 'express' ? 'EXPRESS' : 'EMS',
+          customerName: customer.fullName.trim(),
+          email: customer.email.trim(),
+          phone: customer.phone.trim() || null,
+          shippingAddress: {
+            fullName: customer.fullName.trim(),
+            email: customer.email.trim(),
+            phone: customer.phone.trim(),
+            street: customer.street.trim(),
+            city: customer.city.trim(),
+            country: customer.country.trim(),
+            postalCode: customer.postalCode.trim(),
+          },
         }),
       });
-    } catch {
-      // Handled
+      const data = await res.json();
+      if (data.success && data.order?.orderNumber) {
+        orderNum = data.order.orderNumber;
+      } else if (!res.ok && data.error) {
+        setFormError(data.error);
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (err: any) {
+      console.error('Error in checkout:', err);
     }
 
+    setConfirmedOrderNumber(orderNum);
     clearCart();
     setOrderConfirmed(true);
     setIsSubmitting(false);
@@ -87,18 +130,26 @@ export default function BasketPage() {
             Order confirmed
           </h2>
           <p className="font-lora text-[16.5px] leading-[1.62] text-[#4A3C33] mb-4">
-            Thank you for supporting Bhutan&apos;s artisans. Your order number is{' '}
+            Thank you for supporting Bhutan&apos;s artisans. Your official order number is{' '}
             <strong className="font-mono text-[#8B2E24]">{confirmedOrderNumber}</strong>.
           </p>
           <p className="font-lora text-[15px] leading-[1.6] text-[#6B5A4C] mb-8">
-            Your parcel will be prepared with a verified craft authenticity certificate and dispatched via EMS Bhutan Post within two working days. Tracking details will be emailed to you.
+            Your consignment will be certified with an official seal of authenticity under the 13 Traditional Arts &amp; Crafts and dispatched via EMS Bhutan Post.
           </p>
-          <Link
-            href="/shop"
-            className="font-figtree font-semibold text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-7 py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors inline-block"
-          >
-            Continue shopping
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href={`/track-order?order=${confirmedOrderNumber}`}
+              className="font-figtree font-semibold text-[14.5px] bg-[#8B2E24] text-white px-7 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors inline-block"
+            >
+              Track Order Status →
+            </Link>
+            <Link
+              href="/shop"
+              className="font-figtree font-semibold text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-7 py-3.5 rounded-[7px] hover:bg-black transition-colors inline-block"
+            >
+              Continue shopping
+            </Link>
+          </div>
         </div>
       ) : cartCount === 0 ? (
         /* State 2: Empty Cart */
@@ -187,6 +238,131 @@ export default function BasketPage() {
                   </button>
                 </div>
               ))}
+            </div>
+
+            {/* Customer & Delivery Address */}
+            <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-6 space-y-4">
+              <h3 className="font-figtree font-bold text-[16.5px] text-[#33261F]">
+                Delivery details
+              </h3>
+
+              {formError && (
+                <div className="p-3 bg-[#FDF2F0] border border-[#F3C7C2] rounded-[8px] text-[#8B2E24] text-xs font-figtree">
+                  {formError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customer.fullName}
+                    onChange={(e) => setCustomer({ ...customer, fullName: e.target.value })}
+                    placeholder="e.g. Karma Dorji / Jane Doe"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                    Email Address * (For order tracking)
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={customer.email}
+                    onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                    placeholder="collector@example.com"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                    Phone Number (For dispatch courier)
+                  </label>
+                  <input
+                    type="tel"
+                    value={customer.phone}
+                    onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                    placeholder="+975 17 123 456"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                    Country *
+                  </label>
+                  <select
+                    value={customer.country}
+                    onChange={(e) => setCustomer({ ...customer, country: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                  >
+                    <option value="Bhutan">Bhutan</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Japan">Japan</option>
+                    <option value="Australia">Australia</option>
+                    <option value="Germany">Germany</option>
+                    <option value="France">France</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Canada">Canada</option>
+                    <option value="India">India</option>
+                    <option value="Switzerland">Switzerland</option>
+                    <option value="Other">Other International</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                  Street Delivery Address *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={customer.street}
+                  onChange={(e) => setCustomer({ ...customer, street: e.target.value })}
+                  placeholder="Apartment, suite, house number, street name"
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                    City / Dzongkhag *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customer.city}
+                    onChange={(e) => setCustomer({ ...customer, city: e.target.value })}
+                    placeholder="Thimphu, Paro, New York, Tokyo..."
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-[#6B5A4C] mb-1">
+                    Postal / PIN Code
+                  </label>
+                  <input
+                    type="text"
+                    value={customer.postalCode}
+                    onChange={(e) => setCustomer({ ...customer, postalCode: e.target.value })}
+                    placeholder="e.g. 11001"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#CDBEA8] rounded-[7px] text-sm text-[#33261F] focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* 2. Shipping Selection */}

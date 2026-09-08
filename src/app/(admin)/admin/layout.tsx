@@ -62,6 +62,7 @@ export default function AdminLayout({
 
   const navItems = [
     { label: 'Dashboard', href: '/admin' },
+    { label: 'POS Terminal', href: '/admin/pos' },
     { label: 'Members', href: '/admin/members' },
     { label: 'Products', href: '/admin/products' },
     { label: 'Orders & Fulfillment', href: '/admin/orders' },

@@ -671,7 +671,7 @@ await runTest('Live DB Fix 2: Random temporary credentials, mustChangePassword, 
   const loginData = await loginRes.json();
   assert.equal(loginRes.status, 200);
   assert.equal(loginData.user.mustChangePassword, true, 'Login response must indicate mustChangePassword: true');
-  assert.equal(loginData.redirectUrl, '/portal/change-password', 'Redirect URL must be /portal/change-password');
+  assert.equal(loginData.redirectUrl, '/admin', 'Redirect URL must be /admin since /portal has been removed');
 
   const userCookie = loginRes.headers.get('set-cookie')?.split(';')[0];
   assert.ok(userCookie, 'Login must issue session cookie');
@@ -714,7 +714,7 @@ await runTest('Live DB Fix 2: Random temporary credentials, mustChangePassword, 
   const changeData = await changeRes.json();
   assert.equal(changeRes.status, 200);
   assert.equal(changeData.success, true);
-  assert.equal(changeData.redirectUrl, '/portal');
+  assert.equal(changeData.redirectUrl, '/admin');
 
   // Verify in DB: mustChangePassword is now false
   const updatedUser1 = await prisma.user.findUnique({ where: { id: user1.id } });
@@ -869,6 +869,128 @@ await runTest('Live DB Fix 4: Provisional 80/20 consignment split qualified in C
     jsonData.metrics.artisanShareDescription?.includes('provisional'),
     'JSON metrics must qualify artisanShareDescription as provisional'
   );
+});
+
+await runTest('POS & Fulfillment: Online Real-Time POS terminal sale atomically decrements stock & creates order', async () => {
+  const cookie = await getAdminSessionCookie();
+
+  // Create a dedicated test craft product for POS sale
+  const testPosProduct = await prisma.product.create({
+    data: {
+      code: `POS-TEST-${Date.now()}`,
+      name: 'POS Handcrafted Silk Scarf',
+      priceUSD: 65,
+      craftKey: 'thagzo',
+      region: 'Thimphu',
+      stock: 12,
+      status: 'PUBLISHED',
+      description: 'Test scarf for POS sale verification',
+      images: [],
+    },
+  });
+
+  const posSaleRes = await fetch('http://localhost:3000/api/admin/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookie },
+    body: JSON.stringify({
+      customerType: 'WALK_IN_POS',
+      customerName: 'Walk-in Visitor',
+      customerEmail: 'pos@hab.org.bt',
+      paymentMethod: 'CASH',
+      currencyUsed: 'BTN',
+      shippingMethod: 'WALK_IN',
+      items: [
+        { code: testPosProduct.code, productId: testPosProduct.id, quantity: 2, priceUSD: 65 },
+      ],
+    }),
+  });
+
+  assert.equal(posSaleRes.status, 200, 'POS order creation should succeed with 200');
+  const posData = await posSaleRes.json();
+  assert.equal(posData.success, true);
+  assert.ok(posData.order.orderNumber.startsWith('HAB-POS-'), 'POS Order number must start with HAB-POS-');
+  assert.equal(posData.order.shippingFeeUSD, 0, 'Walk-in POS sales must have 0 shipping fee');
+
+  // Verify atomic stock decrement in PostgreSQL
+  const updatedProduct = await prisma.product.findUnique({ where: { id: testPosProduct.id } });
+  assert.equal(updatedProduct.stock, 10, 'Stock must be atomically decremented from 12 to 10');
+
+  // Verify OrderItem rows created
+  const orderItems = await prisma.orderItem.findMany({ where: { orderId: posData.order.id } });
+  assert.equal(orderItems.length, 1);
+  assert.equal(orderItems[0].productId, testPosProduct.id);
+  assert.equal(orderItems[0].quantity, 2);
+
+  // Clean up
+  await prisma.orderItem.deleteMany({ where: { orderId: posData.order.id } });
+  await prisma.order.delete({ where: { id: posData.order.id } });
+  await prisma.product.delete({ where: { id: testPosProduct.id } });
+});
+
+await runTest('Customer Journey: Public checkout with delivery intake & public order tracking', async () => {
+  // Create a dedicated test product for customer checkout
+  const testCraft = await prisma.product.create({
+    data: {
+      code: `ECOMM-TEST-${Date.now()}`,
+      name: 'Test Silver Amulet',
+      priceUSD: 110,
+      craftKey: 'garzo',
+      region: 'Thimphu',
+      stock: 5,
+      status: 'PUBLISHED',
+      description: 'E-commerce test amulet',
+      images: [],
+    },
+  });
+
+  // Public checkout
+  const checkoutRes = await fetch('http://localhost:3000/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ code: testCraft.code, name: testCraft.name, quantity: 1, priceUsd: 110 }],
+      currency: 'USD',
+      shippingMethod: 'EMS',
+      customerName: 'Karma Tenzin',
+      email: 'karma@example.bt',
+      phone: '+975 17 999 888',
+      shippingAddress: {
+        fullName: 'Karma Tenzin',
+        email: 'karma@example.bt',
+        phone: '+975 17 999 888',
+        street: 'Norzin Lam 45',
+        city: 'Thimphu',
+        country: 'Bhutan',
+        postalCode: '11001',
+      },
+    }),
+  });
+
+  assert.equal(checkoutRes.status, 200, 'Public checkout should return 200');
+  const checkoutData = await checkoutRes.json();
+  assert.equal(checkoutData.success, true);
+  const createdOrderNumber = checkoutData.order.orderNumber;
+  assert.ok(createdOrderNumber.startsWith('HAB-S-'));
+
+  // Test public order tracking endpoint
+  const trackRes = await fetch(`http://localhost:3000/api/orders/track?order=${encodeURIComponent(createdOrderNumber)}`);
+  assert.equal(trackRes.status, 200, 'Tracking should return 200 for valid order');
+  const trackData = await trackRes.json();
+  assert.equal(trackData.success, true);
+  assert.equal(trackData.order.orderNumber, createdOrderNumber);
+  assert.ok(Array.isArray(trackData.order.milestones), 'Tracking must return milestones array');
+  assert.equal(trackData.order.milestones.length, 5);
+  assert.equal(trackData.order.items.length, 1);
+
+  // Clean up
+  await prisma.orderItem.deleteMany({ where: { orderId: checkoutData.order.id } });
+  await prisma.order.delete({ where: { id: checkoutData.order.id } });
+  await prisma.product.delete({ where: { id: testCraft.id } });
+});
+
+await runTest('Portal Removal: /portal routes are completely removed and non-accessible', async () => {
+  const portalRes = await fetch('http://localhost:3000/portal', { redirect: 'manual' });
+  assert.ok(portalRes.status === 404 || portalRes.status === 307 || portalRes.status === 308 || portalRes.status === 302);
 });
 
 await prisma.$disconnect();

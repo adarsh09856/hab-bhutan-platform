@@ -132,8 +132,7 @@ export async function POST(req: NextRequest) {
     };
 
     const newToken = await createSessionToken(freshSessionUser);
-    const isStaff = user.role.slug !== 'member';
-    const redirectUrl = isStaff ? '/admin' : '/portal';
+    const redirectUrl = '/admin';
 
     const response = NextResponse.json({
       success: true,

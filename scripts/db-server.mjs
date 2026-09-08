@@ -9,8 +9,21 @@ const pg = new EmbeddedPostgres({
   persistent: true,
 });
 
-console.log('Initializing embedded postgres...');
-await pg.initialise();
+import fs from 'fs';
+
+const dbDir = path.join(process.cwd(), '.db_data');
+const isInitialized = fs.existsSync(path.join(dbDir, 'PG_VERSION'));
+
+if (!isInitialized) {
+  console.log('Initializing embedded postgres...');
+  try {
+    await pg.initialise();
+  } catch (e) {
+    console.log('Initialise note:', e.message);
+  }
+} else {
+  console.log('Database directory already initialized.');
+}
 console.log('Starting embedded postgres on port 5432...');
 await pg.start();
 

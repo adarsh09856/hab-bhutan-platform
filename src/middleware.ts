@@ -4,11 +4,8 @@ import { verifyToken } from '@/lib/rbac';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Only protect admin and portal paths
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isPortalRoute = pathname.startsWith('/portal');
-
-  if (!isAdminRoute && !isPortalRoute) {
+  // Protect all /admin routes exclusively
+  if (!pathname.startsWith('/admin')) {
     return NextResponse.next();
   }
 
@@ -28,32 +25,13 @@ export async function middleware(req: NextRequest) {
     loginUrl.searchParams.set('redirect', pathname);
     loginUrl.searchParams.set('reason', 'session_expired');
     const response = NextResponse.redirect(loginUrl);
-    // Clear stale cookie
     response.cookies.delete('hab_session');
     return response;
-  }
-
-  // Password change enforcement on first login
-  if (sessionUser.mustChangePassword) {
-    if (pathname !== '/portal/change-password') {
-      return NextResponse.redirect(new URL('/portal/change-password', req.url));
-    }
-    return NextResponse.next();
-  } else if (pathname === '/portal/change-password') {
-    // If password change is not required, redirect away from change-password page
-    const dest = sessionUser.roleSlug === 'member' ? '/portal' : '/admin';
-    return NextResponse.redirect(new URL(dest, req.url));
-  }
-
-  // Role routing enforcement
-  if (isAdminRoute && sessionUser.roleSlug === 'member') {
-    // Member attempting to access staff CRM -> redirect to member portal
-    return NextResponse.redirect(new URL('/portal', req.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/portal/:path*'],
+  matcher: ['/admin/:path*'],
 };

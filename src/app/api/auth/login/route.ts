@@ -75,43 +75,6 @@ export async function POST(req: NextRequest) {
         return response;
       }
 
-      if (cleanEmail === 'member@handicraftsbhutan.org' && bcrypt.compareSync(password, DEMO_MEMBER_HASH)) {
-        const sessionUser: SessionUser = {
-          id: 'usr_demo_member_root',
-          userId: 'usr_demo_member_root',
-          email: 'member@handicraftsbhutan.org',
-          name: 'Choki Wangmo (Demo Member)',
-          roleId: 'role_demo_member',
-          role: 'Artisan Member',
-          roleSlug: 'member',
-          roleVersion: 1,
-          roleStatus: 'ACTIVE',
-          permissions: ['products:create', 'PORTAL_ACCESS', 'PRODUCTS_SUBMIT', 'DUES_PAY'],
-        };
-        const token = await createSessionToken(sessionUser);
-        const response = NextResponse.json({
-          success: true,
-          user: {
-            id: sessionUser.id,
-            email: sessionUser.email,
-            name: sessionUser.name,
-            role: sessionUser.role,
-            roleSlug: sessionUser.roleSlug,
-          },
-          redirectUrl: '/portal',
-        });
-        response.cookies.set({
-          name: 'hab_session',
-          value: token,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 7 * 24 * 60 * 60,
-        });
-        return response;
-      }
-
       await logAudit({
         actorType: 'GUEST',
         actorIdentifier: email || 'anonymous',
@@ -201,20 +164,15 @@ export async function POST(req: NextRequest) {
 
     const token = await createSessionToken(sessionUser);
 
-    const isStaff = user.role.slug !== 'member';
-    const redirectUrl = user.mustChangePassword
-      ? '/portal/change-password'
-      : isStaff
-      ? '/admin'
-      : '/portal';
+    const redirectUrl = '/admin';
 
     // 5. Audit log
     await logAudit({
-      actorType: isStaff ? 'STAFF' : 'MEMBER',
+      actorType: 'STAFF',
       actorId: user.id,
       actorIdentifier: user.email,
       actorIp: ip,
-      action: isStaff ? 'STAFF_LOGIN_SUCCESS' : 'MEMBER_LOGIN_SUCCESS',
+      action: 'STAFF_LOGIN_SUCCESS',
       entityType: 'User',
       entityId: user.id,
       details: { role: user.role.name, roleSlug: user.role.slug, mustChangePassword: user.mustChangePassword },

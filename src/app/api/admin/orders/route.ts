@@ -59,7 +59,11 @@ export async function POST(req: NextRequest) {
       items, // [{ code, quantity, priceUSD }]
     } = body;
 
-    if (!customerName || !customerEmail || !items || !items.length) {
+    const isWalkIn = customerType === 'WALK_IN_POS' || shippingMethod === 'WALK_IN';
+    const effectiveCustomerName = customerName || (isWalkIn ? 'Walk-in Customer' : '');
+    const effectiveCustomerEmail = customerEmail || (isWalkIn ? 'pos@hab.org.bt' : '');
+
+    if (!effectiveCustomerName || !effectiveCustomerEmail || !items || !items.length) {
       return NextResponse.json(
         { success: false, error: 'Customer name, email, and at least one order line item are required.' },
         { status: 400 }
@@ -121,29 +125,47 @@ export async function POST(req: NextRequest) {
       }
 
       // 2. Shipping calculation
-      const shippingCalc = calculateShipping(subtotalUSD);
-      const isExpress = shippingMethod === 'EXPRESS';
-      const shippingFeeUSD = isExpress ? shippingCalc.express.costUSD : shippingCalc.ems.costUSD;
+      let shippingFeeUSD = 0;
+      let effectiveShippingMethod: 'EMS' | 'EXPRESS' = 'EMS';
+
+      if (isWalkIn || shippingMethod === 'NONE') {
+        shippingFeeUSD = 0;
+        effectiveShippingMethod = 'EMS';
+      } else {
+        const shippingCalc = calculateShipping(subtotalUSD);
+        const isExpress = shippingMethod === 'EXPRESS';
+        shippingFeeUSD = isExpress ? shippingCalc.express.costUSD : shippingCalc.ems.costUSD;
+        effectiveShippingMethod = isExpress ? 'EXPRESS' : 'EMS';
+      }
+
       const totalUSD = subtotalUSD + shippingFeeUSD;
       const totalPaidCurrency = currency === 'BTN' ? Math.round(totalUSD * fxRate) : totalUSD;
 
-      const orderNumber = `HAB-M-${Math.floor(10000 + Math.random() * 90000)}`;
+      const orderNumber = isWalkIn
+        ? `HAB-POS-${Math.floor(10000 + Math.random() * 90000)}`
+        : `HAB-M-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      const mappedPaymentMethod: 'CARD' | 'MBOB' | 'BANK' = 
+        paymentMethod === 'MBOB' ? 'MBOB' : paymentMethod === 'CARD' ? 'CARD' : 'BANK';
+
+      const mappedCustomerType: 'STAFF' | 'MEMBER' | 'GUEST' | 'SYSTEM' =
+        customerType === 'STAFF' ? 'STAFF' : customerType === 'MEMBER' ? 'MEMBER' : 'GUEST';
 
       // 3. Create Order
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
-          customerType: customerType || 'GUEST',
+          customerType: mappedCustomerType,
           customerMemberId: customerMemberId || null,
-          customerName,
-          customerEmail,
+          customerName: effectiveCustomerName,
+          customerEmail: effectiveCustomerEmail,
           customerPhone: customerPhone || null,
-          shippingAddress: shippingAddress || {},
-          shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
+          shippingAddress: shippingAddress || (isWalkIn ? { type: 'WALK_IN_POS_STORE_SALE', location: 'HAB Showroom, Thimphu', originalPaymentMethod: paymentMethod } : {}),
+          shippingMethod: effectiveShippingMethod,
           shippingFeeUSD,
-          paymentMethod: paymentMethod || 'CARD',
+          paymentMethod: mappedPaymentMethod,
           paymentStatus: paymentStatus || 'PAID',
-          orderStatus: orderStatus || 'PROCESSING',
+          orderStatus: orderStatus || (isWalkIn ? 'DELIVERED' : 'PROCESSING'),
           currencyUsed: currency,
           fxRateAtPurchase: fxRate,
           totalUSD,
@@ -180,14 +202,17 @@ export async function POST(req: NextRequest) {
       actorId: session.id,
       actorIdentifier: session.email,
       actorIp: ip,
-      action: 'MANUAL_ORDER_CREATED',
+      action: isWalkIn ? 'POS_SALE_COMPLETED' : 'MANUAL_ORDER_CREATED',
       entityType: 'Order',
       entityId: result.id,
       details: {
         orderNumber: result.orderNumber,
         customerEmail: result.customerEmail,
         totalUSD: result.totalUSD,
+        totalPaidCurrency: result.totalPaidCurrency,
+        currencyUsed: result.currencyUsed,
         itemsCount: items.length,
+        paymentMethod: result.paymentMethod,
       },
     });
 

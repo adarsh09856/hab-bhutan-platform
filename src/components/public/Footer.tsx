@@ -24,17 +24,17 @@ export default function Footer() {
         { label: "E-shop", href: "/shop" },
         { label: "Shipping & delivery", href: "/about#support" },
         { label: "Returns", href: "/about#support" },
-        { label: "Track your order", href: "/about#support" },
+        { label: "Track your order", href: "/track-order" },
         { label: "Duty & customs", href: "/about#support" },
       ]
     },
     {
-      title: "Members",
+      title: "Members & Staff",
       links: [
         { label: "Directory by category", href: "/members" },
         { label: "Publications", href: "/publications" },
         { label: "Member shops", href: "/shop" },
-        { label: "Member login", href: "/login" },
+        { label: "Staff Sign In", href: "/login" },
         { label: "Apply to join", href: "/membership/apply" },
       ]
     },
