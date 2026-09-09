@@ -314,13 +314,13 @@ export default function AdminProductsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b admin-border pb-5">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <Package className="w-5 h-5 text-[#8B2E24]" />
             Products &amp; Catalog Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm admin-muted mt-0.5">
             Manage authenticated artisan inventory, canonical USD retail prices, and craft categories.
           </p>
         </div>
@@ -329,7 +329,7 @@ export default function AdminProductsPage() {
           <a
             href="/api/admin/products/csv"
             download
-            className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
+            className="px-3 py-2 admin-button-secondary border text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
@@ -338,7 +338,7 @@ export default function AdminProductsPage() {
           {/* CSV Import */}
           <button
             onClick={() => setShowImportModal(true)}
-            className="px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
+            className="px-3 py-2 admin-button-secondary border text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Import CSV</span>
@@ -347,7 +347,7 @@ export default function AdminProductsPage() {
           {/* Add Product */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-3 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
+            className="px-3 py-2 admin-button-primary text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Product</span>
@@ -356,23 +356,23 @@ export default function AdminProductsPage() {
       </div>
 
       {actionSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-lg flex justify-between items-center">
+        <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-xs font-medium rounded-lg flex justify-between items-center">
           <span>{actionSuccess}</span>
-          <button onClick={() => setActionSuccess('')} className="text-emerald-600 font-bold ml-2">✕</button>
+          <button onClick={() => setActionSuccess('')} className="text-emerald-300 font-bold ml-2">✕</button>
         </div>
       )}
 
       {actionError && (
-        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-lg flex justify-between items-center">
+        <div className="p-3 bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-medium rounded-lg flex justify-between items-center">
           <span>{actionError}</span>
-          <button onClick={() => setActionError('')} className="text-rose-600 font-bold ml-2">✕</button>
+          <button onClick={() => setActionError('')} className="text-rose-300 font-bold ml-2">✕</button>
         </div>
       )}
 
       {/* Search & Filters */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="admin-card p-4 rounded-xl border admin-border shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 admin-muted absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search title, SKU code, artisan maker..."
@@ -381,7 +381,7 @@ export default function AdminProductsPage() {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24] outline-none"
+            className="admin-input w-full pl-9 pr-3 py-2 text-xs border rounded-lg outline-none"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -391,7 +391,7 @@ export default function AdminProductsPage() {
               setCraftFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 outline-none"
+            className="admin-input px-3 py-2 text-xs border rounded-lg outline-none"
           >
             <option value="ALL">All Crafts</option>
             {CRAFTS.map((c) => (
@@ -406,7 +406,7 @@ export default function AdminProductsPage() {
               setStockFilter(e.target.value as any);
               setCurrentPage(1);
             }}
-            className="px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 outline-none"
+            className="admin-input px-3 py-2 text-xs border rounded-lg outline-none"
           >
             <option value="ALL">All Stock Levels</option>
             <option value="IN_STOCK">In Stock (&gt;5)</option>
@@ -417,7 +417,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="admin-card rounded-xl border admin-border shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-6">
             <AdminSkeleton rows={6} cols={6} />
@@ -434,7 +434,7 @@ export default function AdminProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Item &amp; Code</th>
                   <th className="py-3 px-4">Craft Tradition</th>
                   <th className="py-3 px-4">Artisan Maker</th>
@@ -445,47 +445,47 @@ export default function AdminProductsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y admin-divider">
                 {paginatedProducts.map((p) => {
                   const stockVal = p.stock ?? 0;
                   const primaryImg = Array.isArray(p.images) && p.images[0]?.url ? p.images[0].url : null;
 
                   return (
-                    <tr key={p.id || p.code} className="hover:bg-slate-50/75 transition-colors">
+                    <tr key={p.id || p.code} className="admin-hover transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                          <div className="w-10 h-10 rounded-lg admin-panel border admin-border flex-shrink-0 flex items-center justify-center overflow-hidden">
                             {primaryImg ? (
                               <img src={primaryImg} alt={p.name} className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-slate-400 font-mono text-[9px]">NO IMG</span>
+                              <span className="admin-muted font-mono text-[9px]">NO IMG</span>
                             )}
                           </div>
                           <div>
                             <Link
                               href={`/product/${p.code}`}
                               target="_blank"
-                              className="font-medium text-slate-900 hover:text-[#8B2E24] flex items-center gap-1"
+                              className="font-medium admin-title hover:text-amber-200 flex items-center gap-1"
                             >
                               {p.name}
-                              <ExternalLink className="w-3 h-3 text-slate-400" />
+                              <ExternalLink className="w-3 h-3 admin-muted" />
                             </Link>
-                            <span className="font-mono text-[11px] text-slate-500">{p.code}</span>
+                            <span className="font-mono text-[11px] admin-muted">{p.code}</span>
                           </div>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-block font-mono text-[11px] px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="inline-block font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-200 border border-amber-400/25">
                           {p.craft?.name || p.craftKey}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-slate-700 font-medium">
+                      <td className="py-3 px-4 admin-text font-medium">
                         {p.maker?.name || 'HAB Secretariat Guild'}
                       </td>
-                      <td className="py-3 px-4 font-mono font-semibold text-slate-900">
+                      <td className="py-3 px-4 font-mono font-semibold admin-title">
                         ${Number(p.priceUSD).toFixed(2)}
                       </td>
-                      <td className="py-3 px-4 text-slate-600">{p.region}</td>
+                      <td className="py-3 px-4 admin-text">{p.region}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <input
@@ -493,7 +493,7 @@ export default function AdminProductsPage() {
                             min="0"
                             value={stockVal}
                             onChange={(e) => handleUpdateStock(p.code, parseInt(e.target.value) || 0)}
-                            className="w-16 px-2 py-1 border border-slate-200 rounded font-mono text-center text-xs outline-none focus:border-[#8B2E24]"
+                            className="admin-input w-16 px-2 py-1 border rounded font-mono text-center text-xs outline-none"
                           />
                           {stockVal > 5 ? (
                             <AdminBadge variant="success" size="sm" dot>In Stock</AdminBadge>
@@ -521,13 +521,13 @@ export default function AdminProductsPage() {
                       <td className="py-3 px-4 text-right space-x-2">
                         <button
                           onClick={() => handleOpenEdit(p)}
-                          className="px-2 py-1 text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100 rounded font-medium inline-flex items-center gap-1"
+                          className="px-2 py-1 admin-button-secondary border rounded font-medium inline-flex items-center gap-1"
                         >
                           <Edit className="w-3 h-3" /> Edit
                         </button>
                         <button
                           onClick={() => setDeletingProduct(p)}
-                          className="px-2 py-1 text-rose-600 hover:text-rose-800 border border-rose-200 hover:bg-rose-50 rounded font-medium inline-flex items-center gap-1"
+                          className="px-2 py-1 text-rose-300 hover:text-rose-200 border border-rose-400/25 hover:bg-rose-500/15 rounded font-medium inline-flex items-center gap-1"
                         >
                           <Trash2 className="w-3 h-3" /> Delete
                         </button>
@@ -560,18 +560,18 @@ export default function AdminProductsPage() {
         <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Product Code (SKU) *</label>
+              <label className="block font-medium admin-text mb-1">Product Code (SKU) *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. MAS02, THA03"
                 value={addForm.code}
                 onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono uppercase outline-none focus:border-[#8B2E24]"
+                className="w-full admin-input border rounded-lg px-3 py-2 font-mono uppercase outline-none"
               />
             </div>
             <div>
-              <label className="block font-medium text-slate-700 mb-1">USD Price ($) *</label>
+              <label className="block font-medium admin-text mb-1">USD Price ($) *</label>
               <input
                 type="number"
                 step="0.01"
@@ -579,30 +579,30 @@ export default function AdminProductsPage() {
                 placeholder="120.00"
                 value={addForm.priceUSD}
                 onChange={(e) => setAddForm({ ...addForm, priceUSD: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono outline-none focus:border-[#8B2E24]"
+                className="w-full admin-input border rounded-lg px-3 py-2 font-mono outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-medium text-slate-700 mb-1">Product Title *</label>
+            <label className="block font-medium admin-text mb-1">Product Title *</label>
             <input
               type="text"
               required
               placeholder="e.g. Hand-Carved Wrathful Mahakala Mask"
               value={addForm.name}
               onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#8B2E24]"
+              className="w-full admin-input border rounded-lg px-3 py-2 outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Craft Tradition *</label>
+              <label className="block font-medium admin-text mb-1">Craft Tradition *</label>
               <select
                 value={addForm.craftKey}
                 onChange={(e) => setAddForm({ ...addForm, craftKey: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                className="w-full admin-input border rounded-lg px-3 py-2"
               >
                 {CRAFTS.map((c) => (
                   <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
@@ -610,24 +610,24 @@ export default function AdminProductsPage() {
               </select>
             </div>
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Origin Dzongkhag</label>
+              <label className="block font-medium admin-text mb-1">Origin Dzongkhag</label>
               <input
                 type="text"
                 placeholder="e.g. Paro or Punakha"
                 value={addForm.region}
                 onChange={(e) => setAddForm({ ...addForm, region: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                className="w-full admin-input border rounded-lg px-3 py-2"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Maker / Accredited Member</label>
+              <label className="block font-medium admin-text mb-1">Maker / Accredited Member</label>
               <select
                 value={addForm.makerMemberId}
                 onChange={(e) => setAddForm({ ...addForm, makerMemberId: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                className="w-full admin-input border rounded-lg px-3 py-2"
               >
                 <option value="">HAB Guild Artisans (General)</option>
                 {members.map((m) => (
@@ -638,51 +638,51 @@ export default function AdminProductsPage() {
               </select>
             </div>
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Initial Stock Count</label>
+              <label className="block font-medium admin-text mb-1">Initial Stock Count</label>
               <input
                 type="number"
                 min="0"
                 value={addForm.stock}
                 onChange={(e) => setAddForm({ ...addForm, stock: parseInt(e.target.value) || 0 })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                className="w-full admin-input border rounded-lg px-3 py-2 font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-medium text-slate-700 mb-1">Primary Image URL</label>
+            <label className="block font-medium admin-text mb-1">Primary Image URL</label>
             <input
               type="text"
               placeholder="/images/crafts/parzo.jpg"
               value={addForm.imageUrl}
               onChange={(e) => setAddForm({ ...addForm, imageUrl: e.target.value })}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px]"
+              className="w-full admin-input border rounded-lg px-3 py-2 font-mono text-[11px]"
             />
           </div>
 
           <div>
-            <label className="block font-medium text-slate-700 mb-1">Curatorial Provenance &amp; Materials</label>
+            <label className="block font-medium admin-text mb-1">Curatorial Provenance &amp; Materials</label>
             <textarea
               rows={3}
               placeholder="Carved from Himalayan pine wood, cured in natural oil pigments according to Zorig Chusum canons..."
               value={addForm.description}
               onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              className="w-full admin-input border rounded-lg px-3 py-2"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-3 border-t admin-border">
             <button
               type="button"
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
+              className="px-4 py-2 admin-button-secondary border rounded-lg"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white rounded-lg font-semibold disabled:opacity-50"
+              className="px-4 py-2 admin-button-primary rounded-lg font-semibold disabled:opacity-50"
             >
               {submitting ? 'Adding...' : 'Create Product'}
             </button>
@@ -701,34 +701,34 @@ export default function AdminProductsPage() {
         >
           <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Product Title</label>
+              <label className="block font-medium admin-text mb-1">Product Title</label>
               <input
                 type="text"
                 required
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                className="w-full admin-input border rounded-lg px-3 py-2"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">USD Retail Price ($)</label>
+                <label className="block font-medium admin-text mb-1">USD Retail Price ($)</label>
                 <input
                   type="number"
                   step="0.01"
                   required
                   value={editForm.priceUSD}
                   onChange={(e) => setEditForm({ ...editForm, priceUSD: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                  className="w-full admin-input border rounded-lg px-3 py-2 font-mono"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Catalog Status</label>
+                <label className="block font-medium admin-text mb-1">Catalog Status</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                  className="w-full admin-input border rounded-lg px-3 py-2"
                 >
                   <option value="PUBLISHED">Published (Visible in Shop)</option>
                   <option value="DRAFT">Draft</option>
@@ -739,11 +739,11 @@ export default function AdminProductsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Craft Tradition</label>
+                <label className="block font-medium admin-text mb-1">Craft Tradition</label>
                 <select
                   value={editForm.craftKey}
                   onChange={(e) => setEditForm({ ...editForm, craftKey: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                  className="w-full admin-input border rounded-lg px-3 py-2"
                 >
                   {CRAFTS.map((c) => (
                     <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
@@ -751,49 +751,49 @@ export default function AdminProductsPage() {
                 </select>
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Stock Count</label>
+                <label className="block font-medium admin-text mb-1">Stock Count</label>
                 <input
                   type="number"
                   min="0"
                   value={editForm.stock}
                   onChange={(e) => setEditForm({ ...editForm, stock: parseInt(e.target.value) || 0 })}
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                  className="w-full admin-input border rounded-lg px-3 py-2 font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Primary Image URL</label>
+              <label className="block font-medium admin-text mb-1">Primary Image URL</label>
               <input
                 type="text"
                 value={editForm.imageUrl}
                 onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono text-[11px]"
+                className="w-full admin-input border rounded-lg px-3 py-2 font-mono text-[11px]"
               />
             </div>
 
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Description &amp; Cultural Context</label>
+              <label className="block font-medium admin-text mb-1">Description &amp; Cultural Context</label>
               <textarea
                 rows={3}
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                className="w-full admin-input border rounded-lg px-3 py-2"
               />
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
+            <div className="flex justify-end gap-2 border-t admin-border pt-3">
               <button
                 type="button"
                 onClick={() => setEditingProduct(null)}
-                className="px-4 py-2 text-xs text-slate-600 hover:bg-slate-50 rounded-lg border border-slate-200"
+                className="px-4 py-2 text-xs admin-button-secondary rounded-lg border"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#8B2E24] hover:bg-[#72251D] rounded-lg shadow-xs disabled:opacity-50"
+                className="px-4 py-2 text-xs font-semibold admin-button-primary rounded-lg shadow-xs disabled:opacity-50"
               >
                 {submitting ? 'Saving...' : 'Save Updates'}
               </button>
@@ -812,13 +812,13 @@ export default function AdminProductsPage() {
           maxWidth="md"
         >
           <div className="space-y-4 text-xs">
-            <p className="text-slate-600 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-slate-900">{deletingProduct.name}</strong>?
+            <p className="admin-text leading-relaxed">
+              Are you sure you want to permanently delete <strong className="admin-title">{deletingProduct.name}</strong>?
             </p>
 
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 space-y-1.5">
-              <div className="font-bold flex items-center gap-1.5 text-amber-800">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <div className="p-3.5 bg-amber-500/15 border border-amber-400/25 rounded-lg text-amber-100 space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-amber-200">
+                <AlertTriangle className="w-4 h-4 text-amber-300" />
                 Referential Integrity Safeguard
               </div>
               <p className="leading-normal">
@@ -826,19 +826,19 @@ export default function AdminProductsPage() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t admin-border">
               <button
                 onClick={() => setDeletingProduct(null)}
-                className="px-3 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 order-3 sm:order-1"
+                className="px-3 py-2 admin-button-secondary border rounded-lg order-3 sm:order-1"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleArchiveInstead(deletingProduct)}
                 disabled={submitting}
-                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold flex items-center justify-center gap-1.5 order-2"
+                className="px-3 py-2 admin-button-secondary rounded-lg font-semibold flex items-center justify-center gap-1.5 order-2"
               >
-                <Archive className="w-3.5 h-3.5 text-slate-600" />
+                <Archive className="w-3.5 h-3.5 admin-text" />
                 <span>Archive Instead</span>
               </button>
               <button
@@ -863,35 +863,35 @@ export default function AdminProductsPage() {
       >
         <form onSubmit={handleBulkImport} className="space-y-4 text-xs">
           {importError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg">
+            <div className="p-3 bg-rose-500/15 border border-rose-400/25 text-rose-200 rounded-lg">
               {importError}
             </div>
           )}
 
           <div>
-            <label className="block font-medium text-slate-700 mb-1">CSV Content</label>
+            <label className="block font-medium admin-text mb-1">CSV Content</label>
             <textarea
               rows={8}
               required
               placeholder={`Code,Name,PriceUSD,CraftKey,Stock,Region\nMAS05,Himalayan Mahakala Mask,145.00,parzo,8,Punakha\nTHA07,Yathra Wool Runner,95.00,thagzo,12,Bumthang`}
               value={importCsvText}
               onChange={(e) => setImportCsvText(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg p-3 font-mono text-[11px] leading-relaxed outline-none focus:border-[#8B2E24]"
+              className="w-full admin-input border rounded-lg p-3 font-mono text-[11px] leading-relaxed outline-none"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-2 border-t admin-border">
             <button
               type="button"
               onClick={() => setShowImportModal(false)}
-              className="px-4 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
+              className="px-4 py-2 admin-button-secondary border rounded-lg"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || !importCsvText.trim()}
-              className="px-4 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white rounded-lg font-semibold disabled:opacity-50"
+              className="px-4 py-2 admin-button-primary rounded-lg font-semibold disabled:opacity-50"
             >
               {submitting ? 'Importing...' : 'Run Bulk Import'}
             </button>

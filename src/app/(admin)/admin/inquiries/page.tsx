@@ -133,11 +133,11 @@ export default function AdminInquiriesPage() {
       {/* Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold admin-title tracking-tight flex items-center gap-2.5">
             <Mail className="w-6 h-6 text-amber-400" />
             Inquiries &amp; Customer Communications
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs admin-muted mt-1">
             Messages and inquiries submitted via the public Contact Secretariat portal.
           </p>
         </div>
@@ -192,22 +192,22 @@ export default function AdminInquiriesPage() {
       {/* Main Glass Table */}
       <GlassCard className="p-6">
         {/* Filter Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b admin-border">
           <div className="relative flex-1 max-w-sm">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-3 admin-muted" />
             <input
               type="text"
               placeholder="Search sender, email, or subject..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-500/60"
+              className="admin-input w-full pl-10 pr-4 py-2 text-xs rounded-xl border focus:outline-hidden"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl bg-slate-800/80 border border-white/10 text-slate-200 focus:outline-hidden"
+            className="admin-input px-3 py-2 text-xs rounded-xl border focus:outline-hidden"
           >
             <option value="ALL">All Status</option>
             <option value="NEW">New</option>
@@ -220,7 +220,7 @@ export default function AdminInquiriesPage() {
         <div className="overflow-x-auto mt-2">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+              <tr className="admin-muted border-b admin-border font-semibold uppercase tracking-wider text-[10.5px]">
                 <th className="py-3.5 pr-4">Sender</th>
                 <th className="py-3.5 px-4">Subject</th>
                 <th className="py-3.5 px-4">Status</th>
@@ -228,47 +228,47 @@ export default function AdminInquiriesPage() {
                 <th className="py-3.5 pl-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-200">
+            <tbody className="divide-y admin-divider admin-text">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-slate-500 font-mono">
+                  <td colSpan={5} className="py-10 text-center admin-muted font-mono">
                     Loading messages from database...
                   </td>
                 </tr>
               ) : filteredInquiries.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-slate-400">
+                  <td colSpan={5} className="py-10 text-center admin-muted">
                     No inquiries match the current filter.
                   </td>
                 </tr>
               ) : (
                 filteredInquiries.map((inq) => (
-                  <tr key={inq.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => handleOpenDrawer(inq)}>
+                  <tr key={inq.id} className="admin-hover transition-colors cursor-pointer" onClick={() => handleOpenDrawer(inq)}>
                     <td className="py-3.5 pr-4">
-                      <div className="font-semibold text-white">{inq.name}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">{inq.email}</div>
+                      <div className="font-semibold admin-title">{inq.name}</div>
+                      <div className="text-[11px] admin-muted font-mono">{inq.email}</div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-medium text-slate-200 max-w-xs truncate">{inq.subject}</div>
-                      <div className="text-[11px] text-slate-500 truncate max-w-xs">{inq.message}</div>
+                      <div className="font-medium admin-text max-w-xs truncate">{inq.subject}</div>
+                      <div className="text-[11px] admin-muted truncate max-w-xs">{inq.message}</div>
                     </td>
                     <td className="py-3.5 px-4">
                       <GlassBadge status={inq.status} />
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                    <td className="py-3.5 px-4 admin-muted font-mono text-[11px]">
                       {new Date(inq.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-3.5 pl-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => handleOpenDrawer(inq)}
-                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 text-[11px]"
+                          className="px-2.5 py-1 rounded-lg admin-button-secondary text-[11px]"
                         >
                           View Message
                         </button>
                         <button
                           onClick={() => handleDeleteInquiry(inq.id)}
-                          className="p-1 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-400"
+                          className="p-1 rounded-lg hover:bg-rose-500/20 admin-muted hover:text-rose-400"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -293,19 +293,19 @@ export default function AdminInquiriesPage() {
       >
         <div className="space-y-4 text-xs">
           {/* Sender Details Box */}
-          <div className="p-4 rounded-xl bg-slate-800/60 border border-white/10 space-y-2">
+          <div className="p-4 rounded-xl admin-panel border admin-border space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-amber-400" />
-                <span className="font-bold text-white text-sm">{selectedInquiry?.name}</span>
+                <span className="font-bold admin-title text-sm">{selectedInquiry?.name}</span>
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <span className="text-[11px] admin-muted font-mono">
                 {selectedInquiry?.createdAt && new Date(selectedInquiry.createdAt).toLocaleString()}
               </span>
             </div>
-            <div className="text-slate-300 font-mono">{selectedInquiry?.email}</div>
+            <div className="admin-text font-mono">{selectedInquiry?.email}</div>
             {selectedInquiry?.phone && (
-              <div className="text-slate-400 flex items-center gap-1.5">
+              <div className="admin-muted flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5" />
                 <span>{selectedInquiry.phone}</span>
               </div>
@@ -313,18 +313,18 @@ export default function AdminInquiriesPage() {
           </div>
 
           {/* Message Content */}
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-white/10 space-y-1">
-            <div className="text-[10.5px] uppercase tracking-wider text-slate-400 font-semibold">
+          <div className="p-4 rounded-xl admin-panel border admin-border space-y-1">
+            <div className="text-[10.5px] uppercase tracking-wider admin-muted font-semibold">
               Message Body
             </div>
-            <p className="text-slate-200 text-xs leading-relaxed whitespace-pre-wrap">
+            <p className="admin-text text-xs leading-relaxed whitespace-pre-wrap">
               {selectedInquiry?.message}
             </p>
           </div>
 
           {/* Status Selector */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <label className="block text-xs font-semibold admin-text uppercase tracking-wider">
               Workflow Status
             </label>
             <GlassSelect
@@ -340,7 +340,7 @@ export default function AdminInquiriesPage() {
 
           {/* Admin Internal Notes */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <label className="block text-xs font-semibold admin-text uppercase tracking-wider">
               Secretariat Internal Notes
             </label>
             <textarea
@@ -348,12 +348,12 @@ export default function AdminInquiriesPage() {
               value={adminNotes}
               onChange={(e) => setAdminNotes(e.target.value)}
               placeholder="Internal follow-up notes, assigned officer, or resolution details..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-hidden focus:border-amber-500/60"
+              className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-xs focus:outline-hidden"
             />
           </div>
 
           {/* Actions */}
-          <div className="pt-4 flex items-center justify-between border-t border-white/10">
+          <div className="pt-4 flex items-center justify-between border-t admin-border">
             <button
               onClick={() => selectedInquiry && handleDeleteInquiry(selectedInquiry.id)}
               className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1"

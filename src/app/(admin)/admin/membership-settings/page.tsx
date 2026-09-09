@@ -156,13 +156,13 @@ export default function AdminMembershipSettingsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b admin-border pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <CreditCard className="w-6 h-6 text-[#8B2E24]" />
+          <h1 className="text-2xl font-bold admin-title tracking-tight flex items-center gap-2">
+            <CreditCard className="w-6 h-6 text-amber-300" />
             Membership Dues, Tiers &amp; Ledger
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm admin-muted mt-1">
             Configure annual membership subscription fees, manage official banking instructions, and track member dues status.
           </p>
         </div>
@@ -170,7 +170,7 @@ export default function AdminMembershipSettingsPage() {
           <button
             onClick={() => setActiveTab('TIERS')}
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${
-              activeTab === 'TIERS' ? 'bg-[#8B2E24] text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              activeTab === 'TIERS' ? 'admin-button-primary' : 'admin-panel admin-text hover:bg-slate-700'
             }`}
           >
             Tier Fees &amp; Banking
@@ -178,7 +178,7 @@ export default function AdminMembershipSettingsPage() {
           <button
             onClick={() => setActiveTab('LEDGER')}
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === 'LEDGER' ? 'bg-[#8B2E24] text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              activeTab === 'LEDGER' ? 'admin-button-primary' : 'admin-panel admin-text hover:bg-slate-700'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -190,94 +190,94 @@ export default function AdminMembershipSettingsPage() {
       {feedback && (
         <div
           className={`p-4 rounded-lg flex items-center gap-3 text-sm font-medium ${
-            feedback.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+            feedback.type === 'success' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
           }`}
         >
-          {feedback.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" /> : <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />}
+          {feedback.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-300 shrink-0" /> : <AlertCircle className="w-5 h-5 text-rose-300 shrink-0" />}
           <span>{feedback.message}</span>
         </div>
       )}
 
       {/* TAB 1: TIERS & BANKING */}
       {activeTab === 'TIERS' && (
-        <form onSubmit={handleSaveTiers} className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-[#8B2E24]" />
+        <form onSubmit={handleSaveTiers} className="admin-card border admin-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+          <h2 className="text-base font-bold admin-title flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-amber-300" />
             Annual Dues by Membership Tier
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-              <div className="text-xs font-bold text-slate-700 mb-1">Active Sector Member</div>
-              <div className="text-xs text-slate-500 mb-2">Individual artisan / micro workshop</div>
+            <div className="p-4 admin-panel border admin-border rounded-lg">
+              <div className="text-xs font-bold admin-text mb-1">Active Sector Member</div>
+              <div className="text-xs admin-muted mb-2">Individual artisan / micro workshop</div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-500">Nu.</span>
+                <span className="text-sm font-semibold admin-muted">Nu.</span>
                 <input
                   type="number"
                   value={form.activeDuesBTN}
                   onChange={(e) => setForm({ ...form, activeDuesBTN: Number(e.target.value) })}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-bold text-slate-900"
+                  className="w-full px-3 py-2 admin-card border admin-input rounded-lg font-bold admin-title"
                   required
                 />
-                <span className="text-xs text-slate-500">/yr</span>
+                <span className="text-xs admin-muted">/yr</span>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-              <div className="text-xs font-bold text-slate-700 mb-1">Associate Sector Member</div>
-              <div className="text-xs text-slate-500 mb-2">Craft enterprise / retail outlet</div>
+            <div className="p-4 admin-panel border admin-border rounded-lg">
+              <div className="text-xs font-bold admin-text mb-1">Associate Sector Member</div>
+              <div className="text-xs admin-muted mb-2">Craft enterprise / retail outlet</div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-500">Nu.</span>
+                <span className="text-sm font-semibold admin-muted">Nu.</span>
                 <input
                   type="number"
                   value={form.associateDuesBTN}
                   onChange={(e) => setForm({ ...form, associateDuesBTN: Number(e.target.value) })}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-bold text-slate-900"
+                  className="w-full px-3 py-2 admin-card border admin-input rounded-lg font-bold admin-title"
                   required
                 />
-                <span className="text-xs text-slate-500">/yr</span>
+                <span className="text-xs admin-muted">/yr</span>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-              <div className="text-xs font-bold text-slate-700 mb-1">Institutional Member</div>
-              <div className="text-xs text-slate-500 mb-2">Corporation / donor partner</div>
+            <div className="p-4 admin-panel border admin-border rounded-lg">
+              <div className="text-xs font-bold admin-text mb-1">Institutional Member</div>
+              <div className="text-xs admin-muted mb-2">Corporation / donor partner</div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-500">Nu.</span>
+                <span className="text-sm font-semibold admin-muted">Nu.</span>
                 <input
                   type="number"
                   value={form.institutionalDuesBTN}
                   onChange={(e) => setForm({ ...form, institutionalDuesBTN: Number(e.target.value) })}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-bold text-slate-900"
+                  className="w-full px-3 py-2 admin-card border admin-input rounded-lg font-bold admin-title"
                   required
                 />
-                <span className="text-xs text-slate-500">/yr</span>
+                <span className="text-xs admin-muted">/yr</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-200 space-y-4">
-            <h2 className="text-base font-bold text-slate-900">Official Banking &amp; Dues Collection Details</h2>
+          <div className="pt-6 border-t admin-border space-y-4">
+            <h2 className="text-base font-bold admin-title">Official Banking &amp; Dues Collection Details</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Official Bank Name</label>
+                <label className="block text-xs font-semibold admin-text mb-1.5">Official Bank Name</label>
                 <input
                   type="text"
                   value={form.bankName}
                   onChange={(e) => setForm({ ...form, bankName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm"
+                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Account Number</label>
+                <label className="block text-xs font-semibold admin-text mb-1.5">Account Number</label>
                 <input
                   type="text"
                   value={form.accountNumber}
                   onChange={(e) => setForm({ ...form, accountNumber: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-mono"
+                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm font-mono"
                   required
                 />
               </div>
@@ -285,34 +285,34 @@ export default function AdminMembershipSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Account Title / Beneficiary</label>
+                <label className="block text-xs font-semibold admin-text mb-1.5">Account Title / Beneficiary</label>
                 <input
                   type="text"
                   value={form.accountTitle}
                   onChange={(e) => setForm({ ...form, accountTitle: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm"
+                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">mBoB QR Image URL (Optional)</label>
+                <label className="block text-xs font-semibold admin-text mb-1.5">mBoB QR Image URL (Optional)</label>
                 <input
                   type="text"
                   value={form.mbobQrUrl || ''}
                   onChange={(e) => setForm({ ...form, mbobQrUrl: e.target.value })}
                   placeholder="/images/mbob_qr.png"
-                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm font-mono"
+                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm font-mono"
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 flex justify-end">
+          <div className="pt-4 border-t admin-border flex justify-end">
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-2 bg-[#8B2E24] hover:bg-[#72251D] text-white px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-2 admin-button-primary px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : 'Save Dues Settings'}
@@ -323,24 +323,24 @@ export default function AdminMembershipSettingsPage() {
 
       {/* TAB 2: MEMBER DUES LEDGER */}
       {activeTab === 'LEDGER' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="admin-card border admin-border rounded-xl shadow-sm overflow-hidden">
           {/* Controls Bar */}
-          <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+          <div className="p-4 border-b admin-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 admin-panel/50">
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 admin-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search member name, registration number, dzongkhag..."
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#8B2E24]"
+                className="w-full pl-9 pr-4 py-2 border admin-border rounded-lg text-xs admin-card focus:outline-none focus:ring-1 focus:ring-[#8B2E24]"
               />
             </div>
             <div className="flex items-center gap-2">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="text-xs border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 font-medium"
+                className="text-xs border admin-border rounded-lg px-3 py-2 admin-card admin-text font-medium"
               >
                 <option value="ALL">All Dues Statuses</option>
                 <option value="CURRENT">Current / Paid</option>
@@ -349,7 +349,7 @@ export default function AdminMembershipSettingsPage() {
               </select>
               <button
                 onClick={loadData}
-                className="px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-600 hover:bg-slate-100 flex items-center gap-1.5"
+                className="px-3 py-2 border admin-border rounded-lg text-xs admin-text hover:admin-panel flex items-center gap-1.5"
               >
                 <RefreshCw className="w-3.5 h-3.5" /> Refresh
               </button>
@@ -360,7 +360,7 @@ export default function AdminMembershipSettingsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Member Name</th>
                   <th className="py-3 px-4">Reg Number</th>
                   <th className="py-3 px-4">Tier</th>
@@ -370,18 +370,18 @@ export default function AdminMembershipSettingsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y admin-divider">
                 {filteredMembers.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-slate-900">{m.name}</td>
-                    <td className="py-3 px-4 font-mono font-medium text-slate-600">{m.regNumber}</td>
+                  <tr key={m.id} className="hover:admin-panel/75 transition-colors">
+                    <td className="py-3 px-4 font-semibold admin-title">{m.name}</td>
+                    <td className="py-3 px-4 font-mono font-medium admin-text">{m.regNumber}</td>
                     <td className="py-3 px-4">
-                      <span className="text-[11px] font-medium text-slate-700">
+                      <span className="text-[11px] font-medium admin-text">
                         {m.tier === 'ACTIVE_SECTOR_MEMBER' ? 'Active' : m.tier === 'ASSOCIATE_SECTOR_MEMBER' ? 'Associate' : 'Institutional'}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600">{m.dzongkhag}</td>
-                    <td className="py-3 px-4 font-mono text-slate-700">
+                    <td className="py-3 px-4 admin-text">{m.dzongkhag}</td>
+                    <td className="py-3 px-4 font-mono admin-text">
                       {new Date(m.duesExpiryDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
                     <td className="py-3 px-4">
@@ -396,7 +396,7 @@ export default function AdminMembershipSettingsPage() {
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => openRenewalModal(m)}
-                        className="px-2.5 py-1 text-xs font-semibold bg-[#8B2E24] hover:bg-[#72251D] text-white rounded transition-colors"
+                        className="px-2.5 py-1 text-xs font-semibold admin-button-primary rounded transition-colors"
                       >
                         Record Renewal
                       </button>
@@ -427,22 +427,22 @@ export default function AdminMembershipSettingsPage() {
           title={`Record Dues Payment: ${renewingMember.name}`}
         >
           <form onSubmit={handleRecordRenewal} className="space-y-4">
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1">
-              <div><span className="font-semibold text-slate-700">Registration:</span> {renewingMember.regNumber}</div>
-              <div><span className="font-semibold text-slate-700">Current Tier:</span> {renewingMember.tier}</div>
+            <div className="p-3 admin-panel border admin-border rounded-lg text-xs space-y-1">
+              <div><span className="font-semibold admin-text">Registration:</span> {renewingMember.regNumber}</div>
+              <div><span className="font-semibold admin-text">Current Tier:</span> {renewingMember.tier}</div>
               <div>
-                <span className="font-semibold text-slate-700">Current Expiry:</span>{' '}
+                <span className="font-semibold admin-text">Current Expiry:</span>{' '}
                 {new Date(renewingMember.duesExpiryDate).toLocaleDateString()}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Extension Period</label>
+                <label className="block text-xs font-semibold admin-text mb-1">Extension Period</label>
                 <select
                   value={renewalMonths}
                   onChange={(e) => setRenewalMonths(Number(e.target.value))}
-                  className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs bg-white"
+                  className="w-full border admin-input rounded px-2.5 py-2 text-xs admin-card"
                 >
                   <option value={12}>12 Months (1 Year)</option>
                   <option value={24}>24 Months (2 Years)</option>
@@ -451,12 +451,12 @@ export default function AdminMembershipSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Amount Paid (Nu.)</label>
+                <label className="block text-xs font-semibold admin-text mb-1">Amount Paid (Nu.)</label>
                 <input
                   type="number"
                   value={renewalAmount}
                   onChange={(e) => setRenewalAmount(Number(e.target.value))}
-                  className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs font-bold font-mono"
+                  className="w-full border admin-input rounded px-2.5 py-2 text-xs font-bold font-mono"
                   required
                 />
               </div>
@@ -464,11 +464,11 @@ export default function AdminMembershipSettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Payment Method</label>
+                <label className="block text-xs font-semibold admin-text mb-1">Payment Method</label>
                 <select
                   value={renewalMethod}
                   onChange={(e) => setRenewalMethod(e.target.value)}
-                  className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs bg-white"
+                  className="w-full border admin-input rounded px-2.5 py-2 text-xs admin-card"
                 >
                   <option value="BANK">Bank Deposit / Transfer</option>
                   <option value="MBOB">mBoB Mobile Payment</option>
@@ -478,41 +478,41 @@ export default function AdminMembershipSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Receipt / Ref No.</label>
+                <label className="block text-xs font-semibold admin-text mb-1">Receipt / Ref No.</label>
                 <input
                   type="text"
                   value={renewalRef}
                   onChange={(e) => setRenewalRef(e.target.value)}
                   placeholder="e.g. BoB-TXN-98412"
-                  className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs font-mono"
+                  className="w-full border admin-input rounded px-2.5 py-2 text-xs font-mono"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Internal Notes (Optional)</label>
+              <label className="block text-xs font-semibold admin-text mb-1">Internal Notes (Optional)</label>
               <textarea
                 value={renewalNotes}
                 onChange={(e) => setRenewalNotes(e.target.value)}
                 placeholder="e.g. Verified against bank statement deposited 08 Sep 2026."
                 rows={2}
-                className="w-full border border-slate-300 rounded px-2.5 py-2 text-xs"
+                className="w-full border admin-input rounded px-2.5 py-2 text-xs"
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
+            <div className="flex justify-end gap-2 pt-3 border-t admin-border">
               <button
                 type="button"
                 onClick={() => setRenewingMember(null)}
-                className="px-3.5 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="px-3.5 py-2 border admin-input rounded-lg text-xs font-semibold admin-text hover:admin-panel"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submittingRenewal}
-                className="px-4 py-2 bg-[#8B2E24] hover:bg-[#72251D] text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                className="px-4 py-2 admin-button-primary rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
               >
                 {submittingRenewal ? 'Recording...' : 'Confirm Renewal'}
               </button>

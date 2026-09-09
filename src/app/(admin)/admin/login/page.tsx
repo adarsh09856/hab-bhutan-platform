@@ -62,7 +62,7 @@ function AdminLoginForm() {
   };
 
   return (
-    <div className="max-w-[1020px] w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center bg-white border border-[#E2E8F0] rounded-[16px] p-8 md:p-12 shadow-sm">
+    <div className="max-w-[1020px] w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center admin-card border admin-border rounded-[16px] p-8 md:p-12 shadow-sm">
       {/* Left: Mission & Operations Overview */}
       <div>
         <div className="flex items-center gap-3 mb-6">
@@ -70,85 +70,88 @@ function AdminLoginForm() {
             HAB
           </div>
           <div>
-            <div className="font-figtree font-bold text-[15px] text-[#0F172A]">
+            <div className="font-figtree font-bold text-[15px] admin-title">
               Handicrafts Association of Bhutan
             </div>
-            <div className="font-mono text-[11px] text-[#64748B] tracking-wider uppercase">
+            <div className="font-mono text-[11px] admin-muted tracking-wider uppercase">
               Secretariat Operations Suite
             </div>
           </div>
         </div>
 
-        <h1 className="font-marcellus text-[34px] font-normal leading-[1.2] text-[#0F172A] mb-4">
+        <h1 className="font-marcellus text-[34px] font-normal leading-[1.2] admin-title mb-4">
           Staff &amp; Secretariat Sign In
         </h1>
-        <p className="font-lora text-[15px] leading-[1.6] text-[#475569] mb-6">
+        <p className="font-lora text-[15px] leading-[1.6] admin-text mb-6">
           Authorized administrative access for association officers, catalog managers, order fulfillment staff, and trustees.
         </p>
 
         <div className="flex flex-col gap-3">
           {perks.map((perk) => (
-            <div key={perk} className="flex gap-2.5 items-start text-[13.5px] font-figtree text-[#334155]">
-              <span className="text-[#8B2E24] font-bold">✓</span>
+            <div key={perk} className="flex gap-2.5 items-start text-[13.5px] font-figtree admin-text">
+              <span className="text-amber-300 font-bold">✓</span>
               <span>{perk}</span>
             </div>
           ))}
         </div>
 
-        <div className="mt-8 pt-6 border-t border-[#F1F5F9] text-[12px] text-[#94A3B8] font-mono">
+        <div className="mt-8 pt-6 border-t admin-border text-[12px] text-[#94A3B8] font-mono">
           CSO Registration: CSO/2011/043 · Thimphu, Kingdom of Bhutan
         </div>
       </div>
 
       {/* Right: Secure Staff Sign In Form */}
-      <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] p-8">
+      <div className="admin-panel border admin-border rounded-[12px] p-8">
         <div className="mb-6">
-          <h2 className="font-figtree font-bold text-[18px] text-[#0F172A]">
+          <h2 className="font-figtree font-bold text-[18px] admin-title">
             Authenticate Staff Session
           </h2>
-          <p className="text-[13px] text-[#64748B] mt-1">
+          <p className="text-[13px] admin-muted mt-1">
             Enter your assigned secretariat credentials to continue.
           </p>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           {errorMsg && (
-            <div className="p-3.5 rounded-[8px] bg-red-50 border border-red-200 text-red-700 text-[13px] font-figtree">
+            <div role="alert" className="p-3.5 rounded-[8px] bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[13px] font-figtree">
               {errorMsg}
             </div>
           )}
 
           <div>
-            <label className="font-figtree font-semibold text-[13px] text-[#334155] block mb-1.5">
+            <label htmlFor="admin-login-email" className="font-figtree font-semibold text-[13px] admin-text block mb-1.5">
               Staff Email Address
             </label>
             <input
+              id="admin-login-email"
               type="email"
               required
               autoComplete="email"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="officer@handicraftsbhutan.org"
-              className="w-full h-[44px] px-3.5 bg-white border border-[#CBD5E1] rounded-[7px] font-figtree text-[14px] text-[#0F172A] outline-none focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24] transition-all"
+              className="w-full h-[44px] px-3.5 admin-input border rounded-[7px] font-figtree text-[14px]"
             />
           </div>
 
           <div>
-            <label className="font-figtree font-semibold text-[13px] text-[#334155] block mb-1.5">
+            <label htmlFor="admin-login-password" className="font-figtree font-semibold text-[13px] admin-text block mb-1.5">
               Staff Password
             </label>
             <input
+              id="admin-login-password"
               type="password"
               required
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full h-[44px] px-3.5 bg-white border border-[#CBD5E1] rounded-[7px] font-figtree text-[14px] text-[#0F172A] outline-none focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24] transition-all"
+              className="w-full h-[44px] px-3.5 admin-input border rounded-[7px] font-figtree text-[14px]"
             />
           </div>
 
           <button
+            id="admin-login-submit"
             type="submit"
             disabled={loading}
             className="w-full h-[46px] bg-[#8B2E24] text-white rounded-[7px] font-figtree font-semibold text-[14px] hover:bg-[#6D241C] transition-colors disabled:opacity-50 mt-2 cursor-pointer shadow-sm"
@@ -156,11 +159,11 @@ function AdminLoginForm() {
             {loading ? 'Verifying credentials...' : 'Sign in to Secretariat Suite'}
           </button>
 
-          <div className="flex justify-between items-center pt-3 text-[12.5px] font-figtree text-[#64748B]">
-            <Link href="/" className="hover:text-[#0F172A] hover:underline">
+          <div className="flex justify-between items-center pt-3 text-[12.5px] font-figtree admin-muted">
+            <Link id="admin-login-public-link" href="/" className="hover:underline">
               ← Return to Public Site
             </Link>
-            <Link href="/login" className="hover:text-[#8B2E24] hover:underline">
+            <Link id="admin-login-member-link" href="/login" className="hover:underline">
               Member / Artisan Login →
             </Link>
           </div>
@@ -172,8 +175,8 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6">
-      <Suspense fallback={<div className="text-sm font-figtree text-slate-500">Loading Secretariat Portal...</div>}>
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-stone-950 flex items-center justify-center p-6">
+      <Suspense fallback={<div className="text-sm font-figtree admin-muted">Loading Secretariat Portal...</div>}>
         <AdminLoginForm />
       </Suspense>
     </main>

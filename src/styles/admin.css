@@ -1,0 +1,94 @@
+/* Admin-only design tokens. Public and member portal palettes remain untouched. */
+.hab-admin {
+  --admin-surface: #111c30;
+  --admin-inset: #0b1425;
+  --admin-border: #3c4b63;
+  --admin-text: #cbd5e1;
+  --admin-muted: #a5b4c9;
+  --admin-focus: #fbbf24;
+  /* Global anchor defaults consume these without overriding explicit utility colors. */
+  --accent: #fcd34d;
+  --accent-hover: #fde68a;
+  color-scheme: dark;
+  font-family: Figtree, ui-sans-serif, system-ui, sans-serif;
+}
+
+.hab-admin .admin-card {
+  background: linear-gradient(135deg, #152137f5, #101a2ef5);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+  /* No backdrop-filter/transform: nested fixed dialogs must retain viewport positioning. */
+}
+
+.hab-admin .admin-panel {
+  background-color: var(--admin-inset);
+  color: var(--admin-text);
+}
+
+.hab-admin .admin-modal {
+  background-color: #111c30;
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+  box-shadow: 0 24px 80px #0009;
+}
+
+.hab-admin .admin-title { color: #f8fafc; }
+.hab-admin .admin-text { color: var(--admin-text); }
+.hab-admin .admin-muted { color: var(--admin-muted); }
+.hab-admin .admin-border { border-color: var(--admin-border); }
+.hab-admin .admin-divider > :not([hidden]) ~ :not([hidden]) { border-color: var(--admin-border); }
+.hab-admin .admin-hover:hover { background-color: #ffffff0d; }
+
+.hab-admin .admin-input {
+  background-color: var(--admin-inset);
+  color: #f1f5f9;
+  border-color: #64748b;
+  accent-color: var(--admin-focus);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.hab-admin .admin-input::placeholder { color: #94a3b8; opacity: 1; }
+.hab-admin .admin-input option { background-color: #111c30; color: #f1f5f9; }
+.hab-admin .admin-input:focus {
+  border-color: var(--admin-focus);
+  outline: 2px solid var(--admin-focus);
+  outline-offset: 2px;
+}
+.hab-admin .admin-input:disabled { opacity: .6; cursor: not-allowed; }
+.hab-admin .admin-input[aria-invalid="true"] { border-color: #fb7185; }
+.hab-admin .admin-input:-webkit-autofill {
+  -webkit-text-fill-color: #f1f5f9;
+  box-shadow: 0 0 0 1000px var(--admin-inset) inset;
+  caret-color: #f1f5f9;
+}
+
+.hab-admin .admin-button-primary {
+  background: linear-gradient(110deg, #8b2e24, #ad3b30);
+  color: #fff;
+  border-color: #df7769;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+.hab-admin .admin-button-primary:hover { background: linear-gradient(110deg, #a3372b, #bd4539); color: #fff; }
+.hab-admin .admin-button-secondary {
+  background-color: #ffffff0d;
+  border-color: var(--admin-border);
+  color: #e2e8f0;
+  transition: background-color 160ms ease;
+}
+.hab-admin .admin-button-secondary:hover { background-color: #ffffff18; color: #fff; }
+.hab-admin :where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--admin-focus);
+  outline-offset: 3px;
+}
+.hab-admin :where(button:disabled) { cursor: not-allowed; }
+.hab-admin :where(input[type="checkbox"], input[type="radio"]) { accent-color: #d6a44b; }
+.hab-admin .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #475569 transparent; }
+
+/* Flex children must shrink so wide tables scroll locally instead of clipping the page. */
+.hab-admin .admin-main { min-width: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hab-admin .admin-input,
+  .hab-admin .admin-button-primary,
+  .hab-admin .admin-button-secondary { transition: none; }
+}

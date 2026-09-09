@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import '@/styles/globals.css';
+import '@/styles/admin.css';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -182,11 +183,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const breadcrumbs = getBreadcrumbs();
 
   if (isLoginPage) {
-    return <div className="min-h-screen bg-slate-950 text-slate-100">{children}</div>;
+    return <div className="hab-admin min-h-screen bg-slate-950 text-slate-100">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-stone-950 text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="hab-admin min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-stone-950 text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
       {/* Ambient background glows for glassmorphic depth */}
       <div className="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-amber-600/10 blur-[130px] pointer-events-none" />
       <div className="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-rose-600/10 blur-[130px] pointer-events-none" />
@@ -199,7 +200,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            id="admin-sidebar-toggle"
             aria-label="Toggle sidebar"
+            aria-expanded={sidebarOpen}
+            aria-controls="admin-sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -280,7 +284,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Layout Container */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Glassmorphic Sidebar */}
-        <aside
+        <aside id="admin-sidebar"
           className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
@@ -298,6 +302,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
 
             <button
+              id="admin-sidebar-close"
+              aria-label="Close sidebar"
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg"
             >
@@ -310,6 +316,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
               <input
+                id="admin-menu-filter"
+                aria-label="Filter admin menu"
                 type="text"
                 value={quickSearch}
                 onChange={(e) => setQuickSearch(e.target.value)}
@@ -424,7 +432,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
+        <main id="admin-main" className="admin-main flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
           {children}
         </main>
       </div>
@@ -436,6 +444,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="p-4 border-b border-white/10 flex items-center gap-3">
               <Search className="w-4 h-4 text-amber-400" />
               <input
+                id="admin-command-search"
+                aria-label="Search admin modules"
                 autoFocus
                 type="text"
                 placeholder="Type a command or jump to page..."
@@ -452,7 +462,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             <div className="p-3 max-h-80 overflow-y-auto space-y-1">
-              {navGroups.flatMap(g => g.items).map((item) => {
+              {navGroups.flatMap(g => g.items).filter((item) =>
+                item.label.toLowerCase().includes(quickSearch.trim().toLowerCase())
+              ).map((item) => {
                 const Icon = item.icon;
                 return (
                   <button

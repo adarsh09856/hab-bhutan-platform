@@ -195,25 +195,25 @@ export default function AdminReportsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b admin-border pb-5">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-indigo-600" />
+          <h1 className="text-xl font-bold admin-title flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-indigo-300" />
             Financial Reports, Consignment Payouts &amp; Donor Audits
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm admin-muted mt-1">
             Reconciliation of e-commerce consignment sales, 80/20 artisan split disbursements, and bilateral project grants.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Date Filter */}
-          <div className="inline-flex bg-slate-100 p-1 rounded-lg text-xs font-semibold text-slate-600">
+          <div className="inline-flex admin-panel p-1 rounded-lg text-xs font-semibold admin-text">
             {(['all', 'this_month', '30d', '7d', 'today'] as const).map((r) => (
               <button
                 key={r}
                 onClick={() => setDateRange(r)}
                 className={`px-3 py-1 rounded-md transition-all ${
-                  dateRange === r ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
+                  dateRange === r ? 'admin-button-primary shadow-sm' : 'admin-text admin-hover'
                 }`}
               >
                 {r === 'all' ? 'All Time' : r === 'this_month' ? 'This Month' : r === '30d' ? '30 Days' : r === '7d' ? '7 Days' : 'Today'}
@@ -224,13 +224,13 @@ export default function AdminReportsPage() {
           <button
             onClick={loadReports}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white text-slate-700 border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold admin-button-secondary border rounded-lg shadow-sm disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </button>
           <button
             onClick={handleDownloadCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg shadow-sm hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold admin-button-primary rounded-lg shadow-sm"
           >
             <Download className="w-3.5 h-3.5" /> Export Statement (CSV)
           </button>
@@ -238,14 +238,14 @@ export default function AdminReportsPage() {
       </div>
 
       {actionSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-lg flex justify-between items-center">
+        <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-xs font-medium rounded-lg flex justify-between items-center">
           <span>{actionSuccess}</span>
           <button onClick={() => setActionSuccess('')} className="font-bold ml-2">✕</button>
         </div>
       )}
 
       {actionError && (
-        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-lg flex justify-between items-center">
+        <div className="p-3 bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-medium rounded-lg flex justify-between items-center">
           <span>{actionError}</span>
           <button onClick={() => setActionError('')} className="font-bold ml-2">✕</button>
         </div>
@@ -253,63 +253,63 @@ export default function AdminReportsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="admin-card p-4 rounded-xl border admin-border shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Gross E-Commerce Volume</p>
-              <p className="text-xl font-bold font-mono text-slate-900 mt-1">
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Gross E-Commerce Volume</p>
+              <p className="text-xl font-bold font-mono admin-title mt-1">
                 ${metrics.grossVolumeUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+              <p className="text-[11px] text-emerald-300 font-medium mt-1 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" /> {metrics.totalOrdersCount} orders processed
               </p>
             </div>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+            <div className="p-2 bg-emerald-500/15 text-emerald-300 rounded-lg">
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="admin-card p-4 rounded-xl border admin-border shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Artisan Share (80%)</p>
-              <p className="text-xl font-bold font-mono text-indigo-600 mt-1">
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Artisan Share (80%)</p>
+              <p className="text-xl font-bold font-mono text-indigo-300 mt-1">
                 ${metrics.artisanShareUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[11px] text-slate-500 mt-1">Pass-through consignment payout</p>
+              <p className="text-[11px] admin-muted mt-1">Pass-through consignment payout</p>
             </div>
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+            <div className="p-2 bg-indigo-500/20 text-indigo-300 rounded-lg">
               <Users className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="admin-card p-4 rounded-xl border admin-border shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">HAB Operating Margin (20%)</p>
-              <p className="text-xl font-bold font-mono text-slate-900 mt-1">
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">HAB Operating Margin (20%)</p>
+              <p className="text-xl font-bold font-mono admin-title mt-1">
                 ${metrics.associationShareUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className="text-[11px] text-slate-500 mt-1">Retained association revenue</p>
+              <p className="text-[11px] admin-muted mt-1">Retained association revenue</p>
             </div>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+            <div className="p-2 bg-amber-500/15 text-amber-300 rounded-lg">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="admin-card p-4 rounded-xl border admin-border shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Member Dues Collected</p>
-              <p className="text-xl font-bold font-mono text-slate-900 mt-1">
+              <p className="text-xs font-medium admin-muted uppercase tracking-wider">Member Dues Collected</p>
+              <p className="text-xl font-bold font-mono admin-title mt-1">
                 BTN {metrics.duesCollectedBTN.toLocaleString()}
               </p>
-              <p className="text-[11px] text-slate-500 mt-1">{metrics.activeMembersCount} verified enterprises</p>
+              <p className="text-[11px] admin-muted mt-1">{metrics.activeMembersCount} verified enterprises</p>
             </div>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+            <div className="p-2 bg-purple-500/20 text-purple-300 rounded-lg">
               <Landmark className="w-5 h-5" />
             </div>
           </div>
@@ -317,11 +317,11 @@ export default function AdminReportsPage() {
       </div>
 
       {/* Navigation Sections */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex items-center gap-2 border-b admin-border pb-2">
         <button
           onClick={() => setActiveSection('CRAFTS')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
-            activeSection === 'CRAFTS' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+            activeSection === 'CRAFTS' ? 'admin-button-primary' : 'admin-text admin-hover'
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
@@ -330,7 +330,7 @@ export default function AdminReportsPage() {
         <button
           onClick={() => setActiveSection('ARTISANS')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
-            activeSection === 'ARTISANS' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+            activeSection === 'ARTISANS' ? 'admin-button-primary' : 'admin-text admin-hover'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
@@ -339,7 +339,7 @@ export default function AdminReportsPage() {
         <button
           onClick={() => setActiveSection('PROJECTS')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
-            activeSection === 'PROJECTS' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+            activeSection === 'PROJECTS' ? 'admin-button-primary' : 'admin-text admin-hover'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -349,18 +349,18 @@ export default function AdminReportsPage() {
 
       {/* SECTION 1: CRAFT SALES BREAKDOWN */}
       {activeSection === 'CRAFTS' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+        <div className="admin-card border admin-border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b admin-border flex justify-between items-center admin-panel">
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">Zorig Chusum Category Sales Breakdown</h3>
-              <p className="text-xs text-slate-500">Gross revenue, quantity sold, and 80/20 consignment split by craft.</p>
+              <h3 className="font-bold admin-title text-sm">Zorig Chusum Category Sales Breakdown</h3>
+              <p className="text-xs admin-muted">Gross revenue, quantity sold, and 80/20 consignment split by craft.</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Craft Category</th>
                   <th className="py-3 px-4">English Name</th>
                   <th className="py-3 px-4 text-center">Units Sold</th>
@@ -369,19 +369,19 @@ export default function AdminReportsPage() {
                   <th className="py-3 px-4 text-right">HAB Margin 20%</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y admin-divider">
                 {craftSales.map((c) => (
-                  <tr key={c.key} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900 capitalize">{c.name}</td>
-                    <td className="py-3 px-4 text-slate-600">{c.english}</td>
+                  <tr key={c.key} className="admin-hover transition-colors">
+                    <td className="py-3 px-4 font-bold admin-title capitalize">{c.name}</td>
+                    <td className="py-3 px-4 admin-text">{c.english}</td>
                     <td className="py-3 px-4 text-center font-mono font-semibold">{c.units}</td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">
+                    <td className="py-3 px-4 text-right font-mono font-bold admin-title">
                       ${c.grossUSD.toFixed(2)}
                     </td>
-                    <td className="py-3 px-4 text-right font-mono text-indigo-600 font-medium">
+                    <td className="py-3 px-4 text-right font-mono text-indigo-300 font-medium">
                       ${c.artisanShareUSD.toFixed(2)}
                     </td>
-                    <td className="py-3 px-4 text-right font-mono text-emerald-600 font-medium">
+                    <td className="py-3 px-4 text-right font-mono text-emerald-300 font-medium">
                       ${c.associationShareUSD.toFixed(2)}
                     </td>
                   </tr>
@@ -401,18 +401,18 @@ export default function AdminReportsPage() {
 
       {/* SECTION 2: ARTISAN CONSIGNMENT PAYOUT LEDGER */}
       {activeSection === 'ARTISANS' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+        <div className="admin-card border admin-border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b admin-border flex justify-between items-center admin-panel">
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">Artisan Member Consignment Payout Ledger</h3>
-              <p className="text-xs text-slate-500">Calculated 80% consignment payout due to verified artisan members.</p>
+              <h3 className="font-bold admin-title text-sm">Artisan Member Consignment Payout Ledger</h3>
+              <p className="text-xs admin-muted">Calculated 80% consignment payout due to verified artisan members.</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Artisan Name</th>
                   <th className="py-3 px-4">Registration #</th>
                   <th className="py-3 px-4">Dzongkhag</th>
@@ -422,20 +422,20 @@ export default function AdminReportsPage() {
                   <th className="py-3 px-4 text-right">Payout Due (BTN)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y admin-divider">
                 {artisanSales.map((a) => (
-                  <tr key={a.memberId} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">{a.name}</td>
-                    <td className="py-3 px-4 font-mono text-slate-600">{a.regNumber}</td>
-                    <td className="py-3 px-4 text-slate-600">{a.dzongkhag}</td>
+                  <tr key={a.memberId} className="admin-hover transition-colors">
+                    <td className="py-3 px-4 font-bold admin-title">{a.name}</td>
+                    <td className="py-3 px-4 font-mono admin-text">{a.regNumber}</td>
+                    <td className="py-3 px-4 admin-text">{a.dzongkhag}</td>
                     <td className="py-3 px-4 text-center font-mono font-semibold">{a.units}</td>
-                    <td className="py-3 px-4 text-right font-mono font-medium text-slate-900">
+                    <td className="py-3 px-4 text-right font-mono font-medium admin-title">
                       ${a.grossUSD.toFixed(2)}
                     </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-indigo-600">
+                    <td className="py-3 px-4 text-right font-mono font-bold text-indigo-300">
                       ${a.payoutUSD.toFixed(2)}
                     </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">
+                    <td className="py-3 px-4 text-right font-mono font-bold admin-title">
                       Nu. {a.payoutBTN.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     </td>
                   </tr>
@@ -455,15 +455,15 @@ export default function AdminReportsPage() {
 
       {/* SECTION 3: DONOR PROJECTS */}
       {activeSection === 'PROJECTS' && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+        <div className="admin-card border admin-border rounded-xl shadow-sm overflow-hidden">
+          <div className="p-4 border-b admin-border flex justify-between items-center admin-panel">
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">Donor Grants &amp; Bilateral Development Projects</h3>
-              <p className="text-xs text-slate-500">Track drawdown budgets, execution phases, and milestone delivery.</p>
+              <h3 className="font-bold admin-title text-sm">Donor Grants &amp; Bilateral Development Projects</h3>
+              <p className="text-xs admin-muted">Track drawdown budgets, execution phases, and milestone delivery.</p>
             </div>
             <button
               onClick={() => setShowAddProjectModal(true)}
-              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1"
+              className="px-3 py-1.5 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Donor Project</span>
@@ -473,7 +473,7 @@ export default function AdminReportsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Project Name</th>
                   <th className="py-3 px-4">Bilateral Partner</th>
                   <th className="py-3 px-4">Budget</th>
@@ -483,22 +483,22 @@ export default function AdminReportsPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y admin-divider">
                 {projects.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-slate-900">{p.name}</td>
-                    <td className="py-3 px-4 text-slate-700">{p.partner}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">{p.budget}</td>
-                    <td className="py-3 px-4 font-mono text-slate-500">{p.period}</td>
+                  <tr key={p.id} className="admin-hover transition-colors">
+                    <td className="py-3 px-4 font-semibold admin-title">{p.name}</td>
+                    <td className="py-3 px-4 admin-text">{p.partner}</td>
+                    <td className="py-3 px-4 font-mono font-bold admin-title">{p.budget}</td>
+                    <td className="py-3 px-4 font-mono admin-muted">{p.period}</td>
                     <td className="py-3 px-4 w-48">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
+                        <div className="flex-1 admin-panel rounded-full h-2 overflow-hidden border admin-border">
                           <div
                             className="bg-indigo-600 h-full rounded-full transition-all"
                             style={{ width: `${p.progressPercent || 0}%` }}
                           />
                         </div>
-                        <span className="font-mono text-[11px] text-slate-600 font-medium">
+                        <span className="font-mono text-[11px] admin-text font-medium">
                           {p.progressPercent || 0}%
                         </span>
                       </div>
@@ -511,13 +511,13 @@ export default function AdminReportsPage() {
                     <td className="py-3 px-4 text-right space-x-2">
                       <button
                         onClick={() => setEditingProject({ ...p })}
-                        className="px-2 py-1 text-slate-600 hover:text-slate-900 border border-slate-200 rounded text-[11px] inline-flex items-center gap-1"
+                        className="px-2 py-1 admin-button-secondary border rounded text-[11px] inline-flex items-center gap-1"
                       >
                         <Edit className="w-3 h-3" /> Edit
                       </button>
                       <button
                         onClick={() => setDeletingProject(p)}
-                        className="px-2 py-1 text-rose-600 hover:text-rose-800 border border-rose-200 rounded text-[11px] inline-flex items-center gap-1"
+                        className="px-2 py-1 text-rose-300 hover:text-rose-200 border border-rose-400/25 rounded text-[11px] inline-flex items-center gap-1"
                       >
                         <Trash2 className="w-3 h-3" /> Delete
                       </button>
@@ -542,70 +542,70 @@ export default function AdminReportsPage() {
         <AdminModal isOpen={showAddProjectModal} onClose={() => setShowAddProjectModal(false)} title="Register Bilateral Donor Project">
           <form onSubmit={handleCreateProject} className="space-y-3 text-xs">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Project Title *</label>
+              <label className="block font-medium admin-text mb-1">Project Title *</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. EU SWITCH-Asia Craft Value Chain Sustainability"
                 value={projectForm.name}
                 onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
-                className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                className="w-full admin-input border rounded px-2.5 py-1.5"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Donor / Bilateral Partner *</label>
+                <label className="block font-medium admin-text mb-1">Donor / Bilateral Partner *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. UNDP, EU SWITCH-Asia, Ernst & Young"
                   value={projectForm.partner}
                   onChange={(e) => setProjectForm({ ...projectForm, partner: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Approved Budget *</label>
+                <label className="block font-medium admin-text mb-1">Approved Budget *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. $180,000.00"
                   value={projectForm.budget}
                   onChange={(e) => setProjectForm({ ...projectForm, budget: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Period</label>
+                <label className="block font-medium admin-text mb-1">Period</label>
                 <input
                   type="text"
                   placeholder="2025–2027"
                   value={projectForm.period}
                   onChange={(e) => setProjectForm({ ...projectForm, period: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Progress %</label>
+                <label className="block font-medium admin-text mb-1">Progress %</label>
                 <input
                   type="number"
                   min="0"
                   max="100"
                   value={projectForm.progressPercent}
                   onChange={(e) => setProjectForm({ ...projectForm, progressPercent: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Lifecycle Status</label>
+                <label className="block font-medium admin-text mb-1">Lifecycle Status</label>
                 <select
                   value={projectForm.status}
                   onChange={(e) => setProjectForm({ ...projectForm, status: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 >
                   <option value="current">Current / Active</option>
                   <option value="past">Past / Completed</option>
@@ -614,28 +614,28 @@ export default function AdminReportsPage() {
             </div>
 
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Project Summary &amp; Scope</label>
+              <label className="block font-medium admin-text mb-1">Project Summary &amp; Scope</label>
               <textarea
                 rows={3}
                 placeholder="Scope, objectives, and targeted beneficiaries..."
                 value={projectForm.summary}
                 onChange={(e) => setProjectForm({ ...projectForm, summary: e.target.value })}
-                className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                className="w-full admin-input border rounded px-2.5 py-1.5"
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-3 border-t admin-border">
               <button
                 type="button"
                 onClick={() => setShowAddProjectModal(false)}
-                className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-50"
+                className="px-3 py-1.5 admin-button-secondary border rounded"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold disabled:opacity-50"
+                className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
               >
                 {submitting ? 'Registering...' : 'Register Project'}
               </button>
@@ -649,66 +649,66 @@ export default function AdminReportsPage() {
         <AdminModal isOpen={!!editingProject} onClose={() => setEditingProject(null)} title="Update Bilateral Donor Project">
           <form onSubmit={handleEditProject} className="space-y-3 text-xs">
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Project Title *</label>
+              <label className="block font-medium admin-text mb-1">Project Title *</label>
               <input
                 type="text"
                 required
                 value={editingProject.name}
                 onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
-                className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                className="w-full admin-input border rounded px-2.5 py-1.5"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Partner *</label>
+                <label className="block font-medium admin-text mb-1">Partner *</label>
                 <input
                   type="text"
                   required
                   value={editingProject.partner}
                   onChange={(e) => setEditingProject({ ...editingProject, partner: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Budget *</label>
+                <label className="block font-medium admin-text mb-1">Budget *</label>
                 <input
                   type="text"
                   required
                   value={editingProject.budget}
                   onChange={(e) => setEditingProject({ ...editingProject, budget: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Period</label>
+                <label className="block font-medium admin-text mb-1">Period</label>
                 <input
                   type="text"
                   value={editingProject.period}
                   onChange={(e) => setEditingProject({ ...editingProject, period: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Progress %</label>
+                <label className="block font-medium admin-text mb-1">Progress %</label>
                 <input
                   type="number"
                   min="0"
                   max="100"
                   value={editingProject.progressPercent || 0}
                   onChange={(e) => setEditingProject({ ...editingProject, progressPercent: parseInt(e.target.value, 10) || 0 })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Status</label>
+                <label className="block font-medium admin-text mb-1">Status</label>
                 <select
                   value={editingProject.status}
                   onChange={(e) => setEditingProject({ ...editingProject, status: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 >
                   <option value="current">Current / Active</option>
                   <option value="past">Past / Completed</option>
@@ -717,27 +717,27 @@ export default function AdminReportsPage() {
             </div>
 
             <div>
-              <label className="block font-medium text-slate-700 mb-1">Summary</label>
+              <label className="block font-medium admin-text mb-1">Summary</label>
               <textarea
                 rows={3}
                 value={editingProject.summary}
                 onChange={(e) => setEditingProject({ ...editingProject, summary: e.target.value })}
-                className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                className="w-full admin-input border rounded px-2.5 py-1.5"
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-3 border-t admin-border">
               <button
                 type="button"
                 onClick={() => setEditingProject(null)}
-                className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-50"
+                className="px-3 py-1.5 admin-button-secondary border rounded"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold disabled:opacity-50"
+                className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
               >
                 {submitting ? 'Saving...' : 'Save Updates'}
               </button>
@@ -750,13 +750,13 @@ export default function AdminReportsPage() {
       {deletingProject && (
         <AdminModal isOpen={!!deletingProject} onClose={() => setDeletingProject(null)} title="Delete Donor Project?">
           <div className="space-y-4">
-            <p className="text-xs text-slate-600">
-              Permanently remove project <strong className="text-slate-900">{deletingProject.name}</strong> from bilateral records?
+            <p className="text-xs admin-text">
+              Permanently remove project <strong className="admin-title">{deletingProject.name}</strong> from bilateral records?
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setDeletingProject(null)}
-                className="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50"
+                className="px-3 py-1.5 admin-button-secondary border rounded text-xs"
               >
                 Cancel
               </button>

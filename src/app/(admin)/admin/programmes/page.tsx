@@ -142,11 +142,11 @@ export default function AdminProgrammesPage() {
       {/* Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold admin-title tracking-tight flex items-center gap-2.5">
             <BookOpen className="w-6 h-6 text-amber-400" />
             Statutory Programmes &amp; Mandates CMS
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs admin-muted mt-1">
             Configure the 11 statutory objects and interventions displayed on the public Programmes portal.
           </p>
         </div>
@@ -175,16 +175,16 @@ export default function AdminProgrammesPage() {
       {/* Grid of Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
-          <div className="col-span-full py-16 text-center text-slate-500 font-mono text-xs">
+          <div className="col-span-full py-16 text-center admin-muted font-mono text-xs">
             Loading statutory pillars from database...
           </div>
         ) : pillars.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-slate-400 text-xs">
+          <div className="col-span-full py-16 text-center admin-muted text-xs">
             No programme pillars found. Click &quot;Add Programme Object&quot; to begin.
           </div>
         ) : (
           pillars.map((p) => (
-            <GlassCard key={p.id} glow="amber" className="p-5 flex flex-col justify-between">
+            <GlassCard key={p.id} glow="amber" className="admin-card p-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2.5">
                   <span className="font-mono text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
@@ -193,39 +193,39 @@ export default function AdminProgrammesPage() {
                   <GlassBadge status={p.isActive ? 'ACTIVE' : 'SUSPENDED'} />
                 </div>
 
-                <h3 className="text-sm font-bold text-white mb-2 leading-snug">
+                <h3 className="text-sm font-bold admin-title mb-2 leading-snug">
                   {p.title}
                 </h3>
 
-                <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed">
+                <p className="text-xs admin-text line-clamp-3 leading-relaxed">
                   {p.description}
                 </p>
 
                 {Array.isArray(p.activities) && p.activities.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block font-semibold">
+                  <div className="mt-3 pt-3 border-t admin-border space-y-1">
+                    <span className="text-[10px] uppercase font-mono admin-muted block font-semibold">
                       Interventions ({p.activities.length}):
                     </span>
-                    <p className="text-[11px] text-slate-400 truncate">
+                    <p className="text-[11px] admin-muted truncate">
                       {p.activities.join(' · ')}
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                <span className="text-[10px] text-slate-500 font-mono">Order: #{p.sortOrder}</span>
+              <div className="mt-4 pt-3 border-t admin-border flex items-center justify-between">
+                <span className="text-[10px] admin-muted font-mono">Order: #{p.sortOrder}</span>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleOpenEdit(p)}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200"
+                    className="p-1.5 rounded-lg admin-button-secondary"
                     title="Edit"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDelete(p.id)}
-                    className="p-1.5 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-400"
+                    className="p-1.5 rounded-lg hover:bg-rose-500/20 admin-muted hover:text-rose-400"
                     title="Delete"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -260,6 +260,7 @@ export default function AdminProgrammesPage() {
               placeholder="e.g. 3.2.1"
               value={editingPillar?.ref || ''}
               onChange={(e) => setEditingPillar({ ...editingPillar, ref: e.target.value })}
+              className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all"
             />
 
             <GlassInput
@@ -267,6 +268,7 @@ export default function AdminProgrammesPage() {
               type="number"
               value={editingPillar?.sortOrder ?? 1}
               onChange={(e) => setEditingPillar({ ...editingPillar, sortOrder: parseInt(e.target.value, 10) || 0 })}
+              className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all"
             />
           </div>
 
@@ -276,10 +278,11 @@ export default function AdminProgrammesPage() {
             placeholder="e.g. Collective Bargaining & Raw Material Supply"
             value={editingPillar?.title || ''}
             onChange={(e) => setEditingPillar({ ...editingPillar, title: e.target.value })}
+            className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all"
           />
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
               Description / Mandate Narrative *
             </label>
             <textarea
@@ -287,12 +290,12 @@ export default function AdminProgrammesPage() {
               required
               value={editingPillar?.description || ''}
               onChange={(e) => setEditingPillar({ ...editingPillar, description: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-hidden focus:border-amber-500/60"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input border text-xs focus:outline-hidden"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
               Core Interventions (One per line)
             </label>
             <textarea
@@ -300,7 +303,7 @@ export default function AdminProgrammesPage() {
               value={activitiesInput}
               onChange={(e) => setActivitiesInput(e.target.value)}
               placeholder="e.g.&#10;Centralized wool bank in Bumthang&#10;Certified timber allocation&#10;Metalsmithing ingot import"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-hidden focus:border-amber-500/60"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input border text-xs font-mono focus:outline-hidden"
             />
           </div>
 
@@ -310,14 +313,14 @@ export default function AdminProgrammesPage() {
               id="pillarActive"
               checked={editingPillar?.isActive ?? true}
               onChange={(e) => setEditingPillar({ ...editingPillar, isActive: e.target.checked })}
-              className="w-4 h-4 rounded bg-slate-800 border-white/20 text-[#8B2E24] focus:ring-0"
+              className="w-4 h-4 rounded admin-panel admin-border accent-amber-400 focus:ring-0"
             />
-            <label htmlFor="pillarActive" className="text-xs text-slate-300">
+            <label htmlFor="pillarActive" className="text-xs admin-text">
               Active on public website
             </label>
           </div>
 
-          <div className="pt-4 flex items-center justify-end gap-2 border-t border-white/10">
+          <div className="pt-4 flex items-center justify-end gap-2 border-t admin-border">
             <GlassButton
               type="button"
               variant="secondary"

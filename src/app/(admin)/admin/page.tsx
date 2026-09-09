@@ -85,17 +85,20 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const loadDashboard = async () => {
     try {
       setRefreshing(true);
+      setLoadError('');
       const res = await fetch('/api/admin/dashboard', { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) setData(json);
-      }
+      if (!res.ok) throw new Error('Dashboard data is unavailable. Please retry or check your staff permissions.');
+      const json = await res.json();
+      if (!json.success) throw new Error('Dashboard metrics could not be loaded.');
+      setData(json);
     } catch (err) {
       console.error('Failed to load dashboard metrics:', err);
+      setLoadError(err instanceof Error ? err.message : 'Unable to load dashboard data.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -154,6 +157,12 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </GlassCard>
+
+      {loadError && (
+        <div id="admin-dashboard-error" role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/15 p-4 text-sm text-rose-200">
+          {loadError} {data ? 'Previously loaded data is shown below.' : 'Metrics below are unavailable until a successful refresh.'}
+        </div>
+      )}
 
       {/* KPI Stats Row (Glassmorphic Widgets) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -246,7 +255,7 @@ export default function AdminDashboardPage() {
                   ) : !data?.recentOrders || data.recentOrders.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-slate-400">
-                        No recent orders found. All systems operational.
+                        {loadError ? 'Recent orders are unavailable.' : 'No recent orders found.'}
                       </td>
                     </tr>
                   ) : (

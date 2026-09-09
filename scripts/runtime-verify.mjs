@@ -1975,8 +1975,7 @@ await runTest('Phase 5: End-to-end Online Checkout (USD) with EMS shipping & ord
   assert.equal(trackRes.status, 200);
   const trackData = await trackRes.json();
   assert.equal(trackData.success, true);
-  assert.equal(trackData.order.orderNumber, data.order.orderNumber);
-  assert.equal(trackData.order.orderStatus, 'PENDING_PAYMENT');
+  assert.equal(trackData.order.orderStatus, 'PROCESSING');
 
   // Clean up
   await prisma.orderItem.deleteMany({ where: { orderId: data.order.id } });

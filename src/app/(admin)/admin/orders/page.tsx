@@ -311,15 +311,15 @@ export default function AdminOrdersPage() {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Orders &amp; Consignment Dispatch</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold admin-title tracking-tight">Orders &amp; Consignment Dispatch</h1>
+          <p className="text-sm admin-muted mt-1">
             Real-time fulfillment tracking, carrier tracking synchronization, and manual counter order entry.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition"
+            className="px-4 py-2 admin-button-primary text-xs font-semibold rounded-lg shadow-sm transition"
           >
             + Create Manual Order
           </button>
@@ -327,32 +327,32 @@ export default function AdminOrdersPage() {
       </div>
 
       {successMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-md flex justify-between items-center">
+        <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-xs font-medium rounded-md flex justify-between items-center">
           <span>{successMsg}</span>
-          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 font-bold ml-2">✕</button>
+          <button onClick={() => setSuccessMsg('')} className="text-emerald-300 font-bold ml-2">✕</button>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-md flex justify-between items-center">
+        <div className="p-3 bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-medium rounded-md flex justify-between items-center">
           <span>{errorMsg}</span>
-          <button onClick={() => setErrorMsg('')} className="text-rose-600 font-bold ml-2">✕</button>
+          <button onClick={() => setErrorMsg('')} className="text-rose-300 font-bold ml-2">✕</button>
         </div>
       )}
 
       {/* Filter Controls */}
-      <div className="flex gap-4 items-center bg-white p-4 border border-slate-200 rounded-lg shadow-sm flex-wrap">
+      <div className="flex gap-4 items-center admin-card p-4 border admin-border rounded-lg shadow-sm flex-wrap">
         <input
           type="text"
           placeholder="Search order #, customer name, email, tracking..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[240px] text-xs border border-slate-300 rounded px-3 py-2 outline-none focus:border-slate-500 font-sans"
+          className="flex-1 min-w-[240px] text-xs admin-input border rounded px-3 py-2 outline-none font-sans"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs border border-slate-300 rounded px-3 py-2 outline-none focus:border-slate-500 bg-white"
+          className="text-xs admin-input border rounded px-3 py-2 outline-none"
         >
           <option value="ALL">All Order Statuses</option>
           <option value="PROCESSING">Processing</option>
@@ -366,16 +366,16 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-12 text-center text-slate-500 text-xs font-mono">
+          <div className="py-12 text-center admin-muted text-xs font-mono">
             Loading order book from PostgreSQL...
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Order #</th>
                   <th className="py-3 px-4">Collector / Customer</th>
                   <th className="py-3 px-4">Craft Line-Items</th>
@@ -385,61 +385,61 @@ export default function AdminOrdersPage() {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y admin-divider">
                 {filteredOrders.map((o) => {
                   const itemsList = Array.isArray(o.items) ? o.items : [];
                   const itemsSummary = itemsList.map((i: any) => `${i.code || i.name} (x${i.quantity || 1})`).join(', ') || 'Craft item';
 
                   return (
-                    <tr key={o.id} className="hover:bg-slate-50/75 transition-colors">
-                      <td className="py-3 px-4 font-mono font-medium text-slate-900">
+                    <tr key={o.id} className="hover:admin-panel/75 transition-colors">
+                      <td className="py-3 px-4 font-mono font-medium admin-title">
                         <div>{o.orderNumber}</div>
-                        <div className="text-[10px] text-slate-400 font-sans">
+                        <div className="text-[10px] admin-muted font-sans">
                           {new Date(o.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-medium text-slate-900">{o.customerName}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">{o.customerEmail}</div>
+                        <div className="font-medium admin-title">{o.customerName}</div>
+                        <div className="text-[11px] admin-muted font-mono">{o.customerEmail}</div>
                         {o.customerMember && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 font-semibold">
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-200 font-semibold">
                             MEMBER: {o.customerMember.name}
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-slate-600 max-w-xs truncate" title={itemsSummary}>
+                      <td className="py-3 px-4 admin-text max-w-xs truncate" title={itemsSummary}>
                         {itemsSummary}
                       </td>
-                      <td className="py-3 px-4 font-mono font-semibold text-slate-900">
+                      <td className="py-3 px-4 font-mono font-semibold admin-title">
                         ${Number(o.totalUSD).toFixed(2)}
                         {o.currencyUsed === 'BTN' && (
-                          <div className="text-[10px] text-slate-400 font-sans">Nu. {o.totalPaidCurrency}</div>
+                          <div className="text-[10px] admin-muted font-sans">Nu. {o.totalPaidCurrency}</div>
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-mono text-[10px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                        <span className="font-mono text-[10px] admin-text admin-panel px-1.5 py-0.5 rounded border admin-border">
                           {o.shippingMethod}
                         </span>
                         {o.trackingNumber ? (
-                          <div className="font-mono text-[11px] text-indigo-600 font-medium mt-1">
+                          <div className="font-mono text-[11px] text-indigo-300 font-medium mt-1">
                             {o.trackingNumber}
                           </div>
                         ) : (
-                          <div className="text-[10px] text-slate-400 mt-0.5">No tracking assigned</div>
+                          <div className="text-[10px] admin-muted mt-0.5">No tracking assigned</div>
                         )}
                       </td>
                       <td className="py-3 px-4">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
                             o.orderStatus === 'DELIVERED'
-                              ? 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-emerald-500/15 text-emerald-200'
                               : o.orderStatus === 'SHIPPED'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-blue-500/20 text-blue-200'
                               : o.orderStatus === 'CANCELLED'
-                              ? 'bg-rose-100 text-rose-800'
+                              ? 'bg-rose-500/15 text-rose-200'
                               : o.orderStatus === 'REFUNDED'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-amber-100 text-amber-800'
+                              ? 'bg-purple-500/20 text-purple-200'
+                              : 'bg-amber-500/15 text-amber-200'
                           }`}
                         >
                           {o.orderStatus}
@@ -452,14 +452,14 @@ export default function AdminOrdersPage() {
                               setFulfillingOrder(o);
                               setTrackingInput(o.trackingNumber || '');
                             }}
-                            className="px-2 py-1 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded"
+                            className="px-2 py-1 text-xs font-semibold admin-button-primary rounded"
                           >
                             Dispatch
                           </button>
                         )}
                         <button
                           onClick={() => setEditingOrder({ ...o })}
-                          className="px-2 py-1 text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100 rounded text-xs font-medium"
+                          className="px-2 py-1 admin-button-secondary border rounded text-xs font-medium"
                         >
                           Edit
                         </button>
@@ -469,14 +469,14 @@ export default function AdminOrdersPage() {
                               setCancellingOrder(o);
                               setCancellationReason('');
                             }}
-                            className="px-2 py-1 text-rose-600 hover:text-rose-800 border border-rose-200 hover:bg-rose-50 rounded text-xs font-medium"
+                            className="px-2 py-1 text-rose-300 hover:text-rose-200 border border-rose-400/25 hover:bg-rose-500/15 rounded text-xs font-medium"
                           >
                             Cancel
                           </button>
                         )}
                         <button
                           onClick={() => setShowDeleteAttemptModal(o)}
-                          className="px-1.5 py-1 text-slate-400 hover:text-slate-600 text-xs"
+                          className="px-1.5 py-1 admin-muted hover:admin-text text-xs"
                           title="Delete (Protected)"
                         >
                           ✕
@@ -487,7 +487,7 @@ export default function AdminOrdersPage() {
                 })}
                 {filteredOrders.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-400">
+                    <td colSpan={7} className="py-12 text-center admin-muted">
                       No orders found matching search criteria.
                     </td>
                   </tr>
@@ -500,24 +500,24 @@ export default function AdminOrdersPage() {
 
       {/* Create Manual Order Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="admin-modal rounded-xl max-w-2xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b admin-border pb-3">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Create Manual / In-Person Order</h3>
-                <p className="text-xs text-slate-500">Atomic inventory decrement and OrderItem referential record creation.</p>
+                <h3 className="font-bold admin-title text-base">Create Manual / In-Person Order</h3>
+                <p className="text-xs admin-muted">Atomic inventory decrement and OrderItem referential record creation.</p>
               </div>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+              <button onClick={() => setShowCreateModal(false)} className="admin-muted hover:admin-text font-bold">✕</button>
             </div>
 
             <form onSubmit={handleCreateOrder} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Customer Type</label>
+                  <label className="block font-medium admin-text mb-1">Customer Type</label>
                   <select
                     value={orderForm.customerType}
                     onChange={(e) => setOrderForm({ ...orderForm, customerType: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="GUEST">Guest Customer</option>
                     <option value="MEMBER">Registered Artisan Member</option>
@@ -525,7 +525,7 @@ export default function AdminOrdersPage() {
                 </div>
                 {orderForm.customerType === 'MEMBER' && (
                   <div>
-                    <label className="block font-medium text-slate-700 mb-1">Select Member</label>
+                    <label className="block font-medium admin-text mb-1">Select Member</label>
                     <select
                       value={orderForm.customerMemberId}
                       onChange={(e) => {
@@ -537,7 +537,7 @@ export default function AdminOrdersPage() {
                           customerEmail: m?.email || orderForm.customerEmail,
                         });
                       }}
-                      className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                      className="w-full admin-input border rounded px-2.5 py-1.5"
                     >
                       <option value="">Select Member...</option>
                       {members.map((m) => (
@@ -550,40 +550,40 @@ export default function AdminOrdersPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Customer Name *</label>
+                  <label className="block font-medium admin-text mb-1">Customer Name *</label>
                   <input
                     type="text"
                     required
                     value={orderForm.customerName}
                     onChange={(e) => setOrderForm({ ...orderForm, customerName: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Customer Email *</label>
+                  <label className="block font-medium admin-text mb-1">Customer Email *</label>
                   <input
                     type="email"
                     required
                     value={orderForm.customerEmail}
                     onChange={(e) => setOrderForm({ ...orderForm, customerEmail: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Customer Phone</label>
+                  <label className="block font-medium admin-text mb-1">Customer Phone</label>
                   <input
                     type="text"
                     value={orderForm.customerPhone}
                     onChange={(e) => setOrderForm({ ...orderForm, customerPhone: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   />
                 </div>
               </div>
 
               {/* Product Selection Matrix */}
-              <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
+              <div className="border admin-border rounded-lg p-3 admin-panel space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-800">Add Line Items from Catalog</span>
+                  <span className="font-bold admin-title">Add Line Items from Catalog</span>
                   <select
                     onChange={(e) => {
                       if (e.target.value) {
@@ -591,7 +591,7 @@ export default function AdminOrdersPage() {
                         e.target.value = '';
                       }
                     }}
-                    className="border border-slate-300 rounded px-2 py-1 bg-white text-xs"
+                    className="admin-input border rounded px-2 py-1 text-xs"
                   >
                     <option value="">+ Add Product...</option>
                     {products.map((p) => (
@@ -603,15 +603,15 @@ export default function AdminOrdersPage() {
                 </div>
 
                 {orderForm.selectedItems.length === 0 ? (
-                  <p className="text-slate-400 italic text-[11px] py-2">No items selected yet. Choose a product above.</p>
+                  <p className="admin-muted italic text-[11px] py-2">No items selected yet. Choose a product above.</p>
                 ) : (
                   <div className="space-y-2">
                     {orderForm.selectedItems.map((item) => (
-                      <div key={item.code} className="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                      <div key={item.code} className="flex justify-between items-center admin-card p-2 rounded border admin-border">
                         <div>
-                          <span className="font-semibold text-slate-800">{item.name}</span>
-                          <span className="font-mono text-[10px] text-slate-500 ml-2">({item.code})</span>
-                          <span className="text-slate-600 ml-2">${item.priceUSD} ea.</span>
+                          <span className="font-semibold admin-title">{item.name}</span>
+                          <span className="font-mono text-[10px] admin-muted ml-2">({item.code})</span>
+                          <span className="admin-text ml-2">${item.priceUSD} ea.</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <input
@@ -619,15 +619,15 @@ export default function AdminOrdersPage() {
                             min="1"
                             value={item.quantity}
                             onChange={(e) => handleItemQtyChange(item.code, parseInt(e.target.value, 10) || 1)}
-                            className="w-14 border border-slate-300 rounded px-2 py-0.5 font-mono text-center"
+                            className="w-14 admin-input border rounded px-2 py-0.5 font-mono text-center"
                           />
-                          <span className="font-mono font-bold text-slate-800">
+                          <span className="font-mono font-bold admin-title">
                             ${(item.priceUSD * item.quantity).toFixed(2)}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleRemoveItemFromOrder(item.code)}
-                            className="text-rose-600 hover:text-rose-800 font-bold px-1"
+                            className="text-rose-300 hover:text-rose-200 font-bold px-1"
                           >
                             ✕
                           </button>
@@ -640,22 +640,22 @@ export default function AdminOrdersPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Shipping Method</label>
+                  <label className="block font-medium admin-text mb-1">Shipping Method</label>
                   <select
                     value={orderForm.shippingMethod}
                     onChange={(e) => setOrderForm({ ...orderForm, shippingMethod: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="EMS">Bhutan Post / EMS</option>
                     <option value="EXPRESS">Express Courier ($62)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Payment Method</label>
+                  <label className="block font-medium admin-text mb-1">Payment Method</label>
                   <select
                     value={orderForm.paymentMethod}
                     onChange={(e) => setOrderForm({ ...orderForm, paymentMethod: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="CARD">International Card</option>
                     <option value="MBOB">mBOB / QR</option>
@@ -663,11 +663,11 @@ export default function AdminOrdersPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-medium text-slate-700 mb-1">Initial Order Status</label>
+                  <label className="block font-medium admin-text mb-1">Initial Order Status</label>
                   <select
                     value={orderForm.orderStatus}
                     onChange={(e) => setOrderForm({ ...orderForm, orderStatus: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="PROCESSING">Processing</option>
                     <option value="PAID">Paid</option>
@@ -677,28 +677,28 @@ export default function AdminOrdersPage() {
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Staff Internal Notes (Optional)</label>
+                <label className="block font-medium admin-text mb-1">Staff Internal Notes (Optional)</label>
                 <textarea
                   rows={2}
                   value={orderForm.internalNotes}
                   onChange={(e) => setOrderForm({ ...orderForm, internalNotes: e.target.value })}
                   placeholder="Internal notes for this order..."
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t admin-border">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-50"
+                  className="px-3 py-1.5 admin-button-secondary border rounded"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
                 >
                   {submitting ? 'Creating Order...' : 'Create Order & Decrement Stock'}
                 </button>
@@ -710,35 +710,35 @@ export default function AdminOrdersPage() {
 
       {/* Dispatch Modal */}
       {fulfillingOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <h3 className="font-bold text-slate-900 text-base">Fulfill &amp; Dispatch Order</h3>
-            <p className="text-xs text-slate-600">
-              Record carrier tracking and transition order <strong className="text-slate-900">{fulfillingOrder.orderNumber}</strong> to SHIPPED.
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
+            <h3 className="font-bold admin-title text-base">Fulfill &amp; Dispatch Order</h3>
+            <p className="text-xs admin-text">
+              Record carrier tracking and transition order <strong className="admin-title">{fulfillingOrder.orderNumber}</strong> to SHIPPED.
             </p>
 
             <div>
-              <label className="block font-medium text-slate-700 text-xs mb-1">Carrier Tracking Number</label>
+              <label className="block font-medium admin-text text-xs mb-1">Carrier Tracking Number</label>
               <input
                 type="text"
                 value={trackingInput}
                 onChange={(e) => setTrackingInput(e.target.value)}
                 placeholder="e.g. BP-88214-BT or DHL-992817"
-                className="w-full border border-slate-300 rounded px-3 py-2 text-xs font-mono outline-none focus:border-slate-500"
+                className="w-full admin-input border rounded px-3 py-2 text-xs font-mono outline-none"
               />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setFulfillingOrder(null)}
-                className="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50"
+                className="px-3 py-1.5 admin-button-secondary border rounded text-xs"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmShipment}
                 disabled={submitting}
-                className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold disabled:opacity-50"
+                className="px-4 py-1.5 admin-button-primary rounded text-xs font-semibold disabled:opacity-50"
               >
                 {submitting ? 'Saving...' : 'Confirm Shipment'}
               </button>
@@ -749,27 +749,27 @@ export default function AdminOrdersPage() {
 
       {/* Cancel Order Modal */}
       {cancellingOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <h3 className="font-bold text-slate-900 text-base">Cancel Order &amp; Restore Inventory</h3>
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
+            <h3 className="font-bold admin-title text-base">Cancel Order &amp; Restore Inventory</h3>
 
             {['SHIPPED', 'DELIVERED'].includes(cancellingOrder.orderStatus) ? (
               <div className="space-y-3">
-                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 space-y-1.5">
-                  <p className="font-bold flex items-center gap-1.5 text-rose-900">
+                <div className="p-3.5 bg-rose-500/15 border border-rose-400/25 rounded-lg text-xs text-rose-200 space-y-1.5">
+                  <p className="font-bold flex items-center gap-1.5 text-rose-100">
                     <span>⛔</span> Cannot Cancel Shipped / Delivered Order
                   </p>
                   <p className="leading-relaxed">
                     Order <strong>{cancellingOrder.orderNumber}</strong> has already been marked as <strong>{cancellingOrder.orderStatus}</strong>. Physical items have left the secretariat facility and cannot automatically be restored into catalog inventory without corrupting stock counts.
                   </p>
-                  <p className="font-medium pt-1 text-rose-900">
+                  <p className="font-medium pt-1 text-rose-100">
                     To handle customer returns or refunds, please use the <strong>Edit</strong> action and update the order status to <strong>REFUNDED</strong>.
                   </p>
                 </div>
                 <div className="flex justify-end pt-2">
                   <button
                     onClick={() => setCancellingOrder(null)}
-                    className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold"
+                    className="px-4 py-1.5 admin-button-primary rounded text-xs font-semibold"
                   >
                     Close
                   </button>
@@ -777,26 +777,26 @@ export default function AdminOrdersPage() {
               </div>
             ) : (
               <>
-                <p className="text-xs text-slate-600">
-                  Cancelling order <strong className="text-slate-900">{cancellingOrder.orderNumber}</strong> will atomically return all line-item quantities back into active catalog stock.
+                <p className="text-xs admin-text">
+                  Cancelling order <strong className="admin-title">{cancellingOrder.orderNumber}</strong> will atomically return all line-item quantities back into active catalog stock.
                 </p>
 
                 <div>
-                  <label className="block font-medium text-slate-700 text-xs mb-1">Cancellation Reason *</label>
+                  <label className="block font-medium admin-text text-xs mb-1">Cancellation Reason *</label>
                   <textarea
                     rows={3}
                     required
                     value={cancellationReason}
                     onChange={(e) => setCancellationReason(e.target.value)}
                     placeholder="e.g. Customer requested cancellation prior to international shipping."
-                    className="w-full border border-slate-300 rounded px-3 py-2 text-xs outline-none focus:border-slate-500"
+                    className="w-full admin-input border rounded px-3 py-2 text-xs outline-none"
                   />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     onClick={() => setCancellingOrder(null)}
-                    className="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50"
+                    className="px-3 py-1.5 admin-button-secondary border rounded text-xs"
                   >
                     Keep Order
                   </button>
@@ -816,20 +816,20 @@ export default function AdminOrdersPage() {
 
       {/* Edit Order Modal */}
       {editingOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Edit Order: {editingOrder.orderNumber}</h3>
-              <button onClick={() => setEditingOrder(null)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
+            <div className="flex justify-between items-center border-b admin-border pb-3">
+              <h3 className="font-bold admin-title text-base">Edit Order: {editingOrder.orderNumber}</h3>
+              <button onClick={() => setEditingOrder(null)} className="admin-muted hover:admin-text font-bold">✕</button>
             </div>
 
             <form onSubmit={handleSaveEdit} className="space-y-3 text-xs">
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Order Status</label>
+                <label className="block font-medium admin-text mb-1">Order Status</label>
                 <select
                   value={editingOrder.orderStatus}
                   onChange={(e) => setEditingOrder({ ...editingOrder, orderStatus: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 >
                   <option value="PROCESSING">Processing</option>
                   <option value="PAID">Paid</option>
@@ -841,11 +841,11 @@ export default function AdminOrdersPage() {
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Payment Status</label>
+                <label className="block font-medium admin-text mb-1">Payment Status</label>
                 <select
                   value={editingOrder.paymentStatus}
                   onChange={(e) => setEditingOrder({ ...editingOrder, paymentStatus: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 bg-white"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 >
                   <option value="PAID">Paid</option>
                   <option value="PENDING">Pending</option>
@@ -855,48 +855,48 @@ export default function AdminOrdersPage() {
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Tracking Number</label>
+                <label className="block font-medium admin-text mb-1">Tracking Number</label>
                 <input
                   type="text"
                   value={editingOrder.trackingNumber || ''}
                   onChange={(e) => setEditingOrder({ ...editingOrder, trackingNumber: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Customer Phone</label>
+                <label className="block font-medium admin-text mb-1">Customer Phone</label>
                 <input
                   type="text"
                   value={editingOrder.customerPhone || ''}
                   onChange={(e) => setEditingOrder({ ...editingOrder, customerPhone: e.target.value })}
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5"
+                  className="w-full admin-input border rounded px-2.5 py-1.5"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Staff Internal Notes</label>
+                <label className="block font-medium admin-text mb-1">Staff Internal Notes</label>
                 <textarea
                   rows={3}
                   value={editingOrder.internalNotes || ''}
                   onChange={(e) => setEditingOrder({ ...editingOrder, internalNotes: e.target.value })}
                   placeholder="Notes for secretariat staff (e.g. buyer customs declaration, special packaging notes)..."
-                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 outline-none focus:border-slate-500"
+                  className="w-full admin-input border rounded px-2.5 py-1.5 outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t admin-border">
                 <button
                   type="button"
                   onClick={() => setEditingOrder(null)}
-                  className="px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-50"
+                  className="px-3 py-1.5 admin-button-secondary border rounded"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
                 >
                   {submitting ? 'Saving...' : 'Save Updates'}
                 </button>
@@ -908,15 +908,15 @@ export default function AdminOrdersPage() {
 
       {/* Delete Attempt Warning Dialog */}
       {showDeleteAttemptModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <h3 className="font-bold text-slate-900 text-base flex items-center gap-2 text-rose-700">
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
+            <h3 className="font-bold admin-title text-base flex items-center gap-2 text-rose-300">
               <span>⚠️</span> Order Deletion Prohibited
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs admin-text leading-relaxed">
               Under Bhutanese commerce regulations and financial accounting standards, orders cannot be permanently deleted once generated.
             </p>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-700 space-y-1">
+            <div className="p-3 admin-panel border admin-border rounded text-[11px] admin-text space-y-1">
               <p>
                 To reverse this order, select <strong>Cancel Order</strong> instead. That will return all line items to active inventory and flag the order as CANCELLED in the immutable audit log.
               </p>
@@ -924,7 +924,7 @@ export default function AdminOrdersPage() {
             <div className="flex justify-end pt-2">
               <button
                 onClick={() => setShowDeleteAttemptModal(null)}
-                className="px-4 py-1.5 bg-slate-900 text-white rounded text-xs font-semibold"
+                className="px-4 py-1.5 admin-button-primary rounded text-xs font-semibold"
               >
                 Understood
               </button>
