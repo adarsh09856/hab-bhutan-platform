@@ -188,6 +188,17 @@ export interface NewsItemData {
   image_alt?: string;
 }
 
+export interface MemberData {
+  id?: string;
+  name: string;
+  craft_key: string;
+  dzongkhag: string;
+  member_since: number | string;
+  blurb?: string;
+  image_path?: string;
+  role?: string;
+}
+
 export const CLIENT_DATA = {
   crafts: clientDataJson.crafts as CraftData[],
   products: (clientDataJson.products || []) as ProductData[],
@@ -207,6 +218,7 @@ export const CLIENT_DATA = {
   stats: clientDataJson.stats,
   programmes: (clientDataJson.programmes || []) as ProgrammeData[],
   news: (clientDataJson.news || []) as NewsItemData[],
+  members: (clientDataJson.members || []) as MemberData[],
 };
 
 export function getCraftByKey(key: string): CraftData | undefined {

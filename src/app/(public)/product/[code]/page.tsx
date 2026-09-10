@@ -200,7 +200,9 @@ export default function ProductDetailPage() {
             </div>
             <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
               <span className="text-[#6B5A4C] font-lora">Craft</span>
-              <span className="font-figtree text-[#33261F]">{safeCraft.name} · {safeCraft.english}</span>
+              <Link href={`/craft/${safeCraft.key}`} className="font-figtree text-[#8B2E24] hover:underline font-semibold">
+                {safeCraft.name} · {safeCraft.english} →
+              </Link>
             </div>
             <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
               <span className="text-[#6B5A4C] font-lora">Origin</span>

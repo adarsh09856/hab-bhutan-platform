@@ -19,31 +19,35 @@ export default function Footer() {
 
   const [footerCols, setFooterCols] = useState([
     {
-      title: "Organization",
+      title: "Association",
       links: [
         { label: "About HAB", href: "/about" },
-        { label: "Our Mandate & AoA", href: "/programmes" },
-        { label: "Strategic Projects", href: "/projects" },
-        { label: "Contact Secretariat", href: "/contact" },
+        { label: "Programmes", href: "/programmes" },
+        { label: "Projects", href: "/projects" },
+        { label: "Membership", href: "/membership" },
+        { label: "News & events", href: "/news" },
+        { label: "Contact us", href: "/contact" },
       ]
     },
     {
       title: "Shop & support",
       links: [
         { label: "E-shop", href: "/shop" },
-        { label: "Shipping & Customs", href: "/shipping" },
-        { label: "Terms of Service", href: "/terms" },
-        { label: "Privacy Policy", href: "/privacy" },
-        { label: "Track your order", href: "/track-order" },
+        { label: "Wholesale & bulk orders", href: "/wholesale" },
+        { label: "Shipping & delivery policy", href: "/shipping" },
+        { label: "Returns & refunds", href: "/shipping#returns" },
+        { label: "National Craft Awards", href: "/masters" },
+        { label: "Terms of service", href: "/terms" },
+        { label: "Privacy policy", href: "/privacy" },
       ]
     },
     {
       title: "Members",
       links: [
         { label: "Directory by category", href: "/members" },
-        { label: "Publications", href: "/publications" },
-        { label: "Member shops", href: "/shop" },
-        { label: "Apply to join", href: "/membership/apply" },
+        { label: "Publications & downloads", href: "/publications" },
+        { label: "Accreditations & awards", href: "/masters" },
+        { label: "Apply for membership", href: "/membership/apply" },
       ]
     },
     {
