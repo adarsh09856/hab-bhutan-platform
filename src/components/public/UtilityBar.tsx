@@ -35,21 +35,31 @@ export default function UtilityBar() {
             {announcement}
           </span>
         )}
-        <div className="flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/about#contact" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
-              Contact secretariat
+            <Link href="/contact" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
+              Contact us
             </Link>
             <Link href="/news" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
               Tenders &amp; vacancies
             </Link>
-            <Link href="/membership/apply" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
-              Apply for Membership
+            <Link href="/publications" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
+              Publications
+            </Link>
+            <Link href="/donate" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
+              Donate
             </Link>
           </div>
+          <Link
+            href="/wholesale"
+            className="inline-flex items-center text-[#C9A46A] hover:text-[#F4F0E7] whitespace-nowrap text-[10px] sm:text-[11px]"
+          >
+            <span className="hidden sm:inline">Trade &amp; wholesale buyers</span>
+            <span className="sm:hidden">Trade buyers</span>
+          </Link>
           <div className="hidden sm:block w-[1px] h-[13px] bg-[#4E3D2E]" />
           <span className="whitespace-nowrap text-[10px] sm:text-[11px]">
-            <span className="text-[#F4F0E7]">EN</span>
+            <span className="text-[#F4F0E7] font-semibold">EN</span>
             <span className="opacity-50 mx-1">/</span>
             <span className="text-[#D2C2AE]">རྫོང་ཁ</span>
           </span>

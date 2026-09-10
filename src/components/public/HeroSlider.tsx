@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
@@ -13,10 +13,34 @@ interface Slide {
 
 const FALLBACK_SLIDES: Slide[] = [
   {
-    id: 'fallback-1',
-    imageUrl: '/images/hero_artisan.jpg',
-    caption: 'Master artisan at the loom · Khoma, Lhuentse',
-    altText: 'Master artisan weaving on backstrap loom in Khoma, Bhutan',
+    id: 'hero-1',
+    imageUrl: '/assets/photos/hero-1-weaving.jpg',
+    caption: 'Kushutara master weaver at traditional backstrap loom · Khoma, Lhuentse',
+    altText: 'Kushutara master weaver at traditional backstrap loom in Khoma, Lhuentse',
+  },
+  {
+    id: 'hero-2',
+    imageUrl: '/assets/photos/hero-2-punakha.jpg',
+    caption: 'Punakha Crafts Market — authentic craft stalls validated and managed by HAB',
+    altText: 'Punakha Crafts Market overlooking Punakha Dzong, managed by HAB',
+  },
+  {
+    id: 'hero-3',
+    imageUrl: '/assets/photos/hero-3-clay.jpg',
+    caption: 'Jinzo master sculptor modelling traditional statue armature · Thimphu',
+    altText: 'Traditional clay sculpture and statue making in Bhutan',
+  },
+  {
+    id: 'hero-4',
+    imageUrl: '/assets/photos/hero-4-textiles.jpg',
+    caption: 'Naturally dyed yathra and silk supplementary weft textiles · Bumthang',
+    altText: 'Natural vegetable dyed textiles in Bumthang, Bhutan',
+  },
+  {
+    id: 'hero-5',
+    imageUrl: '/assets/photos/hero-5-desho.jpg',
+    caption: 'Traditional handmade Daphne desho paper workshop · Trashiyangtse',
+    altText: 'Handmade traditional desho paper workshop in Trashiyangtse',
   },
 ];
 

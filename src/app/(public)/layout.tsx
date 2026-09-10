@@ -1,4 +1,5 @@
 import React from 'react';
+import '@/styles/client-hab.css';
 import UtilityBar from '@/components/public/UtilityBar';
 import Header from '@/components/public/Header';
 import Footer from '@/components/public/Footer';

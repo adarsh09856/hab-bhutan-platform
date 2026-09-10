@@ -94,12 +94,24 @@ export default function Footer() {
     <footer className="bg-[#33261F] text-[#D2C2AE] pt-12 sm:pt-16 pb-[34px] mt-0">
       <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.35fr_repeat(4,1fr)] gap-8 lg:gap-[34px]">
         <div className="sm:col-span-2 md:col-span-1">
-          <div className="flex items-center gap-[11px] mb-4">
-            <div className="w-9 h-9 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-figtree font-extrabold text-[13px]">
-              HAB
-            </div>
-            <div className="font-figtree font-bold text-[14.5px] text-[#efeae1]">
-              Handicrafts Association of Bhutan
+          <div className="mb-4">
+            <img
+              src="/assets/hab-logo-footer.png"
+              alt="Handicrafts Association of Bhutan"
+              className="h-[44px] w-auto object-contain"
+              onError={(e: any) => {
+                e.currentTarget.style.display = 'none';
+                const fb = e.currentTarget.nextElementSibling;
+                if (fb) fb.style.display = 'flex';
+              }}
+            />
+            <div style={{ display: 'none' }} className="items-center gap-[11px]">
+              <div className="w-9 h-9 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-figtree font-extrabold text-[13px]">
+                HAB
+              </div>
+              <div className="font-figtree font-bold text-[14.5px] text-[#efeae1]">
+                Handicrafts Association of Bhutan
+              </div>
             </div>
           </div>
           <p className="text-[14px] sm:text-[14.5px] leading-[1.6] mb-[18px] max-w-[38ch] font-lora text-[#D2C2AE]">

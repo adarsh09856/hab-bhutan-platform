@@ -84,16 +84,28 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-[rgba(247,246,242,.96)] backdrop-blur-[12px] border-b border-[#E4DDD1]">
       <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 min-h-[64px] sm:min-h-[74px] flex items-center justify-between gap-2 sm:gap-4">
         {/* 1. Logo lockup */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-[11px] cursor-pointer flex-none">
-          <div className="w-[34px] h-[34px] sm:w-[38px] sm:h-[38px] rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-figtree font-extrabold text-[13px] sm:text-[14px] tracking-[-0.02em] flex-none">
-            HAB
-          </div>
-          <div className="font-figtree leading-[1.15]">
-            <div className="font-bold text-[13.5px] sm:text-[14.5px] tracking-[-0.01em] text-[#33261F] whitespace-nowrap">
-              Handicrafts Association
+        <Link href="/" className="logo flex items-center cursor-pointer flex-none" aria-label="Handicrafts Association of Bhutan — home">
+          <img
+            src="/assets/hab-logo.png"
+            alt="Handicrafts Association of Bhutan"
+            className="logo__img h-[40px] sm:h-[46px] w-auto object-contain"
+            onError={(e: any) => {
+              e.currentTarget.style.display = 'none';
+              const fb = e.currentTarget.nextElementSibling;
+              if (fb) fb.style.display = 'flex';
+            }}
+          />
+          <div style={{ display: 'none' }} className="items-center gap-2.5 sm:gap-[11px] flex-none">
+            <div className="w-[34px] h-[34px] sm:w-[38px] sm:h-[38px] rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-figtree font-extrabold text-[13px] sm:text-[14px] tracking-[-0.02em] flex-none">
+              HAB
             </div>
-            <div className="text-[10px] sm:text-[11px] text-[#6B5A4C] tracking-[0.04em] whitespace-nowrap">
-              OF BHUTAN · EST. 2005
+            <div className="font-figtree leading-[1.15]">
+              <div className="font-bold text-[13.5px] sm:text-[14.5px] tracking-[-0.01em] text-[#33261F] whitespace-nowrap">
+                Handicrafts Association
+              </div>
+              <div className="text-[10px] sm:text-[11px] text-[#6B5A4C] tracking-[0.04em] whitespace-nowrap">
+                OF BHUTAN · EST. 2005
+              </div>
             </div>
           </div>
         </Link>
@@ -135,23 +147,47 @@ export default function Header() {
               </div>
 
               {membersMenuOpen && (
-                <div className="absolute top-full left-0 pt-[10px] w-[250px] z-60">
+                <div className="absolute top-full left-0 pt-[10px] w-[280px] z-60">
                   <div
-                    className="w-full bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-2 text-[13.5px]"
+                    className="w-full bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-3 text-[13px]"
                     style={{ boxShadow: '0 14px 34px rgba(27,26,24,.12)' }}
                   >
-                    {headerLinks
-                      .filter((item) => item.parent === 'members')
-                      .map((sub) => (
-                        <Link
-                          key={sub.id}
-                          href={sub.href}
-                          onClick={() => setMembersMenuOpen(false)}
-                          className="block px-3 py-[10px] rounded-[7px] text-[#33261F] hover:bg-[#F1EADC] transition-colors duration-150"
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-[#6B5A4C] px-2 pb-1.5 font-semibold">
+                      Membership categories
+                    </p>
+                    <div className="space-y-0.5">
+                      <Link href="/membership/individual-artisan" onClick={() => setMembersMenuOpen(false)} className="block px-2.5 py-1.5 rounded-[6px] hover:bg-[#F1EADC] transition-colors">
+                        <div className="font-semibold text-[13px] text-[#33261F]">Individual Artisan</div>
+                        <div className="text-[10.5px] text-[#6B5A4C]">Active · Nu. 500 / year</div>
+                      </Link>
+                      <Link href="/membership/craft-enterprise" onClick={() => setMembersMenuOpen(false)} className="block px-2.5 py-1.5 rounded-[6px] hover:bg-[#F1EADC] transition-colors">
+                        <div className="font-semibold text-[13px] text-[#33261F]">Craft Enterprise</div>
+                        <div className="text-[10.5px] text-[#6B5A4C]">Active · Nu. 2,000 / year</div>
+                      </Link>
+                      <Link href="/membership/cluster" onClick={() => setMembersMenuOpen(false)} className="block px-2.5 py-1.5 rounded-[6px] hover:bg-[#F1EADC] transition-colors">
+                        <div className="font-semibold text-[13px] text-[#33261F]">Artisan Cluster</div>
+                        <div className="text-[10.5px] text-[#6B5A4C]">Active · Nu. 3,000 / year</div>
+                      </Link>
+                      <Link href="/membership/associate" onClick={() => setMembersMenuOpen(false)} className="block px-2.5 py-1.5 rounded-[6px] hover:bg-[#F1EADC] transition-colors">
+                        <div className="font-semibold text-[13px] text-[#33261F]">Affiliated Member</div>
+                        <div className="text-[10.5px] text-[#6B5A4C]">Affiliated · Nu. 5,000 / year</div>
+                      </Link>
+                      <Link href="/membership/honorary" onClick={() => setMembersMenuOpen(false)} className="block px-2.5 py-1.5 rounded-[6px] hover:bg-[#F1EADC] transition-colors">
+                        <div className="font-semibold text-[13px] text-[#33261F]">Honorary Member</div>
+                        <div className="text-[10.5px] text-[#6B5A4C]">By Board resolution · no fee</div>
+                      </Link>
+                    </div>
+                    <div className="pt-2.5 mt-2 border-t border-[#EFE9DE] space-y-1.5">
+                      <Link href="/membership/apply" onClick={() => setMembersMenuOpen(false)} className="block text-center py-1.5 px-3 rounded bg-[#8B2E24] text-white font-figtree font-semibold text-xs hover:bg-[#6E241C] transition-colors">
+                        Register as a member
+                      </Link>
+                      <Link href="/masters" onClick={() => setMembersMenuOpen(false)} className="block text-center py-1.5 px-3 rounded border border-[#CDBEA8] text-[#33261F] font-figtree text-xs hover:bg-[#F1EADC] transition-colors">
+                        Accreditations &amp; awards
+                      </Link>
+                      <Link href="/login" onClick={() => setMembersMenuOpen(false)} className="block text-center text-[11px] text-[#6B5A4C] hover:text-[#8B2E24] pt-0.5">
+                        Member login →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )}
@@ -276,6 +312,13 @@ export default function Header() {
                       className="font-figtree font-semibold text-[13.5px] border border-[#CDBEA8] text-[#33261F] px-4 py-[11px] rounded-[7px] hover:border-[#33261F]"
                     >
                       Track order
+                    </Link>
+                    <Link
+                      href="/wholesale"
+                      onClick={() => setShopMenuOpen(false)}
+                      className="font-mono text-[11.5px] text-[#8B2E24] hover:text-[#6E241C] font-semibold ml-auto"
+                    >
+                      Wholesale &amp; bulk buyers →
                     </Link>
                   </div>
                 </div>
