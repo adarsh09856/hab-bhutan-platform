@@ -157,6 +157,36 @@
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* Global Dark Glass Table Protection */
+.hab-admin table {
+  background-color: transparent !important;
+  color: #f1f5f9 !important;
+}
+.hab-admin thead {
+  background-color: rgba(2, 6, 23, 0.85) !important;
+  color: #cbd5e1 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.hab-admin tbody {
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  color: #f1f5f9 !important;
+}
+.hab-admin tr {
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.hab-admin tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+.hab-admin th {
+  color: #cbd5e1 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.hab-admin td {
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hab-admin .admin-input,
   .hab-admin .admin-button-primary,

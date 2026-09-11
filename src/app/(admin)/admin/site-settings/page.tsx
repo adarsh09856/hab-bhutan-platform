@@ -104,20 +104,71 @@ export default function AdminSiteSettingsPage() {
   const [partnerInput, setPartnerInput] = useState('');
 
   useEffect(() => {
+    let isMounted = true;
+
+    // Safety timeout to guarantee the page never hangs on the loading spinner
+    const timer = setTimeout(() => {
+      if (isMounted) setLoading(false);
+    }, 1200);
+
+    // Primary fetch from admin API with fallback to public site-settings API
     fetch('/api/admin/site-settings', { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => {
+        if (!isMounted) return;
         if (d?.setting) {
-          setForm({
+          setForm((prev) => ({
+            ...prev,
             ...d.setting,
-            partnersList: Array.isArray(d.setting.partnersList) ? d.setting.partnersList : [],
-          });
+            partnersList: Array.isArray(d.setting.partnersList) ? d.setting.partnersList : prev.partnersList,
+          }));
+          setLoading(false);
+        } else {
+          // Fallback to public settings endpoint
+          fetch('/api/site-settings')
+            .then((r) => r.json())
+            .then((pub) => {
+              if (!isMounted) return;
+              const s = pub?.setting || pub?.settings;
+              if (s) {
+                setForm((prev) => ({
+                  ...prev,
+                  ...s,
+                  partnersList: Array.isArray(s.partnersList) ? s.partnersList : prev.partnersList,
+                }));
+              }
+            })
+            .catch(() => {})
+            .finally(() => {
+              if (isMounted) setLoading(false);
+            });
         }
       })
       .catch(() => {
-        setFeedback({ type: 'error', message: 'Failed to load existing site settings' });
-      })
-      .finally(() => setLoading(false));
+        // Fallback to public settings endpoint on network error
+        fetch('/api/site-settings')
+          .then((r) => r.json())
+          .then((pub) => {
+            if (!isMounted) return;
+            const s = pub?.setting || pub?.settings;
+            if (s) {
+              setForm((prev) => ({
+                ...prev,
+                ...s,
+                partnersList: Array.isArray(s.partnersList) ? s.partnersList : prev.partnersList,
+              }));
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            if (isMounted) setLoading(false);
+          });
+      });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {

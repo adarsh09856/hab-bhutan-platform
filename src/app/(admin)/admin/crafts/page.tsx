@@ -74,9 +74,9 @@ export default function AdminCraftsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="border-b admin-border pb-5">
-        <h1 className="text-2xl font-bold admin-title tracking-tight">13 Zorig Chusum Traditional Crafts CMS</h1>
-        <p className="text-sm admin-muted mt-1">
+      <div className="border-b border-white/10 pb-5">
+        <h1 className="text-2xl font-bold text-white tracking-tight">13 Zorig Chusum Traditional Crafts CMS</h1>
+        <p className="text-sm text-slate-400 mt-1">
           Manage classical Dzongkha names, English translations, cultural descriptions, banner imagery, and display order for Bhutan’s 13 traditional arts.
         </p>
       </div>
@@ -269,9 +269,9 @@ export default function AdminCraftsPage() {
       )}
 
       {/* Crafts Table */}
-      <div className="admin-card border admin-border rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
         <table className="w-full text-left text-sm">
-          <thead className="admin-panel border-b admin-border text-xs font-bold admin-text uppercase tracking-wider">
+          <thead className="bg-slate-950/80 border-b border-white/10 text-xs font-bold text-slate-300 uppercase tracking-wider">
             <tr>
               <th className="px-5 py-3.5">Craft</th>
               <th className="px-5 py-3.5">Dzongkha</th>
@@ -282,28 +282,30 @@ export default function AdminCraftsPage() {
               <th className="px-5 py-3.5 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y admin-divider">
+          <tbody className="divide-y divide-white/5 bg-slate-900/40">
             {crafts.map((c) => (
-              <tr key={c.key} className="admin-hover transition-colors">
-                <td className="px-5 py-4 font-semibold admin-title">
-                  {c.name} <span className="text-xs admin-muted font-normal">({c.english})</span>
+              <tr key={c.key} className="hover:bg-white/5 transition-colors">
+                <td className="px-5 py-4 font-semibold text-white">
+                  {c.name} <span className="text-xs text-slate-400 font-normal">({c.english})</span>
                 </td>
-                <td className="px-5 py-4 font-serif text-base admin-text">
+                <td className="px-5 py-4 font-serif text-base text-amber-300">
                   {c.dzongkha || '—'}
                 </td>
-                <td className="px-5 py-4 text-xs admin-text max-w-xs truncate">
+                <td className="px-5 py-4 text-xs text-slate-300 max-w-xs truncate">
                   {c.description}
                 </td>
-                <td className="px-5 py-4 text-center font-mono text-xs">
+                <td className="px-5 py-4 text-center font-mono text-xs text-white font-medium">
                   {c._count?.products ?? 0}
                 </td>
-                <td className="px-5 py-4 text-center font-mono text-xs">
+                <td className="px-5 py-4 text-center font-mono text-xs text-white font-medium">
                   {c._count?.members ?? 0}
                 </td>
                 <td className="px-5 py-4 text-center">
                   <span
-                    className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold ${
-                      c.isActive ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-500/15 text-slate-400'
+                    className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                      c.isActive
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        : 'bg-slate-700/40 text-slate-400 border-white/10'
                     }`}
                   >
                     {c.isActive ? 'Active' : 'Hidden'}
@@ -313,9 +315,9 @@ export default function AdminCraftsPage() {
                   <button
                     type="button"
                     onClick={() => setEditing(c)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border admin-border rounded-lg text-xs font-semibold admin-button-secondary cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/15 rounded-xl text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 className="w-3.5 h-3.5 text-amber-400" />
                     Edit
                   </button>
                 </td>
