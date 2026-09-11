@@ -64,14 +64,12 @@ export async function GET() {
         },
       });
     }
-    return NextResponse.json({ success: true, setting });
+    return NextResponse.json({ success: true, setting, settings: setting });
   } catch (error) {
-    return NextResponse.json({
-      success: true,
-      setting: {
-        announcementText: 'CSO/2011/043 · Handicrafts Association of Bhutan',
-        announcementLink: '/about',
-        isAnnouncementOn: true,
+    const fallback = {
+      announcementText: 'CSO/2011/043 · Handicrafts Association of Bhutan',
+      announcementLink: '/about',
+      isAnnouncementOn: true,
         tagline: CLIENT_VERBATIM.tagline,
         heroParagraph: CLIENT_VERBATIM.heroPara,
         heroCtaPrimaryText: 'Our mission',
@@ -119,7 +117,11 @@ export async function GET() {
         membershipRightText: 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.',
         membershipRightCtaText: 'Apply for membership',
         membershipRightCtaLink: '/membership/apply',
-      },
-    });
-  }
+      };
+      return NextResponse.json({
+        success: true,
+        setting: fallback,
+        settings: fallback,
+      });
+    }
 }
