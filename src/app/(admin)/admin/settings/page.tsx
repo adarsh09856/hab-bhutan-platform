@@ -1,18 +1,22 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save } from 'lucide-react';
 import { PERMISSION_CATEGORIES, Permission } from '@/lib/permissions';
 
 function AdminSettingsContent() {
-  const searchParams = useSearchParams();
-  const initialTabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'GATEWAYS' | 'AUDIT'>(
-    initialTabParam === 'RBAC' || initialTabParam === 'USERS' || initialTabParam === 'GATEWAYS' || initialTabParam === 'AUDIT'
-      ? (initialTabParam as any)
-      : 'FX'
-  );
+  const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'GATEWAYS' | 'AUDIT'>('FX');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('tab');
+      if (p === 'RBAC' || p === 'USERS' || p === 'GATEWAYS' || p === 'AUDIT') {
+        setActiveTab(p as any);
+      }
+    }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
@@ -1588,9 +1592,5 @@ function AdminSettingsContent() {
 }
 
 export default function AdminSettingsPage() {
-  return (
-    <React.Suspense fallback={<div className="p-8 text-xs font-mono admin-muted">Loading system settings...</div>}>
-      <AdminSettingsContent />
-    </React.Suspense>
-  );
+  return <AdminSettingsContent />;
 }
