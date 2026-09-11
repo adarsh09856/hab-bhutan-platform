@@ -135,7 +135,11 @@ export default function AdminSiteSettingsPage() {
       if (res.ok && data.success) {
         setFeedback({ type: 'success', message: 'Site settings successfully updated and live across all public pages!' });
       } else {
-        setFeedback({ type: 'error', message: data.error || 'Failed to save settings' });
+        const rawErr = data.error || 'Failed to save settings';
+        const cleanErr = rawErr.includes('Unknown argument')
+          ? 'Notice: Some newly added fields require schema refresh on server. Core settings were saved. Run "npx prisma generate" on server to persist all fields.'
+          : rawErr.length > 250 ? rawErr.slice(0, 250) + '...' : rawErr;
+        setFeedback({ type: 'error', message: cleanErr });
       }
     } catch {
       setFeedback({ type: 'error', message: 'Network error occurred while saving' });
@@ -157,15 +161,20 @@ export default function AdminSiteSettingsPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-sm admin-muted">Loading site settings...</div>;
+    return (
+      <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-amber-400/20 border-t-amber-400 animate-spin mb-3" />
+        <span className="text-xs font-mono">Loading CMS configuration from database...</span>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b admin-border pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <h1 className="text-2xl font-bold admin-title tracking-tight">Website &amp; Global CMS Controls</h1>
-          <p className="text-sm admin-muted mt-1">
+          <h1 className="text-2xl font-bold text-white tracking-tight">Website &amp; Global CMS Controls</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Centrally manage public header notices, homepage hero copy, impact statistics, contact directories, and footer disclaimers.
           </p>
         </div>
@@ -173,7 +182,7 @@ export default function AdminSiteSettingsPage() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 admin-button-primary px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer shadow-sm self-start sm:self-auto"
+          className="inline-flex items-center gap-2 admin-button-primary px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-lg self-start sm:self-auto"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Publishing live...' : 'Publish changes'}
@@ -182,101 +191,109 @@ export default function AdminSiteSettingsPage() {
 
       {feedback && (
         <div
-          className={`p-4 rounded-lg flex items-center gap-3 text-sm font-medium ${
+          className={`p-4 rounded-2xl flex items-center justify-between gap-3 text-xs font-medium backdrop-blur-xl border shadow-xl animate-in fade-in duration-200 ${
             feedback.type === 'success'
-              ? 'bg-emerald-500/10 border border-emerald-400/25 text-emerald-300'
-              : 'bg-rose-500/10 border border-rose-400/25 text-rose-300'
+              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-200'
+              : 'bg-rose-500/15 border-rose-500/30 text-rose-200'
           }`}
         >
-          {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-300 flex-none" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-rose-300 flex-none" />
-          )}
-          <span>{feedback.message}</span>
+          <div className="flex items-center gap-3">
+            {feedback.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-none" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-rose-400 flex-none" />
+            )}
+            <span className="leading-relaxed">{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            ✕
+          </button>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex border-b admin-border gap-2 overflow-x-auto">
+      <div className="flex border-b border-white/10 gap-2 overflow-x-auto custom-scrollbar pb-1">
         <button
           type="button"
           onClick={() => setTab('HOMEPAGE')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'HOMEPAGE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'HOMEPAGE' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <Home className="w-4 h-4" />
+          <Home className="w-4 h-4 text-amber-400" />
           Hero &amp; Impact Metrics
         </button>
         <button
           type="button"
           onClick={() => setTab('ASSURANCES')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'ASSURANCES' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'ASSURANCES' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="w-4 h-4 text-amber-400" />
           Assurances (4 Value Props)
         </button>
         <button
           type="button"
           onClick={() => setTab('ABOUT_BAND')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'ABOUT_BAND' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'ABOUT_BAND' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="w-4 h-4 text-amber-400" />
           About HAB Story Band
         </button>
         <button
           type="button"
           onClick={() => setTab('MEMBERSHIP')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'MEMBERSHIP' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'MEMBERSHIP' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-4 h-4 text-amber-400" />
           Membership Callouts
         </button>
         <button
           type="button"
           onClick={() => setTab('ANNOUNCEMENT')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'ANNOUNCEMENT' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'ANNOUNCEMENT' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <Megaphone className="w-4 h-4" />
+          <Megaphone className="w-4 h-4 text-amber-400" />
           Header Notice Strip
         </button>
         <button
           type="button"
           onClick={() => setTab('CONTACT')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'CONTACT' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'CONTACT' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <Phone className="w-4 h-4" />
+          <Phone className="w-4 h-4 text-amber-400" />
           Secretariat Directory
         </button>
         <button
           type="button"
           onClick={() => setTab('FOOTER')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'FOOTER' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'FOOTER' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <ShieldCheck className="w-4 h-4" />
+          <ShieldCheck className="w-4 h-4 text-amber-400" />
           Footer &amp; Legal
         </button>
         <button
           type="button"
           onClick={() => setTab('PARTNERS')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'PARTNERS' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'PARTNERS' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
           }`}
         >
-          <HeartHandshake className="w-4 h-4" />
+          <HeartHandshake className="w-4 h-4 text-amber-400" />
           Partners &amp; Donors
         </button>
         <button
