@@ -6,7 +6,8 @@ import { useParams } from 'next/navigation';
 import { 
   CLIENT_DATA, 
   getCraftByKey, 
-  getProductsForCraft 
+  getProductsForCraft,
+  CraftData
 } from '@/lib/client-data';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -15,7 +16,17 @@ export default function CraftProfilePage() {
   const params = useParams();
   const craftKey = (params.craft as string) || 'thagzo';
 
-  const craft = getCraftByKey(craftKey) || CLIENT_DATA.crafts[0];
+  const [craft, setCraft] = useState<CraftData>(() => getCraftByKey(craftKey) || CLIENT_DATA.crafts[0]);
+
+  useEffect(() => {
+    fetch(`/api/crafts?key=${encodeURIComponent(craftKey)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.craft) setCraft(d.craft);
+      })
+      .catch(() => {});
+  }, [craftKey]);
+
   const craftIndex = CLIENT_DATA.crafts.findIndex((c) => c.key === craft.key);
   const totalCrafts = CLIENT_DATA.crafts.length;
 
@@ -155,7 +166,7 @@ export default function CraftProfilePage() {
             <h2 className="display display--sub">How it is made</h2>
           </div>
           <div>
-            {longDescParas.map((para, i) => (
+            {longDescParas.map((para: string, i: number) => (
               <p key={i} className="longread__body">{para}</p>
             ))}
           </div>
@@ -174,7 +185,7 @@ export default function CraftProfilePage() {
               </p>
             </div>
             <div>
-              {historyParas.map((para, i) => (
+              {historyParas.map((para: string, i: number) => (
                 <p key={i} className="longread__body">{para}</p>
               ))}
             </div>

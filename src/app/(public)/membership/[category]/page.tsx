@@ -3,35 +3,54 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getMembershipCategoryByKey } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.membershipCategories.map((c) => ({
-    category: c.key,
-  }));
-}
-
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
-  const cat = getMembershipCategoryByKey(category);
+  let dbCat: any = null;
+  try {
+    dbCat = await prisma.membershipCategory.findUnique({ where: { key: category } });
+  } catch {}
+  const cat = dbCat || getMembershipCategoryByKey(category);
   if (!cat) return { title: 'Category Not Found' };
 
   return {
     title: `${cat.name} · Membership Category · HAB`,
-    description: cat.tagline,
+    description: cat.description || cat.tagline,
   };
 }
 
 export default async function MembershipCategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
-  const cat = getMembershipCategoryByKey(category);
+  let dbCat: any = null;
+  try {
+    dbCat = await prisma.membershipCategory.findUnique({ where: { key: category } });
+  } catch {}
 
-  if (!cat) {
+  const fallback = getMembershipCategoryByKey(category);
+  const rawCat = dbCat || fallback;
+
+  if (!rawCat) {
     notFound();
   }
+
+  const cat = {
+    ...rawCat,
+    status: rawCat.shortName || rawCat.status || 'Active Sector Member',
+    tagline: rawCat.tagline || rawCat.description?.slice(0, 100) || '',
+    meaning: rawCat.meaning || rawCat.description || '',
+    fee: rawCat.fee || `Nu. ${rawCat.duesBTN?.toLocaleString()}`,
+    fee_note: rawCat.fee_note || 'per year, renewable each July',
+    criteria: Array.isArray(rawCat.criteria) ? rawCat.criteria : (rawCat.eligibility || []),
+    how: Array.isArray(rawCat.how) ? rawCat.how : (rawCat.documents || ['Complete the online application.', 'Submit verification documents.', 'Pay annual dues.']),
+    benefits: Array.isArray(rawCat.benefits) ? rawCat.benefits : (rawCat.benefits || []),
+  };
 
   const otherCategories = CLIENT_DATA.membershipCategories.filter((c) => c.key !== cat.key);
 
@@ -126,7 +145,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             <p className="eyebrow eyebrow--accent">Eligibility</p>
             <h2 className="catblock__title">Criteria</h2>
             <ul className="bullets">
-              {cat.criteria.map((cr, idx) => (
+              {cat.criteria.map((cr: string, idx: number) => (
                 <li key={idx}>{cr}</li>
               ))}
             </ul>
@@ -137,7 +156,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             <p className="eyebrow eyebrow--accent">Process</p>
             <h2 className="catblock__title">How to register</h2>
             <ol className="numlist numlist--tight">
-              {cat.how.map((step, idx) => (
+              {cat.how.map((step: string, idx: number) => (
                 <li key={idx} className="numlist__item">
                   <span className="numlist__n">{String(idx + 1).padStart(2, '0')}</span>
                   <span className="numlist__t">{step}</span>
@@ -151,7 +170,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             <p className="eyebrow eyebrow--onaccent">What you get</p>
             <h2 className="catblock__title catblock__title--light">Benefits</h2>
             <ul className="bullets bullets--light">
-              {cat.benefits.map((ben, idx) => (
+              {cat.benefits.map((ben: string, idx: number) => (
                 <li key={idx}>{ben}</li>
               ))}
             </ul>

@@ -56,6 +56,7 @@ export default function HomePage() {
     membershipRightText: "Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.",
     membershipRightCtaText: "Apply for membership",
     membershipRightCtaLink: "/membership/apply",
+    homeCraftIntro: '',
   });
 
   const [programs, setPrograms] = useState([
@@ -159,6 +160,7 @@ export default function HomePage() {
             membershipRightText: d.setting.membershipRightText || "Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.",
             membershipRightCtaText: d.setting.membershipRightCtaText || "Apply for membership",
             membershipRightCtaLink: d.setting.membershipRightCtaLink || "/membership/apply",
+            homeCraftIntro: d.setting.homeCraftIntro || '',
           });
         }
       })
@@ -368,7 +370,8 @@ export default function HomePage() {
               The 13 arts &amp; crafts of Bhutan
             </h2>
             <p className="font-lora text-[15px] sm:text-[17px] text-[#6B5A4C] max-w-[65ch]">
-              Living traditions codified in the seventeenth century, each craft holds a specific place in Bhutanese material and religious culture.
+              {siteSettings.homeCraftIntro ||
+                'Living traditions codified in the seventeenth century, each craft holds a specific place in Bhutanese material and religious culture.'}
             </p>
           </div>
           <Link

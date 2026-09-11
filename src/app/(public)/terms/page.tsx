@@ -1,22 +1,42 @@
 import React from 'react';
 import Link from 'next/link';
+import prisma from '@/lib/prisma';
+import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Terms of service · Handicrafts Association of Bhutan',
   description: 'The terms on which HAB provides this website, sells through it, and admits members.',
 };
 
-export default function TermsOfServicePage() {
+async function getTermsPolicy() {
+  try {
+    return await prisma.policyPage.findUnique({
+      where: { slug: 'terms' },
+    });
+  } catch {
+    return null;
+  }
+}
+
+export default async function TermsOfServicePage() {
+  const policy = await getTermsPolicy();
+  const pageTitle = policy?.title || 'Terms of service';
+  const lastReviewed = policy?.updatedAt
+    ? new Date(policy.updatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'September 2026';
+
   return (
     <main id="main">
       <section className="section">
         <p className="crumbs">
-          <Link href="/">Home</Link> / Terms of service
+          <Link href="/">Home</Link> / {pageTitle}
         </p>
-        <h1 className="display display--page">Terms of service</h1>
+        <h1 className="display display--page">{pageTitle}</h1>
         <p className="lede">
           The terms on which the Handicrafts Association of Bhutan provides this website, sells
-          through it, and admits members. Last reviewed September 2026.
+          through it, and admits members. Last reviewed {lastReviewed}.
         </p>
       </section>
 
@@ -38,14 +58,18 @@ export default function TermsOfServicePage() {
 
           {/* Policy Body */}
           <div className="policy__body">
-            <h2 id="who">Who we are</h2>
-            <p>
-              The Handicrafts Association of Bhutan (HAB) is a registered Civil Society Organization
-              and Public Benefit Organisation under the Civil Society Organizations Act of Bhutan
-              2007, as amended in 2022, registration CSO/2011/043, with its office at Metog Lam,
-              Thimphu. In these terms &ldquo;we&rdquo; and &ldquo;HAB&rdquo; mean the association;
-              &ldquo;you&rdquo; means a visitor, buyer, member or trade buyer.
-            </p>
+            {policy?.content ? (
+              <PolicyContentRenderer content={policy.content} />
+            ) : (
+              <>
+                <h2 id="who">Who we are</h2>
+                <p>
+                  The Handicrafts Association of Bhutan (HAB) is a registered Civil Society Organization
+                  and Public Benefit Organisation under the Civil Society Organizations Act of Bhutan
+                  2007, as amended in 2022, registration CSO/2011/043, with its office at Metog Lam,
+                  Thimphu. In these terms &ldquo;we&rdquo; and &ldquo;HAB&rdquo; mean the association;
+                  &ldquo;you&rdquo; means a visitor, buyer, member or trade buyer.
+                </p>
 
             <h2 id="use">Using this site</h2>
             <p>
@@ -162,6 +186,8 @@ export default function TermsOfServicePage() {
               </Link>{' '}
               or to officehab@gmail.com.
             </p>
+              </>
+            )}
           </div>
         </div>
       </section>

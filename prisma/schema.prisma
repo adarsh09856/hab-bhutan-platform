@@ -90,6 +90,11 @@ model Craft {
   dzongkha    String?
   description String    @db.Text
   bannerUrl   String?
+  technique   String?   @db.Text
+  materials   String?   @db.Text
+  practisedIn String?   @db.Text
+  history     String?   @db.Text
+  shopNote    String?   @db.Text
   sortOrder   Int       @default(0)
   isActive    Boolean   @default(true)
   products    Product[]
@@ -269,6 +274,7 @@ model ProjectRecord {
 // Newsroom articles
 model NewsArticle {
   id          String   @id @default(uuid())
+  slug        String?  @unique
   kind        String   // Programs, Artisan support, Events, Publications, Projects
   title       String
   dateString  String   // e.g. "28 Aug 2026"
@@ -483,6 +489,61 @@ model SiteSetting {
   emailTemplates          Json?
   paymentGateways         Json?
 
+  // Wholesale & B2B Trade CMS
+  wholesaleMoq            Int      @default(10)
+  wholesaleLeadTime       String   @default("2 to 4 weeks depending on batch size")
+  wholesaleAssurances     Json?
+  wholesaleBuyerTypes     Json?
+  wholesaleTerms          Json?
+
+  // Extended About Page CMS
+  aboutMandateText        String?  @db.Text
+  aboutMandatePara2       String?  @db.Text
+  aboutHistoryText        String?  @db.Text
+  aboutObjectives         Json?
+  aboutValues             Json?
+  aboutStats              Json?
+
+  // Extended Contact Page CMS
+  contactLede             String?  @db.Text
+  contactDirections       String?  @db.Text
+  contactDepartments      Json?
+  contactPoBox            String?  @default("PO Box 1129, Thimphu")
+  contactHours            String?  @default("Monday – Friday: 9:00 AM – 5:00 PM BST (UTC+6)")
+
+  // Extended Homepage Sections CMS
+  homeCraftIntro          String?  @db.Text
+  homeClusterPromo        Json?
+  homeWholesalePromo      Json?
+  homeCsoText             String?  @db.Text
+
+  // Donate Page CMS
+  donateHeroTitle         String?  @default("Direct Support for Bhutanese Artisans")
+  donateHeroLede          String?  @db.Text
+  donateTaxNotice         String?  @db.Text
+
+  // Checkout & Bank Wire CMS
+  checkoutBankName        String?  @default("Bank of Bhutan Ltd")
+  checkoutAccountNumber   String?  @default("1009234810293")
+  checkoutAccountTitle    String?  @default("Handicrafts Association of Bhutan")
+  checkoutSwiftCode       String?  @default("BOBBBT22")
+  checkoutBankAddress     String?  @default("Corporate Branch, Norzin Lam, Thimphu, Bhutan")
+
+  // Shipping & Logistics Display CMS
+  shippingOriginText      String?  @default("Metog Lam, Kawajangsa, Thimphu, Kingdom of Bhutan")
+  shippingCarrierName     String?  @default("Bhutan Post International Express (EMS) / DHL")
+  shippingTransitDays     String?  @default("7-14 business days")
+  shippingInsuranceNote   String?  @db.Text
+
+  // Order Confirmation & Post-Purchase CMS
+  orderConfirmationTitle  String?  @default("Order Confirmed!")
+  orderConfirmationLede   String?  @db.Text
+  orderSupportEmail       String?  @default("officehab@gmail.com")
+  orderSupportPhone       String?  @default("+975-2-338089")
+
+  // Global Trust & Authenticity Badges
+  trustBadges             Json?
+
   updatedAt            DateTime @updatedAt
 }
 
@@ -561,4 +622,152 @@ model PolicyPage {
 
   @@index([slug])
 }
+
+// Registered artisan clusters across Bhutan
+model ClusterRecord {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  craftKey    String
+  dzongkhag   String
+  members     Int      @default(0)
+  established Int      @default(2026)
+  isFeatured  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  summary     String   @db.Text
+  story       String   @db.Text
+  visitorNote String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([craftKey])
+  @@index([dzongkhag])
+}
+
+// Physical outlets and craft markets (e.g. Punakha Crafts Market)
+model OutletRecord {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  type            String   @default("OUTLET") // MARKET | OUTLET | COUNTER
+  name            String
+  sortOrder       Int      @default(0)
+  isFeatured      Boolean  @default(false)
+  place           String
+  note            String?
+  description     String   @db.Text
+  longDescription String   @db.Text
+  hours           String   @default("09:00 - 18:00 daily")
+  stalls          String?
+  craftsOnSite    String?
+  payment         String?
+  gettingThere    String?  @db.Text
+  facilities      String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([type])
+}
+
+// Events, exhibitions, expos, and workshops
+model EventRecord {
+  id           String    @id @default(uuid())
+  key          String    @unique
+  title        String
+  category     String    @default("Exhibition") // Exhibition | Masterclass | Trade Expo | National Festival
+  dateDisplay  String
+  startDate    DateTime?
+  endDate      DateTime?
+  location     String
+  venue        String?
+  craft        String?
+  organiser    String?
+  description  String    @db.Text
+  schedule     Json?
+  speakers     Json?
+  registration String?   @db.Text
+  isActive     Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// Donation & Support Pillars for public donations
+model SupportPillar {
+  id              String           @id @default(uuid())
+  key             String           @unique
+  title           String
+  description     String           @db.Text
+  targetAmountUSD Float            @default(0)
+  raisedAmountUSD Float            @default(0)
+  iconEmoji       String?
+  isActive        Boolean          @default(true)
+  sortOrder       Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  donations       DonationRecord[]
+
+  @@index([isActive])
+}
+
+// Master Artisan Recognitions and Honours
+model HonourRecord {
+  id          String   @id @default(uuid())
+  name        String
+  craft       String
+  dzongkhag   String
+  awardType   String   // RoyalSeal | Authenticity | NationalMaster
+  yearAwarded Int      @default(2026)
+  citation    String   @db.Text
+  portraitUrl String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([awardType])
+  @@index([craft])
+}
+
+// Dynamic membership tiers & categories
+model MembershipCategory {
+  id          String   @id @default(uuid())
+  key         String   @unique // individual | enterprise | group | supporter
+  name        String
+  shortName   String?
+  duesBTN     Int      @default(1200)
+  duesUSD     Int      @default(15)
+  description String   @db.Text
+  eligibility Json?
+  benefits    Json?
+  documents   Json?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+// Public donation contributions
+model DonationRecord {
+  id            String         @id @default(uuid())
+  pillarKey     String
+  pillar        SupportPillar? @relation(fields: [pillarKey], references: [key], onDelete: Cascade)
+  donorName     String
+  donorEmail    String
+  amountUSD     Float
+  frequency     String         @default("ONE_TIME") // ONE_TIME | MONTHLY
+  status        String         @default("COMPLETED") // PENDING | COMPLETED | FAILED
+  receiptNumber String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([pillarKey])
+  @@index([donorEmail])
+}
+
 

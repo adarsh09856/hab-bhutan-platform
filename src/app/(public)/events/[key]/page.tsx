@@ -3,35 +3,56 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getEventByKey } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 interface EventPageProps {
   params: Promise<{ key: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.events.map((e) => ({
-    key: e.key,
-  }));
-}
-
 export async function generateMetadata({ params }: EventPageProps): Promise<Metadata> {
   const { key } = await params;
-  const event = getEventByKey(key);
+  let event: any = null;
+  try {
+    event = await prisma.eventRecord.findUnique({ where: { key } });
+  } catch {}
+  if (!event) event = getEventByKey(key);
   if (!event) return { title: 'Event Not Found' };
 
   return {
     title: `${event.title} · Events · HAB`,
-    description: event.summary,
+    description: event.description || event.summary,
   };
 }
 
 export default async function EventDetailPage({ params }: EventPageProps) {
   const { key } = await params;
-  const event = getEventByKey(key);
+  let dbEvent: any = null;
+  try {
+    dbEvent = await prisma.eventRecord.findUnique({ where: { key } });
+  } catch {}
 
-  if (!event) {
+  const fallback = getEventByKey(key);
+  const rawEvent = dbEvent || fallback;
+
+  if (!rawEvent) {
     notFound();
   }
+
+  const event = {
+    ...rawEvent,
+    day: rawEvent.day || (rawEvent.dateDisplay ? rawEvent.dateDisplay.split(' ')[0] : '12'),
+    mon: rawEvent.mon || (rawEvent.dateDisplay ? rawEvent.dateDisplay.split(' ')[1] : 'SEP'),
+    year: rawEvent.year || '2026',
+    kind: rawEvent.kind || rawEvent.category || 'Exhibition',
+    place: rawEvent.place || rawEvent.location || 'Thimphu',
+    time: rawEvent.time || rawEvent.schedule?.time || rawEvent.dateDisplay || '',
+    summary: rawEvent.summary || rawEvent.description?.slice(0, 160) + '...',
+    detail: rawEvent.detail || rawEvent.description || '',
+    who: rawEvent.who || rawEvent.registration || 'Open to all',
+    contact: rawEvent.contact || 'officehab@gmail.com',
+  };
 
   const otherEvents = CLIENT_DATA.events.filter((e) => e.key !== event.key).slice(0, 3);
 
@@ -95,7 +116,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <p className="eyebrow eyebrow--accent">About this event</p>
           </div>
           <div>
-            {(event.detail || event.summary || '').split('\n\n').map((para, i) => (
+            {(event.detail || event.summary || '').split('\n\n').map((para: string, i: number) => (
               <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
                 {para.trim()}
               </p>

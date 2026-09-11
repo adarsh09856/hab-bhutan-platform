@@ -12,6 +12,11 @@ interface Craft {
   english: string;
   dzongkha?: string | null;
   description: string;
+  technique?: string | null;
+  materials?: string | null;
+  practisedIn?: string | null;
+  history?: string | null;
+  shopNote?: string | null;
   bannerUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -154,11 +159,66 @@ export default function AdminCraftsPage() {
               <div>
                 <label className="block text-xs font-semibold admin-text mb-1">Cultural Description &amp; Scope</label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={editing.description}
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                   className="w-full px-3 py-2 admin-input border rounded-lg"
                   required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold admin-text mb-1">Traditional Technique</label>
+                  <input
+                    type="text"
+                    value={editing.technique || ''}
+                    onChange={(e) => setEditing({ ...editing, technique: e.target.value })}
+                    placeholder="e.g. Backstrap and pedal looms"
+                    className="w-full px-3 py-2 admin-input border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold admin-text mb-1">Primary Materials</label>
+                  <input
+                    type="text"
+                    value={editing.materials || ''}
+                    onChange={(e) => setEditing({ ...editing, materials: e.target.value })}
+                    placeholder="e.g. Silk, wool, cotton, nettle"
+                    className="w-full px-3 py-2 admin-input border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold admin-text mb-1">Practised In</label>
+                  <input
+                    type="text"
+                    value={editing.practisedIn || ''}
+                    onChange={(e) => setEditing({ ...editing, practisedIn: e.target.value })}
+                    placeholder="e.g. Lhuentse, Trashigang"
+                    className="w-full px-3 py-2 admin-input border rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-text mb-1">Historical Origins &amp; Heritage Narrative</label>
+                <textarea
+                  rows={4}
+                  value={editing.history || ''}
+                  onChange={(e) => setEditing({ ...editing, history: e.target.value })}
+                  placeholder="Historical background of this craft in Bhutan..."
+                  className="w-full px-3 py-2 admin-input border rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-text mb-1">Commission / Shop Note</label>
+                <input
+                  type="text"
+                  value={editing.shopNote || ''}
+                  onChange={(e) => setEditing({ ...editing, shopNote: e.target.value })}
+                  placeholder="Custom note shown if not sold online directly"
+                  className="w-full px-3 py-2 admin-input border rounded-lg"
                 />
               </div>
 

@@ -3,15 +3,68 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Outlets, Markets & Clusters · Handicrafts Association of Bhutan',
   description: 'Physical outlets, verified markets and artisan clusters across Bhutan validated by HAB.',
 };
 
-export default function OutletsPage() {
-  const featured = CLIENT_DATA.outlets.find((o) => o.is_featured) || CLIENT_DATA.outlets[0];
-  const otherOutlets = CLIENT_DATA.outlets.filter((o) => o.key !== featured?.key);
-  const clusters = CLIENT_DATA.clusters;
+async function getOutletsData() {
+  try {
+    const dbOutlets = await prisma.outletRecord.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    const dbClusters = await prisma.clusterRecord.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    const outlets = dbOutlets.length > 0
+      ? dbOutlets.map(o => ({
+          key: o.key,
+          type: o.type,
+          name: o.name,
+          sort_order: o.sortOrder,
+          is_featured: o.isFeatured,
+          place: o.place,
+          note: o.note || '',
+          description: o.description,
+          long_description: o.longDescription,
+          hours: o.hours,
+          stalls: o.stalls || '',
+          crafts_on_site: o.craftsOnSite || '',
+          payment: o.payment || '',
+          getting_there: o.gettingThere || '',
+          facilities: o.facilities || '',
+        }))
+      : CLIENT_DATA.outlets;
+
+    const clusters = dbClusters.length > 0
+      ? dbClusters.map(c => ({
+          key: c.key,
+          name: c.name,
+          craft_key: c.craftKey,
+          dzongkhag: c.dzongkhag,
+          members: c.members,
+          established: c.established,
+          is_featured: c.isFeatured,
+          sort_order: c.sortOrder,
+          summary: c.summary,
+          story: c.story,
+          visitor_note: c.visitorNote || undefined,
+        }))
+      : CLIENT_DATA.clusters;
+
+    return { outlets, clusters };
+  } catch {}
+  return { outlets: CLIENT_DATA.outlets, clusters: CLIENT_DATA.clusters };
+}
+
+export default async function OutletsPage() {
+  const { outlets, clusters } = await getOutletsData();
+  const featured = outlets.find((o) => o.is_featured) || outlets[0];
+  const otherOutlets = outlets.filter((o) => o.key !== featured?.key);
 
   return (
     <main id="main">

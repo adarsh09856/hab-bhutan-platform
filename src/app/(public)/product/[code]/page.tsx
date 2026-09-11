@@ -20,7 +20,19 @@ export default function ProductDetailPage() {
   const [craft, setCraft] = React.useState<any | null>(null);
   const [makerMember, setMakerMember] = React.useState<any | null>(null);
   const [relatedProducts, setRelatedProducts] = React.useState<any[]>([]);
+  const [siteSettings, setSiteSettings] = React.useState<any | null>(null);
   const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.setting || d?.settings) {
+          setSiteSettings(d.setting || d.settings);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     if (!code) return;
@@ -213,8 +225,10 @@ export default function ProductDetailPage() {
               <span className="font-figtree text-[#33261F]">{product.maker}</span>
             </div>
             <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
-              <span className="text-[#6B5A4C] font-lora">Lead time</span>
-              <span className="font-figtree text-[#33261F]">Ships in 2 working days</span>
+              <span className="text-[#6B5A4C] font-lora">Dispatch &amp; Delivery</span>
+              <span className="font-figtree text-[#33261F] text-right">
+                {siteSettings?.shippingTransitDays || 'Ships in 2 working days'}
+              </span>
             </div>
           </div>
 

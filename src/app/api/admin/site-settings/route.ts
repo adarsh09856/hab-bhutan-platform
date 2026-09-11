@@ -98,6 +98,52 @@ export async function PUT(req: NextRequest) {
         // Gateways & Email Templates CMS
         ...(body.emailTemplates !== undefined && { emailTemplates: body.emailTemplates }),
         ...(body.paymentGateways !== undefined && { paymentGateways: body.paymentGateways }),
+        // Wholesale & Bulk Orders CMS
+        ...(body.wholesaleMoq !== undefined && { wholesaleMoq: Number(body.wholesaleMoq) || 5 }),
+        ...(body.wholesaleLeadTime !== undefined && { wholesaleLeadTime: body.wholesaleLeadTime }),
+        ...(body.wholesaleAssurances !== undefined && { wholesaleAssurances: body.wholesaleAssurances }),
+        ...(body.wholesaleBuyerTypes !== undefined && { wholesaleBuyerTypes: body.wholesaleBuyerTypes }),
+        ...(body.wholesaleTerms !== undefined && { wholesaleTerms: body.wholesaleTerms }),
+        // Extended About Page CMS
+        ...(body.aboutMandateText !== undefined && { aboutMandateText: body.aboutMandateText }),
+        ...(body.aboutMandatePara2 !== undefined && { aboutMandatePara2: body.aboutMandatePara2 }),
+        ...(body.aboutHistoryText !== undefined && { aboutHistoryText: body.aboutHistoryText }),
+        ...(body.aboutObjectives !== undefined && { aboutObjectives: body.aboutObjectives }),
+        ...(body.aboutValues !== undefined && { aboutValues: body.aboutValues }),
+        ...(body.aboutStats !== undefined && { aboutStats: body.aboutStats }),
+        // Extended Contact Page CMS
+        ...(body.contactLede !== undefined && { contactLede: body.contactLede }),
+        ...(body.contactDirections !== undefined && { contactDirections: body.contactDirections }),
+        ...(body.contactDepartments !== undefined && { contactDepartments: body.contactDepartments }),
+        ...(body.contactPoBox !== undefined && { contactPoBox: body.contactPoBox }),
+        ...(body.contactHours !== undefined && { contactHours: body.contactHours }),
+        // Extended Homepage Sections CMS
+        ...(body.homeCraftIntro !== undefined && { homeCraftIntro: body.homeCraftIntro }),
+        ...(body.homeClusterPromo !== undefined && { homeClusterPromo: body.homeClusterPromo }),
+        ...(body.homeWholesalePromo !== undefined && { homeWholesalePromo: body.homeWholesalePromo }),
+        ...(body.homeCsoText !== undefined && { homeCsoText: body.homeCsoText }),
+        // Donate Page CMS
+        ...(body.donateHeroTitle !== undefined && { donateHeroTitle: body.donateHeroTitle }),
+        ...(body.donateHeroLede !== undefined && { donateHeroLede: body.donateHeroLede }),
+        ...(body.donateTaxNotice !== undefined && { donateTaxNotice: body.donateTaxNotice }),
+        // Checkout & Bank Wire CMS
+        ...(body.checkoutBankName !== undefined && { checkoutBankName: body.checkoutBankName }),
+        ...(body.checkoutAccountNumber !== undefined && { checkoutAccountNumber: body.checkoutAccountNumber }),
+        ...(body.checkoutAccountTitle !== undefined && { checkoutAccountTitle: body.checkoutAccountTitle }),
+        ...(body.checkoutSwiftCode !== undefined && { checkoutSwiftCode: body.checkoutSwiftCode }),
+        ...(body.checkoutBankAddress !== undefined && { checkoutBankAddress: body.checkoutBankAddress }),
+        // Shipping & Logistics Display CMS
+        ...(body.shippingOriginText !== undefined && { shippingOriginText: body.shippingOriginText }),
+        ...(body.shippingCarrierName !== undefined && { shippingCarrierName: body.shippingCarrierName }),
+        ...(body.shippingTransitDays !== undefined && { shippingTransitDays: body.shippingTransitDays }),
+        ...(body.shippingInsuranceNote !== undefined && { shippingInsuranceNote: body.shippingInsuranceNote }),
+        // Order Confirmation & Post-Purchase CMS
+        ...(body.orderConfirmationTitle !== undefined && { orderConfirmationTitle: body.orderConfirmationTitle }),
+        ...(body.orderConfirmationLede !== undefined && { orderConfirmationLede: body.orderConfirmationLede }),
+        ...(body.orderSupportEmail !== undefined && { orderSupportEmail: body.orderSupportEmail }),
+        ...(body.orderSupportPhone !== undefined && { orderSupportPhone: body.orderSupportPhone }),
+        // Global Trust & Authenticity Badges
+        ...(body.trustBadges !== undefined && { trustBadges: body.trustBadges }),
       },
       create: {
         id: 'default',
@@ -151,6 +197,8 @@ export async function PUT(req: NextRequest) {
         membershipRightText: body.membershipRightText || 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.',
         membershipRightCtaText: body.membershipRightCtaText || 'Apply for membership',
         membershipRightCtaLink: body.membershipRightCtaLink || '/membership/apply',
+        wholesaleMoq: Number(body.wholesaleMoq) || 5,
+        wholesaleLeadTime: body.wholesaleLeadTime || '2-4 weeks',
       },
     });
 

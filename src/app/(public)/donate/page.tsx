@@ -9,10 +9,18 @@ function DonateContent() {
   const searchParams = useSearchParams();
   const presetPillar = searchParams.get('pillar');
 
-  const pillars = CLIENT_DATA.supportPillars || [];
+  const [pillars, setPillars] = useState<any[]>(() => CLIENT_DATA.supportPillars || []);
   const [selectedPillar, setSelectedPillar] = useState<string>(
-    presetPillar || (pillars[0]?.key || '')
+    presetPillar || (CLIENT_DATA.supportPillars?.[0]?.key || '')
   );
+  const [heroTitle, setHeroTitle] = useState('Support Bhutanese craft');
+  const [heroLede, setHeroLede] = useState(
+    'Choose where your gift goes. HAB is a registered Public Benefit Organisation, so nothing given here leaves the handicrafts sector, and the audited accounts published each year say exactly where it went.'
+  );
+  const [taxNotice, setTaxNotice] = useState(
+    'Donations qualify under the Civil Society Organizations Act of Bhutan as contributions to a registered Public Benefit Organisation (CSO/2011/043). Receipts are issued for tax deduction under Department of Revenue and Customs rules.'
+  );
+
   const [amount, setAmount] = useState<number>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isMonthly, setIsMonthly] = useState<boolean>(false);
@@ -24,6 +32,38 @@ function DonateContent() {
   const [payMethod, setPayMethod] = useState<string>('card');
   const [refNumber, setRefNumber] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Load dynamic pillars
+    fetch('/api/support-pillars')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.pillars && Array.isArray(d.pillars) && d.pillars.length > 0) {
+          const mapped = d.pillars.map((p: any) => ({
+            ...p,
+            letter: p.iconEmoji || p.title?.[0] || '🌱',
+            line: p.description?.slice(0, 70) || '',
+            body: p.description || '',
+          }));
+          setPillars(mapped);
+          if (!presetPillar) setSelectedPillar(mapped[0].key);
+        }
+      })
+      .catch(() => {});
+
+    // Load site settings for hero and tax notice
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.setting) {
+          if (d.setting.donateHeroTitle) setHeroTitle(d.setting.donateHeroTitle);
+          if (d.setting.donateHeroLede) setHeroLede(d.setting.donateHeroLede);
+          if (d.setting.donateTaxNotice) setTaxNotice(d.setting.donateTaxNotice);
+        }
+      })
+      .catch(() => {});
+  }, [presetPillar]);
 
   useEffect(() => {
     if (presetPillar) {
@@ -49,16 +89,44 @@ function DonateContent() {
     }
   };
 
-  const handleGive = (e: React.FormEvent) => {
+  const handleGive = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!donorName.trim() || !donorEmail.trim()) {
       setErrorMsg('Please give your name and email so we can send a receipt.');
       return;
     }
     setErrorMsg(null);
-    const generatedRef = `HAB-D-${Math.floor(10000 + Math.random() * 90000)}`;
-    setRefNumber(generatedRef);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setSubmitting(true);
+
+    try {
+      // Calculate USD equivalent approx (84 BTN = 1 USD)
+      const amountUSD = Math.round((amount / 84) * 100) / 100;
+      const res = await fetch('/api/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pillarKey: selectedPillar,
+          donorName: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
+          donorEmail: donorEmail.trim(),
+          amountUSD,
+          frequency: isMonthly ? 'MONTHLY' : 'ONE_TIME',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRefNumber(data.donation.receiptNumber);
+      } else {
+        const generatedRef = `HAB-D-${Math.floor(10000 + Math.random() * 90000)}`;
+        setRefNumber(generatedRef);
+      }
+    } catch {
+      const generatedRef = `HAB-D-${Math.floor(10000 + Math.random() * 90000)}`;
+      setRefNumber(generatedRef);
+    } finally {
+      setSubmitting(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -67,9 +135,9 @@ function DonateContent() {
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#support">Support us</Link> / Donate
         </p>
-        <h1 className="display display--page">Support Bhutanese craft</h1>
+        <h1 className="display display--page">{heroTitle}</h1>
         <p className="lede">
-          Choose where your gift goes. HAB is a registered Public Benefit Organisation, so nothing given here leaves the handicrafts sector, and the audited accounts published each year say exactly where it went.
+          {heroLede}
         </p>
 
         {refNumber ? (
@@ -294,7 +362,7 @@ function DonateContent() {
                   Give securely
                 </button>
                 <p className="summary__fine">
-                  A receipt is issued by email. Bhutanese taxpayers can claim relief on gifts to a registered CSO.
+                  {taxNotice}
                 </p>
               </div>
             </form>

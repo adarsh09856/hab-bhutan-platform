@@ -4,19 +4,39 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getClusterByKey, getCraftByKey, getProductsForCraft } from '@/lib/client-data';
 
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+
 interface ClusterPageProps {
   params: Promise<{ key: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.clusters.map((c) => ({
-    key: c.key,
-  }));
+async function resolveCluster(key: string) {
+  try {
+    const c = await prisma.clusterRecord.findUnique({ where: { key } });
+    if (c) {
+      return {
+        key: c.key,
+        name: c.name,
+        craft_key: c.craftKey,
+        dzongkhag: c.dzongkhag,
+        members: c.members,
+        established: c.established,
+        is_featured: c.isFeatured,
+        sort_order: c.sortOrder,
+        summary: c.summary,
+        story: c.story,
+        visitor_note: c.visitorNote || undefined,
+      };
+    }
+  } catch {}
+  return getClusterByKey(key);
 }
 
 export async function generateMetadata({ params }: ClusterPageProps): Promise<Metadata> {
   const { key } = await params;
-  const cluster = getClusterByKey(key);
+  const cluster = await resolveCluster(key);
   if (!cluster) return { title: 'Cluster Not Found' };
 
   return {
@@ -27,7 +47,7 @@ export async function generateMetadata({ params }: ClusterPageProps): Promise<Me
 
 export default async function ClusterDetailPage({ params }: ClusterPageProps) {
   const { key } = await params;
-  const cluster = getClusterByKey(key);
+  const cluster = await resolveCluster(key);
 
   if (!cluster) {
     notFound();
@@ -37,7 +57,15 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
   const products = getProductsForCraft(cluster.craft_key).slice(0, 4);
 
   // Compute prev/next cluster
-  const allClusters = CLIENT_DATA.clusters;
+  let allClusters: any[] = [];
+  try {
+    const dbC = await prisma.clusterRecord.findMany({ orderBy: { sortOrder: 'asc' } });
+    if (dbC.length > 0) {
+      allClusters = dbC.map(c => ({ key: c.key, name: c.name, craft_key: c.craftKey }));
+    }
+  } catch {}
+  if (!allClusters.length) allClusters = CLIENT_DATA.clusters;
+
   const currentIndex = allClusters.findIndex((c) => c.key === cluster.key);
   const prevCluster = allClusters[(currentIndex - 1 + allClusters.length) % allClusters.length];
   const nextCluster = allClusters[(currentIndex + 1) % allClusters.length];

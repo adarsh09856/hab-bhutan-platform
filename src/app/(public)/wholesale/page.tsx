@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA, getCountsByCraft } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Wholesale & Bulk Orders · Handicrafts Association of Bhutan',
@@ -17,9 +20,35 @@ const FLOW_STEPS = [
   { title: 'Order & tracking', desc: 'Production, quality control in Thimphu, then shipment with tracking.' },
 ];
 
-export default function WholesalePage() {
+export default async function WholesalePage() {
+  let siteSettings: any = null;
+  let dbProducts: any[] = [];
+  try {
+    siteSettings = await prisma.siteSetting.findFirst();
+    dbProducts = await prisma.product.findMany({
+      where: { status: 'PUBLISHED' },
+      take: 8,
+      orderBy: { createdAt: 'desc' },
+      include: { craft: true },
+    });
+  } catch {}
+
   const craftCounts = getCountsByCraft();
-  const previewProducts = CLIENT_DATA.products.slice(0, 8);
+  const previewProducts = dbProducts.length > 0
+    ? dbProducts.map((p) => ({
+        code: p.code,
+        name: p.name,
+        craft_key: p.craft?.slug || p.category?.toLowerCase() || 'thangka',
+        craft_name: p.craft?.nameEnglish || p.craft?.nameBhutanese || 'Zorig Chusum',
+        maker: p.artisan || p.originDzongkhag || 'Master Artisan',
+        region: p.originDzongkhag || 'Bhutan',
+        image_path: p.images?.[0] || '/assets/photos/product-sad03.jpg',
+      }))
+    : CLIENT_DATA.products.slice(0, 8);
+
+  const assurances = (siteSettings?.wholesaleAssurances && Array.isArray(siteSettings.wholesaleAssurances) && siteSettings.wholesaleAssurances.length > 0)
+    ? siteSettings.wholesaleAssurances
+    : CLIENT_DATA.wholesaleAssurance;
 
   return (
     <main id="main">
@@ -39,7 +68,7 @@ export default function WholesalePage() {
               You contract with the association; we manage the makers, the quality control and the shipping.
             </p>
             <p className="section__lede">
-              Trade prices, minimum order quantities and lead times are shown to verified buyers only. Registration takes a few minutes and is reviewed by the secretariat.
+              Trade prices, minimum order quantities (typical MOQ {siteSettings?.wholesaleMoq || 10} units, lead time {siteSettings?.wholesaleLeadTime || '2 to 4 weeks'}) are shown to verified buyers only. Registration takes a few minutes and is reviewed by the secretariat.
             </p>
           </div>
           <div className="panel panel--accent">
@@ -63,15 +92,19 @@ export default function WholesalePage() {
       {/* Assurance Grid */}
       <section className="section section--tight">
         <div className="assurance assurance--5">
-          {CLIENT_DATA.wholesaleAssurance.map((item, idx) => (
-            <div key={idx} className="assurance__cell">
-              <h3 className="assurance__title">
-                <span className="assurance__initial">{item.letter}</span>
-                <span>{item.title.slice(item.letter.length)}</span>
-              </h3>
-              <p className="assurance__body">{item.body}</p>
-            </div>
-          ))}
+          {assurances.map((item: any, idx: number) => {
+            const letter = item.letter || item.title?.charAt(0) || '✓';
+            const restTitle = item.title && item.letter ? item.title.slice(item.letter.length) : (item.title || '');
+            return (
+              <div key={idx} className="assurance__cell">
+                <h3 className="assurance__title">
+                  <span className="assurance__initial">{letter}</span>
+                  <span>{restTitle}</span>
+                </h3>
+                <p className="assurance__body">{item.body || item.description || ''}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 

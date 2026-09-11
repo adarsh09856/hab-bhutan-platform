@@ -1,24 +1,47 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
 
 export default function EventsPage() {
+  const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
   const [selectedKind, setSelectedKind] = useState<string>('');
+
+  useEffect(() => {
+    fetch('/api/events')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
+          // Normalize database EventRecord fields to display format if needed
+          const normalized = d.events.map((e: any) => ({
+            ...e,
+            day: e.day || (e.dateDisplay ? e.dateDisplay.split(' ')[0] : '12'),
+            mon: e.mon || (e.dateDisplay ? e.dateDisplay.split(' ')[1] : 'SEP'),
+            kind: e.kind || e.category || 'Exhibition',
+            place: e.place || e.location || 'Thimphu',
+            time: e.time || (e.schedule?.time) || e.dateDisplay || '',
+            summary: e.summary || (e.description?.slice(0, 160) + '...'),
+          }));
+          setEventsList(normalized);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const kinds = useMemo(() => {
     const set = new Set<string>();
-    CLIENT_DATA.events.forEach((e) => {
-      if (e.kind) set.add(e.kind);
+    eventsList.forEach((e) => {
+      const k = e.kind || e.category;
+      if (k) set.add(k);
     });
     return Array.from(set);
-  }, []);
+  }, [eventsList]);
 
   const filteredEvents = useMemo(() => {
-    if (!selectedKind) return CLIENT_DATA.events;
-    return CLIENT_DATA.events.filter((e) => e.kind === selectedKind);
-  }, [selectedKind]);
+    if (!selectedKind) return eventsList;
+    return eventsList.filter((e) => (e.kind || e.category) === selectedKind);
+  }, [selectedKind, eventsList]);
 
   return (
     <main id="main">

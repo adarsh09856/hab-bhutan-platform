@@ -1,19 +1,40 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
 
 export default function MastersPage() {
   const [activeTab, setActiveTab] = useState<string>('ALL');
+  const [allRecognised, setAllRecognised] = useState<any[]>(() => CLIENT_DATA.recognised);
 
-  const allRecognised = CLIENT_DATA.recognised;
+  useEffect(() => {
+    fetch('/api/honours')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.honours && Array.isArray(d.honours) && d.honours.length > 0) {
+          const mapped = d.honours.map((h: any) => ({
+            name: h.name,
+            craft_key: h.craft,
+            dzongkhag: h.dzongkhag,
+            honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : 'Master Craftsperson',
+            since: h.yearAwarded,
+            note: h.citation,
+            image_path: h.portraitUrl || 'assets/photos/hero-1-weaving.jpg',
+            image_alt: h.name,
+          }));
+          setAllRecognised(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const filtered = activeTab === 'ALL'
     ? allRecognised
     : allRecognised.filter((r) => r.honour === activeTab);
 
   const totalRecognised = allRecognised.length;
-  const masterCount = allRecognised.filter((r) => r.honour === 'Master Craftsperson').length;
+  const masterCount = allRecognised.filter((r) => r.honour === 'Master Craftsperson' || r.awardType === 'RoyalSeal').length;
   const uniqueCrafts = Array.from(new Set(allRecognised.map((r) => r.craft_key))).length;
   const earliestYear = Math.min(...allRecognised.map((r) => r.since || 2026));
 

@@ -57,6 +57,18 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.setting || d?.settings) {
+          setSiteSettings(d.setting || d.settings);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Attempt to autofill from user profile if logged in
   useEffect(() => {
@@ -466,12 +478,12 @@ export default function CheckoutPage() {
                 <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-3">
                   <div className="text-xs text-amber-900 font-semibold flex items-center gap-1.5">
                     <QrCode className="w-4 h-4 text-amber-700" />
-                    <span>Bank of Bhutan (BoB) Official Account</span>
+                    <span>{siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'} Official Account</span>
                   </div>
                   <div className="bg-white p-3 rounded-lg border border-amber-200 text-xs space-y-1 font-mono text-slate-800">
-                    <div><strong>Account Title:</strong> Handicrafts Association of Bhutan</div>
-                    <div><strong>Account Number:</strong> 200847291038</div>
-                    <div><strong>Bank:</strong> Bank of Bhutan (BoB), Main Branch Thimphu</div>
+                    <div><strong>Account Title:</strong> {siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
+                    <div><strong>Account Number:</strong> {siteSettings?.checkoutAccountNumber || '200847291038'}</div>
+                    <div><strong>Bank:</strong> {siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'}, {siteSettings?.checkoutBankAddress || 'Main Branch Thimphu'}</div>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
@@ -499,10 +511,11 @@ export default function CheckoutPage() {
                     <span>International Wire Transfer (SWIFT)</span>
                   </div>
                   <div className="bg-white p-3 rounded-lg border border-[#E4DDD1] space-y-1 font-mono text-slate-700 text-[11px]">
-                    <div><strong>SWIFT Code:</strong> BHUBBTBT</div>
-                    <div><strong>Beneficiary:</strong> Handicrafts Association of Bhutan</div>
-                    <div><strong>Bank:</strong> Bank of Bhutan Limited</div>
-                    <div><strong>Account:</strong> 200847291038</div>
+                    <div><strong>SWIFT Code:</strong> {siteSettings?.checkoutSwiftCode || 'BHUBBTBT'}</div>
+                    <div><strong>Beneficiary:</strong> {siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
+                    <div><strong>Bank:</strong> {siteSettings?.checkoutBankName || 'Bank of Bhutan Limited'}</div>
+                    <div><strong>Account:</strong> {siteSettings?.checkoutAccountNumber || '200847291038'}</div>
+                    {siteSettings?.checkoutBankAddress && <div><strong>Branch:</strong> {siteSettings.checkoutBankAddress}</div>}
                   </div>
                   <p className="text-[11px] text-[#6B5A4C]">
                     Please quote your Order Number in the wire transfer reference. Orders ship once transfer settles.

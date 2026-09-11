@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export default function ContactPage() {
+  const [siteSettings, setSiteSettings] = useState<any>(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -28,6 +29,19 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    fetch('/api/site-settings')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.setting || d?.settings) {
+          setSiteSettings(d.setting || d.settings);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const s = siteSettings;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +86,7 @@ export default function ContactPage() {
             Contact the Secretariat
           </h1>
           <p className="font-lora text-sm sm:text-base text-[#6B5A4C] mt-2 max-w-2xl">
-            Whether you are an artisan inquiring about guild membership, an international collector seeking custom orders, or a development donor partnering on heritage projects, we welcome your communication.
+            {s?.contactLede || 'Whether you are an artisan inquiring about guild membership, an international collector seeking custom orders, or a development donor partnering on heritage projects, we welcome your communication.'}
           </p>
         </div>
 
@@ -86,12 +100,12 @@ export default function ContactPage() {
             <h3 className="font-marcellus text-base text-[#33261F]">National Secretariat</h3>
             <p className="text-xs text-[#6B5A4C] leading-relaxed">
               Handicrafts Association of Bhutan (HAB)<br />
-              Chhubachu / Norzin Lam<br />
-              Post Box 1234, Thimphu 11001<br />
+              {s?.officeAddress || 'Metog Lam, Kawajangsa'}<br />
+              {s?.contactPoBox || 'Post Box 1129, Thimphu 11001'}<br />
               Kingdom of Bhutan
             </p>
             <div className="pt-2 text-[11px] text-[#A39281] font-mono">
-              CSO Reg: CSO/2011/043
+              {s?.csoRegistration || 'CSO Reg: CSO/2011/043'}
             </div>
           </div>
 
@@ -104,19 +118,19 @@ export default function ContactPage() {
             <div className="space-y-1.5 text-xs text-[#6B5A4C]">
               <div>
                 <span className="font-semibold text-[#33261F]">Official Desk: </span>
-                <a href="mailto:officehab@gmail.com" className="text-[#8B2E24] hover:underline">
-                  officehab@gmail.com
+                <a href={`mailto:${s?.officialEmail || 'officehab@gmail.com'}`} className="text-[#8B2E24] hover:underline">
+                  {s?.officialEmail || 'officehab@gmail.com'}
                 </a>
               </div>
-              <div>
-                <span className="font-semibold text-[#33261F]">Secretariat: </span>
-                <a href="mailto:secretariat@handicraftsbhutan.org" className="text-[#8B2E24] hover:underline">
-                  secretariat@handicraftsbhutan.org
-                </a>
-              </div>
+              {s?.edPhone && (
+                <div>
+                  <span className="font-semibold text-[#33261F]">Executive Desk: </span>
+                  <span className="font-mono text-[#33261F]">{s.edPhone}</span>
+                </div>
+              )}
               <div>
                 <span className="font-semibold text-[#33261F]">Telephone: </span>
-                <span className="font-mono text-[#33261F]">+975 2 328014 / 1711 0022</span>
+                <span className="font-mono text-[#33261F]">{s?.officePhone || '+975 2 338089'}</span>
               </div>
             </div>
           </div>
@@ -128,12 +142,12 @@ export default function ContactPage() {
             </div>
             <h3 className="font-marcellus text-base text-[#33261F]">Secretariat Hours</h3>
             <p className="text-xs text-[#6B5A4C] leading-relaxed">
-              Monday to Friday: 9:00 AM – 5:00 PM (BST / UTC+6)<br />
+              {s?.contactHours || 'Monday to Friday: 9:00 AM – 5:00 PM (BST / UTC+6)'}<br />
               Saturday &amp; Sunday: Closed<br />
               Closed on Bhutanese National &amp; Religious Holidays
             </p>
             <div className="pt-2 text-xs text-[#6B5A4C]">
-              <strong>Regional Guilds:</strong> Bumthang, Trashigang, Paro
+              <strong>Visitor Directions:</strong> {s?.contactDirections || 'Opposite National Library, Kawajangsa, Thimphu'}
             </div>
           </div>
         </div>

@@ -34,7 +34,12 @@ import {
   Sparkles,
   Command,
   CheckCircle2,
-  Activity
+  Activity,
+  Store,
+  Calendar,
+  Heart,
+  Award,
+  Layers
 } from 'lucide-react';
 
 interface HealthData {
@@ -132,6 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Orders & Fulfillment', href: '/admin/orders', icon: Package },
         { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
         { label: '13 Crafts CMS', href: '/admin/crafts', icon: Palette },
+        { label: 'Clusters & Outlets', href: '/admin/clusters-outlets', icon: Store },
       ],
     },
     {
@@ -141,6 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Artisan Members', href: '/admin/members', icon: Users },
         { label: 'Applications Queue', href: '/admin/applications', icon: ClipboardList },
         { label: 'Membership Dues & Tiers', href: '/admin/membership-settings', icon: BadgePercent },
+        { label: 'Membership Tiers', href: '/admin/membership-categories', icon: Layers },
       ],
     },
     {
@@ -152,6 +159,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Inquiries Inbox', href: '/admin/inquiries', icon: Mail },
         { label: 'Projects & Impact', href: '/admin/projects', icon: FolderKanban },
         { label: 'Hero Slides', href: '/admin/hero', icon: ImageIcon },
+        { label: 'Events & Expos', href: '/admin/events', icon: Calendar },
+        { label: 'Donations & Support', href: '/admin/donate-settings', icon: Heart },
+        { label: 'Master Honours', href: '/admin/honours', icon: Award },
         { label: 'News & Publications', href: '/admin/content', icon: FileText },
       ],
     },

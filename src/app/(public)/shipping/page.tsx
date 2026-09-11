@@ -1,22 +1,42 @@
 import React from 'react';
 import Link from 'next/link';
+import prisma from '@/lib/prisma';
+import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Shipping & delivery policy · Handicrafts Association of Bhutan',
   description: 'How orders placed with the Handicrafts Association of Bhutan are packed, shipped, charged and returned.',
 };
 
-export default function ShippingPolicyPage() {
+async function getShippingPolicy() {
+  try {
+    return await prisma.policyPage.findUnique({
+      where: { slug: 'shipping' },
+    });
+  } catch {
+    return null;
+  }
+}
+
+export default async function ShippingPolicyPage() {
+  const policy = await getShippingPolicy();
+  const pageTitle = policy?.title || 'Shipping & delivery policy';
+  const lastReviewed = policy?.updatedAt
+    ? new Date(policy.updatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'September 2026';
+
   return (
     <main id="main">
       <section className="section">
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / Shipping &amp; delivery policy
+          <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / {pageTitle}
         </p>
-        <h1 className="display display--page">Shipping &amp; delivery policy</h1>
+        <h1 className="display display--page">{pageTitle}</h1>
         <p className="lede">
           How orders placed with the Handicrafts Association of Bhutan are packed, shipped, charged
-          and returned. Last reviewed September 2026.
+          and returned. Last reviewed {lastReviewed}.
         </p>
       </section>
 
@@ -37,13 +57,17 @@ export default function ShippingPolicyPage() {
 
           {/* Policy Content Body */}
           <div className="policy__body">
-            <h2 id="dispatch">Dispatch &amp; handling</h2>
-            <p>
-              Orders are picked, checked and packed at the HAB office in Thimphu. Stocked pieces leave
-              within two working days of payment clearing. Made-to-order and commissioned work is
-              dispatched on the lead time quoted at the time of order, which is set by the artisan and
-              confirmed in writing before we take payment.
-            </p>
+            {policy?.content ? (
+              <PolicyContentRenderer content={policy.content} />
+            ) : (
+              <>
+                <h2 id="dispatch">Dispatch &amp; handling</h2>
+                <p>
+                  Orders are picked, checked and packed at the HAB office in Thimphu. Stocked pieces leave
+                  within two working days of payment clearing. Made-to-order and commissioned work is
+                  dispatched on the lead time quoted at the time of order, which is set by the artisan and
+                  confirmed in writing before we take payment.
+                </p>
             <p>
               Every piece is wrapped by hand. Textiles travel folded in acid-free tissue; turned wood,
               ceramics and cast metal travel double-boxed. We do not ship on Bhutanese national holidays.
@@ -208,6 +232,8 @@ export default function ShippingPolicyPage() {
               , email officehab@gmail.com, or telephone +975-2-338089 between 09:00 and 17:00 BTT,
               Monday to Friday.
             </p>
+              </>
+            )}
           </div>
         </div>
       </section>

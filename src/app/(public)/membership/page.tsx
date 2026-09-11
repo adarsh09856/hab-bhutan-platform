@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
 import { useRouter } from 'next/navigation';
@@ -21,7 +21,26 @@ export default function MembershipPage() {
     router.push(`/login?email=${encodeURIComponent(memberId)}`);
   };
 
-  const categories = CLIENT_DATA.membershipCategories || [];
+  const [categories, setCategories] = useState<any[]>(() => CLIENT_DATA.membershipCategories || []);
+
+  useEffect(() => {
+    fetch('/api/membership-categories')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.categories && Array.isArray(d.categories) && d.categories.length > 0) {
+          const mapped = d.categories.map((c: any) => ({
+            key: c.key,
+            name: c.name,
+            status: c.shortName || 'Active Sector Member',
+            fee: `Nu. ${c.duesBTN?.toLocaleString()}`,
+            tagline: c.description?.slice(0, 80) || '',
+            meaning: c.description || '',
+          }));
+          setCategories(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <main id="main">

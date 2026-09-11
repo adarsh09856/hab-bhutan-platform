@@ -4,19 +4,43 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getOutletByKey } from '@/lib/client-data';
 
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+
 interface OutletPageProps {
   params: Promise<{ key: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.outlets.map((o) => ({
-    key: o.key,
-  }));
+async function resolveOutlet(key: string) {
+  try {
+    const o = await prisma.outletRecord.findUnique({ where: { key } });
+    if (o) {
+      return {
+        key: o.key,
+        type: o.type,
+        name: o.name,
+        sort_order: o.sortOrder,
+        is_featured: o.isFeatured,
+        place: o.place,
+        note: o.note || '',
+        description: o.description,
+        long_description: o.longDescription,
+        hours: o.hours,
+        stalls: o.stalls || '',
+        crafts_on_site: o.craftsOnSite || '',
+        payment: o.payment || '',
+        getting_there: o.gettingThere || '',
+        facilities: o.facilities || '',
+      };
+    }
+  } catch {}
+  return getOutletByKey(key);
 }
 
 export async function generateMetadata({ params }: OutletPageProps): Promise<Metadata> {
   const { key } = await params;
-  const outlet = getOutletByKey(key);
+  const outlet = await resolveOutlet(key);
   if (!outlet) return { title: 'Outlet Not Found' };
 
   return {
@@ -27,13 +51,33 @@ export async function generateMetadata({ params }: OutletPageProps): Promise<Met
 
 export default async function OutletDetailPage({ params }: OutletPageProps) {
   const { key } = await params;
-  const outlet = getOutletByKey(key);
+  const outlet = await resolveOutlet(key);
 
   if (!outlet) {
     notFound();
   }
 
-  const others = CLIENT_DATA.outlets.filter((o) => o.key !== outlet.key);
+  let others = CLIENT_DATA.outlets.filter((o) => o.key !== outlet.key);
+  try {
+    const dbAll = await prisma.outletRecord.findMany({ where: { NOT: { key: outlet.key } }, orderBy: { sortOrder: 'asc' } });
+    if (dbAll.length > 0) {
+      others = dbAll.map(o => ({
+        key: o.key,
+        type: o.type,
+        name: o.name,
+        place: o.place,
+        note: o.note || '',
+        description: o.description,
+        long_description: o.longDescription,
+        hours: o.hours,
+        stalls: o.stalls || '',
+        crafts_on_site: o.craftsOnSite || '',
+        payment: o.payment || '',
+        getting_there: o.gettingThere || '',
+        facilities: o.facilities || '',
+      }));
+    }
+  } catch {}
 
   return (
     <main id="main">

@@ -3,20 +3,23 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 interface NewsPostPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.news.map((n) => ({
-    slug: n.slug || n.id || 'update',
-  }));
-}
-
 export async function generateMetadata({ params }: NewsPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = CLIENT_DATA.news.find((n) => n.slug === slug || n.id === slug);
+  let dbPost: any = null;
+  try {
+    dbPost = await prisma.newsArticle.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
+    });
+  } catch {}
+  const post = dbPost || CLIENT_DATA.news.find((n) => n.slug === slug || n.id === slug);
   if (!post) return { title: 'News Post Not Found' };
 
   return {
@@ -27,11 +30,30 @@ export async function generateMetadata({ params }: NewsPostPageProps): Promise<M
 
 export default async function NewsPostPage({ params }: NewsPostPageProps) {
   const { slug } = await params;
-  const post = CLIENT_DATA.news.find((n) => n.slug === slug || n.id === slug);
+  let dbPost: any = null;
+  try {
+    dbPost = await prisma.newsArticle.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
+    });
+  } catch {}
 
-  if (!post) {
+  const fallback = CLIENT_DATA.news.find((n) => n.slug === slug || n.id === slug);
+  const rawPost = dbPost || fallback;
+
+  if (!rawPost) {
     notFound();
   }
+
+  const post = {
+    ...rawPost,
+    id: rawPost.id || rawPost.slug || 'news-item',
+    slug: rawPost.slug || rawPost.id,
+    title: rawPost.title,
+    kind: rawPost.kind || 'Programs',
+    blurb: rawPost.blurb || rawPost.summary || '',
+    body: rawPost.content || rawPost.body || rawPost.blurb || '',
+    published_at: rawPost.dateString || rawPost.published_at || rawPost.date || 'Recent',
+  };
 
   const otherNews = CLIENT_DATA.news
     .filter((n) => (n.slug || n.id) !== (post.slug || post.id))
@@ -86,7 +108,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             <p className="eyebrow eyebrow--accent">The story</p>
           </div>
           <div>
-            {(post.body || post.blurb || '').split('\n\n').map((para, i) => (
+            {(post.body || post.blurb || '').split('\n\n').map((para: string, i: number) => (
               <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
                 {para.trim()}
               </p>

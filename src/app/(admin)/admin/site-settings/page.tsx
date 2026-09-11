@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users } from 'lucide-react';
 
 export default function AdminSiteSettingsPage() {
-  const [tab, setTab] = useState<'HOMEPAGE' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS'>('HOMEPAGE');
+  const [tab, setTab] = useState<'HOMEPAGE' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -65,6 +65,40 @@ export default function AdminSiteSettingsPage() {
     membershipRightText: '',
     membershipRightCtaText: '',
     membershipRightCtaLink: '',
+    // About Page Detailed CMS
+    aboutMandateText: '',
+    aboutMandatePara2: '',
+    aboutHistoryText: '',
+    // Extended Contact Details CMS
+    contactLede: '',
+    contactDirections: '',
+    contactPoBox: '',
+    contactHours: '',
+    // Homepage Extended Sections
+    homeCraftIntro: '',
+    homeCsoText: '',
+    // Wholesale Sourcing CMS
+    wholesaleMoq: 10,
+    wholesaleLeadTime: '',
+    // Checkout & Wire CMS
+    checkoutBankName: '',
+    checkoutAccountNumber: '',
+    checkoutAccountTitle: '',
+    checkoutSwiftCode: '',
+    checkoutBankAddress: '',
+    shippingOriginText: '',
+    shippingCarrierName: '',
+    shippingTransitDays: '',
+    shippingInsuranceNote: '',
+    // Order Confirmation CMS
+    orderConfirmationTitle: '',
+    orderConfirmationLede: '',
+    orderSupportEmail: '',
+    orderSupportPhone: '',
+    // Donate Page CMS
+    donateHeroTitle: '',
+    donateHeroLede: '',
+    donateTaxNotice: '',
   });
 
   const [partnerInput, setPartnerInput] = useState('');
@@ -244,6 +278,46 @@ export default function AdminSiteSettingsPage() {
         >
           <HeartHandshake className="w-4 h-4" />
           Partners &amp; Donors
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('ABOUT_PAGE')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'ABOUT_PAGE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          About Page Mandate
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('WHOLESALE')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'WHOLESALE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          }`}
+        >
+          <Shield className="w-4 h-4" />
+          Wholesale &amp; Sourcing
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('CHECKOUT')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'CHECKOUT' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          Checkout &amp; Shipping
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('DONATE')}
+          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
+            tab === 'DONATE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          }`}
+        >
+          <HeartHandshake className="w-4 h-4" />
+          Donate Page Notices
         </button>
       </div>
 
@@ -959,6 +1033,266 @@ export default function AdminSiteSettingsPage() {
                   </button>
                 </span>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ABOUT PAGE CMS TAB */}
+        {tab === 'ABOUT_PAGE' && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold admin-title">About Page Mandate &amp; Heritage</h2>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Statutory Mandate (Opening Narrative)
+              </label>
+              <textarea
+                rows={4}
+                value={form.aboutMandateText}
+                onChange={(e) => setForm({ ...form, aboutMandateText: e.target.value })}
+                placeholder="The Handicrafts Association of Bhutan (HAB) was established in 2005 under Royal Patronage..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Artisan Network Scope (Paragraph 2)
+              </label>
+              <textarea
+                rows={4}
+                value={form.aboutMandatePara2}
+                onChange={(e) => setForm({ ...form, aboutMandatePara2: e.target.value })}
+                placeholder="We are the apex civil society body representing 7,500+ traditional artisans..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Sector History &amp; Strategic Evolution
+              </label>
+              <textarea
+                rows={4}
+                value={form.aboutHistoryText}
+                onChange={(e) => setForm({ ...form, aboutHistoryText: e.target.value })}
+                placeholder="Over two decades of sector leadership, HAB has transformed informal cottage workshops..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* WHOLESALE TAB */}
+        {tab === 'WHOLESALE' && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold admin-title">Wholesale &amp; Trade Sourcing Rules</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Default Minimum Order Quantity (MOQ)
+                </label>
+                <input
+                  type="number"
+                  value={form.wholesaleMoq}
+                  onChange={(e) => setForm({ ...form, wholesaleMoq: parseInt(e.target.value) || 1 })}
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Quoted Lead Time Display
+                </label>
+                <input
+                  type="text"
+                  value={form.wholesaleLeadTime}
+                  onChange={(e) => setForm({ ...form, wholesaleLeadTime: e.target.value })}
+                  placeholder="2 to 4 weeks depending on batch size"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CHECKOUT & SHIPPING TAB */}
+        {tab === 'CHECKOUT' && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold admin-title">Bank Wire Details (Direct Transfer)</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Bank Name
+                </label>
+                <input
+                  type="text"
+                  value={form.checkoutBankName}
+                  onChange={(e) => setForm({ ...form, checkoutBankName: e.target.value })}
+                  placeholder="Bank of Bhutan Ltd"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Account Holder Title
+                </label>
+                <input
+                  type="text"
+                  value={form.checkoutAccountTitle}
+                  onChange={(e) => setForm({ ...form, checkoutAccountTitle: e.target.value })}
+                  placeholder="Handicrafts Association of Bhutan"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Account Number / IBAN
+                </label>
+                <input
+                  type="text"
+                  value={form.checkoutAccountNumber}
+                  onChange={(e) => setForm({ ...form, checkoutAccountNumber: e.target.value })}
+                  placeholder="1009234810293"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  SWIFT / BIC Code
+                </label>
+                <input
+                  type="text"
+                  value={form.checkoutSwiftCode}
+                  onChange={(e) => setForm({ ...form, checkoutSwiftCode: e.target.value })}
+                  placeholder="BOBBBT22"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+
+            <h2 className="text-base font-bold admin-title pt-4 border-t admin-border">
+              International Dispatch &amp; Logistics Display
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Designated Carrier
+                </label>
+                <input
+                  type="text"
+                  value={form.shippingCarrierName}
+                  onChange={(e) => setForm({ ...form, shippingCarrierName: e.target.value })}
+                  placeholder="Bhutan Post International Express (EMS) / DHL"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Estimated Transit Time
+                </label>
+                <input
+                  type="text"
+                  value={form.shippingTransitDays}
+                  onChange={(e) => setForm({ ...form, shippingTransitDays: e.target.value })}
+                  placeholder="7-14 business days"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Packaging &amp; Transit Insurance Note
+              </label>
+              <textarea
+                rows={3}
+                value={form.shippingInsuranceNote}
+                onChange={(e) => setForm({ ...form, shippingInsuranceNote: e.target.value })}
+                placeholder="Every consignment is hand-packed in Thimphu using traditional handmade Desho paper wrappers..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+
+            <h2 className="text-base font-bold admin-title pt-4 border-t admin-border">
+              Post-Purchase Order Confirmation
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Confirmation Header Title
+                </label>
+                <input
+                  type="text"
+                  value={form.orderConfirmationTitle}
+                  onChange={(e) => setForm({ ...form, orderConfirmationTitle: e.target.value })}
+                  placeholder="Order Confirmed!"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                  Customer Support Email
+                </label>
+                <input
+                  type="text"
+                  value={form.orderSupportEmail}
+                  onChange={(e) => setForm({ ...form, orderSupportEmail: e.target.value })}
+                  placeholder="officehab@gmail.com"
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Confirmation Lede Message
+              </label>
+              <textarea
+                rows={2}
+                value={form.orderConfirmationLede}
+                onChange={(e) => setForm({ ...form, orderConfirmationLede: e.target.value })}
+                placeholder="Thank you for supporting Bhutanese master artisans..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* DONATE TAB */}
+        {tab === 'DONATE' && (
+          <div className="space-y-6">
+            <h2 className="text-base font-bold admin-title">Donate Page Header &amp; CSO Disclosures</h2>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Donate Hero Title
+              </label>
+              <input
+                type="text"
+                value={form.donateHeroTitle}
+                onChange={(e) => setForm({ ...form, donateHeroTitle: e.target.value })}
+                placeholder="Direct Support for Bhutanese Artisans"
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Hero Lede Message
+              </label>
+              <textarea
+                rows={3}
+                value={form.donateHeroLede}
+                onChange={(e) => setForm({ ...form, donateHeroLede: e.target.value })}
+                placeholder="100% of public contributions go directly to artisan welfare, emergency raw material funds..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                Tax Exemption &amp; PBO Statutory Notice
+              </label>
+              <textarea
+                rows={3}
+                value={form.donateTaxNotice}
+                onChange={(e) => setForm({ ...form, donateTaxNotice: e.target.value })}
+                placeholder="HAB is a registered Public Benefit Organisation (CSO/2011/043)..."
+                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+              />
             </div>
           </div>
         )}

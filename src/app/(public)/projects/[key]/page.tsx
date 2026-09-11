@@ -3,20 +3,23 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 interface ProjectPageProps {
   params: Promise<{ key: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.projects.map((p) => ({
-    key: p.key,
-  }));
-}
-
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { key } = await params;
-  const project = CLIENT_DATA.projects.find((p) => p.key === key);
+  let dbProj: any = null;
+  try {
+    dbProj = await prisma.projectRecord.findFirst({
+      where: { OR: [{ id: key }, { name: { contains: key, mode: 'insensitive' } }] },
+    });
+  } catch {}
+  const project = dbProj || CLIENT_DATA.projects.find((p) => p.key === key);
   if (!project) return { title: 'Project Not Found' };
 
   return {
@@ -27,11 +30,34 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 
 export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const { key } = await params;
-  const project = CLIENT_DATA.projects.find((p) => p.key === key);
+  let dbProj: any = null;
+  try {
+    dbProj = await prisma.projectRecord.findFirst({
+      where: { OR: [{ id: key }, { name: { contains: key, mode: 'insensitive' } }] },
+    });
+  } catch {}
 
-  if (!project) {
+  const fallback = CLIENT_DATA.projects.find((p) => p.key === key);
+  const rawProj = dbProj || fallback;
+
+  if (!rawProj) {
     notFound();
   }
+
+  const project = {
+    ...rawProj,
+    key: rawProj.key || rawProj.id,
+    name: rawProj.name || rawProj.title || 'Project',
+    title: rawProj.name || rawProj.title || 'Project',
+    status: rawProj.status || 'Current',
+    partner: rawProj.partner || rawProj.funder || 'HAB',
+    summary: rawProj.summary || '',
+    period: rawProj.period || '2024 – 2027',
+    budget: rawProj.budget || '',
+    progressPercent: rawProj.progressPercent || 50,
+    activities: Array.isArray(rawProj.activities) ? rawProj.activities : [],
+    results: Array.isArray(rawProj.results) ? rawProj.results : [],
+  };
 
   const projectTitle = project.name || project.title || 'Project';
   const partnerName = project.partner || project.funder || 'HAB';
@@ -114,7 +140,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             <h2 className="display display--sub">{isCurrent ? 'What it is doing' : 'What it achieved'}</h2>
           </div>
           <div>
-            {(project.description || project.summary).split('\n\n').map((para, i) => (
+            {(project.description || project.summary).split('\n\n').map((para: string, i: number) => (
               <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
                 {para.trim()}
               </p>
@@ -133,7 +159,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             </div>
             <div>
               <ol className="numlist numlist--ruled">
-                {project.outputs.map((item, idx) => (
+                {project.outputs.map((item: string, idx: number) => (
                   <li key={idx} className="numlist__item">
                     <span className="numlist__n">{String(idx + 1).padStart(2, '0')}</span>
                     <span className="numlist__t">{item}</span>

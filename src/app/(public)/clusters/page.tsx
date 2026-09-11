@@ -1,15 +1,42 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
+import prisma from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Artisan Clusters · Handicrafts Association of Bhutan',
   description: 'Villages and valleys where traditional Bhutanese crafts are concentrated. Verified artisan clusters under HAB.',
 };
 
-export default function ClustersPage() {
-  const clusters = CLIENT_DATA.clusters;
+async function getClusters() {
+  try {
+    const dbClusters = await prisma.clusterRecord.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    if (dbClusters.length > 0) {
+      return dbClusters.map((c) => ({
+        key: c.key,
+        name: c.name,
+        craft_key: c.craftKey,
+        dzongkhag: c.dzongkhag,
+        members: c.members,
+        established: c.established,
+        is_featured: c.isFeatured,
+        sort_order: c.sortOrder,
+        summary: c.summary,
+        story: c.story,
+        visitor_note: c.visitorNote || undefined,
+      }));
+    }
+  } catch {}
+  return CLIENT_DATA.clusters;
+}
+
+export default async function ClustersPage() {
+  const clusters = await getClusters();
 
   return (
     <main id="main">
@@ -59,13 +86,15 @@ export default function ClustersPage() {
                   <h3 className="card__title clamp-2">
                     <Link href={`/clusters/${c.key}`}>{c.name}</Link>
                   </h3>
-                  <p className="card__meta">
-                    {c.dzongkhag} · {c.members} members · est. {c.established}
-                  </p>
                   <p className="card__text clamp-3">{c.summary}</p>
-                  <Link className="cluster__read link-accent" href={`/clusters/${c.key}`}>
-                    Read the story →
-                  </Link>
+                  <div className="card__foot">
+                    <span className="card__meta">
+                      {c.members} artisans · {c.dzongkhag}
+                    </span>
+                    <Link href={`/clusters/${c.key}`} className="link-accent">
+                      Story &rarr;
+                    </Link>
+                  </div>
                 </div>
               </article>
             );
@@ -73,47 +102,22 @@ export default function ClustersPage() {
         </div>
       </section>
 
-      {/* Cluster Registration Banner */}
-      <section className="section">
+      {/* Outlets CTA Banner */}
+      <section className="section section--last">
         <div className="ctaband">
           <div>
-            <h2 className="display display--panel">Register your cluster</h2>
+            <p className="eyebrow eyebrow--onaccent">Visit our stores</p>
+            <h2 className="display display--panel">Where to buy authenticated crafts in person</h2>
             <p className="ctaband__body">
-              A cluster of ten or more artisans working the same craft can join as a body under Artisan Cluster membership — one membership for everyone in it, at Nu. 3,000 a year, with a page here telling your story.
+              Every outlet stocks directly from registered cluster members, with prices agreed in advance and verified authenticity seals.
             </p>
           </div>
           <div className="actions">
-            <Link className="btn btn--light" href="/membership/apply?tier=cluster">
-              Register as a cluster
+            <Link className="btn btn--light" href="/outlets">
+              View all HAB outlets &rarr;
             </Link>
-            <Link className="btn btn--ghost" href="/membership/cluster">
-              What the category means
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Duo Section */}
-      <section className="section section--last">
-        <div className="duo">
-          <div className="panel">
-            <p className="eyebrow eyebrow--muted">Plan a visit</p>
-            <h2 className="display display--panel">See the crafts being made</h2>
-            <p className="panel__body">
-              The secretariat arranges cluster visits, demonstrations and workshop sessions for individuals and groups.
-            </p>
-            <Link className="btn btn--ink" href="/contact?topic=visit">
-              Contact the secretariat
-            </Link>
-          </div>
-          <div className="panel panel--accent">
-            <p className="eyebrow eyebrow--onaccent">Buy the work</p>
-            <h2 className="display display--panel display--onaccent">Shop by craft</h2>
-            <p className="panel__body panel__body--onaccent">
-              Everything the clusters make is available in the HAB shop, bought from the member at an agreed price.
-            </p>
-            <Link className="btn btn--light" href="/shop">
-              Visit the shop →
+            <Link className="btn btn--ghost" href="/outlets/punakha-market">
+              Punakha Crafts Market &rarr;
             </Link>
           </div>
         </div>

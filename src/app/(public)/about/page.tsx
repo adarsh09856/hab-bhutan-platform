@@ -141,9 +141,9 @@ export default function AboutPage() {
           </div>
 
           <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden">
-            {OBJECTIVES.map((obj, i) => (
+            {(Array.isArray(s?.aboutObjectives) ? s.aboutObjectives : OBJECTIVES).map((obj: string, i: number) => (
               <div
-                key={obj}
+                key={i}
                 className="flex gap-[18px] items-start p-4 sm:p-[20px_24px] border-b border-[#EFE9DE] last:border-b-0"
               >
                 <span className="font-mono text-[11px] text-[#8B2E24] flex-none pt-1">
@@ -167,14 +167,14 @@ export default function AboutPage() {
           How we work
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[1px] bg-[#E4DDD1] border border-[#E4DDD1] rounded-[14px] overflow-hidden">
-          {VALUES.map((val) => (
-            <div key={val.t} className="bg-[#FFFCF8] p-5 sm:p-[26px_22px] flex flex-col justify-between">
+          {(Array.isArray(s?.aboutValues) ? s.aboutValues : VALUES).map((val: any, idx: number) => (
+            <div key={idx} className="bg-[#FFFCF8] p-5 sm:p-[26px_22px] flex flex-col justify-between">
               <div>
                 <div className="font-figtree font-bold text-base sm:text-[16.5px] tracking-[-0.01em] mb-2 text-[#33261F]">
-                  {val.t}
+                  {val.title || val.t}
                 </div>
                 <p className="font-lora text-xs sm:text-[14.5px] leading-[1.55] text-[#6B5A4C]">
-                  {val.d}
+                  {val.body || val.d}
                 </p>
               </div>
             </div>

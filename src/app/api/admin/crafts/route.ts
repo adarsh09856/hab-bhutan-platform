@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
   const user = await verifyAdmin(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
-  const { key, name, english, dzongkha, description, bannerUrl, sortOrder, isActive } = body;
+  const { key, name, english, dzongkha, description, bannerUrl, technique, materials, practisedIn, history, shopNote, sortOrder, isActive } = body;
   if (!key) return NextResponse.json({ error: 'key required' }, { status: 400 });
   try {
     const updated = await prisma.craft.update({
@@ -40,6 +40,11 @@ export async function PUT(req: NextRequest) {
         ...(dzongkha !== undefined && { dzongkha: dzongkha?.trim() || null }),
         ...(description !== undefined && { description: description.trim() }),
         ...(bannerUrl !== undefined && { bannerUrl: bannerUrl?.trim() || null }),
+        ...(technique !== undefined && { technique: technique?.trim() || null }),
+        ...(materials !== undefined && { materials: materials?.trim() || null }),
+        ...(practisedIn !== undefined && { practisedIn: practisedIn?.trim() || null }),
+        ...(history !== undefined && { history: history?.trim() || null }),
+        ...(shopNote !== undefined && { shopNote: shopNote?.trim() || null }),
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
       },

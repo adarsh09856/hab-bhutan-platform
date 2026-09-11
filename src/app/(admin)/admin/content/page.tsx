@@ -33,8 +33,17 @@ interface GovernanceItem {
   sortOrder: number;
 }
 
+interface PolicyItem {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  isActive: boolean;
+  updatedAt?: string;
+}
+
 export default function AdminContentPage() {
-  const [activeTab, setActiveTab] = useState<'NEWS' | 'PUBLICATIONS' | 'GOVERNANCE' | 'CLAMP_LAB'>('NEWS');
+  const [activeTab, setActiveTab] = useState<'NEWS' | 'PUBLICATIONS' | 'GOVERNANCE' | 'POLICIES' | 'CLAMP_LAB'>('NEWS');
   const [clampLevel, setClampLevel] = useState<number>(3);
   const [sampleText, setSampleText] = useState<string>(
     'The Handicrafts Association of Bhutan (HAB) stands as the apex civil society organization dedicated to the preservation, development, and promotion of Bhutan’s traditional Thirteen Arts and Crafts (Zorig Chusum). Founded to empower local artisans across all twenty dzongkhags, HAB facilitates market access, provides masterclass training in indigenous techniques, ensures fair trade pricing, and establishes rigorous quality certification protocols to safeguard Bhutanese cultural heritage in the global economy.'
@@ -43,6 +52,9 @@ export default function AdminContentPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [publications, setPublications] = useState<PublicationItem[]>([]);
   const [governance, setGovernance] = useState<GovernanceItem[]>([]);
+  const [policies, setPolicies] = useState<PolicyItem[]>([]);
+  const [editingPolicy, setEditingPolicy] = useState<PolicyItem | null>(null);
+  const [policySaving, setPolicySaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Modals
@@ -82,15 +94,24 @@ export default function AdminContentPage() {
     setLoading(true);
     setFeedback(null);
     try {
-      const res = await fetch('/api/admin/content', { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
+      const [contentRes, policiesRes] = await Promise.all([
+        fetch('/api/admin/content', { credentials: 'include' }),
+        fetch('/api/admin/policies', { credentials: 'include' }),
+      ]);
+
+      if (contentRes.ok) {
+        const data = await contentRes.json();
         setNews(data.news || []);
         setPublications(data.publications || []);
         setGovernance(data.governance || []);
       } else {
-        const err = await res.json();
+        const err = await contentRes.json();
         setFeedback({ type: 'error', message: err.error || 'Failed to load content from PostgreSQL.' });
+      }
+
+      if (policiesRes.ok) {
+        const pData = await policiesRes.json();
+        setPolicies(pData.policies || []);
       }
     } catch (err: any) {
       setFeedback({ type: 'error', message: err.message || 'Network error fetching content.' });
@@ -102,6 +123,33 @@ export default function AdminContentPage() {
   useEffect(() => {
     loadContent();
   }, []);
+
+  const handleSavePolicy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPolicy) return;
+    setPolicySaving(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/policies', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(editingPolicy),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFeedback({ type: 'success', message: `✓ Policy "${editingPolicy.title}" updated successfully.` });
+        setEditingPolicy(null);
+        await loadContent();
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Failed to save policy.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Network error saving policy.' });
+    } finally {
+      setPolicySaving(false);
+    }
+  };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,6 +290,15 @@ export default function AdminContentPage() {
               <span>Add Governance Officer</span>
             </button>
           )}
+          {activeTab === 'POLICIES' && (
+            <button
+              onClick={() => setEditingPolicy({ id: '', slug: '', title: '', content: '', isActive: true })}
+              className="px-3.5 py-1.5 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Policy Document</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -294,6 +351,18 @@ export default function AdminContentPage() {
         >
           <Shield className="w-4 h-4" />
           <span>Governance &amp; Chapters ({governance.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('POLICIES')}
+          className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition ${
+            activeTab === 'POLICIES'
+              ? 'border-indigo-400 text-indigo-300'
+              : 'border-transparent admin-muted admin-hover'
+          }`}
+        >
+          <FileEdit className="w-4 h-4" />
+          <span>Statutory Policies ({policies.length})</span>
         </button>
 
         <button
@@ -470,6 +539,67 @@ export default function AdminContentPage() {
                     <tr>
                       <td colSpan={5} className="py-12 text-center admin-muted">
                         No governance records found in database. Click &ldquo;Add Governance Officer&rdquo; above.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Statutory Policies */}
+      {activeTab === 'POLICIES' && (
+        <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden">
+          {loading ? (
+            <div className="py-12 text-center admin-muted text-xs font-mono">Loading statutory policies from PostgreSQL...</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-4">Policy Title &amp; Slug</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Word Count</th>
+                    <th className="py-3 px-4">Last Updated</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y admin-divider">
+                  {policies.map((p) => (
+                    <tr key={p.id || p.slug} className="admin-hover transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="font-semibold admin-title">{p.title}</div>
+                        <div className="font-mono text-[11px] text-indigo-300 mt-0.5">/{p.slug}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          p.isActive ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-slate-500/15 text-slate-400 border border-slate-500/30'
+                        }`}>
+                          {p.isActive ? 'Active & Published' : 'Draft / Inactive'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 admin-muted font-mono">
+                        {p.content ? p.content.split(/\s+/).length : 0} words
+                      </td>
+                      <td className="py-3 px-4 admin-muted font-mono text-[11px]">
+                        {p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-GB') : 'Seeded'}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => setEditingPolicy({ ...p })}
+                          className="px-2.5 py-1 admin-button-secondary border rounded text-[11px] inline-flex items-center gap-1"
+                        >
+                          <Edit className="w-3 h-3" /> Edit Policy
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {policies.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center admin-muted">
+                        No policies configured. Click &ldquo;New Policy Document&rdquo; above.
                       </td>
                     </tr>
                   )}
@@ -841,6 +971,90 @@ export default function AdminContentPage() {
                 {submitting ? 'Deleting...' : 'Confirm Delete'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Create Policy Modal */}
+      {editingPolicy && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="admin-modal rounded-xl max-w-2xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8">
+            <div className="flex justify-between items-center border-b admin-border pb-3">
+              <h3 className="font-bold admin-title text-base">
+                {editingPolicy.id ? 'Edit Statutory Policy' : 'Create Statutory Policy'}
+              </h3>
+              <button onClick={() => setEditingPolicy(null)} className="admin-muted admin-hover font-bold">✕</button>
+            </div>
+
+            <form onSubmit={handleSavePolicy} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium admin-text mb-1">Policy Document Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingPolicy.title}
+                    onChange={(e) => setEditingPolicy({ ...editingPolicy, title: e.target.value })}
+                    placeholder="e.g., Shipping & Delivery Policy"
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium admin-text mb-1">URL Route Slug *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingPolicy.slug}
+                    onChange={(e) => setEditingPolicy({ ...editingPolicy, slug: e.target.value.toLowerCase().trim() })}
+                    placeholder="e.g., shipping, terms, privacy"
+                    className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 font-medium admin-text cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editingPolicy.isActive}
+                    onChange={(e) => setEditingPolicy({ ...editingPolicy, isActive: e.target.checked })}
+                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>Publish this policy live on public website (/shipping, /terms, /privacy)</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block font-medium admin-text mb-1">
+                  Policy Content (Markdown / Plain Text) *
+                </label>
+                <textarea
+                  rows={14}
+                  required
+                  value={editingPolicy.content}
+                  onChange={(e) => setEditingPolicy({ ...editingPolicy, content: e.target.value })}
+                  placeholder="Enter full policy terms, guidelines, disclaimers..."
+                  className="w-full admin-input border rounded px-3 py-2 font-mono text-xs leading-relaxed"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t admin-border">
+                <button
+                  type="button"
+                  onClick={() => setEditingPolicy(null)}
+                  className="px-3 py-1.5 admin-button-secondary border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={policySaving}
+                  className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
+                >
+                  {policySaving ? 'Saving to Database...' : 'Save Policy'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

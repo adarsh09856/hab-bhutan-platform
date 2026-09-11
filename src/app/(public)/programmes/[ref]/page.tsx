@@ -3,20 +3,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 interface ProgrammePageProps {
   params: Promise<{ ref: string }>;
 }
 
-export async function generateStaticParams() {
-  return CLIENT_DATA.programmes.map((p) => ({
-    ref: p.ref,
-  }));
-}
-
 export async function generateMetadata({ params }: ProgrammePageProps): Promise<Metadata> {
   const { ref } = await params;
-  const programme = CLIENT_DATA.programmes.find((p) => p.ref === ref);
+  let dbProg: any = null;
+  try {
+    dbProg = await prisma.programmePillar.findUnique({ where: { ref } });
+  } catch {}
+  const programme = dbProg || CLIENT_DATA.programmes.find((p) => p.ref === ref);
   if (!programme) return { title: 'Programme Not Found' };
 
   return {
@@ -27,11 +28,25 @@ export async function generateMetadata({ params }: ProgrammePageProps): Promise<
 
 export default async function ProgrammeDetailPage({ params }: ProgrammePageProps) {
   const { ref } = await params;
-  const programme = CLIENT_DATA.programmes.find((p) => p.ref === ref);
+  let dbProg: any = null;
+  try {
+    dbProg = await prisma.programmePillar.findUnique({ where: { ref } });
+  } catch {}
 
-  if (!programme) {
+  const fallback = CLIENT_DATA.programmes.find((p) => p.ref === ref);
+  const rawProg = dbProg || fallback;
+
+  if (!rawProg) {
     notFound();
   }
+
+  const programme = {
+    ...rawProg,
+    title: rawProg.title,
+    ref: rawProg.ref,
+    description: rawProg.description,
+    activities: Array.isArray(rawProg.activities) ? rawProg.activities : (rawProg.activities?.items || []),
+  };
 
   const allProgrammes = CLIENT_DATA.programmes;
   const currentIndex = allProgrammes.findIndex((p) => p.ref === programme.ref);
@@ -89,7 +104,7 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
           </div>
           <div>
             <ol className="numlist">
-              {programme.activities.map((item, idx) => (
+              {programme.activities.map((item: string, idx: number) => (
                 <li key={idx} className="numlist__item">
                   <span className="numlist__n">{String(idx + 1).padStart(2, '0')}</span>
                   <span className="numlist__t">{item}</span>

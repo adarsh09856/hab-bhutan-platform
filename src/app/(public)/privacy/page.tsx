@@ -1,22 +1,42 @@
 import React from 'react';
 import Link from 'next/link';
+import prisma from '@/lib/prisma';
+import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Privacy policy · Handicrafts Association of Bhutan',
   description: 'What the Handicrafts Association of Bhutan collects, why we hold it, and what you can ask us to do with it.',
 };
 
-export default function PrivacyPolicyPage() {
+async function getPrivacyPolicy() {
+  try {
+    return await prisma.policyPage.findUnique({
+      where: { slug: 'privacy' },
+    });
+  } catch {
+    return null;
+  }
+}
+
+export default async function PrivacyPolicyPage() {
+  const policy = await getPrivacyPolicy();
+  const pageTitle = policy?.title || 'Privacy policy';
+  const lastReviewed = policy?.updatedAt
+    ? new Date(policy.updatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'September 2026';
+
   return (
     <main id="main">
       <section className="section">
         <p className="crumbs">
-          <Link href="/">Home</Link> / Privacy policy
+          <Link href="/">Home</Link> / {pageTitle}
         </p>
-        <h1 className="display display--page">Privacy policy</h1>
+        <h1 className="display display--page">{pageTitle}</h1>
         <p className="lede">
           What the Handicrafts Association of Bhutan collects, why we hold it, and what you can ask
-          us to do with it. Last reviewed September 2026.
+          us to do with it. Last reviewed {lastReviewed}.
         </p>
       </section>
 
@@ -37,7 +57,11 @@ export default function PrivacyPolicyPage() {
 
           {/* Policy Body */}
           <div className="policy__body">
-            <h2 id="collect">What we collect</h2>
+            {policy?.content ? (
+              <PolicyContentRenderer content={policy.content} />
+            ) : (
+              <>
+                <h2 id="collect">What we collect</h2>
             <ul>
               <li>
                 <strong>Enquiries.</strong> Your name, email, organisation, country and the message you
@@ -148,6 +172,8 @@ export default function PrivacyPolicyPage() {
               </a>
               , +975-2-338089.
             </p>
+              </>
+            )}
           </div>
         </div>
       </section>

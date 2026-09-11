@@ -21,7 +21,19 @@ export default function OrderConfirmationPage() {
   const orderNumber = params?.orderNumber as string;
 
   const [order, setOrder] = useState<any | null>(null);
+  const [siteSettings, setSiteSettings] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/site-settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.setting || data?.settings) {
+          setSiteSettings(data.setting || data.settings);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!orderNumber) return;
@@ -54,10 +66,10 @@ export default function OrderConfirmationPage() {
               Order Confirmed &amp; Certified
             </span>
             <h1 className="font-marcellus text-2xl sm:text-3xl text-[#33261F] mt-1">
-              Thank You for Your Order
+              {siteSettings?.orderConfirmationTitle || 'Thank You for Your Order'}
             </h1>
             <p className="text-xs sm:text-sm text-[#6B5A4C] mt-1 max-w-md mx-auto">
-              Your patronage directly sustains rural artisan households and cultural heritage across Bhutan.
+              {siteSettings?.orderConfirmationLede || 'Your patronage directly sustains rural artisan households and cultural heritage across Bhutan.'}
             </p>
           </div>
 
@@ -223,6 +235,20 @@ export default function OrderConfirmationPage() {
           {/* Statutory Export Notice */}
           <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] text-[11px] text-[#6B5A4C] leading-relaxed">
             <strong>Customs &amp; Export Verification:</strong> Certified under Article 3 of the Articles of Association (2026 Edition) and Civil Society Organizations Act 2007. Parcel contains authentic contemporary handicraft work not subject to antique export restrictions.
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between text-xs text-[#6B5A4C] pt-2 border-t border-[#E4DDD1]">
+            <span>Need assistance with your order?</span>
+            <div className="flex items-center gap-4">
+              <a href={`mailto:${siteSettings?.orderSupportEmail || 'officehab@gmail.com'}`} className="hover:text-[#8B2E24] flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5" />
+                <span>{siteSettings?.orderSupportEmail || 'officehab@gmail.com'}</span>
+              </a>
+              <a href={`tel:${siteSettings?.orderSupportPhone || '+975-2-338089'}`} className="hover:text-[#8B2E24] flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5" />
+                <span>{siteSettings?.orderSupportPhone || '+975-2-338089'}</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
