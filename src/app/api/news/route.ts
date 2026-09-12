@@ -65,12 +65,14 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       articles,
+      news: articles,
       events,
     });
   } catch (err: any) {
     return NextResponse.json({
       success: true,
       articles: DEFAULT_NEWS,
+      news: DEFAULT_NEWS,
       events: DEFAULT_EVENTS,
       fallback: true,
     });

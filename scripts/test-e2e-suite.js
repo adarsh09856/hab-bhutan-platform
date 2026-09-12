@@ -1,19 +1,35 @@
 const https = require('https');
+const http = require('http');
+const fs = require('fs');
 
-const BASE_URL = 'https://hab.touratbhutan.info';
+const BASE_URL = process.env.TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
+
+let adminEmail = process.env.ADMIN_EMAIL || 'admin@handicraftsbhutan.org';
+let adminPassword = process.env.ADMIN_PASSWORD || 'HabAdminProduction2026!#';
+if (fs.existsSync('.admin_credentials.local')) {
+  try {
+    const credContent = fs.readFileSync('.admin_credentials.local', 'utf-8');
+    const mEmail = credContent.match(/ADMIN_EMAIL=(.+)/);
+    const mPass = credContent.match(/ADMIN_PASSWORD=(.+)/);
+    if (mEmail) adminEmail = mEmail[1].trim();
+    if (mPass) adminPassword = mPass[1].trim();
+  } catch {}
+}
 
 function request(url, options = {}, postData = null) {
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
+    const isHttps = parsedUrl.protocol === 'https:';
+    const client = isHttps ? https : http;
     const reqOptions = {
       hostname: parsedUrl.hostname,
-      port: 443,
+      port: parsedUrl.port || (isHttps ? 443 : 80),
       path: parsedUrl.pathname + parsedUrl.search,
       method: options.method || 'GET',
       headers: options.headers || {},
     };
 
-    const req = https.request(reqOptions, (res) => {
+    const req = client.request(reqOptions, (res) => {
       let data = '';
       res.on('data', (chunk) => (data += chunk));
       res.on('end', () => {
@@ -54,8 +70,8 @@ async function runSuite() {
       'x-bypass-rate-limit': 'true',
     },
   }, {
-    email: 'admin@handicraftsbhutan.org',
-    password: 'HabAdminProduction2026!#',
+    email: adminEmail,
+    password: adminPassword,
     targetPortal: 'admin',
   });
 

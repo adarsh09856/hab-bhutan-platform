@@ -25,10 +25,12 @@ export async function GET(req: NextRequest) {
             bannerUrl: craft.bannerUrl,
             technique: craft.technique,
             materials: craft.materials,
-            practised_in: craft.practisedIn,
-            history: craft.history,
             shop_note: craft.shopNote,
+            shopNote: craft.shopNote,
+            practised_in: craft.practisedIn,
+            practisedIn: craft.practisedIn,
             sort_order: craft.sortOrder,
+            sortOrder: craft.sortOrder,
           },
         });
       }
@@ -54,9 +56,12 @@ export async function GET(req: NextRequest) {
           technique: craft.technique,
           materials: craft.materials,
           practised_in: craft.practisedIn,
+          practisedIn: craft.practisedIn,
           history: craft.history,
           shop_note: craft.shopNote,
+          shopNote: craft.shopNote,
           sort_order: craft.sortOrder,
+          sortOrder: craft.sortOrder,
         })),
       });
     }

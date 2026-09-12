@@ -243,7 +243,7 @@ export default function AdminNavigationPage() {
                 {headerItems.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center admin-muted">
-                      No header links configured. Click "+ Add Header Link" to create one.
+                      No header links configured. Click &quot;+ Add Header Link&quot; to create one.
                     </td>
                   </tr>
                 ) : (
@@ -300,7 +300,7 @@ export default function AdminNavigationPage() {
         <div className="space-y-6">
           {footerColumns.length === 0 ? (
             <div className="admin-card p-8 rounded-[14px] border admin-border text-center text-xs admin-muted">
-              No footer columns configured. Click "+ Add Footer Link" to create one.
+              No footer columns configured. Click &quot;+ Add Footer Link&quot; to create one.
             </div>
           ) : (
             footerColumns.map((colName) => {

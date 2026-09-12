@@ -22,10 +22,20 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ success: true, setting });
 }
 
-// Resilient upsert helper that safely catches schema mismatches / ungenerated Prisma fields
+// Resilient upsert helper that safely catches schema mismatches and DB encoding constraints (e.g. WIN1252 vs UTF8)
 async function safeUpsertSiteSetting(updateData: Record<string, any>, createData: Record<string, any>) {
   const curUpdate = { ...updateData };
   const curCreate = { ...createData };
+
+  const sanitizeStr = (val: any): any => {
+    if (typeof val === 'string') {
+      return val.replace(/→/g, '->').replace(/—/g, '-').replace(/–/g, '-').replace(/·/g, '-');
+    }
+    return val;
+  };
+
+  for (const k of Object.keys(curUpdate)) curUpdate[k] = sanitizeStr(curUpdate[k]);
+  for (const k of Object.keys(curCreate)) curCreate[k] = sanitizeStr(curCreate[k]);
 
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
@@ -36,6 +46,16 @@ async function safeUpsertSiteSetting(updateData: Record<string, any>, createData
       });
     } catch (err: any) {
       const msg = err?.message || '';
+      if (msg.includes('22P05') || msg.includes('encoding')) {
+        // Strip any characters outside ASCII 0x00-0x7F to guarantee storage on non-UTF8 DBs
+        for (const k of Object.keys(curUpdate)) {
+          if (typeof curUpdate[k] === 'string') curUpdate[k] = curUpdate[k].replace(/[^\x00-\x7F]/g, '');
+        }
+        for (const k of Object.keys(curCreate)) {
+          if (typeof curCreate[k] === 'string') curCreate[k] = curCreate[k].replace(/[^\x00-\x7F]/g, '');
+        }
+        continue;
+      }
       // Match "Unknown argument `fieldName`" or "Unknown field `fieldName`"
       const unknownMatch = msg.match(/Unknown (?:argument|field) ['"`]?(\w+)['"`]?/i);
       if (unknownMatch && unknownMatch[1]) {
@@ -249,3 +269,5 @@ export async function PUT(req: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export const PATCH = PUT;

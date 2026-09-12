@@ -11,7 +11,21 @@
 const https = require('https');
 const http = require('http');
 
-const BASE_URL = process.env.TEST_BASE_URL || 'https://hab.touratbhutan.info';
+const fs = require('fs');
+
+const BASE_URL = process.env.TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
+
+let adminEmail = process.env.ADMIN_EMAIL || 'admin@handicraftsbhutan.org';
+let adminPassword = process.env.ADMIN_PASSWORD || 'HabAdminProduction2026!#';
+if (fs.existsSync('.admin_credentials.local')) {
+  try {
+    const credContent = fs.readFileSync('.admin_credentials.local', 'utf-8');
+    const mEmail = credContent.match(/ADMIN_EMAIL=(.+)/);
+    const mPass = credContent.match(/ADMIN_PASSWORD=(.+)/);
+    if (mEmail) adminEmail = mEmail[1].trim();
+    if (mPass) adminPassword = mPass[1].trim();
+  } catch {}
+}
 
 function request(url, options = {}, postData = null) {
   return new Promise((resolve, reject) => {
@@ -90,8 +104,8 @@ async function run() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   }, {
-    email: 'admin@handicraftsbhutan.org',
-    password: 'HabAdminProduction2026!#',
+    email: adminEmail,
+    password: adminPassword,
     targetPortal: 'admin',
   });
 

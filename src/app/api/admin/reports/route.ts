@@ -146,7 +146,7 @@ export async function GET(req: NextRequest) {
             artisanSalesMap[makerId].units += qty;
             artisanSalesMap[makerId].grossUSD += itemTotalUSD;
             artisanSalesMap[makerId].payoutUSD += itemTotalUSD * 0.8;
-            artisanSalesMap[makerId].payoutBTN += itemTotalUSD * 0.8 * (order.fxRateAtPurchase || 84.0);
+            artisanSalesMap[makerId].payoutBTN += Math.round(itemTotalUSD * 0.8 * (order.fxRateAtPurchase || 84.0));
           }
         }
       } else {
@@ -217,7 +217,7 @@ export async function GET(req: NextRequest) {
           a.units.toString(),
           a.grossUSD.toFixed(2),
           a.payoutUSD.toFixed(2),
-          a.payoutBTN.toFixed(2),
+          Math.round(a.payoutBTN).toString(),
         ]),
         [],
         ['=== 4. ORDER TRANSACTIONS AUDIT LOG ==='],

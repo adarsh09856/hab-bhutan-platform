@@ -46,18 +46,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
 
-    const pillar = await prisma.supportPillar.create({
-      data: {
-        key: key.trim().toLowerCase(),
-        title: title.trim(),
-        description: description.trim(),
-        targetAmountUSD: Number(targetAmountUSD) || 0,
-        raisedAmountUSD: Number(raisedAmountUSD) || 0,
-        iconEmoji: iconEmoji?.trim() || '🌱',
-        isActive: isActive !== undefined ? Boolean(isActive) : true,
-        sortOrder: Number(sortOrder) || 0,
-      },
-    });
+    let pillar;
+    try {
+      pillar = await prisma.supportPillar.create({
+        data: {
+          key: key.trim().toLowerCase(),
+          title: title.trim(),
+          description: description.trim(),
+          targetAmountUSD: Number(targetAmountUSD) || 0,
+          raisedAmountUSD: Number(raisedAmountUSD) || 0,
+          iconEmoji: iconEmoji?.trim() || 'leaf',
+          isActive: isActive !== undefined ? Boolean(isActive) : true,
+          sortOrder: Number(sortOrder) || 0,
+        },
+      });
+    } catch (createErr: any) {
+      if (createErr.message?.includes('22P05') || createErr.message?.includes('encoding')) {
+        pillar = await prisma.supportPillar.create({
+          data: {
+            key: key.trim().toLowerCase(),
+            title: title.trim().replace(/[^\x00-\x7F]/g, ''),
+            description: description.trim().replace(/[^\x00-\x7F]/g, ''),
+            targetAmountUSD: Number(targetAmountUSD) || 0,
+            raisedAmountUSD: Number(raisedAmountUSD) || 0,
+            iconEmoji: 'leaf',
+            isActive: isActive !== undefined ? Boolean(isActive) : true,
+            sortOrder: Number(sortOrder) || 0,
+          },
+        });
+      } else {
+        throw createErr;
+      }
+    }
 
     await logAudit({
       actorType: 'STAFF',
@@ -88,18 +108,38 @@ export async function PUT(req: NextRequest) {
     }
 
     const where = id ? { id } : { key };
-    const pillar = await prisma.supportPillar.update({
-      where,
-      data: {
-        ...(title !== undefined && { title: title.trim() }),
-        ...(description !== undefined && { description: description.trim() }),
-        ...(targetAmountUSD !== undefined && { targetAmountUSD: Number(targetAmountUSD) || 0 }),
-        ...(raisedAmountUSD !== undefined && { raisedAmountUSD: Number(raisedAmountUSD) || 0 }),
-        ...(iconEmoji !== undefined && { iconEmoji: iconEmoji?.trim() || null }),
-        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
-        ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
-      },
-    });
+    let pillar;
+    try {
+      pillar = await prisma.supportPillar.update({
+        where,
+        data: {
+          ...(title !== undefined && { title: title.trim() }),
+          ...(description !== undefined && { description: description.trim() }),
+          ...(targetAmountUSD !== undefined && { targetAmountUSD: Number(targetAmountUSD) || 0 }),
+          ...(raisedAmountUSD !== undefined && { raisedAmountUSD: Number(raisedAmountUSD) || 0 }),
+          ...(iconEmoji !== undefined && { iconEmoji: iconEmoji?.trim() || null }),
+          ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+          ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
+        },
+      });
+    } catch (updateErr: any) {
+      if (updateErr.message?.includes('22P05') || updateErr.message?.includes('encoding')) {
+        pillar = await prisma.supportPillar.update({
+          where,
+          data: {
+            ...(title !== undefined && { title: title.trim().replace(/[^\x00-\x7F]/g, '') }),
+            ...(description !== undefined && { description: description.trim().replace(/[^\x00-\x7F]/g, '') }),
+            ...(targetAmountUSD !== undefined && { targetAmountUSD: Number(targetAmountUSD) || 0 }),
+            ...(raisedAmountUSD !== undefined && { raisedAmountUSD: Number(raisedAmountUSD) || 0 }),
+            ...(iconEmoji !== undefined && { iconEmoji: 'leaf' }),
+            ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+            ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
+          },
+        });
+      } else {
+        throw updateErr;
+      }
+    }
 
     await logAudit({
       actorType: 'STAFF',

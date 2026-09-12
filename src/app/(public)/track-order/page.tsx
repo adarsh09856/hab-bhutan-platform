@@ -300,7 +300,7 @@ function TrackOrderContent() {
                 <strong className="text-[#33261F] font-semibold block mb-0.5">
                   Official Seal of Origin &amp; CSO Authentication
                 </strong>
-                This consignment has been verified by the Secretariat of the Handicrafts Association of Bhutan (Registration CSO/2011/043). 100% of purchase proceeds directly support indigenous craft communities and rural master artisans across Bhutan's 20 Dzongkhags.
+                This consignment has been verified by the Secretariat of the Handicrafts Association of Bhutan (Registration CSO/2011/043). 100% of purchase proceeds directly support indigenous craft communities and rural master artisans across Bhutan&apos;s 20 Dzongkhags.
               </div>
             </div>
           </div>
