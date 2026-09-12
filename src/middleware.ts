@@ -12,6 +12,16 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
+function applyNoStoreHeaders(res: NextResponse): NextResponse {
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.headers.set('CDN-Cache-Control', 'no-store');
+  res.headers.set('Surrogate-Control', 'no-store');
+  res.headers.set('Cloudflare-CDN-Cache-Control', 'no-store');
+  res.headers.set('Pragma', 'no-cache');
+  res.headers.set('Expires', '0');
+  return res;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -35,10 +45,10 @@ export async function middleware(req: NextRequest) {
       );
       // If already signed in as staff, redirect directly to admin dashboard
       if (isStaff) {
-        return applySecurityHeaders(NextResponse.redirect(new URL('/admin', req.url)));
+        return applyNoStoreHeaders(applySecurityHeaders(NextResponse.redirect(new URL('/admin', req.url))));
       }
     }
-    return applySecurityHeaders(NextResponse.next());
+    return applyNoStoreHeaders(applySecurityHeaders(NextResponse.next()));
   }
 
   // 2. Protect all other /admin routes exclusively for authenticated staff
@@ -48,7 +58,7 @@ export async function middleware(req: NextRequest) {
     if (!token) {
       const adminLoginUrl = new URL('/admin/login', req.url);
       adminLoginUrl.searchParams.set('redirect', pathname);
-      return applySecurityHeaders(NextResponse.redirect(adminLoginUrl));
+      return applyNoStoreHeaders(applySecurityHeaders(NextResponse.redirect(adminLoginUrl)));
     }
 
     // Lightweight edge-compatible JWT verification via jose
@@ -60,7 +70,7 @@ export async function middleware(req: NextRequest) {
       adminLoginUrl.searchParams.set('reason', 'session_expired');
       const response = NextResponse.redirect(adminLoginUrl);
       response.cookies.delete('hab_session');
-      return applySecurityHeaders(response);
+      return applyNoStoreHeaders(applySecurityHeaders(response));
     }
 
     // Enforce role check: Non-staff (e.g. member/artisan) cannot access /admin
@@ -74,14 +84,10 @@ export async function middleware(req: NextRequest) {
     if (!isStaff) {
       const adminLoginUrl = new URL('/admin/login', req.url);
       adminLoginUrl.searchParams.set('reason', 'unauthorized_staff');
-      return applySecurityHeaders(NextResponse.redirect(adminLoginUrl));
+      return applyNoStoreHeaders(applySecurityHeaders(NextResponse.redirect(adminLoginUrl)));
     }
 
-    const res = applySecurityHeaders(NextResponse.next());
-    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.headers.set('Pragma', 'no-cache');
-    res.headers.set('Expires', '0');
-    return res;
+    return applyNoStoreHeaders(applySecurityHeaders(NextResponse.next()));
   }
 
   // 3. Protect /portal routes for authenticated members
