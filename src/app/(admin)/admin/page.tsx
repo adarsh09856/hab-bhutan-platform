@@ -168,8 +168,8 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <GlassStatWidget
           title="Today's Revenue"
-          value={loading ? '...' : `$${m?.sales.today.usd.toLocaleString() || '0'}`}
-          subtitle={`Nu. ${m?.sales.today.btn.toLocaleString() || '0'} BTN`}
+          value={loading ? '...' : `$${m?.sales?.today?.usd != null ? m.sales.today.usd.toLocaleString() : '0'}`}
+          subtitle={`Nu. ${m?.sales?.today?.btn != null ? m.sales.today.btn.toLocaleString() : '0'} BTN`}
           icon={CreditCard}
           glow="amber"
           trendLabel="Settled via Card / mBOB"
@@ -178,18 +178,18 @@ export default function AdminDashboardPage() {
 
         <GlassStatWidget
           title="Weekly Volume"
-          value={loading ? '...' : `$${m?.sales.thisWeek.usd.toLocaleString() || '0'}`}
-          subtitle={`Nu. ${m?.sales.thisWeek.btn.toLocaleString() || '0'} BTN`}
+          value={loading ? '...' : `$${m?.sales?.thisWeek?.usd != null ? m.sales.thisWeek.usd.toLocaleString() : '0'}`}
+          subtitle={`Nu. ${m?.sales?.thisWeek?.btn != null ? m.sales.thisWeek.btn.toLocaleString() : '0'} BTN`}
           icon={TrendingUp}
-          trendPct={m?.sales.thisWeek.trendPct ?? 12.5}
+          trendPct={m?.sales?.thisWeek?.trendPct ?? 12.5}
           glow="emerald"
           sparklineData={[20, 25, 40, 35, 55, 65, 80]}
         />
 
         <GlassStatWidget
           title="Orders Pending"
-          value={loading ? '...' : (m?.orders.pendingFulfillment ?? 0)}
-          subtitle={`${m?.orders.attentionRequired ?? 0} require courier dispatch`}
+          value={loading ? '...' : (m?.orders?.pendingFulfillment ?? 0)}
+          subtitle={`${m?.orders?.attentionRequired ?? 0} require courier dispatch`}
           icon={Package}
           glow="rose"
           trendLabel="EMS & DHL queue"
@@ -198,8 +198,8 @@ export default function AdminDashboardPage() {
 
         <GlassStatWidget
           title="Artisan Guild"
-          value={loading ? '...' : (m?.members.totalActive ?? 0)}
-          subtitle={`${m?.members.pendingApplications ?? 0} applications in review`}
+          value={loading ? '...' : (m?.members?.totalActive ?? 0)}
+          subtitle={`${m?.members?.pendingApplications ?? 0} applications in review`}
           icon={Users}
           glow="indigo"
           trendLabel="Active members"

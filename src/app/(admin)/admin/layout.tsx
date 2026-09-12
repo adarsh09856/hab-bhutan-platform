@@ -277,7 +277,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* FX Status Pill */}
           {health?.fx && (
             <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-white/10 text-[11px] font-mono text-amber-300">
-              <span>USD/BTN: Nu. {health.fx.rate.toFixed(2)}</span>
+              <span>USD/BTN: Nu. {health.fx.rate != null ? Number(health.fx.rate).toFixed(2) : '86.50'}</span>
             </div>
           )}
 
@@ -411,8 +411,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-3.5 border-t border-white/10 bg-slate-950/60 text-xs space-y-2">
             <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${health?.database.connected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-                <span>PostgreSQL {health?.database.latencyMs ? `(${health.database.latencyMs}ms)` : 'Active'}</span>
+                <span className={`w-2 h-2 rounded-full ${health?.database?.connected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
+                <span>PostgreSQL {health?.database?.latencyMs != null ? `(${health.database.latencyMs}ms)` : (health?.database?.connected ? 'Active' : 'Checking...')}</span>
               </div>
               <span className="text-[10px] text-slate-400">v2.4 LTS</span>
             </div>

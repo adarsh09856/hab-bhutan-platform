@@ -15,14 +15,16 @@ function AdminLoginForm() {
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState(
-    reasonParam === 'session_expired' 
-      ? 'Your session has expired. Please sign in again.'
-      : reasonParam === 'unauthorized_staff'
-      ? 'Staff authorization required to access the Secretariat Suite.'
-      : ''
-  );
+  const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (reasonParam === 'session_expired') {
+      setErrorMsg('Your session has expired. Please sign in again.');
+    } else if (reasonParam === 'unauthorized_staff') {
+      setErrorMsg('Staff authorization required to access the Secretariat Suite.');
+    }
+  }, [reasonParam]);
 
   const perks = [
     'Catalog inventory & artisan maker accreditation',
