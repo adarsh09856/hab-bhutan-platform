@@ -232,14 +232,18 @@ export async function POST(req: NextRequest) {
 
     const token = await createSessionToken(sessionUser);
 
-    let redirectUrl = '/';
-    if (isStaffRole && targetPortal !== 'member') {
+    let redirectUrl = '/account';
+    if (body.redirectUrl && typeof body.redirectUrl === 'string' && body.redirectUrl.startsWith('/')) {
+      redirectUrl = body.redirectUrl;
+    } else if (isStaffRole && targetPortal !== 'member') {
       redirectUrl = '/admin';
     } else if (user.memberProfile) {
       const slug = encodeURIComponent(user.memberProfile.regNumber || user.memberProfile.name);
       redirectUrl = `/members/${slug}`;
     } else if (user.role.slug === 'member' || user.role.slug === 'artisan') {
       redirectUrl = '/members';
+    } else {
+      redirectUrl = '/account';
     }
 
     // 6. Audit log

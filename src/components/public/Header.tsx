@@ -15,6 +15,7 @@ export default function Header() {
 
   const [membersMenuOpen, setMembersMenuOpen] = useState(false);
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,7 +33,7 @@ export default function Header() {
     fetch('/api/navigation')
       .then((r) => r.json())
       .then((data) => {
-        if (data?.header && data.header.length > 0) {
+        if (data?.header && Array.isArray(data.header) && data.header.length >= 5) {
           setHeaderLinks(data.header);
         }
       })
@@ -41,6 +42,7 @@ export default function Header() {
 
   const membersWrapperRef = useRef<HTMLDivElement>(null);
   const shopWrapperRef = useRef<HTMLDivElement>(null);
+  const userWrapperRef = useRef<HTMLDivElement>(null);
 
   // Close menus on Escape key
   useEffect(() => {
@@ -48,6 +50,7 @@ export default function Header() {
       if (e.key === 'Escape') {
         setMembersMenuOpen(false);
         setShopMenuOpen(false);
+        setUserMenuOpen(false);
         setMobileMenuOpen(false);
         setMobileSearchOpen(false);
       }
@@ -62,10 +65,12 @@ export default function Header() {
       const target = e.target as HTMLElement;
       if (
         !membersWrapperRef.current?.contains(target) &&
-        !shopWrapperRef.current?.contains(target)
+        !shopWrapperRef.current?.contains(target) &&
+        !userWrapperRef.current?.contains(target)
       ) {
         setMembersMenuOpen(false);
         setShopMenuOpen(false);
+        setUserMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleMouseDown, true);
@@ -326,15 +331,76 @@ export default function Header() {
             )}
           </div>
 
-          {/* User Account Link */}
-          <Link
-            href="/account"
-            aria-label="Account"
-            title="My Account & Orders"
-            className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-[7px] border border-[#E4DDD1] bg-[#FFFCF8] flex items-center justify-center text-[#6B5A4C] hover:border-[#33261F] hover:text-[#33261F] transition-colors duration-150"
+          {/* User Account Dropdown */}
+          <div
+            ref={userWrapperRef}
+            className="relative"
+            onMouseEnter={() => setUserMenuOpen(true)}
+            onMouseLeave={() => setUserMenuOpen(false)}
           >
-            <User className="w-4 h-4" />
-          </Link>
+            <Link
+              href="/account"
+              aria-label="Account"
+              title="My Account & Orders"
+              onClick={() => setUserMenuOpen((prev) => !prev)}
+              className="w-[38px] h-[38px] sm:w-[42px] sm:h-[42px] rounded-[7px] border border-[#E4DDD1] bg-[#FFFCF8] flex items-center justify-center text-[#6B5A4C] hover:border-[#33261F] hover:text-[#33261F] transition-colors duration-150"
+            >
+              <User className="w-4 h-4" />
+            </Link>
+
+            {userMenuOpen && (
+              <div className="absolute top-full right-0 pt-[8px] w-[250px] z-60">
+                <div
+                  className="w-full bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-2.5 shadow-xl text-[13px] font-figtree"
+                  style={{ boxShadow: '0 14px 34px rgba(27,26,24,.14)' }}
+                >
+                  <div className="px-2.5 py-1.5 border-b border-[#EAE3D7] mb-1">
+                    <p className="font-semibold text-[#33261F] text-[13.5px]">User Account</p>
+                    <p className="text-[11px] text-[#8A7767]">Orders, consignments &amp; profile</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <Link
+                      href="/account"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-2.5 py-2 rounded-[6px] text-[#33261F] hover:bg-[#F1EADC] transition-colors font-medium"
+                    >
+                      <span className="text-[14px]">📦</span> My Account &amp; Orders
+                    </Link>
+                    <Link
+                      href="/track-order"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-2.5 py-2 rounded-[6px] text-[#33261F] hover:bg-[#F1EADC] transition-colors font-medium"
+                    >
+                      <span className="text-[14px]">🚚</span> Track Consignment
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-2.5 py-2 rounded-[6px] text-[#8B2E24] hover:bg-[#F1EADC] transition-colors font-semibold"
+                    >
+                      <span className="text-[14px]">🔑</span> Sign In
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-2.5 py-2 rounded-[6px] text-[#8B2E24] hover:bg-[#8B2E24]/10 transition-colors font-semibold"
+                    >
+                      <span className="text-[14px]">✨</span> Create Account
+                    </Link>
+                    <div className="border-t border-[#EAE3D7] my-1 pt-1">
+                      <Link
+                        href="/admin/login"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-[#8A7767] hover:text-[#8B2E24] hover:bg-[#F1EADC] transition-colors text-[11.5px]"
+                      >
+                        <span className="text-[13px]">⚙️</span> Secretariat Operations Suite
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Basket Icon with Count Badge */}
           <Link
@@ -402,18 +468,25 @@ export default function Header() {
             </div>
 
             {/* Account & Register Quick Links */}
-            <div className="grid grid-cols-2 gap-2 pb-2">
+            <div className="grid grid-cols-3 gap-1.5 pb-2">
               <Link
                 href="/account"
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-figtree font-semibold text-[13px] border border-[#E4DDD1] text-[#33261F] p-2.5 rounded-[8px] text-center bg-white"
+                className="font-figtree font-semibold text-[12px] border border-[#E4DDD1] text-[#33261F] p-2 rounded-[8px] text-center bg-white"
               >
                 My Account
               </Link>
               <Link
+                href="/track-order"
+                onClick={() => setMobileMenuOpen(false)}
+                className="font-figtree font-semibold text-[12px] border border-[#E4DDD1] text-[#33261F] p-2 rounded-[8px] text-center bg-white"
+              >
+                Track Order
+              </Link>
+              <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-figtree font-semibold text-[13px] border border-[#8B2E24] text-[#8B2E24] p-2.5 rounded-[8px] text-center bg-[#8B2E24]/5"
+                className="font-figtree font-semibold text-[12px] border border-[#8B2E24] text-[#8B2E24] p-2 rounded-[8px] text-center bg-[#8B2E24]/5"
               >
                 Register
               </Link>

@@ -61,15 +61,45 @@ export async function GET() {
       });
     }
 
-    const header = items.filter((i) => i.menuType === 'HEADER');
-    const footerItems = items.filter((i) => i.menuType === 'FOOTER');
+    const customHeader = items.filter((i) => i.menuType === 'HEADER');
+    const header: any[] = [...customHeader];
+    if (header.length < 5) {
+      const existingHrefs = new Set(header.map((h) => h.href));
+      DEFAULT_HEADER_LINKS.forEach((def) => {
+        if (!existingHrefs.has(def.href)) {
+          header.push({
+            id: def.id,
+            menuType: 'HEADER',
+            column: null,
+            label: def.label,
+            href: def.href,
+            parent: def.parent,
+            sortOrder: def.sortOrder,
+            isActive: def.isActive,
+            isExternal: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      });
+      header.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+    }
 
+    const footerItems = items.filter((i) => i.menuType === 'FOOTER');
     const footer: Record<string, any[]> = {};
-    footerItems.forEach((item) => {
-      const col = item.column || 'General';
-      if (!footer[col]) footer[col] = [];
-      footer[col].push(item);
-    });
+    if (footerItems.length === 0) {
+      DEFAULT_FOOTER_COLUMNS.forEach((item) => {
+        const col = item.column || 'General';
+        if (!footer[col]) footer[col] = [];
+        footer[col].push(item);
+      });
+    } else {
+      footerItems.forEach((item) => {
+        const col = item.column || 'General';
+        if (!footer[col]) footer[col] = [];
+        footer[col].push(item);
+      });
+    }
 
     return NextResponse.json({
       success: true,
