@@ -11,6 +11,11 @@ export default function WholesaleCartPage() {
   const [deliveryDate, setDeliveryDate] = useState<string>('');
   const [destination, setDestination] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
+  const [buyerName, setBuyerName] = useState<string>('');
+  const [buyerEmail, setBuyerEmail] = useState<string>('');
+  const [buyerPhone, setBuyerPhone] = useState<string>('');
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
   const [quoteRef, setQuoteRef] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,11 +82,67 @@ export default function WholesaleCartPage() {
     return items.reduce((sum, item) => sum + item.qty, 0);
   }, [items]);
 
-  const handleRequestQuotation = () => {
-    const ref = `HAB-Q-${Math.floor(1000 + Math.random() * 9000)}`;
-    setQuoteRef(ref);
-    saveBasket({});
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleRequestQuotation = async () => {
+    setErrorMsg('');
+    if (!buyerName.trim()) {
+      setErrorMsg('Please enter your business or contact name.');
+      return;
+    }
+    if (!buyerEmail.trim() || !buyerEmail.includes('@')) {
+      setErrorMsg('Please enter a valid email address to receive the quotation.');
+      return;
+    }
+    if (items.length === 0) {
+      setErrorMsg('Your quote basket is empty.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const subject = `Wholesale Quotation Request: ${buyerName} (${totalUnits} units · $${totalAmount.toFixed(2)} USD)`;
+      const itemsList = items
+        .map((i) => ` - [${i.code}] ${i.product?.name || 'Craft SKU'}: ${i.qty} units @ $${i.unitPrice} = $${i.lineTotal.toFixed(2)}`)
+        .join('\n');
+
+      const message = [
+        `WHOLESALE QUOTATION INTAKE:`,
+        `Buyer / Company: ${buyerName}`,
+        `Contact Email: ${buyerEmail}`,
+        `Contact Phone: ${buyerPhone || 'N/A'}`,
+        `Destination Country: ${destination || 'Not specified'}`,
+        `Required Delivery Date: ${deliveryDate || 'Flexible'}`,
+        `Total Items: ${items.length} line-items | ${totalUnits} total units`,
+        `Indicative Goods Value (FOB Thimphu): $${totalAmount.toFixed(2)} USD`,
+        `\nREQUESTED LINE-ITEMS:\n${itemsList}`,
+        notes ? `\nCUSTOMISATION & PACKAGING NOTES:\n${notes}` : '',
+      ].filter(Boolean).join('\n');
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: buyerName,
+          email: buyerEmail,
+          phone: buyerPhone || null,
+          subject,
+          message,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const ref = data.inquiryId ? `HAB-Q-${data.inquiryId.slice(0, 6).toUpperCase()}` : `HAB-Q-${Math.floor(1000 + Math.random() * 9000)}`;
+        setQuoteRef(ref);
+        saveBasket({});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMsg(data.error || 'Failed to submit quotation request. Please try again.');
+      }
+    } catch {
+      setErrorMsg('Network error submitting quote request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!isLoaded) {
@@ -197,15 +258,38 @@ export default function WholesaleCartPage() {
               </div>
 
               <div className="panel">
-                <h2 className="newsaside__title">Anything else the trade desk should know?</h2>
+                <h2 className="newsaside__title">Buyer Contact &amp; Quotation Destination</h2>
                 <div className="formgrid">
                   <label className="field">
-                    <span className="field__label">Required delivery date</span>
+                    <span className="field__label">Company / Buyer Name *</span>
                     <input
                       className="input"
-                      type="date"
-                      value={deliveryDate}
-                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      type="text"
+                      required
+                      placeholder="e.g. Himalayan Imports LLC"
+                      value={buyerName}
+                      onChange={(e) => setBuyerName(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field__label">Business Email Address *</span>
+                    <input
+                      className="input"
+                      type="email"
+                      required
+                      placeholder="trade@company.com"
+                      value={buyerEmail}
+                      onChange={(e) => setBuyerEmail(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field__label">Phone / WhatsApp</span>
+                    <input
+                      className="input"
+                      type="text"
+                      placeholder="+1 555 0192"
+                      value={buyerPhone}
+                      onChange={(e) => setBuyerPhone(e.target.value)}
                     />
                   </label>
                   <label className="field">
@@ -216,6 +300,15 @@ export default function WholesaleCartPage() {
                       placeholder="For freight quotation"
                       value={destination}
                       onChange={(e) => setDestination(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span className="field__label">Target delivery date</span>
+                    <input
+                      className="input"
+                      type="date"
+                      value={deliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
                     />
                   </label>
                   <label className="field field--wide">
@@ -253,12 +346,18 @@ export default function WholesaleCartPage() {
                 <span>Goods, FOB</span>
                 <span>${totalAmount.toLocaleString()}</span>
               </div>
+              {errorMsg && (
+                <div style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', color: '#FCA5A5', fontSize: '12px', marginBottom: '12px' }}>
+                  {errorMsg}
+                </div>
+              )}
               <button
                 type="button"
                 className="btn btn--light btn--full"
+                disabled={submitting}
                 onClick={handleRequestQuotation}
               >
-                Request quotation
+                {submitting ? 'Transmitting to Trade Desk...' : 'Request quotation'}
               </button>
               <p className="summary__fine">
                 Indicative only. Freight, duty and payment terms are confirmed in the formal quotation, usually within two working days.

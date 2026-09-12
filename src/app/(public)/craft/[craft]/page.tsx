@@ -18,11 +18,58 @@ export default function CraftProfilePage() {
 
   const [craft, setCraft] = useState<CraftData>(() => getCraftByKey(craftKey) || CLIENT_DATA.crafts[0]);
 
+  const [products, setProducts] = useState<any[]>(() => getProductsForCraft(craft.key));
+  const [clusters, setClusters] = useState<any[]>(() => CLIENT_DATA.clusters.filter((c) => c.craft_key === craft.key));
+  const [members, setMembers] = useState<any[]>(() => (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === craft.key));
+
   useEffect(() => {
     fetch(`/api/crafts?key=${encodeURIComponent(craftKey)}`)
       .then((r) => r.json())
       .then((d) => {
         if (d?.craft) setCraft(d.craft);
+      })
+      .catch(() => {});
+
+    // Fetch live products for this craft
+    fetch(`/api/products?craft=${encodeURIComponent(craftKey)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.products && Array.isArray(d.products) && d.products.length > 0) {
+          setProducts(
+            d.products.map((p: any) => ({
+              code: p.code,
+              name: p.name,
+              craft_key: p.craftKey || p.craft_key,
+              region: p.region || 'Bhutan',
+              maker: p.maker?.name || p.maker || 'Registered Master',
+              price: p.priceUSD || p.price,
+              hero_image: p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
+              summary: p.description || p.summary || '',
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    // Fetch live clusters for this craft
+    fetch('/api/clusters')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.clusters && Array.isArray(d.clusters)) {
+          const matching = d.clusters.filter((c: any) => (c.craftKey || c.craft_key) === craftKey);
+          if (matching.length > 0) {
+            setClusters(
+              matching.map((c: any) => ({
+                key: c.key,
+                name: c.name,
+                craft_key: c.craftKey || c.craft_key,
+                dzongkhag: c.dzongkhag,
+                members: c.members,
+                summary: c.summary,
+              }))
+            );
+          }
+        }
       })
       .catch(() => {});
   }, [craftKey]);
@@ -32,10 +79,6 @@ export default function CraftProfilePage() {
 
   const prevCraft = CLIENT_DATA.crafts[(craftIndex - 1 + totalCrafts) % totalCrafts];
   const nextCraft = CLIENT_DATA.crafts[(craftIndex + 1) % totalCrafts];
-
-  const products = getProductsForCraft(craft.key);
-  const clusters = CLIENT_DATA.clusters.filter((c) => c.craft_key === craft.key);
-  const members = (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === craft.key);
 
   const [activeSlide, setActiveSlide] = useState(0);
   const { addToCart } = useCart();

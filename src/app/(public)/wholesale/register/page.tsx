@@ -30,6 +30,7 @@ export default function WholesaleRegisterPage() {
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   const toggleAllCrafts = () => {
     if (selectedCrafts.length === CLIENT_DATA.crafts.length) {
@@ -53,7 +54,7 @@ export default function WholesaleRegisterPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -76,9 +77,52 @@ export default function WholesaleRegisterPage() {
       return;
     }
 
-    const ref = `HAB-W-${Math.floor(1000 + Math.random() * 9000)}`;
-    setSubmittedRef(ref);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setSubmitting(true);
+    try {
+      const subject = `Wholesale Buyer Registration: ${formData.businessName} (${formData.country})`;
+      const message = [
+        `BUSINESS REGISTRATION DETAILS:`,
+        `Business Name: ${formData.businessName}`,
+        `Buyer Type: ${formData.buyerType}`,
+        `Registration Number / Tax ID: ${formData.regNumber || 'N/A'}`,
+        `Country: ${formData.country}`,
+        `City: ${formData.city || 'N/A'}`,
+        `Website: ${formData.website || 'N/A'}`,
+        `Contact Person: ${formData.contactPerson} (${formData.position || 'Representative'})`,
+        `Phone: ${formData.phone}`,
+        `Email: ${formData.email}`,
+        `Business Purpose: ${formData.purpose}`,
+        `Estimated Order Value: ${formData.orderValue || 'Not specified'}`,
+        `Order Frequency: ${formData.frequency || 'Not specified'}`,
+        `Selected Crafts: ${selectedCrafts.join(', ') || 'All Crafts'}`,
+        formData.customNotes ? `Custom Production Notes: ${formData.customNotes}` : '',
+      ].filter(Boolean).join('\n');
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.contactPerson,
+          email: formData.email,
+          phone: formData.phone,
+          subject,
+          message,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const ref = data.inquiryId ? `HAB-W-${data.inquiryId.slice(0, 6).toUpperCase()}` : `HAB-W-${Math.floor(1000 + Math.random() * 9000)}`;
+        setSubmittedRef(ref);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setErrorMessage(data.error || 'Failed to submit application. Please try again.');
+      }
+    } catch {
+      setErrorMessage('Network error submitting application. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -423,8 +467,8 @@ export default function WholesaleRegisterPage() {
             </section>
 
             <div className="actions">
-              <button className="btn btn--accent" type="submit">
-                Submit application
+              <button className="btn btn--accent" type="submit" disabled={submitting}>
+                {submitting ? 'Submitting to Secretariat...' : 'Submit application'}
               </button>
               <Link className="btn btn--outline" href="/wholesale">
                 ← Back to wholesale

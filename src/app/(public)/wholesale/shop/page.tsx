@@ -69,14 +69,51 @@ function WholesaleShopContent() {
     showToast(`${product.name} × ${qty} added to the quote basket.`);
   };
 
+  const [productsList, setProductsList] = useState<any[]>(() => CLIENT_DATA.products);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProductsList(
+            data.products.map((p: any) => ({
+              code: p.code,
+              name: p.name,
+              craft_key: p.craftKey || p.craft_key,
+              region: p.region || 'Bhutan',
+              maker: p.maker?.name || p.maker || 'Registered Master',
+              price: p.priceUSD || p.price,
+              hero_image: p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
+              summary: p.description || p.summary || '',
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const counts = getCountsByCraft();
   const activeCraft = selectedCraft ? CLIENT_DATA.crafts.find((c) => c.key === selectedCraft) : null;
 
+  // Helper to ensure terms exist for all products (dynamic fallback)
+  const getTermsForProduct = (code: string, price: number): WholesaleTermData => {
+    if (CLIENT_DATA.wholesaleTerms[code]) return CLIENT_DATA.wholesaleTerms[code];
+    const base = price || 50;
+    return {
+      moq: 5,
+      lead: '2 – 3 weeks',
+      tiers: [
+        [5, Math.round(base * 0.9)],
+        [10, Math.round(base * 0.82)],
+        [25, Math.round(base * 0.72)],
+      ],
+    };
+  };
+
   // Filter products that have wholesale terms
   const filteredProducts = useMemo(() => {
-    let list = CLIENT_DATA.products.filter((p) => {
-      const hasTerms = !!CLIENT_DATA.wholesaleTerms[p.code];
-      if (!hasTerms) return false;
+    let list = productsList.filter((p) => {
       if (selectedCraft) {
         return p.craft_key === selectedCraft;
       }
@@ -85,22 +122,22 @@ function WholesaleShopContent() {
 
     if (sortOrder === 'moq') {
       list.sort((a, b) => {
-        const ma = CLIENT_DATA.wholesaleTerms[a.code]?.moq || 0;
-        const mb = CLIENT_DATA.wholesaleTerms[b.code]?.moq || 0;
+        const ma = getTermsForProduct(a.code, a.price)?.moq || 0;
+        const mb = getTermsForProduct(b.code, b.price)?.moq || 0;
         return ma - mb;
       });
     } else if (sortOrder === 'low') {
       list.sort((a, b) => {
-        const ta = CLIENT_DATA.wholesaleTerms[a.code];
-        const tb = CLIENT_DATA.wholesaleTerms[b.code];
+        const ta = getTermsForProduct(a.code, a.price);
+        const tb = getTermsForProduct(b.code, b.price);
         const pa = getTierPrice(ta, 0);
         const pb = getTierPrice(tb, 0);
         return pa - pb;
       });
     } else if (sortOrder === 'high') {
       list.sort((a, b) => {
-        const ta = CLIENT_DATA.wholesaleTerms[a.code];
-        const tb = CLIENT_DATA.wholesaleTerms[b.code];
+        const ta = getTermsForProduct(a.code, a.price);
+        const tb = getTermsForProduct(b.code, b.price);
         const pa = getTierPrice(ta, 0);
         const pb = getTierPrice(tb, 0);
         return pb - pa;
@@ -108,7 +145,7 @@ function WholesaleShopContent() {
     }
 
     return list;
-  }, [selectedCraft, sortOrder]);
+  }, [productsList, selectedCraft, sortOrder]);
 
   return (
     <main id="main">
@@ -281,12 +318,12 @@ function WholesaleShopContent() {
               <div className="grid grid--3">
                 {filteredProducts.map((p) => {
                   const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
-                  const terms = CLIENT_DATA.wholesaleTerms[p.code];
-                  if (!terms) return null;
-
+                  const terms = getTermsForProduct(p.code, p.price);
                   const currentQty = quantities[p.code] || terms.moq;
                   const unitPrice = getTierPrice(terms, currentQty);
-                  const imgSrc = p.image_path ? `/${p.image_path.replace(/^\/+/, '')}` : '/assets/photos/product-sad03.jpg';
+                  const imgSrc = p.image_path
+                    ? (p.image_path.startsWith('/') ? p.image_path : `/${p.image_path}`)
+                    : (p.hero_image ? (p.hero_image.startsWith('/') || p.hero_image.startsWith('http') ? p.hero_image : `/${p.hero_image}`) : '/assets/photos/product-sad03.jpg');
 
                   return (
                     <article key={p.code} className="card product wscard" id={p.code}>
