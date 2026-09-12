@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'hab-platform',
+      name: 'habbhutanplatform',
       cwd: __dirname,
       script: 'npm',
       args: 'start',
@@ -12,7 +12,7 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3001,
       },
     },
   ],

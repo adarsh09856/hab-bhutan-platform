@@ -44,20 +44,38 @@ export default function AdminMembersPage() {
   const loadMembers = async () => {
     setLoading(true);
     setActionError('');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+
     try {
       const res = await fetch('/api/admin/members', {
         credentials: 'include',
+        signal: controller.signal,
       });
       if (res.ok) {
-        const data = await res.json();
-        setMembers(data.members || []);
+        try {
+          const data = await res.json();
+          setMembers(Array.isArray(data.members) ? data.members : []);
+        } catch {
+          setMembers([]);
+          setActionError('Received malformed response from members API.');
+        }
       } else {
-        const err = await res.json();
-        setActionError(err.error || 'Failed to fetch members from PostgreSQL.');
+        let errText = `Members service responded with status ${res.status}.`;
+        try {
+          const err = await res.json();
+          if (err?.error) errText = err.error;
+        } catch {}
+        setActionError(errText);
       }
     } catch (err: any) {
-      setActionError(err.message || 'Network error fetching members.');
+      if (err.name === 'AbortError') {
+        setActionError('Members request timed out. Please refresh or check server status.');
+      } else {
+        setActionError(err.message || 'Network error fetching members.');
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   };
@@ -231,15 +249,15 @@ export default function AdminMembersPage() {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold admin-title tracking-tight">Member CRM &amp; Artisans Registry</h1>
-          <p className="text-sm admin-muted mt-1">
+          <h1 className="text-2xl font-bold text-white tracking-tight">Member CRM &amp; Artisans Registry</h1>
+          <p className="text-sm text-slate-400 mt-1">
             Complete management of certified Bhutanese handicraft enterprises, artisans, and guild members.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-2 transition"
+            className="px-4 py-2 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-2 transition"
           >
             <span>+</span>
             <span>Register New Member</span>
@@ -263,22 +281,22 @@ export default function AdminMembersPage() {
       )}
 
       {/* Filter controls */}
-      <div className="flex gap-4 items-center admin-card p-4 border admin-border rounded-lg shadow-sm flex-wrap">
+      <div className="flex gap-4 items-center admin-card bg-slate-900/80 p-4 border border-white/10 rounded-xl shadow-lg flex-wrap backdrop-blur-xl">
         <input
           type="text"
           placeholder="Search by enterprise name, dzongkhag, registration #, CID..."
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
-          className="flex-1 min-w-[240px] text-xs border border-slate-300 rounded px-3 py-2 outline-none focus:border-slate-500 font-sans"
+          className="flex-1 min-w-[240px] text-xs admin-input bg-slate-950/60 text-white placeholder-slate-400 border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 font-sans transition-colors"
         />
         <select
           value={filterCraft}
           onChange={(e) => setFilterCraft(e.target.value)}
-          className="text-xs border border-slate-300 rounded px-3 py-2 outline-none focus:border-slate-500 admin-card"
+          className="text-xs admin-input bg-slate-950/60 text-white border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 transition-colors"
         >
-          <option value="">All 13 Traditional Crafts</option>
+          <option value="" className="bg-slate-900 text-white">All 13 Traditional Crafts</option>
           {CRAFTS.map((c) => (
-            <option key={c.key} value={c.key}>
+            <option key={c.key} value={c.key} className="bg-slate-900 text-white">
               {c.name} ({c.english})
             </option>
           ))}
@@ -286,10 +304,11 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Member Table */}
-      <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden">
+      <div className="admin-card bg-slate-900/80 border border-white/10 rounded-xl shadow-lg overflow-hidden backdrop-blur-xl">
         {loading ? (
-          <div className="py-12 text-center admin-muted text-xs font-mono">
-            Loading artisan members from PostgreSQL...
+          <div className="py-16 text-center text-slate-400 text-xs font-mono flex flex-col items-center justify-center gap-3">
+            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <span>Loading artisan members from PostgreSQL...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
