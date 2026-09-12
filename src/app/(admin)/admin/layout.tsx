@@ -87,6 +87,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
+    document.body.classList.add('hab-admin-body');
+    return () => {
+      document.body.classList.remove('hab-admin-body');
+    };
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
     async function checkHealth() {
       try {

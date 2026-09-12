@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
 import { UserCheck, Search, CheckCircle, XCircle, Clock, Shield, AlertCircle, FileText, Plus, Edit2, Trash2, Copy, Check, CheckCircle2 } from 'lucide-react';

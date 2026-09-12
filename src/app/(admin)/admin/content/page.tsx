@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2 } from 'lucide-react';
 

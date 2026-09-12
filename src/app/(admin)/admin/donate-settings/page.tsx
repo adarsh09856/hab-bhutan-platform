@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { Heart, Plus, Edit2, Trash2, CheckCircle, XCircle, DollarSign, Layers } from 'lucide-react';
 

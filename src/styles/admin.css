@@ -1,4 +1,11 @@
 /* Admin-only Dark Glassmorphic design tokens. Public and member portal palettes remain untouched. */
+body:has(.hab-admin),
+body.hab-admin-body,
+html:has(.hab-admin) {
+  background-color: #020617 !important;
+  color: #f8fafc !important;
+}
+
 .hab-admin {
   --admin-bg-base: #020617;
   --admin-surface: rgba(15, 23, 42, 0.75);
