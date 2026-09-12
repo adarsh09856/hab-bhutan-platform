@@ -86,7 +86,9 @@ export async function POST(req: NextRequest) {
         description: description || 'Authentic artisan handicraft curated by HAB.',
         images: imageList,
         stock: stock !== undefined ? Math.max(0, Number(stock)) : 10,
-        status: status || 'PUBLISHED',
+        status: ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
+          ? status
+          : 'PUBLISHED',
       },
       include: { craft: true, maker: true },
     });
@@ -167,7 +169,11 @@ export async function PATCH(req: NextRequest) {
     if (region !== undefined) updateData.region = region;
     if (makerMemberId !== undefined) updateData.makerMemberId = makerMemberId || null;
     if (description !== undefined) updateData.description = description;
-    if (status !== undefined) updateData.status = status;
+    if (status !== undefined) {
+      updateData.status = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
+        ? status
+        : 'PUBLISHED';
+    }
 
     if (images !== undefined) {
       updateData.images = images;
@@ -296,3 +302,6 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
+
+export const PUT = PATCH;
+

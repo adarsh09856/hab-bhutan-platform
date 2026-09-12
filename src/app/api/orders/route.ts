@@ -67,9 +67,12 @@ export async function POST(req: NextRequest) {
 
     const rateApplied = fxInfo.rate || 84.0;
     const orderNumber = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
-    const customerEmail = email || shippingAddress?.email || 'guest@handicraftsbhutan.org';
-    const customerFullName = customerName || shippingAddress?.fullName || 'Guest Collector';
+    const customerEmail = email || body.customerEmail || shippingAddress?.email || 'guest@handicraftsbhutan.org';
+    const customerFullName = customerName || body.customerName || shippingAddress?.fullName || 'Guest Collector';
+    const customerPhoneNum = phone || body.customerPhone || shippingAddress?.phone || null;
     const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
+    const rawPayment = String(paymentMethod || 'CARD').toUpperCase();
+    const normalizedPaymentMethod = ['CARD', 'MBOB', 'BANK_TRANSFER', 'CASH', 'CHEQUE'].includes(rawPayment) ? rawPayment : 'CARD';
 
     // Persist real order and line-items in PostgreSQL with canonical pricing & atomic stock decrement
     const result = await prisma.$transaction(async (tx) => {
@@ -146,13 +149,13 @@ export async function POST(req: NextRequest) {
           proofUrl: body.proofUrl || null,
           customerName: customerFullName,
           customerEmail,
-          customerPhone: phone || shippingAddress?.phone || null,
+          customerPhone: customerPhoneNum,
           shippingAddress: shippingAddress || {},
           shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
           shippingFeeUSD: shippingCostUSD,
-          paymentMethod: paymentMethod || 'CARD',
-          paymentStatus: paymentMethod === 'CARD' ? 'PAID' : 'PENDING',
-          orderStatus: paymentMethod === 'CARD' ? 'PROCESSING' : 'PENDING_PAYMENT',
+          paymentMethod: normalizedPaymentMethod as any,
+          paymentStatus: normalizedPaymentMethod === 'CARD' ? 'PAID' : 'PENDING',
+          orderStatus: normalizedPaymentMethod === 'CARD' ? 'PROCESSING' : 'PENDING_PAYMENT',
           currencyUsed: currency || 'USD',
           fxRateAtPurchase: rateApplied,
           totalUSD: totalUSD,

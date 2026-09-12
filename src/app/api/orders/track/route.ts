@@ -76,10 +76,12 @@ export async function GET(req: NextRequest) {
     const statusMap: Record<string, number> = {
       PENDING_PAYMENT: 1,
       PROCESSING: 2,
+      SHIPPED: 3,
       DISPATCHED: 3,
       IN_TRANSIT: 4,
       DELIVERED: 5,
       CANCELLED: 0,
+      REFUNDED: 0,
     };
 
     const currentStep = statusMap[order.orderStatus] ?? 2;
@@ -138,6 +140,7 @@ export async function GET(req: NextRequest) {
         paymentStatus: order.paymentStatus,
         paymentMethod: order.paymentMethod,
         shippingMethod: order.shippingMethod,
+        trackingNumber: order.trackingNumber || null,
         shippingFeeUSD: order.shippingFeeUSD,
         totalUSD: order.totalUSD,
         totalPaidCurrency: order.totalPaidCurrency,
