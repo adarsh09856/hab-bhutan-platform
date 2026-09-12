@@ -88,18 +88,25 @@ export default function AdminDashboardPage() {
   const [loadError, setLoadError] = useState('');
 
   const loadDashboard = async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
     try {
       setRefreshing(true);
       setLoadError('');
-      const res = await fetch('/api/admin/dashboard', { credentials: 'include' });
-      if (!res.ok) throw new Error('Dashboard data is unavailable. Please retry or check your staff permissions.');
+      const res = await fetch('/api/admin/dashboard', { credentials: 'include', signal: controller.signal });
+      if (!res.ok) throw new Error(`Dashboard unavailable (HTTP ${res.status}).`);
       const json = await res.json();
       if (!json.success) throw new Error('Dashboard metrics could not be loaded.');
       setData(json);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load dashboard metrics:', err);
-      setLoadError(err instanceof Error ? err.message : 'Unable to load dashboard data.');
+      if (err.name === 'AbortError') {
+        setLoadError('Dashboard metrics request timed out. Please click Refresh to retry.');
+      } else {
+        setLoadError(err instanceof Error ? err.message : 'Unable to load dashboard data.');
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
       setRefreshing(false);
     }

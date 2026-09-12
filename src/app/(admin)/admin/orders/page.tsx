@@ -52,33 +52,54 @@ export default function AdminOrdersPage() {
   const loadData = async () => {
     setLoading(true);
     setErrorMsg('');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+
     try {
       const [ordRes, prodRes, memRes] = await Promise.all([
-        fetch('/api/admin/orders', { credentials: 'include' }),
-        fetch('/api/admin/products', { credentials: 'include' }).catch(() => null),
-        fetch('/api/admin/members', { credentials: 'include' }).catch(() => null),
+        fetch('/api/admin/orders', { credentials: 'include', signal: controller.signal }),
+        fetch('/api/admin/products', { credentials: 'include', signal: controller.signal }).catch(() => null),
+        fetch('/api/admin/members', { credentials: 'include', signal: controller.signal }).catch(() => null),
       ]);
 
       if (ordRes.ok) {
-        const ordData = await ordRes.json();
-        setOrders(ordData.orders || []);
+        try {
+          const ordData = await ordRes.json();
+          setOrders(Array.isArray(ordData.orders) ? ordData.orders : []);
+        } catch {
+          setOrders([]);
+          setErrorMsg('Received malformed response from orders API.');
+        }
       } else {
-        const err = await ordRes.json();
-        setErrorMsg(err.error || 'Failed to fetch orders from PostgreSQL.');
+        let errText = `Orders service responded with status ${ordRes.status}.`;
+        try {
+          const err = await ordRes.json();
+          if (err?.error) errText = err.error;
+        } catch {}
+        setErrorMsg(errText);
       }
 
       if (prodRes && prodRes.ok) {
-        const prodData = await prodRes.json();
-        setProducts(prodData.products || []);
+        try {
+          const prodData = await prodRes.json();
+          setProducts(Array.isArray(prodData.products) ? prodData.products : []);
+        } catch {}
       }
 
       if (memRes && memRes.ok) {
-        const memData = await memRes.json();
-        setMembers(memData.members || []);
+        try {
+          const memData = await memRes.json();
+          setMembers(Array.isArray(memData.members) ? memData.members : []);
+        } catch {}
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Network error fetching data.');
+      if (err.name === 'AbortError') {
+        setErrorMsg('Orders request timed out. Please refresh or verify server status.');
+      } else {
+        setErrorMsg(err.message || 'Network error fetching data.');
+      }
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   };
@@ -313,8 +334,8 @@ export default function AdminOrdersPage() {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold admin-title tracking-tight">Orders &amp; Consignment Dispatch</h1>
-          <p className="text-sm admin-muted mt-1">
+          <h1 className="text-2xl font-bold text-white tracking-tight">Orders &amp; Consignment Dispatch</h1>
+          <p className="text-sm text-slate-400 mt-1">
             Real-time fulfillment tracking, carrier tracking synchronization, and manual counter order entry.
           </p>
         </div>
@@ -343,35 +364,36 @@ export default function AdminOrdersPage() {
       )}
 
       {/* Filter Controls */}
-      <div className="flex gap-4 items-center admin-card p-4 border admin-border rounded-lg shadow-sm flex-wrap">
+      <div className="flex gap-4 items-center admin-card bg-slate-900/80 p-4 border border-white/10 rounded-xl shadow-lg flex-wrap backdrop-blur-xl">
         <input
           type="text"
           placeholder="Search order #, customer name, email, tracking..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[240px] text-xs admin-input border rounded px-3 py-2 outline-none font-sans"
+          className="flex-1 min-w-[240px] text-xs admin-input bg-slate-950/60 text-white placeholder-slate-400 border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 font-sans transition-colors"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs admin-input border rounded px-3 py-2 outline-none"
+          className="text-xs admin-input bg-slate-950/60 text-white border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 transition-colors"
         >
-          <option value="ALL">All Order Statuses</option>
-          <option value="PROCESSING">Processing</option>
-          <option value="PAID">Paid (Awaiting Dispatch)</option>
-          <option value="SHIPPED">Shipped / Dispatched</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="PENDING_PAYMENT">Pending Payment</option>
-          <option value="CANCELLED">Cancelled</option>
-          <option value="REFUNDED">Refunded</option>
+          <option value="ALL" className="bg-slate-900 text-white">All Order Statuses</option>
+          <option value="PROCESSING" className="bg-slate-900 text-white">Processing</option>
+          <option value="PAID" className="bg-slate-900 text-white">Paid (Awaiting Dispatch)</option>
+          <option value="SHIPPED" className="bg-slate-900 text-white">Shipped / Dispatched</option>
+          <option value="DELIVERED" className="bg-slate-900 text-white">Delivered</option>
+          <option value="PENDING_PAYMENT" className="bg-slate-900 text-white">Pending Payment</option>
+          <option value="CANCELLED" className="bg-slate-900 text-white">Cancelled</option>
+          <option value="REFUNDED" className="bg-slate-900 text-white">Refunded</option>
         </select>
       </div>
 
       {/* Orders Table */}
-      <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden">
+      <div className="admin-card bg-slate-900/80 border border-white/10 rounded-xl shadow-lg overflow-hidden backdrop-blur-xl">
         {loading ? (
-          <div className="py-12 text-center admin-muted text-xs font-mono">
-            Loading order book from PostgreSQL...
+          <div className="py-16 text-center text-slate-400 text-xs font-mono flex flex-col items-center justify-center gap-3">
+            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <span>Loading order book from PostgreSQL...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -88,6 +88,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     document.body.classList.add('hab-admin-body');
+    document.documentElement.style.backgroundColor = '#020617';
+    document.body.style.backgroundColor = '#020617';
     return () => {
       document.body.classList.remove('hab-admin-body');
     };
@@ -95,10 +97,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+
     async function checkHealth() {
       try {
         const res = await fetch('/api/admin/health', {
           credentials: 'include',
+          signal: controller.signal,
         });
         if (res.ok) {
           const data = await res.json();
@@ -107,12 +113,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       } catch (err) {
         console.error('Failed to fetch system health:', err);
       } finally {
+        clearTimeout(timer);
         if (isMounted) setLoadingHealth(false);
       }
     }
     checkHealth();
     return () => {
       isMounted = false;
+      controller.abort();
+      clearTimeout(timer);
     };
   }, []);
 

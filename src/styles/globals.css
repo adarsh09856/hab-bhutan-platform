@@ -28,6 +28,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html:has(.hab-admin),
+body:has(.hab-admin),
+body.hab-admin-body,
+.hab-admin {
+  background-color: #020617 !important;
+  background: #020617 !important;
+  color: #f8fafc !important;
+}
+
 * {
   box-sizing: border-box;
 }

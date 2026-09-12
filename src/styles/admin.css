@@ -24,55 +24,66 @@ html:has(.hab-admin) {
 }
 
 /* Glass Card & Surfaces */
+.admin-card,
 .hab-admin .admin-card {
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(15, 23, 42, 0.82) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--admin-border);
-  color: var(--admin-text);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f1f5f9 !important;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   border-radius: 0.875rem;
 }
 
+.admin-panel,
 .hab-admin .admin-panel {
-  background-color: var(--admin-inset);
-  color: var(--admin-text);
+  background-color: rgba(11, 20, 37, 0.88) !important;
+  color: #f1f5f9 !important;
 }
 
+.admin-modal,
 .hab-admin .admin-modal {
-  background-color: rgba(15, 23, 42, 0.95);
+  background-color: rgba(15, 23, 42, 0.96) !important;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--admin-text);
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #f1f5f9 !important;
   box-shadow: 0 25px 80px 0 rgba(0, 0, 0, 0.8);
 }
 
 /* Typography & Contrast */
-.hab-admin .admin-title { color: #f8fafc; }
-.hab-admin .admin-text { color: var(--admin-text); }
-.hab-admin .admin-muted { color: var(--admin-muted); }
-.hab-admin .admin-border { border-color: var(--admin-border); }
-.hab-admin .admin-divider > :not([hidden]) ~ :not([hidden]) { border-color: var(--admin-border); }
+.admin-title,
+.hab-admin .admin-title { color: #f8fafc !important; }
+.admin-text,
+.hab-admin .admin-text { color: #f1f5f9 !important; }
+.admin-muted,
+.hab-admin .admin-muted { color: #94a3b8 !important; }
+.admin-border,
+.hab-admin .admin-border { border-color: rgba(255, 255, 255, 0.12) !important; }
+.hab-admin .admin-divider > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.12); }
 .hab-admin .admin-hover:hover { background-color: rgba(255, 255, 255, 0.05); }
 
 /* Form Controls & Inputs */
+.admin-input,
 .hab-admin .admin-input {
-  background-color: rgba(15, 23, 42, 0.65);
-  color: #f8fafc;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   accent-color: var(--admin-focus);
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
   backdrop-filter: blur(8px);
 }
 
-.hab-admin .admin-input::placeholder { color: #64748b; opacity: 1; }
-.hab-admin .admin-input option { background-color: #0f172a; color: #f8fafc; }
-.hab-admin .admin-input:focus {
-  border-color: var(--admin-focus);
+.hab-admin .admin-input::placeholder,
+.admin-input::placeholder { color: #64748b; opacity: 1; }
+.hab-admin .admin-input option,
+.admin-input option { background-color: #0f172a; color: #f8fafc; }
+.hab-admin .admin-input:focus,
+.admin-input:focus {
+  border-color: var(--admin-focus) !important;
   outline: 2px solid var(--admin-focus);
   outline-offset: 1px;
-  background-color: rgba(15, 23, 42, 0.9);
+  background-color: rgba(15, 23, 42, 0.95) !important;
 }
 .hab-admin .admin-input:disabled { opacity: 0.5; cursor: not-allowed; }
 .hab-admin .admin-input[aria-invalid="true"] { border-color: #fb7185; }
