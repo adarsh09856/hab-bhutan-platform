@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HAB Bhutan — Secretariat Admin Panel Full Audit & Operational Manual</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 12mm 14mm 12mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #33261F;
+      background: #FFFFFF;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .header-banner {
+      background: #8B2E24;
+      color: #FFFFFF;
+      padding: 22px 26px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-banner h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+    .header-banner p {
+      font-size: 11.5px;
+      color: #F0D2C9;
+    }
+    .badge {
+      background: #F4F0E7;
+      color: #8B2E24;
+      font-weight: 700;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 10px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8B2E24;
+      border-bottom: 2px solid #E4DDD1;
+      padding-bottom: 5px;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+      font-size: 10px;
+    }
+    th, td {
+      border: 1px solid #E4DDD1;
+      padding: 7px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #F7F5F0;
+      color: #33261F;
+      font-weight: 700;
+    }
+    tr:nth-child(even) {
+      background: #FAF8F5;
+    }
+    .module-card {
+      border: 1px solid #E4DDD1;
+      border-radius: 7px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      background: #FFFFFF;
+      page-break-inside: avoid;
+    }
+    .module-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #F0EAE1;
+      padding-bottom: 5px;
+    }
+    .module-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #33261F;
+    }
+    .module-route {
+      font-family: monospace;
+      font-size: 9.5px;
+      color: #8B2E24;
+      background: #FDF4F3;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #F3CECA;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .grid-item strong {
+      display: block;
+      font-size: 9px;
+      color: #6B5A4C;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .impact-box {
+      background: #F6F9F4;
+      border: 1px solid #CFE2C7;
+      border-radius: 5px;
+      padding: 7px 9px;
+      margin-top: 5px;
+      font-size: 10px;
+    }
+    .impact-box strong {
+      color: #2F6B27;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .footer-note {
+      margin-top: 24px;
+      border-top: 1px solid #E4DDD1;
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #8C7B6E;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 600;
+      margin-right: 4px;
+      margin-bottom: 2px;
+    }
+    .tag-crud { background: #EBF3FF; color: #1B5FB8; border: 1px solid #CADDF7; }
+    .tag-db { background: #F3EAFD; color: #6D24A6; border: 1px solid #DECAF2; }
+    .tag-api { background: #FFF4E5; color: #B35B00; border: 1px solid #FCE0BC; }
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER HEADER -->
+  <div class="header-banner">
+    <div>
+      <div class="badge" style="margin-bottom: 6px;">Official Reference Manual · Confidential</div>
+      <h1>Handicrafts Association of Bhutan (HAB)</h1>
+      <p>Executive System Audit: Admin Panel Controls, Database Mappings & Public Frontend Impact</p>
+    </div>
+    <div style="text-align: right;">
+      <p style="font-size: 10.5px; color: #FFFFFF; font-weight: 700;">CSOA Reg: CSO/2011/043</p>
+      <p style="font-size: 9.5px; color: #F0D2C9;">Edition: 2026 Production Baseline</p>
+      <p style="font-size: 9.5px; color: #F0D2C9;">Date: September 2026</p>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="section-title">1. Executive Overview & Architecture</div>
+  <p style="margin-bottom: 10px; font-size: 11px; color: #4A3C33;">
+    The Handicrafts Association of Bhutan platform operates an end-to-end synchronized architecture connecting the <strong>Secretariat Admin Panel (<code>/admin</code>)</strong>, a robust <strong>PostgreSQL database (Prisma ORM)</strong>, and the <strong>Public Website (Next.js App Router)</strong>. Every piece of public information—including event listings, donation pillars, master artisan honours, membership dues, catalog items, and logistics terms—is dynamically driven by the database with real-time administrative controls and resilient default safety fallbacks.
+  </p>
+
+  <!-- MASTER QUICK REFERENCE MATRIX -->
+  <div class="section-title">2. Master Module Quick Reference Matrix</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Admin Module & Route</th>
+        <th style="width: 28%;">Administrative Capabilities (CRUD)</th>
+        <th style="width: 20%;">Database Table(s)</th>
+        <th style="width: 30%;">Public Impact Location</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Site Settings & CMS</strong><br><code>/admin/site-settings</code></td>
+        <td>Update Tagline, Hero Lede, Stats, Mandate, Wholesale MOQ, Bank Wire / SWIFT, Dispatch Times</td>
+        <td><code>SiteSetting</code></td>
+        <td>Homepage (<code>/</code>), <code>/about</code>, <code>/contact</code>, <code>/wholesale</code>, <code>/checkout</code>, <code>/order-confirmation/*</code>, Global Footer</td>
+      </tr>
+      <tr>
+        <td><strong>Events & Expos</strong><br><code>/admin/events</code></td>
+        <td>Create, edit, reorder, delete exhibitions, masterclasses, and national craft festivals</td>
+        <td><code>EventRecord</code></td>
+        <td><code>/events</code> (Card Directory), <code>/events/[key]</code> (Event Page), <code>/news</code> (Calendar)</td>
+      </tr>
+      <tr>
+        <td><strong>Donate Settings</strong><br><code>/admin/donate-settings</code></td>
+        <td>Manage 4 support pillars (targets, descriptions, icons), view live donation ledger & receipts</td>
+        <td><code>SupportPillar</code><br><code>DonationRecord</code></td>
+        <td><code>/donate</code> (Live Progress Bars, Contribution Receipts <code>HAB-DON-YYYY-XXXXX</code>)</td>
+      </tr>
+      <tr>
+        <td><strong>Honours & Masters</strong><br><code>/admin/honours</code></td>
+        <td>Confer master craftspeople, Royal Seal awards, Seal of Authenticity, citations & portraits</td>
+        <td><code>HonourRecord</code></td>
+        <td><code>/masters</code> (Conferred Masters Gallery & Filter Chips)</td>
+      </tr>
+      <tr>
+        <td><strong>Membership Categories</strong><br><code>/admin/membership-categories</code></td>
+        <td>Configure 4 dynamic tiers, annual dues in Nu./USD, criteria, and benefits</td>
+        <td><code>MembershipCategory</code></td>
+        <td><code>/membership</code> (Five Ways to Belong Matrix), <code>/membership/[category]</code>, <code>/register</code></td>
+      </tr>
+      <tr>
+        <td><strong>Clusters & Outlets</strong><br><code>/admin/clusters-outlets</code></td>
+        <td>CRUD artisan villages, stories, visitor notes, and retail outlets (Punakha Crafts Market)</td>
+        <td><code>ClusterRecord</code><br><code>OutletRecord</code></td>
+        <td><code>/clusters</code>, <code>/clusters/[key]</code>, <code>/outlets</code>, <code>/outlets/[key]</code>, <code>/craft/[craft]</code></td>
+      </tr>
+      <tr>
+        <td><strong>Zorig Chusum Crafts</strong><br><code>/admin/crafts</code></td>
+        <td>Edit Dzongkha & English names, historical essays, materials, tools, and techniques</td>
+        <td><code>Craft</code></td>
+        <td>Homepage 13 Crafts Grid, <code>/craft/[craft]</code>, <code>/shop</code> filter rail, <code>/wholesale</code></td>
+      </tr>
+      <tr>
+        <td><strong>Product Inventory</strong><br><code>/admin/products</code></td>
+        <td>Catalog inventory, prices in USD & BTN, maker links, photos, stock counts, wholesale tiers</td>
+        <td><code>Product</code><br><code>WholesaleTier</code></td>
+        <td><code>/shop</code> (Catalog), <code>/product/[code]</code> (Product Page), <code>/wholesale/shop</code>, POS</td>
+      </tr>
+      <tr>
+        <td><strong>Orders & Fulfillment</strong><br><code>/admin/orders</code></td>
+        <td>Track orders, change status (Paid, Processing, Shipped), assign Bhutan Post EMS tracking</td>
+        <td><code>Order</code><br><code>OrderItem</code></td>
+        <td><code>/track-order</code> (Live Tracking), <code>/order-confirmation/*</code>, Member Portal</td>
+      </tr>
+      <tr>
+        <td><strong>Member Directory</strong><br><code>/admin/members</code></td>
+        <td>Verify, edit, suspend artisan members, profile bios, contact info, and guild tiers</td>
+        <td><code>Member</code></td>
+        <td><code>/members</code> (Directory), <code>/members/[slug]</code> (Artisan Bio), <code>/portal</code></td>
+      </tr>
+      <tr>
+        <td><strong>Applications Queue</strong><br><code>/admin/applications</code></td>
+        <td>Review new member submissions, verify CID/trade licenses, approve or reject</td>
+        <td><code>Application</code><br><code>Member</code></td>
+        <td>On approval, newly verified members appear instantly in directory and can sign in</td>
+      </tr>
+      <tr>
+        <td><strong>Inquiries CRM</strong><br><code>/admin/inquiries</code></td>
+        <td>Review contact submissions from public site, assign internal notes, update status</td>
+        <td><code>Inquiry</code></td>
+        <td>Receives submissions from public <code>/contact</code> form</td>
+      </tr>
+      <tr>
+        <td><strong>Content & Policies</strong><br><code>/admin/content</code></td>
+        <td>Edit statutory policies (Shipping, Terms, Privacy), publications (PDFs), news & governance</td>
+        <td><code>PolicyPage</code><br><code>Publication</code><br><code>NewsArticle</code></td>
+        <td><code>/shipping</code>, <code>/terms</code>, <code>/privacy</code>, <code>/publications</code>, <code>/news</code>, <code>/about#governance</code></td>
+      </tr>
+      <tr>
+        <td><strong>Programmes & Projects</strong><br><code>/admin/programmes</code> & <code>projects</code></td>
+        <td>Manage 11 statutory pillars (Article 3.2) and partner-funded development projects</td>
+        <td><code>ProgrammePillar</code><br><code>Project</code></td>
+        <td><code>/programmes</code>, <code>/programmes/[ref]</code>, <code>/projects</code>, <code>/projects/[key]</code></td>
+      </tr>
+      <tr>
+        <td><strong>Hero Carousel</strong><br><code>/admin/hero</code></td>
+        <td>Add, reorder, or edit homepage slider images, display titles, and CTA links</td>
+        <td><code>HeroSlide</code></td>
+        <td>Homepage (<code>/</code>) top rotating carousel</td>
+      </tr>
+      <tr>
+        <td><strong>Navigation Menus</strong><br><code>/admin/navigation</code></td>
+        <td>Manage header menu dropdowns and footer 4-column link layout</td>
+        <td><code>NavigationItem</code></td>
+        <td>Header and Footer across <strong>every page on the website</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Users & RBAC</strong><br><code>/admin/users</code></td>
+        <td>Create staff logins, assign roles (Super Admin, Operator, Viewer), reset credentials</td>
+        <td><code>User</code>, <code>Role</code></td>
+        <td>Governs access to <code>/admin/login</code> and administrative capabilities</td>
+      </tr>
+      <tr>
+        <td><strong>Reports & Audit</strong><br><code>/admin/reports</code> & <code>audit</code></td>
+        <td>Export financial CSVs, monitor security incidents, inspect rate-limit events</td>
+        <td><code>AuditLog</code><br><code>RateLimitAttempt</code></td>
+        <td>Secretariat Internal Oversight & Compliance Records</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- IN-DEPTH MODULE AUDIT -->
+  <div class="section-title">3. In-Depth Operational Breakdown by Module</div>
+
+  <!-- MODULE 1 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">1. Site Settings & Global CMS</span>
+      <span class="module-route">/admin/site-settings</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Model: SiteSetting</span><span class="tag tag-api">PUT /api/admin/site-settings</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Organized into specialized tabs: <em>General</em> (taglines, statistics), <em>Contact</em> (addresses, phone numbers, P.O. Box), <em>About Page</em> (official mandate, history, objectives, values), <em>Wholesale</em> (MOQs, lead times, 5 assurance cards), <em>Checkout</em> (BoB official account, SWIFT, branch, mBOB notes), <em>Donate</em> (fundraising lede, tax exemption notes), and <em>Logistics</em> (carrier partners, transit times).
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Directly feeds Homepage (<code>/</code>), About (<code>/about</code>), Contact (<code>/contact</code>), Wholesale (<code>/wholesale</code>), Checkout (<code>/checkout</code>), Order Confirmation (<code>/order-confirmation/[orderNumber]</code>), and the global footer.
+    </div>
+  </div>
+
+  <!-- MODULE 2 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">2. Events & Exhibitions Management</span>
+      <span class="module-route">/admin/events</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Model: EventRecord</span><span class="tag tag-api">CRUD /api/admin/events</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Controls exhibition titles, categories (<em>Exhibition, Masterclass, Trade Expo, National Festival</em>), dates, venues, organizers, craft disciplines, schedule timelines, and registration buttons.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Immediately populates the filterable directory on <code>/events</code>, dynamically provisions dedicated event pages on <code>/events/[key]</code>, and updates the calendar on <code>/news</code>.
+    </div>
+  </div>
+
+  <!-- MODULE 3 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">3. Donate Settings & Contributions Ledger</span>
+      <span class="module-route">/admin/donate-settings</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Models: SupportPillar, DonationRecord</span><span class="tag tag-api">CRUD /api/admin/support-pillars</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Allows administrators to define fundraising pillars (target amounts, raised totals, icon badges, descriptions) and review the immutable audit ledger of all public donor contributions.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      The public donation page on <code>/donate</code> renders live funding progress bars. Online donations generate official receipts (<code>HAB-DON-YYYY-XXXXX</code>) and increment pillar totals in real-time.
+    </div>
+  </div>
+
+  <!-- MODULE 4 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">4. Honours & Master Artisans</span>
+      <span class="module-route">/admin/honours</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Model: HonourRecord</span><span class="tag tag-api">CRUD /api/admin/honours</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Manages national craft accreditations, conferred master artisans, Royal Seal recipients, Seal of Authenticity awardees, citations, dzongkhags, and portraits.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Populates the Master Artisans gallery on <code>/masters</code>, filterable by award type and traditional craft specialization.
+    </div>
+  </div>
+
+  <!-- MODULE 5 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">5. Membership Categories & Dues</span>
+      <span class="module-route">/admin/membership-categories</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Model: MembershipCategory</span><span class="tag tag-api">CRUD /api/admin/membership-categories</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Maintains guild tiers (Individual, Enterprise, Group, Supporter), annual dues in BTN (Nu.) and USD, eligibility criteria, registration steps, and member entitlements.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Renders the "Five ways to belong" comparative matrix on <code>/membership</code>, generates dedicated tier landing pages on <code>/membership/[category]</code>, and dynamically calculates dues on <code>/register</code>.
+    </div>
+  </div>
+
+  <!-- MODULE 6 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">6. Clusters & Physical Outlets</span>
+      <span class="module-route">/admin/clusters-outlets</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Models: ClusterRecord, OutletRecord</span><span class="tag tag-api">CRUD /api/admin/clusters, .../outlets</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Maintains registered artisan clusters across Bhutan (member counts, village histories, visitor notes) and physical craft markets (Punakha Crafts Market, opening hours, facilities, directions).
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Feeds <code>/clusters</code>, <code>/clusters/[key]</code>, <code>/outlets</code>, <code>/outlets/[key]</code>, and the cluster associations on <code>/craft/[craft]</code>.
+    </div>
+  </div>
+
+  <!-- MODULE 7 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">7. Product Inventory & Wholesale B2B</span>
+      <span class="module-route">/admin/products</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span><span class="tag tag-crud">CSV IMPORT/EXPORT</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Models: Product, WholesaleTier</span><span class="tag tag-api">CRUD /api/admin/products</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Controls retail and trade inventory: product codes (e.g. <code>THAG-001</code>), USD & BTN pricing, artisan attribution, origin dzongkhag, materials, photography, stock levels, and wholesale tiered pricing against MOQs.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Drives the retail shop (<code>/shop</code>), product details (<code>/product/[code]</code>), wholesale purchasing (<code>/wholesale/shop</code>), and the administrative POS checkout (<code>/admin/pos</code>).
+    </div>
+  </div>
+
+  <!-- MODULE 8 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">8. Orders, Fulfillment & Tracking</span>
+      <span class="module-route">/admin/orders</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">READ</span><span class="tag tag-crud">STATUS UPDATE</span><span class="tag tag-crud">ASSIGN TRACKING</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Models: Order, OrderItem</span><span class="tag tag-api">GET, PUT /api/admin/orders</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Enables Secretariat staff to transition orders through fulfillment stages (<em>Pending, Paid, Processing, Shipped, Delivered</em>), attach international Bhutan Post EMS tracking numbers, and download invoices.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Updates the public shipment tracking portal on <code>/track-order</code> and the receipt tracking view on <code>/order-confirmation/[orderNumber]</code>.
+    </div>
+  </div>
+
+  <!-- MODULE 9 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">9. Statutory Content, Policies & Publications</span>
+      <span class="module-route">/admin/content</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">DELETE</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Models: PolicyPage, Publication, NewsArticle</span><span class="tag tag-api">CRUD /api/admin/content</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Complete content management for statutory legal policies (Shipping, Terms, Privacy), downloadable executive publications (PDF Annual Reports, Strategic Plans), and newsroom articles.
+    </p>
+    <div class="impact-box">
+      <strong>Public Frontend Impact</strong>
+      Renders live legal policies on <code>/shipping</code>, <code>/terms</code>, <code>/privacy</code>; downloads on <code>/publications</code>; and articles on <code>/news</code> and <code>/news/[slug]</code>.
+    </div>
+  </div>
+
+  <!-- MODULE 10 -->
+  <div class="module-card">
+    <div class="module-card-header">
+      <span class="module-name">10. Security, RBAC & Immutable Audit Logs</span>
+      <span class="module-route">/admin/users & /admin/audit</span>
+    </div>
+    <div class="grid-2">
+      <div class="grid-item">
+        <strong>Operations Supported</strong>
+        <span class="tag tag-crud">CREATE</span><span class="tag tag-crud">READ</span><span class="tag tag-crud">UPDATE</span><span class="tag tag-crud">REVOKE SESSIONS</span>
+      </div>
+      <div class="grid-item">
+        <strong>Database & APIs</strong>
+        <span class="tag tag-db">Models: User, Role, AuditLog, RateLimitAttempt</span><span class="tag tag-api">CRUD /api/admin/users</span>
+      </div>
+    </div>
+    <p style="margin-bottom: 5px; color: #4A3C33;">
+      Governs Secretariat staff logins, multi-factor authentication (2FA), role assignments (<em>Super Admin, Staff Operator, Trustee Viewer</em>), session revocations, and audit records of all administrative actions.
+    </p>
+    <div class="impact-box">
+      <strong>Operational Impact</strong>
+      Secures all <code>/admin/*</code> routes behind JWT token checks. Enforces durable sliding-window rate limiting on public endpoints to prevent abuse.
+    </div>
+  </div>
+
+  <!-- GUARANTEES & ARCHITECTURE -->
+  <div class="section-title">4. Core Architecture Guarantees</div>
+  <div style="background: #FDFBF7; border: 1px solid #E4DDD1; border-radius: 7px; padding: 12px 16px; margin-bottom: 16px;">
+    <p style="font-size: 10.5px; margin-bottom: 6px;"><strong>1. DB-First with Resilient Fallback:</strong> Every public page queries the live PostgreSQL database first. If any table or record is ever empty, the system gracefully falls back to canonical default records (<code>CLIENT_DATA</code>), ensuring zero 404s, broken layouts, or blank screens.</p>
+    <p style="font-size: 10.5px; margin-bottom: 6px;"><strong>2. Zero Hardcoded Content:</strong> All public headlines, body narratives, bank details, dues amounts, and logistics terms are 100% editable from the Admin Panel.</p>
+    <p style="font-size: 10.5px; margin-bottom: 6px;"><strong>3. Strict Security & CSOA Compliance:</strong> All administrative modifications are permanently logged in the <code>AuditLog</code> table with actor ID, IP address, and timestamp in compliance with Civil Society Organizations Act of Bhutan (2007) guidelines.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-note">
+    <div>Handicrafts Association of Bhutan (HAB) · Metog Lam, Kawajangsa, Thimphu</div>
+    <div>Executive System Audit & Operational Manual · 2026 Edition</div>
+  </div>
+
+</body>
+</html>
