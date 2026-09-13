@@ -15,6 +15,22 @@ interface HeroSlide {
   linkUrl?: string | null;
 }
 
+const SCENE_POOL = [
+  '/assets/photos/hero-1-weaving.jpg',
+  '/assets/photos/hero-4-textiles.jpg',
+  '/assets/photos/hero-5-desho.jpg',
+  '/assets/photos/hero-3-clay.jpg',
+  '/assets/photos/hero-2-punakha.jpg',
+  '/assets/photos/about-hab.jpg',
+];
+
+const PRODUCT_POOL = [
+  '/assets/photos/product-sad03.jpg',
+  '/assets/photos/product-hhb01.jpg',
+  '/assets/photos/product-lud01.jpg',
+  '/assets/photos/product-cam01.jpg',
+];
+
 const DEFAULT_HERO_SLIDES: HeroSlide[] = [
   {
     id: 'hero-1',
@@ -93,7 +109,7 @@ export default function HomePage() {
       maker: 'Sonam Thangka Studio, Paro',
       price: 260,
       priceUSD: 260,
-      image_path: '/assets/photos/product-hhb01.jpg',
+      image_path: '/assets/photos/product-sad03.jpg',
       slot: 'photo 1 — thangka, full view',
     },
     {
@@ -104,7 +120,7 @@ export default function HomePage() {
       maker: 'Chumey Yathra House, Bumthang',
       price: 120,
       priceUSD: 120,
-      image_path: '/assets/photos/product-sad03.jpg',
+      image_path: '/assets/photos/product-hhb01.jpg',
       slot: 'photo 1 — saddle bag, full view',
     },
     {
@@ -115,7 +131,7 @@ export default function HomePage() {
       maker: 'Zorig Silversmiths, Thimphu',
       price: 92,
       priceUSD: 92,
-      image_path: '/assets/photos/product-cam01.jpg',
+      image_path: '/assets/photos/product-lud01.jpg',
       slot: 'photo 1 — koma pair, full view',
     },
     {
@@ -126,10 +142,11 @@ export default function HomePage() {
       maker: 'Kheng Bamboo Collective, Zhemgang',
       price: 34,
       priceUSD: 34,
-      image_path: '/assets/photos/product-lud01.jpg',
+      image_path: '/assets/photos/product-cam01.jpg',
       slot: 'photo 1 — bangchung basket, full view',
     },
   ]);
+
 
   const [clusters, setClusters] = useState<any[]>([
     {
@@ -548,7 +565,7 @@ export default function HomePage() {
           </div>
           <figure className="frame frame--square frame--dark">
             <img
-              src={siteSettings.aboutBandImageUrl}
+              src={siteSettings.aboutBandImageUrl?.includes('training_workshop') ? '/assets/photos/about-hab.jpg' : (siteSettings.aboutBandImageUrl || '/assets/photos/about-hab.jpg')}
               alt={siteSettings.aboutBandImageCaption}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/about-hab.jpg'; }}
@@ -575,17 +592,18 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid--4">
-          {products.slice(0, 4).map((p) => {
+          {products.slice(0, 4).map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
+            const productImg = p.image_path || (p.images && p.images[0]?.url) || PRODUCT_POOL[pIdx % PRODUCT_POOL.length];
             return (
               <article key={p.code} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square">
                     <img
-                      src={p.image_path || p.imageUrl || '/assets/photos/product-hhb01.jpg'}
+                      src={productImg}
                       alt={p.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = PRODUCT_POOL[pIdx % PRODUCT_POOL.length]; }}
                     />
                     <figcaption className="frame__caption frame__caption--sm">{p.slot || p.code}</figcaption>
                   </figure>
@@ -596,6 +614,7 @@ export default function HomePage() {
                   <h3 className="card__title clamp-2">
                     <Link href={`/product/${p.code}`}>{p.name}</Link>
                   </h3>
+
                   <p className="card__meta clamp-1">{typeof p.maker === 'object' ? p.maker?.name : p.maker}</p>
                   <div className="card__foot">
                     <span className="price">{fmt(displayPrice)}</span>
@@ -822,12 +841,13 @@ export default function HomePage() {
                 <figure className="frame frame--wide16" style={{ position: 'relative' }}>
                   <span className="craft__num">{num} / 13</span>
                   <img
-                    src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                    src={SCENE_POOL[idx % SCENE_POOL.length]}
                     alt={craft.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                   />
                   <figcaption className="frame__caption frame__caption--sm">{craft.name}</figcaption>
+
                 </figure>
                 <div className="card__body">
                   <div className="craft__heading">

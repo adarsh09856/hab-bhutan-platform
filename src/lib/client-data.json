@@ -13,7 +13,7 @@
       "practised_in": "all twenty dzongkhags",
       "typical_products": "structural joinery, doors, window frames, brackets",
       "shop_note": "Carpentry is commissioned, not shipped. Send the secretariat your building or restoration brief and we will match it to a Shingzo member.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Shingzo — Carpentry"
     },
     {
@@ -29,7 +29,7 @@
       "practised_in": "all twenty dzongkhags",
       "typical_products": "stone and rammed-earth walling, paving, mani walls, chortens",
       "shop_note": "Masonry is commissioned on site. Send the secretariat your construction or heritage-repair brief and we will match it to a Dozo member.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Dozo — Masonry"
     },
     {
@@ -44,7 +44,7 @@
       "materials": "Seasoned walnut and maple, local slate, soapstone",
       "practised_in": "Trashiyangtse, Thimphu, Paro",
       "typical_products": "dance masks, altar panels, printing blocks, slate reliefs",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Parzo — Carving"
     },
     {
@@ -59,7 +59,7 @@
       "materials": "Cotton canvas, mineral and earth pigments, gold leaf, silk brocade",
       "practised_in": "Thimphu, Paro, Trongsa",
       "typical_products": "thangka scrolls, murals, architectural motifs",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Lhazo — Painting"
     },
     {
@@ -75,7 +75,7 @@
       "practised_in": "Thimphu, Punakha, Trongsa",
       "typical_products": "statues, ritual objects, moulded ornament",
       "shop_note": "Sculpture is made to commission. Tell the secretariat what you have in mind and we will put a Jinzo member on it.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Jinzo — Clay & sculpture"
     },
     {
@@ -91,7 +91,7 @@
       "practised_in": "Thimphu, Paro",
       "typical_products": "bells, cymbals, statues, household vessels",
       "shop_note": "Cast work is made to order. Tell the secretariat what you need cast and we will match it to a Lugzo member.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Lugzo — Bronze casting"
     },
     {
@@ -107,7 +107,7 @@
       "practised_in": "Trashigang, Mongar, Paro",
       "typical_products": "knives, tools, chains, farm implements",
       "shop_note": "Edged tools face export restrictions. Write to the secretariat about buying direct in Bhutan from a Garzo member.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Garzo — Blacksmithing"
     },
     {
@@ -122,7 +122,7 @@
       "materials": "Silver, gold, coral, turquoise",
       "practised_in": "Thimphu, Trashiyangtse",
       "typical_products": "koma clasps, jewellery, ritual vessels, betel boxes",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Troezo — Gold & silversmithing"
     },
     {
@@ -137,7 +137,7 @@
       "materials": "Bamboo, cane, natural dyes",
       "practised_in": "Zhemgang, Trongsa, Trashigang",
       "typical_products": "bangchung baskets, mats, quivers, storage baskets",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Tshazo — Bamboo & cane"
     },
     {
@@ -152,7 +152,7 @@
       "materials": "Raw and reeled silk, cotton, sheep and yak wool, natural dyes",
       "practised_in": "Lhuentse, Bumthang, Trashigang, Zhemgang",
       "typical_products": "kira and gho cloth, kisuthara silk, yathra wool, bags",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Thagzo — Weaving"
     },
     {
@@ -167,7 +167,7 @@
       "materials": "Raw silk, brocade, cotton, wool felt",
       "practised_in": "Thimphu, Paro, Bumthang",
       "typical_products": "appliqué thongdrel, boots, cushion covers, bags",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Tshemzo — Tailoring & embroidery"
     },
     {
@@ -182,7 +182,7 @@
       "materials": "Maple and rhododendron burl, natural lacquer",
       "practised_in": "Trashiyangtse",
       "typical_products": "dapa bowls, phob cups, lacquered containers",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Shagzo — Wood turning"
     },
     {
@@ -197,7 +197,7 @@
       "materials": "Daphne bhola and edgeworthia bark, wood ash",
       "practised_in": "Punakha, Thimphu, Trashiyangtse",
       "typical_products": "desho sheets, notebooks, envelopes, gift wrap",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Dezo — Paper making"
     }
   ],
@@ -211,10 +211,12 @@
       "region": "Paro",
       "is_featured": true,
       "created_at": "2026-08-28",
-      "description": "Mineral pigments on cotton, brocade-mounted. Painted to the proportions set out in the classical treatises."
+      "description": "Mineral pigments on cotton, brocade-mounted. Painted to the proportions set out in the classical treatises.",
+      "image_path": "/assets/photos/product-sad03.jpg",
+      "image_alt": "Thangka Scroll"
     },
     {
-      "image_path": "assets/photos/product-sad03.jpg",
+      "image_path": "/assets/photos/product-hhb01.jpg",
       "image_alt": "Woven shoulder bag with leather straps",
       "code": "SAD03",
       "name": "Yathra Saddle Bag",
@@ -235,7 +237,9 @@
       "region": "Thimphu",
       "is_featured": true,
       "created_at": "2026-08-20",
-      "description": "Hand-chased silver koma, the clasp traditionally worn with a kira."
+      "description": "Hand-chased silver koma, the clasp traditionally worn with a kira.",
+      "image_path": "/assets/photos/product-lud01.jpg",
+      "image_alt": "Silver Brooch (Koma)"
     },
     {
       "code": "FTB04",
@@ -246,7 +250,9 @@
       "region": "Zhemgang",
       "is_featured": true,
       "created_at": "2026-08-18",
-      "description": "Split bamboo woven tight enough to hold water, in the Kheng technique passed down through generations."
+      "description": "Split bamboo woven tight enough to hold water, in the Kheng technique passed down through generations.",
+      "image_path": "/assets/photos/product-cam01.jpg",
+      "image_alt": "Bangchung Fruit Basket"
     },
     {
       "code": "DAP02",
@@ -257,7 +263,9 @@
       "region": "Trashiyangtse",
       "is_featured": true,
       "created_at": "2026-08-14",
-      "description": "Turned from the burl of a maple, then lacquered — the bowl form long associated with healing properties."
+      "description": "Turned from the burl of a maple, then lacquered — the bowl form long associated with healing properties.",
+      "image_path": "/assets/photos/product-sad03.jpg",
+      "image_alt": "Lacquered Bowl (Dapa)"
     },
     {
       "code": "MAS01",
@@ -268,7 +276,9 @@
       "region": "Trashiyangtse",
       "is_featured": true,
       "created_at": "2026-08-10",
-      "description": "Hand-carved and painted mask of the kind worn in tshechu dances, cut from a single block of seasoned wood."
+      "description": "Hand-carved and painted mask of the kind worn in tshechu dances, cut from a single block of seasoned wood.",
+      "image_path": "/assets/photos/product-hhb01.jpg",
+      "image_alt": "Carved Ritual Mask"
     },
     {
       "code": "DEZ01",
@@ -279,7 +289,9 @@
       "region": "Punakha",
       "is_featured": true,
       "created_at": "2026-08-06",
-      "description": "Sheets of desho paper made from daphne bark, sun-dried on frames. Set of ten."
+      "description": "Sheets of desho paper made from daphne bark, sun-dried on frames. Set of ten.",
+      "image_path": "/assets/photos/product-lud01.jpg",
+      "image_alt": "Desho Paper Set"
     },
     {
       "code": "CUS02",
@@ -290,10 +302,12 @@
       "region": "Thimphu",
       "is_featured": true,
       "created_at": "2026-08-02",
-      "description": "Appliqué cushion cover in raw silk with hand-stitched borders."
+      "description": "Appliqué cushion cover in raw silk with hand-stitched borders.",
+      "image_path": "/assets/photos/product-cam01.jpg",
+      "image_alt": "Appliqué Cushion Cover"
     },
     {
-      "image_path": "assets/photos/product-hhb01.jpg",
+      "image_path": "/assets/photos/product-sad03.jpg",
       "image_alt": "Handwoven handheld bag with cane trim",
       "code": "HHB01",
       "name": "Handwoven Handheld Bag",
@@ -306,7 +320,7 @@
       "description": "Backstrap-loom cloth in yathra-inspired stripes, lined and finished with a wooden handle."
     },
     {
-      "image_path": "assets/photos/product-lud01.jpg",
+      "image_path": "/assets/photos/product-hhb01.jpg",
       "image_alt": "Cane-rimmed woven basket with silk lining",
       "code": "LUD01",
       "name": "Cane Laundry Basket",
@@ -319,7 +333,7 @@
       "description": "Deep cane basket with a reinforced rim, sized for a household and light enough to carry full."
     },
     {
-      "image_path": "assets/photos/product-cam01.jpg",
+      "image_path": "/assets/photos/product-lud01.jpg",
       "image_alt": "Striped woven camera bag with strap",
       "code": "CAM01",
       "name": "Quilted Camera Bag",
@@ -339,7 +353,9 @@
       "maker": "Khoma Weavers Group",
       "region": "Lhuentse",
       "created_at": "2026-07-10",
-      "description": "Supplementary-weft silk kira woven in Khoma. Roughly eleven months on the loom."
+      "description": "Supplementary-weft silk kira woven in Khoma. Roughly eleven months on the loom.",
+      "image_path": "/assets/photos/product-cam01.jpg",
+      "image_alt": "Kisuthara Silk Kira"
     },
     {
       "code": "PHO03",
@@ -349,7 +365,9 @@
       "maker": "Yangtse Turning Works",
       "region": "Trashiyangtse",
       "created_at": "2026-07-04",
-      "description": "Turned from figured burl and lacquered, sized to carry."
+      "description": "Turned from figured burl and lacquered, sized to carry.",
+      "image_path": "/assets/photos/product-sad03.jpg",
+      "image_alt": "Burl Wood Cup (Phob)"
     },
     {
       "code": "DEZ07",
@@ -359,7 +377,9 @@
       "maker": "Jungshi Paper Works",
       "region": "Punakha",
       "created_at": "2026-06-26",
-      "description": "Hand-stitched notebook, desho covers and sixty leaves."
+      "description": "Hand-stitched notebook, desho covers and sixty leaves.",
+      "image_path": "/assets/photos/product-hhb01.jpg",
+      "image_alt": "Desho Notebook"
     },
     {
       "code": "TRO09",
@@ -369,7 +389,9 @@
       "maker": "Zorig Silversmiths",
       "region": "Thimphu",
       "created_at": "2026-06-18",
-      "description": "Drawn-wire filigree over a chased silver body, with a fitted lid."
+      "description": "Drawn-wire filigree over a chased silver body, with a fitted lid.",
+      "image_path": "/assets/photos/product-lud01.jpg",
+      "image_alt": "Filigree Betel Box"
     },
     {
       "code": "PAR06",
@@ -379,7 +401,9 @@
       "maker": "Kelzang Dorji Woodworks",
       "region": "Trashiyangtse",
       "created_at": "2026-06-12",
-      "description": "Local slate carved in shallow relief, of the kind set into a mani wall."
+      "description": "Local slate carved in shallow relief, of the kind set into a mani wall.",
+      "image_path": "/assets/photos/product-cam01.jpg",
+      "image_alt": "Carved Slate Relief"
     },
     {
       "code": "LHA08",
@@ -389,7 +413,9 @@
       "maker": "Sonam Thangka Studio",
       "region": "Paro",
       "created_at": "2026-06-04",
-      "description": "Cloud and jewel motifs in mineral pigment on primed board."
+      "description": "Cloud and jewel motifs in mineral pigment on primed board.",
+      "image_path": "/assets/photos/product-sad03.jpg",
+      "image_alt": "Painted Motif Panel"
     },
     {
       "code": "TSH11",
@@ -399,7 +425,9 @@
       "maker": "Kheng Bamboo Collective",
       "region": "Zhemgang",
       "created_at": "2026-05-28",
-      "description": "Split bamboo in a twill pattern, bound at the edge with cane."
+      "description": "Split bamboo in a twill pattern, bound at the edge with cane.",
+      "image_path": "/assets/photos/product-hhb01.jpg",
+      "image_alt": "Woven Floor Mat"
     }
   ],
   "outlets": [
@@ -420,7 +448,7 @@
       "getting_there": "A 15-minute walk from Khuruthang town, or 3 hours by road from Thimphu via Dochula.",
       "facilities": "Covered stalls, seating, toilets, parking for coaches",
       "map_url": "",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Punakha Crafts Market"
     },
     {
@@ -431,7 +459,7 @@
       "sort_order": 2,
       "note": "The association’s own shop at the secretariat, carrying work from all thirteen crafts.",
       "hours": "Mon–Sat, 09:00 – 17:00",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "HAB Craft Outlet, Thimphu"
     },
     {
@@ -442,7 +470,7 @@
       "sort_order": 3,
       "note": "Last-minute purchases with export paperwork issued at the counter.",
       "hours": "Aligned to departures",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Paro Departures Counter"
     },
     {
@@ -453,7 +481,7 @@
       "sort_order": 4,
       "note": "Yathra wool sold at the loom, alongside the weaving shed.",
       "hours": "Daily, 08:00 – 17:00",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Chumey Yathra Outlet"
     }
   ],
@@ -470,7 +498,7 @@
       "summary": "Forty-two women weaving kisuthara silk on backstrap looms, in the village the textile is named for.",
       "story": "Khoma sits above the Kuri Chhu, an hour’s walk from the road when the cluster was formed. Almost every household here weaves, and the village gives its name to the kisuthara patterns that are the most demanding silk work in Bhutan — a single kira can hold a weaver for eleven months, the design built up thread by thread in supplementary weft with nothing written down. Before the cluster existed, buyers came up from the valley and set the price, and a weaver had no way to know what her work sold for in Thimphu. Forty-two weavers now hold a common price list, buy reeled silk together at a rate none of them could get alone, and take turns travelling down to the trade fairs. The youngest member joined at nineteen; the eldest has been weaving for fifty-one years and taught eleven of the others.",
       "visitor_note": "Weavers receive visitors most mornings. Arrange through the HAB secretariat.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Khoma Weaving Cluster"
     },
     {
@@ -485,7 +513,7 @@
       "summary": "Bamboo and cane workers across the Kheng villages, making bangchung baskets to a technique held locally.",
       "story": "The Kheng region grows the bamboo and works it where it stands. A bangchung — the shallow lidded basket woven in two nesting halves — is split, dyed and woven by one person from start to finish, and the twill patterns are held in families rather than in books. The cluster formed when the road reached Zhemgang and the market suddenly extended past the district: thirty-six households agreed a grading standard so that a basket sold as Kheng work would hold water as it should, and agreed not to undercut each other on it. They now supply the association’s outlets, the Punakha market and, since 2024, two retailers abroad. The cluster also replanted harvesting stands, because the demand that arrived with the road was cutting bamboo faster than it grew back.",
       "visitor_note": "Demonstrations at the cluster shed, Trong. Half a day from Zhemgang town.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Kheng Bamboo Cluster"
     },
     {
@@ -500,7 +528,7 @@
       "summary": "The country’s wood-turning centre — dapa bowls and phob cups turned from burl and lacquered.",
       "story": "Trashiyangtse is where Bhutanese turning is from. The lathes here are worked by hand or treadle, and the material is burl: the knotted growth on a maple or rhododendron trunk, which is turned while still green, then dried slowly for months so it will not split, then lacquered. Certain figured woods are traditionally held to reveal poison, which is why the finest phob cups were given as diplomatic gifts. The cluster’s problem was never skill but supply — burl cannot be planted, only found — so the twenty-four turners agreed a sourcing protocol with the forestry office, took on a shared drying store so wood could be seasoned properly instead of sold green, and began marking each piece with the turner’s name. That mark is now what distinguishes their work from imported bowls sold as Bhutanese.",
       "visitor_note": "The cluster workshop is in Trashiyangtse town, near the chorten.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Trashiyangtse Turning Cluster"
     },
     {
@@ -513,7 +541,7 @@
       "sort_order": 4,
       "summary": "Yathra wool weaving along the Chumey valley — blankets, jackets and saddle bags.",
       "story": "Yathra is woven for the cold, in heavy patterned wool on pedal looms, and the Chumey valley has made it for as long as anyone records. Thirty-one weavers now share dyeing facilities and a common wool purchase, and have moved from selling blankets at the roadside to supplying finished garments and bags.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Chumey Yathra Cluster"
     },
     {
@@ -526,7 +554,7 @@
       "sort_order": 5,
       "summary": "Desho paper makers working daphne and edgeworthia bark by hand.",
       "story": "Desho paper is made by stripping, cooking and beating shrub bark, then pouring the pulp onto frames to dry in the sun. Eighteen makers work here, and because daphne coppices, harvesting does not kill the stand — the cluster manages its own harvesting rotation.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Jungshi Paper Cluster"
     },
     {
@@ -539,7 +567,7 @@
       "sort_order": 6,
       "summary": "Silversmiths and casters working koma clasps, jewellery and ritual vessels.",
       "story": "Twenty-seven silversmiths and casters share premises and a hallmark in Thimphu, working chased silver, drawn-wire filigree and lost-wax bronze. The shared hallmark was the point: it lets a buyer tell a Bhutanese-made koma from an import.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Thimphu Metalwork Cluster"
     }
   ],
@@ -552,7 +580,7 @@
       "blurb": "Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.",
       "is_published": true,
       "body": "The trade facilitation desk is open at the HAB office on Metog Lam from 1 September to the end of November, the months in which most member consignments leave the country. Members book a forty-minute session and bring a real order rather than a hypothetical one.\n\nThe desk covers the paperwork a shipment needs and the order in which it has to be assembled: the commercial invoice and its valuation, the certificate of origin, the customs declaration for the destination market, and the craft certificate HAB issues with every parcel. Officers also compare EMS and courier rates against the weight and declared value of the consignment, which for small parcels is where most of the avoidable cost sits.\n\nTwo questions came up repeatedly last season and are dealt with directly. The first is valuation — members have been declaring the retail price rather than the transaction value, and paying duty accordingly at the far end. The second is consolidation. Where several members in the same dzongkhag are sending to the same market, the secretariat will now pool the parcels into one shipment through Thimphu, at a cost per piece that is a fraction of what each would pay alone.\n\nSessions are open to Active Sector Members and are booked by telephone or email. Members who cannot travel to Thimphu can send scanned documents in advance and take the session by telephone. The desk will publish a short summary of common errors at the end of the season.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Trade facilitation desk opens for the autumn export season"
     },
     {
@@ -563,7 +591,7 @@
       "blurb": "Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.",
       "is_published": true,
       "body": "Twenty-six weavers from Khoma and Gangzur completed a ten-day residential course in natural dyeing this month, run with the Khoma cluster under the resource-efficiency project.\n\nThe course was built around a problem the cluster had raised itself. Madder, indigo and lac have largely given way to synthetic dye on grounds of cost and, more importantly, consistency: a weaver taking a commission cannot risk a batch that comes out a different colour from the last. The training therefore concentrated less on the dyes themselves than on making the process repeatable — mordanting, water quality, ratios by weight rather than by eye, timings, and a written batch record for every pot.\n\nParticipants dyed and recorded eleven batches each. Colour-fastness was tested at the end of the course by washing and sun exposure, and the results were logged against the recipe so a weaver can see which of their own batches held and which did not. Each participant left with a sample card, their batch book, and enough prepared madder and lac to complete one commission.\n\nThe course was taught by two master weavers from the cluster with a technical officer from the secretariat. Places were allocated to Active Sector Members practising Thagzo, with priority to first-time participants; materials and accommodation were covered by the project and travel was not.\n\nThe next intake runs from 4 November, again at Khoma, with twenty-six places. Applications open through the Membership Services officer six weeks in advance.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Natural dye training concludes in Lhuentse"
     },
     {
@@ -574,7 +602,7 @@
       "blurb": "Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.",
       "is_published": true,
       "body": "The Zorig Chusum craft bazaar returns to Clock Tower Square in Thimphu from 12 September, running three days from nine in the morning to six in the evening. Entry is free.\n\nForty member enterprises take stalls, arranged by craft so that a visitor can walk the thirteen disciplines in sequence rather than hunting for them. Demonstrations run continuously through each afternoon: backstrap weaving, bamboo splitting, paper pouring, lathe turning and blacksmithing, with the maker at work and the finished piece alongside.\n\nMembers sell directly and keep the proceeds. Prices are those agreed with the association, which is to say the same price the piece carries in the HAB outlet, so a visitor is not choosing between the bazaar and the shop on cost. Every stallholder is a registered member selling their own work; there are no resellers and no imported stock.\n\nThe bazaar is the association’s largest public event of the year and its main recruiting ground. Membership Services will hold a desk at the north end of the square for artisans who want to apply, and the trade facilitation desk will run sessions for members who have export orders in hand.\n\nStalls are allocated by the secretariat. Applications from Active Sector Members close four weeks before the opening, and priority goes to enterprises that have not exhibited in the previous cycle and to the crafts with the fewest practising members. Write to the office to be added to the list.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Zorig Chusum craft bazaar returns to Clock Tower Square"
     },
     {
@@ -585,7 +613,7 @@
       "blurb": "Sector figures, programme outcomes and audited accounts for the year, published in English and Dzongkha.",
       "is_published": true,
       "body": "The annual report for 2025 is published and free to download from the publications library, in English and Dzongkha, alongside the audited financial statements for the same year.\n\nThe report sets out what the association did against the objects in the Articles of Association and what it cost. It carries the sector figures the secretariat maintains — the network of 7,500 micro and small enterprises, 5,250 of them women-led, and 195 affiliated stores — together with programme outcomes for the year, the project portfolio, and the membership and governance record.\n\nThree results are reported at length. Cleaner-production audits reached 240 workshops across nine dzongkhags and cut measured waste by an average of 31 percent. Four hundred products were photographed and catalogued to export standard, and export documentation clinics ran in six dzongkhags. Forty paid two-year apprenticeships were opened in the five crafts with the fewest practising masters.\n\nThe audited statements are prepared by an independent auditor and presented in the format required under the Civil Society Organizations Act. They are received by the Annual Sector Forum together with the report, which is where members put questions to the Board of Trustees on both.\n\nMembers who would prefer a printed copy can collect one from the office on Metog Lam or ask for it at a Dzongkhag Chapter meeting. Earlier reports back to 2018 are in the same library, as are the audited accounts for each year.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Annual report 2025 available to download"
     },
     {
@@ -596,7 +624,7 @@
       "blurb": "A six-month cycle developing new homeware lines from bamboo, yathra and desho paper for international retail.",
       "is_published": true,
       "body": "Six member artisans have been paired with product designers for a six-month development cycle, working on homeware lines in bamboo, yathra and desho paper for international retail.\n\nThe pairings answer a specific gap. Members reach buyers with pieces made for a domestic or ceremonial use, and buyers ask for something in the same technique at a size, price and function their own market recognises. Neither side is well placed to bridge that alone: the designer does not know what the material will do, and the artisan has no reason to guess at a foreign kitchen shelf.\n\nEach pair works to a brief agreed at the start — a defined product family, a target landed price, and a production method the artisan can repeat without new equipment. The cycle runs in three stages: technique and material study, prototyping with costed bills of material, and a sampling run of twenty pieces that goes in front of buyers at the November inbound mission.\n\nIntellectual property in the resulting designs rests with the artisan. Where a line goes into production, the designer is paid a fee from project funds rather than a royalty, so the member is not carrying a permanent cost on their own product.\n\nThe six crafts represented are Thagzo, Tshazo, Dezo, Shagzo, Lhadri and Garzo. Outcomes, costings and what failed will be published as a case study at the end of the cycle so the method can be repeated without the project.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Product innovation lab pairs six artisans with designers"
     }
   ],
@@ -616,7 +644,7 @@
       "detail": "The bazaar is the association’s largest public event of the year. Forty member enterprises take stalls in Clock Tower Square, arranged by craft so a visitor can walk the thirteen disciplines in sequence rather than hunting for them.\n\nDemonstrations run continuously through each afternoon — backstrap weaving, bamboo splitting, paper pouring, lathe turning and blacksmithing — with the maker at work and the finished piece alongside. Members sell directly and keep the proceeds. Prices are those agreed with the association, the same price the piece carries in the HAB outlet, so a visitor is not choosing between the bazaar and the shop on cost. Every stallholder is a registered member selling their own work: no resellers, no imported stock.\n\nEntry is free and the square stays open from nine to six on all three days. The busiest hours are late morning and the two hours before closing; the demonstrations are quietest, and easiest to watch properly, in the early afternoon.\n\nMembership Services holds a desk at the north end of the square for artisans who want to apply to join, and the trade facilitation desk runs sessions for members with export orders in hand. Both are staffed for the full three days.\n\nStalls are allocated by the secretariat. Applications from Active Sector Members close four weeks before the opening. Priority goes to enterprises that did not exhibit in the previous cycle and to the crafts with the fewest practising members. Stallholders are asked to bring their own display and to price every piece visibly before the doors open.",
       "who": "Open to the public",
       "contact": "officehab@gmail.com",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Zorig Chusum craft bazaar"
     },
     {
@@ -634,7 +662,7 @@
       "detail": "Members bring an actual consignment and leave with the paperwork completed. The clinic is not a lecture: an officer works through one member’s order at a time, with the documents on the table.\n\nThe session covers the commercial invoice and how the transaction value is arrived at, the certificate of origin, the customs declaration for the destination market, and the craft certificate HAB issues with every parcel. Officers compare EMS and courier rates against the weight and declared value of the consignment, which for small parcels is where most of the avoidable cost sits.\n\nTwo errors account for most of the problems seen last season. The first is declaring the retail price rather than the transaction value, which leaves the buyer paying duty on a figure the member never received. The second is sending alone: where several members in the same dzongkhag are shipping to the same market, the secretariat will consolidate the parcels into one shipment through Thimphu at a fraction of the per-piece cost.\n\nSessions run forty minutes and must be booked in advance. Bring the order, the buyer’s details, the weight of the packed consignment, and your member number. Members who cannot travel to Thimphu can send scanned documents ahead and take the session by telephone.\n\nThe desk is open to Active Sector Members from September to the end of November, and a summary of common errors is published to the membership at the end of the season.",
       "who": "Active Sector Members",
       "contact": "officehab@gmail.com",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Export documentation clinic"
     },
     {
@@ -652,7 +680,7 @@
       "detail": "Under the Articles of Association the Annual Sector Forum receives the annual report and audited accounts, considers the strategic direction, and provides the forum for sector-wide consultation.\n\nThe morning is given to the report and the accounts. The Board of Trustees presents both, the independent auditor takes questions on the statements, and the Forum records its receipt of them. The afternoon is consultation: the strategic plan is reviewed against what the year actually delivered, and the Dzongkhag Chapters bring the matters raised at their own meetings — raw material supply, pricing, and the crafts where practising numbers are still falling.\n\nActive Sector Members hold a vote. Associate members attend and are consulted but do not vote. Honorary members hold a standing invitation. Members of the secretariat attend to answer on delivery rather than to speak for the Board.\n\nPapers are circulated to the membership two weeks in advance: the annual report, the audited statements, the workplan and budget for the coming year, and any resolution put by the Board or by a Chapter. A member wanting an item taken at the Forum should send it to the secretariat before the papers go out, in writing, with the support of one other Active member.\n\nThe Forum is where the association’s accountability to its own membership is discharged, and attendance is recorded. Travel support is available to Chapter representatives from the eastern dzongkhags on application to the office.",
       "who": "All members",
       "contact": "officehab@gmail.com",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Annual Sector Forum"
     },
     {
@@ -670,7 +698,7 @@
       "detail": "A ten-day residential course at Khoma covering the preparation of madder, indigo and lac dyes, mordanting, colour-fastness testing and batch record keeping.\n\nThe course concentrates less on the dyes than on making the process repeatable. A weaver taking a commission cannot risk a batch that comes out a different colour from the last, and that risk — not cost alone — is why synthetic dye displaced the traditional preparations. Participants therefore work by weight rather than by eye, record water quality, ratios and timings for every pot, and keep a written batch book they take away with them.\n\nEach participant dyes and records eleven batches. Colour-fastness is tested at the end of the course by washing and sun exposure, and results are logged against the recipe, so a weaver can see which of their own batches held and which did not. Everyone leaves with a sample card, their batch book, and enough prepared madder and lac to complete one commission.\n\nTeaching is by two master weavers from the Khoma cluster with a technical officer from the secretariat. Places are allocated to Active Sector Members practising Thagzo, with priority to cluster members and first-time participants.\n\nMaterials and accommodation are covered by the project; travel is not. Twenty-six places. Applications open through the Membership Services officer six weeks before the start and close when the intake is full.",
       "who": "Thagzo members, 26 places",
       "contact": "officehab@gmail.com",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Natural dye training, Lhuentse"
     },
     {
@@ -688,7 +716,7 @@
       "detail": "Fourteen retail and wholesale buyers from India, Thailand and Japan visit Thimphu under the Market Access project. The mission is a working day, not a reception.\n\nMember enterprises with export-ready product and completed catalogue photography are matched to buyers in advance on what each buyer has said they are looking for. Matched members get a scheduled thirty-minute meeting; walk-in members can join the open session after 14:00, when buyers move through the room by craft.\n\nBring physical samples, a price list in USD, your minimum order quantity, and a lead time you can hold. Buyers will ask all four in the first five minutes, and an answer of “it depends” generally ends the conversation. Members who came to the last mission without a price list are strongly advised to attend the costing workshop the week before.\n\nThe secretariat sits in on scheduled meetings only where a member asks it to, and follows up every introduction in writing within a week so that nothing rests on a verbal indication. Sample shipping after the mission is consolidated through the office.\n\nOpen to Craft Enterprise members and to producer groups nominated by a Dzongkhag Chapter. Registration closes two weeks before, and matched members are notified with their buyer’s brief five days in advance. Fourteen buyers, roughly forty scheduled meetings, one afternoon — the constraint is time, so preparation decides what comes of it.",
       "who": "Craft Enterprise members",
       "contact": "officehab@gmail.com",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Inbound buyer mission"
     },
     {
@@ -706,7 +734,7 @@
       "detail": "The Skills Transmission project opens forty paid two-year placements across the five crafts with the fewest practising members — Lugzo, Garzo, Jinzo, Dozo and Shingzo. This briefing is for young artisans considering an application, and for parents who want to understand what the two years involve.\n\nThese five crafts share a pattern. The work is commissioned rather than sold, the commissions are irregular, and a young person cannot afford years of unpaid apprenticeship. The placements address the money rather than the sentiment: the apprentice is paid a monthly stipend for the full two years, and the master is paid for teaching.\n\nThe briefing covers eligibility, the stipend and what it does and does not cover, the working week, how masters and apprentices are matched, and what happens at the end — including the tools grant and the route into membership as an Active Sector Member.\n\nEighteen masters are taking apprentices this cycle. Matching is done on craft, location and the master’s own assessment, and both sides meet before a placement is confirmed. Technique is documented in video and print as it is taught, and the curriculum developed with each master is shared with the Institute of Zorig Chusum.\n\nOpen to applicants aged 16–30. No prior training is required and no fee is charged. Applications close six weeks after the briefing; the form is available at the office and through Dzongkhag Chapters.",
       "who": "Open to applicants aged 16–30",
       "contact": "officehab@gmail.com",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Apprenticeship intake briefing"
     }
   ],
@@ -719,7 +747,7 @@
       "is_featured": true,
       "is_published": true,
       "abstract": "Programme outcomes, sector figures, membership and governance record for 2025, with the audited accounts presented alongside.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Annual Report 2025 cover"
     },
     {
@@ -730,7 +758,7 @@
       "is_featured": true,
       "is_published": true,
       "abstract": "The Board-approved strategy: six objectives, the delivery model through Dzongkhag Chapters, and the indicators performance is reviewed against.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Five-Year Strategic Plan 2026–2030 cover"
     },
     {
@@ -741,7 +769,7 @@
       "is_featured": true,
       "is_published": true,
       "abstract": "Maps material supply, production, pricing and route to market for each of the thirteen crafts, and where value is lost.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Zorig Chusum Value Chain Assessment cover"
     },
     {
@@ -752,7 +780,7 @@
       "is_featured": true,
       "is_published": true,
       "abstract": "Independent auditor's statements for 2025 in the format required under the Civil Society Organizations Act.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Audited Financial Statements 2025 cover"
     },
     {
@@ -763,7 +791,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "One hundred and twenty member products with reference codes, materials, dimensions, maker and dzongkhag for retail and trade buyers.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "HAB Product Catalogue 2026 cover"
     },
     {
@@ -774,7 +802,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Sets out how current tax and licensing treatment affects informal craft producers, with four costed options for change.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Craft Sector Tax and Licensing: A Note for Policymakers cover"
     },
     {
@@ -785,7 +813,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Preparation of madder, indigo and lac: mordanting, ratios by weight, timings, colour-fastness testing and batch record keeping.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Natural Dye Handbook for Weavers cover"
     },
     {
@@ -796,7 +824,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A workbook for costing a piece by material, labour and overhead, and setting retail, wholesale and export prices from it.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Costing and Pricing for Craft Enterprises cover"
     },
     {
@@ -807,7 +835,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Programme outcomes, sector figures and governance record for 2024, in English and Dzongkha.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Annual Report 2024 cover"
     },
     {
@@ -818,7 +846,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Independent auditor's statements for 2024, received by the Annual Sector Forum with the annual report.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Audited Financial Statements 2024 cover"
     },
     {
@@ -829,7 +857,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A photo essay tracing how the Khoma cluster held a common price and moved kisuthara weaving from household loom to a national market.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Khoma Weavers: Fifteen Years of Kisuthara cover"
     },
     {
@@ -840,7 +868,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A buyer survey covering price expectations, packaging, certification and the product categories Japanese retailers ask for.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Market Demand for Bhutanese Handicrafts in Japan cover"
     },
     {
@@ -851,7 +879,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Checklists for the commercial invoice, certificate of origin, customs declaration and craft certificate, with worked examples.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Export Documentation Guide for Members cover"
     },
     {
@@ -862,7 +890,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Quarterly newsletter: training intakes, trade fairs, cluster news, publications and notices to the membership.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Zorig Bulletin — Issue 12 cover"
     },
     {
@@ -873,7 +901,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Programme outcomes, sector figures and governance record for 2023, in English and Dzongkha.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Annual Report 2023 cover"
     },
     {
@@ -884,7 +912,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Illustrated notes on species selection, harvesting season, splitting, node treatment and the principal Tshazo weaves.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Bamboo Splitting and Weaving: Technique Notes cover"
     },
     {
@@ -895,7 +923,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "An external evaluation of income, enterprise survival and decision-making among women-led member enterprises.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Women in Craft Enterprise: Endline Evaluation cover"
     },
     {
@@ -906,7 +934,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Compares geographical indication, collective marks and certification schemes as means of protecting Bhutanese craft origin.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Protecting Craft Origin: Options for Bhutan cover"
     },
     {
@@ -917,7 +945,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Quarterly newsletter: training intakes, trade fairs, cluster news, publications and notices to the membership.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Zorig Bulletin — Issue 9 cover"
     },
     {
@@ -928,7 +956,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Independent auditor's statements for 2022, prepared in the format required under the Act.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Audited Financial Statements 2022 cover"
     },
     {
@@ -939,7 +967,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Baseline figures on employment, household income and seasonality across the craft sector, by craft and dzongkhag.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Craft Sector Employment and Income Baseline cover"
     },
     {
@@ -950,7 +978,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "The inspection criteria a product must meet to be listed by HAB: materials, finish, dimensions, labelling and origin.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Quality Standards for HAB-Listed Products cover"
     },
     {
@@ -961,7 +989,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A review of the cash-for-craft procurement scheme run during the tourism shutdown, with what it cost and what it sustained.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "COVID-19 Recovery: What Cash-for-Craft Achieved cover"
     },
     {
@@ -972,7 +1000,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Programme outcomes and accounts for 2021, the year the e-shop launched and cash-for-craft procurement began.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Annual Report 2021 cover"
     },
     {
@@ -983,7 +1011,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A practical guide to lighting, backgrounds, scale, angles and file preparation for catalogue and e-shop photography.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Photographing Craft for Online Sale cover"
     },
     {
@@ -994,7 +1022,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A reference for all thirteen crafts: technique, materials, tools, regional variation and the vocabulary used to describe each.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Zorig Chusum Reference Catalogue cover"
     },
     {
@@ -1005,7 +1033,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Quarterly newsletter: training intakes, trade fairs, cluster news, publications and notices to the membership.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Zorig Bulletin — Issue 5 cover"
     },
     {
@@ -1016,7 +1044,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Where craft sits in visitor spending, what is bought and by whom, and how much reaches the maker.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Craft in the Tourism Value Chain cover"
     },
     {
@@ -1027,7 +1055,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A field study of cane, bamboo, dye plant and timber supply in the eastern dzongkhags, and its effect on production.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Raw Material Supply Constraints in Eastern Bhutan cover"
     },
     {
@@ -1038,7 +1066,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "Programme outcomes, sector figures and accounts for 2018.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Annual Report 2018 cover"
     },
     {
@@ -1049,7 +1077,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A handbook on forming a producer group: membership, common pricing, joint material purchase and record keeping.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Setting Up a Craft Producer Group cover"
     },
     {
@@ -1060,7 +1088,7 @@
       "is_featured": false,
       "is_published": true,
       "abstract": "A photo essay on how Chumey yathra weavers moved from household production to a retail line with consistent quality.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Chumey Yathra: From Household Loom to Retail cover"
     }
   ],
@@ -1331,7 +1359,7 @@
           "l": "Average waste reduction"
         }
       ],
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Sustainable Bhutanese Handicrafts (SWITCH-Asia)"
     },
     {
@@ -1363,7 +1391,7 @@
           "l": "Dzongkhags covered"
         }
       ],
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Market Access for Rural Artisans"
     },
     {
@@ -1395,7 +1423,7 @@
           "l": "Masters engaged"
         }
       ],
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Zorig Chusum Skills Transmission"
     },
     {
@@ -1426,7 +1454,7 @@
           "l": "New enterprises registered"
         }
       ],
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Women in Craft Enterprise"
     },
     {
@@ -1457,7 +1485,7 @@
           "l": "Stores kept trading"
         }
       ],
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "COVID-19 Craft Sector Recovery"
     },
     {
@@ -1488,7 +1516,7 @@
           "l": "Crafts represented"
         }
       ],
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Craft Product Innovation Lab"
     }
   ],
@@ -2001,7 +2029,7 @@
         "Participation in legislative and regulatory consultations",
         "Engagement with ministries, regulators and international forums"
       ],
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Sector Representation and Advocacy"
     },
     {
@@ -2014,7 +2042,7 @@
         "Review of standards and incentive frameworks affecting the sector",
         "Monitoring of sector-relevant policy commitments"
       ],
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Policy Development and Intervention"
     },
     {
@@ -2028,7 +2056,7 @@
         "Buyer–seller linkages and market information systems",
         "Certification and standards compliance support"
       ],
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Trade Facilitation"
     },
     {
@@ -2042,7 +2070,7 @@
         "Quality improvement initiatives",
         "Product development guidelines and toolkits"
       ],
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Product Development"
     },
     {
@@ -2056,7 +2084,7 @@
         "Geographical indications and certification marks",
         "Digital and physical promotional platforms"
       ],
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Branding and Market Development"
     },
     {
@@ -2070,7 +2098,7 @@
         "Study tours, peer exchanges and mentorship",
         "Support to training institutions and curricula"
       ],
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Capacity Development"
     },
     {
@@ -2084,7 +2112,7 @@
         "Geographical indication and certification of origin",
         "Cooperation with national and international heritage bodies"
       ],
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Cultural Heritage Stewardship"
     },
     {
@@ -2097,7 +2125,7 @@
         "Sector data platform",
         "Research reports and market intelligence briefs"
       ],
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Research and Knowledge Management"
     },
     {
@@ -2110,7 +2138,7 @@
         "Pathways for youth entering the crafts",
         "Access for persons with disabilities and marginalised communities"
       ],
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Social Inclusion and Equity"
     },
     {
@@ -2123,7 +2151,7 @@
         "Financial literacy and entrepreneurship programmes",
         "Endowment Fund and resilience mechanisms"
       ],
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Financial Sustainability of the Sector"
     },
     {
@@ -2136,7 +2164,7 @@
         "Linkages with research and educational institutions",
         "Private sector and civil society collaboration"
       ],
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Partnerships and Institutional Linkages"
     }
   ],
@@ -2148,7 +2176,7 @@
       "member_since": 2011,
       "blurb": "Forty-two women weaving kisuthara silk patterns on backstrap looms in Khoma village.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Khoma Weavers Group"
     },
     {
@@ -2158,7 +2186,7 @@
       "member_since": 2013,
       "blurb": "Bamboo and cane baskets, bangchungs and mats from the Kheng region.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Kheng Bamboo Collective"
     },
     {
@@ -2168,7 +2196,7 @@
       "member_since": 2009,
       "blurb": "Yathra wool weaving in Chumey valley — blankets, jackets and saddle bags.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Chumey Yathra House"
     },
     {
@@ -2178,7 +2206,7 @@
       "member_since": 2015,
       "blurb": "Carving workshop producing masks, choesham panels and altar detail.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "Kelzang Dorji Woodworks"
     },
     {
@@ -2188,7 +2216,7 @@
       "member_since": 2012,
       "blurb": "Tailoring and appliqué studio working in raw silk and cotton.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Norzin Tailoring"
     },
     {
@@ -2198,7 +2226,7 @@
       "member_since": 2010,
       "blurb": "Lacquered dapa and phob turned from burl wood.",
       "is_verified": true,
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Yangtse Turning Works"
     },
     {
@@ -2208,7 +2236,7 @@
       "member_since": 2008,
       "blurb": "Traditional desho paper from daphne and edgeworthia bark.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Jungshi Paper Works"
     },
     {
@@ -2218,7 +2246,7 @@
       "member_since": 2014,
       "blurb": "Silver koma, jewellery and ritual objects, hand-chased.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Zorig Silversmiths"
     },
     {
@@ -2228,7 +2256,7 @@
       "member_since": 2007,
       "blurb": "Thangka painting to classical proportion, mineral pigments only.",
       "is_verified": true,
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "Sonam Thangka Studio"
     }
   ],
@@ -2298,7 +2326,7 @@
       "honour": "Master Craftsperson",
       "since": 1974,
       "note": "Fifty-one years at the backstrap loom, and teacher to eleven of the weavers now working in the Khoma cluster.",
-      "image_path": "assets/photos/hero-1-weaving.jpg",
+      "image_path": "/assets/photos/hero-1-weaving.jpg",
       "image_alt": "Master Craftsperson"
     },
     {
@@ -2308,7 +2336,7 @@
       "honour": "Master Craftsperson",
       "since": 1988,
       "note": "Thangka painter working only in mineral pigment, to the proportions set out in the classical treatises.",
-      "image_path": "assets/photos/hero-4-textiles.jpg",
+      "image_path": "/assets/photos/hero-4-textiles.jpg",
       "image_alt": "Master Craftsperson"
     },
     {
@@ -2318,7 +2346,7 @@
       "honour": "National Craft Award",
       "since": 2019,
       "note": "Recognised for the grading standard now used across the Kheng bamboo cluster.",
-      "image_path": "assets/photos/hero-5-desho.jpg",
+      "image_path": "/assets/photos/hero-5-desho.jpg",
       "image_alt": "National Craft Award"
     },
     {
@@ -2328,7 +2356,7 @@
       "honour": "National Craft Award",
       "since": 2022,
       "note": "Turner whose maker’s mark became the model for distinguishing Bhutanese work from imports.",
-      "image_path": "assets/photos/hero-3-clay.jpg",
+      "image_path": "/assets/photos/hero-3-clay.jpg",
       "image_alt": "National Craft Award"
     },
     {
@@ -2338,7 +2366,7 @@
       "honour": "Enterprise of the Year",
       "since": 2024,
       "note": "Silversmithing enterprise that established the shared Thimphu hallmark.",
-      "image_path": "assets/photos/hero-2-punakha.jpg",
+      "image_path": "/assets/photos/hero-2-punakha.jpg",
       "image_alt": "Enterprise of the Year"
     },
     {
@@ -2348,7 +2376,7 @@
       "honour": "Young Artisan Award",
       "since": 2025,
       "note": "Desho paper maker who took the craft into stationery and packaging for export.",
-      "image_path": "assets/photos/about-hab.jpg",
+      "image_path": "/assets/photos/about-hab.jpg",
       "image_alt": "Young Artisan Award"
     }
   ],

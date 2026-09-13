@@ -43,24 +43,37 @@ function ShopContent() {
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
   const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || '');
 
+const PRODUCT_POOL = [
+  '/assets/photos/product-sad03.jpg',
+  '/assets/photos/product-hhb01.jpg',
+  '/assets/photos/product-lud01.jpg',
+  '/assets/photos/product-cam01.jpg',
+];
+
   useEffect(() => {
     fetch('/api/products')
       .then((r) => r.json())
       .then((data) => {
         if (data?.products && Array.isArray(data.products) && data.products.length > 0) {
           setProducts(
-            data.products.map((p: any) => ({
-              code: p.code,
-              name: p.name,
-              craftKey: p.craftKey || 'craft',
-              craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
-              maker: typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Verified Member'),
-              region: p.region || p.dzongkhag || 'Bhutan',
-              price: p.priceUSD || p.price || 0,
-              priceUSD: p.priceUSD || p.price || 0,
-              image_path: p.image_path || p.imageUrl || '/assets/photos/product-hhb01.jpg',
-              slot: p.slot || p.code,
-            }))
+            data.products.map((p: any, idx: number) => {
+              let img = p.image_path || p.imageUrl;
+              if (!img || img.includes('placeholder') || img.includes('training_workshop') || img.includes('/images/')) {
+                img = PRODUCT_POOL[idx % PRODUCT_POOL.length];
+              }
+              return {
+                code: p.code,
+                name: p.name,
+                craftKey: p.craftKey || 'craft',
+                craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
+                maker: typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Verified Member'),
+                region: p.region || p.dzongkhag || 'Bhutan',
+                price: p.priceUSD || p.price || 0,
+                priceUSD: p.priceUSD || p.price || 0,
+                image_path: img,
+                slot: p.slot || p.code,
+              };
+            })
           );
         }
       })

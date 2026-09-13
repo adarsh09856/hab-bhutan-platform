@@ -61,6 +61,15 @@ async function getOutletsData() {
   return { outlets: CLIENT_DATA.outlets, clusters: CLIENT_DATA.clusters };
 }
 
+const SCENE_POOL = [
+  '/assets/photos/hero-4-textiles.jpg',
+  '/assets/photos/hero-1-weaving.jpg',
+  '/assets/photos/hero-5-desho.jpg',
+  '/assets/photos/hero-3-clay.jpg',
+  '/assets/photos/hero-2-punakha.jpg',
+  '/assets/photos/about-hab.jpg',
+];
+
 export default async function OutletsPage() {
   const { outlets, clusters } = await getOutletsData();
   const featured = outlets.find((o) => o.is_featured) || outlets[0];
@@ -149,12 +158,12 @@ export default async function OutletsPage() {
         </div>
 
         <div className="grid grid--3">
-          {otherOutlets.map((o) => (
+          {otherOutlets.map((o, idx) => (
             <article key={o.key} className="card outlet">
               <Link href={`/outlets/${o.key}`}>
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
-                    src="/assets/photos/hero-4-textiles.jpg"
+                    src={SCENE_POOL[idx % SCENE_POOL.length]}
                     alt={o.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -195,7 +204,7 @@ export default async function OutletsPage() {
         </div>
 
         <div className="grid grid--3">
-          {clusters.slice(0, 3).map((c) => {
+          {clusters.slice(0, 3).map((c, idx) => {
             const craft = CLIENT_DATA.crafts.find((cr) => cr.key === c.craft_key);
 
             return (
@@ -203,7 +212,7 @@ export default async function OutletsPage() {
                 <Link href={`/clusters/${c.key}`}>
                   <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
-                      src="/assets/photos/hero-1-weaving.jpg"
+                      src={SCENE_POOL[(idx + 2) % SCENE_POOL.length]}
                       alt={c.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"

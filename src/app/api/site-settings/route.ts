@@ -49,8 +49,8 @@ export async function GET() {
           aboutBandTitle: 'A network built for the artisans, not the middlemen',
           aboutBandPara1: 'Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.',
           aboutBandPara2: 'Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.',
-          aboutBandImageUrl: '/images/training_workshop.jpg',
-          aboutBandImageCaption: 'HAB artisan training workshop · Thimphu',
+          aboutBandImageUrl: '/assets/photos/about-hab.jpg',
+          aboutBandImageCaption: 'photo — HAB training workshop',
           aboutBandCtaText: 'Read about our programmes →',
           aboutBandCtaLink: '/programmes',
           membershipLeftTitle: 'Find a member',
@@ -64,8 +64,17 @@ export async function GET() {
         },
       });
     }
+    if (setting) {
+      if (!setting.aboutBandImageUrl || setting.aboutBandImageUrl.includes('training_workshop') || setting.aboutBandImageUrl.includes('placeholder')) {
+        setting.aboutBandImageUrl = '/assets/photos/about-hab.jpg';
+      }
+      if (!setting.aboutBandImageCaption || setting.aboutBandImageCaption.includes('training_workshop')) {
+        setting.aboutBandImageCaption = 'photo — HAB training workshop';
+      }
+    }
     return NextResponse.json({ success: true, setting, settings: setting });
   } catch (error) {
+
     const fallback = {
       announcementText: 'CSO/2011/043 · Handicrafts Association of Bhutan',
       announcementLink: '/about',
@@ -105,8 +114,9 @@ export async function GET() {
         aboutBandTitle: 'A network built for the artisans, not the middlemen',
         aboutBandPara1: 'Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.',
         aboutBandPara2: 'Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.',
-        aboutBandImageUrl: '/images/training_workshop.jpg',
-        aboutBandImageCaption: 'HAB artisan training workshop · Thimphu',
+        aboutBandImageUrl: '/assets/photos/about-hab.jpg',
+        aboutBandImageCaption: 'photo — HAB training workshop',
+
         aboutBandCtaText: 'Read about our programmes →',
         aboutBandCtaLink: '/programmes',
         membershipLeftTitle: 'Find a member',

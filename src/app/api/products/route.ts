@@ -61,11 +61,30 @@ export async function GET(req: NextRequest) {
     });
 
     if (dbProducts.length > 0) {
+      const productPool = [
+        '/assets/photos/product-sad03.jpg',
+        '/assets/photos/product-hhb01.jpg',
+        '/assets/photos/product-lud01.jpg',
+        '/assets/photos/product-cam01.jpg',
+      ];
+      const mapped = dbProducts.map((p, idx) => {
+        let img = (p.images as any)?.[0]?.url;
+        if (!img || img.includes('placeholder') || img.includes('parotaktshang') || !img.startsWith('/assets/photos/')) {
+          img = productPool[idx % productPool.length];
+        }
+        return {
+          ...p,
+          image_path: img,
+          imageUrl: img,
+          price: p.priceUSD,
+        };
+      });
       return NextResponse.json({
         success: true,
-        products: dbProducts,
+        products: mapped,
       });
     }
+
 
     // Fallback to SAMPLE_PRODUCTS mapped to match schema if DB has not been seeded yet
     let fallback = SAMPLE_PRODUCTS.map((sp) => ({
