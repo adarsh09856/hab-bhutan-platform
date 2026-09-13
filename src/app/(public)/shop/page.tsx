@@ -1,366 +1,316 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useCart } from '@/context/CartContext';
 import { CRAFTS } from '@/lib/data';
-import ProductCard from '@/components/public/ProductCard';
 
-export default function ShopLandingPage() {
-  const [newArrivals, setNewArrivals] = React.useState<any[]>([]);
-  const [bestSellers, setBestSellers] = React.useState<any[]>([]);
+interface ProductItem {
+  code: string;
+  name: string;
+  craftKey: string;
+  craft_name?: string;
+  maker: string;
+  region?: string;
+  price: number;
+  priceUSD: number;
+  image_path?: string;
+  slot?: string;
+}
 
-  React.useEffect(() => {
-    fetch('/api/products?limit=8')
+const DEFAULT_PRODUCTS: ProductItem[] = [
+  { code: 'LHA01', name: 'Guru Rinpoche Mineral-Pigment Thangka', craftKey: 'lhazo', craft_name: 'Lhazo · Painting', maker: 'Sonam Thangka Studio', region: 'Paro', price: 260, priceUSD: 260, image_path: '/assets/photos/product-hhb01.jpg', slot: 'photo 1 — thangka, full view' },
+  { code: 'SAD03', name: 'Yathra Wool Saddle Bag', craftKey: 'thagzo', craft_name: 'Thagzo · Weaving', maker: 'Chumey Yathra House', region: 'Bumthang', price: 120, priceUSD: 120, image_path: '/assets/photos/product-sad03.jpg', slot: 'photo 1 — saddle bag, full view' },
+  { code: 'TRO04', name: 'Hand-Chased Silver Koma Clasp Pair', craftKey: 'troezo', craft_name: 'Troezo · Silver & Gold', maker: 'Zorig Silversmiths', region: 'Thimphu', price: 92, priceUSD: 92, image_path: '/assets/photos/product-cam01.jpg', slot: 'photo 1 — koma pair, full view' },
+  { code: 'FTB04', name: 'Two-Tier Bangchung Basket', craftKey: 'tshazo', craft_name: 'Tshazo · Cane & Bamboo', maker: 'Kheng Bamboo Collective', region: 'Zhemgang', price: 34, priceUSD: 34, image_path: '/assets/photos/product-lud01.jpg', slot: 'photo 1 — bangchung basket, full view' },
+  { code: 'DAP02', name: 'Turned Maple Burl Dapa Bowl with Lid', craftKey: 'shagzo', craft_name: 'Shagzo · Woodturning', maker: 'Yangtse Turning Works', region: 'Trashiyangtse', price: 48, priceUSD: 48, image_path: '/assets/photos/hero-5-desho.jpg', slot: 'photo 1 — dapa bowl, full view' },
+  { code: 'DEZ01', name: 'Daphne Desho Handmade Paper (10 Sheets)', craftKey: 'dezo', craft_name: 'Dezo · Papermaking', maker: 'Jungshi Paper Works', region: 'Punakha', price: 18, priceUSD: 18, image_path: '/assets/photos/hero-4-textiles.jpg', slot: 'photo 1 — desho paper, full view' },
+  { code: 'MAS01', name: 'Carved Wooden Garuda Dance Mask', craftKey: 'parzo', craft_name: 'Parzo · Woodcarving', maker: 'Kelzang Dorji Woodworks', region: 'Trashiyangtse', price: 68, priceUSD: 68, image_path: '/assets/photos/hero-3-clay.jpg', slot: 'photo 1 — dance mask, full view' },
+  { code: 'CUS02', name: 'Raw Silk Supplementary Weft Cushion Cover', craftKey: 'thagzo', craft_name: 'Thagzo · Weaving', maker: 'Khoma Weavers Group', region: 'Lhuentse', price: 54, priceUSD: 54, image_path: '/assets/photos/hero-1-weaving.jpg', slot: 'photo 1 — silk cushion, full view' },
+];
+
+function ShopContent() {
+  const searchParams = useSearchParams();
+  const initialCraft = searchParams.get('craft') || '';
+
+  const { fmt } = useCurrency();
+  const { addToCart } = useCart();
+
+  const [products, setProducts] = useState<ProductItem[]>(DEFAULT_PRODUCTS);
+  const [selectedCraft, setSelectedCraft] = useState<string>(initialCraft);
+  const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
+  const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || '');
+
+  useEffect(() => {
+    fetch('/api/products')
       .then((r) => r.json())
       .then((data) => {
-        if (data?.products && data.products.length > 0) {
-          setNewArrivals(data.products.slice(0, 4));
-          setBestSellers(data.products.slice(4, 8).length > 0 ? data.products.slice(4, 8) : data.products.slice(0, 4));
+        if (data?.products && Array.isArray(data.products) && data.products.length > 0) {
+          setProducts(
+            data.products.map((p: any) => ({
+              code: p.code,
+              name: p.name,
+              craftKey: p.craftKey || 'craft',
+              craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
+              maker: typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Verified Member'),
+              region: p.region || p.dzongkhag || 'Bhutan',
+              price: p.priceUSD || p.price || 0,
+              priceUSD: p.priceUSD || p.price || 0,
+              image_path: p.image_path || p.imageUrl || '/assets/photos/product-hhb01.jpg',
+              slot: p.slot || p.code,
+            }))
+          );
         }
       })
       .catch(() => {});
   }, []);
 
-  const collections = [
-    {
-      key: 'under50',
-      name: 'Under $50',
-      desc: 'Gifts and everyday treasures, hand-carved, woven, or folded by verified artisans.',
-      count: '4 pieces',
-      slot: 'Handmade Daphne Paper & Gifts',
-      image: '/images/products/dez01.jpg',
-      filterParam: 'collection=under50',
-    },
-    {
-      key: 'textiles',
-      name: 'Textiles & weaving',
-      desc: 'Yathra wool, kisuthara silk, and backstrap-loom heritage from Bumthang and Lhuentse.',
-      count: '4 pieces',
-      slot: 'Master Weaving & Textiles',
-      image: '/images/crafts/thagzo.jpg',
-      filterParam: 'craft=thagzo',
-    },
-    {
-      key: 'home',
-      name: 'Home & table',
-      desc: 'Turned maple dapa bowls, split bamboo baskets, and handmade daphne paper stationery.',
-      count: '4 pieces',
-      slot: 'Turned Maple Burl Tableware',
-      image: '/images/products/dap02.jpg',
-      filterParam: 'collection=home',
-    },
-  ];
+  const craftCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach((p) => {
+      counts[p.craftKey] = (counts[p.craftKey] || 0) + 1;
+    });
+    return counts;
+  }, [products]);
+
+  const activeCraftMeta = useMemo(() => {
+    return CRAFTS.find((c) => c.key === selectedCraft);
+  }, [selectedCraft]);
+
+  const filteredAndSortedProducts = useMemo(() => {
+    let result = products.slice();
+
+    if (selectedCraft) {
+      result = result.filter((p) => p.craftKey === selectedCraft);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.code.toLowerCase().includes(q) ||
+        p.maker.toLowerCase().includes(q) ||
+        p.craftKey.toLowerCase().includes(q)
+      );
+    }
+
+    if (sortOrder === 'low') {
+      result.sort((a, b) => a.priceUSD - b.priceUSD);
+    } else if (sortOrder === 'high') {
+      result.sort((a, b) => b.priceUSD - a.priceUSD);
+    }
+
+    return result;
+  }, [products, selectedCraft, searchQuery, sortOrder]);
 
   return (
-    <main className="pb-24">
-      {/* 1. Promo Hero Panel */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-12">
-        <div className="bg-[#33261F] text-[#F1ECE2] rounded-[16px] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.02fr_0.98fr]">
-          <div className="p-6 sm:p-10 lg:p-14 flex flex-col justify-center">
-            <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#C9A46A] mb-3 sm:mb-4">
-              The HAB E-Shop
+    <main id="main">
+
+      <section className="section">
+        {/* 1. Breadcrumbs */}
+        <p className="crumbs">
+          <Link href="/">Home</Link> / <Link href="/shop" onClick={() => setSelectedCraft('')}>E-shop</Link> / <span>{activeCraftMeta ? activeCraftMeta.name : 'All crafts'}</span>
+        </p>
+
+        <div className="shopgrid">
+
+          {/* 2. Left Rail: Categories & Sort */}
+          <aside>
+            <h2 className="railtitle">Craft category</h2>
+            <div className="rail" id="shopRail">
+              <button
+                type="button"
+                className={`rail__row ${!selectedCraft ? 'is-active' : ''}`}
+                onClick={() => setSelectedCraft('')}
+                style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, cursor: 'pointer' }}
+              >
+                <span className="rail__name">All crafts</span>
+                <span className="rail__n">{products.length}</span>
+              </button>
+
+              {CRAFTS.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  className={`rail__row ${selectedCraft === c.key ? 'is-active' : ''}`}
+                  onClick={() => setSelectedCraft(c.key)}
+                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, cursor: 'pointer' }}
+                >
+                  <span>
+                    <span className="rail__name">{c.name}</span>
+                    <span className="rail__en">{c.english}</span>
+                  </span>
+                  <span className="rail__n">{craftCounts[c.key] || 0}</span>
+                </button>
+              ))}
             </div>
-            <h1 className="font-marcellus text-2xl sm:text-4xl lg:text-[52px] font-normal leading-[1.08] lg:leading-[1.04] tracking-[-0.008em] mb-4 sm:mb-5 [text-wrap:balance] text-white">
-              Handmade in Bhutan, bought fairly, shipped worldwide
-            </h1>
-            <p className="font-lora text-sm sm:text-base lg:text-[17.5px] leading-[1.62] text-[#D2C2AE] mb-6 sm:mb-8 max-w-[50ch]">
-              Every piece in the catalogue is purchased upfront from a registered member of the Handicrafts Association of Bhutan at an agreed price, supporting rural households across all 20 dzongkhags.
+
+            <div className="railtitle" id="shopSortWrap" style={{ marginTop: '22px' }}>
+              <label className="field__label" htmlFor="shopSort">Sort</label>
+              <select
+                className="input"
+                id="shopSort"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as any)}
+              >
+                <option value="new">Newest</option>
+                <option value="low">Price: low to high</option>
+                <option value="high">Price: high to low</option>
+              </select>
+            </div>
+          </aside>
+
+          {/* 3. Main Products Area */}
+          <div>
+            <p className="shopswitch">
+              Buying for a shop, hotel or distributor? <Link href="/wholesale">See trade pricing and MOQs →</Link>
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link
-                href="/shop/all"
-                className="font-figtree font-semibold text-center text-[15px] bg-[#8B2E24] text-white px-6 py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors"
-              >
-                Shop all products
-              </Link>
-              <a
-                href="#shop-crafts"
-                className="font-figtree font-semibold text-center text-[15px] border border-[#4E3D2E] text-[#F1ECE2] px-6 py-3.5 rounded-[7px] hover:border-white transition-colors"
-              >
-                Shop by craft ↓
-              </a>
-            </div>
-          </div>
 
-          <div data-cms-img className="relative min-h-[260px] sm:min-h-[420px] bg-[#42332A] flex items-end p-6 sm:p-8 border-t lg:border-t-0 lg:border-l border-[#4E3D2E] overflow-hidden">
-            <img
-              src="/images/outlets/thimphu.jpg"
-              alt="Authentic Bhutanese Crafts Exhibition and Market"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
-            <span className="relative z-10 font-mono text-[10.5px] sm:text-[11.5px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-2.5 py-1.5 rounded border border-white/20">
-              Authentic Bhutanese artisan crafts collection
-            </span>
+            <h1 className="display display--band" id="shopTitle">
+              {activeCraftMeta ? `${activeCraftMeta.name} — ${activeCraftMeta.english}` : 'The HAB e-shop'}
+            </h1>
+
+            <p className="section__lede" id="shopLede" style={{ marginBottom: '18px' }}>
+              {activeCraftMeta
+                ? `Work in ${activeCraftMeta.english.toLowerCase()}, one of the thirteen crafts of Zorig Chusum, bought from registered members at an agreed price and sold centrally by HAB.`
+                : 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category on the left.'}
+            </p>
+
+            <div className="actions" style={{ marginBottom: '22px' }}>
+              {selectedCraft && (
+                <button
+                  type="button"
+                  className="btn btn--accent btn--sm"
+                  onClick={() => setSelectedCraft('')}
+                >
+                  View all products
+                </button>
+              )}
+              {selectedCraft && (
+                <Link className="btn btn--outline btn--sm" href={`/craft/${selectedCraft}`}>
+                  About this craft →
+                </Link>
+              )}
+              <span className="craft__count" id="shopCount" style={{ margin: 0, alignSelf: 'center' }}>
+                {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'product' : 'products'}
+              </span>
+            </div>
+
+            {filteredAndSortedProducts.length > 0 ? (
+              <div className="grid grid--3" id="shopProducts">
+                {filteredAndSortedProducts.map((p) => (
+                  <article key={p.code} className="card product">
+                    <Link className="product__shot" href={`/product/${p.code}`}>
+                      <figure className="frame frame--square">
+                        <img
+                          src={p.image_path || '/assets/photos/product-hhb01.jpg'}
+                          alt={p.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                        />
+                        <figcaption className="frame__caption frame__caption--sm">
+                          {p.slot || p.code}
+                        </figcaption>
+                      </figure>
+                      <span className="product__ref">{p.code}</span>
+                    </Link>
+
+                    <div className="card__body">
+                      <p className="eyebrow eyebrow--accent eyebrow--sm">{p.craft_name || p.craftKey}</p>
+                      <h3 className="card__title clamp-2">
+                        <Link href={`/product/${p.code}`}>{p.name}</Link>
+                      </h3>
+                      <p className="card__meta clamp-1">{p.maker} · {p.region}</p>
+                      <div className="card__foot">
+                        <span className="price">{fmt(p.priceUSD)}</span>
+                        <button
+                          className="btn btn--outline btn--xs"
+                          type="button"
+                          onClick={() => addToCart(p.code)}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="shopempty" id="shopEmpty">
+                <h2 className="shopempty__title">
+                  Nothing online in {activeCraftMeta ? activeCraftMeta.name : 'this category'} yet
+                </h2>
+                <p className="shopempty__body">
+                  {activeCraftMeta?.description
+                    ? `${activeCraftMeta.name} is commissioned rather than shipped. Send the secretariat your specification and we will match it to a member who practises it.`
+                    : 'This craft is commissioned rather than shipped. Send the secretariat your specification and we will match it to a member who practises it.'}
+                </p>
+                <div className="actions" style={{ justifyContent: 'center' }}>
+                  <Link
+                    className="btn btn--accent"
+                    href={`/contact?topic=commission${activeCraftMeta ? `&craft=${encodeURIComponent(activeCraftMeta.name)}` : ''}`}
+                  >
+                    Enquire about a commission
+                  </Link>
+                  <button
+                    type="button"
+                    className="btn btn--outline"
+                    onClick={() => { setSelectedCraft(''); setSearchQuery(''); }}
+                  >
+                    Browse all crafts
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </section>
 
-      {/* 2. Service Bar */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 mb-12 sm:mb-16">
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#E4DDD1] p-4 sm:p-6 text-center gap-4 sm:gap-0">
-          <div className="pt-2 sm:pt-0 sm:px-4">
-            <div className="font-figtree font-bold text-sm sm:text-[15.5px] text-[#33261F] mb-1">
-              Worldwide shipping
-            </div>
-            <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
-              EMS via Bhutan Post, tracked, 7–14 days. Free over $200.
-            </div>
+      {/* 4. Assurance Strip */}
+      <section className="section section--last">
+        <div className="assurance">
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">T</span>
+              <span>racked Origin</span>
+            </h3>
+            <p className="assurance__body">Materials, makers, and worldwide shipping are 100% traceable.</p>
           </div>
-          <div className="pt-4 sm:pt-0 sm:px-4">
-            <div className="font-figtree font-bold text-sm sm:text-[15.5px] text-[#33261F] mb-1">
-              Duty made clear
-            </div>
-            <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
-              Commercial invoice and craft certificate in every parcel.
-            </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">R</span>
+              <span>egistered Chain</span>
+            </h3>
+            <p className="assurance__body">Every artisan, supplier, and input is strictly verified.</p>
           </div>
-          <div className="pt-4 sm:pt-0 sm:px-4">
-            <div className="font-figtree font-bold text-sm sm:text-[15.5px] text-[#33261F] mb-1">
-              14-day returns
-            </div>
-            <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
-              Unused authentic pieces returned within 14 days of delivery.
-            </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">U</span>
+              <span>pfront &amp; Fair</span>
+            </h3>
+            <p className="assurance__body">Pre-paid artisan pricing cuts out unethical markups.</p>
           </div>
-          <div className="pt-4 sm:pt-0 sm:px-4">
-            <div className="font-figtree font-bold text-sm sm:text-[15.5px] text-[#33261F] mb-1">
-              Secure payment
-            </div>
-            <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
-              3-D Secure cards, mBoB and bank transfer, USD or Nu.
-            </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">E</span>
+              <span>ncrypted Escrow</span>
+            </h3>
+            <p className="assurance__body">Bulletproof 3-D Secure, mBoB, and bank transfers.</p>
           </div>
         </div>
       </section>
 
-      {/* 3. New Arrivals */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 mb-12 sm:mb-20">
-        <div className="flex items-end justify-between mb-6 sm:mb-8">
-          <div>
-            <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.2] text-[#33261F] mb-1">
-              New arrivals
-            </h2>
-            <div className="font-mono text-[11px] text-[#6B5A4C]">
-              Added to the catalogue this month
-            </div>
-          </div>
-          <Link
-            href="/shop/all"
-            className="font-figtree text-sm sm:text-[15px] font-semibold text-[#8B2E24] hover:underline"
-          >
-            All products →
-          </Link>
-        </div>
-
-        {newArrivals.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-[3/4] bg-slate-100 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-            {newArrivals.map((p) => (
-              <ProductCard
-                key={p.code}
-                code={p.code}
-                name={p.name}
-                priceUSD={p.priceUSD || p.price}
-                craftKey={p.craftKey}
-                region={p.region}
-                maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 4. Shop by Craft Grid */}
-      <section id="shop-crafts" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 mb-12 sm:mb-20">
-        <div className="mb-6 sm:mb-8">
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2">
-            The Thirteen Crafts
-          </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.2] text-[#33261F]">
-            Shop by craft category
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {CRAFTS.map((c) => (
-            <Link
-              key={c.key}
-              href={`/shop/${c.key}`}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] overflow-hidden p-3 sm:p-4 flex flex-col hover:border-[#33261F] transition-colors group"
-            >
-              <div data-cms-img className="aspect-[3/2] bg-[#E8E1D4] rounded-[6px] border border-[#E4DDD1] mb-3 overflow-hidden relative">
-                <img
-                  src={`/images/crafts/${c.key}.jpg`}
-                  alt={`${c.name} — ${c.english}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
-                <span className="absolute bottom-2 left-2 z-10 font-mono text-[9px] sm:text-[10px] text-[#F4F0E7] bg-[#33261F]/80 backdrop-blur-sm px-2 py-0.5 rounded truncate max-w-[90%]">
-                  {c.english}
-                </span>
-              </div>
-              <div className="font-figtree font-bold text-sm sm:text-[16px] text-[#33261F] group-hover:text-[#8B2E24] transition-colors">
-                {c.name}
-              </div>
-              <div className="font-lora text-xs sm:text-[13px] text-[#6B5A4C] mb-2 sm:mb-3 truncate">
-                {c.english}
-              </div>
-              <div className="font-mono text-[10.5px] sm:text-[11px] text-[#8B2E24] mt-auto">
-                Browse craft →
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. Collections */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 mb-12 sm:mb-20">
-        <div className="mb-6 sm:mb-8">
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2">
-            Curated Lines
-          </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.2] text-[#33261F]">
-            Featured collections
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {collections.map((col) => (
-            <div
-              key={col.key}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden flex flex-col p-5 sm:p-6"
-            >
-              <div data-cms-img className="aspect-[16/9] bg-[#E8E1D4] rounded-[8px] border border-[#E4DDD1] mb-4 sm:mb-5 overflow-hidden relative">
-                <img
-                  src={col.image}
-                  alt={col.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
-                <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] sm:text-[10.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2.5 py-1 rounded">
-                  {col.slot}
-                </span>
-              </div>
-              <div className="flex justify-between items-baseline mb-2">
-                <h3 className="font-figtree font-bold text-base sm:text-[19px] text-[#33261F]">
-                  {col.name}
-                </h3>
-                <span className="font-mono text-[11.5px] text-[#8B2E24]">
-                  {col.count}
-                </span>
-              </div>
-              <p className="font-lora text-xs sm:text-[14.5px] leading-[1.55] text-[#6B5A4C] mb-6 flex-1">
-                {col.desc}
-              </p>
-              <Link
-                href={`/shop/all?${col.filterParam}`}
-                className="font-figtree font-semibold text-xs sm:text-[14.5px] text-[#8B2E24] hover:underline"
-              >
-                Shop the collection →
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 6. Best Sellers */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 mb-12 sm:mb-20">
-        <div className="flex items-end justify-between mb-6 sm:mb-8">
-          <div>
-            <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.2] text-[#33261F] mb-1">
-              Most bought
-            </h2>
-            <div className="font-mono text-[11px] text-[#6B5A4C]">
-              Popular pieces central to living Bhutanese traditions
-            </div>
-          </div>
-          <Link
-            href="/shop/all"
-            className="font-figtree text-sm sm:text-[15px] font-semibold text-[#8B2E24] hover:underline"
-          >
-            All products →
-          </Link>
-        </div>
-
-        {bestSellers.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-[3/4] bg-slate-100 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-            {bestSellers.map((p) => (
-              <ProductCard
-                key={p.code}
-                code={p.code}
-                name={p.name}
-                priceUSD={p.priceUSD || p.price}
-                craftKey={p.craftKey}
-                region={p.region}
-                maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 7. Closing Split Panels */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-6 sm:p-8 flex flex-col justify-between">
-            <div>
-              <div className="font-mono text-[11px] tracking-[0.14em] uppercase text-[#6B5A4C] mb-3">
-                Behind the work
-              </div>
-              <h3 className="font-marcellus text-xl sm:text-[28px] font-normal text-[#33261F] mb-3">
-                Meet the makers
-              </h3>
-              <p className="font-lora text-xs sm:text-[15px] text-[#4A3C33] leading-[1.6] mb-6">
-                Discover the stories, weaving villages, and family woodcarving studios across Bhutan represented in the HAB catalogue.
-              </p>
-            </div>
-            <Link
-              href="/members"
-              className="self-start font-figtree font-semibold text-xs sm:text-[14px] bg-[#33261F] text-[#F4F0E7] px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors"
-            >
-              Browse member directory →
-            </Link>
-          </div>
-
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-6 sm:p-8 flex flex-col justify-between">
-            <div>
-              <div className="font-mono text-[11px] tracking-[0.14em] uppercase text-[#6B5A4C] mb-3">
-                Institutional &amp; Hospitality
-              </div>
-              <h3 className="font-marcellus text-xl sm:text-[28px] font-normal text-[#33261F] mb-3">
-                Trade &amp; wholesale
-              </h3>
-              <p className="font-lora text-xs sm:text-[15px] text-[#4A3C33] leading-[1.6] mb-6">
-                We supply luxury hotels, international galleries, and ethical retailers with authenticated, volume orders produced to consistent specification.
-              </p>
-            </div>
-            <Link
-              href="/about#contact"
-              className="self-start font-figtree font-semibold text-xs sm:text-[14px] border border-[#33261F] text-[#33261F] px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#33261F] hover:text-[#F4F0E7] transition-colors"
-            >
-              Request a wholesale quote →
-            </Link>
-          </div>
-        </div>
-      </section>
     </main>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<main id="main"><section className="section"><p>Loading shop…</p></section></main>}>
+      <ShopContent />
+    </Suspense>
   );
 }

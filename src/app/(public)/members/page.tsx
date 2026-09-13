@@ -1,272 +1,285 @@
-'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CRAFTS } from '@/lib/data';
+import Image from 'next/image';
+import { CLIENT_DATA } from '@/lib/client-data';
+import prisma from '@/lib/prisma';
 
-export default function MemberDirectoryPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCraft, setSelectedCraft] = useState('');
-  const [selectedDzongkhag, setSelectedDzongkhag] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [dbMembers, setDbMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const pageSize = 6;
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    setLoading(true);
-    fetch('/api/members')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.members)) {
-          const mapped = data.members.map((m: any) => ({
-            name: m.name,
-            craftKey: m.craftKey,
-            dz: m.dzongkhag,
-            village: m.dzongkhag || 'Central',
-            year: m.joinYear || 2026,
-            tier: m.tier || 'ACTIVE_SECTOR_MEMBER',
-            productsCount: m.products?.length || 0,
-            bio: m.bio || `Master artisan practicing ${m.craftKey} in ${m.dzongkhag}.`,
-            verified: m.status === 'VERIFIED',
-            regNumber: m.regNumber,
-          }));
-          setDbMembers(mapped);
-        }
-      })
-      .catch((err) => console.error('Error fetching live members:', err))
-      .finally(() => setLoading(false));
-  }, []);
+export const metadata: Metadata = {
+  title: 'Membership database · Handicrafts Association of Bhutan',
+  description: 'The sector by the numbers. Artisans, master craftspeople and craft enterprises across Bhutan.',
+};
 
-  const activeMemberList = dbMembers;
+const memberCounts: Record<string, number> = {
+  shingzo: 412,
+  dozo: 305,
+  parzo: 486,
+  lhazo: 371,
+  jinzo: 168,
+  lugzo: 143,
+  garzo: 214,
+  troezo: 397,
+  tshazo: 892,
+  thagzo: 3140,
+  tshemzo: 648,
+  shagzo: 176,
+  dezo: 148,
+};
 
-  // Extract all unique dzongkhags
-  const dzongkhags = useMemo(() => {
-    return Array.from(new Set(activeMemberList.map((m: any) => m.dz))).sort();
-  }, [activeMemberList]);
+const regionCounts = [
+  { name: 'Lhuentse', n: 940 },
+  { name: 'Zhemgang', n: 720 },
+  { name: 'Trashigang', n: 690 },
+  { name: 'Bumthang', n: 615 },
+  { name: 'Thimphu', n: 580 },
+  { name: 'Trashiyangtse', n: 520 },
+  { name: 'Mongar', n: 470 },
+  { name: 'Paro', n: 405 },
+  { name: 'Punakha', n: 360 },
+  { name: 'Other dzongkhags', n: 2200, aggregate: true },
+];
 
-  // Filter members
-  const filteredMembers = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return activeMemberList.filter((m: any) => {
-      const craft = CRAFTS.find((c) => c.key === m.craftKey);
-      const matchQ =
-        !q ||
-        m.name.toLowerCase().includes(q) ||
-        m.dz.toLowerCase().includes(q) ||
-        m.bio.toLowerCase().includes(q) ||
-        craft?.name.toLowerCase().includes(q) ||
-        craft?.english.toLowerCase().includes(q);
-
-      const matchCraft = !selectedCraft || m.craftKey === selectedCraft;
-      const matchDz = !selectedDzongkhag || m.dz === selectedDzongkhag;
-
-      return matchQ && matchCraft && matchDz;
+async function getRecognisedMembers() {
+  try {
+    const dbHonours = await prisma.honourRecord.findMany({
+      orderBy: { yearAwarded: 'desc' },
+      take: 6,
     });
-  }, [activeMemberList, searchQuery, selectedCraft, selectedDzongkhag]);
+    if (dbHonours.length > 0) {
+      return dbHonours.map((h) => ({
+        name: h.name,
+        craft_key: h.craft,
+        dzongkhag: h.dzongkhag,
+        honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : 'Master Craftsperson',
+        since: h.yearAwarded,
+        note: h.citation,
+        image_path: h.portraitUrl || '/assets/photos/hero-1-weaving.jpg',
+      }));
+    }
+  } catch {}
+  return CLIENT_DATA.recognised;
+}
 
-  // Pagination
-  const totalPages = Math.ceil(filteredMembers.length / pageSize) || 1;
-  const paginatedMembers = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredMembers.slice(start, start + pageSize);
-  }, [filteredMembers, currentPage, pageSize]);
+export default async function MembersPage() {
+  const recognised = await getRecognisedMembers();
+  const total = Object.values(memberCounts).reduce((t, n) => t + n, 0);
 
-  const resetFilters = () => {
-    setSearchQuery('');
-    setSelectedCraft('');
-    setSelectedDzongkhag('');
-    setCurrentPage(1);
-  };
+  const sortedCrafts = CLIENT_DATA.crafts.slice().sort((a, b) => {
+    return (memberCounts[b.key] || 0) - (memberCounts[a.key] || 0);
+  });
+
+  const regions = regionCounts.filter((r) => !r.aggregate);
+  const aggregate = regionCounts.find((r) => r.aggregate);
+  const maxRegion = Math.max(...regions.map((r) => r.n), 1);
 
   return (
-    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
-      {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
-        <Link href="/" className="hover:underline">Home</Link> /{' '}
-        <Link href="/about" className="hover:underline">Members</Link> /{' '}
-        <span>Directory</span>
-      </div>
-
-      {/* Header Row */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 sm:gap-10 mb-8">
-        <div>
-          <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[44px] font-normal leading-[1.06] text-[#33261F] mb-3">
-            Membership database
-          </h1>
-          <p className="font-lora text-sm sm:text-base lg:text-[17px] leading-[1.6] text-[#4A3C33] max-w-[66ch]">
-            Browse registered master craftspeople, weaving clusters, and traditional workshops across Bhutan. Every listing connects directly to member-made work in our central e-shop.
-          </p>
+    <main id="main">
+      {/* 1. Page Hero */}
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / Members
+        </p>
+        <div className="pagehero">
+          <div>
+            <p className="eyebrow eyebrow--accent">Membership</p>
+            <h1 className="display display--page">The sector, by the numbers</h1>
+            <p className="lede">
+              HAB represents artisans and craft enterprises in every dzongkhag of Bhutan. Rather than list every member, this page shows the shape of the sector — how many people work in each of the thirteen crafts, and where they are.
+            </p>
+            <p className="craft__count" id="memberTotal" style={{ margin: 0 }}>
+              {total.toLocaleString('en-US')} registered members
+            </p>
+          </div>
+          <div className="panel panel--accent">
+            <p className="eyebrow eyebrow--onaccent">Looking for someone?</p>
+            <h2 className="display display--panel display--onaccent">We will introduce you</h2>
+            <p className="panel__body panel__body--onaccent">
+              Member contact details are held by the secretariat and not published, so tell us what you need — a craft, a quantity, a delivery date — and we will put you in touch with members who can do it.
+            </p>
+            <div className="actions">
+              <Link className="btn btn--light" href="/contact">
+                Request an introduction
+              </Link>
+              <Link className="btn btn--ghost" href="/shop">
+                Or shop online
+              </Link>
+            </div>
+          </div>
         </div>
-        <Link
-          href="/membership/apply"
-          className="font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#8B2E24] text-white px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#6E241C] transition-colors whitespace-nowrap self-start sm:self-auto"
-        >
-          Apply for membership
-        </Link>
-      </div>
+      </section>
 
-      {/* Filter Bar */}
-      <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-4 sm:p-[18px] mb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_auto] gap-3 items-center">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            placeholder="Search by name, craft or village"
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 sm:p-3 text-xs sm:text-[14px] font-figtree text-[#33261F] outline-none placeholder:text-[#8A7767]"
-          />
-
-          <select
-            value={selectedCraft}
-            onChange={(e) => {
-              setSelectedCraft(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 sm:p-3 text-xs sm:text-[14px] font-figtree text-[#33261F] outline-none"
-          >
-            <option value="">All craft categories</option>
-            {CRAFTS.map((c) => (
-              <option key={c.key} value={c.key}>
-                {c.name} — {c.english}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={selectedDzongkhag}
-            onChange={(e) => {
-              setSelectedDzongkhag(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 sm:p-3 text-xs sm:text-[14px] font-figtree text-[#33261F] outline-none"
-          >
-            <option value="">All dzongkhags</option>
-            {dzongkhags.map((dz) => (
-              <option key={dz} value={dz}>
-                {dz}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="font-figtree font-semibold text-xs sm:text-[14px] text-[#8B2E24] hover:underline px-3 py-2 cursor-pointer text-left sm:text-center"
-          >
-            Reset
-          </button>
+      {/* 2. By Craft Category */}
+      <section className="section">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">By craft category</p>
+            <h2 className="display display--sub">Members in each of the thirteen crafts</h2>
+            <p className="section__lede">
+              Weaving is by far the largest, and the five smallest are the crafts HAB&apos;s skills transmission work is aimed at.
+            </p>
+          </div>
+          <Link className="btn btn--ink btn--sm" href="/#crafts">
+            About the crafts →
+          </Link>
         </div>
 
-        <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] mt-4 pt-3 border-t border-[#EFE9DE]">
-          {filteredMembers.length} of {activeMemberList.length} listings shown · directory of registered HAB artisan members
-        </div>
-      </div>
+        <div className="countgrid" id="countGrid" data-cms-repeat>
+          {sortedCrafts.map((c) => {
+            const n = memberCounts[c.key] || 0;
+            const share = Math.round((n / total) * 100);
 
-      {/* Results Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px] mb-12">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-[22px] h-[220px] animate-pulse" />
-          ))}
-        </div>
-      ) : paginatedMembers.length === 0 ? (
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-16 text-center mb-12">
-          <h3 className="font-marcellus text-[26px] font-normal text-[#33261F] mb-3">
-            No members match these filters
-          </h3>
-          <p className="font-lora text-[15px] text-[#6B5A4C] mb-6 max-w-[48ch] mx-auto">
-            Try resetting your search query or selecting a different craft or dzongkhag.
-          </p>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="font-figtree font-semibold text-[14px] bg-[#33261F] text-white px-5 py-3 rounded-[7px] hover:bg-[#8B2E24] transition-colors cursor-pointer"
-          >
-            Clear all filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px] mb-12">
-          {paginatedMembers.map((m) => {
-            const craft = CRAFTS.find((c) => c.key === m.craftKey);
             return (
-              <Link
-                key={m.name}
-                href={`/members/${encodeURIComponent(m.name)}`}
-                className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-[22px] flex flex-col gap-3 hover:border-[#33261F] transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div data-cms-avatar className="w-[52px] h-[52px] rounded-full bg-[#E8E1D4] border border-[#E4DDD1] flex-none overflow-hidden relative">
-                    <img
-                      src={`/images/crafts/${m.craftKey}.jpg`}
-                      alt={m.name}
-                      className="w-full h-full object-cover"
+              <article key={c.key} className="countcard">
+                <span className="countcard__n">{n.toLocaleString('en-US')}</span>
+                <div className="countcard__body">
+                  <h3 className="countcard__name">{c.name}</h3>
+                  <span className="countcard__en">{c.english}</span>
+                </div>
+                <div className="countcard__foot">
+                  <div className="countcard__bar">
+                    <div
+                      className="countcard__fill"
+                      style={{ width: `${Math.max(share, 2)}%` }}
                     />
                   </div>
-                  <div>
-                    <h3 className="font-figtree font-bold text-[17px] text-[#33261F] group-hover:text-[#8B2E24] transition-colors">
-                      {m.name}
-                    </h3>
-                    <div className="font-lora text-[13.5px] text-[#6B5A4C]">
-                      {m.dz} · member since {m.year}
-                    </div>
-                  </div>
+                  <span className="countcard__share">{share}% of members</span>
                 </div>
-
-                <div className="flex gap-2 items-center">
-                  <span className="font-mono text-[10.5px] bg-[#F1E9DB] text-[#8B2E24] px-2 py-0.5 rounded">
-                    {craft?.name}
-                  </span>
-                  <span className="font-mono text-[10.5px] bg-[#EFF0E4] text-[#4C6B41] px-2 py-0.5 rounded">
-                    HAB verified
-                  </span>
+                <div className="countcard__links">
+                  <Link
+                    className="countcard__link"
+                    href={c.key === 'dozo' ? `/craft/${c.key}` : `/shop?craft=${c.key}`}
+                  >
+                    Shop {c.name} →
+                  </Link>
+                  <Link className="countcard__link countcard__link--quiet" href={`/craft/${c.key}`}>
+                    About the craft →
+                  </Link>
                 </div>
-
-                <p className="font-lora text-[14.5px] leading-[1.5] text-[#4A3C33] flex-1">
-                  {m.bio}
-                </p>
-
-                <div className="pt-3 border-t border-[#EFE9DE] flex justify-between items-center text-[13.5px]">
-                  <span className="font-mono text-[11px] text-[#6B5A4C]">
-                    {m.productsCount || 0} products in shop
-                  </span>
-                  <span className="font-figtree font-semibold text-[#8B2E24] group-hover:translate-x-1 transition-transform">
-                    View profile →
-                  </span>
-                </div>
-              </Link>
+              </article>
             );
           })}
         </div>
-      )}
+      </section>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2">
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="font-figtree text-[13.5px] px-4 py-2 rounded-[6px] border border-[#CDBEA8] text-[#33261F] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#33261F] cursor-pointer"
-          >
-            ← Previous
-          </button>
-          <span className="font-mono text-[12px] text-[#6B5A4C] px-3">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            type="button"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="font-figtree text-[13.5px] px-4 py-2 rounded-[6px] border border-[#CDBEA8] text-[#33261F] disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#33261F] cursor-pointer"
-          >
-            Next →
-          </button>
+      {/* 3. By Dzongkhag */}
+      <section className="section">
+        <div className="longread">
+          <div>
+            <p className="eyebrow eyebrow--accent">By dzongkhag</p>
+            <h2 className="display display--sub">Where the members are</h2>
+            <p className="section__lede">
+              Craft is a rural livelihood: the largest concentrations are in the eastern and central dzongkhags, not in Thimphu.
+            </p>
+          </div>
+          <div className="regionlist" id="regionList" data-cms-repeat>
+            {regions.map((r) => {
+              const widthPct = Math.round((r.n / maxRegion) * 100);
+              return (
+                <div key={r.name} className="regionrow">
+                  <span className="regionrow__name">{r.name}</span>
+                  <span className="regionrow__bar">
+                    <span className="regionrow__fill" style={{ width: `${widthPct}%` }} />
+                  </span>
+                  <span className="regionrow__n">{r.n.toLocaleString('en-US')}</span>
+                </div>
+              );
+            })}
+            {aggregate && (
+              <div className="regionrow regionrow--total">
+                <span className="regionrow__name">{aggregate.name}</span>
+                <span className="regionrow__note">across the remaining eleven dzongkhags</span>
+                <span className="regionrow__n">{aggregate.n.toLocaleString('en-US')}</span>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </section>
+
+      {/* 4. Recognised Members */}
+      <section className="section" id="recognised">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Recognised members</p>
+            <h2 className="display display--sub">Masters, award winners &amp; enterprises</h2>
+            <p className="section__lede">
+              A small number of members are recognised individually — master craftspeople, national award winners, and the enterprises that have changed how a craft trades.
+            </p>
+          </div>
+          <Link className="btn btn--ink btn--sm" href="/clusters">
+            Visit the clusters →
+          </Link>
+        </div>
+
+        <div className="grid grid--3" id="honourGrid" data-cms-repeat>
+          {recognised.slice(0, 6).map((m, i) => {
+            const craft = CLIENT_DATA.crafts.find((c) => c.key === m.craft_key) || {
+              name: m.craft_key || 'Craft',
+            };
+            const photoPool = [
+              '/assets/photos/hero-1-weaving.jpg',
+              '/assets/photos/hero-4-textiles.jpg',
+              '/assets/photos/hero-5-desho.jpg',
+              '/assets/photos/hero-3-clay.jpg',
+              '/assets/photos/hero-2-punakha.jpg',
+            ];
+            const imgSrc = m.image_path || photoPool[i % photoPool.length];
+
+            return (
+              <article key={i} className="card honour">
+                <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+                  <Image
+                    src={imgSrc}
+                    alt={m.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <figcaption className="frame__caption frame__caption--sm">
+                    portrait — {craft.name.toLowerCase()} practitioner
+                  </figcaption>
+                </figure>
+                <div className="card__body">
+                  <span className="honour__badge">{m.honour}</span>
+                  <h3 className="card__title">
+                    <Link href={`/members/${encodeURIComponent(m.name)}`}>{m.name}</Link>
+                  </h3>
+                  <p className="card__meta">
+                    {craft.name} · {m.dzongkhag} · since {m.since}
+                  </p>
+                  <p className="card__text">{m.note}</p>
+                  <Link className="news__more" href={`/shop?craft=${m.craft_key}`}>
+                    Shop {craft.name} →
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <p className="footnote" style={{ marginTop: 20 }}>
+          Names, portraits and citations to be supplied by the secretariat.
+        </p>
+      </section>
+
+      {/* 5. CTA Band */}
+      <section className="section section--last">
+        <div className="ctaband">
+          <div>
+            <h2 className="display display--panel">Not a member yet?</h2>
+            <p className="ctaband__body">
+              Individual artisans, craft enterprises, artisan clusters and affiliated organisations can all register online. Applications are verified by the secretariat within five working days.
+            </p>
+          </div>
+          <div className="actions">
+            <Link className="btn btn--light" href="/register">
+              Register as a member
+            </Link>
+            <Link className="btn btn--ghost" href="/membership">
+              Compare categories
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

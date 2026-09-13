@@ -1,166 +1,165 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface NewsItem {
-  kind: string;
-  date: string;
-  title: string;
-  blurb: string;
-}
-
-interface EventItem {
-  day: string;
-  mon: string;
-  title: string;
-  place: string;
-}
+import Image from 'next/image';
+import { CLIENT_DATA } from '@/lib/client-data';
 
 export default function NewsPage() {
-  const [articles, setArticles] = React.useState<NewsItem[]>([]);
-  const [events, setEvents] = React.useState<EventItem[]>([]);
-  const [loading, setLoading] = React.useState(true);
+  const [newsList, setNewsList] = useState<any[]>(() => CLIENT_DATA.news);
+  const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
+  const [selectedKind, setSelectedKind] = useState<string>('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/news')
       .then((r) => r.json())
-      .then((data) => {
-        if (data?.articles && Array.isArray(data.articles)) {
-          setArticles(
-            data.articles.map((a: any) => ({
-              kind: a.kind || 'News',
-              date: a.dateString || 'Recent',
+      .then((d) => {
+        if (d?.articles && Array.isArray(d.articles) && d.articles.length > 0) {
+          setNewsList(
+            d.articles.map((a: any) => ({
+              id: a.id,
+              slug: a.slug || a.id,
+              kind: a.kind || 'Notice',
               title: a.title,
-              blurb: a.blurb || '',
+              blurb: a.blurb || a.summary || '',
+              published_at: a.dateString || a.published_at || 'Recent',
+              image_path: a.image_path || '/assets/photos/hero-4-textiles.jpg',
             }))
           );
         }
-        if (data?.events && Array.isArray(data.events)) {
-          setEvents(data.events);
+        if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
+          setEventsList(d.events);
         }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
+
+  const kinds = Array.from(new Set(newsList.map((n) => n.kind))).filter(Boolean);
+
+  const filtered = !selectedKind
+    ? newsList
+    : newsList.filter((n) => n.kind === selectedKind);
+
+  const photoPool = [
+    '/assets/photos/about-hab.jpg',
+    '/assets/photos/hero-4-textiles.jpg',
+    '/assets/photos/hero-1-weaving.jpg',
+    '/assets/photos/hero-5-desho.jpg',
+    '/assets/photos/hero-2-punakha.jpg',
+  ];
+
   return (
-    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
-      {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
-        <Link href="/" className="hover:underline">Home</Link> /{' '}
-        <span>News &amp; events</span>
-      </div>
-
-      {/* Header */}
-      <div className="mb-8 sm:mb-10">
-        <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[44px] font-normal leading-[1.06] text-[#33261F] mb-2">
-          News &amp; events
-        </h1>
-        <p className="font-lora text-sm sm:text-base lg:text-[17px] text-[#6B5A4C]">
-          Stay informed, stay empowered.
+    <main id="main">
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / News &amp; events
         </p>
-      </div>
+        <h1 className="display display--page">News &amp; events</h1>
+        <p className="lede">Stay informed, stay empowered.</p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 items-start">
-        {/* Left Column: Articles */}
-        <div className="flex flex-col gap-5">
-          {articles.map((article) => (
-            <div
-              key={article.title}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden grid grid-cols-1 sm:grid-cols-[200px_1fr]"
-            >
-              <div data-cms-img className="relative min-h-[180px] sm:min-h-[150px] bg-[#E8E1D4] border-b sm:border-b-0 sm:border-r border-[#E4DDD1] overflow-hidden">
-                <img
-                  src={article.kind === 'Programs' ? '/images/programs/trade.jpg' : article.kind === 'Artisan support' ? '/images/programs/dye_training.jpg' : article.kind === 'Events' ? '/images/outlets/thimphu.jpg' : '/images/about_hero.jpg'}
-                  alt={article.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-                <span className="absolute bottom-2 left-2 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-0.5 rounded">
-                  {article.kind}
-                </span>
-              </div>
-
-              <div className="p-4 sm:p-[22px_24px] flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-mono text-[10px] sm:text-[10.5px] bg-[#F1E9DB] text-[#8B2E24] px-2 py-0.5 rounded">
-                      {article.kind}
-                    </span>
-                    <span className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C]">
-                      {article.date}
-                    </span>
-                  </div>
-                  <h2 className="font-figtree font-bold text-base sm:text-[20px] leading-[1.28] text-[#33261F] mb-2">
-                    {article.title}
-                  </h2>
-                  <p className="font-lora text-xs sm:text-[15px] leading-[1.55] text-[#6B5A4C]">
-                    {article.blurb}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-[#EFE9DE] mt-4">
-                  <span className="font-figtree font-semibold text-xs sm:text-[13.5px] text-[#8B2E24] hover:underline cursor-pointer">
-                    Continue reading →
-                  </span>
-                </div>
-              </div>
+        <div className="newsrow" style={{ marginTop: 34 }}>
+          {/* Left: Articles List */}
+          <div>
+            <div className="filterbar filterbar--slim">
+              <label className="visually-hidden" htmlFor="newsFilter">
+                Category
+              </label>
+              <select
+                className="input"
+                id="newsFilter"
+                value={selectedKind}
+                onChange={(e) => setSelectedKind(e.target.value)}
+              >
+                <option value="">All categories</option>
+                {kinds.map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))}
+              </select>
+              <span className="craft__count" id="newsCount" style={{ margin: 0, alignSelf: 'center' }}>
+                {filtered.length} {filtered.length === 1 ? 'post' : 'posts'}
+              </span>
             </div>
-          ))}
-        </div>
 
-        {/* Right Column: Events & Downloads */}
-        <div className="lg:sticky lg:top-[100px] flex flex-col gap-6">
-          {/* Upcoming Events Card */}
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-6">
-            <h3 className="font-figtree font-bold text-[18px] text-[#33261F] mb-4">
-              Upcoming events
-            </h3>
-            <div className="divide-y divide-[#EFE9DE]">
-              {events.map((ev) => (
-                <div key={ev.title} className="py-3.5 flex items-center gap-4 first:pt-0 last:pb-0">
-                  <div className="w-[44px] h-[44px] bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] flex flex-col items-center justify-center flex-none">
-                    <span className="font-figtree font-bold text-[14px] text-[#33261F] leading-none">
-                      {ev.day}
-                    </span>
-                    <span className="font-mono text-[10px] text-[#8B2E24] font-bold">
-                      {ev.mon}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="font-figtree font-semibold text-[15px] text-[#33261F]">
-                      {ev.title}
+            <div className="newslist" id="newsList" data-cms-repeat>
+              {filtered.map((n, idx) => {
+                const imgSrc = n.image_path || photoPool[idx % photoPool.length];
+                const slug = n.slug || n.id || `post-${idx}`;
+
+                return (
+                  <article key={slug} className="card news" data-cms-item>
+                    <Link className="news__shot" href={`/news/${slug}`}>
+                      <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+                        <Image
+                          src={imgSrc}
+                          alt={n.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 40vw"
+                          style={{ objectFit: 'cover' }}
+                        />
+                        <figcaption className="frame__caption frame__caption--sm">
+                          photo — {n.kind.toLowerCase()}
+                        </figcaption>
+                      </figure>
+                    </Link>
+
+                    <div className="card__body">
+                      <div className="news__meta">
+                        <span className="tag">{n.kind}</span>
+                        <span className="news__date">{n.published_at || 'Recent'}</span>
+                      </div>
+                      <h2 className="news__title clamp-2">
+                        <Link href={`/news/${slug}`}>{n.title}</Link>
+                      </h2>
+                      <p className="card__text clamp-3">{n.blurb}</p>
+                      <Link className="news__more" href={`/news/${slug}`}>
+                        Read the full story →
+                      </Link>
                     </div>
-                    <div className="font-lora text-[13px] text-[#6B5A4C]">
-                      {ev.place}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </div>
 
-          {/* Publications Promo */}
-          <div className="bg-[#33261F] text-[#F1ECE2] rounded-[12px] p-6">
-            <h3 className="font-marcellus text-[22px] font-normal text-white mb-2">
-              Annual Reports &amp; Studies
-            </h3>
-            <p className="font-lora text-[14px] text-[#D2C2AE] mb-4 leading-[1.5]">
-              Download full audited accounts, strategic blueprints, and value-chain assessments.
-            </p>
-            <Link
-              href="/publications"
-              className="font-figtree font-semibold text-[13.5px] text-[#F1ECE2] border-b border-[#8B2E24] pb-0.5 hover:text-white transition-colors"
-            >
-              Browse downloads →
-            </Link>
-          </div>
+          {/* Right: Sidebar */}
+          <aside className="newsaside">
+            <div className="newsaside__block">
+              <div className="newsaside__head">
+                <h2 className="newsaside__title">Upcoming events</h2>
+                <Link className="link-accent" href="/events">
+                  All events →
+                </Link>
+              </div>
+              <div id="newsEvents">
+                {eventsList.slice(0, 4).map((e) => (
+                  <Link key={e.key} className="eventrow" href={`/events/${e.key}`}>
+                    <span className="eventrow__date">
+                      <strong>{e.day || '12'}</strong>
+                      <span>{e.mon || 'OCT'}</span>
+                    </span>
+                    <span className="eventrow__body">
+                      <span className="eventrow__title clamp-2">{e.title}</span>
+                      <span className="eventrow__place clamp-1">{e.place}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
-          <div className="font-mono text-[11px] text-[#6B5A4C] p-2">
-            Sample content — updated weekly from the HAB communications desk.
-          </div>
+            <div className="newsaside__block newsaside__block--dark">
+              <h2 className="newsaside__title newsaside__title--light">Reports &amp; publications</h2>
+              <p className="newsaside__body">
+                Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.
+              </p>
+              <Link className="link-brass" href="/publications">
+                Browse all reports
+              </Link>
+            </div>
+          </aside>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

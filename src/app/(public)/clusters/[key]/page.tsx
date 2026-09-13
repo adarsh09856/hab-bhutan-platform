@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getClusterByKey, getCraftByKey, getProductsForCraft } from '@/lib/client-data';
-
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -53,15 +52,16 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
     notFound();
   }
 
-  const craft = getCraftByKey(cluster.craft_key);
+  const craft = getCraftByKey(cluster.craft_key) || { name: 'Craft', english: 'Artisanal craft' };
   const products = getProductsForCraft(cluster.craft_key).slice(0, 4);
+  const members = (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === cluster.craft_key);
 
   // Compute prev/next cluster
   let allClusters: any[] = [];
   try {
     const dbC = await prisma.clusterRecord.findMany({ orderBy: { sortOrder: 'asc' } });
     if (dbC.length > 0) {
-      allClusters = dbC.map(c => ({ key: c.key, name: c.name, craft_key: c.craftKey }));
+      allClusters = dbC.map((c) => ({ key: c.key, name: c.name, craft_key: c.craftKey }));
     }
   } catch {}
   if (!allClusters.length) allClusters = CLIENT_DATA.clusters;
@@ -81,44 +81,21 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
 
   return (
     <main id="main">
-      {/* Detail Hero */}
+      {/* 1. Breadcrumbs & Detail Hero */}
       <section className="section">
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> /{' '}
-          <Link href="/clusters">Clusters</Link> / {cluster.name}
+          <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> / <span>{cluster.name}</span>
         </p>
 
-        <div className="pagehero">
-          <div>
-            <p className="eyebrow eyebrow--accent">
-              Artisan cluster · {craft?.name} · {craft?.english}
-            </p>
-            <h1 className="display display--page">{cluster.name}</h1>
-            <p className="lede">{cluster.summary}</p>
-          </div>
-
-          <div className="craftfacts" style={{ alignSelf: 'start' }}>
-            <div className="craftfacts__cell">
-              <span className="craftfacts__key">Dzongkhag</span>
-              <span className="craftfacts__val">{cluster.dzongkhag}</span>
-            </div>
-            <div className="craftfacts__cell">
-              <span className="craftfacts__key">Members</span>
-              <span className="craftfacts__val">{cluster.members} active artisans</span>
-            </div>
-            <div className="craftfacts__cell">
-              <span className="craftfacts__key">Established</span>
-              <span className="craftfacts__val">{cluster.established}</span>
-            </div>
-            <div className="craftfacts__cell">
-              <span className="craftfacts__key">Craft</span>
-              <span className="craftfacts__val">{craft?.name} ({craft?.english})</span>
-            </div>
-          </div>
+        <div className="detailhero">
+          <p className="eyebrow eyebrow--accent" id="dEyebrow">
+            Artisan cluster · {craft.name} · {craft.english}
+          </p>
+          <h1 className="display display--page" id="dTitle">{cluster.name}</h1>
+          <p className="lede lede--wide" id="dStand">{cluster.summary}</p>
         </div>
 
-        {/* Large Photograph Banner */}
-        <div style={{ marginTop: 32, position: 'relative', height: 420, borderRadius: 2, overflow: 'hidden' }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', height: 440, overflow: 'hidden', marginTop: 24 }}>
           <Image
             src={bannerImg}
             alt={cluster.name}
@@ -127,18 +104,43 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
+          <figcaption className="frame__caption" id="dPhotoCap">
+            wide photo — {cluster.name.toLowerCase()}
+          </figcaption>
+        </figure>
+      </section>
+
+      {/* 2. Facts Strip */}
+      <section className="section section--tight" id="dMetaWrap">
+        <div className="craftfacts" id="dMeta">
+          <div className="craftfacts__cell">
+            <span className="craftfacts__key">Dzongkhag</span>
+            <span className="craftfacts__val">{cluster.dzongkhag}</span>
+          </div>
+          <div className="craftfacts__cell">
+            <span className="craftfacts__key">Members</span>
+            <span className="craftfacts__val">{String(cluster.members)}</span>
+          </div>
+          <div className="craftfacts__cell">
+            <span className="craftfacts__key">Established</span>
+            <span className="craftfacts__val">{String(cluster.established)}</span>
+          </div>
+          <div className="craftfacts__cell">
+            <span className="craftfacts__key">Craft</span>
+            <span className="craftfacts__val">{craft.name} · {craft.english}</span>
+          </div>
         </div>
       </section>
 
-      {/* The Story */}
+      {/* 3. The Story */}
       <section className="section">
         <div className="longread">
           <div>
             <p className="eyebrow eyebrow--accent">The story</p>
           </div>
           <div>
-            {cluster.story.split('\n\n').map((para, i) => (
-              <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
+            {(cluster.story || cluster.summary).split(/\n\s*\n/).map((para, i) => (
+              <p key={i} className="longread__body">
                 {para.trim()}
               </p>
             ))}
@@ -146,7 +148,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
         </div>
       </section>
 
-      {/* Visiting Note */}
+      {/* 4. Visiting Panel */}
       {cluster.visitor_note && (
         <section className="section">
           <div className="panel">
@@ -154,7 +156,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
             <h2 className="display display--panel">See the work being done</h2>
             <p className="panel__body">{cluster.visitor_note}</p>
             <div className="actions">
-              <Link className="btn btn--ink" href={`/contact?topic=visit&cluster=${encodeURIComponent(cluster.name)}`}>
+              <Link className="btn btn--ink" href="/contact?topic=other">
                 Arrange a visit
               </Link>
             </div>
@@ -162,7 +164,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
         </section>
       )}
 
-      {/* What the cluster makes */}
+      {/* 5. What the Cluster Makes */}
       {products.length > 0 && (
         <section className="section">
           <div className="section__head">
@@ -170,50 +172,80 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
               <p className="eyebrow eyebrow--accent">What the cluster makes</p>
               <h2 className="display display--sub">In the HAB shop</h2>
             </div>
-            {craft && (
-              <Link className="btn btn--ink btn--sm" href={`/shop/${craft.key}`}>
-                Shop {craft.name} →
-              </Link>
-            )}
+            <Link className="btn btn--ink btn--sm" href={`/shop?craft=${cluster.craft_key}`}>
+              Shop {craft.name} →
+            </Link>
           </div>
-          <div className="grid grid--4">
-            {products.map((p) => {
-              const imgSrc = p.image_path ? `/${p.image_path.replace(/^\/+/, '')}` : '/assets/photos/product-sad03.jpg';
 
-              return (
-                <article key={p.code} className="card product">
-                  <Link className="product__shot" href={`/product/${p.code}`}>
-                    <div className="frame frame--square" style={{ position: 'relative', overflow: 'hidden' }}>
-                      <Image
-                        src={imgSrc}
-                        alt={p.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                    <span className="product__ref">{p.code}</span>
-                  </Link>
-                  <div className="card__body">
-                    <p className="eyebrow eyebrow--accent eyebrow--sm">{craft?.name}</p>
-                    <h3 className="card__title clamp-2">
-                      <Link href={`/product/${p.code}`}>{p.name}</Link>
-                    </h3>
-                    <p className="card__meta clamp-1">{p.maker} · {p.region}</p>
-                    <div className="card__foot">
-                      <span className="money" style={{ fontWeight: 600 }}>${p.price_usd}</span>
-                    </div>
+          <div className="grid grid--4" data-cms-repeat>
+            {products.map((p) => (
+              <article key={p.code} className="card product" data-cms-item data-code={p.code}>
+                <Link className="product__shot" href={`/product/${p.code}`}>
+                  <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+                    <Image
+                      src={p.image_path || '/assets/photos/product-sad03.jpg'}
+                      alt={p.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <figcaption className="frame__caption frame__caption--sm">
+                      photo — {p.name.toLowerCase()}
+                    </figcaption>
+                  </figure>
+                  <span className="product__ref">{p.code}</span>
+                </Link>
+                <div className="card__body">
+                  <p className="eyebrow eyebrow--accent eyebrow--sm">{craft.name}</p>
+                  <h3 className="card__title clamp-2">
+                    <Link href={`/product/${p.code}`}>{p.name}</Link>
+                  </h3>
+                  <p className="card__meta clamp-1">
+                    {p.maker} · {p.region}
+                  </p>
+                  <div className="card__foot">
+                    <span className="price">${p.price_usd}</span>
+                    <Link className="btn btn--outline btn--xs" href={`/product/${p.code}`}>
+                      View
+                    </Link>
                   </div>
-                </article>
-              );
-            })}
+                </div>
+              </article>
+            ))}
           </div>
         </section>
       )}
 
-      {/* Prev / Next Navigation */}
+      {/* 6. Members Who Work Here */}
+      {members.length > 0 && (
+        <section className="section">
+          <div className="section__head">
+            <div>
+              <p className="eyebrow eyebrow--accent">Members</p>
+              <h2 className="display display--sub">Who works here</h2>
+            </div>
+            <Link className="link-accent" href={`/shop?craft=${cluster.craft_key}`}>
+              Shop this craft →
+            </Link>
+          </div>
+
+          <div className="grid grid--3">
+            {members.map((m: any, i: number) => (
+              <Link key={i} className="card" href={`/members/${encodeURIComponent(m.name)}`}>
+                <div className="card__body">
+                  <p className="eyebrow eyebrow--accent eyebrow--sm">{m.dzongkhag}</p>
+                  <h3 className="card__title">{m.name}</h3>
+                  <p className="card__text clamp-3">{m.blurb}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 7. Next / Prev Bottom Nav */}
       <section className="section section--last">
-        <nav className="craftnav">
+        <nav className="craftnav" aria-label="Other clusters">
           <Link className="craftnav__link" href={`/clusters/${prevCluster.key}`}>
             <span className="craftnav__hint">← Previous cluster</span>
             <span>{prevCluster.name}</span>

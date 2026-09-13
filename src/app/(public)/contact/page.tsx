@@ -1,318 +1,304 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  Send, 
-  CheckCircle2, 
-  AlertCircle, 
-  Building2, 
-  Globe2, 
-  ShieldCheck,
-  HelpCircle
-} from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
-export default function ContactPage() {
-  const [siteSettings, setSiteSettings] = useState<any>(null);
-  const [form, setForm] = useState({
+function ContactContent() {
+  const searchParams = useSearchParams();
+  const initialTopic = searchParams.get('topic') || 'membership';
+
+  const [topic, setTopic] = useState(initialTopic);
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    subject: 'General Inquiry',
+    org: '',
+    country: 'Bhutan',
+    subject: '',
     message: '',
+    consent: true,
   });
 
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  const [refNumber, setRefNumber] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  React.useEffect(() => {
-    fetch('/api/site-settings')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.setting || d?.settings) {
-          setSiteSettings(d.setting || d.settings);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  useEffect(() => {
+    if (searchParams.get('topic')) {
+      setTopic(searchParams.get('topic') || 'membership');
+    }
+  }, [searchParams]);
 
-  const s = siteSettings;
+  const topics = [
+    { key: 'membership', label: 'Membership' },
+    { key: 'order', label: 'Orders & delivery' },
+    { key: 'wholesale', label: 'Wholesale & B2B' },
+    { key: 'commission', label: 'Commission a piece' },
+    { key: 'events', label: 'Events & registration' },
+    { key: 'awards', label: 'Awards & nominations' },
+    { key: 'press', label: 'Press & partnerships' },
+    { key: 'other', label: 'Something else' },
+  ];
+
+  const currentTopicLabel = topics.find((t) => t.key === topic)?.label || 'General enquiry';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setErrorMsg('');
 
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      setError('Please fill in all required fields.');
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setErrorMsg('Please complete all required fields.');
       return;
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
+    const ref = `HAB-ENQ-${Math.floor(1000 + Math.random() * 9000)}`;
+
     try {
-      const res = await fetch('/api/contact', {
+      await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          topic: currentTopicLabel,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          org: formData.org.trim(),
+          country: formData.country.trim(),
+          subject: formData.subject.trim() || currentTopicLabel,
+          message: formData.message.trim(),
+          refNumber: ref,
+        }),
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSuccess(true);
-        setForm({ name: '', email: '', phone: '', subject: 'General Inquiry', message: '' });
-      } else {
-        setError(data.error || 'Failed to submit inquiry.');
-      }
-    } catch {
-      setError('Network connection error.');
-    } finally {
-      setLoading(false);
-    }
+    } catch {}
+
+    setRefNumber(ref);
+    setIsSubmitting(false);
+    setIsSent(true);
+    window.scrollTo(0, 0);
   };
 
   return (
-    <main className="min-h-[85vh] bg-[#FBF9F5] py-8 sm:py-12 px-4 sm:px-6 lg:px-10 font-figtree">
-      <div className="max-w-6xl mx-auto space-y-10">
-        {/* Header Breadcrumbs & Title */}
-        <div>
-          <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-2">
-            <Link href="/" className="hover:underline">Home</Link> /{' '}
-            <span className="text-[#33261F]">Contact Secretariat</span>
-          </div>
-          <h1 className="font-marcellus text-3xl sm:text-4xl text-[#33261F]">
-            Contact the Secretariat
-          </h1>
-          <p className="font-lora text-sm sm:text-base text-[#6B5A4C] mt-2 max-w-2xl">
-            {s?.contactLede || 'Whether you are an artisan inquiring about guild membership, an international collector seeking custom orders, or a development donor partnering on heritage projects, we welcome your communication.'}
-          </p>
-        </div>
-
-        {/* Contact Info Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Main Headquarters */}
-          <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-[#8B2E24]/10 text-[#8B2E24] flex items-center justify-center">
-              <Building2 className="w-5 h-5" />
-            </div>
-            <h3 className="font-marcellus text-base text-[#33261F]">National Secretariat</h3>
-            <p className="text-xs text-[#6B5A4C] leading-relaxed">
-              Handicrafts Association of Bhutan (HAB)<br />
-              {s?.officeAddress || 'Metog Lam, Kawajangsa'}<br />
-              {s?.contactPoBox || 'Post Box 1129, Thimphu 11001'}<br />
-              Kingdom of Bhutan
+    <main id="main">
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / Contact us
+        </p>
+        <div className="pagehero">
+          <div>
+            <p className="eyebrow eyebrow--accent">Contact us</p>
+            <h1 className="display display--page">Write to the secretariat</h1>
+            <p className="lede">
+              One form for every enquiry. Choose what it is about and your message reaches the right desk — membership, an order, wholesale, a commission, an event, an award nomination or the press office.
             </p>
-            <div className="pt-2 text-[11px] text-[#A39281] font-mono">
-              {s?.csoRegistration || 'CSO Reg: CSO/2011/043'}
+            <p className="section__lede">
+              Member contact details are held securely and are not published, so enquiries to individual artisans and enterprises are routed through the office. We reply within two working days.
+            </p>
+          </div>
+          <div className="panel panel--accent">
+            <p className="eyebrow eyebrow--onaccent">Secretariat</p>
+            <p className="panel__body panel__body--onaccent" style={{ fontSize: 17 }}>
+              Metog Lam, Thimphu, Bhutan<br />
+              Office +975-2-338089<br />
+              officehab@gmail.com
+            </p>
+            <p className="panel__body panel__body--onaccent" style={{ margin: 0, fontSize: 14.5 }}>
+              Monday to Friday, 09:00–17:00 BTT. Closed on national holidays.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section section--last">
+        {isSent ? (
+          <div className="contactsent" id="contactSent">
+            <p className="eyebrow eyebrow--accent">Message sent</p>
+            <h2 className="display display--sub">Thank you — we have your enquiry</h2>
+            <p className="lede">
+              Your reference is <strong>{refNumber}</strong>, logged against <strong>{currentTopicLabel}</strong>. The secretariat replies within two working days; urgent matters are best raised by telephone on +975-2-338089.
+            </p>
+            <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
+              <Link className="btn btn--accent" href="/shop">
+                Browse the shop
+              </Link>
+              <Link className="btn btn--outline" href="/publications">
+                Read our publications
+              </Link>
             </div>
           </div>
+        ) : (
+          <div className="contactgrid">
+            <form className="contactform" id="contactForm" onSubmit={handleSubmit} noValidate>
+              <p className="eyebrow eyebrow--accent">What is your enquiry about?</p>
+              <div className="topicset">
+                {topics.map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    className={`topicbtn ${topic === t.key ? 'is-on' : ''}`}
+                    onClick={() => setTopic(t.key)}
+                    aria-pressed={topic === t.key}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
 
-          {/* Direct Communication */}
-          <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
-              <Mail className="w-5 h-5" />
-            </div>
-            <h3 className="font-marcellus text-base text-[#33261F]">Inquiries &amp; Orders</h3>
-            <div className="space-y-1.5 text-xs text-[#6B5A4C]">
-              <div>
-                <span className="font-semibold text-[#33261F]">Official Desk: </span>
-                <a href={`mailto:${s?.officialEmail || 'officehab@gmail.com'}`} className="text-[#8B2E24] hover:underline">
-                  {s?.officialEmail || 'officehab@gmail.com'}
+              {errorMsg && (
+                <p style={{ color: 'var(--accent)', fontSize: 13.5, margin: '12px 0' }}>
+                  {errorMsg}
+                </p>
+              )}
+
+              <div className="formgrid" style={{ marginTop: 20 }}>
+                <label className="field" htmlFor="cName">
+                  <span className="field__label">
+                    Your name <span className="field__req">required</span>
+                  </span>
+                  <input
+                    className="input"
+                    id="cName"
+                    type="text"
+                    placeholder="Full name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </label>
+
+                <label className="field" htmlFor="cEmail">
+                  <span className="field__label">
+                    Email <span className="field__req">required</span>
+                  </span>
+                  <input
+                    className="input"
+                    id="cEmail"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                </label>
+
+                <label className="field" htmlFor="cOrg">
+                  <span className="field__label">Organisation <em>optional</em></span>
+                  <input
+                    className="input"
+                    id="cOrg"
+                    type="text"
+                    placeholder="Business, school or institution"
+                    value={formData.org}
+                    onChange={(e) => setFormData({ ...formData, org: e.target.value })}
+                  />
+                </label>
+
+                <label className="field" htmlFor="cCountry">
+                  <span className="field__label">Country <em>optional</em></span>
+                  <input
+                    className="input"
+                    id="cCountry"
+                    type="text"
+                    placeholder="Bhutan"
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  />
+                </label>
+
+                <label className="field field--wide" htmlFor="cSubject">
+                  <span className="field__label">Subject <em>optional</em></span>
+                  <input
+                    className="input"
+                    id="cSubject"
+                    type="text"
+                    placeholder="A line that tells us what this is"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  />
+                </label>
+
+                <label className="field field--wide" htmlFor="cMessage">
+                  <span className="field__label">
+                    Your message <span className="field__req">required</span>
+                  </span>
+                  <textarea
+                    className="input"
+                    id="cMessage"
+                    rows={7}
+                    placeholder="Give us as much detail as you can — quantities, dates, a craft, an order reference."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
+                  />
+                  <span className="field__help">
+                    For a commission, tell us the craft, the quantity, the finish and when you need it.
+                  </span>
+                </label>
+              </div>
+
+              <label className="check" htmlFor="cConsent" style={{ marginTop: 14 }}>
+                <input
+                  type="checkbox"
+                  id="cConsent"
+                  checked={formData.consent}
+                  onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
+                />
+                <span>
+                  I agree that HAB may hold my details in order to answer this enquiry, as set out in the{' '}
+                  <Link href="/privacy">privacy policy</Link>.
+                </span>
+              </label>
+
+              <div className="actions" style={{ marginTop: 22 }}>
+                <button className="btn btn--accent" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Sending...' : 'Send to the secretariat'}
+                </button>
+                <a className="btn btn--text" href="mailto:officehab@gmail.com">
+                  Or email directly
                 </a>
               </div>
-              {s?.edPhone && (
-                <div>
-                  <span className="font-semibold text-[#33261F]">Executive Desk: </span>
-                  <span className="font-mono text-[#33261F]">{s.edPhone}</span>
+            </form>
+
+            <aside className="contact-aside">
+              <div className="panel" style={{ padding: '30px 28px' }}>
+                <p className="eyebrow eyebrow--muted eyebrow--sm">Where enquiries go</p>
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Membership &amp; dues</span>
+                  <span className="contact-aside__v">Membership desk</span>
                 </div>
-              )}
-              <div>
-                <span className="font-semibold text-[#33261F]">Telephone: </span>
-                <span className="font-mono text-[#33261F]">{s?.officePhone || '+975 2 338089'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Working Hours & Chapters */}
-          <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
-            </div>
-            <h3 className="font-marcellus text-base text-[#33261F]">Secretariat Hours</h3>
-            <p className="text-xs text-[#6B5A4C] leading-relaxed">
-              {s?.contactHours || 'Monday to Friday: 9:00 AM – 5:00 PM (BST / UTC+6)'}<br />
-              Saturday &amp; Sunday: Closed<br />
-              Closed on Bhutanese National &amp; Religious Holidays
-            </p>
-            <div className="pt-2 text-xs text-[#6B5A4C]">
-              <strong>Visitor Directions:</strong> {s?.contactDirections || 'Opposite National Library, Kawajangsa, Thimphu'}
-            </div>
-          </div>
-        </div>
-
-        {/* Main Grid: Form Left, FAQ Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Inquiry Form */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E4DDD1] p-6 sm:p-8 shadow-xs">
-            <h2 className="font-marcellus text-xl text-[#33261F] mb-1">
-              Send an Official Message
-            </h2>
-            <p className="text-xs text-[#6B5A4C] mb-6">
-              Our Secretariat team responds to verified inquiries within 2 business days.
-            </p>
-
-            {success ? (
-              <div className="py-10 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-6 h-6" />
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Orders, delivery, returns</span>
+                  <span className="contact-aside__v">Retail desk</span>
                 </div>
-                <h3 className="font-marcellus text-xl text-[#33261F]">Message Dispatched</h3>
-                <p className="text-xs text-[#6B5A4C] max-w-md mx-auto">
-                  Thank you for contacting the Handicrafts Association of Bhutan. Your message has been routed to the relevant Secretariat division.
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Wholesale &amp; export</span>
+                  <span className="contact-aside__v">Trade desk</span>
+                </div>
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Commissions</span>
+                  <span className="contact-aside__v">Producer liaison</span>
+                </div>
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Events &amp; nominations</span>
+                  <span className="contact-aside__v">Programmes desk</span>
+                </div>
+                <p className="footnote" style={{ marginTop: 18 }}>
+                  Before you write: shipping times and free-delivery conditions are set out in the{' '}
+                  <Link href="/shipping-policy">shipping &amp; delivery policy</Link>.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setSuccess(false)}
-                  className="mt-3 px-4 py-2 rounded-xl bg-[#8B2E24] text-white text-xs font-semibold"
-                >
-                  Send Another Message
-                </button>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 flex-none" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                      Your Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="e.g. Karma Wangmo"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="karma@example.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                      Phone Number (Optional)
-                    </label>
-                    <input
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      placeholder="+975 1712 3456"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                      Inquiry Category *
-                    </label>
-                    <select
-                      value={form.subject}
-                      onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]"
-                    >
-                      <option value="General Inquiry">General Public Inquiry</option>
-                      <option value="Artisan Membership">Artisan Guild Membership</option>
-                      <option value="Order & Wholesale">International Orders &amp; Wholesale</option>
-                      <option value="Donor & Projects">Donor &amp; Development Partnerships</option>
-                      <option value="Cultural Heritage">Cultural &amp; Zorig Chusum Research</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    Your Message *
-                  </label>
-                  <textarea
-                    rows={5}
-                    required
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    placeholder="Write your message or inquiry here..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="py-3 px-6 rounded-xl bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-semibold shadow-xs flex items-center gap-2 transition-colors disabled:opacity-50"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{loading ? 'Submitting...' : 'Submit Inquiry'}</span>
-                </button>
-              </form>
-            )}
+            </aside>
           </div>
-
-          {/* FAQ & Information Right */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-4">
-              <h3 className="font-marcellus text-base text-[#33261F] flex items-center gap-2">
-                <HelpCircle className="w-4 h-4 text-[#8B2E24]" />
-                Frequently Asked Inquiries
-              </h3>
-
-              <div className="space-y-3 text-xs text-[#6B5A4C]">
-                <div>
-                  <div className="font-bold text-[#33261F] mb-0.5">How do I verify if my product is authentic?</div>
-                  <p>Every piece dispatched includes the official tamper-evident HAB Seal of Authenticity with export accreditation.</p>
-                </div>
-
-                <div className="pt-2 border-t border-[#E4DDD1]">
-                  <div className="font-bold text-[#33261F] mb-0.5">Can rural artisans register without a business license?</div>
-                  <p>Yes. Individual village artisans may apply under Active Sector Membership using their Citizenship Identity (CID) card.</p>
-                </div>
-
-                <div className="pt-2 border-t border-[#E4DDD1]">
-                  <div className="font-bold text-[#33261F] mb-0.5">How are international shipments tracked?</div>
-                  <p>Live tracking is available on our platform with carrier integration for Bhutan Post EMS and DHL Express Courier.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#EDE5D6]/40 border border-[#E4DDD1] text-xs text-[#6B5A4C] flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#8B2E24] flex-none mt-0.5" />
-              <div>
-                <strong className="text-[#33261F] block mb-0.5">Public Benefit CSO Accountability</strong>
-                HAB operates under statutory supervision of the Civil Society Organizations Authority (CSOA) of Bhutan.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
+      </section>
     </main>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<main id="main"><section className="section section--narrow"><p>Loading contact form…</p></section></main>}>
+      <ContactContent />
+    </Suspense>
   );
 }

@@ -3,281 +3,143 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-interface Pillar {
-  id?: string;
+interface ProgrammeItem {
   ref: string;
   title: string;
   description: string;
-  activities: string[];
+  activities?: string[];
+  image_path?: string;
 }
 
-const STATUTORY_SCOPE = [
-  {
-    title: 'Input Supply & Equipment',
-    items: ['Centralized yarn & vegetable dye procurement', 'Loom allocation & repair grants', 'Quality tool kits for graduating apprentices'],
-  },
-  {
-    title: 'Standard Setting & Certification',
-    items: ['National Seal of Bhutan testing benchmarks', 'Authenticity documentation & verification', 'Traditional botanical purity audits'],
-  },
-  {
-    title: 'Market Linkage & Promotion',
-    items: ['Official digital e-commerce platform', 'International trade expo delegations', 'Permanent artisanal outlet management'],
-  },
-  {
-    title: 'Skill Development & Training',
-    items: ['Master-apprentice living heritage programs', 'Contemporary product design residencies', 'Business literacy & financial bookkeeping'],
-  },
-  {
-    title: 'Artisan Welfare & Protection',
-    items: ['Dzongkhag chapter welfare funds', 'Emergency medical & relief assistance', 'Workplace ergonomics & eye care clinics'],
-  },
-  {
-    title: 'Heritage Preservation & Research',
-    items: ['Endangered craft technique oral archives', 'National craft census & economic studies', 'Intellectual property & GI registration'],
-  },
-];
-
-const DELIVERY_CHAIN = [
-  { n: 1, title: 'Constitutional Mandate', desc: 'Every program is derived directly from the 11 statutory objects set out in Article 3.2 of the Articles of Association.' },
-  { n: 2, title: 'Regional Identification', desc: 'Twenty Dzongkhag chapters consult grassroots cooperatives to establish urgent material and training requirements.' },
-  { n: 3, title: 'Secretariat Execution', desc: 'The Central Secretariat deploys technical trainers, procurement funds, and logistics with strict milestone verification.' },
-  { n: 4, title: 'Audited Impact', desc: 'Outcomes are measured by artisan income increases, guild membership renewals, and statutory annual CSOA compliance audits.' },
-];
-
-const BENEFICIARY_GROUPS = [
-  'Rural Handloom Weavers',
-  'Master Woodcarvers & Carpenters (Zow & Shingzo)',
-  'Traditional Sculptors & Clay Artisans (Jimzo)',
-  'Cane & Bamboo Weavers (Tsharzo)',
-  'Paper-makers (Dezo)',
-  'Metalsmiths & Bronzecasters (Lugzo & Garzo)',
-  'Youth Apprentices & Vocational Trainees',
-  'Women-led Craft Cooperatives',
-  'Seminomadic Highland Wool Processors',
+const DEFAULT_PROGRAMMES: ProgrammeItem[] = [
+  { ref: 'a', title: 'Sector Representation and Advocacy', description: 'Represent and advance the collective interests of all handicrafts sector stakeholders — artisans, producers, designers, traders and service providers — before governmental, legislative, regulatory, intergovernmental and private sector bodies.', image_path: '/assets/photos/hero-1-weaving.jpg' },
+  { ref: 'b', title: 'Policy Development and Intervention', description: 'Engage with competent authorities on policies, laws, regulations, standards and incentive frameworks affecting the sector; submit evidence-based positions and monitor implementation of policy commitments.', image_path: '/assets/photos/hero-2-punakha.jpg' },
+  { ref: 'c', title: 'Trade Facilitation', description: 'Facilitate domestic and international trade through trade infrastructure, standards compliance systems, market linkage mechanisms, export facilitation instruments and certification frameworks.', image_path: '/assets/photos/hero-3-clay.jpg' },
+  { ref: 'd', title: 'Product Development', description: 'Support innovation, quality enhancement, design evolution and product diversification through design interventions, technical upgradation and linkages between artisans, designers, institutions and markets.', image_path: '/assets/photos/hero-4-textiles.jpg' },
+  { ref: 'e', title: 'Branding and Market Development', description: 'Steward a credible sector brand identity for Bhutanese handicrafts, promote authenticity and cultural value, and support distribution networks, retail channels and promotional platforms.', image_path: '/assets/photos/hero-5-desho.jpg' },
+  { ref: 'f', title: 'Capacity Development', description: 'Strengthen productive, entrepreneurial, managerial, technical and institutional capacity through training, professional development, knowledge exchange, mentorship and peer learning.', image_path: '/assets/photos/hero-1-weaving.jpg' },
+  { ref: 'g', title: 'Cultural Heritage Stewardship', description: 'Protect, document, promote and transmit the intangible cultural heritage of the Zorig Chusum; maintain a registry of authentic craft practices and producers; pursue geographical indication and certification of origin.', image_path: '/assets/photos/hero-2-punakha.jpg' },
+  { ref: 'h', title: 'Research and Knowledge Management', description: 'Undertake and disseminate research, sector data, market intelligence and policy analysis to inform advocacy, programme design and the evidence base for the sector.', image_path: '/assets/photos/hero-3-clay.jpg' },
+  { ref: 'i', title: 'Social Inclusion and Equity', description: 'Advance equitable participation of rural artisans, women practitioners, youth, persons with disabilities and marginalised communities in the sector and in HAB’s programmes, governance and services.', image_path: '/assets/photos/hero-4-textiles.jpg' },
+  { ref: 'j', title: 'Financial Sustainability of the Sector', description: 'Facilitate access to finance, grants, concessional credit and catalytic investment; develop financial literacy and entrepreneurship programmes; strengthen long-term viability.', image_path: '/assets/photos/hero-5-desho.jpg' },
+  { ref: 'k', title: 'Partnerships and Institutional Linkages', description: 'Establish and grow partnerships with national and international organisations, government agencies, development partners, research and educational institutions, the private sector and civil society.', image_path: '/assets/photos/hero-1-weaving.jpg' },
 ];
 
 export default function ProgrammesPage() {
-  const [pillars, setPillars] = useState<Pillar[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedObjects, setExpandedObjects] = useState<Record<string, boolean>>({});
+  const [programmes, setProgrammes] = useState<ProgrammeItem[]>(DEFAULT_PROGRAMMES);
 
   useEffect(() => {
     fetch('/api/programmes')
       .then((res) => res.json())
       .then((data) => {
-        if (data?.success && Array.isArray(data.pillars)) {
-          setPillars(data.pillars);
+        if (data?.pillars && Array.isArray(data.pillars) && data.pillars.length > 0) {
+          setProgrammes(data.pillars.map((p: any) => ({
+            ref: p.ref || 'a',
+            title: p.title,
+            description: p.description,
+            activities: p.activities || [],
+            image_path: p.imageUrl || p.image_path || '/assets/photos/hero-1-weaving.jpg',
+          })));
         }
       })
-      .catch((err) => console.error('Error fetching programmes:', err))
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
 
-  const toggleObject = (ref: string) => {
-    setExpandedObjects((prev) => ({
-      ...prev,
-      [ref]: !prev[ref],
-    }));
-  };
-
   return (
-    <main className="pb-24 font-figtree bg-[#FBF9F5]">
+    <main id="main">
+
       {/* 1. Header & Mandate */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-12 sm:pb-16">
-        <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6">
-          <Link href="/" className="hover:underline">Home</Link> / Programmes
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_0.92fr] gap-8 lg:gap-14 items-end">
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / Programmes
+        </p>
+        <div className="pagehero">
           <div>
-            <div className="font-mono text-[11.5px] tracking-[0.16em] uppercase text-[#8B2E24] mb-4 sm:mb-5 font-bold">
-              Institutional Mandate
-            </div>
-            <h1 className="font-marcellus text-3xl sm:text-4xl lg:text-[52px] font-normal leading-[1.08] text-[#33261F] mb-4">
-              Eleven objects, one national mission
-            </h1>
-            <p className="font-lora text-sm sm:text-base lg:text-[18px] leading-[1.62] text-[#4A3C33] mb-4 max-w-[58ch]">
-              HAB operates as the national apex Public Benefit Organization for Bhutan&apos;s handicrafts sector, advancing the productive, economic, cultural, and social well-being of actors across the value chain.
+            <p className="eyebrow eyebrow--accent">Programmes</p>
+            <h1 className="display display--page">Eleven objects, one mandate</h1>
+            <p className="lede">
+              HAB operates as the national apex Public Benefit Organisation for Bhutan&apos;s handicrafts sector, advancing the productive, economic, cultural and social well-being of all actors across the handicrafts value chain.
             </p>
-            <p className="font-lora text-xs sm:text-sm text-[#6B5A4C] max-w-[58ch]">
-              Constituted under Article 3 of the Articles of Association (2026 Edition) and Civil Society Organizations Act of Bhutan 2007.
+            <p className="section__lede">
+              Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association. Activity outside those objects is <em>ultra vires</em> and of no effect.
             </p>
           </div>
-
-          <div className="bg-[#8B2E24] text-white rounded-[16px] p-6 sm:p-9 shadow-lg">
-            <div className="font-mono text-[10.5px] tracking-[0.14em] uppercase text-[#F0D2C9] mb-3 sm:mb-4">
-              Governing principles
-            </div>
-            <p className="font-lora text-base sm:text-[17px] leading-[1.62] text-[#F6E7E2] mb-4 sm:mb-5">
-              Public Benefit · Cultural Stewardship · Integrity · Inclusivity · Independence
+          <div className="panel panel--accent">
+            <p className="eyebrow eyebrow--onaccent">Governing principles</p>
+            <p className="panel__body panel__body--onaccent" style={{ fontSize: '17px', fontWeight: 600 }}>
+              Public Benefit · Integrity · Inclusivity · Cultural Stewardship · Compliance · Independence
             </p>
-            <div className="border-t border-[#A85246] pt-[18px] text-xs sm:text-[14px] leading-[1.55] text-[#EBC9C2] font-lora">
-              National jurisdiction across all twenty dzongkhags. Certified non-political and non-sectarian by constitution.
-            </div>
+            <p className="panel__body panel__body--onaccent" style={{ margin: 0, fontSize: '14.5px' }}>
+              Constituted under the Civil Society Organizations Act of Bhutan 2007, as amended 2022. National scope across all twenty dzongkhags. Non-political by constitution.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* 2. Programme Types (11 Dynamic Objects from Database) */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-8 mb-6 sm:mb-7">
+      {/* 2. Programmes Grid */}
+      <section className="section">
+        <div className="section__head">
           <div>
-            <h2 className="font-marcellus text-2xl sm:text-3xl text-[#33261F] mb-1">
-              Statutory Programme Objects
-            </h2>
-            <p className="font-lora text-xs sm:text-sm text-[#6B5A4C] max-w-[74ch]">
-              All activities deployed by the Secretariat are formally registered against Article 3.2.
+            <p className="eyebrow eyebrow--accent">What we run</p>
+            <h2 className="display display--sub">Our Programmes</h2>
+            <p className="section__lede">
+              The objects are construed broadly: each is a standing programme area, not a fixed project.
             </p>
           </div>
+          <Link className="btn btn--ink btn--sm" href="/projects">
+            See current projects →
+          </Link>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="bg-white rounded-2xl border border-[#E4DDD1] p-6 animate-pulse h-48" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {pillars.map((po) => {
-              const isExpanded = Boolean(expandedObjects[po.ref]);
-              return (
-                <div
-                  key={po.ref}
-                  className="bg-white border border-[#E4DDD1] rounded-2xl p-6 flex flex-col justify-between shadow-xs hover:border-[#8B2E24]/40 transition-colors"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-mono text-xs font-bold text-[#8B2E24] bg-[#8B2E24]/10 px-2.5 py-0.5 rounded-full">
-                        Article {po.ref}
-                      </span>
-                    </div>
-
-                    <h3 className="font-marcellus text-base sm:text-lg text-[#33261F] mb-2 leading-snug">
-                      {po.title}
-                    </h3>
-
-                    <p className="font-lora text-xs sm:text-[13.5px] leading-[1.6] text-[#6B5A4C]">
-                      {po.description}
-                    </p>
-
-                    {/* Expandable Activities */}
-                    {isExpanded && Array.isArray(po.activities) && po.activities.length > 0 && (
-                      <div className="mt-4 pt-3 border-t border-[#EDE5D6] space-y-2">
-                        <div className="font-mono text-[10.5px] uppercase tracking-wider text-[#33261F] font-bold">
-                          Core Interventions:
-                        </div>
-                        <ul className="space-y-1.5 text-xs text-[#6B5A4C]">
-                          {po.activities.map((act, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <span className="text-[#8B2E24] font-bold flex-none">•</span>
-                              <span>{act}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleObject(po.ref)}
-                    className="text-left font-figtree font-semibold text-xs text-[#8B2E24] hover:underline mt-4 pt-3 border-t border-[#EDE5D6]"
-                  >
-                    {isExpanded ? 'Show less ↑' : 'View interventions ↓'}
-                  </button>
+        <div className="grid grid--3" id="programmeList">
+          {programmes.map((p, idx) => (
+            <article key={p.ref || idx} className="card programme">
+              <figure className="frame frame--wide16">
+                <img
+                  src={p.image_path || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  alt={p.title}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+                <figcaption className="frame__caption frame__caption--sm">
+                  photo — {p.title.toLowerCase()}
+                </figcaption>
+              </figure>
+              <div className="card__body">
+                <div className="programme__head">
+                  <span className="badge badge--ref">Art. 3.2({p.ref})</span>
+                  <h3 className="card__title clamp-2">{p.title}</h3>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* 3. Scope of Activities */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-16">
-        <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2 font-bold">
-          Scope of activities
-        </div>
-        <h2 className="font-marcellus text-2xl sm:text-3xl text-[#33261F] mb-6">
-          Six Operational Pillars in Practice
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {STATUTORY_SCOPE.map((ac) => (
-            <div
-              key={ac.title}
-              className="bg-white border border-[#E4DDD1] rounded-2xl p-6 shadow-xs"
-            >
-              <h3 className="font-figtree font-bold text-sm sm:text-base text-[#33261F] mb-3">
-                {ac.title}
-              </h3>
-              <div className="space-y-2 text-xs text-[#6B5A4C] font-lora">
-                {ac.items.map((item, i) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="text-[#8B2E24] flex-none">—</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
+                <p className="card__text programme__desc clamp-4">{p.description}</p>
+                <Link className="link-accent programme__toggle" href={`/programmes/${p.ref}`}>
+                  Read more →
+                </Link>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* 4. Delivery Chain Band */}
-      <section className="bg-[#8B2E24] text-white py-14 mt-16">
-        <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#F0D2C9] mb-2">
-            Delivery Chain
+      {/* 3. CTA Band */}
+      <section className="section section--last">
+        <div className="ctaband">
+          <div>
+            <h2 className="display display--panel">Access these programmes</h2>
+            <p className="ctaband__body">
+              Active Sector Members receive preferential access to training, trade fair participation and market linkage services. Affiliated Members receive general sector benefits.
+            </p>
           </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl text-white mb-2">
-            How Programmes Reach Rural Gewogs
-          </h2>
-          <p className="font-lora text-xs sm:text-sm text-[#F6E7E2] mb-8 max-w-2xl">
-            From national mandate to audited results, every project follows an unbroken chain of accountability.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {DELIVERY_CHAIN.map((step) => (
-              <div
-                key={step.n}
-                className="bg-[#7A2820] border border-[#A85246] rounded-2xl p-6 flex flex-col"
-              >
-                <span className="font-mono text-xs font-bold text-[#F0D2C9] mb-2">
-                  Step 0{step.n}
-                </span>
-                <div className="font-figtree font-bold text-base text-white mb-2">
-                  {step.title}
-                </div>
-                <p className="font-lora text-xs text-[#F6E7E2] leading-relaxed">
-                  {step.desc}
-                </p>
-              </div>
-            ))}
+          <div className="actions">
+            <Link className="btn btn--light" href="/membership/apply">
+              Become a member
+            </Link>
+            <Link className="btn btn--ghost" href="/publications">
+              Reports &amp; downloads
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* 5. Beneficiary Groups */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-16">
-        <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2 font-bold">
-          Beneficiaries
-        </div>
-        <h2 className="font-marcellus text-2xl sm:text-3xl text-[#33261F] mb-6">
-          Who Our Programmes Serve
-        </h2>
-        <div className="flex flex-wrap gap-2.5">
-          {BENEFICIARY_GROUPS.map((b) => (
-            <span
-              key={b}
-              className="bg-white border border-[#E4DDD1] font-lora text-xs sm:text-sm text-[#33261F] px-4 py-2.5 rounded-xl shadow-xs"
-            >
-              {b}
-            </span>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }

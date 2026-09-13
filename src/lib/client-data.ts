@@ -30,6 +30,7 @@ export interface RecognisedPerson {
   honour: string;
   since: number;
   note: string;
+  image_path?: string;
 }
 
 export interface ClusterData {

@@ -24,46 +24,32 @@ export default function UtilityBar() {
   if (!visible) return null;
 
   return (
-    <div className="bg-[#33261F] text-[#D2C2AE]">
-      <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 min-h-[36px] flex items-center justify-between gap-4 font-mono text-[10.5px] sm:text-[11px] tracking-[0.04em]">
+    <div className="utility">
+      <div className="utility__inner">
         {announcementLink ? (
-          <Link href={announcementLink} className="text-[#F4F0E7] hover:underline truncate text-[10px] sm:text-[11px]">
+          <Link href={announcementLink} className="utility__status">
             {announcement}
           </Link>
         ) : (
-          <span className="text-[#F4F0E7] truncate text-[10px] sm:text-[11px]">
-            {announcement}
-          </span>
+          <span className="utility__status">{announcement}</span>
         )}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/contact" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
-              Contact us
-            </Link>
-            <Link href="/news" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
-              Tenders &amp; vacancies
-            </Link>
-            <Link href="/publications" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
-              Publications
-            </Link>
-            <Link href="/donate" className="text-[#D2C2AE] hover:text-white whitespace-nowrap">
-              Donate
-            </Link>
-          </div>
-          <Link
-            href="/wholesale"
-            className="inline-flex items-center text-[#C9A46A] hover:text-[#F4F0E7] whitespace-nowrap text-[10px] sm:text-[11px]"
-          >
-            <span className="hidden sm:inline">Trade &amp; wholesale buyers</span>
-            <span className="sm:hidden">Trade buyers</span>
-          </Link>
-          <div className="hidden sm:block w-[1px] h-[13px] bg-[#4E3D2E]" />
-          <span className="whitespace-nowrap text-[10px] sm:text-[11px]">
-            <span className="text-[#F4F0E7] font-semibold">EN</span>
-            <span className="opacity-50 mx-1">/</span>
-            <span className="text-[#D2C2AE]">རྫོང་ཁ</span>
-          </span>
-        </div>
+        <span className="utility__spacer"></span>
+        <nav className="utility__links" aria-label="Secondary">
+          <Link href="/contact">Contact us</Link>
+          <Link href="/news">Tenders &amp; vacancies</Link>
+          <Link href="/publications">Publications</Link>
+          <Link href="/donate">Donate</Link>
+        </nav>
+        <Link className="utility__trade" href="/wholesale">
+          <span className="utility__trade-long">Trade &amp; wholesale buyers</span>
+          <span className="utility__trade-short">Trade buyers</span>
+        </Link>
+        <span className="utility__rule" aria-hidden="true"></span>
+        <span className="utility__lang">
+          <span className="is-active">EN</span>
+          <span aria-hidden="true">/</span>
+          <span lang="dz">རྫོང་ཁ</span>
+        </span>
       </div>
     </div>
   );

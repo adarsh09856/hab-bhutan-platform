@@ -2,540 +2,1020 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import {
-  CRAFTS,
-  CLIENT_VERBATIM,
-} from '@/lib/data';
-import CraftCard from '@/components/public/CraftCard';
-import ProductCard from '@/components/public/ProductCard';
-import HeroSlider from '@/components/public/HeroSlider';
+import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useCart } from '@/context/CartContext';
+import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
+
+interface HeroSlide {
+  id: string;
+  imageUrl: string;
+  caption: string;
+  altText?: string;
+  linkUrl?: string | null;
+}
+
+const DEFAULT_HERO_SLIDES: HeroSlide[] = [
+  {
+    id: 'hero-1',
+    imageUrl: '/assets/photos/hero-1-weaving.jpg',
+    caption: 'photo 1 — artisan at the loom, Khoma',
+    altText: 'Artisan at the backstrap loom in Khoma, Lhuentse',
+  },
+  {
+    id: 'hero-2',
+    imageUrl: '/assets/photos/hero-2-punakha.jpg',
+    caption: 'photo 2 — the Punakha crafts market, stalls and buyers',
+    altText: 'The Punakha crafts market, stalls and buyers',
+  },
+  {
+    id: 'hero-3',
+    imageUrl: '/assets/photos/hero-3-clay.jpg',
+    caption: 'photo 3 — a natural dye training, Lhuentse',
+    altText: 'Traditional clay sculpture and statue making in Bhutan',
+  },
+  {
+    id: 'hero-4',
+    imageUrl: '/assets/photos/hero-4-textiles.jpg',
+    caption: 'photo 4 — carving workshop, Trashiyangtse',
+    altText: 'Naturally dyed yathra and silk textiles in Bumthang',
+  },
+  {
+    id: 'hero-5',
+    imageUrl: '/assets/photos/hero-5-desho.jpg',
+    caption: 'photo 5 — HAB outlet counter, Thimphu',
+    altText: 'Handmade traditional desho paper workshop in Trashiyangtse',
+  },
+];
+
+const PUNAKHA_SLIDES = [
+  { img: '/assets/photos/hero-2-punakha.jpg', cap: 'photo 1 — Punakha Crafts Market, stalls and river' },
+  { img: '/assets/photos/hero-1-weaving.jpg', cap: 'photo 2 — a stallholder with her own work' },
+  { img: '/assets/photos/hero-4-textiles.jpg', cap: 'photo 3 — a weaving demonstration' },
+  { img: '/assets/photos/hero-3-clay.jpg', cap: 'photo 4 — the market from the Khuruthang road' },
+];
 
 export default function HomePage() {
-  const [newInShop, setNewInShop] = useState<any[]>([]);
+  const router = useRouter();
+  const { currency, fmt } = useCurrency();
+  const { addToCart } = useCart();
+
+  // Dynamic States initialized with exact client reference fallbacks
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
+  const [currentHero, setCurrentHero] = useState(0);
+
+  const [currentPunakha, setCurrentPunakha] = useState(0);
 
   const [siteSettings, setSiteSettings] = useState({
     tagline: CLIENT_VERBATIM.tagline,
     heroParagraph: CLIENT_VERBATIM.heroPara,
-    heroCtaPrimaryText: 'Our mission',
-    heroCtaPrimaryLink: '/about',
-    heroCtaSecondaryText: 'Shop the crafts →',
-    heroCtaSecondaryLink: '/shop',
+    heroEyebrow: 'Civil Society Organization · Bhutan',
     stats: [
-      { n: "7,500", label: "Micro & small enterprises in the network" },
-      { n: "5,250", label: "Women-led enterprises" },
-      { n: "195", label: "Affiliated stores across Bhutan" },
-      { n: "13", label: "Arts & crafts of Zorig Chusum" },
+      { value: '7,500', label: 'Micro & small enterprises in the network', url: '/members' },
+      { value: '5,250', label: 'Women-led enterprises', url: '/members' },
+      { value: '195', label: 'Affiliated stores across Bhutan', url: '/outlets' },
+      { value: '13', label: 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
+    aboutBandTitle: 'A network built for artisans and everyone who brings a craft to market',
+    aboutBandPara1: 'HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.',
+    aboutBandPara2: 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and 195 affiliated stores exhibiting more than 100 unique handcrafted products.',
+    aboutBandImageUrl: '/assets/photos/about-hab.jpg',
+    aboutBandImageCaption: 'photo — HAB training workshop',
     partnersList: CLIENT_VERBATIM.partners,
-
-    // Assurances band
-    assurance1Title: "Verified members only",
-    assurance1Text: "Every seller is a registered HAB member with documented craft credentials.",
-    assurance2Title: "Fair price, paid upfront",
-    assurance2Text: "HAB buys from the artisan at an agreed price before the piece is listed.",
-    assurance3Title: "Secure payment",
-    assurance3Text: "3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.",
-    assurance4Title: "Tracked worldwide",
-    assurance4Text: "EMS via Bhutan Post with commercial invoice and craft certificate.",
-
-    // About band
-    aboutBandTitle: "A network built for the artisans, not the middlemen",
-    aboutBandPara1: "Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.",
-    aboutBandPara2: "Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.",
-    aboutBandImageUrl: "/images/training_workshop.jpg",
-    aboutBandImageCaption: "HAB artisan training workshop · Thimphu",
-    aboutBandCtaText: "Read about our programmes →",
-    aboutBandCtaLink: "/programmes",
-
-    // Membership callouts
-    membershipLeftTitle: "Find a member",
-    membershipLeftText: "Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.",
-    membershipLeftCtaText: "Search member directory →",
-    membershipLeftCtaLink: "/members",
-    membershipRightTitle: "Become a member",
-    membershipRightText: "Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.",
-    membershipRightCtaText: "Apply for membership",
-    membershipRightCtaLink: "/membership/apply",
-    homeCraftIntro: '',
   });
 
-  const [programs, setPrograms] = useState([
+  const [products, setProducts] = useState<any[]>([
     {
-      title: "Trade facilitation",
-      desc: "Trade infrastructure, market linkage, export facilitation and certification frameworks so members can compete in real markets.",
-      slot: "Trade facilitation & export",
-      image: "/images/programs/trade.jpg",
+      code: 'LHA01',
+      name: 'Guru Rinpoche Mineral-Pigment Thangka',
+      craftKey: 'lhazo',
+      craft_name: 'Lhazo · Painting',
+      maker: 'Sonam Thangka Studio, Paro',
+      price: 260,
+      priceUSD: 260,
+      image_path: '/assets/photos/product-hhb01.jpg',
+      slot: 'photo 1 — thangka, full view',
     },
     {
-      title: "Artisan support",
-      desc: "Craft skills, business management, financial literacy and export procedures, through training, mentorship and peer exchange.",
-      slot: "Natural dye & capacity training",
-      image: "/images/programs/dye_training.jpg",
+      code: 'SAD03',
+      name: 'Yathra Wool Saddle Bag',
+      craftKey: 'thagzo',
+      craft_name: 'Thagzo · Weaving',
+      maker: 'Chumey Yathra House, Bumthang',
+      price: 120,
+      priceUSD: 120,
+      image_path: '/assets/photos/product-sad03.jpg',
+      slot: 'photo 1 — saddle bag, full view',
     },
     {
-      title: "Punakha Market",
-      desc: "The only authentic crafts market validated and managed by HAB, guaranteeing genuine provenance for every object sold.",
-      slot: "Authentic provenance market",
-      image: "/images/programs/punakha.jpg",
+      code: 'TRO04',
+      name: 'Hand-Chased Silver Koma Clasp Pair',
+      craftKey: 'troezo',
+      craft_name: 'Troezo · Silver & Gold',
+      maker: 'Zorig Silversmiths, Thimphu',
+      price: 92,
+      priceUSD: 92,
+      image_path: '/assets/photos/product-cam01.jpg',
+      slot: 'photo 1 — koma pair, full view',
     },
     {
-      title: "Product innovation",
-      desc: "Design interventions, technical upgradation and artisan–designer collaboration that diversify what the sector can sell.",
-      slot: "Product design laboratory",
-      image: "/images/programs/design_lab.jpg",
+      code: 'FTB04',
+      name: 'Two-Tier Bangchung Basket',
+      craftKey: 'tshazo',
+      craft_name: 'Tshazo · Cane & Bamboo',
+      maker: 'Kheng Bamboo Collective, Zhemgang',
+      price: 34,
+      priceUSD: 34,
+      image_path: '/assets/photos/product-lud01.jpg',
+      slot: 'photo 1 — bangchung basket, full view',
     },
   ]);
 
-  const [newsItems, setNewsItems] = useState([
+  const [clusters, setClusters] = useState<any[]>([
     {
-      kind: "Programs",
-      date: "28 Aug 2026",
-      title: "Trade facilitation desk opens for the autumn export season",
-      blurb: "Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.",
+      key: 'khoma',
+      name: 'Khoma Weaving Cluster',
+      craft_name: 'Thagzo · Weaving',
+      dzongkhag: 'Lhuentse',
+      meta: '42 member weavers',
+      summary: 'Forty-two women weaving kisuthara silk on backstrap looms, in the village the textile is named for.',
+      image_path: '/assets/photos/hero-1-weaving.jpg',
+      slot: 'photo — Khoma weavers at work',
     },
     {
-      kind: "Artisan support",
-      date: "14 Aug 2026",
-      title: "Natural dye training concludes in Lhuentse",
-      blurb: "Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.",
+      key: 'kheng',
+      name: 'Kheng Bamboo Cluster',
+      craft_name: 'Tshazo · Bamboo & Cane',
+      dzongkhag: 'Zhemgang',
+      meta: '36 member artisans',
+      summary: 'Bamboo and cane workers across the Kheng villages, making bangchung baskets to a technique held locally.',
+      image_path: '/assets/photos/hero-4-textiles.jpg',
+      slot: 'photo — Kheng bamboo splitting',
     },
     {
-      kind: "Events",
-      date: "02 Aug 2026",
-      title: "Zorig Chusum craft bazaar returns to Clock Tower Square",
-      blurb: "Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.",
+      key: 'trashiyangtse',
+      name: 'Trashiyangtse Turning Cluster',
+      craft_name: 'Shagzo · Woodturning',
+      dzongkhag: 'Trashiyangtse',
+      meta: '24 member turners',
+      summary: 'The country’s wood-turning centre — dapa bowls and phob cups turned from burl and lacquered.',
+      image_path: '/assets/photos/hero-5-desho.jpg',
+      slot: 'photo — Trashiyangtse lathe turning',
     },
   ]);
 
-  const [publications, setPublications] = useState([
-    { kind: "Latest · Annual report", title: "Annual Report 2025", meta: "PDF · 4.2 MB · English & Dzongkha" },
-    { kind: "Strategy", title: "Five-Year Strategic Plan 2026–2030", meta: "PDF · 3.6 MB · Board approved" },
-    { kind: "Sector study", title: "Zorig Chusum Value Chain Assessment", meta: "PDF · 2.8 MB · 96 pages" },
-    { kind: "Accounts", title: "Audited Financial Statements 2025", meta: "PDF · 1.1 MB · Independent auditor" },
+  const [masters, setMasters] = useState<any[]>([
+    {
+      name: 'Aum Karma Wangmo',
+      honour: 'Master Craftsperson',
+      meta: 'Thagzo · Lhuentse · Since 1974',
+      note: 'Fifty-one years at the backstrap loom, and teacher to eleven of the weavers now working in the Khoma cluster.',
+      image_path: '/assets/photos/hero-1-weaving.jpg',
+      slot: 'photo — Aum Karma Wangmo at the loom',
+    },
+    {
+      name: 'Lopen Ugyen Namgyel',
+      honour: 'Master Craftsperson',
+      meta: 'Lhazo · Paro · Since 1988',
+      note: 'Thangka painter working only in mineral pigment, to the proportions set out in the classical treatises.',
+      image_path: '/assets/photos/hero-3-clay.jpg',
+      slot: 'photo — Lopen Ugyen Namgyel painting thangka',
+    },
+    {
+      name: 'Sonam Dorji',
+      honour: 'National Craft Award',
+      meta: 'Tshazo · Zhemgang · Since 2019',
+      note: 'Recognised for the grading standard now used across the Kheng bamboo cluster.',
+      image_path: '/assets/photos/hero-4-textiles.jpg',
+      slot: 'photo — Sonam Dorji weaving bangchung',
+    },
   ]);
 
+  const [programmes, setProgrammes] = useState<any[]>([
+    {
+      ref: 'a',
+      title: 'Sector Representation and Advocacy',
+      description: 'Represent and advance the collective interests of all handicrafts sector stakeholders before governmental, legislative and private sector bodies.',
+      url: '/programmes/a',
+    },
+    {
+      ref: 'b',
+      title: 'Policy Development and Intervention',
+      description: 'Engage with competent authorities on policies, laws, regulations and incentive frameworks affecting the craft sector in Bhutan.',
+      url: '/programmes/b',
+    },
+    {
+      ref: 'c',
+      title: 'Trade Facilitation',
+      description: 'Facilitate domestic and international trade through trade infrastructure, standards compliance, market linkages and export facilitation.',
+      url: '/programmes/c',
+    },
+    {
+      ref: 'd',
+      title: 'Product Development',
+      description: 'Support innovation, quality enhancement and product diversification through design interventions and artisan–designer collaborations.',
+      url: '/programmes/d',
+    },
+    {
+      ref: 'e',
+      title: 'Branding and Market Development',
+      description: 'Steward a credible sector brand identity for Bhutanese handicrafts, promoting authenticity, cultural provenance and export distribution.',
+      url: '/programmes/e',
+    },
+    {
+      ref: 'f',
+      title: 'Capacity Development',
+      description: 'Strengthen productive, entrepreneurial, managerial and technical capacity through vocational training, mentorship and masterclasses.',
+      url: '/programmes/f',
+    },
+  ]);
+
+  const [news, setNews] = useState<any[]>([
+    {
+      kind: 'Programmes',
+      date: '28 Aug 2026',
+      title: 'Trade facilitation desk opens for the autumn export season',
+      blurb: 'Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.',
+      slug: 'trade-facilitation-desk-autumn',
+      image_path: '/assets/photos/hero-2-punakha.jpg',
+      slot: 'photo — HAB trade facilitation desk',
+    },
+    {
+      kind: 'Artisan support',
+      date: '14 Aug 2026',
+      title: 'Natural dye training concludes in Lhuentse',
+      blurb: 'Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.',
+      slug: 'natural-dye-training-lhuentse',
+      image_path: '/assets/photos/hero-1-weaving.jpg',
+      slot: 'photo — natural dye preparation in Lhuentse',
+    },
+    {
+      kind: 'Events',
+      date: '02 Aug 2026',
+      title: 'Zorig Chusum craft bazaar returns to Clock Tower Square',
+      blurb: 'Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.',
+      slug: 'craft-bazaar-clock-tower',
+      image_path: '/assets/photos/hero-4-textiles.jpg',
+      slot: 'photo — Clock Tower Square craft bazaar',
+    },
+  ]);
+
+  const [events, setEvents] = useState<any[]>([
+    {
+      day: '12',
+      mon: 'SEP',
+      title: 'Zorig Chusum craft bazaar',
+      place: 'Clock Tower Square, Thimphu',
+      url: '/events/craft-bazaar-2026',
+    },
+    {
+      day: '27',
+      mon: 'SEP',
+      title: 'Export documentation clinic',
+      place: 'HAB office, Metog Lam',
+      url: '/events/export-clinic-sep',
+    },
+    {
+      day: '08',
+      mon: 'OCT',
+      title: 'Annual Sector Forum',
+      place: 'Thimphu',
+      url: '/events/sector-forum-2026',
+    },
+  ]);
+
+  const [publications, setPublications] = useState<any[]>([
+    { kind: 'Latest · Annual report', title: 'Annual Report 2025', meta: 'PDF · 4.2 MB · English & Dzongkha', file_url: '/publications' },
+    { kind: 'Strategy', title: 'Five-Year Strategic Plan 2026–2030', meta: 'PDF · 3.6 MB · Board approved', file_url: '/publications' },
+    { kind: 'Sector study', title: 'Zorig Chusum Value Chain Assessment', meta: 'PDF · 2.8 MB · 96 pages', file_url: '/publications' },
+    { kind: 'Accounts', title: 'Audited Financial Statements 2025', meta: 'PDF · 1.1 MB · Independent auditor', file_url: '/publications' },
+  ]);
+
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
+
+  // 1. Dynamic API Bindings for Secretariat Admin Controls
   useEffect(() => {
-    // 1. Fetch site settings & partners
+    // A. Hero Slides from Admin
+    fetch('/api/hero-slides')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.slides && d.slides.length > 0) {
+          setHeroSlides(d.slides);
+        }
+      })
+      .catch(() => {});
+
+    // B. Site Settings from Admin
     fetch('/api/site-settings')
       .then((r) => r.json())
       .then((d) => {
         if (d?.setting) {
-          setSiteSettings({
-            tagline: d.setting.tagline || CLIENT_VERBATIM.tagline,
-            heroParagraph: d.setting.heroParagraph || CLIENT_VERBATIM.heroPara,
-            heroCtaPrimaryText: d.setting.heroCtaPrimaryText || 'Our mission',
-            heroCtaPrimaryLink: d.setting.heroCtaPrimaryLink || '/about',
-            heroCtaSecondaryText: d.setting.heroCtaSecondaryText || 'Shop the crafts →',
-            heroCtaSecondaryLink: d.setting.heroCtaSecondaryLink || '/shop',
+          setSiteSettings((prev) => ({
+            ...prev,
+            tagline: d.setting.tagline || prev.tagline,
+            heroParagraph: d.setting.heroParagraph || prev.heroParagraph,
+            heroEyebrow: d.setting.heroEyebrow || prev.heroEyebrow,
             stats: [
-              { n: d.setting.stat1Number || "7,500", label: d.setting.stat1Label || "Micro & small enterprises in the network" },
-              { n: d.setting.stat2Number || "5,250", label: d.setting.stat2Label || "Women-led enterprises" },
-              { n: d.setting.stat3Number || "195", label: d.setting.stat3Label || "Affiliated stores across Bhutan" },
-              { n: d.setting.stat4Number || "13", label: d.setting.stat4Label || "Arts & crafts of Zorig Chusum" },
+              { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '/members' },
+              { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '/members' },
+              { value: d.setting.stat3Number || '195', label: d.setting.stat3Label || 'Affiliated stores across Bhutan', url: '/outlets' },
+              { value: d.setting.stat4Number || '13', label: d.setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
             ],
-            partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : CLIENT_VERBATIM.partners,
-
-            assurance1Title: d.setting.assurance1Title || "Verified members only",
-            assurance1Text: d.setting.assurance1Text || "Every seller is a registered HAB member with documented craft credentials.",
-            assurance2Title: d.setting.assurance2Title || "Fair price, paid upfront",
-            assurance2Text: d.setting.assurance2Text || "HAB buys from the artisan at an agreed price before the piece is listed.",
-            assurance3Title: d.setting.assurance3Title || "Secure payment",
-            assurance3Text: d.setting.assurance3Text || "3-D Secure cards, mBoB and bank transfer, in USD or Ngultrum.",
-            assurance4Title: d.setting.assurance4Title || "Tracked worldwide",
-            assurance4Text: d.setting.assurance4Text || "EMS via Bhutan Post with commercial invoice and craft certificate.",
-
-            aboutBandTitle: d.setting.aboutBandTitle || "A network built for the artisans, not the middlemen",
-            aboutBandPara1: d.setting.aboutBandPara1 || "Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector. We work towards creating a vibrant, sustainable, and inclusive craft ecosystem by bridging traditional techniques with modern markets, and ensuring fair compensation for our artisans.",
-            aboutBandPara2: d.setting.aboutBandPara2 || "Our nationwide network supports more than 7,500 micro and small craft enterprises — 70% women-led — across all twenty dzongkhags. We provide capacity building, quality certification, and direct market access through our physical outlets and international e-shop.",
-            aboutBandImageUrl: d.setting.aboutBandImageUrl || "/images/training_workshop.jpg",
-            aboutBandImageCaption: d.setting.aboutBandImageCaption || "HAB artisan training workshop · Thimphu",
-            aboutBandCtaText: d.setting.aboutBandCtaText || "Read about our programmes →",
-            aboutBandCtaLink: d.setting.aboutBandCtaLink || "/programmes",
-
-            membershipLeftTitle: d.setting.membershipLeftTitle || "Find a member",
-            membershipLeftText: d.setting.membershipLeftText || "Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.",
-            membershipLeftCtaText: d.setting.membershipLeftCtaText || "Search member directory →",
-            membershipLeftCtaLink: d.setting.membershipLeftCtaLink || "/members",
-            membershipRightTitle: d.setting.membershipRightTitle || "Become a member",
-            membershipRightText: d.setting.membershipRightText || "Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.",
-            membershipRightCtaText: d.setting.membershipRightCtaText || "Apply for membership",
-            membershipRightCtaLink: d.setting.membershipRightCtaLink || "/membership/apply",
-            homeCraftIntro: d.setting.homeCraftIntro || '',
-          });
+            aboutBandTitle: d.setting.aboutBandTitle || prev.aboutBandTitle,
+            aboutBandPara1: d.setting.aboutBandPara1 || prev.aboutBandPara1,
+            aboutBandPara2: d.setting.aboutBandPara2 || prev.aboutBandPara2,
+            aboutBandImageUrl: d.setting.aboutBandImageUrl || prev.aboutBandImageUrl,
+            aboutBandImageCaption: d.setting.aboutBandImageCaption || prev.aboutBandImageCaption,
+            partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
+          }));
         }
       })
       .catch(() => {});
 
-    // 2. Fetch dynamic products (New in the shop)
+    // C. Products from Admin
     fetch('/api/products?limit=4')
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && d.products.length > 0) {
-          setNewInShop(d.products);
+          setProducts(d.products);
         }
       })
       .catch(() => {});
 
-    // 3. Fetch dynamic programmes
+    // D. Clusters from Admin
+    fetch('/api/clusters')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.clusters && d.clusters.length > 0) {
+          setClusters(d.clusters.slice(0, 3));
+        }
+      })
+      .catch(() => {});
+
+    // E. Honours & Masters from Admin
+    fetch('/api/honours')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.masters && d.masters.length > 0) {
+          setMasters(d.masters.slice(0, 3));
+        }
+      })
+      .catch(() => {});
+
+    // F. Programmes from Admin
     fetch('/api/programmes')
       .then((r) => r.json())
       .then((d) => {
         if (d?.pillars && d.pillars.length > 0) {
-          setPrograms(
-            d.pillars.slice(0, 4).map((p: any) => ({
-              title: p.title,
-              desc: p.description,
-              slot: p.badge || p.subtitle || 'Programme Pillar',
-              image: p.imageUrl || '/images/programs/trade.jpg',
-            }))
-          );
+          setProgrammes(d.pillars.slice(0, 6));
         }
       })
       .catch(() => {});
 
-    // 4. Fetch dynamic news
+    // G. News from Admin
     fetch('/api/news')
       .then((r) => r.json())
       .then((d) => {
         if (d?.articles && d.articles.length > 0) {
-          setNewsItems(
-            d.articles.slice(0, 3).map((a: any) => ({
-              kind: a.kind || 'News',
-              date: a.dateString || 'Recent',
-              title: a.title,
-              blurb: a.blurb || '',
-            }))
-          );
+          setNews(d.articles.slice(0, 3));
         }
       })
       .catch(() => {});
 
-    // 5. Fetch dynamic publications
+    // H. Events from Admin
+    fetch('/api/events')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.events && d.events.length > 0) {
+          setEvents(d.events.slice(0, 3));
+        }
+      })
+      .catch(() => {});
+
+    // I. Publications from Admin
     fetch('/api/publications')
       .then((r) => r.json())
       .then((d) => {
         if (d?.publications && d.publications.length > 0) {
-          setPublications(
-            d.publications.slice(0, 4).map((p: any) => ({
-              kind: p.kind || 'Report',
-              title: p.title,
-              meta: p.metaDetails || (p.year ? `${p.year} publication` : 'PDF'),
-            }))
-          );
+          setPublications(d.publications.slice(0, 4));
         }
       })
       .catch(() => {});
   }, []);
 
+  // Carousel Timers
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+    const t = setInterval(() => {
+      setCurrentHero((c) => (c + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setCurrentPunakha((c) => (c + 1) % PUNAKHA_SLIDES.length);
+    }, 5500);
+    return () => clearInterval(t);
+  }, []);
+
+  const handleMemberSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (memberSearchTerm.trim()) {
+      router.push(`/members?q=${encodeURIComponent(memberSearchTerm.trim())}`);
+    } else {
+      router.push('/members');
+    }
+  };
+
   return (
-    <main className="w-full">
-      {/* 1. Hero Section */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-8 sm:pt-14 pb-5 grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-14 items-center">
-        <div>
-          <div className="font-mono text-[10.5px] sm:text-[11.5px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3 sm:mb-5">
-            Civil Society Organization · Bhutan
-          </div>
-          <h1 className="font-marcellus text-[36px] sm:text-[48px] lg:text-[58px] font-normal leading-[1.06] tracking-[-0.01em] mb-4 sm:mb-[22px] [text-wrap:balance] text-[#33261F]">
-            {siteSettings.tagline}
-          </h1>
-          <p className="font-lora text-[16px] sm:text-[18px] leading-[1.62] text-[#4A3C33] mb-6 sm:mb-[30px] max-w-[52ch]">
-            {siteSettings.heroParagraph}
+    <main id="main">
+
+      {/* ========================= 1. HERO ========================= */}
+      <section className="section hero">
+        <div className="hero__copy">
+          <p className="eyebrow eyebrow--accent">{siteSettings.heroEyebrow}</p>
+          <h1 className="display display--hero">{siteSettings.tagline}</h1>
+          <p className="lede">
+            Handicrafts Association of Bhutan supports <Link href="/members">local artisans</Link> in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
           </p>
-          <div className="flex gap-3 flex-wrap">
-            <Link
-              href={siteSettings.heroCtaPrimaryLink}
-              className="font-figtree text-[14px] sm:text-[15px] font-semibold bg-[#33261F] text-[#F4F0E7] px-5 sm:px-6 py-3 sm:py-[15px] rounded-[8px] whitespace-nowrap hover:bg-[#8B2E24] hover:text-white transition-colors"
-            >
-              {siteSettings.heroCtaPrimaryText}
-            </Link>
-            <Link
-              href={siteSettings.heroCtaSecondaryLink}
-              className="font-figtree text-[14px] sm:text-[15px] font-semibold border border-[#CDBEA8] text-[#8B2E24] px-5 sm:px-6 py-3 sm:py-[15px] rounded-[8px] bg-[#FFFCF8] whitespace-nowrap hover:border-[#33261F] transition-colors"
-            >
-              {siteSettings.heroCtaSecondaryText}
-            </Link>
-            <Link
-              href="/members"
-              className="font-figtree text-[14px] sm:text-[15px] font-semibold text-[#8B2E24] px-3 py-3 sm:py-[15px] whitespace-nowrap hover:underline"
-            >
-              Find a member
+          <div className="actions">
+            <Link className="btn btn--accent" href="/masters">
+              Meet the Makers →
             </Link>
           </div>
         </div>
 
-        <HeroSlider />
-      </section>
-
-      {/* 2. Stat Row */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-[34px]">
-        <div className="grid grid-cols-2 md:grid-cols-4 border-t border-b border-[#E4DDD1] divide-y sm:divide-y-0 divide-[#EFE9DE]">
-          {siteSettings.stats.map((s) => (
-            <div key={s.label} className="py-4 sm:py-[26px] pr-4 sm:pr-6 pl-0">
-              <div className="font-figtree font-bold text-[28px] sm:text-[38px] tracking-[-0.03em] leading-none text-[#33261F]">
-                {s.n}
+        <div className="carousel" aria-label="Who we are and what we do">
+          <div className="carousel__track">
+            {heroSlides.map((s, idx) => (
+              <div
+                key={s.id || idx}
+                className={`carousel__slide ${idx === currentHero ? 'is-on' : ''}`}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  opacity: idx === currentHero ? 1 : 0,
+                  transition: 'opacity .6s ease',
+                  zIndex: idx === currentHero ? 1 : 0,
+                }}
+              >
+                <img
+                  src={s.imageUrl}
+                  alt={s.altText || s.caption}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+                <span className="carousel__cap">{s.caption}</span>
               </div>
-              <div className="font-lora text-[13px] sm:text-[14.5px] text-[#6B5A4C] mt-1.5 sm:mt-2">
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. Assurance Band */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 pb-10 sm:pb-16">
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-x divide-[#EFE9DE] p-5 sm:p-[26px] gap-4 sm:gap-0">
-          <div className="sm:px-4 lg:px-5 first:pl-0 last:pr-0">
-            <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              {siteSettings.assurance1Title}
-            </div>
-            <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              {siteSettings.assurance1Text}
-            </div>
-          </div>
-          <div className="sm:px-4 lg:px-5 pt-3 sm:pt-0">
-            <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              {siteSettings.assurance2Title}
-            </div>
-            <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              {siteSettings.assurance2Text}
-            </div>
-          </div>
-          <div className="sm:px-4 lg:px-5 pt-3 sm:pt-0">
-            <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              {siteSettings.assurance3Title}
-            </div>
-            <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              {siteSettings.assurance3Text}
-            </div>
-          </div>
-          <div className="sm:px-4 lg:px-5 pt-3 sm:pt-0">
-            <div className="font-figtree font-bold text-[15px] sm:text-[15.5px] text-[#33261F] mb-1">
-              {siteSettings.assurance4Title}
-            </div>
-            <div className="font-lora text-[13.5px] sm:text-[14px] text-[#6B5A4C] leading-[1.5]">
-              {siteSettings.assurance4Text}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. About Band */}
-      <section id="about" className="bg-[#33261F] text-[#D2C2AE] py-14 sm:py-[86px]">
-        <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          <div>
-            <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#C9A46A] mb-3 sm:mb-[18px]">
-              About Us
-            </div>
-            <h2 className="font-marcellus text-[30px] sm:text-[40px] font-normal leading-[1.15] tracking-[-0.01em] text-[#F1ECE2] mb-4 sm:mb-6">
-              {siteSettings.aboutBandTitle}
-            </h2>
-            <p className="font-lora text-[15.5px] sm:text-[17px] leading-[1.62] text-[#D2C2AE] mb-4 sm:mb-5">
-              {siteSettings.aboutBandPara1}
-            </p>
-            <p className="font-lora text-[15.5px] sm:text-[17px] leading-[1.62] text-[#D2C2AE] mb-6 sm:mb-8">
-              {siteSettings.aboutBandPara2}
-            </p>
-            <Link
-              href={siteSettings.aboutBandCtaLink}
-              className="font-figtree text-[14.5px] sm:text-[15px] font-semibold text-[#F1ECE2] border-b border-[#8B2E24] pb-1 hover:text-white transition-colors inline-block"
-            >
-              {siteSettings.aboutBandCtaText}
-            </Link>
-          </div>
-          <div data-cms-img className="aspect-video sm:aspect-square rounded-[14px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
-            <img
-              src={siteSettings.aboutBandImageUrl}
-              alt={siteSettings.aboutBandImageCaption}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 right-4 z-10">
-              <span className="font-mono text-[10.5px] sm:text-[11px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-3 py-1.5 rounded border border-white/20 inline-block">
-                {siteSettings.aboutBandImageCaption}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Zorig Chusum — 13 Crafts */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-[86px] pb-10">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
-          <div>
-            <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2 sm:mb-3">
-              Zorig Chusum
-            </div>
-            <h2 className="font-marcellus text-[30px] sm:text-[40px] font-normal leading-[1.1] tracking-[-0.01em] text-[#33261F] mb-2">
-              The 13 arts &amp; crafts of Bhutan
-            </h2>
-            <p className="font-lora text-[15px] sm:text-[17px] text-[#6B5A4C] max-w-[65ch]">
-              {siteSettings.homeCraftIntro ||
-                'Living traditions codified in the seventeenth century, each craft holds a specific place in Bhutanese material and religious culture.'}
-            </p>
-          </div>
-          <Link
-            href="/shop"
-            className="font-figtree text-[14px] sm:text-[15px] font-semibold text-[#8B2E24] hover:underline whitespace-nowrap self-start sm:self-auto"
-          >
-            Browse all crafts →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {CRAFTS.map((craft, idx) => (
-            <CraftCard
-              key={craft.key}
-              craftKey={craft.key}
-              name={craft.name}
-              english={craft.english}
-              description={craft.description}
-              index={idx}
-              memberCount={idx % 2 === 0 ? 2 : 1}
-              productCount={idx % 3 === 0 ? 3 : 1}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* 6. New in the Shop */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-16">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
-          <div>
-            <h2 className="font-marcellus text-[28px] sm:text-[34px] font-normal leading-[1.2] tracking-[-0.01em] text-[#33261F] mb-1">
-              New in the shop
-            </h2>
-            <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C]">
-              Added to the catalogue this month · EMS tracked worldwide
-            </div>
-          </div>
-          <Link
-            href="/shop"
-            className="font-figtree text-[14px] sm:text-[15px] font-semibold text-[#8B2E24] hover:underline self-start sm:self-auto"
-          >
-            All products →
-          </Link>
-        </div>
-
-        {newInShop.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-square bg-slate-100 rounded-xl animate-pulse" />
             ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {newInShop.map((p) => (
-              <ProductCard
-                key={p.code}
-                code={p.code}
-                name={p.name}
-                priceUSD={p.priceUSD || p.price}
-                craftKey={p.craftKey}
-                region={p.region}
-                maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
+          <button
+            className="carousel__nav carousel__nav--prev"
+            type="button"
+            onClick={() => setCurrentHero((c) => (c - 1 + heroSlides.length) % heroSlides.length)}
+            aria-label="Previous photograph"
+          >
+            ‹
+          </button>
+          <button
+            className="carousel__nav carousel__nav--next"
+            type="button"
+            onClick={() => setCurrentHero((c) => (c + 1) % heroSlides.length)}
+            aria-label="Next photograph"
+          >
+            ›
+          </button>
+          <div className="carousel__dots">
+            {heroSlides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`carousel__dot ${idx === currentHero ? 'is-on' : ''}`}
+                onClick={() => setCurrentHero(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
               />
             ))}
           </div>
-        )}
+        </div>
       </section>
 
-      {/* 7. Programmes & Projects */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-12">
-        <div className="mb-6 sm:mb-8">
-          <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2 sm:mb-3">
-            Programmes &amp; projects
-          </div>
-          <h2 className="font-marcellus text-[30px] sm:text-[40px] font-normal leading-[1.1] tracking-[-0.01em] text-[#33261F]">
-            {CLIENT_VERBATIM.sectionLines.programs}
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {programs.map((prog) => (
-            <div
-              key={prog.title}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col p-4 sm:p-5 hover:border-[#33261F] transition-colors"
-            >
-              <div data-cms-img className="aspect-[16/10] bg-[#E8E1D4] rounded-[8px] border border-[#E4DDD1] mb-3 sm:mb-4 overflow-hidden relative">
-                <img
-                  src={prog.image}
-                  alt={prog.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
-                <span className="absolute bottom-2 left-2 z-10 font-mono text-[9.5px] sm:text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-1 rounded">
-                  {prog.slot}
-                </span>
-              </div>
-              <h3 className="font-figtree font-bold text-[16px] sm:text-[17px] text-[#33261F] mb-1.5">
-                {prog.title}
-              </h3>
-              <p className="font-lora text-[13.5px] sm:text-[14.5px] text-[#6B5A4C] leading-[1.55] mb-4 flex-1">
-                {prog.desc}
-              </p>
-              <Link
-                href="/programmes"
-                className="font-figtree text-[13px] sm:text-[13.5px] font-semibold text-[#8B2E24] hover:underline pt-3 border-t border-[#EFE9DE]"
-              >
-                Read more →
-              </Link>
-            </div>
+      {/* ========================= 2. STATS ========================= */}
+      <section className="section section--tight">
+        <div className="stats">
+          {siteSettings.stats.map((st, idx) => (
+            <Link key={idx} href={st.url} className="stats__cell" style={{ color: 'inherit' }}>
+              <span className="stats__num">{st.value}</span>
+              <span className="stats__label">{st.label}</span>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* 8. Membership Double Panel */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
-          {/* Left panel: Find a member */}
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] p-6 sm:p-8 flex flex-col justify-between">
-            <div>
-              <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#6B5A4C] mb-2 sm:mb-3">
-                Membership Database
-              </div>
-              <h3 className="font-marcellus text-[26px] sm:text-[30px] font-normal leading-[1.2] text-[#33261F] mb-3">
-                {siteSettings.membershipLeftTitle}
-              </h3>
-              <p className="font-lora text-[14.5px] sm:text-[15.5px] text-[#4A3C33] leading-[1.6] mb-6">
-                {siteSettings.membershipLeftText}
-              </p>
-            </div>
-            <Link
-              href={siteSettings.membershipLeftCtaLink}
-              className="self-start font-figtree font-semibold text-[14px] sm:text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors"
-            >
-              {siteSettings.membershipLeftCtaText}
+      {/* ========================= 3. B2C / B2B GATEWAY ========================= */}
+      <section className="section section--tight" id="buy">
+        <div className="buyband">
+          <div className="buyband__copy">
+            <p className="eyebrow eyebrow--accent">Two ways to buy</p>
+            <h2 className="display display--sub">Retail or trade</h2>
+          </div>
+          <div className="buyband__actions">
+            <Link className="buybtn" href="/shop">
+              <span className="buybtn__label">Retail</span>
+              <span className="buybtn__name">Visit the e-shop</span>
+              <span className="buybtn__note">Single pieces, shipped worldwide</span>
+            </Link>
+            <Link className="buybtn buybtn--trade" href="/wholesale">
+              <span className="buybtn__label">Trade</span>
+              <span className="buybtn__name">Wholesale &amp; bulk</span>
+              <span className="buybtn__note">Trade pricing on approval</span>
             </Link>
           </div>
+        </div>
+      </section>
 
-          {/* Right panel: Become a member */}
-          <div className="bg-[#8B2E24] text-white rounded-[14px] p-6 sm:p-8 flex flex-col justify-between">
-            <div>
-              <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#F0C4BD] mb-2 sm:mb-3">
-                Join HAB
-              </div>
-              <h3 className="font-marcellus text-[26px] sm:text-[30px] font-normal leading-[1.2] text-white mb-3">
-                {siteSettings.membershipRightTitle}
-              </h3>
-              <p className="font-lora text-[14.5px] sm:text-[15.5px] text-[#F6DED9] leading-[1.6] mb-6">
-                {siteSettings.membershipRightText}
-              </p>
+      {/* ========================= 4. ABOUT BAND ========================= */}
+      <section className="band" id="about">
+        <div className="band__inner about">
+          <div>
+            <p className="eyebrow eyebrow--brass">About us</p>
+            <h2 className="display display--band">{siteSettings.aboutBandTitle}</h2>
+            <p className="band__body">{siteSettings.aboutBandPara1}</p>
+            <p className="band__body">{siteSettings.aboutBandPara2}</p>
+            <Link className="link-brass" href="/programmes">
+              Read about our programmes
+            </Link>
+          </div>
+          <figure className="frame frame--square frame--dark">
+            <img
+              src={siteSettings.aboutBandImageUrl}
+              alt={siteSettings.aboutBandImageCaption}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/about-hab.jpg'; }}
+            />
+            <figcaption className="frame__caption frame__caption--dark">
+              {siteSettings.aboutBandImageCaption}
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {/* ========================= 5. NEW IN THE SHOP ========================= */}
+      <section className="section" id="shop">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Latest arrivals</p>
+            <h2 className="display display--band">New in the shop</h2>
+            <p className="section__lede">
+              A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.
+            </p>
+          </div>
+          <Link className="btn btn--ink btn--sm" href="/shop">
+            Visit the shop →
+          </Link>
+        </div>
+        <div className="grid grid--4">
+          {products.slice(0, 4).map((p) => {
+            const displayPrice = p.priceUSD || p.price || 0;
+            return (
+              <article key={p.code} className="card product">
+                <Link className="product__shot" href={`/product/${p.code}`}>
+                  <figure className="frame frame--square">
+                    <img
+                      src={p.image_path || p.imageUrl || '/assets/photos/product-hhb01.jpg'}
+                      alt={p.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                    />
+                    <figcaption className="frame__caption frame__caption--sm">{p.slot || p.code}</figcaption>
+                  </figure>
+                  <span className="product__ref">{p.code}</span>
+                </Link>
+                <div className="card__body">
+                  <p className="eyebrow eyebrow--accent eyebrow--sm">{p.craft_name || p.craftKey}</p>
+                  <h3 className="card__title clamp-2">
+                    <Link href={`/product/${p.code}`}>{p.name}</Link>
+                  </h3>
+                  <p className="card__meta clamp-1">{typeof p.maker === 'object' ? p.maker?.name : p.maker}</p>
+                  <div className="card__foot">
+                    <span className="price">{fmt(displayPrice)}</span>
+                    <button
+                      className="btn btn--outline btn--xs"
+                      type="button"
+                      onClick={() => addToCart(p.code)}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================= 6. ASSURANCE ========================= */}
+      <section className="section section--tight">
+        <div className="assurance">
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">T</span>
+              <span>racked Origin</span>
+            </h3>
+            <p className="assurance__body">Materials, makers, and worldwide shipping are 100% traceable.</p>
+          </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">R</span>
+              <span>egistered Chain</span>
+            </h3>
+            <p className="assurance__body">Every artisan, supplier, and input is strictly verified.</p>
+          </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">U</span>
+              <span>pfront &amp; Fair</span>
+            </h3>
+            <p className="assurance__body">Pre-paid artisan pricing cuts out unethical markups.</p>
+          </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">E</span>
+              <span>ncrypted Escrow</span>
+            </h3>
+            <p className="assurance__body">Bulletproof 3-D Secure, mBoB, and bank transfers.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================= 7. OUTLETS & PUNAKHA MARKET ========================= */}
+      <section className="section" id="outlets">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Visit us in person</p>
+            <h2 className="display display--band">Our physical outlets &amp; clusters</h2>
+            <p className="section__lede">
+              Buy directly from the artisans, at the markets and clusters the association runs or validates.
+            </p>
+          </div>
+          <Link className="link-accent" href="/shop">
+            Or shop online →
+          </Link>
+        </div>
+
+        <article className="outlet-lead" id="outletLead">
+          <div className="carousel carousel--outlet" aria-label="Punakha Crafts Market">
+            <div className="carousel__track">
+              {PUNAKHA_SLIDES.map((sl, i) => (
+                <div
+                  key={i}
+                  className={`carousel__slide ${i === currentPunakha ? 'is-on' : ''}`}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: i === currentPunakha ? 1 : 0,
+                    transition: 'opacity .6s ease',
+                    zIndex: i === currentPunakha ? 1 : 0,
+                  }}
+                >
+                  <img
+                    src={sl.img}
+                    alt={sl.cap}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
+                  />
+                  <span className="carousel__cap">{sl.cap}</span>
+                </div>
+              ))}
             </div>
-            <div className="flex gap-3 flex-wrap">
-              <Link
-                href={siteSettings.membershipRightCtaLink}
-                className="font-figtree font-semibold text-[14px] sm:text-[14.5px] bg-white text-[#8B2E24] px-5 sm:px-6 py-3 sm:py-3.5 rounded-[7px] hover:bg-[#F4F0E7] transition-colors"
-              >
-                {siteSettings.membershipRightCtaText}
+            <button
+              className="carousel__nav carousel__nav--prev"
+              type="button"
+              onClick={() => setCurrentPunakha((c) => (c - 1 + PUNAKHA_SLIDES.length) % PUNAKHA_SLIDES.length)}
+              aria-label="Previous photograph"
+            >
+              ‹
+            </button>
+            <button
+              className="carousel__nav carousel__nav--next"
+              type="button"
+              onClick={() => setCurrentPunakha((c) => (c + 1) % PUNAKHA_SLIDES.length)}
+              aria-label="Next photograph"
+            >
+              ›
+            </button>
+            <div className="carousel__dots">
+              {PUNAKHA_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`carousel__dot ${i === currentPunakha ? 'is-on' : ''}`}
+                  onClick={() => setCurrentPunakha(i)}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="outlet-lead__body">
+            <p className="badge badge--ink">
+              <span aria-hidden="true">★</span> HAB validated &amp; managed
+            </p>
+            <h3 className="display display--panel">Punakha Crafts Market</h3>
+            <p className="outlet-lead__place">Punakha · beside the Mo Chhu, on the Khuruthang road</p>
+            <p className="outlet-lead__desc">
+              The only authentic crafts market validated and managed by HAB. Every stall is a registered member selling their own work, priced as agreed with the association — no resellers, no imported copies.
+            </p>
+            <div className="factgrid">
+              <div className="factgrid__cell">
+                <span className="factgrid__key">Hours</span>
+                <span className="factgrid__val clamp-2">Daily, 09:00 – 18:00</span>
+              </div>
+              <div className="factgrid__cell">
+                <span className="factgrid__key">Stalls</span>
+                <span className="factgrid__val clamp-2">32 member artisans</span>
+              </div>
+              <div className="factgrid__cell">
+                <span className="factgrid__key">Crafts on site</span>
+                <span className="factgrid__val clamp-2">Weaving, bamboo, wood turning, paper</span>
+              </div>
+              <div className="factgrid__cell">
+                <span className="factgrid__key">Payment</span>
+                <span className="factgrid__val clamp-2">Cash, mBoB, cards</span>
+              </div>
+            </div>
+            <div className="actions">
+              <Link className="btn btn--accent" href="/outlets/punakha-market">
+                Get directions
               </Link>
-              <Link
-                href="/login"
-                className="font-figtree font-semibold text-[14px] sm:text-[14.5px] border border-white text-white px-4 sm:px-5 py-3 sm:py-3.5 rounded-[7px] hover:bg-white/10 transition-colors"
-              >
+              <Link className="btn btn--outline" href="/contact">
+                Plan a group visit
+              </Link>
+              <Link className="btn btn--text" href="/outlets/punakha-market">
+                Learn more →
+              </Link>
+            </div>
+          </div>
+        </article>
+
+        {/* Artisan clusters subhead */}
+        <div className="subhead" id="clusters">
+          <div>
+            <p className="eyebrow eyebrow--accent">Artisan clusters</p>
+            <p className="subhead__lede">
+              A cluster is a village or valley where one craft is concentrated, and where members hold a common price, buy materials together and receive visitors.
+            </p>
+          </div>
+          <Link className="btn btn--outline btn--sm" href="/clusters">
+            Visit more clusters →
+          </Link>
+        </div>
+
+        <div className="grid grid--3">
+          {clusters.map((c) => (
+            <Link key={c.key} className="card cluster" href={`/clusters/${c.key}`}>
+              <figure className="frame frame--wide16">
+                <img
+                  src={c.image_path || '/assets/photos/hero-1-weaving.jpg'}
+                  alt={c.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+                <figcaption className="frame__caption frame__caption--sm">{c.slot || c.name}</figcaption>
+              </figure>
+              <div className="card__body">
+                <p className="eyebrow eyebrow--accent eyebrow--sm">{c.craft_name || c.craftKey}</p>
+                <h3 className="cluster__name">{c.name}</h3>
+                <p className="cluster__place">{c.dzongkhag} · {c.meta || 'Active Cluster'}</p>
+                <p className="card__text cluster__summary">{c.summary}</p>
+                <p className="cluster__read">Read the story →</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <p className="footnote">
+          195 affiliated stores across Bhutan also carry member work. Outlets and clusters are added here as they are validated.
+        </p>
+      </section>
+
+      {/* ========================= 8. 13 CRAFTS ========================= */}
+      <section className="section" id="crafts">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Zorig Chusum</p>
+            <h2 className="display display--band">The 13 arts &amp; crafts of Bhutan</h2>
+            <p className="section__lede">
+              First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.
+            </p>
+          </div>
+          <Link className="btn btn--ink btn--sm" href="/shop">
+            Shop all crafts →
+          </Link>
+        </div>
+
+        <div className="grid grid--auto">
+          {CRAFTS.map((craft, idx) => {
+            const num = String(idx + 1).padStart(2, '0');
+            return (
+              <article key={craft.key} className="card craft">
+                <figure className="frame frame--wide16" style={{ position: 'relative' }}>
+                  <span className="craft__num">{num} / 13</span>
+                  <img
+                    src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                    alt={craft.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                  />
+                  <figcaption className="frame__caption frame__caption--sm">{craft.name}</figcaption>
+                </figure>
+                <div className="card__body">
+                  <div className="craft__heading">
+                    <h3 className="craft__name">{craft.name}</h3>
+                    <span className="craft__en">{craft.english}</span>
+                  </div>
+                  <p className="card__text craft__desc">{craft.description}</p>
+                  <div className="craft__foot">
+                    <Link className="craft__about" href={`/craft/${craft.key}`}>
+                      About this craft →
+                    </Link>
+                    <Link className="craft__shop" href={`/shop/${craft.key}`}>
+                      Shop {craft.name}
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================= 9. MASTER CRAFTSPEOPLE ========================= */}
+      <section className="section" id="masters">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Recognised by the association</p>
+            <h2 className="display display--band">Master craftspeople</h2>
+            <p className="section__lede">
+              Members honoured for mastery of a Zorig Chusum craft, for national craft awards, and for the standards they set for everyone else working in it.
+            </p>
+          </div>
+          <Link className="btn btn--ink btn--sm" href="/masters">
+            All recognised members →
+          </Link>
+        </div>
+
+        <div className="grid grid--3">
+          {masters.map((m, idx) => (
+            <Link key={idx} className="card honour" href="/masters" style={{ color: 'inherit' }}>
+              <figure className="frame frame--square">
+                <img
+                  src={m.image_path || '/assets/photos/hero-1-weaving.jpg'}
+                  alt={m.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+                <figcaption className="frame__caption frame__caption--sm">{m.slot || m.name}</figcaption>
+              </figure>
+              <div className="card__body">
+                <span className="honour__badge">{m.honour}</span>
+                <h3 className="card__title">{m.name}</h3>
+                <p className="card__meta">{m.meta}</p>
+                <p className="card__text clamp-3">{m.note}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ========================= 10. PROGRAMMES ========================= */}
+      <section className="section" id="programmes">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Programmes &amp; projects</p>
+            <h2 className="display display--band">Change lives, build a better community</h2>
+            <p className="section__lede">
+              Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association.
+            </p>
+          </div>
+          <Link className="link-accent" href="/programmes">
+            All eleven programme areas →
+          </Link>
+        </div>
+
+        <div className="grid grid--3">
+          {programmes.map((p, idx) => (
+            <article key={p.ref || idx} className="card programme">
+              <div className="programme__head">
+                <span className="badge badge--ref">Art. 3.2({p.ref})</span>
+                <h3 className="card__title clamp-3">{p.title}</h3>
+              </div>
+              <p className="card__text programme__desc">{p.description}</p>
+              <Link className="link-accent programme__toggle" href={`/programmes/${p.ref}`}>
+                Read more →
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* ========================= 11. SUPPORT US ========================= */}
+      <section className="section support" id="support">
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Support us</p>
+            <h2 className="display display--band">Support the Living Heritage of Bhutan</h2>
+            <p className="section__lede">
+              We empower the entire craft value chain. Your support directly sustains rural creators, safeguards ancestral arts, and protects our natural landscapes.
+            </p>
+          </div>
+          <Link className="btn btn--accent" href="/donate">
+            Donate now
+          </Link>
+        </div>
+
+        <div className="pillars" id="supportPillars">
+          <article className="pillar">
+            <h3 className="pillar__title">
+              <span className="pillar__initial">G</span>
+              <span>rassroots Benefit</span>
+            </h3>
+            <p className="pillar__line">Keeps rural creators trading through the lean season.</p>
+            <p className="pillar__body">Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.</p>
+            <Link className="pillar__give" href="/donate?pillar=grassroots">
+              Give Now →
+            </Link>
+          </article>
+          <article className="pillar">
+            <h3 className="pillar__title">
+              <span className="pillar__initial">I</span>
+              <span>mpact Crowdfunding &amp; Enterprise</span>
+            </h3>
+            <p className="pillar__line">Buys the raw materials an artisan cannot afford upfront.</p>
+            <p className="pillar__body">Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.</p>
+            <Link className="pillar__give" href="/donate?pillar=impact">
+              Give Now →
+            </Link>
+          </article>
+          <article className="pillar">
+            <h3 className="pillar__title">
+              <span className="pillar__initial">V</span>
+              <span>ital Cultural Preservation</span>
+            </h3>
+            <p className="pillar__line">Funds critical master-to-apprentice placements.</p>
+            <p className="pillar__body">Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.</p>
+            <Link className="pillar__give" href="/donate?pillar=cultural">
+              Give Now →
+            </Link>
+          </article>
+          <article className="pillar">
+            <h3 className="pillar__title">
+              <span className="pillar__initial">E</span>
+              <span>nvironmental &amp; Landscape Conservation</span>
+            </h3>
+            <p className="pillar__line">Replants the natural materials our crafts grow from.</p>
+            <p className="pillar__body">Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.</p>
+            <Link className="pillar__give" href="/donate?pillar=environment">
+              Give Now →
+            </Link>
+          </article>
+        </div>
+      </section>
+
+      {/* ========================= 12. MEMBERSHIP DUO ========================= */}
+      <section className="section" id="membership">
+        <div className="duo">
+          <div className="panel">
+            <p className="eyebrow eyebrow--muted">Search the crafts</p>
+            <h3 className="display display--panel">Find a craft, a maker or a piece</h3>
+            <p className="panel__body">
+              Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.
+            </p>
+            <form className="inline-form" onSubmit={handleMemberSearch}>
+              <label className="visually-hidden" htmlFor="memberSearch">Search crafts, makers, clusters and products</label>
+              <input
+                className="input"
+                id="memberSearch"
+                type="search"
+                placeholder="Try weaving, Lhuentse, bowl, Khoma…"
+                autoComplete="off"
+                value={memberSearchTerm}
+                onChange={(e) => setMemberSearchTerm(e.target.value)}
+              />
+              <button className="btn btn--ink" type="submit">Search</button>
+            </form>
+          </div>
+          <div className="panel panel--accent">
+            <p className="eyebrow eyebrow--onaccent">Join HAB</p>
+            <h3 className="display display--panel display--onaccent">Become a member</h3>
+            <p className="panel__body panel__body--onaccent">
+              Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.
+            </p>
+            <div className="actions">
+              <Link className="btn btn--light" href="/membership/apply">
+                Apply for membership
+              </Link>
+              <Link className="btn btn--ghost" href="/login">
                 Member login
               </Link>
             </div>
@@ -543,114 +1023,127 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. News & Events */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 sm:mb-8">
+      {/* ========================= 13. NEWSROOM & EVENTS ========================= */}
+      <section className="section" id="news">
+        <div className="section__head">
           <div>
-            <h2 className="font-marcellus text-[28px] sm:text-[34px] font-normal text-[#33261F] mb-1">
-              News &amp; events
-            </h2>
-            <div className="font-lora text-[15px] sm:text-[16px] text-[#6B5A4C]">
-              {CLIENT_VERBATIM.sectionLines.news}
-            </div>
+            <p className="eyebrow eyebrow--accent">Newsroom</p>
+            <h2 className="display display--band">News, events &amp; reports</h2>
+            <p className="section__lede">
+              The three most recent updates, newest first. Stay informed, stay empowered.
+            </p>
           </div>
-          <Link
-            href="/news"
-            className="font-figtree text-[14px] sm:text-[15px] font-semibold text-[#8B2E24] hover:underline self-start sm:self-auto"
-          >
+          <Link className="btn btn--ink btn--sm" href="/news">
             All updates →
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {newsItems.map((news) => (
-            <Link
-              key={news.title}
-              href="/news"
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col hover:border-[#33261F] transition-colors group"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="font-mono text-[10px] sm:text-[10.5px] bg-[#F1E9DB] text-[#8B2E24] px-2 py-0.5 rounded">
-                  {news.kind}
-                </span>
-                <span className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C]">
-                  {news.date}
-                </span>
-              </div>
-              <h3 className="font-figtree font-semibold text-[16.5px] sm:text-[18px] text-[#33261F] leading-[1.3] mb-2.5 group-hover:text-[#8B2E24] transition-colors">
-                {news.title}
-              </h3>
-              <p className="font-lora text-[13.5px] sm:text-[14.5px] text-[#6B5A4C] leading-[1.5] flex-1">
-                {news.blurb}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 10. Reports & Publications */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-10 sm:py-16 border-t border-[#E4DDD1]">
-        <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-8 lg:gap-[52px]">
-          <div>
-            <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-2 sm:mb-3">
-              Accountability
-            </div>
-            <h2 className="font-marcellus text-[28px] sm:text-[34px] font-normal leading-[1.2] text-[#33261F] mb-3 sm:mb-4">
-              Reports &amp; publications
-            </h2>
-            <p className="font-lora text-[15px] sm:text-[16px] text-[#6B5A4C] leading-[1.6] mb-5 sm:mb-6">
-              HAB publishes annual programme reports, audited financial accounts, value-chain studies, and technical training manuals.
-            </p>
-            <Link
-              href="/publications"
-              className="font-figtree font-semibold text-[14px] sm:text-[14.5px] text-[#8B2E24] hover:underline"
-            >
-              All publications →
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-            {publications.map((pub) => (
-              <Link
-                key={pub.title}
-                href="/publications"
-                className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-4 sm:p-5 flex flex-col justify-between hover:border-[#33261F] transition-colors"
-              >
-                <div>
-                  <div className="font-mono text-[10px] sm:text-[10.5px] text-[#8B2E24] mb-2 uppercase">
-                    {pub.kind}
+        <div className="newsrow">
+          <div className="grid grid--3">
+            {news.map((item, idx) => (
+              <article key={item.slug || idx} className="card news">
+                <figure className="frame frame--wide16">
+                  <img
+                    src={item.image_path || '/assets/photos/hero-2-punakha.jpg'}
+                    alt={item.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
+                  />
+                  <figcaption className="frame__caption frame__caption--sm">{item.slot || item.title}</figcaption>
+                </figure>
+                <div className="card__body">
+                  <div className="news__meta">
+                    <span className="tag">{item.kind || 'News'}</span>
+                    <span className="news__date">{item.date || item.published_at || 'Recent'}</span>
                   </div>
-                  <div className="font-figtree font-semibold text-[15px] sm:text-[16px] text-[#33261F] leading-[1.3] mb-4">
-                    {pub.title}
-                  </div>
+                  <h3 className="news__title clamp-2">{item.title}</h3>
+                  <p className="card__text clamp-4">{item.blurb}</p>
+                  <Link className="news__more" href={`/news/${item.slug}`}>
+                    Read more →
+                  </Link>
                 </div>
-                <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] pt-2.5 sm:pt-3 border-t border-[#EFE9DE]">
-                  {pub.meta} ↓
-                </div>
-              </Link>
+              </article>
             ))}
           </div>
+
+          <aside className="newsaside">
+            <div className="newsaside__block">
+              <div className="newsaside__head">
+                <h3 className="newsaside__title">Upcoming events</h3>
+                <Link className="link-accent" href="/events">
+                  All events →
+                </Link>
+              </div>
+              <div>
+                {events.map((ev, idx) => (
+                  <Link key={idx} className="eventrow" href={ev.url || '/events'}>
+                    <span className="eventrow__date">
+                      <strong>{ev.day}</strong>
+                      <span>{ev.mon}</span>
+                    </span>
+                    <span className="eventrow__body">
+                      <span className="eventrow__title clamp-2">{ev.title}</span>
+                      <span className="eventrow__place clamp-1">{ev.place}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className="newsaside__block newsaside__block--dark">
+              <h3 className="newsaside__title newsaside__title--light">Reports &amp; publications</h3>
+              <p className="newsaside__body">
+                Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.
+              </p>
+              <Link className="link-brass" href="/publications">
+                Browse all reports
+              </Link>
+            </div>
+          </aside>
         </div>
       </section>
 
-      {/* 11. Partners & Funders */}
-      <section className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 pb-16 sm:pb-20 pt-6">
-        <div className="font-mono text-[10.5px] sm:text-[11px] tracking-[0.16em] uppercase text-[#6B5A4C] mb-4 text-center">
-          Partners &amp; Funders
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-[1px] bg-[#E4DDD1] border border-[#E4DDD1] rounded-[10px] overflow-hidden">
-          {(siteSettings.partnersList || CLIENT_VERBATIM.partners).map((partner: string) => (
-            <div
-              key={partner}
-              className="h-[68px] sm:h-[78px] bg-white flex items-center justify-center p-3 text-center"
-            >
-              <span className="font-mono text-[10.5px] sm:text-[11px] text-[#33261F]">
-                {partner}
-              </span>
+      {/* ========================= 14. PUBLICATIONS ========================= */}
+      <section className="section" id="publications">
+        <div className="rule-top">
+          <div className="pubs">
+            <div>
+              <p className="eyebrow eyebrow--accent">Accountability</p>
+              <h2 className="display display--sub">Reports &amp; publications</h2>
+              <p className="section__lede">
+                HAB publishes programme outcomes, sector research and audited accounts every year, in English and Dzongkha.
+              </p>
+              <Link className="link-accent" href="/publications">
+                All publications →
+              </Link>
             </div>
-          ))}
+            <div className="grid grid--2">
+              {publications.map((pb, idx) => (
+                <Link key={idx} className="card pub" href={pb.file_url || '/publications'}>
+                  <span className="eyebrow eyebrow--accent eyebrow--sm">{pb.kind}</span>
+                  <span className="pub__title clamp-3">{pb.title}</span>
+                  <span className="pub__meta">{pb.meta}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* ========================= 15. PARTNERS ========================= */}
+      <section className="section section--last">
+        <p className="eyebrow eyebrow--muted">Development Partners</p>
+        <div className="partners">
+          {siteSettings.partnersList.map((partner: any, idx: number) => {
+            const name = typeof partner === 'string' ? partner : partner.name;
+            return (
+              <div key={idx} className="partners__cell">
+                <span className="partners__name">{name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
     </main>
   );
 }

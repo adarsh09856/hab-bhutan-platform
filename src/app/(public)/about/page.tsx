@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { OBJECTIVES, VALUES } from '@/lib/data';
 
 export default function AboutPage() {
   const [siteSettings, setSiteSettings] = useState<any>(null);
@@ -13,21 +12,23 @@ export default function AboutPage() {
   } | null>(null);
 
   useEffect(() => {
-    // 1. Fetch live site settings
+    // 1. Dynamic API: Site Settings
     fetch('/api/site-settings')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.settings) {
+        if (data?.setting) {
+          setSiteSettings(data.setting);
+        } else if (data?.settings) {
           setSiteSettings(data.settings);
         }
       })
-      .catch((err) => console.error('Error fetching site settings:', err));
+      .catch(() => {});
 
-    // 2. Fetch live governance records
+    // 2. Dynamic API: Governance & Team
     fetch('/api/governance')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
+        if (data?.success) {
           setGovernance({
             board: data.board || [],
             team: data.team || [],
@@ -35,123 +36,146 @@ export default function AboutPage() {
           });
         }
       })
-      .catch((err) => console.error('Error fetching governance records:', err));
+      .catch(() => {});
   }, []);
 
   const s = siteSettings;
-  const aboutFacts = [
-    { k: 'Established', v: '2005' },
-    { k: 'Registered CSO', v: s?.csoRegistration?.split('·')[0]?.trim() || 'CSO/2011/043' },
-    { k: 'Member enterprises', v: s?.stat1Number || '7,500' },
-    { k: 'Affiliated stores', v: s?.stat3Number || '195' },
+
+  const aboutIntro = s?.aboutIntro ||
+    'Handicrafts Association of Bhutan (HAB) was established in 2005 and got formally registered as Civil Society Organization in 2011 under the CSO act of Bhutan 2007 as a pioneer centre for the promotion of vibrant and sustainable Bhutanese handicrafts.';
+
+  const facts = [
+    { key: 'Established', value: '2005' },
+    { key: 'Registered CSO', value: s?.csoRegistration || '2011 · CSO/2011/043' },
+    { key: 'Member enterprises', value: s?.stat1Number || '7,500' },
+    { key: 'Affiliated stores', value: s?.stat3Number || '195' },
   ];
 
+  const visionTitle = s?.visionTitle || 'Towards a vibrant & sustainable handicrafts sector';
+  const visionBody = s?.visionBody || 'A Bhutan where the thirteen crafts remain in daily practice, and where making them is a livelihood a young person would choose.';
+  const missionTitle = s?.missionTitle || 'Promoting sustainability, inclusiveness and resilience';
+  const missionBody = s?.missionBody || 'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.';
+
+  const objectives = [
+    'Improve market access for Bhutanese artisans at home, in the tourism sector and internationally.',
+    'Raise product quality and consistency through training, standards and inspection.',
+    'Guarantee fair compensation and prompt payment for handcrafted work.',
+    'Keep the thirteen crafts of Zorig Chusum in living practice, particularly those with few practitioners.',
+    'Represent the sector in policy dialogue with government and development partners.',
+    'Strengthen member enterprises as businesses — costing, licensing, export documentation and finance.',
+  ];
+
+  const values = [
+    { letter: 'C', title: 'Care', body: 'Care for the maker, the material and the object. We do not ask an artisan to cut a corner we would not put our own name to, and we do not sell work we have not handled.' },
+    { letter: 'R', title: 'Respect', body: 'Respect for a tradition older than the association, and for the person who carries it. Masters are consulted, not instructed; technique is recorded on the maker’s terms.' },
+    { letter: 'A', title: 'Attentive', body: 'Attentive to quality, to the market and to what members actually ask for. Programmes are designed from what artisans report, and are dropped when they stop working.' },
+    { letter: 'F', title: 'Fair', body: 'Fair dealing, in writing. Prices are agreed with the maker and paid upfront, consignment risk stays with the association, and no member is undercut by another.' },
+    { letter: 'T', title: 'Transparent', body: 'Transparent about money and results. Audited accounts, programme outcomes and project evaluations are published every year in English and Dzongkha.' },
+  ];
+
+  const govNote = s?.govNote || 'HAB is a Public Benefit Organisation under the Civil Society Organizations Act of Bhutan 2007, as amended in 2022. Authority runs from the sector membership upward: the Annual Sector Forum receives the accounts and the Board of Trustees is accountable for governance, with Dzongkhag Chapters carrying representation into all twenty districts.';
+
+  const governanceTiers = [
+    { tier: 'Sector Membership', note: 'Artisans, producers, designers, traders and service providers across the handicrafts value chain, admitted as Active or Affiliated members. Active Sector Members receive preferential access to services.', items: ['Active Sector Members', 'Associate Members', 'Admission by the Board', 'Register maintained by the secretariat'] },
+    { tier: 'Annual Sector Forum', note: 'The annual meeting of the sector membership. Receives the annual report and audited accounts, considers the strategic direction, and provides the forum for sector-wide consultation.', items: ['Held annually', 'Annual report & accounts received', 'Sector consultation', 'Open to all members'] },
+    { tier: 'Board of Trustees', note: 'Holds fiduciary responsibility for HAB and is accountable to the Authority for compliance. Adopts the Strategic Plan and approves annual workplans and budgets; may resolve that further activity falls within the objects.', items: ['Fiduciary responsibility', 'Adopts the Strategic Plan', 'Approves workplans & budgets', 'Reports to the Authority'] },
+    { tier: 'Dzongkhag Chapters', note: 'Subnational structures carrying representation and service delivery into all twenty dzongkhags, so rural and informal producers participate on equal terms.', items: ['Twenty dzongkhags', 'Local representation', 'Programme delivery', 'Member services'] },
+    { tier: 'Secretariat', note: 'Delivers the approved workplan under the Board, maintains the statutory registers and records, and files reports and returns to the Authority under BCAS.', items: ['Programme delivery', 'Statutory registers', 'Reports & returns', 'Membership services'] },
+    { tier: 'Endowment Fund', note: 'Held for the long-term financial sustainability of the sector, alongside grants, donations and project funding administered under the Board.', items: ['Long-term sustainability', 'Grants & donations', 'Project funding', 'Board oversight'] },
+  ];
+
+  const defaultBoard = [
+    { role: 'Chair, Board of Trustees', name: 'Aum Karma Wangmo', note: 'Master weaver, Lhuentse' },
+    { role: 'Vice-Chair', name: 'Sonam Tashi', note: 'Craft enterprise owner, Thimphu' },
+    { role: 'Trustee — Finance', name: 'Kinley Dorji', note: 'Chairs audit & finance' },
+    { role: 'Trustee — Membership', name: 'Tashi Pelzom', note: 'Eastern dzongkhags' },
+    { role: 'Trustee — Crafts', name: 'Lopen Ugyen Namgyel', note: 'Institute of Zorig Chusum' },
+    { role: 'Trustee — Dzongkhag Chapters', name: 'Dawa Zangmo', note: 'Chapter representation, twenty dzongkhags' },
+    { role: 'Trustee — Market Development', name: 'Pema Rinzin', note: 'Export trade and retail' },
+    { role: 'Trustee — Compliance', name: 'Karma Tshering', note: 'CSOA compliance and reporting' },
+  ];
+
+  const defaultTeam = [
+    { role: 'Executive Director', name: 'Chhimi Bidha', note: '+975-2-338089 · director@handicraftsbhutan.org' },
+    { role: 'Programmes & Projects', name: 'Sonam Choden', note: 'Donor projects, training, M&E' },
+    { role: 'Marketing & E-shop', name: 'Tenzin Norbu', note: '+975-17462636 · shop@handicraftsbhutan.org' },
+    { role: 'Finance & Administration', name: 'Dechen Wangmo', note: 'Accounts, procurement, payroll' },
+    { role: 'Membership Services', name: 'Sangay Lhamo', note: 'Applications, directory, dues' },
+    { role: 'Trade Facilitation', name: 'Karma Dorji', note: 'Export documentation, buyer liaison' },
+    { role: 'Cluster Support Officer', name: 'Tshering Yangzom', note: 'Artisan clusters and producer groups' },
+    { role: 'Communications', name: 'Pema Lhaden', note: 'Publications, website, newsroom' },
+  ];
+
+  const boardList = (governance?.board && governance.board.length > 0) ? governance.board : defaultBoard;
+  const teamList = (governance?.team && governance.team.length > 0) ? governance.team : defaultTeam;
+
   return (
-    <main className="pb-24">
-      {/* 1. Hero & Facts */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10">
-        <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6">
-          <Link href="/" className="hover:underline">Home</Link> / About us
-        </div>
+    <main id="main">
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-14 items-end pb-11">
+      {/* 1. Page Hero & Facts */}
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / About us
+        </p>
+        <div className="pagehero">
           <div>
-            <div className="font-mono text-[11.5px] tracking-[0.16em] uppercase text-[#8B2E24] mb-4 sm:mb-5">
-              Who we are
-            </div>
-            <h1 className="font-marcellus text-3xl sm:text-4xl lg:text-[56px] font-normal leading-[1.08] lg:leading-[1.06] tracking-[-0.008em] mb-5 [text-wrap:balance] text-[#33261F]">
-              A pioneer centre for Bhutanese handicrafts
-            </h1>
-            <p className="font-lora text-base sm:text-[18.5px] leading-[1.62] text-[#4A3C33] max-w-[56ch] [text-wrap:pretty]">
-              {s?.footerAbout ||
-                'Handicrafts Association of Bhutan (HAB) was established in 2005 and got formally registered as Civil Society Organization in 2011 under the CSO act of Bhutan 2007 as a pioneer centre for the promotion of vibrant and sustainable Bhutanese handicrafts.'}
-            </p>
+            <p className="eyebrow eyebrow--accent">Who we are</p>
+            <h1 className="display display--page">A pioneer centre for Bhutanese handicrafts</h1>
+            <p className="lede">{aboutIntro}</p>
           </div>
-
-          <div className="grid grid-cols-2 gap-[1px] bg-[#E4DDD1] border border-[#E4DDD1] rounded-[12px] overflow-hidden">
-            {aboutFacts.map((af) => (
-              <div key={af.k} className="bg-[#FFFCF8] p-4 sm:p-[20px_22px]">
-                <div className="font-mono text-[10px] sm:text-[10.5px] tracking-[0.12em] uppercase text-[#6B5A4C] mb-[7px]">
-                  {af.k}
-                </div>
-                <div className="font-figtree font-bold text-base sm:text-[19px] tracking-[-0.01em] text-[#33261F]">
-                  {af.v}
-                </div>
+          <div className="craftfacts craftfacts--2">
+            {facts.map((f, idx) => (
+              <div key={idx} className="craftfacts__cell">
+                <span className="craftfacts__key">{f.key}</span>
+                <span className="craftfacts__val">{f.value}</span>
               </div>
             ))}
           </div>
         </div>
-
-        <div data-cms-img className="aspect-[16/9] sm:aspect-[24/7] rounded-[16px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative mb-12 sm:mb-20 shadow-sm">
+        <figure className="frame frame--banner">
           <img
-            src="/images/about_hero.jpg"
-            alt="Artisans, Traditional Workshops, and Heritage of Bhutan"
-            className="w-full h-full object-cover"
+            src="/assets/photos/about-hab.jpg"
+            alt="Handicrafts Association of Bhutan artisans and training"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-          <span className="absolute bottom-3 left-3 sm:bottom-4 sm:left-5 z-10 font-mono text-[10.5px] sm:text-[11.5px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-[5px] border border-white/20 max-w-[90%] truncate">
-            Artisans, traditional craft clusters, and communities across Bhutan
-          </span>
-        </div>
+          <figcaption className="frame__caption">
+            photo — HAB artisan training workshop, Thimphu
+          </figcaption>
+        </figure>
       </section>
 
-      {/* 2. Vision & Mission (Dark Surface) */}
-      <section className="bg-[#33261F] text-[#F1ECE2] py-12 sm:py-20">
-        <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-14">
+      {/* 2. Vision & Mission Band */}
+      <section className="band">
+        <div className="band__inner vm">
           <div>
-            <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#D2C2AE] mb-3 sm:mb-[18px]">
-              Vision
-            </div>
-            <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[36px] font-normal leading-[1.18] tracking-[-0.008em] mb-4 text-[#F1ECE2]">
-              {s?.tagline || 'Towards a vibrant & sustainable handicrafts sector'}
-            </h2>
-            <p className="font-lora text-sm sm:text-[17px] leading-[1.62] text-[#D2C2AE] max-w-[46ch]">
-              A Bhutan where the thirteen crafts remain in daily practice, and where making them is a livelihood a young person would choose.
-            </p>
+            <p className="eyebrow eyebrow--brass">Vision</p>
+            <h2 className="display display--vm">{visionTitle}</h2>
+            <p className="band__body">{visionBody}</p>
           </div>
-
-          <div className="border-t md:border-t-0 md:border-l border-[#4E3D2E] pt-8 md:pt-0 md:pl-14">
-            <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#D2C2AE] mb-3 sm:mb-[18px]">
-              Mission
-            </div>
-            <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[36px] font-normal leading-[1.18] tracking-[-0.008em] mb-4 text-[#F1ECE2]">
-              Promoting sustainability, inclusiveness and resilience
-            </h2>
-            <p className="font-lora text-sm sm:text-[17px] leading-[1.62] text-[#D2C2AE] max-w-[46ch]">
-              {s?.heroParagraph ||
-                'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.'}
-            </p>
+          <div className="vm__second">
+            <p className="eyebrow eyebrow--brass">Mission</p>
+            <h2 className="display display--vm">{missionTitle}</h2>
+            <p className="band__body">{missionBody}</p>
           </div>
         </div>
       </section>
 
       {/* 3. Objectives */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 lg:gap-14 items-start">
+      <section className="section">
+        <div className="longread">
           <div>
-            <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
-              Objectives
-            </div>
-            <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.2] tracking-[-0.008em] mb-3.5 text-[#33261F]">
-              What we set out to do
-            </h2>
-            <p className="font-lora text-sm sm:text-[16px] leading-[1.6] text-[#6B5A4C]">
+            <p className="eyebrow eyebrow--accent">Objectives</p>
+            <h2 className="display display--sub">What we set out to do</h2>
+            <p className="section__lede">
               Six objectives carried in the strategic plan 2026–2030, against which the Board reviews performance each year.
             </p>
           </div>
-
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[14px] overflow-hidden">
-            {(Array.isArray(s?.aboutObjectives) ? s.aboutObjectives : OBJECTIVES).map((obj: string, i: number) => (
-              <div
-                key={i}
-                className="flex gap-[18px] items-start p-4 sm:p-[20px_24px] border-b border-[#EFE9DE] last:border-b-0"
-              >
-                <span className="font-mono text-[11px] text-[#8B2E24] flex-none pt-1">
-                  0{i + 1}
-                </span>
-                <span className="font-lora text-sm sm:text-[16.5px] leading-[1.5] text-[#33261F]">
-                  {obj}
-                </span>
+          <div className="objlist">
+            {objectives.map((text, i) => (
+              <div key={i} className="objrow">
+                <span className="objrow__n">{String(i + 1).padStart(2, '0')}</span>
+                <span className="objrow__t">{text}</span>
               </div>
             ))}
           </div>
@@ -159,243 +183,127 @@ export default function AboutPage() {
       </section>
 
       {/* 4. Values */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
-        <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
-          Values
+      <section className="section">
+        <p className="eyebrow eyebrow--accent">Values</p>
+        <h2 className="display display--sub">How we work</h2>
+        <p className="section__lede" style={{ marginBottom: '28px' }}>
+          Five commitments, and they spell what we are for. Each one is testable — a member can hold the association to it.
+        </p>
+        <div className="valuegrid">
+          {values.map((v) => (
+            <div key={v.letter} className="valuecell">
+              <span className="valuecell__letter">{v.letter}</span>
+              <h3 className="valuecell__title">{v.title}</h3>
+              <p className="valuecell__body">{v.body}</p>
+            </div>
+          ))}
         </div>
-        <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal tracking-[-0.008em] mb-7 text-[#33261F]">
-          How we work
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[1px] bg-[#E4DDD1] border border-[#E4DDD1] rounded-[14px] overflow-hidden">
-          {(Array.isArray(s?.aboutValues) ? s.aboutValues : VALUES).map((val: any, idx: number) => (
-            <div key={idx} className="bg-[#FFFCF8] p-5 sm:p-[26px_22px] flex flex-col justify-between">
+      </section>
+
+      {/* 5. Governance */}
+      <section className="section" id="governance">
+        <div className="govwrap">
+          <aside className="govintro">
+            <p className="eyebrow eyebrow--accent">Governance</p>
+            <h2 className="display display--sub">How HAB is governed</h2>
+            <p className="govintro__note">{govNote}</p>
+            <Link className="btn btn--outline btn--sm" href="/publications">
+              Articles &amp; reports →
+            </Link>
+          </aside>
+          <div className="govlist">
+            {governanceTiers.map((g, i) => (
+              <article key={i} className="govtier">
+                <div className="govtier__rail">
+                  <span className="govtier__n">{String(i + 1).padStart(2, '0')}</span>
+                </div>
+                <div className="govtier__body">
+                  <h3 className="govtier__title">{g.tier}</h3>
+                  <p className="govtier__note">{g.note}</p>
+                  <div className="govtier__chips">
+                    {g.items.map((item, idx) => (
+                      <span key={idx} className="govchip">{item}</span>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Board of Trustees */}
+      <section className="section">
+        <p className="eyebrow eyebrow--accent">Board of Trustees</p>
+        <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Oversight body</h2>
+        <div className="grid grid--people">
+          {boardList.map((b, idx) => (
+            <article key={idx} className="card">
+              <figure className="frame frame--square">
+                <img
+                  src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  alt={b.role}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+                <figcaption className="frame__caption frame__caption--sm">{b.role}</figcaption>
+              </figure>
+              <div className="card__body">
+                <p className="eyebrow eyebrow--accent eyebrow--sm">{b.role}</p>
+                <h3 className="card__title">{b.name}</h3>
+                <p className="card__meta">{b.note}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* 7. Secretariat */}
+      <section className="section">
+        <p className="eyebrow eyebrow--accent">Secretariat</p>
+        <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Our team</h2>
+        <div className="grid grid--team">
+          {teamList.map((t, idx) => (
+            <div key={idx} className="teamrow">
+              <div className="teamrow__avatar" style={{ overflow: 'hidden' }}>
+                <img
+                  src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  alt={t.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+              </div>
               <div>
-                <div className="font-figtree font-bold text-base sm:text-[16.5px] tracking-[-0.01em] mb-2 text-[#33261F]">
-                  {val.title || val.t}
-                </div>
-                <p className="font-lora text-xs sm:text-[14.5px] leading-[1.55] text-[#6B5A4C]">
-                  {val.body || val.d}
-                </p>
+                <p className="eyebrow eyebrow--accent eyebrow--sm">{t.role}</p>
+                <p className="teamrow__name">{t.name}</p>
+                <p className="card__meta">{t.note}</p>
               </div>
             </div>
           ))}
         </div>
+        <p className="footnote">Names and portfolios accredited by the Secretariat.</p>
       </section>
 
-      {/* 5. Governance Overhaul (AoA 2026 Model - Live Database Driven) */}
-      <section id="governance" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
-        <div className="mb-8">
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
-            Governance &amp; Constitution
-          </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#33261F] mb-3">
-            Articles of Association (2026 AGM Endorsed)
-          </h2>
-          <p className="font-lora text-sm sm:text-[16px] text-[#6B5A4C] max-w-[76ch]">
-            Constituted as a Public Benefit Organisation under the CSOA 2007 (as amended 2022). Governance is anchored by the Board of Trustees, Dzongkhag Chapters, Annual Sector Forum, and the Endowment Fund.
-          </p>
-        </div>
-
-        {/* Board of Trustees and Secretariat roster (Live from PostgreSQL) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+      {/* 8. CTA Band */}
+      <section className="section section--last">
+        <div className="ctaband">
           <div>
-            <h3 className="font-marcellus text-xl sm:text-[26px] font-normal text-[#33261F] mb-4">
-              Board of Trustees
-            </h3>
-            <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] divide-y divide-[#EFE9DE]">
-              {(governance?.board || []).map((b) => (
-                <div key={b.role + b.name} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <div>
-                    <div className="font-figtree font-bold text-[15.5px] text-[#33261F]">
-                      {b.role}
-                    </div>
-                    <div className="font-lora text-[13.5px] text-[#6B5A4C]">
-                      {b.note}
-                    </div>
-                  </div>
-                  <span className="font-mono text-[11.5px] text-[#8B2E24] bg-[#F1E9DB] px-2.5 py-1 rounded self-start sm:self-center">
-                    {b.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-marcellus text-xl sm:text-[26px] font-normal text-[#33261F] mb-4">
-              Secretariat Team
-            </h3>
-            <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] divide-y divide-[#EFE9DE]">
-              {(governance?.team || []).map((t) => (
-                <div key={t.role + t.name} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                  <div>
-                    <div className="font-figtree font-bold text-[15.5px] text-[#33261F]">
-                      {t.role}
-                    </div>
-                    <div className="font-lora text-[13.5px] text-[#6B5A4C]">
-                      {t.note}
-                    </div>
-                  </div>
-                  <span className="font-mono text-[11.5px] text-[#8B2E24] bg-[#F1E9DB] px-2.5 py-1 rounded self-start sm:self-center">
-                    {t.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Milestones (Live from PostgreSQL) */}
-      <section className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
-        <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
-          History
-        </div>
-        <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#33261F] mb-8">
-          Milestones since founding
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {(governance?.milestones || []).map((m) => (
-            <div
-              key={m.y + m.t}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-4 sm:p-5 flex flex-col justify-between"
-            >
-              <div className="font-figtree font-bold text-xl sm:text-[24px] text-[#8B2E24] mb-2">
-                {m.y}
-              </div>
-              <p className="font-lora text-xs sm:text-[13.5px] leading-[1.5] text-[#4A3C33]">
-                {m.t}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 7. Shipping, Customs & Returns Support (Live from SiteSetting) */}
-      <section id="support" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
-        <div className="mb-8">
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
-            Collector Services &amp; Fulfillment
-          </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#33261F] mb-3">
-            Shipping, Customs &amp; Returns
-          </h2>
-          <p className="font-lora text-sm sm:text-[16px] text-[#6B5A4C] max-w-[76ch]">
-            Every consignment dispatched from our Thimphu secretariat represents direct support to Bhutanese master artisans and rural craft communities.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col">
-            <span className="font-mono text-[11px] text-[#8B2E24] uppercase mb-2">
-              {s?.supportDispatchTitle || 'International Dispatch'}
-            </span>
-            <h3 className="font-figtree font-bold text-lg sm:text-[18px] text-[#33261F] mb-2">
-              {s?.supportDispatchHeading || 'EMS & Express Courier'}
-            </h3>
-            <p className="font-lora text-xs sm:text-[14.5px] leading-[1.6] text-[#4A3C33] mb-4 flex-1">
-              {s?.supportDispatchBody ||
-                'Orders are packaged at our Thimphu hub and dispatched via EMS Bhutan Post (7–14 days) or DHL Express (3–5 days). Orders over $200 qualify for free standard EMS shipping.'}
+            <h2 className="display display--panel">Work with the association</h2>
+            <p className="ctaband__body">
+              Artisans and enterprises can apply for membership online. Retailers, hotels and development partners can reach the secretariat directly at Metog Lam, Thimphu.
             </p>
-            <div className="font-mono text-[12px] text-[#6B5A4C] pt-3 border-t border-[#EFE9DE]">
-              {s?.supportDispatchSubtext || 'Live tracking available at /track-order'}
-            </div>
           </div>
-
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col">
-            <span className="font-mono text-[11px] text-[#8B2E24] uppercase mb-2">
-              {s?.supportCustomsTitle || 'Heritage Certification'}
-            </span>
-            <h3 className="font-figtree font-bold text-lg sm:text-[18px] text-[#33261F] mb-2">
-              {s?.supportCustomsHeading || 'Duty & Seal of Authenticity'}
-            </h3>
-            <p className="font-lora text-xs sm:text-[14.5px] leading-[1.6] text-[#4A3C33] mb-4 flex-1">
-              {s?.supportCustomsBody ||
-                'Each handicraft is officially certified under the 13 Traditional Arts & Crafts of Bhutan with an authenticity seal and export declaration. Import duties and taxes are subject to destination country regulations.'}
-            </p>
-            <div className="font-mono text-[12px] text-[#6B5A4C] pt-3 border-t border-[#EFE9DE]">
-              {s?.supportCustomsSubtext || 'Compliant with CSO Act 2007 Export Standards'}
-            </div>
-          </div>
-
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6 flex flex-col">
-            <span className="font-mono text-[11px] text-[#8B2E24] uppercase mb-2">
-              {s?.supportReturnsTitle || 'Collector Guarantee'}
-            </span>
-            <h3 className="font-figtree font-bold text-lg sm:text-[18px] text-[#33261F] mb-2">
-              {s?.supportReturnsHeading || 'Returns & Replacements'}
-            </h3>
-            <p className="font-lora text-xs sm:text-[14.5px] leading-[1.6] text-[#4A3C33] mb-4 flex-1">
-              {s?.supportReturnsBody ||
-                'Because items are handcrafted by community artisans, organic variations are celebrated. If a piece arrives damaged in transit or exhibits craft defects, we arrange replacement or refund within 14 days.'}
-            </p>
-            <div className="font-mono text-[12px] text-[#6B5A4C] pt-3 border-t border-[#EFE9DE]">
-              {s?.supportReturnsSubtext || 'Contact officehab@gmail.com for claims'}
-            </div>
+          <div className="actions">
+            <Link className="btn btn--light" href="/membership/apply">
+              Apply for membership
+            </Link>
+            <Link className="btn btn--ghost" href="/publications">
+              Annual reports
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* 8. Secretariat Office & Chapter Contact (Live from SiteSetting) */}
-      <section id="contact" className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-12 sm:pt-20">
-        <div className="mb-8">
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#8B2E24] mb-3.5">
-            Headquarters &amp; Field Chapters
-          </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#33261F] mb-3">
-            Contact the Secretariat
-          </h2>
-          <p className="font-lora text-sm sm:text-[16px] text-[#6B5A4C] max-w-[76ch]">
-            Reach out to our executive secretariat in Thimphu or our regional coordinators across the 20 Dzongkhags.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6">
-            <h3 className="font-figtree font-bold text-base sm:text-[17px] text-[#33261F] mb-3">
-              National Secretariat
-            </h3>
-            <div className="font-lora text-xs sm:text-[14.5px] leading-[1.7] text-[#4A3C33] space-y-1">
-              <div>Handicrafts Association of Bhutan</div>
-              <div>{s?.officeAddress || 'Metog Lam, Post Box 1284, Thimphu'}</div>
-              <div>Kingdom of Bhutan</div>
-              <div className="font-mono text-[13px] text-[#8B2E24] pt-2">
-                Tel: {s?.officePhone || '+975-2-338089'}
-              </div>
-              <div className="font-mono text-[13px] text-[#8B2E24]">
-                Email: {s?.officialEmail || 'officehab@gmail.com'}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6">
-            <h3 className="font-figtree font-bold text-base sm:text-[17px] text-[#33261F] mb-3">
-              Operating Hours
-            </h3>
-            <div className="font-lora text-xs sm:text-[14.5px] leading-[1.7] text-[#4A3C33] space-y-1">
-              <div>Monday – Friday: 09:00 – 17:00 BST</div>
-              <div>Saturday (Artisan Desk): 09:00 – 13:00 BST</div>
-              <div>Sunday &amp; National Holidays: Closed</div>
-              <div className="font-mono text-[12px] text-[#6B5A4C] pt-2">
-                Timezone: GMT+6 (Bhutan Time)
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-5 sm:p-6">
-            <h3 className="font-figtree font-bold text-base sm:text-[17px] text-[#33261F] mb-3">
-              Regional Contacts
-            </h3>
-            <div className="font-lora text-xs sm:text-[14.5px] leading-[1.7] text-[#4A3C33] space-y-1">
-              <div>Executive Director: {s?.edPhone || '+975-77654508'}</div>
-              <div>Marketing &amp; Consignments: {s?.marketingPhone || '+975-17462636'}</div>
-              <div className="font-mono text-[12px] text-[#8B2E24] pt-2">
-                CSO Registration: {s?.csoRegistration?.split('·')[0] || 'CSO/2011/043'}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

@@ -95,68 +95,49 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="bg-[#33261F] text-[#D2C2AE] pt-12 sm:pt-16 pb-[34px] mt-0">
-      <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[1.35fr_repeat(4,1fr)] gap-8 lg:gap-[34px]">
-        <div className="sm:col-span-2 md:col-span-1">
-          <div className="mb-4">
-            <img
-              src="/assets/hab-logo-footer.png"
-              alt="Handicrafts Association of Bhutan"
-              className="h-[44px] w-auto object-contain"
-              onError={(e: any) => {
-                e.currentTarget.style.display = 'none';
-                const fb = e.currentTarget.nextElementSibling;
-                if (fb) fb.style.display = 'flex';
-              }}
-            />
-            <div style={{ display: 'none' }} className="items-center gap-[11px]">
-              <div className="w-9 h-9 rounded-full bg-[#8B2E24] text-white flex items-center justify-center font-figtree font-extrabold text-[13px]">
-                HAB
-              </div>
-              <div className="font-figtree font-bold text-[14.5px] text-[#efeae1]">
-                Handicrafts Association of Bhutan
-              </div>
-            </div>
+    <footer className="footer" id="contact">
+      <div className="signoff">
+        <div className="signoff__inner">
+          <Link className="signoff__logo" href="/" aria-label="Handicrafts Association of Bhutan — home">
+            <img className="logo__img" src="/assets/hab-logo-footer.png" alt="Handicrafts Association of Bhutan" width="3412" height="1296" />
+          </Link>
+          <div className="signoff__text">
+            <p className="signoff__name">Handicrafts Association of Bhutan</p>
+            <p className="signoff__line">{settings.footerAbout}</p>
           </div>
-          <p className="text-[14px] sm:text-[14.5px] leading-[1.6] mb-[18px] max-w-[38ch] font-lora text-[#D2C2AE]">
-            {settings.footerAbout}
-          </p>
-          <div className="font-mono text-[11.5px] leading-[1.9] text-[#D2C2AE]">
-            {settings.officeAddress}<br />
-            Office: {settings.officePhone}<br />
-            Director: {settings.edPhone}<br />
-            Marketing: {settings.marketingPhone}<br />
-            {settings.officialEmail}
+          <div className="signoff__social">
+            <a className="social__link" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook</a>
+            <a className="social__link" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a className="social__link" href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
+            <a className="social__link" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube</a>
+            <a className="social__link" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">TikTok</a>
           </div>
+        </div>
+      </div>
+
+      <div className="footer__inner">
+        <div className="footer__brand">
+          <h2 className="footer__title">Secretariat</h2>
+          <address className="footer__contact" style={{ fontStyle: 'normal' }}>
+            <span>{settings.officeAddress}</span><br />
+            <span>Office {settings.officePhone}</span><br />
+            <a href={`mailto:${settings.officialEmail}`}>{settings.officialEmail}</a>
+          </address>
         </div>
 
         {footerCols.map((col) => (
-          <div key={col.title}>
-            <div className="font-figtree font-bold text-[13.5px] text-[#efeae1] tracking-[0.02em] mb-[14px]">
-              {col.title}
-            </div>
-            <div className="flex flex-col gap-[9px]">
-              {col.links.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="text-[14px] sm:text-[14.5px] text-[#D2C2AE] hover:text-white transition-colors duration-150 font-lora"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <nav key={col.title} className="footer__col" aria-label={col.title}>
+            <h2 className="footer__title">{col.title}</h2>
+            {col.links.map((link) => (
+              <Link key={link.label} href={link.href}>{link.label}</Link>
+            ))}
+          </nav>
         ))}
       </div>
 
-      <div className="max-w-[1280px] w-full mx-auto mt-[34px] px-4 sm:px-6 lg:px-10 pt-[22px] border-t border-[#463629] flex flex-col sm:flex-row justify-between font-mono text-[10.5px] sm:text-[11px] gap-3 text-[#A8947F]">
-        <span>
-          {settings.copyrightText} · {settings.csoRegistration}
-        </span>
-        <span>
-          Prices shown in {currency === 'USD' ? 'USD $' : 'BTN Nu.'} · Payments by card, mBoB and bank transfer
-        </span>
+      <div className="footer__bar">
+        <span>{settings.copyrightText} · {settings.csoRegistration}</span>
+        <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
       </div>
     </footer>
   );

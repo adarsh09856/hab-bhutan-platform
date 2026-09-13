@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { CRAFTS } from '@/lib/data';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
-import ProductCard from '@/components/public/ProductCard';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -16,271 +15,358 @@ export default function ProductDetailPage() {
 
   const code = (params.code as string) || '';
 
-  const [product, setProduct] = React.useState<any | null>(null);
-  const [craft, setCraft] = React.useState<any | null>(null);
-  const [makerMember, setMakerMember] = React.useState<any | null>(null);
-  const [relatedProducts, setRelatedProducts] = React.useState<any[]>([]);
-  const [siteSettings, setSiteSettings] = React.useState<any | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [product, setProduct] = useState<any | null>(null);
+  const [craft, setCraft] = useState<any | null>(null);
+  const [related, setRelated] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeThumb, setActiveThumb] = useState(0);
+  const [quantity, setQuantity] = useState(1);
 
-  React.useEffect(() => {
-    fetch('/api/site-settings')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.setting || d?.settings) {
-          setSiteSettings(d.setting || d.settings);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!code) return;
     setLoading(true);
+
     fetch(`/api/products/${encodeURIComponent(code)}`)
       .then((r) => r.json())
       .then((data) => {
         if (data?.product) {
           const p = data.product;
           setProduct({
-            ...p,
-            desc: p.description || p.desc || p.material,
-            price: p.priceUSD || p.price,
-            maker: typeof p.maker === 'object' ? p.maker?.name : p.maker,
+            code: p.code,
+            name: p.name,
+            priceUSD: p.priceUSD || p.price || 0,
+            craftKey: p.craftKey || 'thagzo',
+            craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
+            maker: typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Verified Member'),
+            region: p.region || p.dzongkhag || 'Bhutan',
+            description: p.description || p.desc || 'Handcrafted by registered members of the Handicrafts Association of Bhutan using traditional techniques and locally sourced materials.',
+            size: p.size || '30 × 24 × 8 cm',
+            weight: p.weight || '420 g',
+            materials: p.materials || p.material || 'Naturally dyed local materials',
+            care: p.care || 'Spot clean or gentle hand wash; do not soak',
+            lead: p.lead || 'Ships in 2 working days with EMS tracking and craft certificate',
+            image_path: p.image_path || p.imageUrl || '/assets/photos/product-hhb01.jpg',
+            maker_blurb: p.maker?.bio || 'Registered artisan practicing traditional craft heritage under the Handicrafts Association of Bhutan.',
+            maker_since: p.maker?.memberSince || '2015',
           });
-          if (p.craft) {
-            setCraft(p.craft);
-          } else if (p.craftKey) {
-            setCraft(CRAFTS.find((c) => c.key === p.craftKey) || null);
+
+          const foundCraft = CRAFTS.find((c) => c.key === p.craftKey);
+          if (foundCraft) setCraft(foundCraft);
+
+          if (data.related && Array.isArray(data.related) && data.related.length > 0) {
+            setRelated(data.related);
           }
-          if (p.maker) setMakerMember(p.maker);
-        }
-        if (data?.related && data.related.length > 0) {
-          setRelatedProducts(data.related);
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [code]);
 
+  const handleAddToCart = () => {
+    if (product) {
+      for (let i = 0; i < quantity; i++) {
+        addToCart(product.code);
+      }
+    }
+  };
+
   const handleBuyNow = () => {
     if (product) {
-      addToCart(product.code);
+      handleAddToCart();
       router.push('/basket');
     }
   };
 
   if (loading) {
     return (
-      <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-10 pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className="aspect-[4/3] bg-slate-100 rounded-xl animate-pulse" />
-          <div className="space-y-4">
-            <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
-            <div className="h-8 w-3/4 bg-slate-100 rounded animate-pulse" />
-            <div className="h-6 w-24 bg-slate-100 rounded animate-pulse" />
-            <div className="h-24 w-full bg-slate-100 rounded animate-pulse" />
+      <main id="main">
+        <section className="section">
+          <p className="crumbs"><Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / Loading...</p>
+          <div className="proddetail">
+            <div className="frame frame--square" style={{ minHeight: '380px' }} />
+            <div>
+              <p className="eyebrow eyebrow--muted">Loading piece details...</p>
+            </div>
           </div>
-        </div>
+        </section>
       </main>
     );
   }
 
   if (!product) {
     return (
-      <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-16 pb-24 text-center">
-        <div className="max-w-md mx-auto bg-[#FFFCF8] border border-[#E4DDD1] rounded-2xl p-8">
-          <h2 className="font-marcellus text-2xl text-[#33261F] mb-3">Product Not Found</h2>
-          <p className="font-lora text-sm text-[#6B5A4C] mb-6">
-            The craft piece with code &quot;{code}&quot; could not be located or may have been rotated out of the active catalog.
-          </p>
-          <Link
-            href="/shop"
-            className="inline-block bg-[#8B2E24] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#6E241C] transition-colors"
-          >
-            Browse E-Shop Catalog →
-          </Link>
-        </div>
+      <main id="main">
+        <section className="section">
+          <p className="crumbs"><Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / Product not found</p>
+          <div className="shopempty" style={{ display: 'block', margin: '40px auto', maxWidth: '600px', textAlign: 'center' }}>
+            <h2 className="shopempty__title">Piece not in catalogue</h2>
+            <p className="shopempty__body">The craft piece with code &quot;{code}&quot; is not currently listed.</p>
+            <div className="actions" style={{ justifyContent: 'center' }}>
+              <Link className="btn btn--accent" href="/shop">Browse the e-shop</Link>
+              <Link className="btn btn--outline" href="/contact">Contact Secretariat</Link>
+            </div>
+          </div>
+        </section>
       </main>
     );
   }
 
-  const safeCraft = craft || { key: product.craftKey || 'thagzo', name: 'Traditional Craft', english: 'Bhutanese Heritage' };
+  const galleryImages = [
+    product.image_path,
+    '/assets/photos/product-sad03.jpg',
+    '/assets/photos/product-cam01.jpg',
+  ];
 
   return (
-    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
-      {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
-        <Link href="/" className="hover:underline">Home</Link> /{' '}
-        <Link href="/shop" className="hover:underline">E-shop</Link> /{' '}
-        <Link href={`/shop/${safeCraft.key}`} className="hover:underline">{safeCraft.name}</Link> /{' '}
-        <span>{product.code}</span>
-      </div>
+    <main id="main">
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-14 items-start mb-16 sm:mb-24">
-        {/* Left: Gallery */}
-        <div className="grid grid-cols-2 gap-3">
-          <div data-cms-img className="col-span-2 aspect-[4/3] rounded-[12px] bg-[#F5EFE6] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
-            <img
-              src={`/images/products/${product.code.toLowerCase()}.jpg`}
-              alt={`${product.name} — ${product.code}`}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-            <span className="absolute bottom-3 left-3 z-10 font-mono text-[11px] text-[#33261F] bg-[#FFFCF8]/90 backdrop-blur-sm px-2.5 py-1 rounded-[5px] border border-[#E4DDD1]">
-              {product.code} · Primary angle
-            </span>
+      {/* 1. Breadcrumbs & Product Detail */}
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / <Link href="/wholesale">Wholesale &amp; bulk orders</Link> / <Link href={`/shop?craft=${product.craftKey}`}>{craft ? craft.name : product.craftKey}</Link> / <span>{product.code}</span>
+        </p>
+
+        <div className="proddetail">
+
+          {/* Left Column: Gallery & Thumbnails */}
+          <div>
+            <div className="gallery" id="prodMain">
+              <figure className="frame frame--square">
+                <img
+                  src={galleryImages[activeThumb]}
+                  alt={product.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                />
+                <figcaption className="frame__caption gallery__cap" id="prodMainCap">
+                  photo {activeThumb + 1} — {product.name.toLowerCase()}, view {activeThumb + 1}
+                </figcaption>
+              </figure>
+            </div>
+
+            <div className="gallery__thumbs" id="prodThumbs">
+              {galleryImages.map((src, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`gallery__thumb ${activeThumb === i ? 'is-active' : ''}`}
+                  onClick={() => setActiveThumb(i)}
+                  style={{
+                    width: '74px',
+                    height: '74px',
+                    padding: 0,
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    border: activeThumb === i ? '2px solid var(--accent)' : '1px solid var(--line)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt={`Thumbnail ${i + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="gallery__hint">Three views. Look before you add to the basket.</p>
           </div>
-          <div data-cms-img className="aspect-square rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative">
-            <img
-              src={`/images/crafts/${safeCraft.key}.jpg`}
-              alt={`${safeCraft.name} tradition`}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-            <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-0.5 rounded">
-              {safeCraft.english} detail
-            </span>
-          </div>
-          <div data-cms-img className="aspect-square rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative">
-            <img
-              src="/images/training_workshop.jpg"
-              alt="Artisan studio in Bhutan"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-            <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-2 py-0.5 rounded">
-              Workshop context
-            </span>
+
+          {/* Right Column: Purchasing & Specifications */}
+          <div className="prodbuy">
+            <p className="eyebrow eyebrow--accent" id="prodCraft">
+              {craft ? `${craft.name} · ${craft.english}` : product.craft_name}
+            </p>
+
+            <h1 className="display display--prod" id="prodName">
+              {product.name}
+            </h1>
+
+            <p className="prodbuy__price" id="prodPrice">
+              {fmt(product.priceUSD)}
+            </p>
+            <p className="prodbuy__alt" id="prodAlt">
+              Approx. {alt(product.priceUSD)} · EMS tracked delivery included on qualifying orders
+            </p>
+
+            <p className="prodbuy__desc" id="prodDesc">
+              {product.description}
+            </p>
+
+            <div className="prodbuy__actions">
+              <label className="visually-hidden" htmlFor="prodQty">Quantity</label>
+              <input
+                className="input prodbuy__qty"
+                id="prodQty"
+                type="number"
+                min="1"
+                max="20"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              />
+              <button
+                className="btn btn--accent prodbuy__add"
+                type="button"
+                id="prodAdd"
+                onClick={handleAddToCart}
+              >
+                Add to basket
+              </button>
+              <button
+                className="btn btn--outline"
+                type="button"
+                id="prodBuy"
+                onClick={handleBuyNow}
+              >
+                Buy now
+              </button>
+            </div>
+
+            <p className="eyebrow eyebrow--muted eyebrow--sm" style={{ marginTop: '30px' }}>
+              Specifications
+            </p>
+            <dl className="deeplist" id="prodSpecs" style={{ marginTop: '12px' }}>
+              <div className="deeplist__row">
+                <dt className="deeplist__key">Reference</dt>
+                <dd className="deeplist__val">{product.code}</dd>
+              </div>
+              <div className="deeplist__row">
+                <dt className="deeplist__key">Dimensions</dt>
+                <dd className="deeplist__val">{product.size}</dd>
+              </div>
+              <div className="deeplist__row">
+                <dt className="deeplist__key">Weight</dt>
+                <dd className="deeplist__val">{product.weight}</dd>
+              </div>
+              <div className="deeplist__row">
+                <dt className="deeplist__key">Materials</dt>
+                <dd className="deeplist__val">{product.materials}</dd>
+              </div>
+              <div className="deeplist__row">
+                <dt className="deeplist__key">Care instructions</dt>
+                <dd className="deeplist__val">{product.care}</dd>
+              </div>
+              <div className="deeplist__row">
+                <dt className="deeplist__key">Dispatch &amp; Lead</dt>
+                <dd className="deeplist__val">{product.lead}</dd>
+              </div>
+            </dl>
+
+            {craft && (
+              <Link className="link-accent" id="prodCraftLink" href={`/craft/${craft.key}`} style={{ display: 'inline-block', marginTop: '18px' }}>
+                About this craft →
+              </Link>
+            )}
+
+            {/* Maker Accreditation Card */}
+            <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
+              <span className="makerpanel__avatar" style={{ overflow: 'hidden' }}>
+                <img
+                  src="/assets/photos/hero-1-weaving.jpg"
+                  alt={product.maker}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                />
+              </span>
+              <span className="makerpanel__body">
+                <span className="eyebrow eyebrow--muted eyebrow--sm">Made by</span>
+                <span className="makerpanel__name" id="prodMaker">{product.maker}</span>
+                <span className="makerpanel__meta" id="prodMakerMeta">{product.region} · Member since {product.maker_since}</span>
+                <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>
+              </span>
+              <span className="makerpanel__go" id="prodMakerLink">✓</span>
+            </div>
+
           </div>
         </div>
+      </section>
 
-        {/* Right: Buy Column */}
-        <div className="flex flex-col">
-          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#8B2E24] mb-2">
-            {safeCraft.name} · {safeCraft.english}
+      {/* 2. Assurance Strip */}
+      <section className="section section--tight">
+        <div className="assurance">
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">T</span>
+              <span>racked Origin</span>
+            </h3>
+            <p className="assurance__body">Materials, makers, and worldwide shipping are 100% traceable.</p>
           </div>
-          <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[38px] font-normal leading-[1.08] text-[#33261F] mb-3">
-            {product.name}
-          </h1>
-
-          <div className="mb-6">
-            <div className="font-figtree font-bold text-2xl sm:text-[26px] text-[#33261F]">
-              {fmt(product.price)}
-            </div>
-            <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C]">
-              {alt(product.price)} · duties and local taxes payable on arrival
-            </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">R</span>
+              <span>egistered Chain</span>
+            </h3>
+            <p className="assurance__body">Every artisan, supplier, and input is strictly verified.</p>
           </div>
-
-          <p className="font-lora text-sm sm:text-base lg:text-[16.5px] leading-[1.6] text-[#4A3C33] mb-6 sm:mb-8">
-            {product.desc}
-          </p>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
-            <button
-              type="button"
-              onClick={() => addToCart(product.code)}
-              className="flex-1 font-figtree font-semibold text-center text-[15px] bg-[#8B2E24] text-white p-3.5 sm:p-4 rounded-[9px] hover:bg-[#6E241C] transition-colors cursor-pointer"
-            >
-              Add to basket
-            </button>
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              className="font-figtree font-semibold text-center text-[15px] border border-[#33261F] text-[#33261F] px-6 py-3.5 sm:py-4 rounded-[9px] hover:bg-[#33261F] hover:text-white transition-colors cursor-pointer"
-            >
-              Buy now
-            </button>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">U</span>
+              <span>pfront &amp; Fair</span>
+            </h3>
+            <p className="assurance__body">Pre-paid artisan pricing cuts out unethical markups.</p>
           </div>
-
-          {/* Spec Table */}
-          <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] divide-y divide-[#EFE9DE] mb-8">
-            <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
-              <span className="text-[#6B5A4C] font-lora">Reference</span>
-              <span className="font-mono text-xs sm:text-[13px] text-[#33261F]">{product.code}</span>
-            </div>
-            <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
-              <span className="text-[#6B5A4C] font-lora">Craft</span>
-              <Link href={`/craft/${safeCraft.key}`} className="font-figtree text-[#8B2E24] hover:underline font-semibold">
-                {safeCraft.name} · {safeCraft.english} →
-              </Link>
-            </div>
-            <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
-              <span className="text-[#6B5A4C] font-lora">Origin</span>
-              <span className="font-figtree text-[#33261F]">{product.region}, Bhutan</span>
-            </div>
-            <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
-              <span className="text-[#6B5A4C] font-lora">Made by</span>
-              <span className="font-figtree text-[#33261F]">{product.maker}</span>
-            </div>
-            <div className="flex justify-between p-3 sm:p-[13px_16px] text-xs sm:text-[14px]">
-              <span className="text-[#6B5A4C] font-lora">Dispatch &amp; Delivery</span>
-              <span className="font-figtree text-[#33261F] text-right">
-                {siteSettings?.shippingTransitDays || 'Ships in 2 working days'}
-              </span>
-            </div>
+          <div className="assurance__cell">
+            <h3 className="assurance__title">
+              <span className="assurance__initial">E</span>
+              <span>ncrypted Escrow</span>
+            </h3>
+            <p className="assurance__body">Bulletproof 3-D Secure, mBoB, and bank transfers.</p>
           </div>
+        </div>
+      </section>
 
-          {/* Maker Card */}
-          <Link
-            href={`/members/${encodeURIComponent(product.maker)}`}
-            className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-4 sm:p-[18px] flex items-center gap-4 hover:border-[#33261F] transition-colors group"
-          >
-            <div data-cms-avatar className="w-12 h-12 sm:w-[54px] sm:h-[54px] rounded-full bg-[#E8E1D4] border border-[#E4DDD1] flex-none overflow-hidden relative">
-              <img
-                src={`/images/crafts/${safeCraft.key}.jpg`}
-                alt={product.maker}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#6B5A4C]">
-                Made by
-              </div>
-              <div className="font-figtree font-semibold text-sm sm:text-[16px] text-[#33261F] group-hover:text-[#8B2E24] transition-colors truncate">
-                {product.maker}
-              </div>
-              <div className="font-lora text-xs sm:text-[13.5px] text-[#6B5A4C] truncate">
-                {product.region} · HAB verified member
-              </div>
-            </div>
-            <span className="text-[#8B2E24] text-[18px] group-hover:translate-x-1 transition-transform flex-none">
-              →
-            </span>
+      {/* 3. Related Products */}
+      <section className="section section--last" id="prodRelatedSection">
+        <div className="section__head">
+          <h2 className="display display--sub" id="prodRelatedTitle">More from this craft</h2>
+          <Link className="btn btn--ink btn--sm" id="prodRelatedAll" href={`/shop?craft=${product.craftKey}`}>
+            Shop the category →
           </Link>
         </div>
-      </div>
 
-      {/* Related Products */}
-      <section className="border-t border-[#E4DDD1] pt-10 sm:pt-14">
-        <h2 className="font-marcellus text-2xl sm:text-[30px] font-normal text-[#33261F] mb-6 sm:mb-8">
-          More from {safeCraft.name}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[22px]">
-          {relatedProducts.map((p) => (
-            <ProductCard
-              key={p.code}
-              code={p.code}
-              name={p.name}
-              priceUSD={p.price}
-              craftKey={p.craftKey}
-              region={p.region}
-              maker={p.maker}
-            />
+        <div className="grid grid--4" id="prodRelated">
+          {(related.length > 0 ? related : [
+            { code: 'SAD03', name: 'Yathra Wool Saddle Bag', craft_name: 'Thagzo · Weaving', maker: 'Chumey Yathra House', priceUSD: 120, image_path: '/assets/photos/product-sad03.jpg' },
+            { code: 'TRO04', name: 'Hand-Chased Silver Koma Clasp Pair', craft_name: 'Troezo · Silver & Gold', maker: 'Zorig Silversmiths', priceUSD: 92, image_path: '/assets/photos/product-cam01.jpg' },
+            { code: 'FTB04', name: 'Two-Tier Bangchung Basket', craft_name: 'Tshazo · Cane & Bamboo', maker: 'Kheng Bamboo Collective', priceUSD: 34, image_path: '/assets/photos/product-lud01.jpg' },
+            { code: 'LHA01', name: 'Guru Rinpoche Mineral-Pigment Thangka', craft_name: 'Lhazo · Painting', maker: 'Sonam Thangka Studio', priceUSD: 260, image_path: '/assets/photos/product-hhb01.jpg' },
+          ]).slice(0, 4).map((rp: any) => (
+            <article key={rp.code} className="card product">
+              <Link className="product__shot" href={`/product/${rp.code}`}>
+                <figure className="frame frame--square">
+                  <img
+                    src={rp.image_path || rp.imageUrl || '/assets/photos/product-hhb01.jpg'}
+                    alt={rp.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                  />
+                  <figcaption className="frame__caption frame__caption--sm">{rp.code}</figcaption>
+                </figure>
+                <span className="product__ref">{rp.code}</span>
+              </Link>
+              <div className="card__body">
+                <p className="eyebrow eyebrow--accent eyebrow--sm">{rp.craft_name || rp.craftKey}</p>
+                <h3 className="card__title clamp-2">
+                  <Link href={`/product/${rp.code}`}>{rp.name}</Link>
+                </h3>
+                <p className="card__meta clamp-1">{typeof rp.maker === 'object' ? rp.maker?.name : rp.maker}</p>
+                <div className="card__foot">
+                  <span className="price">{fmt(rp.priceUSD || rp.price || 0)}</span>
+                  <button
+                    className="btn btn--outline btn--xs"
+                    type="button"
+                    onClick={() => addToCart(rp.code)}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       </section>
+
     </main>
   );
 }

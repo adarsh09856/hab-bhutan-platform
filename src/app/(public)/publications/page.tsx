@@ -1,68 +1,65 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-
-interface PublicationItem {
-  kind: string;
-  title: string;
-  year: number;
-  meta: string;
-  isFeatured: boolean;
-}
+import { CLIENT_DATA } from '@/lib/client-data';
 
 export default function PublicationsPage() {
-  const [publications, setPublications] = useState<PublicationItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [publications, setPublications] = useState<any[]>(() => CLIENT_DATA.publications || []);
   const [selectedKind, setSelectedKind] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/publications')
       .then((r) => r.json())
       .then((d) => {
-        if (d?.publications && Array.isArray(d.publications)) {
+        if (d?.publications && Array.isArray(d.publications) && d.publications.length > 0) {
           setPublications(
             d.publications.map((p: any) => ({
-              kind: p.kind || 'Report',
+              key: p.key || p.id,
+              kind: p.kind || 'Annual report',
               title: p.title,
-              year: p.year || new Date().getFullYear(),
-              meta: p.metaDetails || 'PDF Document',
-              isFeatured: Boolean(p.isFeatured),
+              year: p.year || 2026,
+              meta: p.metaDetails || p.meta || 'PDF · English & Dzongkha',
+              abstract: p.abstract || p.summary || p.description || '',
+              file_url: p.fileUrl || p.file_url || '#',
+              is_featured: Boolean(p.isFeatured || p.is_featured),
             }))
           );
         }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
 
   const kinds = useMemo(() => {
-    return Array.from(new Set(publications.map((p) => p.kind))).sort();
+    return Array.from(new Set(publications.map((p) => p.kind))).filter(Boolean).sort();
   }, [publications]);
 
   const years = useMemo(() => {
-    return Array.from(new Set(publications.map((p) => String(p.year)))).sort().reverse();
+    return Array.from(new Set(publications.map((p) => String(p.year)))).filter(Boolean).sort().reverse();
   }, [publications]);
 
-  const filteredPublications = useMemo(() => {
+  const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return publications.filter((p) => {
       const matchKind = !selectedKind || p.kind === selectedKind;
       const matchYear = !selectedYear || String(p.year) === selectedYear;
-      const matchQ = !q || p.title.toLowerCase().includes(q) || p.kind.toLowerCase().includes(q);
+      const matchQ = !q || p.title.toLowerCase().includes(q) || (p.abstract && p.abstract.toLowerCase().includes(q));
       return matchKind && matchYear && matchQ;
     });
   }, [publications, selectedKind, selectedYear, searchQuery]);
 
-  const leadReport = publications.find((p) => p.isFeatured) || publications[0] || {
-    kind: "Annual report",
-    title: "Annual Report 2025",
+  const leadReport = publications.find((p) => p.is_featured) || publications[0] || {
+    kind: 'Annual report',
+    title: 'Annual Report 2025',
     year: 2026,
-    meta: "PDF · 4.2 MB · English & Dzongkha",
-    isFeatured: true,
+    meta: 'PDF · 4.2 MB · English & Dzongkha',
+    abstract: 'Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.',
+    file_url: '#',
   };
+
+  const secondaryReports = publications.filter((p) => p !== leadReport).slice(0, 3);
 
   const resetFilters = () => {
     setSelectedKind('');
@@ -71,146 +68,167 @@ export default function PublicationsPage() {
   };
 
   return (
-    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
-      {/* Breadcrumb */}
-      <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
-        <Link href="/" className="hover:underline">Home</Link> /{' '}
-        <span>Publications &amp; downloads</span>
-      </div>
-
-      {/* Header */}
-      <div className="mb-8 sm:mb-10">
-        <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[44px] font-normal leading-[1.06] text-[#33261F] mb-3">
-          Publications &amp; downloads
-        </h1>
-        <p className="font-lora text-sm sm:text-base lg:text-[17px] text-[#6B5A4C] max-w-[68ch]">
-          The institutional memory, research, financial accounts, and craft development manuals published by the Handicrafts Association of Bhutan.
+    <main id="main">
+      <section className="section">
+        <p className="crumbs">
+          <Link href="/">Home</Link> / Publications
         </p>
-      </div>
-
-      {/* Lead Featured Report */}
-      <div className="bg-[#33261F] text-[#F1ECE2] rounded-[14px] p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-[1.3fr_0.7fr] gap-8 lg:gap-10 items-center mb-8 sm:mb-12">
-        <div>
-          <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-[#C9A46A] mb-3">
-            Featured release · {leadReport.year}
-          </div>
-          <h2 className="font-marcellus text-2xl sm:text-3xl lg:text-[32px] font-normal text-white mb-3">
-            {leadReport.title}
-          </h2>
-          <p className="font-lora text-sm sm:text-[15.5px] leading-[1.6] text-[#D2C2AE] mb-6">
-            Sector statistics, financial health, strategic milestones, and capacity interventions delivered across Bhutan during the 2025 operating year.
+        <div style={{ maxWidth: '74ch', marginBottom: 38 }}>
+          <h1 className="display display--page">Publications</h1>
+          <p className="lede" style={{ marginBottom: 0 }}>
+            Annual reports, audited accounts, sector research, guidelines and training material — published by HAB and free to download. {publications.length} publications listed.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
-            <button
-              type="button"
-              className="w-full sm:w-auto font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#8B2E24] text-white px-6 py-3 rounded-[7px] hover:bg-[#6E241C] transition-colors cursor-pointer text-center"
-            >
-              Download PDF ({leadReport.meta})
-            </button>
-            <span className="font-mono text-xs sm:text-[11.5px] text-[#A8947F]">
-              English &amp; Dzongkha
-            </span>
+        </div>
+
+        {/* Lead Featured Box */}
+        <div className="publead">
+          <div className="publead__main">
+            <div className="publead__copy">
+              <div className="publead__tags">
+                <span className="badge badge--ink" style={{ margin: 0 }}>
+                  Latest
+                </span>
+                <span className="eyebrow eyebrow--brass eyebrow--sm" id="pubLeadKind">
+                  {leadReport.kind}
+                </span>
+              </div>
+              <h2 className="display display--lead" id="pubLeadTitle">
+                {leadReport.title}
+              </h2>
+              <p className="band__body">
+                {leadReport.abstract || 'Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.'}
+              </p>
+              <div className="publead__foot">
+                <a className="btn btn--accent" href={leadReport.file_url || '#pubList'} download>
+                  Download ↓
+                </a>
+                <span className="publead__meta" id="pubLeadMeta">
+                  {leadReport.meta}
+                </span>
+              </div>
+            </div>
+            <figure className="frame frame--dark publead__cover" data-cms-img>
+              <figcaption className="frame__caption frame__caption--dark">
+                cover — {leadReport.title.toLowerCase()}
+              </figcaption>
+            </figure>
+          </div>
+
+          <div className="publead__side">
+            <p className="eyebrow eyebrow--muted eyebrow--sm">Also essential</p>
+            <div id="pubSecondary">
+              {secondaryReports.map((p) => (
+                <div key={p.key || p.title} style={{ marginBottom: 16 }}>
+                  <span className="tag" style={{ fontSize: 10, padding: '2px 6px' }}>{p.kind}</span>
+                  <h4 style={{ fontFamily: 'var(--display)', fontSize: 16, margin: '4px 0 2px' }}>
+                    <a href={p.file_url || '#'} download className="hover:underline">{p.title}</a>
+                  </h4>
+                  <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)', margin: 0 }}>{p.year} · {p.meta}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div data-cms-img className="aspect-[16/9] sm:aspect-[4/3] rounded-[10px] bg-[#42332A] border border-[#4E3D2E] overflow-hidden relative shadow-md">
-          <img
-            src="/images/crafts/dezo.jpg"
-            alt={leadReport.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
-          <span className="absolute bottom-3 left-3 z-10 font-mono text-[10px] sm:text-[10.5px] text-[#F4F0E7] bg-[#33261F]/90 backdrop-blur-sm px-2.5 py-1 rounded border border-white/15 truncate max-w-[90%]">
-            {leadReport.title} · Official Report
-          </span>
-        </div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-4 mb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_auto] gap-3 items-center">
+        {/* Filter Bar */}
+        <div className="filterbar">
+          <label className="visually-hidden" htmlFor="pubSearch">
+            Search publications
+          </label>
           <input
-            type="text"
+            className="input"
+            id="pubSearch"
+            type="search"
+            placeholder="Search publications by title"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search report titles or keywords"
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-xs sm:text-[14px] font-figtree outline-none"
           />
-
+          <label className="visually-hidden" htmlFor="pubKind">
+            Type
+          </label>
           <select
+            className="input"
+            id="pubKind"
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-xs sm:text-[14px] font-figtree outline-none"
           >
-            <option value="">All document types</option>
+            <option value="">All types</option>
             {kinds.map((k) => (
-              <option key={k} value={k}>{k}</option>
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </select>
-
+          <label className="visually-hidden" htmlFor="pubYear">
+            Year
+          </label>
           <select
+            className="input"
+            id="pubYear"
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-[#F4F0E7] border border-[#CDBEA8] rounded-[8px] p-2.5 text-xs sm:text-[14px] font-figtree outline-none"
           >
             <option value="">All years</option>
             {years.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
-
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="font-figtree font-semibold text-xs sm:text-[13.5px] text-[#8B2E24] hover:underline px-3 py-2 cursor-pointer text-left sm:text-center"
-          >
+          <button className="btn btn--text" type="button" id="pubReset" onClick={resetFilters}>
             Reset
           </button>
         </div>
 
-        <div className="font-mono text-[10.5px] sm:text-[11px] text-[#6B5A4C] mt-3 pt-3 border-t border-[#EFE9DE]">
-          {filteredPublications.length} publications of {publications.length} · newest first
-        </div>
-      </div>
+        <p className="craft__count" id="pubCount" style={{ margin: '0 0 20px' }}>
+          {filtered.length} {filtered.length === 1 ? 'publication' : 'publications'} listed
+        </p>
 
-      {/* Publications Grid */}
-      {filteredPublications.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {filteredPublications.map((pub) => (
-            <div
-              key={pub.title}
-              className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-5 flex flex-col justify-between hover:border-[#33261F] transition-colors"
-            >
-              <div>
-                <div className="flex justify-between items-baseline mb-2">
-                  <span className="font-mono text-[10.5px] text-[#8B2E24] uppercase">
-                    {pub.kind}
-                  </span>
-                  <span className="font-mono text-[11px] text-[#6B5A4C]">
-                    {pub.year}
-                  </span>
+        {/* Publications List */}
+        {filtered.length > 0 ? (
+          <div className="publist" id="pubList">
+            {filtered.map((p) => (
+              <article key={p.key || p.title} className="pubcard">
+                <div className="pubcard__copy">
+                  <span className="tag">{p.kind}</span>
+                  <h3 className="pubcard__title">{p.title}</h3>
+                  <p className="pubcard__abstract">{p.abstract}</p>
                 </div>
-                <h3 className="font-figtree font-semibold text-[16px] text-[#33261F] leading-[1.3] mb-4">
-                  {pub.title}
-                </h3>
-              </div>
+                <div className="pubcard__side">
+                  <span className="pubcard__year">{p.year}</span>
+                  <span className="pubcard__meta">{p.meta}</span>
+                  <a className="btn btn--accent btn--sm" href={p.file_url || '#'} download>
+                    Download ↓
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="shopempty" id="pubEmpty">
+            <h2 className="shopempty__title">No publications match these filters</h2>
+            <p className="shopempty__body">Try a different type or year, or clear the filters.</p>
+          </div>
+        )}
 
-              <div className="pt-3 border-t border-[#EFE9DE] flex justify-between items-center text-[12.5px]">
-                <span className="font-mono text-[11px] text-[#6B5A4C]">
-                  {pub.meta}
-                </span>
-                <span className="font-figtree font-semibold text-[#8B2E24] cursor-pointer hover:underline">
-                  Download ↓
-                </span>
-              </div>
-            </div>
-          ))}
+        {/* CTA Band */}
+        <div className="ctaband" style={{ marginTop: 34 }}>
+          <div>
+            <h2 className="display display--panel">Looking for something not listed here?</h2>
+            <p className="ctaband__body">
+              Board minutes, procurement notices and project evaluations are available from the secretariat on request. Members can also download training material from the members-only area.
+            </p>
+          </div>
+          <div className="actions">
+            <Link className="btn btn--light" href="/contact">
+              Contact the secretariat
+            </Link>
+            <Link className="btn btn--ghost" href="/membership#login">
+              Member login
+            </Link>
+          </div>
         </div>
-      ) : (
-        <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] p-12 text-center text-[#6B5A4C] font-lora">
-          No publications match your selected filters. Try clearing filters to view the full library.
-        </div>
-      )}
+      </section>
     </main>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 
 export default function EventsPage() {
@@ -13,15 +14,16 @@ export default function EventsPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
-          // Normalize database EventRecord fields to display format if needed
           const normalized = d.events.map((e: any) => ({
             ...e,
             day: e.day || (e.dateDisplay ? e.dateDisplay.split(' ')[0] : '12'),
             mon: e.mon || (e.dateDisplay ? e.dateDisplay.split(' ')[1] : 'SEP'),
+            year: e.year || 2026,
             kind: e.kind || e.category || 'Exhibition',
             place: e.place || e.location || 'Thimphu',
-            time: e.time || (e.schedule?.time) || e.dateDisplay || '',
+            time: e.time || e.schedule?.time || e.dateDisplay || '',
             summary: e.summary || (e.description?.slice(0, 160) + '...'),
+            who: e.who || 'Members & public',
           }));
           setEventsList(normalized);
         }
@@ -43,12 +45,21 @@ export default function EventsPage() {
     return eventsList.filter((e) => (e.kind || e.category) === selectedKind);
   }, [selectedKind, eventsList]);
 
+  const photoPool = [
+    '/assets/photos/hero-4-textiles.jpg',
+    '/assets/photos/hero-1-weaving.jpg',
+    '/assets/photos/hero-2-punakha.jpg',
+    '/assets/photos/hero-5-desho.jpg',
+    '/assets/photos/hero-3-clay.jpg',
+  ];
+
   return (
     <main id="main">
       <section className="section">
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / Events
         </p>
+
         <div className="pagehero">
           <div>
             <p className="eyebrow eyebrow--accent">What&apos;s coming up</p>
@@ -71,11 +82,14 @@ export default function EventsPage() {
 
         {/* Filter Bar */}
         <div className="filterbar filterbar--slim">
+          <label className="visually-hidden" htmlFor="eventFilter">
+            Event type
+          </label>
           <select
             className="input"
+            id="eventFilter"
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            aria-label="Event type"
           >
             <option value="">All event types</option>
             {kinds.map((k) => (
@@ -84,48 +98,57 @@ export default function EventsPage() {
               </option>
             ))}
           </select>
-          <span className="craft__count" style={{ margin: 0, alignSelf: 'center' }}>
+          <span className="craft__count" id="eventCount" style={{ margin: 0, alignSelf: 'center' }}>
             {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
           </span>
         </div>
 
         {/* Events List */}
-        <div className="eventlist" style={{ marginTop: 24 }}>
-          {filteredEvents.map((e) => (
-            <article key={e.key} className="eventcard" style={{ display: 'flex', gap: 24, padding: '24px 0', borderBottom: '1px solid var(--border)' }}>
-              <div
-                className="eventdate"
-                style={{
-                  minWidth: 72,
-                  textAlign: 'center',
-                  background: 'var(--surface)',
-                  padding: '12px 8px',
-                  border: '1px solid var(--border)',
-                  alignSelf: 'start',
-                }}
-              >
-                <span className="eventdate__day" style={{ display: 'block', fontSize: 24, fontWeight: 700, fontFamily: 'var(--font-heading)' }}>
-                  {e.day}
-                </span>
-                <span className="eventdate__mon" style={{ display: 'block', fontSize: 12, textTransform: 'uppercase', color: 'var(--muted)', letterSpacing: '0.05em' }}>
-                  {e.mon}
-                </span>
-              </div>
-              <div className="eventcard__body" style={{ flex: 1 }}>
-                <span className="tag" style={{ marginBottom: 8, display: 'inline-block' }}>{e.kind}</span>
-                <h2 className="eventcard__title" style={{ fontSize: 20, marginBottom: 6 }}>
-                  <Link href={`/events/${e.key}`}>{e.title}</Link>
-                </h2>
-                <p className="card__meta" style={{ marginBottom: 10 }}>
-                  {e.place} · {e.time}
-                </p>
-                <p className="card__text" style={{ marginBottom: 12 }}>{e.summary}</p>
-                <Link className="link-accent" href={`/events/${e.key}`}>
-                  View event detail →
+        <div className="eventlist" id="eventList" data-cms-repeat>
+          {filteredEvents.map((e, idx) => {
+            const imgSrc = photoPool[idx % photoPool.length];
+
+            return (
+              <article key={e.key} id={e.key} className="eventcard" data-cms-item>
+                <Link className="eventcard__shot" href={`/events/${e.key}`}>
+                  <figure className="frame frame--eventshot has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+                    <Image
+                      src={imgSrc}
+                      alt={e.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 30vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    <figcaption className="frame__caption frame__caption--sm">
+                      photo — {e.title.toLowerCase()}
+                    </figcaption>
+                  </figure>
+                  <span className="eventcard__cal">
+                    <span className="eventcard__day">{e.day || '12'}</span>
+                    <span className="eventcard__mon">{e.mon || 'OCT'}</span>
+                    <span className="eventcard__year">{e.year || '2026'}</span>
+                  </span>
                 </Link>
-              </div>
-            </article>
-          ))}
+
+                <div className="eventcard__body">
+                  <div className="news__meta">
+                    <span className="tag">{e.kind}</span>
+                    <span className="news__date">{e.time || 'All day'}</span>
+                  </div>
+                  <h2 className="eventcard__title">
+                    <Link href={`/events/${e.key}`}>{e.title}</Link>
+                  </h2>
+                  <p className="eventcard__place">
+                    {e.place} · {e.who || 'Open to all'}
+                  </p>
+                  <p className="card__text">{e.summary}</p>
+                  <Link className="news__more" href={`/events/${e.key}`}>
+                    Event detail →
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -139,7 +162,7 @@ export default function EventsPage() {
             </p>
           </div>
           <div className="actions">
-            <Link className="btn btn--light" href="/contact?topic=events">
+            <Link className="btn btn--light" href="/contact">
               Talk to us
             </Link>
             <Link className="btn btn--ghost" href="/news">
