@@ -1,12 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 
-export default function RegisterPage() {
+function RegisterContent() {
+  const searchParams = useSearchParams();
+  const initialType = searchParams.get('type') || 'individual-artisan';
+
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [selectedType, setSelectedType] = useState<string>('individual-artisan');
+  const [selectedType, setSelectedType] = useState<string>(initialType);
+
+  useEffect(() => {
+    const t = searchParams.get('type');
+    if (t) setSelectedType(t);
+  }, [searchParams]);
+
   const [formData, setFormData] = useState({
     fullName: '',
     primaryCraft: 'thagzo',
@@ -517,3 +527,12 @@ export default function RegisterPage() {
     </main>
   );
 }
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="section"><p>Loading registration form…</p></div>}>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+

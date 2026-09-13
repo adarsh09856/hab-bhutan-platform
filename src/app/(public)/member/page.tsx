@@ -3,29 +3,28 @@
 import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function CraftRedirectContent() {
+function RedirectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const val = searchParams.get('craft') || 'thagzo';
-    router.replace(`/craft/${encodeURIComponent(val)}`);
+    const val = searchParams.get('member') || searchParams.get('slug') || 'ap-sonam-dorji';
+    router.replace(`/members/${encodeURIComponent(val)}`);
   }, [router, searchParams]);
 
   return (
     <main id="main">
       <section className="section section--narrow">
-        <p>Loading craft…</p>
+        <p>Loading…</p>
       </section>
     </main>
   );
 }
 
-export default function CraftIndexPage() {
+export default function QueryRedirectPage() {
   return (
     <Suspense fallback={<div className="section"><p>Loading…</p></div>}>
-      <CraftRedirectContent />
+      <RedirectContent />
     </Suspense>
   );
 }
-

@@ -3,6 +3,8 @@ import '@/styles/client-hab.css';
 import UtilityBar from '@/components/public/UtilityBar';
 import Header from '@/components/public/Header';
 import Footer from '@/components/public/Footer';
+import AdminDrawer from '@/components/public/AdminDrawer';
+import AskHabAssistant from '@/components/public/AskHabAssistant';
 
 export default function PublicLayout({
   children,
@@ -15,6 +17,9 @@ export default function PublicLayout({
       <Header />
       <div className="flex-1">{children}</div>
       <Footer />
+      <AdminDrawer />
+      <AskHabAssistant />
     </div>
   );
 }
+

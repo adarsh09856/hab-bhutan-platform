@@ -144,21 +144,27 @@ export function GlassStatWidget({
    3. GlassBadge: Frosted Status Badge with Pulsing Dot
    ========================================================================= */
 interface GlassBadgeProps {
-  status: string;
-  variant?: 'emerald' | 'amber' | 'rose' | 'blue' | 'indigo' | 'slate';
+  status?: string;
+  children?: ReactNode;
+  variant?: 'emerald' | 'amber' | 'rose' | 'blue' | 'indigo' | 'slate' | 'secondary';
   pulse?: boolean;
 }
 
 export function GlassBadge({
   status,
+  children,
   variant,
   pulse = true,
 }: GlassBadgeProps) {
-  const norm = (status || '').toUpperCase();
+  const label = children !== undefined ? children : (status || '').replace(/_/g, ' ');
+  const norm = typeof status === 'string' ? status.toUpperCase() : typeof children === 'string' ? children.toUpperCase() : '';
 
-  // Automatic variant inference if not specified
-  let v = variant;
-  if (!v) {
+  let v: 'emerald' | 'amber' | 'rose' | 'blue' | 'indigo' | 'slate' = 'slate';
+  if (variant && variant !== 'secondary') {
+    v = variant;
+  } else if (variant === 'secondary') {
+    v = 'slate';
+  } else if (norm) {
     if (['ACTIVE', 'PAID', 'DELIVERED', 'VERIFIED', 'APPROVED', 'PUBLISHED', 'FRESH'].includes(norm)) {
       v = 'emerald';
     } else if (['PENDING', 'PROCESSING', 'UNDER_REVIEW', 'PENDING_PAYMENT'].includes(norm)) {
@@ -197,10 +203,11 @@ export function GlassBadge({
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide border backdrop-blur-md shadow-xs ${styles[v]}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dots[v]} ${pulse ? 'animate-pulse' : ''}`} />
-      <span>{status.replace(/_/g, ' ')}</span>
+      <span>{label}</span>
     </span>
   );
 }
+
 
 /* =========================================================================
    4. GlassButton: Tactile Action Button with subtle shimmer

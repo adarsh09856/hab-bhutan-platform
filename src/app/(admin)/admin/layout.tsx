@@ -152,6 +152,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: 'Orders & Fulfillment', href: '/admin/orders', icon: Package },
         { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
+        { label: 'Wholesale & B2B Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
         { label: '13 Crafts CMS', href: '/admin/crafts', icon: Palette },
         { label: 'Clusters & Outlets', href: '/admin/clusters-outlets', icon: Store },
       ],
@@ -170,15 +171,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       group: 'Site CMS & Content',
       items: [
         { label: 'Website CMS & Bands', href: '/admin/site-settings', icon: Globe },
+        { label: 'Media & Image Assets', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
         { label: 'Navigation & Menus', href: '/admin/navigation', icon: Navigation },
         { label: 'Statutory Programmes', href: '/admin/programmes', icon: BookOpen },
         { label: 'Inquiries Inbox', href: '/admin/inquiries', icon: Mail },
         { label: 'Projects & Impact', href: '/admin/projects', icon: FolderKanban },
-        { label: 'Hero Slides', href: '/admin/hero', icon: ImageIcon },
+        { label: 'Hero Slides', href: '/admin/hero', icon: Sparkles },
         { label: 'Events & Expos', href: '/admin/events', icon: Calendar },
         { label: 'Donations & Support', href: '/admin/donate-settings', icon: Heart },
         { label: 'Master Honours', href: '/admin/honours', icon: Award },
         { label: 'News & Publications', href: '/admin/content', icon: FileText },
+        { label: 'Policies & Legal CMS', href: '/admin/policies', icon: ShieldCheck },
       ],
     },
     {

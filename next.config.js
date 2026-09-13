@@ -6,6 +6,12 @@ const nextConfig = {
     domains: [],
     unoptimized: true,
   },
+  async rewrites() {
+    return [
+      { source: '/index.html', destination: '/' },
+      { source: '/:path*.html', destination: '/:path*' },
+    ];
+  },
 };
 
 module.exports = nextConfig;
