@@ -152,6 +152,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: 'Orders & Fulfillment', href: '/admin/orders', icon: Package },
         { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
+        { label: 'Point of Sale (POS)', href: '/admin/pos', icon: Store, badge: 'Retail' },
         { label: 'Wholesale & B2B Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
         { label: '13 Crafts CMS', href: '/admin/crafts', icon: Palette },
         { label: 'Clusters & Outlets', href: '/admin/clusters-outlets', icon: Store },

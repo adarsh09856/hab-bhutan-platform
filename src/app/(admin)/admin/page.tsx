@@ -79,6 +79,37 @@ interface DashboardData {
     target: string;
     createdAt: string;
   }[];
+  recentInquiries?: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    subject: string;
+    message: string;
+    status: string;
+    createdAt: string;
+  }[];
+  recentApplications?: {
+    id: string;
+    applicantName: string;
+    email: string;
+    phone: string;
+    craftKey: string;
+    dzongkhag: string;
+    planTier: string;
+    status: string;
+    submittedAt: string;
+  }[];
+  recentDonations?: {
+    id: string;
+    donorName: string;
+    donorEmail: string;
+    amountUSD: number;
+    pillarTitle: string;
+    receiptNumber: string;
+    status: string;
+    createdAt: string;
+  }[];
 }
 
 export default function AdminDashboardPage() {
@@ -86,6 +117,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [activityTab, setActivityTab] = useState<'orders' | 'inquiries' | 'applications' | 'donations'>('orders');
 
   const loadDashboard = async () => {
     const controller = new AbortController();
@@ -216,91 +248,282 @@ export default function AdminDashboardPage() {
 
       {/* Main Grid: Orders & Fast Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Live Orders Stream */}
+        {/* Left 2 Cols: Live Public Store & User Activity Stream */}
         <div className="lg:col-span-2 space-y-4">
           <GlassCard className="p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 gap-3">
               <div>
                 <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                   <PackageCheck className="w-4 h-4 text-amber-400" />
-                  Recent E-Commerce Orders
+                  Public Store &amp; User Activity
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Incoming purchases from conscious collectors worldwide
+                  Real-time checkouts, visitor inquiries, applications &amp; contributions
                 </p>
               </div>
 
-              <Link
-                href="/admin/orders"
-                className="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
-              >
-                <span>Fulfillment Hub</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              {/* Activity Stream Tabs */}
+              <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-xl border border-white/10 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActivityTab('orders')}
+                  className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                    activityTab === 'orders' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Orders ({data?.recentOrders?.length ?? 0})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivityTab('inquiries')}
+                  className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                    activityTab === 'inquiries' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Inquiries ({data?.recentInquiries?.length ?? 0})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivityTab('applications')}
+                  className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                    activityTab === 'applications' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Artisans ({data?.recentApplications?.length ?? 0})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivityTab('donations')}
+                  className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                    activityTab === 'donations' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Donations ({data?.recentDonations?.length ?? 0})
+                </button>
+              </div>
             </div>
 
-            {/* Orders Table */}
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
-                    <th className="pb-3 pr-4">Order #</th>
-                    <th className="pb-3 px-4">Customer</th>
-                    <th className="pb-3 px-4">Total</th>
-                    <th className="pb-3 px-4">Payment</th>
-                    <th className="pb-3 px-4">Status</th>
-                    <th className="pb-3 pl-4 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-slate-200">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-500 font-mono">
-                        Loading orders from PostgreSQL...
-                      </td>
+            {/* Orders Stream Tab */}
+            {activityTab === 'orders' && (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                      <th className="pb-3 pr-4">Order #</th>
+                      <th className="pb-3 px-4">Customer</th>
+                      <th className="pb-3 px-4">Total</th>
+                      <th className="pb-3 px-4">Payment</th>
+                      <th className="pb-3 px-4">Status</th>
+                      <th className="pb-3 pl-4 text-right">Action</th>
                     </tr>
-                  ) : !data?.recentOrders || data.recentOrders.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400">
-                        {loadError ? 'Recent orders are unavailable.' : 'No recent orders found.'}
-                      </td>
-                    </tr>
-                  ) : (
-                    data.recentOrders.slice(0, 6).map((ord) => (
-                      <tr key={ord.id} className="hover:bg-white/5 transition-colors">
-                        <td className="py-3 pr-4 font-mono font-semibold text-white">
-                          <Link href={`/admin/orders`} className="hover:text-amber-400">
-                            {ord.id.length > 12 ? ord.id.slice(0, 12) : ord.id}
-                          </Link>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-white truncate max-w-[140px]">{ord.customer}</div>
-                          <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{ord.items}</div>
-                        </td>
-                        <td className="py-3 px-4 font-mono font-bold text-amber-300">
-                          {ord.total}
-                        </td>
-                        <td className="py-3 px-4">
-                          <GlassBadge status={ord.paymentStatus || 'PAID'} />
-                        </td>
-                        <td className="py-3 px-4">
-                          <GlassBadge status={ord.orderStatus || 'PROCESSING'} />
-                        </td>
-                        <td className="py-3 pl-4 text-right">
-                          <Link
-                            href={`/admin/orders`}
-                            className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                          >
-                            <span>Fulfill</span>
-                            <ArrowUpRight className="w-3 h-3 ml-1" />
-                          </Link>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-slate-200">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-500 font-mono">
+                          Loading orders from PostgreSQL...
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : !data?.recentOrders || data.recentOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          {loadError ? 'Recent orders are unavailable.' : 'No recent orders found.'}
+                        </td>
+                      </tr>
+                    ) : (
+                      data.recentOrders.slice(0, 6).map((ord) => (
+                        <tr key={ord.id} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3 pr-4 font-mono font-semibold text-white">
+                            <Link href={`/admin/orders`} className="hover:text-amber-400">
+                              {ord.id.length > 12 ? ord.id.slice(0, 12) : ord.id}
+                            </Link>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium text-white truncate max-w-[140px]">{ord.customer}</div>
+                            <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{ord.items}</div>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold text-amber-300">
+                            {ord.total}
+                          </td>
+                          <td className="py-3 px-4">
+                            <GlassBadge status={ord.paymentStatus || 'PAID'} />
+                          </td>
+                          <td className="py-3 px-4">
+                            <GlassBadge status={ord.orderStatus || 'PROCESSING'} />
+                          </td>
+                          <td className="py-3 pl-4 text-right">
+                            <Link
+                              href={`/admin/orders`}
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                            >
+                              <span>Fulfill</span>
+                              <ArrowUpRight className="w-3 h-3 ml-1" />
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Inquiries Stream Tab */}
+            {activityTab === 'inquiries' && (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                      <th className="pb-3 pr-4">Sender</th>
+                      <th className="pb-3 px-4">Subject</th>
+                      <th className="pb-3 px-4">Message Preview</th>
+                      <th className="pb-3 px-4">Status</th>
+                      <th className="pb-3 pl-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-slate-200">
+                    {!data?.recentInquiries || data.recentInquiries.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-slate-400">
+                          No customer inquiries received yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      data.recentInquiries.slice(0, 6).map((inq) => (
+                        <tr key={inq.id} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3 pr-4">
+                            <div className="font-semibold text-white">{inq.name}</div>
+                            <div className="text-[10px] text-slate-400">{inq.email}</div>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-slate-300">{inq.subject}</td>
+                          <td className="py-3 px-4 text-slate-400 truncate max-w-[200px]">{inq.message}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                              {inq.status}
+                            </span>
+                          </td>
+                          <td className="py-3 pl-4 text-right">
+                            <Link
+                              href="/admin/inquiries"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                            >
+                              <span>Reply</span>
+                              <ArrowUpRight className="w-3 h-3 ml-1" />
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Applications Stream Tab */}
+            {activityTab === 'applications' && (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                      <th className="pb-3 pr-4">Artisan Applicant</th>
+                      <th className="pb-3 px-4">Craft</th>
+                      <th className="pb-3 px-4">Dzongkhag</th>
+                      <th className="pb-3 px-4">Tier</th>
+                      <th className="pb-3 px-4">Status</th>
+                      <th className="pb-3 pl-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-slate-200">
+                    {!data?.recentApplications || data.recentApplications.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          No pending membership applications.
+                        </td>
+                      </tr>
+                    ) : (
+                      data.recentApplications.slice(0, 6).map((app) => (
+                        <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3 pr-4">
+                            <div className="font-semibold text-white">{app.applicantName}</div>
+                            <div className="text-[10px] text-slate-400">{app.email}</div>
+                          </td>
+                          <td className="py-3 px-4 uppercase text-amber-300 font-mono text-[11px]">{app.craftKey}</td>
+                          <td className="py-3 px-4 text-slate-300">{app.dzongkhag}</td>
+                          <td className="py-3 px-4 text-[10px] text-slate-400">{app.planTier}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              {app.status}
+                            </span>
+                          </td>
+                          <td className="py-3 pl-4 text-right">
+                            <Link
+                              href="/admin/applications"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                            >
+                              <span>Review</span>
+                              <ArrowUpRight className="w-3 h-3 ml-1" />
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Donations Stream Tab */}
+            {activityTab === 'donations' && (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                      <th className="pb-3 pr-4">Donor</th>
+                      <th className="pb-3 px-4">Pillar</th>
+                      <th className="pb-3 px-4">Amount</th>
+                      <th className="pb-3 px-4">Receipt #</th>
+                      <th className="pb-3 px-4">Status</th>
+                      <th className="pb-3 pl-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-slate-200">
+                    {!data?.recentDonations || data.recentDonations.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          No recent public donations recorded.
+                        </td>
+                      </tr>
+                    ) : (
+                      data.recentDonations.slice(0, 6).map((don) => (
+                        <tr key={don.id} className="hover:bg-white/5 transition-colors">
+                          <td className="py-3 pr-4">
+                            <div className="font-semibold text-white">{don.donorName}</div>
+                            <div className="text-[10px] text-slate-400">{don.donorEmail}</div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-300">{don.pillarTitle}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-emerald-400">${don.amountUSD.toFixed(2)}</td>
+                          <td className="py-3 px-4 font-mono text-[10px] text-slate-400">{don.receiptNumber}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                              {don.status}
+                            </span>
+                          </td>
+                          <td className="py-3 pl-4 text-right">
+                            <Link
+                              href="/admin/donate-settings"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                            >
+                              <span>Details</span>
+                              <ArrowUpRight className="w-3 h-3 ml-1" />
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </GlassCard>
         </div>
 

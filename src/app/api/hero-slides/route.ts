@@ -53,19 +53,33 @@ export async function GET() {
       orderBy: { sortOrder: 'asc' },
       select: { id: true, imageUrl: true, caption: true, altText: true, linkUrl: true, sortOrder: true },
     });
-    if (!slides || slides.length === 0) {
-      return NextResponse.json({ slides: DEFAULT_SLIDES });
+    
+    // Normalize and ensure we ALWAYS have at least 5 slides to slide through
+    let effectiveSlides = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
+    if (effectiveSlides.length < 5) {
+      const needed = 5 - effectiveSlides.length;
+      effectiveSlides = [...effectiveSlides, ...DEFAULT_SLIDES.slice(effectiveSlides.length, effectiveSlides.length + needed)];
     }
-    const normalized = slides.map((s, idx) => {
+
+    const normalized = effectiveSlides.map((s, idx) => {
       let img = s.imageUrl;
       if (!img || img.includes('/images/') || img.includes('placeholder')) {
         img = DEFAULT_SLIDES[idx % DEFAULT_SLIDES.length].imageUrl;
       }
-      return { ...s, imageUrl: img };
+      return { 
+        ...s, 
+        imageUrl: img,
+        caption: s.caption || DEFAULT_SLIDES[idx % DEFAULT_SLIDES.length].caption,
+      };
     });
-    return NextResponse.json({ slides: normalized });
+
+    const response = NextResponse.json({ slides: normalized });
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    return response;
   } catch {
-    return NextResponse.json({ slides: DEFAULT_SLIDES });
+    const response = NextResponse.json({ slides: DEFAULT_SLIDES });
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    return response;
   }
 }
 

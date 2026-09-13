@@ -41,6 +41,9 @@ export async function GET(req: NextRequest) {
       latestPublication,
       recentAuditLogs,
       paidOrders,
+      recentInquiries,
+      recentApplications,
+      recentDonations,
     ] = await Promise.all([
       prisma.order.findMany({
         orderBy: { createdAt: 'desc' },
@@ -117,6 +120,21 @@ export async function GET(req: NextRequest) {
           totalPaidCurrency: true,
           currencyUsed: true,
           createdAt: true,
+        },
+      }),
+      prisma.inquiry.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+      }),
+      prisma.membershipApplication.findMany({
+        orderBy: { submittedAt: 'desc' },
+        take: 8,
+      }),
+      prisma.donationRecord.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        include: {
+          pillar: { select: { title: true } },
         },
       }),
     ]);
@@ -221,6 +239,37 @@ export async function GET(req: NextRequest) {
         orderStatus: o.orderStatus,
         paymentStatus: o.paymentStatus,
         createdAt: o.createdAt,
+      })),
+      recentInquiries: recentInquiries.map((i) => ({
+        id: i.id,
+        name: i.name,
+        email: i.email,
+        phone: i.phone,
+        subject: i.subject,
+        message: i.message,
+        status: i.status,
+        createdAt: i.createdAt,
+      })),
+      recentApplications: recentApplications.map((a) => ({
+        id: a.id,
+        applicantName: a.applicantName,
+        email: a.email,
+        phone: a.phone,
+        craftKey: a.craftKey,
+        dzongkhag: a.dzongkhag,
+        planTier: a.planTier,
+        status: a.status,
+        submittedAt: a.submittedAt,
+      })),
+      recentDonations: recentDonations.map((d) => ({
+        id: d.id,
+        donorName: d.donorName,
+        donorEmail: d.donorEmail,
+        amountUSD: d.amountUSD,
+        pillarTitle: d.pillar?.title || d.pillarKey,
+        receiptNumber: d.receiptNumber,
+        status: d.status,
+        createdAt: d.createdAt,
       })),
       recentAuditLogs: recentAuditLogs.map((log) => ({
         id: log.id,

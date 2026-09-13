@@ -72,7 +72,9 @@ export async function GET() {
         setting.aboutBandImageCaption = 'photo — HAB training workshop';
       }
     }
-    return NextResponse.json({ success: true, setting, settings: setting });
+    const response = NextResponse.json({ success: true, setting, settings: setting });
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    return response;
   } catch (error) {
 
     const fallback = {

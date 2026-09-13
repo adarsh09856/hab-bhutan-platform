@@ -316,8 +316,12 @@ export default function HomePage() {
     fetch('/api/hero-slides')
       .then((r) => r.json())
       .then((d) => {
-        if (d?.slides && d.slides.length > 0) {
-          setHeroSlides(d.slides);
+        if (d?.slides && Array.isArray(d.slides)) {
+          if (d.slides.length >= 2) {
+            setHeroSlides(d.slides);
+          } else if (d.slides.length === 1) {
+            setHeroSlides([d.slides[0], ...DEFAULT_HERO_SLIDES.slice(1)]);
+          }
         }
       })
       .catch(() => {});

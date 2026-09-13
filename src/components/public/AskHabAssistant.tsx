@@ -139,7 +139,7 @@ export default function AskHabAssistant() {
 
   return (
     <>
-      {/* Floating launcher button */}
+      {/* Floating launcher button — always anchored bottom-right */}
       <button
         type="button"
         className={`ai-launch ${isCompact ? 'is-compact' : ''} ${isOpen ? 'is-open' : ''}`}
@@ -147,6 +147,13 @@ export default function AskHabAssistant() {
         aria-controls="aiPanel"
         onClick={() => setIsOpen(!isOpen)}
         title="Ask HAB site guide assistant"
+        style={{
+          position: 'fixed',
+          right: '20px',
+          bottom: '20px',
+          zIndex: 9999,
+          cursor: 'pointer',
+        }}
       >
         <span className="ai-launch__dot" aria-hidden="true" />
         <span className="ai-launch__label">Ask HAB</span>
@@ -159,6 +166,10 @@ export default function AskHabAssistant() {
         aria-hidden={!isOpen}
         aria-label="Ask HAB — site assistant"
         style={{
+          position: 'fixed',
+          right: '20px',
+          bottom: '78px',
+          zIndex: 9999,
           display: isOpen ? 'flex' : 'none',
           flexDirection: 'column',
         }}
