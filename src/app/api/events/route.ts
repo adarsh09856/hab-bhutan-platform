@@ -31,17 +31,23 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
 
+    let res: NextResponse;
     if (events.length > 0) {
-      return NextResponse.json({ success: true, events });
+      res = NextResponse.json({ success: true, events });
+    } else {
+      let fallbackEvents = CLIENT_DATA.events || [];
+      if (category && category !== 'all' && category !== 'All Events') {
+        fallbackEvents = fallbackEvents.filter((e: any) => e.category?.toLowerCase() === category.toLowerCase());
+      }
+      res = NextResponse.json({ success: true, events: fallbackEvents });
     }
-
-    let fallbackEvents = CLIENT_DATA.events || [];
-    if (category && category !== 'all' && category !== 'All Events') {
-      fallbackEvents = fallbackEvents.filter((e: any) => e.category?.toLowerCase() === category.toLowerCase());
-    }
-
-    return NextResponse.json({ success: true, events: fallbackEvents });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch {
-    return NextResponse.json({ success: true, events: CLIENT_DATA.events || [] });
+    const res = NextResponse.json({ success: true, events: CLIENT_DATA.events || [] });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

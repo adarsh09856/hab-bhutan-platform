@@ -10,9 +10,15 @@ export async function GET() {
       orderBy: { sortOrder: 'asc' },
     });
 
-    return NextResponse.json({ success: true, pillars });
+    const res = NextResponse.json({ success: true, pillars });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch (err: any) {
     console.error('Error fetching programme pillars:', err);
-    return NextResponse.json({ success: false, error: 'Database unavailable.' }, { status: 500 });
+    const res = NextResponse.json({ success: false, error: 'Database unavailable.' }, { status: 500 });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

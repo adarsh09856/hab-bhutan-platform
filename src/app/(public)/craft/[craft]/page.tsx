@@ -147,23 +147,43 @@ export default function CraftProfilePage() {
 
           {/* Crossfading Flipper */}
           <div className="flipper" tabIndex={0} aria-label="Photographs of this craft">
-            {slideCaptions.map((cap, i) => (
-              <div
-                key={i}
-                className={`flipper__slide ${activeSlide === i ? 'is-on' : ''}`}
-                data-cms-img
-              >
-                <img
-                  src={`/images/crafts/${craft.key}.jpg`}
-                  alt={cap}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = `/images/hero-${(i % 5) + 1}.jpg`;
+            {slideCaptions.map((cap, i) => {
+              const flipperImgs = [
+                `/images/crafts/${craft.key}.jpg`,
+                products[0]?.hero_image ? (products[0].hero_image.startsWith('/') ? products[0].hero_image : `/${products[0].hero_image}`) : '/assets/photos/hero-4-textiles.jpg',
+                products[1]?.hero_image ? (products[1].hero_image.startsWith('/') ? products[1].hero_image : `/${products[1].hero_image}`) : '/assets/photos/hero-3-clay.jpg',
+              ];
+              const fallbacks = [
+                `/images/crafts/${craft.key}.jpg`,
+                '/assets/photos/hero-4-textiles.jpg',
+                '/assets/photos/hero-3-clay.jpg',
+              ];
+              return (
+                <div
+                  key={i}
+                  className={`flipper__slide ${activeSlide === i ? 'is-on' : ''}`}
+                  data-cms-img
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: activeSlide === i ? 1 : 0,
+                    transition: 'opacity 0.8s ease',
+                    pointerEvents: activeSlide === i ? 'auto' : 'none',
+                    zIndex: activeSlide === i ? 2 : 1,
                   }}
-                />
-                <span className="flipper__cap">{cap}</span>
-              </div>
-            ))}
+                >
+                  <img
+                    src={flipperImgs[i]}
+                    alt={cap}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = fallbacks[i];
+                    }}
+                  />
+                  <span className="flipper__cap">{cap}</span>
+                </div>
+              );
+            })}
             <div className="flipper__dots">
               {[0, 1, 2].map((i) => (
                 <button

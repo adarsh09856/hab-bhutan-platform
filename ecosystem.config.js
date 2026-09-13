@@ -3,8 +3,8 @@ module.exports = {
     {
       name: 'habbhutanplatform',
       cwd: __dirname,
-      script: 'npm',
-      args: 'start',
+      script: 'node_modules/next/dist/bin/next',
+      args: 'start -p 3001',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,

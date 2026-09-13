@@ -29,7 +29,7 @@ export default async function WholesalePage() {
       where: { status: 'PUBLISHED' },
       take: 8,
       orderBy: { createdAt: 'desc' },
-      include: { craft: true },
+      include: { craft: true, maker: true },
     });
   } catch {}
 
@@ -38,11 +38,11 @@ export default async function WholesalePage() {
     ? dbProducts.map((p) => ({
         code: p.code,
         name: p.name,
-        craft_key: p.craft?.slug || p.category?.toLowerCase() || 'thangka',
-        craft_name: p.craft?.nameEnglish || p.craft?.nameBhutanese || 'Zorig Chusum',
-        maker: p.artisan || p.originDzongkhag || 'Master Artisan',
-        region: p.originDzongkhag || 'Bhutan',
-        image_path: p.images?.[0] || '/assets/photos/product-sad03.jpg',
+        craft_key: p.craft?.key || p.craftKey || 'thagzo',
+        craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : 'Zorig Chusum',
+        maker: p.maker?.name || 'Master Artisan',
+        region: p.region || 'Bhutan',
+        image_path: (p.images as any)?.[0]?.url || '/assets/photos/product-sad03.jpg',
       }))
     : CLIENT_DATA.products.slice(0, 8);
 

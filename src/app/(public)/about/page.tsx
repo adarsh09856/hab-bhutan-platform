@@ -13,7 +13,7 @@ export default function AboutPage() {
 
   useEffect(() => {
     // 1. Dynamic API: Site Settings
-    fetch('/api/site-settings')
+    fetch('/api/site-settings', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.setting) {
@@ -25,7 +25,7 @@ export default function AboutPage() {
       .catch(() => {});
 
     // 2. Dynamic API: Governance & Team
-    fetch('/api/governance')
+    fetch('/api/governance', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.success) {
@@ -41,37 +41,47 @@ export default function AboutPage() {
 
   const s = siteSettings;
 
-  const aboutIntro = s?.aboutIntro ||
-    'Handicrafts Association of Bhutan (HAB) was established in 2005 and got formally registered as Civil Society Organization in 2011 under the CSO act of Bhutan 2007 as a pioneer centre for the promotion of vibrant and sustainable Bhutanese handicrafts.';
+  const aboutIntro = s?.aboutMandateText || s?.aboutIntro ||
+    'The Handicrafts Association of Bhutan (HAB) was established in 2005 under Royal Patronage and registered as a Civil Society Organisation (CSO/2011/043) and Public Benefit Organisation (PBO) under the Civil Society Organizations Act of Bhutan.';
 
-  const facts = [
-    { key: 'Established', value: '2005' },
-    { key: 'Registered CSO', value: s?.csoRegistration || '2011 · CSO/2011/043' },
-    { key: 'Member enterprises', value: s?.stat1Number || '7,500' },
-    { key: 'Affiliated stores', value: s?.stat3Number || '195' },
-  ];
+  const facts: { key: string; value: string }[] = (Array.isArray(s?.aboutStats) && s.aboutStats.length > 0)
+    ? s.aboutStats.map((st: any) => ({ key: String(st.label || ''), value: String(st.number || '') }))
+    : [
+        { key: 'Established', value: '2005' },
+        { key: 'Registered CSO', value: s?.csoRegistration || '2011 · CSO/2011/043' },
+        { key: 'Member enterprises', value: s?.stat1Number || '7,500' },
+        { key: 'Affiliated stores', value: s?.stat3Number || '195' },
+      ];
 
   const visionTitle = s?.visionTitle || 'Towards a vibrant & sustainable handicrafts sector';
-  const visionBody = s?.visionBody || 'A Bhutan where the thirteen crafts remain in daily practice, and where making them is a livelihood a young person would choose.';
+  const visionBody = s?.visionBody || s?.heroParagraph || 'A Bhutan where the thirteen crafts remain in daily practice, and where making them is a livelihood a young person would choose.';
   const missionTitle = s?.missionTitle || 'Promoting sustainability, inclusiveness and resilience';
-  const missionBody = s?.missionBody || 'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.';
+  const missionBody = s?.missionBody || s?.aboutMandatePara2 || 'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.';
 
-  const objectives = [
-    'Improve market access for Bhutanese artisans at home, in the tourism sector and internationally.',
-    'Raise product quality and consistency through training, standards and inspection.',
-    'Guarantee fair compensation and prompt payment for handcrafted work.',
-    'Keep the thirteen crafts of Zorig Chusum in living practice, particularly those with few practitioners.',
-    'Represent the sector in policy dialogue with government and development partners.',
-    'Strengthen member enterprises as businesses — costing, licensing, export documentation and finance.',
-  ];
+  const objectives: string[] = (Array.isArray(s?.aboutObjectives) && s.aboutObjectives.length > 0)
+    ? s.aboutObjectives.map((o: any) => String(o))
+    : [
+        'Improve market access for Bhutanese artisans at home, in the tourism sector and internationally.',
+        'Raise product quality and consistency through training, standards and inspection.',
+        'Guarantee fair compensation and prompt payment for handcrafted work.',
+        'Keep the thirteen crafts of Zorig Chusum in living practice, particularly those with few practitioners.',
+        'Represent the sector in policy dialogue with government and development partners.',
+        'Strengthen member enterprises as businesses — costing, licensing, export documentation and finance.',
+      ];
 
-  const values = [
-    { letter: 'C', title: 'Care', body: 'Care for the maker, the material and the object. We do not ask an artisan to cut a corner we would not put our own name to, and we do not sell work we have not handled.' },
-    { letter: 'R', title: 'Respect', body: 'Respect for a tradition older than the association, and for the person who carries it. Masters are consulted, not instructed; technique is recorded on the maker’s terms.' },
-    { letter: 'A', title: 'Attentive', body: 'Attentive to quality, to the market and to what members actually ask for. Programmes are designed from what artisans report, and are dropped when they stop working.' },
-    { letter: 'F', title: 'Fair', body: 'Fair dealing, in writing. Prices are agreed with the maker and paid upfront, consignment risk stays with the association, and no member is undercut by another.' },
-    { letter: 'T', title: 'Transparent', body: 'Transparent about money and results. Audited accounts, programme outcomes and project evaluations are published every year in English and Dzongkha.' },
-  ];
+  const values: { letter: string; title: string; body: string }[] = (Array.isArray(s?.aboutValues) && s.aboutValues.length > 0)
+    ? s.aboutValues.map((v: any) => ({
+        letter: String(v.letter || ''),
+        title: String(v.title || ''),
+        body: String(v.body || ''),
+      }))
+    : [
+        { letter: 'C', title: 'Care', body: 'Care for the maker, the material and the object. We do not ask an artisan to cut a corner we would not put our own name to, and we do not sell work we have not handled.' },
+        { letter: 'R', title: 'Respect', body: 'Respect for a tradition older than the association, and for the person who carries it. Masters are consulted, not instructed; technique is recorded on the maker’s terms.' },
+        { letter: 'A', title: 'Attentive', body: 'Attentive to quality, to the market and to what members actually ask for. Programmes are designed from what artisans report, and are dropped when they stop working.' },
+        { letter: 'F', title: 'Fair', body: 'Fair dealing, in writing. Prices are agreed with the maker and paid upfront, consignment risk stays with the association, and no member is undercut by another.' },
+        { letter: 'T', title: 'Transparent', body: 'Transparent about money and results. Audited accounts, programme outcomes and project evaluations are published every year in English and Dzongkha.' },
+      ];
 
   const govNote = s?.govNote || 'HAB is a Public Benefit Organisation under the Civil Society Organizations Act of Bhutan 2007, as amended in 2022. Authority runs from the sector membership upward: the Annual Sector Forum receives the accounts and the Board of Trustees is accountable for governance, with Dzongkhag Chapters carrying representation into all twenty districts.';
 
@@ -124,7 +134,7 @@ export default function AboutPage() {
             <p className="lede">{aboutIntro}</p>
           </div>
           <div className="craftfacts craftfacts--2">
-            {facts.map((f, idx) => (
+            {facts.map((f: { key: string; value: string }, idx: number) => (
               <div key={idx} className="craftfacts__cell">
                 <span className="craftfacts__key">{f.key}</span>
                 <span className="craftfacts__val">{f.value}</span>
@@ -172,7 +182,7 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="objlist">
-            {objectives.map((text, i) => (
+            {objectives.map((text: string, i: number) => (
               <div key={i} className="objrow">
                 <span className="objrow__n">{String(i + 1).padStart(2, '0')}</span>
                 <span className="objrow__t">{text}</span>
@@ -190,7 +200,7 @@ export default function AboutPage() {
           Five commitments, and they spell what we are for. Each one is testable — a member can hold the association to it.
         </p>
         <div className="valuegrid">
-          {values.map((v) => (
+          {values.map((v: { letter: string; title: string; body: string }) => (
             <div key={v.letter} className="valuecell">
               <span className="valuecell__letter">{v.letter}</span>
               <h3 className="valuecell__title">{v.title}</h3>

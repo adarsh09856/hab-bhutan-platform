@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       ];
       const mapped = dbProducts.map((p, idx) => {
         let img = (p.images as any)?.[0]?.url;
-        if (!img || img.includes('placeholder') || img.includes('parotaktshang') || !img.startsWith('/assets/photos/')) {
+        if (!img || img.includes('placeholder') || img.includes('parotaktshang')) {
           img = productPool[idx % productPool.length];
         }
         return {
@@ -83,7 +83,9 @@ export async function GET(req: NextRequest) {
         success: true,
         products: mapped,
       });
-      response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
       return response;
     }
 

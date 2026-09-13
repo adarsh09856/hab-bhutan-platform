@@ -26,15 +26,21 @@ export async function GET() {
 
     const publications = dbPublications.length > 0 ? dbPublications : DEFAULT_PUBLICATIONS;
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       publications,
     });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch (err: any) {
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       publications: DEFAULT_PUBLICATIONS,
       fallback: true,
     });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

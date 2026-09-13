@@ -54,12 +54,19 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
+    let res: NextResponse;
     if (projects.length > 0) {
-      return NextResponse.json({ success: true, projects });
+      res = NextResponse.json({ success: true, projects });
+    } else {
+      res = NextResponse.json({ success: true, projects: DEFAULT_PROJECTS, fallback: true });
     }
-
-    return NextResponse.json({ success: true, projects: DEFAULT_PROJECTS, fallback: true });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch (err: any) {
-    return NextResponse.json({ success: true, projects: DEFAULT_PROJECTS, fallback: true });
+    const res = NextResponse.json({ success: true, projects: DEFAULT_PROJECTS, fallback: true });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

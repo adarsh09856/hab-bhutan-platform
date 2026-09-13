@@ -24,12 +24,19 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
 
+    let res: NextResponse;
     if (outlets.length > 0) {
-      return NextResponse.json({ success: true, outlets });
+      res = NextResponse.json({ success: true, outlets });
+    } else {
+      res = NextResponse.json({ success: true, outlets: CLIENT_DATA.outlets });
     }
-
-    return NextResponse.json({ success: true, outlets: CLIENT_DATA.outlets });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch {
-    return NextResponse.json({ success: true, outlets: CLIENT_DATA.outlets });
+    const res = NextResponse.json({ success: true, outlets: CLIENT_DATA.outlets });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

@@ -23,6 +23,16 @@ function ContactContent() {
   const [isSent, setIsSent] = useState(false);
   const [refNumber, setRefNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/site-settings', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.setting) setSettings(d.setting);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (searchParams.get('topic')) {
@@ -98,9 +108,9 @@ function ContactContent() {
           <div className="panel panel--accent">
             <p className="eyebrow eyebrow--onaccent">Secretariat</p>
             <p className="panel__body panel__body--onaccent" style={{ fontSize: 17 }}>
-              Metog Lam, Thimphu, Bhutan<br />
-              Office +975-2-338089<br />
-              officehab@gmail.com
+              {settings?.officeAddress || 'Metog Lam, Thimphu, Bhutan'}<br />
+              Office {settings?.officePhone || '+975-2-338089'}<br />
+              {settings?.officialEmail || 'officehab@gmail.com'}
             </p>
             <p className="panel__body panel__body--onaccent" style={{ margin: 0, fontSize: 14.5 }}>
               Monday to Friday, 09:00–17:00 BTT. Closed on national holidays.

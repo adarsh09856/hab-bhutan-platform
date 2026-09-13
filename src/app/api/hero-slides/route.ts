@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 const DEFAULT_SLIDES = [
   {
@@ -63,7 +61,7 @@ export async function GET() {
 
     const normalized = effectiveSlides.map((s, idx) => {
       let img = s.imageUrl;
-      if (!img || img.includes('/images/') || img.includes('placeholder')) {
+      if (!img || img.includes('placeholder')) {
         img = DEFAULT_SLIDES[idx % DEFAULT_SLIDES.length].imageUrl;
       }
       return { 
@@ -74,11 +72,15 @@ export async function GET() {
     });
 
     const response = NextResponse.json({ slides: normalized });
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
     return response;
   } catch {
     const response = NextResponse.json({ slides: DEFAULT_SLIDES });
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
     return response;
   }
 }

@@ -15,16 +15,26 @@ export async function GET(req: NextRequest) {
       if (!policy) {
         return NextResponse.json({ success: false, error: 'Policy not found.' }, { status: 404 });
       }
-      return NextResponse.json({ success: true, policy });
+      const res = NextResponse.json({ success: true, policy });
+      res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+      res.headers.set('Pragma', 'no-cache');
+      res.headers.set('Expires', '0');
+      return res;
     }
 
     const policies = await prisma.policyPage.findMany({
       where: { isActive: true },
     });
 
-    return NextResponse.json({ success: true, policies });
+    const res = NextResponse.json({ success: true, policies });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch (err: any) {
     console.error('Error fetching policies:', err);
-    return NextResponse.json({ success: false, error: 'Failed to retrieve policy.' }, { status: 500 });
+    const res = NextResponse.json({ success: false, error: 'Failed to retrieve policy.' }, { status: 500 });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

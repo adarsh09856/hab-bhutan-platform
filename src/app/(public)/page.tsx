@@ -485,7 +485,7 @@ export default function HomePage() {
                   src={s.imageUrl}
                   alt={s.altText || s.caption}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = SCENE_POOL[idx % SCENE_POOL.length]; }}
                 />
                 <span className="carousel__cap">{s.caption}</span>
               </div>

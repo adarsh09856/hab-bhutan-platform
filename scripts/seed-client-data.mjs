@@ -421,6 +421,11 @@ async function main() {
         { title: 'Bhutanese Origin Certificate', description: 'Includes an official Certificate of Bhutanese Origin and CSO seal.' },
         { title: 'Tracked Worldwide EMS', description: 'Full airway bill tracking from Thimphu to your destination door.' },
       ],
+      wholesaleMoq: 5,
+      wholesaleLeadTime: '2 to 4 weeks depending on batch size',
+      wholesaleTerms: sanitizeJson(data.wholesaleTerms) || null,
+      wholesaleAssurances: sanitizeJson(data.wholesaleAssurance) || null,
+      wholesaleBuyerTypes: sanitizeJson(data.buyerTypes) || null,
     },
     create: {
       id: 'default',
@@ -492,6 +497,11 @@ async function main() {
       orderConfirmationTitle: 'Order Confirmed!',
       orderSupportEmail: 'officehab@gmail.com',
       orderSupportPhone: '+975-2-338089',
+      wholesaleMoq: 5,
+      wholesaleLeadTime: '2 to 4 weeks depending on batch size',
+      wholesaleTerms: sanitizeJson(data.wholesaleTerms) || null,
+      wholesaleAssurances: sanitizeJson(data.wholesaleAssurance) || null,
+      wholesaleBuyerTypes: sanitizeJson(data.buyerTypes) || null,
     },
   });
   console.log('✓ Seeded Site Settings with full dynamic CMS values.');
@@ -513,12 +523,10 @@ async function main() {
           name: p.name,
           priceUSD: p.price_usd || 50,
           craftKey: p.craft_key,
-          craftId: craft?.id || null,
           region: p.region || 'Thimphu',
           description: p.description || 'Authentic Bhutanese craft certified by HAB.',
           stock: 25,
           status: 'PUBLISHED',
-          isFeatured: Boolean(p.is_featured),
           images,
         },
         create: {
@@ -526,12 +534,10 @@ async function main() {
           name: p.name,
           priceUSD: p.price_usd || 50,
           craftKey: p.craft_key,
-          craftId: craft?.id || null,
           region: p.region || 'Thimphu',
           description: p.description || 'Authentic Bhutanese craft certified by HAB.',
           stock: 25,
           status: 'PUBLISHED',
-          isFeatured: Boolean(p.is_featured),
           images,
         },
       });
@@ -539,7 +545,234 @@ async function main() {
     console.log(`✓ Seeded ${data.products.length} catalog products into database.`);
   }
 
-  console.log('Seed completed successfully!');
+  // 11. Seed Programmes (Pillars A through K)
+  if (Array.isArray(data.programmes)) {
+    for (let i = 0; i < data.programmes.length; i++) {
+      const p = data.programmes[i];
+      await prisma.programmePillar.upsert({
+        where: { ref: p.ref },
+        update: {
+          title: p.title,
+          description: p.description,
+          activities: Array.isArray(p.activities) ? p.activities : [],
+          sortOrder: p.sort_order || i + 1,
+          isActive: true,
+        },
+        create: {
+          ref: p.ref,
+          title: p.title,
+          description: p.description,
+          activities: Array.isArray(p.activities) ? p.activities : [],
+          sortOrder: p.sort_order || i + 1,
+          isActive: true,
+        },
+      });
+    }
+    console.log(`✓ Seeded ${data.programmes.length} programme pillars.`);
+  }
+
+  // 12. Seed Projects
+  if (Array.isArray(data.projects)) {
+    for (let i = 0; i < data.projects.length; i++) {
+      const pr = data.projects[i];
+      const existing = await prisma.projectRecord.findFirst({
+        where: { name: pr.name },
+      });
+
+      const projData = {
+        status: pr.status || 'current',
+        name: pr.name,
+        partner: pr.partner || 'HAB Partner',
+        period: pr.period || '2024 – 2027',
+        budget: pr.budget || 'Undisclosed',
+        progressPercent: pr.progress !== undefined ? Number(pr.progress) : 50,
+        summary: pr.summary || '',
+        activities: Array.isArray(pr.activities) ? pr.activities : [],
+        results: Array.isArray(pr.results) ? pr.results : [],
+      };
+
+      if (existing) {
+        await prisma.projectRecord.update({
+          where: { id: existing.id },
+          data: projData,
+        });
+      } else {
+        await prisma.projectRecord.create({
+          data: {
+            id: pr.key || `proj-${i + 1}`,
+            ...projData,
+          },
+        });
+      }
+    }
+    console.log(`✓ Seeded ${data.projects.length} project records.`);
+  }
+
+  // 13. Seed Publications
+  if (Array.isArray(data.publications)) {
+    for (let i = 0; i < data.publications.length; i++) {
+      const pub = data.publications[i];
+      const existing = await prisma.publication.findFirst({
+        where: { title: pub.title },
+      });
+
+      const pubData = {
+        kind: pub.kind || 'Annual report',
+        title: pub.title,
+        year: Number(pub.year) || 2026,
+        metaDetails: pub.meta || 'PDF · English & Dzongkha',
+        fileUrl: pub.file_url || null,
+        isFeatured: Boolean(pub.is_featured),
+      };
+
+      if (existing) {
+        await prisma.publication.update({
+          where: { id: existing.id },
+          data: pubData,
+        });
+      } else {
+        await prisma.publication.create({
+          data: {
+            id: `pub-${i + 1}`,
+            ...pubData,
+          },
+        });
+      }
+    }
+    console.log(`✓ Seeded ${data.publications.length} publications.`);
+  }
+
+  // 14. Seed News Articles
+  if (Array.isArray(data.news)) {
+    for (let i = 0; i < data.news.length; i++) {
+      const nw = data.news[i];
+      const slug = nw.slug || `news-${i + 1}`;
+      await prisma.newsArticle.upsert({
+        where: { slug },
+        update: {
+          kind: nw.kind || 'Programmes',
+          title: nw.title,
+          dateString: nw.published_at || 'Recent',
+          blurb: nw.blurb || '',
+          content: nw.body || null,
+          isPublished: nw.is_published !== false,
+        },
+        create: {
+          slug,
+          kind: nw.kind || 'Programmes',
+          title: nw.title,
+          dateString: nw.published_at || 'Recent',
+          blurb: nw.blurb || '',
+          content: nw.body || null,
+          isPublished: nw.is_published !== false,
+        },
+      });
+    }
+    console.log(`✓ Seeded ${data.news.length} news articles.`);
+  }
+
+  // 15. Seed Hero Slides
+  const defaultHeroSlides = [
+    {
+      id: 'hero-1',
+      imageUrl: '/assets/photos/hero-1-weaving.jpg',
+      caption: 'photo 1 — artisan at the loom, Khoma',
+      altText: 'Artisan at the backstrap loom in Khoma, Lhuentse',
+      linkUrl: '/shop',
+      sortOrder: 1,
+    },
+    {
+      id: 'hero-2',
+      imageUrl: '/assets/photos/hero-2-punakha.jpg',
+      caption: 'photo 2 — the Punakha crafts market, stalls and buyers',
+      altText: 'The Punakha crafts market, stalls and buyers',
+      linkUrl: '/outlets/punakha-market',
+      sortOrder: 2,
+    },
+    {
+      id: 'hero-3',
+      imageUrl: '/assets/photos/hero-3-clay.jpg',
+      caption: 'photo 3 — a natural dye training, Lhuentse',
+      altText: 'Traditional clay sculpture and statue making in Bhutan',
+      linkUrl: '/programmes/f',
+      sortOrder: 3,
+    },
+    {
+      id: 'hero-4',
+      imageUrl: '/assets/photos/hero-4-textiles.jpg',
+      caption: 'photo 4 — carving workshop, Trashiyangtse',
+      altText: 'Naturally dyed yathra and silk textiles in Bumthang',
+      linkUrl: '/clusters',
+      sortOrder: 4,
+    },
+    {
+      id: 'hero-5',
+      imageUrl: '/assets/photos/hero-5-desho.jpg',
+      caption: 'photo 5 — HAB outlet counter, Thimphu',
+      altText: 'Handmade traditional desho paper workshop in Trashiyangtse',
+      linkUrl: '/outlets',
+      sortOrder: 5,
+    },
+  ];
+
+  for (const s of defaultHeroSlides) {
+    await prisma.heroSlide.upsert({
+      where: { id: s.id },
+      update: {
+        imageUrl: s.imageUrl,
+        caption: s.caption,
+        altText: s.altText,
+        linkUrl: s.linkUrl,
+        sortOrder: s.sortOrder,
+        isActive: true,
+      },
+      create: {
+        id: s.id,
+        imageUrl: s.imageUrl,
+        caption: s.caption,
+        altText: s.altText,
+        linkUrl: s.linkUrl,
+        sortOrder: s.sortOrder,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`✓ Seeded ${defaultHeroSlides.length} hero slides.`);
+
+  // 16. Seed Members
+  if (Array.isArray(data.members)) {
+    for (let i = 0; i < data.members.length; i++) {
+      const m = data.members[i];
+      const reg = `HAB-${m.member_since || 2015}-${100 + i}`;
+      await prisma.member.upsert({
+        where: { regNumber: reg },
+        update: {
+          name: m.name,
+          craftKey: m.craft_key,
+          dzongkhag: m.dzongkhag,
+          bio: m.blurb || 'Registered master artisan enterprise with HAB.',
+          portraitUrl: m.image_path ? `/${m.image_path.replace(/^\/+/, '')}` : '/assets/photos/hero-1-weaving.jpg',
+          status: 'VERIFIED',
+        },
+        create: {
+          name: m.name,
+          craftKey: m.craft_key,
+          dzongkhag: m.dzongkhag,
+          joinYear: m.member_since || 2015,
+          regNumber: reg,
+          tier: 'ACTIVE_SECTOR_MEMBER',
+          status: 'VERIFIED',
+          bio: m.blurb || 'Registered master artisan enterprise with HAB.',
+          portraitUrl: m.image_path ? `/${m.image_path.replace(/^\/+/, '')}` : '/assets/photos/hero-1-weaving.jpg',
+          cidNumber: `10${100000000 + i}`,
+          duesExpiryDate: new Date('2026-12-31'),
+        },
+      });
+    }
+    console.log(`✓ Seeded ${data.members.length} member profiles.`);
+  }
+
+  console.log('🎉 Seed completed successfully!');
 }
 
 main()

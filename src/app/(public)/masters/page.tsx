@@ -86,7 +86,14 @@ export default function MastersPage() {
                   key={i}
                   className={`carousel__slide ${activeSlide === i ? 'is-on' : ''}`}
                   data-cms-img
-                  style={{ position: 'relative', overflow: 'hidden' }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: activeSlide === i ? 1 : 0,
+                    transition: 'opacity 0.8s ease',
+                    pointerEvents: activeSlide === i ? 'auto' : 'none',
+                    zIndex: activeSlide === i ? 2 : 1,
+                  }}
                 >
                   <Image
                     src={s.src}

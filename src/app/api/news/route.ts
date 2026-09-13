@@ -62,19 +62,25 @@ export async function GET() {
     const articles = dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS;
     const events = dbEvents.length > 0 ? dbEvents : DEFAULT_EVENTS;
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       articles,
       news: articles,
       events,
     });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch (err: any) {
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       articles: DEFAULT_NEWS,
       news: DEFAULT_NEWS,
       events: DEFAULT_EVENTS,
       fallback: true,
     });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   }
 }

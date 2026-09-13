@@ -45,6 +45,13 @@ echo "🏗️ [5/6] Compiling Next.js Production Build on Linux..."
 npm run build
 
 echo "🔄 [6/6] Reloading Application in PM2..."
+# Release port 3001 if held by an orphan process
+if command -v fuser &> /dev/null; then
+    fuser -k 3001/tcp 2>/dev/null || true
+elif command -v lsof &> /dev/null; then
+    kill -9 $(lsof -t -i:3001 2>/dev/null) 2>/dev/null || true
+fi
+
 if command -v pm2 &> /dev/null; then
     pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
     pm2 save
@@ -58,6 +65,6 @@ else
 fi
 
 echo "===================================================="
-echo "🎉 Deployment Complete! Local server on port 3000."
-echo "   Check health: curl http://127.0.0.1:3000/api/admin/health"
+echo "🎉 Deployment Complete! Local server on port 3001."
+echo "   Check health: curl http://127.0.0.1:3001/api/admin/health"
 echo "===================================================="

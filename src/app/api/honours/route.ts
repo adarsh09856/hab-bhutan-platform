@@ -20,7 +20,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (honours.length > 0) {
-      return NextResponse.json({ success: true, honours });
+      const res = NextResponse.json({ success: true, honours, masters: honours });
+      res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+      res.headers.set('Pragma', 'no-cache');
+      res.headers.set('Expires', '0');
+      return res;
     }
 
     // Fallback to CLIENT_DATA honours
@@ -29,8 +33,16 @@ export async function GET(req: NextRequest) {
       fallback = fallback.filter((h: any) => h.awardType === awardType);
     }
 
-    return NextResponse.json({ success: true, honours: fallback });
+    const res = NextResponse.json({ success: true, honours: fallback, masters: fallback });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   } catch {
-    return NextResponse.json({ success: true, honours: (CLIENT_DATA as any).honours || [] });
+    const res = NextResponse.json({ success: true, honours: (CLIENT_DATA as any).honours || [], masters: (CLIENT_DATA as any).honours || [] });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.headers.set('Pragma', 'no-cache');
+    res.headers.set('Expires', '0');
+    return res;
   }
 }
