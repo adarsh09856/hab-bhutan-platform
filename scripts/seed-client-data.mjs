@@ -496,6 +496,49 @@ async function main() {
   });
   console.log('✓ Seeded Site Settings with full dynamic CMS values.');
 
+  // 10. Seed Products from client-data.json
+  if (Array.isArray(data.products)) {
+    for (const p of data.products) {
+      const craft = await prisma.craft.findFirst({
+        where: { key: p.craft_key },
+      });
+
+      const images = p.image_path
+        ? [{ url: `/${p.image_path.replace(/^\/+/, '')}`, role: 'primary' }]
+        : [{ url: `/assets/photos/product-${p.code.toLowerCase().slice(0, 5)}.jpg`, role: 'primary' }];
+
+      await prisma.product.upsert({
+        where: { code: p.code },
+        update: {
+          name: p.name,
+          priceUSD: p.price_usd || 50,
+          craftKey: p.craft_key,
+          craftId: craft?.id || null,
+          region: p.region || 'Thimphu',
+          description: p.description || 'Authentic Bhutanese craft certified by HAB.',
+          stock: 25,
+          status: 'PUBLISHED',
+          isFeatured: Boolean(p.is_featured),
+          images,
+        },
+        create: {
+          code: p.code,
+          name: p.name,
+          priceUSD: p.price_usd || 50,
+          craftKey: p.craft_key,
+          craftId: craft?.id || null,
+          region: p.region || 'Thimphu',
+          description: p.description || 'Authentic Bhutanese craft certified by HAB.',
+          stock: 25,
+          status: 'PUBLISHED',
+          isFeatured: Boolean(p.is_featured),
+          images,
+        },
+      });
+    }
+    console.log(`✓ Seeded ${data.products.length} catalog products into database.`);
+  }
+
   console.log('Seed completed successfully!');
 }
 

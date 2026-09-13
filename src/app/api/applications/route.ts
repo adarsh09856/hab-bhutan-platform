@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,8 +51,23 @@ export async function POST(req: NextRequest) {
     if (String(paymentMethod).toUpperCase() === 'MBOB') mappedPayment = 'MBOB';
     else if (String(paymentMethod).toUpperCase() === 'BANK') mappedPayment = 'BANK';
 
-    // Verify craftKey exists
-    const craft = await prisma.craft.findUnique({ where: { key: craftKey } });
+    // Verify craftKey exists or auto-provision from canonical list
+    let craft = await prisma.craft.findUnique({ where: { key: craftKey } });
+    if (!craft) {
+      const canonical = CLIENT_DATA.crafts.find((c) => c.key === craftKey);
+      if (canonical) {
+        craft = await prisma.craft.create({
+          data: {
+            key: canonical.key,
+            name: canonical.name,
+            english: canonical.english,
+            description: canonical.description,
+            isActive: true,
+          },
+        });
+      }
+    }
+
     if (!craft) {
       return NextResponse.json(
         { success: false, error: `Invalid craft category: ${craftKey}` },
