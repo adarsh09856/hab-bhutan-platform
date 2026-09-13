@@ -42,39 +42,9 @@ body.hab-admin-body,
   box-sizing: border-box;
 }
 
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--accent-hover);
-}
-
-/* CMS safety: authored content of any length or aspect ratio must not break the blueprint */
-body, p, h1, h2, h3, h4, span, div, a, li, td {
-  overflow-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
-}
-
 img {
   display: block;
   max-width: 100%;
-}
-
-[data-cms-img] {
-  overflow: hidden;
-  position: relative;
-}
-
-[data-cms-img] > img,
-[data-cms-img] > picture > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
 }
 
 [data-cms-avatar] {

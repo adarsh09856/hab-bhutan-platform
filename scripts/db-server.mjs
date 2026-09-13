@@ -35,3 +35,6 @@ try {
 }
 
 console.log('Postgres is ready on localhost:5432!');
+
+// Keep process alive indefinitely
+setInterval(() => {}, 1000 * 60 * 60);
