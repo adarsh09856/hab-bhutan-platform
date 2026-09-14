@@ -7,6 +7,28 @@ import { CRAFTS } from '@/lib/data';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 
+const PRODUCT_SPECS: Record<string, { size: string; weight: string; materials: string; care: string; lead: string }> = {
+  LHA01: { size: "61 × 43 cm image, 96 × 66 cm mounted", weight: "0.9 kg", materials: "Cotton canvas, mineral pigment, gold leaf, silk brocade", care: "Keep out of direct sun; roll, never fold", lead: "Ships in 2 working days" },
+  SAD03: { size: "46 × 34 × 12 cm", weight: "1.4 kg", materials: "Yathra sheep wool, leather straps, cotton lining", care: "Dry clean or spot clean only", lead: "Ships in 2 working days" },
+  TRO04: { size: "7.5 × 5 cm, pin 4 cm", weight: "62 g", materials: "Hand-chased 92.5 silver", care: "Polish with a soft cloth", lead: "Ships in 2 working days" },
+  FTB04: { size: "28 cm diameter × 14 cm", weight: "340 g", materials: "Split bamboo, natural dye", care: "Wipe dry; avoid prolonged soaking", lead: "Ships in 2 working days" },
+  DAP02: { size: "18 cm diameter × 11 cm with lid", weight: "480 g", materials: "Maple burl, natural lacquer", care: "Hand wash, do not soak", lead: "Ships in 2 working days" },
+  MAS01: { size: "32 × 24 × 16 cm", weight: "1.1 kg", materials: "Seasoned hardwood, mineral pigment", care: "Dust with a dry brush", lead: "Ships in 3 working days" },
+  DEZ01: { size: "50 × 70 cm sheets, set of ten", weight: "260 g", materials: "Daphne bhola bark", care: "Store flat, away from damp", lead: "Ships in 2 working days" },
+  CUS02: { size: "45 × 45 cm cover, no insert", weight: "290 g", materials: "Raw silk, cotton backing", care: "Dry clean recommended", lead: "Ships in 2 working days" },
+  HHB01: { size: "30 × 24 × 8 cm", weight: "420 g", materials: "Backstrap-loom cotton, wooden handle", care: "Spot clean", lead: "Ships in 2 working days" },
+  HHB10: { size: "28 × 22 cm", weight: "380 g", materials: "Silk-cotton blend, brass clasp", care: "Spot clean", lead: "Ships in 2 working days" },
+  LUD01: { size: "42 cm diameter × 52 cm", weight: "1.6 kg", materials: "Cane, reinforced rim", care: "Keep dry", lead: "Ships in 4 working days" },
+  CAM01: { size: "24 × 17 × 11 cm", weight: "540 g", materials: "Quilted cotton, water-resistant liner", care: "Spot clean", lead: "Ships in 2 working days" },
+  KIS02: { size: "250 × 130 cm, untailored", weight: "1.2 kg", materials: "Reeled and raw silk, natural dye", care: "Specialist dry clean only", lead: "Made to order, 4 weeks" },
+  PHO03: { size: "9 cm diameter × 8 cm", weight: "180 g", materials: "Figured burl, natural lacquer", care: "Hand wash, do not soak", lead: "Ships in 2 working days" },
+  DEZ07: { size: "A5, 60 leaves", weight: "310 g", materials: "Desho paper, cotton thread", care: "Store away from damp", lead: "Ships in 2 working days" },
+  TRO09: { size: "11 × 7 × 5 cm", weight: "310 g", materials: "92.5 silver, drawn-wire filigree", care: "Polish with a soft cloth", lead: "Ships in 3 working days" },
+  PAR06: { size: "30 × 22 × 3 cm", weight: "2.3 kg", materials: "Local slate", care: "Wipe with a damp cloth", lead: "Ships in 4 working days" },
+  LHA08: { size: "40 × 28 cm", weight: "700 g", materials: "Primed board, mineral pigment", care: "Keep out of direct sun", lead: "Ships in 2 working days" },
+  TSH11: { size: "120 × 80 cm", weight: "1.1 kg", materials: "Split bamboo, cane binding", care: "Keep dry; roll to store", lead: "Ships in 3 working days" },
+};
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -31,6 +53,9 @@ export default function ProductDetailPage() {
       .then((data) => {
         if (data?.product) {
           const p = data.product;
+          const codeUpper = (p.code || '').toUpperCase();
+          const spec = PRODUCT_SPECS[codeUpper] || {};
+
           setProduct({
             code: p.code,
             name: p.name,
@@ -40,12 +65,14 @@ export default function ProductDetailPage() {
             maker: typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Verified Member'),
             region: p.region || p.dzongkhag || 'Bhutan',
             description: p.description || p.desc || 'Handcrafted by registered members of the Handicrafts Association of Bhutan using traditional techniques and locally sourced materials.',
-            size: p.size || '30 × 24 × 8 cm',
-            weight: p.weight || '420 g',
-            materials: p.materials || p.material || 'Naturally dyed local materials',
-            care: p.care || 'Spot clean or gentle hand wash; do not soak',
-            lead: p.lead || 'Ships in 2 working days with EMS tracking and craft certificate',
-            image_path: p.image_path || p.imageUrl || `/images/products/${p.code.toLowerCase()}.jpg`,
+            size: p.size || spec.size || '30 × 24 × 8 cm',
+            weight: p.weight || spec.weight || '420 g',
+            materials: p.materials || spec.materials || p.material || 'Naturally dyed local materials',
+            care: p.care || spec.care || 'Spot clean or gentle hand wash; do not soak',
+            lead: p.lead || spec.lead || 'Ships in 2 working days with EMS tracking and craft certificate',
+            image_path: p.image_path || p.imageUrl || `/assets/photos/product-${p.code.toLowerCase()}.jpg`,
+            gallery: p.gallery,
+            images: p.images,
             maker_blurb: p.maker?.bio || 'Registered artisan practicing traditional craft heritage under the Handicrafts Association of Bhutan.',
             maker_since: p.maker?.memberSince || '2015',
           });
@@ -109,11 +136,29 @@ export default function ProductDetailPage() {
     );
   }
 
-  const galleryImages = [
-    product.image_path || `/images/products/${product.code.toLowerCase()}.jpg`,
-    `/assets/photos/product-${product.code.toLowerCase()}.jpg`,
-    '/assets/photos/product-sad03.jpg',
-  ];
+  const craftFallbacks: Record<string, string[]> = {
+    thagzo: ['/assets/photos/product-sad03.jpg', '/assets/photos/product-hhb01.jpg', '/assets/photos/hero-4-textiles.jpg'],
+    shagzo: ['/assets/photos/product-dap02.jpg', '/assets/photos/hero-3-clay.jpg', '/assets/photos/hero-2-punakha.jpg'],
+    troezo: ['/assets/photos/product-tro04.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/product-cam01.jpg'],
+    tshazo: ['/assets/photos/product-ftb04.jpg', '/assets/photos/product-lud01.jpg', '/assets/photos/hero-2-punakha.jpg'],
+    lhazo: ['/assets/photos/product-lha01.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/about-hab.jpg'],
+    parzo: ['/assets/photos/product-mas01.jpg', '/assets/photos/hero-3-clay.jpg', '/assets/photos/product-ftb04.jpg'],
+    dezo: ['/assets/photos/product-dez01.jpg', '/assets/photos/hero-5-desho.jpg', '/assets/photos/about-hab.jpg'],
+    tshemzo: ['/assets/photos/product-cus02.jpg', '/assets/photos/product-cam01.jpg', '/assets/photos/hero-4-textiles.jpg'],
+    garzo: ['/assets/photos/product-tro04.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/product-cam01.jpg'],
+    jinzo: ['/assets/photos/hero-3-clay.jpg', '/assets/photos/product-mas01.jpg', '/assets/photos/hero-2-punakha.jpg'],
+  };
+
+  const fallbacks = craftFallbacks[product.craftKey] || ['/assets/photos/product-hhb01.jpg', '/assets/photos/product-sad03.jpg', '/assets/photos/product-dap02.jpg'];
+  const primaryImg = product.image_path || (product.images && product.images[0]?.url) || fallbacks[0];
+
+  const galleryImages: string[] = Array.isArray(product.gallery) && product.gallery.length >= 3
+    ? product.gallery
+    : [
+        primaryImg,
+        (product.images && product.images[1]?.url) || fallbacks[1] || fallbacks[0],
+        (product.images && product.images[2]?.url) || fallbacks[2] || fallbacks[0],
+      ];
 
   return (
     <main id="main">
@@ -129,14 +174,39 @@ export default function ProductDetailPage() {
           {/* Left Column: Gallery & Thumbnails */}
           <div>
             <div className="gallery" id="prodMain">
-              <figure className="frame frame--square">
-                <img
-                  src={galleryImages[activeThumb]}
-                  alt={product.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
-                />
-              </figure>
+              {galleryImages.map((src, i) => (
+                <div
+                  key={i}
+                  className={`gallery__slide ${activeThumb === i ? 'is-on' : ''}`}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    opacity: activeThumb === i ? 1 : 0,
+                    transition: 'opacity .35s ease',
+                    pointerEvents: activeThumb === i ? 'auto' : 'none',
+                    zIndex: activeThumb === i ? 1 : 0,
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt={`${product.name} view ${i + 1}`}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg';
+                    }}
+                  />
+                </div>
+              ))}
+              <figcaption className="frame__caption gallery__cap" id="prodMainCap">
+                {product.name} — View {activeThumb + 1} of {galleryImages.length}
+              </figcaption>
             </div>
 
             <div className="gallery__thumbs" id="prodThumbs">
@@ -144,24 +214,39 @@ export default function ProductDetailPage() {
                 <button
                   key={i}
                   type="button"
-                  className={`gallery__thumb ${activeThumb === i ? 'is-active' : ''}`}
+                  className={`gallery__thumb ${activeThumb === i ? 'is-on' : ''}`}
                   onClick={() => setActiveThumb(i)}
+                  aria-label={`View photograph ${i + 1}`}
                   style={{
-                    width: '74px',
-                    height: '74px',
-                    padding: 0,
-                    borderRadius: '8px',
-                    overflow: 'hidden',
+                    position: 'relative',
+                    width: '88px',
+                    height: '66px',
+                    borderRadius: '9px',
                     border: activeThumb === i ? '2px solid var(--accent)' : '1px solid var(--line)',
+                    overflow: 'hidden',
+                    padding: 0,
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'flex-start',
                   }}
                 >
                   <img
                     src={src}
                     alt={`Thumbnail ${i + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg';
+                    }}
                   />
+                  <span className="gallery__thumbcap" style={{ position: 'relative', zIndex: 2 }}>{i + 1}</span>
                 </button>
               ))}
             </div>

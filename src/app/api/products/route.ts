@@ -60,17 +60,47 @@ export async function GET(req: NextRequest) {
       take: limit,
     });
 
+    const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
+      lha01: '/assets/photos/product-lha01.jpg',
+      sad03: '/assets/photos/product-sad03.jpg',
+      tro04: '/assets/photos/product-tro04.jpg',
+      ftb04: '/assets/photos/product-ftb04.jpg',
+      dap02: '/assets/photos/product-dap02.jpg',
+      mas01: '/assets/photos/product-mas01.jpg',
+      dez01: '/assets/photos/product-dez01.jpg',
+      cus02: '/assets/photos/product-cus02.jpg',
+      hhb01: '/assets/photos/product-hhb01.jpg',
+      hhb10: '/assets/photos/product-hhb10.jpg',
+      lud01: '/assets/photos/product-lud01.jpg',
+      cam01: '/assets/photos/product-cam01.jpg',
+      kis02: '/assets/photos/product-sad03.jpg',
+      pho03: '/assets/photos/product-dap02.jpg',
+      dez07: '/assets/photos/product-dez01.jpg',
+      tro09: '/assets/photos/product-tro04.jpg',
+      par06: '/assets/photos/product-mas01.jpg',
+      lha08: '/assets/photos/product-lha01.jpg',
+      tsh11: '/assets/photos/product-ftb04.jpg',
+    };
+
+    const CRAFT_FALLBACKS: Record<string, string> = {
+      thagzo: '/assets/photos/product-sad03.jpg',
+      shagzo: '/assets/photos/product-dap02.jpg',
+      troezo: '/assets/photos/product-tro04.jpg',
+      tshazo: '/assets/photos/product-ftb04.jpg',
+      lhazo: '/assets/photos/product-lha01.jpg',
+      parzo: '/assets/photos/product-mas01.jpg',
+      dezo: '/assets/photos/product-dez01.jpg',
+      tshemzo: '/assets/photos/product-cus02.jpg',
+      garzo: '/assets/photos/product-tro04.jpg',
+      jinzo: '/assets/photos/hero-3-clay.jpg',
+    };
+
     if (dbProducts.length > 0) {
-      const productPool = [
-        '/assets/photos/product-sad03.jpg',
-        '/assets/photos/product-hhb01.jpg',
-        '/assets/photos/product-lud01.jpg',
-        '/assets/photos/product-cam01.jpg',
-      ];
-      const mapped = dbProducts.map((p, idx) => {
+      const mapped = dbProducts.map((p) => {
+        const codeLower = p.code.toLowerCase();
         let img = (p.images as any)?.[0]?.url;
         if (!img || img.includes('placeholder') || img.includes('parotaktshang')) {
-          img = `/images/products/${p.code.toLowerCase()}.jpg`;
+          img = KNOWN_PRODUCT_IMAGES[codeLower] || CRAFT_FALLBACKS[p.craftKey] || '/assets/photos/product-hhb01.jpg';
         }
         return {
           ...p,

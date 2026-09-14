@@ -216,12 +216,19 @@ const PRODUCT_POOL = [
                 {filteredAndSortedProducts.map((p) => (
                   <article key={p.code} className="card product">
                     <Link className="product__shot" href={`/product/${p.code}`}>
-                      <figure className="frame frame--square">
+                      <figure className="frame frame--square has-image">
                         <img
-                          src={p.image_path || '/assets/photos/product-hhb01.jpg'}
+                          src={(p as any).image_path || ((p as any).images && (p as any).images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`}
                           alt={p.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (!target.src.includes('/assets/photos/product-')) {
+                              target.src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
+                            } else {
+                              target.src = '/assets/photos/product-hhb01.jpg';
+                            }
+                          }}
                         />
                       </figure>
                       <span className="product__ref">{p.code}</span>

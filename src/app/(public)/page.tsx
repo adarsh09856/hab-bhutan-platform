@@ -727,17 +727,24 @@ export default function HomePage() {
         <div className="grid grid--4">
           {products.slice(0, 8).map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
-            const productImg = p.image_path || (p.images && p.images[0]?.url) || `/images/products/${p.code.toLowerCase()}.jpg`;
+            const productImg = p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
             const makerName = typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Registered Member');
             return (
               <article key={p.code} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`}>
-                  <figure className="frame frame--square">
+                  <figure className="frame frame--square has-image">
                     <img
                       src={productImg}
                       alt={p.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { (e.target as HTMLImageElement).src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`; }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (!target.src.includes('/assets/photos/product-')) {
+                          target.src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
+                        } else {
+                          target.src = '/assets/photos/product-hhb01.jpg';
+                        }
+                      }}
                     />
                   </figure>
                   <span className="product__ref">{p.code}</span>
