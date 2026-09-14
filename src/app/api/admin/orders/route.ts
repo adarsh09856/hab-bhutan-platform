@@ -248,6 +248,8 @@ export async function PATCH(req: NextRequest) {
       orderStatus,
       paymentStatus,
       trackingNumber,
+      customerName,
+      customerEmail,
       customerPhone,
       shippingAddress,
       cancellationReason,
@@ -375,6 +377,8 @@ export async function PATCH(req: NextRequest) {
       if (orderStatus) updateData.orderStatus = orderStatus;
       if (paymentStatus) updateData.paymentStatus = paymentStatus;
       if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
+      if (customerName !== undefined) updateData.customerName = customerName;
+      if (customerEmail !== undefined) updateData.customerEmail = customerEmail;
       if (customerPhone !== undefined) updateData.customerPhone = customerPhone;
       if (shippingAddress) updateData.shippingAddress = shippingAddress;
       if (internalNotes !== undefined || notes !== undefined) {

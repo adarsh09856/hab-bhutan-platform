@@ -74,15 +74,41 @@ export async function POST(req: NextRequest) {
     const customerPhoneNum = phone || body.customerPhone || shippingAddress?.phone || null;
     const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
 
-    // Strict normalization for PostgreSQL / Prisma PaymentMethod enum ('CARD' | 'MBOB' | 'BANK')
+    // Strict normalization for PostgreSQL / Prisma PaymentMethod enum ('CARD' | 'MBOB' | 'BANK' | 'COD')
     const rawPayment = String(paymentMethod || 'CARD').trim().toUpperCase();
-    let normalizedPaymentMethod: 'CARD' | 'MBOB' | 'BANK' = 'CARD';
-    if (rawPayment === 'MBOB' || rawPayment.includes('MBOB') || rawPayment.includes('MOBILE')) {
+    let normalizedPaymentMethod: 'CARD' | 'MBOB' | 'BANK' | 'COD' = 'CARD';
+    if (rawPayment === 'COD' || rawPayment.includes('CASH') || rawPayment.includes('DELIVERY')) {
+      normalizedPaymentMethod = 'COD';
+    } else if (rawPayment === 'MBOB' || rawPayment.includes('MBOB') || rawPayment.includes('MOBILE')) {
       normalizedPaymentMethod = 'MBOB';
     } else if (rawPayment === 'BANK' || rawPayment.includes('BANK') || rawPayment.includes('WIRE') || rawPayment.includes('TRANSFER')) {
       normalizedPaymentMethod = 'BANK';
     } else {
       normalizedPaymentMethod = 'CARD';
+    }
+
+    let initialPaymentStatus: 'PAID' | 'PENDING' = 'PENDING';
+    let initialOrderStatus: 'PROCESSING' | 'PENDING_PAYMENT' = 'PENDING_PAYMENT';
+    let internalNotes = '';
+
+    if (normalizedPaymentMethod === 'COD') {
+      initialPaymentStatus = 'PENDING';
+      initialOrderStatus = 'PROCESSING';
+      internalNotes = '[CASH ON DELIVERY] Payment to be collected in cash or via mBoB upon courier arrival.';
+    } else if (normalizedPaymentMethod === 'CARD') {
+      initialPaymentStatus = 'PAID';
+      initialOrderStatus = 'PROCESSING';
+      internalNotes = '[GATEWAY SANDBOX / TEST SIMULATION] Simulated 3D-Secure card authorization in Sandbox Mode.';
+    } else if (normalizedPaymentMethod === 'MBOB') {
+      initialPaymentStatus = 'PENDING';
+      initialOrderStatus = 'PROCESSING';
+      internalNotes = body.mBOBTransactionRef
+        ? `[mBoB] Customer submitted Journal Ref: ${body.mBOBTransactionRef}. Verify with Bank of Bhutan before dispatch.`
+        : '[mBoB] Awaiting mBoB journal confirmation.';
+    } else if (normalizedPaymentMethod === 'BANK') {
+      initialPaymentStatus = 'PENDING';
+      initialOrderStatus = 'PENDING_PAYMENT';
+      internalNotes = '[BANK WIRE] Awaiting direct bank transfer to Bank of Bhutan account.';
     }
 
     // Persist real order and line-items in PostgreSQL with canonical pricing & atomic stock decrement
@@ -185,14 +211,15 @@ export async function POST(req: NextRequest) {
           shippingAddress: shippingAddress || {},
           shippingMethod: isExpress ? 'EXPRESS' : 'EMS',
           shippingFeeUSD: shippingCostUSD,
-          paymentMethod: normalizedPaymentMethod as any,
-          paymentStatus: normalizedPaymentMethod === 'CARD' ? 'PAID' : 'PENDING',
-          orderStatus: normalizedPaymentMethod === 'CARD' ? 'PROCESSING' : 'PENDING_PAYMENT',
+          paymentMethod: normalizedPaymentMethod,
+          paymentStatus: initialPaymentStatus,
+          orderStatus: initialOrderStatus,
           currencyUsed: currency || 'USD',
           fxRateAtPurchase: rateApplied,
           totalUSD: totalUSD,
           totalPaidCurrency,
           items: resolvedItems,
+          internalNotes: internalNotes,
           orderItems: {
             create: resolvedItems.map((ri) => ({
               productId: ri.productId,

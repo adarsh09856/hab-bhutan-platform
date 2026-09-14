@@ -25,7 +25,7 @@ export default function BasketPage() {
     clearCart,
   } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'mbob' | 'bank'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'cod' | 'mbob' | 'bank'>('card');
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [confirmedOrderNumber, setConfirmedOrderNumber] = useState('HAB-S-88214');
   const [confirmedEmail, setConfirmedEmail] = useState('');
@@ -43,6 +43,7 @@ export default function BasketPage() {
 
   const handlePlaceOrder = async () => {
     setFormError('');
+
     if (!customer.fullName.trim()) {
       setFormError('Please enter your full name.');
       return;
@@ -60,8 +61,8 @@ export default function BasketPage() {
     let orderNum = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
 
     try {
-      const selectedCurrency = paymentMethod === 'mbob' ? 'BTN' : (currency || 'USD');
-      const selectedPaymentMethod = paymentMethod === 'card' ? 'CARD' : paymentMethod === 'mbob' ? 'MBOB' : 'BANK';
+      const selectedCurrency = (paymentMethod === 'mbob' || paymentMethod === 'cod') ? 'BTN' : (currency || 'USD');
+      const selectedPaymentMethod = paymentMethod === 'card' ? 'CARD' : paymentMethod === 'mbob' ? 'MBOB' : paymentMethod === 'cod' ? 'COD' : 'BANK';
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -118,6 +119,7 @@ export default function BasketPage() {
 
   const payOptions = [
     { key: 'card', name: 'International card', note: 'Visa, Mastercard, Amex — 3-D Secure' },
+    { key: 'cod', name: 'Cash on Delivery (COD)', note: 'Pay in cash or mBoB upon parcel arrival' },
     { key: 'mbob', name: 'Bhutan mobile pay', note: 'mBoB / RMA-approved wallets, in Nu.' },
     { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
   ];

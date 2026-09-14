@@ -13,6 +13,7 @@ import {
   CreditCard, 
   QrCode, 
   Building2, 
+  Banknote,
   Lock, 
   ArrowRight, 
   AlertCircle, 
@@ -36,7 +37,8 @@ export default function CheckoutPage() {
   } = useCart();
   const { currency, fmt } = useCurrency();
 
-  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BANK'>('CARD');
+  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BANK' | 'COD'>('CARD');
+  const [gatewayMethods, setGatewayMethods] = useState<any>(null);
   const [mbobRef, setMbobRef] = useState('');
   const [cardDetails, setCardDetails] = useState({
     number: '',
@@ -44,6 +46,17 @@ export default function CheckoutPage() {
     cvc: '',
     nameOnCard: '',
   });
+
+  useEffect(() => {
+    fetch('/api/payment-methods', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.methods) {
+          setGatewayMethods(d.methods);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [customer, setCustomer] = useState({
     fullName: '',
@@ -387,7 +400,7 @@ export default function CheckoutPage() {
                 Payment Method
               </h2>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('CARD')}
@@ -399,6 +412,19 @@ export default function CheckoutPage() {
                 >
                   <CreditCard className="w-5 h-5" />
                   <span>Card Online</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('COD')}
+                  className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
+                    paymentMethod === 'COD'
+                      ? 'border-[#8B2E24] bg-[#8B2E24]/5 text-[#8B2E24] ring-1 ring-[#8B2E24]'
+                      : 'border-[#E4DDD1] text-[#6B5A4C] hover:border-slate-300'
+                  }`}
+                >
+                  <Banknote className="w-5 h-5" />
+                  <span>Cash on Delivery</span>
                 </button>
 
                 <button
@@ -431,6 +457,16 @@ export default function CheckoutPage() {
               {/* Payment Details Container */}
               {paymentMethod === 'CARD' && (
                 <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] space-y-3">
+                  {gatewayMethods?.card?.isSandbox !== false && (
+                    <div className="p-3 bg-amber-500/10 border border-amber-400/25 rounded-lg text-xs text-amber-900 space-y-1">
+                      <div className="font-semibold flex items-center gap-1.5 text-amber-800">
+                        <span>⚡</span> Gateway Sandbox / Test Mode
+                      </div>
+                      <p className="text-[11px] text-amber-700 leading-relaxed">
+                        This store is currently in Gateway Sandbox Mode. Card payments are authorized in test mode. In production, payments route directly through 3D-Secure Stripe.
+                      </p>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 text-xs text-slate-600">
                     <Lock className="w-4 h-4 text-emerald-600" />
                     <span>256-Bit SSL Encrypted Card Processing</span>
@@ -522,6 +558,22 @@ export default function CheckoutPage() {
                   <p className="text-[11px] text-[#6B5A4C]">
                     Please quote your Order Number in the wire transfer reference. Orders ship once transfer settles.
                   </p>
+                </div>
+              )}
+
+              {paymentMethod === 'COD' && (
+                <div className="p-4 rounded-xl bg-[#FBF9F5] border border-amber-300/60 space-y-2.5 text-xs">
+                  <div className="font-semibold text-[#33261F] flex items-center gap-2">
+                    <Banknote className="w-4 h-4 text-amber-700" />
+                    <span>Cash on Delivery (COD) / Pay upon Arrival</span>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    {gatewayMethods?.cod?.instructions || 'Please keep the exact order amount ready in Cash (Nu.) or via mBoB when your courier delivers your package.'}
+                  </p>
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Your order will be packed and dispatched directly by the HAB Secretariat. Payment is collected upon parcel delivery.</span>
+                  </div>
                 </div>
               )}
             </div>

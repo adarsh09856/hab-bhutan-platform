@@ -39,7 +39,8 @@ import {
   Calendar,
   Heart,
   Award,
-  Layers
+  Layers,
+  CreditCard
 } from 'lucide-react';
 
 interface HealthData {
@@ -152,6 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
         { label: 'Customer Orders', href: '/admin/orders', icon: Package },
+        { label: 'Payment Gateways & Methods', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
         { label: 'Store Counter (POS)', href: '/admin/pos', icon: Store, badge: 'Retail' },
         { label: 'Wholesale & Bulk Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
         { label: 'The 13 Crafts (Zorig Chusum)', href: '/admin/crafts', icon: Palette },
@@ -198,6 +200,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       group: '7. Settings & Administration',
       items: [
+        { label: 'Payment Gateways & Methods', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
         { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'Store FX' },
         { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Staff' },
         { label: 'Sales & Financial Reports', href: '/admin/reports', icon: BarChart3 },

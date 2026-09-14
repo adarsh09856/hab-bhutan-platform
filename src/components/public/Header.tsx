@@ -374,6 +374,16 @@ export default function Header() {
             </div>
           </div>
 
+          <Link
+            className="chip"
+            href="/account"
+            title="Customer Account & Order History"
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 8px', fontSize: '11px', fontWeight: 600 }}
+          >
+            <span aria-hidden="true">👤</span>
+            <span>Account</span>
+          </Link>
+
           <Link className="basket" href="/basket" aria-label={t('nav.basket', 'Basket')}>
             <span aria-hidden="true">🧺</span>
             {cartCount > 0 ? (

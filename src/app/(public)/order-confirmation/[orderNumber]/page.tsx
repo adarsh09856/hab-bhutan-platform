@@ -15,7 +15,8 @@ import {
   QrCode, 
   ShieldCheck,
   Mail,
-  Phone
+  Phone,
+  Banknote
 } from 'lucide-react';
 
 export default function OrderConfirmationPage() {
@@ -277,6 +278,21 @@ export default function OrderConfirmationPage() {
               <p className="text-[#6B5A4C] leading-relaxed">
                 Thank you for your local order. If you have not already entered your transaction journal number, please send your payment screenshot with order reference <strong>{orderNumber}</strong> to our secretariat via WhatsApp at <strong>+975-2-338089</strong> or email <strong>officehab@gmail.com</strong>.
               </p>
+            </div>
+          )}
+
+          {order?.paymentMethod === 'COD' && (
+            <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-3">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                <Banknote className="w-4 h-4 text-amber-700" />
+                <span>Cash on Delivery (COD) Confirmed</span>
+              </div>
+              <p className="text-[#6B5A4C] leading-relaxed">
+                Your order is confirmed and has been queued for packaging at the HAB Secretariat in Thimphu. Please have Nu. <strong>{order.totalPaidCurrency || (order.currencyUsed === 'BTN' ? Math.round(order.totalUSD * 84) : order.totalUSD)}</strong> ready in cash or via mBoB when your courier delivers your package.
+              </p>
+              <div className="text-[11px] text-amber-900 font-medium">
+                📍 Delivery to: {order?.shippingAddress?.street ? `${order.shippingAddress.street}, ${order.shippingAddress.city || 'Thimphu'}` : 'Specified delivery address'}
+              </div>
             </div>
           )}
 

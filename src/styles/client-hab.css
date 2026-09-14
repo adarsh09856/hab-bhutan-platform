@@ -260,15 +260,16 @@ textarea.input{line-height:1.5;resize:vertical}
    CHROME — utility bar, header, menus
    ========================================================================== */
 
-.utility{background:var(--ink);color:var(--on-dark-body)}
+.utility{background:var(--ink);color:var(--on-dark-body);overflow:hidden}
 .utility__inner{
   max-width:var(--shell);margin:0 auto;padding:0 var(--gutter);
-  min-height:var(--utility-h);display:flex;align-items:center;gap:22px;
+  min-height:var(--utility-h);display:flex;align-items:center;gap:18px;
   font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+  overflow:hidden;
 }
-.utility__status{color:var(--on-dark);white-space:nowrap}
+.utility__status{color:var(--on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:480px}
 .utility__spacer{flex:1}
-.utility__links{display:flex;gap:22px}
+.utility__links{display:flex;gap:18px;overflow:hidden}
 .utility__links a{color:var(--on-dark-body);white-space:nowrap}
 .utility__links a:hover{color:#fff}
 .utility__rule{width:1px;height:15px;background:var(--dark-line)}
