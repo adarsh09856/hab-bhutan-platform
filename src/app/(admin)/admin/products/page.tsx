@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CRAFTS } from '@/lib/data';
 import { 
   Package, 
@@ -21,6 +21,164 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
+
+// Intuitive, non-technical drag-and-drop & file picker photo uploader
+function ImageUploadField({
+  value,
+  onChange,
+  label = 'Product Photograph',
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  label?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [showManualUrl, setShowManualUrl] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    if (!file) return;
+    setError('');
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: fd,
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.url) {
+        onChange(data.url);
+      } else {
+        setError(data.error || 'Failed to upload photo. Please check format and try again.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Upload connection error.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="block font-semibold text-slate-200 text-xs">{label}</label>
+
+      {/* Upload Zone & Live Preview */}
+      {value ? (
+        <div className="relative rounded-xl border border-white/15 p-3.5 bg-white/[0.03] flex items-center gap-4">
+          <div className="w-20 h-20 rounded-lg overflow-hidden bg-black/40 flex-none border border-white/10 relative shadow-inner">
+            <img
+              src={value}
+              alt="Product preview"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg';
+              }}
+            />
+          </div>
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="text-xs text-white font-medium truncate font-mono">
+              {value.split('/').pop()}
+            </div>
+            <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <CheckCircle className="w-3.5 h-3.5" /> Photo uploaded and attached
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-slate-200 transition-colors cursor-pointer"
+              >
+                Change photo
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+            uploading
+              ? 'border-amber-400 bg-amber-400/10'
+              : 'border-white/20 hover:border-amber-400/80 hover:bg-white/[0.03]'
+          }`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                handleFile(e.target.files[0]);
+              }
+            }}
+          />
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="w-11 h-11 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300">
+              <Upload className={`w-5 h-5 ${uploading ? 'animate-bounce' : ''}`} />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-200">
+                {uploading ? 'Uploading image to server...' : 'Click to choose photo from computer/phone, or drag & drop here'}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Supports JPG, PNG, WEBP files up to 10MB
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-rose-300 text-[11px] flex items-center gap-1.5 p-2 rounded bg-rose-500/10 border border-rose-500/20">
+          <AlertTriangle className="w-3.5 h-3.5 flex-none text-rose-400" /> {error}
+        </p>
+      )}
+
+      {/* Optional fallback for advanced manual URL entry */}
+      <div className="pt-1">
+        <button
+          type="button"
+          onClick={() => setShowManualUrl(!showManualUrl)}
+          className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors cursor-pointer underline"
+        >
+          {showManualUrl ? '− Hide web link option' : '+ Or paste image web link manually'}
+        </button>
+        {showManualUrl && (
+          <div className="mt-1.5">
+            <input
+              type="text"
+              placeholder="e.g. /assets/photos/product-sample.jpg or https://..."
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className="w-full admin-input border rounded-lg px-3 py-2 font-mono text-[11px]"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -157,7 +315,7 @@ export default function AdminProductsPage() {
   const handleOpenEdit = (p: any) => {
     setEditingProduct(p);
     const existingImages = Array.isArray(p.images) ? p.images : [];
-    const primaryImg = existingImages[0]?.url || p.images?.url || '';
+    const primaryImg = existingImages[0]?.url || p.images?.url || p.image_path || (p.code ? `/assets/photos/product-${p.code.toLowerCase()}.jpg` : '');
     setEditForm({
       id: p.id,
       code: p.code,
@@ -571,6 +729,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono uppercase outline-none"
               />
+              <span className="text-[10.5px] text-slate-400 block mt-1">Unique tracking code for inventory.</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">USD Price ($) *</label>
@@ -583,6 +742,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, priceUSD: e.target.value })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono outline-none"
               />
+              <span className="text-[10.5px] text-slate-400 block mt-1">Price in USD (auto-converted to Nu. on website).</span>
             </div>
           </div>
 
@@ -596,6 +756,7 @@ export default function AdminProductsPage() {
               onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
               className="w-full admin-input border rounded-lg px-3 py-2 outline-none"
             />
+            <span className="text-[10.5px] text-slate-400 block mt-1">Full descriptive title shown on public store and receipts.</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -604,12 +765,13 @@ export default function AdminProductsPage() {
               <select
                 value={addForm.craftKey}
                 onChange={(e) => setAddForm({ ...addForm, craftKey: e.target.value })}
-                className="w-full admin-input border rounded-lg px-3 py-2"
+                className="w-full admin-input border rounded-lg px-3 py-2 cursor-pointer"
               >
                 {CRAFTS.map((c) => (
                   <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
                 ))}
               </select>
+              <span className="text-[10.5px] text-slate-400 block mt-1">One of the 13 Bhutanese Arts (Zorig Chusum).</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Origin Dzongkhag</label>
@@ -620,6 +782,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, region: e.target.value })}
                 className="w-full admin-input border rounded-lg px-3 py-2"
               />
+              <span className="text-[10.5px] text-slate-400 block mt-1">District where the item was handcrafted.</span>
             </div>
           </div>
 
@@ -629,7 +792,7 @@ export default function AdminProductsPage() {
               <select
                 value={addForm.makerMemberId}
                 onChange={(e) => setAddForm({ ...addForm, makerMemberId: e.target.value })}
-                className="w-full admin-input border rounded-lg px-3 py-2"
+                className="w-full admin-input border rounded-lg px-3 py-2 cursor-pointer"
               >
                 <option value="">HAB Guild Artisans (General)</option>
                 {members.map((m) => (
@@ -638,6 +801,7 @@ export default function AdminProductsPage() {
                   </option>
                 ))}
               </select>
+              <span className="text-[10.5px] text-slate-400 block mt-1">Credit registered master artisan or weaving cluster.</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Initial Stock Count</label>
@@ -648,19 +812,16 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, stock: parseInt(e.target.value) || 0 })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono"
               />
+              <span className="text-[10.5px] text-slate-400 block mt-1">Number of physical items currently available in inventory.</span>
             </div>
           </div>
 
-          <div>
-            <label className="block font-medium admin-text mb-1">Primary Image URL</label>
-            <input
-              type="text"
-              placeholder="/images/crafts/parzo.jpg"
-              value={addForm.imageUrl}
-              onChange={(e) => setAddForm({ ...addForm, imageUrl: e.target.value })}
-              className="w-full admin-input border rounded-lg px-3 py-2 font-mono text-[11px]"
-            />
-          </div>
+          {/* Photo Uploader Component */}
+          <ImageUploadField
+            value={addForm.imageUrl}
+            onChange={(url) => setAddForm({ ...addForm, imageUrl: url, images: url ? [{ url, role: 'primary' }] : [] })}
+            label="Product Photograph (Upload from your computer or phone)"
+          />
 
           <div>
             <label className="block font-medium admin-text mb-1">Curatorial Provenance &amp; Materials</label>
@@ -671,6 +832,7 @@ export default function AdminProductsPage() {
               onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
               className="w-full admin-input border rounded-lg px-3 py-2"
             />
+            <span className="text-[10.5px] text-slate-400 block mt-1">Story, materials used, techniques, and cultural symbolism.</span>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t admin-border">
@@ -764,15 +926,12 @@ export default function AdminProductsPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block font-medium admin-text mb-1">Primary Image URL</label>
-              <input
-                type="text"
-                value={editForm.imageUrl}
-                onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                className="w-full admin-input border rounded-lg px-3 py-2 font-mono text-[11px]"
-              />
-            </div>
+            {/* Photo Uploader Component */}
+            <ImageUploadField
+              value={editForm.imageUrl}
+              onChange={(url) => setEditForm({ ...editForm, imageUrl: url, images: url ? [{ url, role: 'primary' }] : [] })}
+              label="Product Photograph (Upload from your computer or phone)"
+            />
 
             <div>
               <label className="block font-medium admin-text mb-1">Description &amp; Cultural Context</label>

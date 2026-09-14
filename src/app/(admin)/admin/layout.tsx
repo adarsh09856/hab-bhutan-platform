@@ -142,54 +142,64 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: 'Overview',
+      group: '1. Overview & Analytics',
       items: [
-        { label: 'Executive Dashboard', href: '/admin', icon: LayoutDashboard },
+        { label: 'Executive Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
       ],
     },
     {
-      group: 'Commerce & Orders',
+      group: '2. Store & Products',
       items: [
-        { label: 'Orders & Fulfillment', href: '/admin/orders', icon: Package },
         { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
-        { label: 'Point of Sale (POS)', href: '/admin/pos', icon: Store, badge: 'Retail' },
-        { label: 'Wholesale & B2B Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
-        { label: '13 Crafts CMS', href: '/admin/crafts', icon: Palette },
-        { label: 'Clusters & Outlets', href: '/admin/clusters-outlets', icon: Store },
+        { label: 'Customer Orders', href: '/admin/orders', icon: Package },
+        { label: 'Store Counter (POS)', href: '/admin/pos', icon: Store, badge: 'Retail' },
+        { label: 'Wholesale & Bulk Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'The 13 Crafts (Zorig Chusum)', href: '/admin/crafts', icon: Palette },
+        { label: 'Craft Markets & Outlets', href: '/admin/clusters-outlets', icon: Store },
       ],
     },
     {
-      group: 'People & Accounts',
+      group: '3. Artisans & Members',
       items: [
-        { label: 'Users & Credentials', href: '/admin/users', icon: ShieldCheck, badge: 'RBAC' },
-        { label: 'Artisan Members', href: '/admin/members', icon: Users },
-        { label: 'Applications Queue', href: '/admin/applications', icon: ClipboardList },
-        { label: 'Membership Dues & Tiers', href: '/admin/membership-settings', icon: BadgePercent },
-        { label: 'Membership Tiers', href: '/admin/membership-categories', icon: Layers },
+        { label: 'Artisan Directory', href: '/admin/members', icon: Users },
+        { label: 'Membership Applications', href: '/admin/applications', icon: ClipboardList },
+        { label: 'Membership Categories', href: '/admin/membership-categories', icon: Layers },
+        { label: 'Dues & Renewal Ledger', href: '/admin/membership-settings', icon: BadgePercent },
+        { label: 'Master Honours & Awards', href: '/admin/honours', icon: Award },
       ],
     },
     {
-      group: 'Site CMS & Content',
+      group: '4. Website & Pages',
       items: [
-        { label: 'Website CMS & Bands', href: '/admin/site-settings', icon: Globe },
-        { label: 'Media & Image Assets', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
-        { label: 'Navigation & Menus', href: '/admin/navigation', icon: Navigation },
-        { label: 'Statutory Programmes', href: '/admin/programmes', icon: BookOpen },
-        { label: 'Inquiries Inbox', href: '/admin/inquiries', icon: Mail },
-        { label: 'Projects & Impact', href: '/admin/projects', icon: FolderKanban },
-        { label: 'Hero Slides', href: '/admin/hero', icon: Sparkles },
-        { label: 'Events & Expos', href: '/admin/events', icon: Calendar },
-        { label: 'Donations & Support', href: '/admin/donate-settings', icon: Heart },
-        { label: 'Master Honours', href: '/admin/honours', icon: Award },
-        { label: 'News & Publications', href: '/admin/content', icon: FileText },
-        { label: 'Policies & Legal CMS', href: '/admin/policies', icon: ShieldCheck },
+        { label: 'Website CMS & Settings', href: '/admin/site-settings', icon: Globe },
+        { label: 'Homepage Banners & Slides', href: '/admin/hero', icon: Sparkles },
+        { label: 'Menus & Navigation Links', href: '/admin/navigation', icon: Navigation },
+        { label: 'Photo & Media Library', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
+        { label: 'Store Policies & Legal', href: '/admin/policies', icon: ShieldCheck },
+        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
       ],
     },
     {
-      group: 'Finance & System',
+      group: '5. News, Events & Programmes',
       items: [
-        { label: 'Financial Reports', href: '/admin/reports', icon: BarChart3 },
-        { label: 'System Settings', href: '/admin/settings', icon: Settings },
+        { label: 'News, Stories & Articles', href: '/admin/content', icon: FileText },
+        { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
+        { label: 'Donor Projects & Impact', href: '/admin/projects', icon: FolderKanban },
+        { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
+      ],
+    },
+    {
+      group: '6. Customer Inbox',
+      items: [
+        { label: 'Contact Inquiries', href: '/admin/inquiries', icon: Mail },
+      ],
+    },
+    {
+      group: '7. Settings & Administration',
+      items: [
+        { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Staff' },
+        { label: 'Sales & Financial Reports', href: '/admin/reports', icon: BarChart3 },
+        { label: 'System Health & Settings', href: '/admin/settings', icon: Settings },
       ],
     },
   ];
@@ -375,9 +385,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               if (visibleItems.length === 0) return null;
 
               return (
-                <div key={group.group}>
-                  <div className="px-3 mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-slate-400">
-                    {group.group}
+                <div key={group.group} className="pt-1">
+                  <div className="px-3 pb-1 mb-1 border-b border-white/5 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-amber-400/90">
+                    <span>{group.group}</span>
+                    <span className="text-[10px] font-mono font-normal text-slate-500">{visibleItems.length}</span>
                   </div>
                   <div className="space-y-1">
                     {visibleItems.map((item) => {
