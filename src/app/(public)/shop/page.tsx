@@ -59,7 +59,7 @@ const PRODUCT_POOL = [
             data.products.map((p: any, idx: number) => {
               let img = p.image_path || p.imageUrl;
               if (!img || img.includes('placeholder') || img.includes('training_workshop')) {
-                img = PRODUCT_POOL[idx % PRODUCT_POOL.length];
+                img = `/images/products/${p.code.toLowerCase()}.jpg`;
               }
               return {
                 code: p.code,

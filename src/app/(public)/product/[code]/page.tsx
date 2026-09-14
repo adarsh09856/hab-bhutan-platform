@@ -45,7 +45,7 @@ export default function ProductDetailPage() {
             materials: p.materials || p.material || 'Naturally dyed local materials',
             care: p.care || 'Spot clean or gentle hand wash; do not soak',
             lead: p.lead || 'Ships in 2 working days with EMS tracking and craft certificate',
-            image_path: p.image_path || p.imageUrl || '/assets/photos/product-hhb01.jpg',
+            image_path: p.image_path || p.imageUrl || `/images/products/${p.code.toLowerCase()}.jpg`,
             maker_blurb: p.maker?.bio || 'Registered artisan practicing traditional craft heritage under the Handicrafts Association of Bhutan.',
             maker_since: p.maker?.memberSince || '2015',
           });
@@ -64,9 +64,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (product) {
-      for (let i = 0; i < quantity; i++) {
-        addToCart(product.code);
-      }
+      addToCart(product.code, quantity);
     }
   };
 
@@ -112,9 +110,9 @@ export default function ProductDetailPage() {
   }
 
   const galleryImages = [
-    product.image_path,
+    product.image_path || `/images/products/${product.code.toLowerCase()}.jpg`,
+    `/assets/photos/product-${product.code.toLowerCase()}.jpg`,
     '/assets/photos/product-sad03.jpg',
-    '/assets/photos/product-cam01.jpg',
   ];
 
   return (

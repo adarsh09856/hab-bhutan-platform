@@ -297,9 +297,10 @@ export default function CraftProfilePage() {
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img>
                     <img
-                      src={p.image_path || `/images/product-sad03.jpg`}
+                      src={p.image_path || `/images/products/${p.code.toLowerCase()}.jpg`}
                       alt={p.name}
                       loading="lazy"
+                      onError={(e) => { (e.target as HTMLImageElement).src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`; }}
                     />
                     <figcaption className="frame__caption frame__caption--sm">
                       photo — {p.name.toLowerCase()}

@@ -34,9 +34,14 @@ export default function ProductCard({
         <img
           src={`/images/products/${code.toLowerCase()}.jpg`}
           alt={name}
-          className="transition-transform duration-500 ease-out group-hover:scale-105"
+          className="transition-transform duration-500 ease-out group-hover:scale-105 w-full h-full object-cover"
           onError={(e) => {
-            (e.target as HTMLElement).style.display = 'none';
+            const target = e.target as HTMLImageElement;
+            if (!target.src.includes('/assets/photos/product-')) {
+              target.src = `/assets/photos/product-${code.toLowerCase()}.jpg`;
+            } else {
+              target.src = '/assets/photos/product-hhb01.jpg';
+            }
           }}
         />
         <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#33261F] bg-[#FFFCF8]/90 backdrop-blur-sm px-[8px] py-[3px] rounded-[4px] border border-[#E4DDD1]">

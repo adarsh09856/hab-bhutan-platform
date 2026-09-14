@@ -598,7 +598,7 @@ export default function HomePage() {
         <div className="grid grid--4">
           {products.slice(0, 4).map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
-            const productImg = p.image_path || (p.images && p.images[0]?.url) || PRODUCT_POOL[pIdx % PRODUCT_POOL.length];
+            const productImg = p.image_path || (p.images && p.images[0]?.url) || `/images/products/${p.code.toLowerCase()}.jpg`;
             return (
               <article key={p.code} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`}>
@@ -607,7 +607,7 @@ export default function HomePage() {
                       src={productImg}
                       alt={p.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => { (e.target as HTMLImageElement).src = PRODUCT_POOL[pIdx % PRODUCT_POOL.length]; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`; }}
                     />
                     <figcaption className="frame__caption frame__caption--sm">{p.slot || p.code}</figcaption>
                   </figure>

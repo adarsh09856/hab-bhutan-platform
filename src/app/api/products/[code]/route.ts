@@ -36,9 +36,18 @@ export async function GET(
         take: 4,
       });
 
+      let img = (product.images as any)?.[0]?.url;
+      if (!img || img.includes('placeholder') || img.includes('parotaktshang')) {
+        img = `/images/products/${product.code.toLowerCase()}.jpg`;
+      }
+
       return NextResponse.json({
         success: true,
-        product,
+        product: {
+          ...product,
+          image_path: img,
+          imageUrl: img,
+        },
         related,
       });
     }

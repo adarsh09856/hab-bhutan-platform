@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       const mapped = dbProducts.map((p, idx) => {
         let img = (p.images as any)?.[0]?.url;
         if (!img || img.includes('placeholder') || img.includes('parotaktshang')) {
-          img = productPool[idx % productPool.length];
+          img = `/images/products/${p.code.toLowerCase()}.jpg`;
         }
         return {
           ...p,

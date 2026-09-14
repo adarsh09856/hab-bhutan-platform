@@ -168,15 +168,18 @@ export default function BasketPage() {
                     const craft = CLIENT_DATA.crafts.find((c) => c.key === line.craftKey) || { name: line.craftKey || 'Craft' };
                     return (
                       <div key={line.code} className="basketline">
-                        <span className="basketline__thumb" style={{ position: 'relative', overflow: 'hidden' }}>
-                          <Image
-                            src={`/assets/photos/product-${line.code.toLowerCase().slice(0, 5)}.jpg`}
+                        <span className="basketline__thumb" style={{ position: 'relative', overflow: 'hidden', display: 'block', width: '86px', height: '86px', borderRadius: '8px', background: 'var(--panel-soft, #f5efe6)', flexShrink: 0 }}>
+                          <img
+                            src={line.imageUrl || `/images/products/${line.code.toLowerCase()}.jpg`}
                             alt={line.name}
-                            fill
-                            sizes="86px"
-                            style={{ objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                             onError={(e) => {
-                              (e.target as HTMLElement).style.display = 'none';
+                              const target = e.target as HTMLImageElement;
+                              if (!target.src.includes('/assets/photos/product-')) {
+                                target.src = `/assets/photos/product-${line.code.toLowerCase()}.jpg`;
+                              } else {
+                                target.src = '/assets/photos/product-hhb01.jpg';
+                              }
                             }}
                           />
                         </span>
@@ -201,7 +204,7 @@ export default function BasketPage() {
                           <button
                             type="button"
                             className="qty__btn"
-                            onClick={() => addToCart(line.code)}
+                            onClick={() => addToCart(line.code, 1, { silent: true })}
                           >
                             +
                           </button>
