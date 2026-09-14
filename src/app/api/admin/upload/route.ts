@@ -20,20 +20,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'No image file provided in request.' }, { status: 400 });
     }
 
-    // Validate MIME type
-    const validMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/svg+xml'];
-    if (!validMimes.includes(file.type)) {
+    // Validate MIME type & file extension
+    const validMimes = [
+      // Images
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/svg+xml',
+      // Documents & PDFs
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain',
+      'text/csv',
+      'application/octet-stream' // fallback
+    ];
+
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv'];
+    const fileExt = file.name && file.name.includes('.') ? file.name.split('.').pop()?.toLowerCase() || '' : '';
+
+    if (!validMimes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
       return NextResponse.json(
-        { success: false, error: 'Unsupported file type. Please upload a JPG, PNG, WEBP, or GIF image.' },
+        { success: false, error: 'Unsupported file format. Please upload a PDF, Word document, Excel spreadsheet, or standard image (JPG/PNG).' },
         { status: 400 }
       );
     }
 
-    // Max file size: 10MB
-    const MAX_SIZE = 10 * 1024 * 1024;
+    // Max file size: 30MB
+    const MAX_SIZE = 30 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { success: false, error: 'File size exceeds maximum allowable limit of 10MB.' },
+        { success: false, error: 'File size exceeds maximum allowable limit of 30MB.' },
         { status: 400 }
       );
     }
@@ -45,15 +61,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Determine clean extension
-    let ext = 'jpg';
-    if (file.type === 'image/png') ext = 'png';
+    let ext = fileExt || 'bin';
+    if (file.type === 'application/pdf') ext = 'pdf';
+    else if (file.type === 'image/jpeg') ext = 'jpg';
+    else if (file.type === 'image/png') ext = 'png';
     else if (file.type === 'image/webp') ext = 'webp';
     else if (file.type === 'image/gif') ext = 'gif';
-    else if (file.type === 'image/avif') ext = 'avif';
     else if (file.type === 'image/svg+xml') ext = 'svg';
-    else if (file.name && file.name.includes('.')) {
-      ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    }
+    else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') ext = 'docx';
+    else if (file.type === 'application/msword') ext = 'doc';
 
     const safeBaseName = (file.name || 'product')
       .replace(/\.[^/.]+$/, '')

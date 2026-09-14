@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react';
 import { LucideIcon, Loader2, X, TrendingUp, TrendingDown } from 'lucide-react';
 
 /* =========================================================================
-   1. GlassCard: Frosted translucent container with glowing borders
+   1. GlassCard: Clean high-contrast card container
    ========================================================================= */
 interface GlassCardProps {
   children: ReactNode;
@@ -20,20 +20,18 @@ export function GlassCard({
   onClick,
 }: GlassCardProps) {
   const glowStyles = {
-    none: 'hover:border-white/20',
-    amber: 'hover:border-amber-500/40 hover:shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)]',
-    rose: 'hover:border-rose-500/40 hover:shadow-[0_0_30px_-5px_rgba(244,63,94,0.15)]',
-    emerald: 'hover:border-emerald-500/40 hover:shadow-[0_0_30px_-5px_rgba(16,185,129,0.15)]',
-    indigo: 'hover:border-indigo-500/40 hover:shadow-[0_0_30px_-5px_rgba(99,102,241,0.15)]',
+    none: 'hover:border-slate-300',
+    amber: 'hover:border-amber-400 hover:shadow-md',
+    rose: 'hover:border-rose-400 hover:shadow-md',
+    emerald: 'hover:border-emerald-400 hover:shadow-md',
+    indigo: 'hover:border-indigo-400 hover:shadow-md',
   };
 
   return (
     <div
       onClick={onClick}
-      className={`relative overflow-hidden rounded-2xl bg-slate-900/65 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] transition-all duration-300 ${glowStyles[glow]} ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-white border border-slate-200 shadow-xs transition-all duration-200 text-slate-900 ${glowStyles[glow]} ${className}`}
     >
-      {/* Subtle top ambient sheen */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       {children}
     </div>
   );
@@ -66,10 +64,10 @@ export function GlassStatWidget({
   onClick,
 }: GlassStatWidgetProps) {
   const iconGlows = {
-    amber: 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]',
-    rose: 'bg-rose-500/15 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]',
-    emerald: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]',
-    indigo: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.2)]',
+    amber: 'bg-amber-50 text-amber-800 border border-amber-200',
+    rose: 'bg-rose-50 text-rose-700 border border-rose-200',
+    emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    indigo: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
   };
 
   // Generate SVG sparkline path
@@ -92,10 +90,10 @@ export function GlassStatWidget({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-400">{title}</p>
-          <div className="mt-1 text-2xl font-bold tracking-tight text-white">{value}</div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</p>
+          <div className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{value}</div>
           {subtitle && (
-            <p className="mt-0.5 text-xs font-mono text-slate-400">{subtitle}</p>
+            <p className="mt-0.5 text-xs font-mono text-slate-500">{subtitle}</p>
           )}
         </div>
         <div className={`p-3 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 duration-200 ${iconGlows[glow]}`}>
@@ -103,31 +101,31 @@ export function GlassStatWidget({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/5">
+      <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100">
         {trendPct !== undefined ? (
           <div className="flex items-center gap-1.5 text-xs">
             <span
               className={`inline-flex items-center font-semibold px-2 py-0.5 rounded-full border ${
                 trendPct >= 0
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-rose-50 text-rose-700 border-rose-200'
               }`}
             >
               {trendPct >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
               {trendPct >= 0 ? `+${trendPct}%` : `${trendPct}%`}
             </span>
-            <span className="text-[11px] text-slate-400">{trendLabel}</span>
+            <span className="text-[11px] text-slate-500">{trendLabel}</span>
           </div>
         ) : (
-          <div className="text-[11px] text-slate-400">{trendLabel}</div>
+          <div className="text-[11px] text-slate-500">{trendLabel}</div>
         )}
 
         {/* Miniature SVG Sparkline */}
-        <div className="w-[90px] h-[28px] opacity-75 group-hover:opacity-100 transition-opacity">
+        <div className="w-[90px] h-[28px] opacity-80 group-hover:opacity-100 transition-opacity">
           <svg viewBox="0 0 90 28" className="w-full h-full overflow-visible">
             <polyline
               fill="none"
-              stroke={glow === 'emerald' ? '#34d399' : glow === 'rose' ? '#fb7185' : glow === 'indigo' ? '#818cf8' : '#fbbf24'}
+              stroke={glow === 'emerald' ? '#059669' : glow === 'rose' ? '#e11d48' : glow === 'indigo' ? '#4f46e5' : '#d97706'}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -141,7 +139,7 @@ export function GlassStatWidget({
 }
 
 /* =========================================================================
-   3. GlassBadge: Frosted Status Badge with Pulsing Dot
+   3. GlassBadge: Clear Status Badge with Pulsing Dot
    ========================================================================= */
 interface GlassBadgeProps {
   status?: string;
@@ -181,26 +179,26 @@ export function GlassBadge({
   }
 
   const styles = {
-    emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-    amber: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-    rose: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
-    blue: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
-    indigo: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
-    slate: 'bg-slate-700/30 text-slate-300 border-slate-600/40',
+    emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    amber: 'bg-amber-50 text-amber-800 border-amber-200',
+    rose: 'bg-rose-50 text-rose-800 border-rose-200',
+    blue: 'bg-sky-50 text-sky-800 border-sky-200',
+    indigo: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+    slate: 'bg-slate-100 text-slate-700 border-slate-200',
   };
 
   const dots = {
-    emerald: 'bg-emerald-400',
-    amber: 'bg-amber-400',
-    rose: 'bg-rose-400',
-    blue: 'bg-sky-400',
-    indigo: 'bg-indigo-400',
-    slate: 'bg-slate-400',
+    emerald: 'bg-emerald-500',
+    amber: 'bg-amber-500',
+    rose: 'bg-rose-500',
+    blue: 'bg-sky-500',
+    indigo: 'bg-indigo-500',
+    slate: 'bg-slate-500',
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide border backdrop-blur-md shadow-xs ${styles[v]}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide border shadow-2xs ${styles[v]}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dots[v]} ${pulse ? 'animate-pulse' : ''}`} />
       <span>{label}</span>
@@ -208,9 +206,8 @@ export function GlassBadge({
   );
 }
 
-
 /* =========================================================================
-   4. GlassButton: Tactile Action Button with subtle shimmer
+   4. GlassButton: Tactile Action Button
    ========================================================================= */
 interface GlassButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
@@ -238,13 +235,13 @@ export function GlassButton({
 
   const variants = {
     primary:
-      'bg-gradient-to-r from-[#8B2E24] to-[#B23E30] hover:from-[#A0352A] hover:to-[#C64738] text-white shadow-[0_4px_20px_rgba(139,46,36,0.35)] border border-rose-400/30 hover:border-rose-300/50',
+      'bg-[#8B2E24] hover:bg-[#73241C] text-white shadow-xs border border-[#73241C]',
     secondary:
-      'bg-slate-800/70 hover:bg-slate-800 text-slate-200 border border-white/10 hover:border-white/25 backdrop-blur-xl shadow-xs',
+      'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs',
     danger:
-      'bg-gradient-to-r from-rose-900/80 to-rose-800/80 hover:from-rose-800 hover:to-rose-700 text-rose-100 border border-rose-500/40 shadow-[0_4px_15px_rgba(244,63,94,0.25)]',
+      'bg-rose-600 hover:bg-rose-700 text-white shadow-xs border border-rose-700',
     ghost:
-      'bg-transparent hover:bg-white/10 text-slate-300 hover:text-white border border-transparent',
+      'bg-transparent hover:bg-slate-100 text-slate-700 border border-transparent',
   };
 
   return (
@@ -298,22 +295,22 @@ export function GlassDrawer({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
       />
 
       <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
         <div
-          className={`w-screen ${widths[width]} transform bg-slate-900/90 backdrop-blur-2xl border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.7)] flex flex-col`}
+          className={`w-screen ${widths[width]} transform bg-white border-l border-slate-200 shadow-2xl flex flex-col`}
         >
           {/* Header */}
-          <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+          <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>
-              {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">{title}</h3>
+              {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -326,7 +323,7 @@ export function GlassDrawer({
 
           {/* Footer */}
           {footer && (
-            <div className="px-6 py-4 border-t border-white/10 bg-slate-950/40 flex items-center justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
               {footer}
             </div>
           )}
@@ -337,7 +334,7 @@ export function GlassDrawer({
 }
 
 /* =========================================================================
-   6. GlassInput & GlassSelect: Translucent Form Elements
+   6. GlassInput & GlassSelect: Form Elements
    ========================================================================= */
 export function GlassInput({
   label,
@@ -347,15 +344,15 @@ export function GlassInput({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+        <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
           {label}
         </label>
       )}
       <input
-        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-hidden focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20 backdrop-blur-md transition-all"
+        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 text-sm focus:outline-hidden focus:border-[#8B2E24] focus:ring-2 focus:ring-[#8B2E24]/20 transition-all"
         {...props}
       />
-      {error && <p className="mt-1 text-xs text-rose-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
     </div>
   );
 }
@@ -369,17 +366,17 @@ export function GlassSelect({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+        <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
           {label}
         </label>
       )}
       <select
-        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/80 border border-white/10 text-white text-sm focus:outline-hidden focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20 backdrop-blur-md transition-all cursor-pointer"
+        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 text-sm focus:outline-hidden focus:border-[#8B2E24] focus:ring-2 focus:ring-[#8B2E24]/20 transition-all cursor-pointer"
         {...props}
       >
         {children}
       </select>
-      {error && <p className="mt-1 text-xs text-rose-400">{error}</p>}
+      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
     </div>
   );
 }

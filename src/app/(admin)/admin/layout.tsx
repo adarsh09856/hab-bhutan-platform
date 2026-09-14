@@ -89,8 +89,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     document.body.classList.add('hab-admin-body');
-    document.documentElement.style.backgroundColor = '#020617';
-    document.body.style.backgroundColor = '#020617';
+    document.documentElement.style.backgroundColor = '#f8fafc';
+    document.body.style.backgroundColor = '#f8fafc';
     return () => {
       document.body.classList.remove('hab-admin-body');
     };
@@ -143,75 +143,69 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: '1. Overview & Analytics',
+      group: '1. Overview & Reports',
       items: [
-        { label: 'Executive Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
+        { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
+        { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
       ],
     },
     {
-      group: '2. Store & Products',
+      group: '2. Shop & Sales',
       items: [
-        { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag },
-        { label: 'Customer Orders', href: '/admin/orders', icon: Package },
-        { label: 'Payment Gateways & Methods', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
-        { label: 'Store Counter (POS)', href: '/admin/pos', icon: Store, badge: 'Retail' },
-        { label: 'Wholesale & Bulk Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
-        { label: 'The 13 Crafts (Zorig Chusum)', href: '/admin/crafts', icon: Palette },
-        { label: 'Craft Markets & Outlets', href: '/admin/clusters-outlets', icon: Store },
+        { label: 'Online Orders', href: '/admin/orders', icon: Package },
+        { label: 'Counter Billing (Online POS)', href: '/admin/pos', icon: Store, badge: 'Live POS' },
+        { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag },
+        { label: 'Payment Settings', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
+        { label: 'B2B Wholesale Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'The 13 Crafts', href: '/admin/crafts', icon: Palette },
+        { label: 'Outlets & Craft Shops', href: '/admin/clusters-outlets', icon: Store },
       ],
     },
     {
-      group: '3. Artisans & Members',
+      group: '3. Artisans & Membership',
       items: [
         { label: 'Artisan Directory', href: '/admin/members', icon: Users },
-        { label: 'Membership Applications', href: '/admin/applications', icon: ClipboardList },
-        { label: 'Membership Categories', href: '/admin/membership-categories', icon: Layers },
-        { label: 'Dues & Renewal Ledger', href: '/admin/membership-settings', icon: BadgePercent },
-        { label: 'Master Honours & Awards', href: '/admin/honours', icon: Award },
+        { label: 'New Member Applications', href: '/admin/applications', icon: ClipboardList },
+        { label: 'Membership Types', href: '/admin/membership-categories', icon: Layers },
+        { label: 'Membership Fees & Renewals', href: '/admin/membership-settings', icon: BadgePercent },
+        { label: 'Master Artisans & Awards', href: '/admin/honours', icon: Award },
       ],
     },
     {
-      group: '4. Website & Pages',
+      group: '4. Website Pages & Content',
+      items: [
+        { label: 'News & Stories', href: '/admin/content', icon: FileText },
+        { label: 'Homepage Banners', href: '/admin/hero', icon: Sparkles },
+        { label: 'Menus & Links', href: '/admin/navigation', icon: Navigation },
+        { label: 'Photo & Document Library', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
+        { label: 'Training Programs', href: '/admin/programmes', icon: BookOpen },
+        { label: 'Donor Projects', href: '/admin/projects', icon: FolderKanban },
+        { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
+        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
+        { label: 'Policies & Rules', href: '/admin/policies', icon: ShieldCheck },
+      ],
+    },
+    {
+      group: '5. Messages & Enquiries',
+      items: [
+        { label: 'Customer Inquiries', href: '/admin/inquiries', icon: Mail },
+      ],
+    },
+    {
+      group: '6. Settings & Administration',
       items: [
         { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'USD/BTN' },
-        { label: 'Website CMS & Settings', href: '/admin/site-settings', icon: LayoutDashboard },
-        { label: 'Homepage Banners & Slides', href: '/admin/hero', icon: Sparkles },
-        { label: 'Menus & Navigation Links', href: '/admin/navigation', icon: Navigation },
-        { label: 'Photo & Media Library', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
-        { label: 'Store Policies & Legal', href: '/admin/policies', icon: ShieldCheck },
-        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
-      ],
-    },
-    {
-      group: '5. News, Events & Programmes',
-      items: [
-        { label: 'News, Stories & Articles', href: '/admin/content', icon: FileText },
-        { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
-        { label: 'Donor Projects & Impact', href: '/admin/projects', icon: FolderKanban },
-        { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
-      ],
-    },
-    {
-      group: '6. Customer Inbox',
-      items: [
-        { label: 'Contact Inquiries', href: '/admin/inquiries', icon: Mail },
-      ],
-    },
-    {
-      group: '7. Settings & Administration',
-      items: [
-        { label: 'Payment Gateways & Methods', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
-        { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'Store FX' },
-        { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Staff' },
-        { label: 'Sales & Financial Reports', href: '/admin/reports', icon: BarChart3 },
-        { label: 'System Health & Settings', href: '/admin/settings', icon: Settings },
+        { label: 'Website Settings', href: '/admin/site-settings', icon: LayoutDashboard },
+        { label: 'Payment Settings', href: '/admin/payments', icon: CreditCard },
+        { label: 'Staff Logins', href: '/admin/users', icon: ShieldCheck, badge: 'Staff' },
+        { label: 'System Status', href: '/admin/settings', icon: Settings },
       ],
     },
   ];
 
   // Helper to generate dynamic breadcrumbs
   const getBreadcrumbs = () => {
-    if (pathname === '/admin') return [{ label: 'Executive Dashboard', href: '/admin' }];
+    if (pathname === '/admin') return [{ label: 'Dashboard', href: '/admin' }];
     const crumbs = [{ label: 'Admin', href: '/admin' }];
     
     for (const group of navGroups) {
@@ -228,23 +222,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const breadcrumbs = getBreadcrumbs();
 
   if (isLoginPage) {
-    return <div className="hab-admin min-h-screen bg-slate-950 text-slate-100">{children}</div>;
+    return <div className="hab-admin min-h-screen bg-slate-50 text-slate-900">{children}</div>;
   }
 
   return (
-    <div className="hab-admin min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-stone-950 text-slate-100 flex flex-col relative overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-200">
-      {/* Ambient background glows for glassmorphic depth */}
-      <div className="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-amber-600/10 blur-[130px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-rose-600/10 blur-[130px] pointer-events-none" />
-      <div className="fixed top-[40%] right-[20%] w-[30vw] h-[30vw] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
-
-      {/* Top Floating Glass Header */}
-      <header className="sticky top-0 z-40 h-16 bg-slate-900/60 backdrop-blur-2xl border-b border-white/10 px-4 sm:px-6 flex items-center justify-between gap-4">
+    <div className="hab-admin min-h-screen bg-slate-50 text-slate-900 flex flex-col relative overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-900">
+      {/* Top Clean Header */}
+      <header className="sticky top-0 z-40 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 shadow-xs">
         {/* Left: Mobile hamburger & breadcrumbs */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             id="admin-sidebar-toggle"
             aria-label="Toggle sidebar"
             aria-expanded={sidebarOpen}
@@ -255,16 +244,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Breadcrumbs */}
           <nav className="hidden sm:flex items-center gap-1.5 text-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1" />
             {breadcrumbs.map((crumb, idx) => (
               <React.Fragment key={crumb.href}>
-                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-500" />}
+                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
                 <Link
                   href={crumb.href}
                   className={`transition-colors ${
                     idx === breadcrumbs.length - 1
-                      ? 'text-white font-semibold'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'text-slate-900 font-semibold'
+                      : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   {crumb.label}
@@ -278,13 +267,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex-1 max-w-md mx-auto hidden md:block">
           <button
             onClick={() => setCommandPaletteOpen(true)}
-            className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-slate-800/50 hover:bg-slate-800/80 border border-white/10 text-slate-400 text-xs transition-all backdrop-blur-md"
+            className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-100 border border-slate-200 text-slate-500 text-xs transition-all shadow-xs"
           >
             <div className="flex items-center gap-2">
               <Search className="w-3.5 h-3.5 text-slate-400" />
-              <span>Search modules or actions...</span>
+              <span>Search pages, modules or actions...</span>
             </div>
-            <kbd className="px-1.5 py-0.5 rounded bg-slate-900/80 text-[10px] font-mono text-slate-400 border border-white/10">
+            <kbd className="px-1.5 py-0.5 rounded bg-white text-[10px] font-mono text-slate-600 border border-slate-200 shadow-xs">
               Ctrl K
             </kbd>
           </button>
@@ -296,9 +285,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link
             href="/"
             target="_blank"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 hover:text-white transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/70 border border-slate-200 text-xs font-medium text-slate-700 transition-colors"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             <span>Storefront</span>
           </Link>
 
@@ -306,27 +295,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link
             href="/admin/localization"
             title="Manage Store Currency & Language Settings"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-mono text-amber-300 transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-xs font-mono text-amber-900 transition-colors"
           >
-            <Globe className="w-3.5 h-3.5 text-amber-400" />
+            <Globe className="w-3.5 h-3.5 text-amber-700" />
             <span>Currency &amp; Language</span>
             {health?.fx?.rate && (
-              <span className="hidden xl:inline text-[10px] text-amber-400/70 border-l border-amber-500/30 pl-1.5 ml-1">
+              <span className="hidden xl:inline text-[10px] text-amber-800 border-l border-amber-300 pl-1.5 ml-1 font-semibold">
                 Nu. {Number(health.fx.rate).toFixed(2)}
               </span>
             )}
           </Link>
 
           {/* User profile dropdown button */}
-          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#8B2E24] to-amber-500 flex items-center justify-center text-white font-bold text-xs shadow-md border border-white/20">
+          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+            <div className="w-8 h-8 rounded-xl bg-[#8B2E24] text-white flex items-center justify-center font-bold text-xs shadow-xs">
               {health?.user?.name ? health.user.name[0].toUpperCase() : 'H'}
             </div>
             <div className="hidden xl:block text-left">
-              <div className="text-xs font-semibold text-white leading-tight">
+              <div className="text-xs font-semibold text-slate-800 leading-tight">
                 {health?.user?.name || 'Administrator'}
               </div>
-              <div className="text-[10px] text-amber-400 font-mono">
+              <div className="text-[10px] text-amber-800 font-mono font-medium">
                 {health?.user?.role || 'Super Admin'}
               </div>
             </div>
@@ -336,21 +325,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Layout Container */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Glassmorphic Sidebar */}
+        {/* Light Sidebar */}
         <aside id="admin-sidebar"
-          className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-950/80 backdrop-blur-2xl border-r border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col ${
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 shadow-lg lg:shadow-none transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {/* Logo & Header */}
-          <div className="h-16 px-5 border-b border-white/10 flex items-center justify-between">
+          <div className="h-16 px-5 border-b border-slate-200 flex items-center justify-between">
             <Link href="/admin" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#8B2E24] to-[#B23E30] text-white flex items-center justify-center font-bold text-sm shadow-[0_0_20px_rgba(139,46,36,0.4)] border border-rose-400/30">
+              <div className="w-9 h-9 rounded-xl bg-[#8B2E24] text-white flex items-center justify-center font-bold text-sm shadow-xs">
                 HAB
               </div>
               <div>
-                <span className="font-bold text-sm tracking-tight text-white block">HAB Secretariat</span>
-                <span className="text-[10px] text-amber-400/90 font-mono tracking-wider block">EXECUTIVE ADMIN</span>
+                <span className="font-bold text-sm tracking-tight text-slate-900 block">HAB Secretariat</span>
+                <span className="text-[10px] text-amber-800 font-mono font-semibold tracking-wider block">ADMIN CONSOLE</span>
               </div>
             </Link>
 
@@ -358,7 +347,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               id="admin-sidebar-close"
               aria-label="Close sidebar"
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-white p-1 rounded-lg"
+              className="lg:hidden text-slate-500 hover:text-slate-800 p-1 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -374,13 +363,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 type="text"
                 value={quickSearch}
                 onChange={(e) => setQuickSearch(e.target.value)}
-                placeholder="Filter menu..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-900/60 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-amber-500/50"
+                placeholder="Search menu..."
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#8B2E24] focus:bg-white"
               />
               {quickSearch && (
                 <button
                   onClick={() => setQuickSearch('')}
-                  className="absolute right-2.5 top-2 text-slate-400 hover:text-white"
+                  className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-700"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -389,7 +378,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Navigation Items */}
-          <nav className="p-3 flex-1 overflow-y-auto space-y-5 custom-scrollbar">
+          <nav className="p-3 flex-1 overflow-y-auto space-y-4 custom-scrollbar">
             {navGroups.map((group) => {
               const visibleItems = group.items.filter((item) =>
                 !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
@@ -399,11 +388,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               return (
                 <div key={group.group} className="pt-1">
-                  <div className="px-3 pb-1 mb-1 border-b border-white/5 flex items-center justify-between text-[10.5px] font-bold uppercase tracking-wider text-amber-400/90">
+                  <div className="px-3 pb-1 mb-1 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <span>{group.group}</span>
-                    <span className="text-[10px] font-mono font-normal text-slate-500">{visibleItems.length}</span>
+                    <span className="text-[10px] font-mono font-normal text-slate-400">{visibleItems.length}</span>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {visibleItems.map((item) => {
                       const Icon = item.icon;
                       const isActive =
@@ -418,20 +407,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           onClick={() => setSidebarOpen(false)}
                           className={`px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between group ${
                             isActive
-                              ? 'bg-gradient-to-r from-[#8B2E24]/90 to-[#B23E30]/80 text-white shadow-[0_0_20px_rgba(139,46,36,0.35)] border border-rose-400/30 font-semibold'
-                              : 'text-slate-300 hover:bg-white/5 hover:text-white border border-transparent'
+                              ? 'bg-[#8B2E24] text-white shadow-xs font-semibold'
+                              : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <Icon
                               className={`w-4 h-4 flex-none transition-colors ${
-                                isActive ? 'text-white' : 'text-slate-400 group-hover:text-amber-400'
+                                isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-900'
                               }`}
                             />
                             <span className="truncate">{item.label}</span>
                           </div>
                           {item.badge && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-medium ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                            }`}>
                               {item.badge}
                             </span>
                           )}
@@ -445,21 +436,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
 
           {/* Live System Health Footer */}
-          <div className="p-3.5 border-t border-white/10 bg-slate-950/60 text-xs space-y-2">
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+          <div className="p-3.5 border-t border-slate-200 bg-slate-50 text-xs space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-600">
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${health?.database?.connected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-                <span>PostgreSQL {health?.database?.latencyMs != null ? `(${health.database.latencyMs}ms)` : (health?.database?.connected ? 'Active' : 'Checking...')}</span>
+                <span className={`w-2 h-2 rounded-full ${health?.database?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span>PostgreSQL {health?.database?.latencyMs != null ? `(${health.database.latencyMs}ms)` : (health?.database?.connected ? 'Online' : 'Checking...')}</span>
               </div>
               <span className="text-[10px] text-slate-400">v2.4 LTS</span>
             </div>
 
-            <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+            <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
               <div className="truncate">
-                <div className="text-white font-medium text-xs truncate">
+                <div className="text-slate-800 font-semibold text-xs truncate">
                   {health?.user?.name || 'Staff Administrator'}
                 </div>
-                <div className="text-[10.5px] text-amber-400 font-mono">
+                <div className="text-[10.5px] text-amber-800 font-mono font-medium">
                   {health?.user?.role || 'Super Admin'}
                 </div>
               </div>
@@ -469,7 +460,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   router.push('/admin/login');
                 }}
                 title="Sign out"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-colors"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -481,7 +472,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {sidebarOpen && (
           <div
             onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs lg:hidden"
           />
         )}
 
@@ -493,23 +484,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Command Palette Modal (Ctrl + K) */}
       {commandPaletteOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-20 bg-black/70 backdrop-blur-md flex items-start justify-center">
-          <div className="relative w-full max-w-lg bg-slate-900/90 backdrop-blur-2xl rounded-2xl border border-white/15 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-4 border-b border-white/10 flex items-center gap-3">
-              <Search className="w-4 h-4 text-amber-400" />
+        <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-20 bg-slate-900/50 backdrop-blur-xs flex items-start justify-center">
+          <div className="relative w-full max-w-lg bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-4 border-b border-slate-200 flex items-center gap-3">
+              <Search className="w-4 h-4 text-slate-500" />
               <input
                 id="admin-command-search"
                 aria-label="Search admin modules"
                 autoFocus
                 type="text"
-                placeholder="Type a command or jump to page..."
+                placeholder="Type a menu name or jump to page..."
                 value={quickSearch}
                 onChange={(e) => setQuickSearch(e.target.value)}
-                className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-hidden"
+                className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 focus:outline-hidden"
               />
               <button
                 onClick={() => setCommandPaletteOpen(false)}
-                className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-white/5"
+                className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded bg-slate-100"
               >
                 Esc
               </button>
@@ -527,13 +518,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       router.push(item.href);
                       setCommandPaletteOpen(false);
                     }}
-                    className="w-full px-3 py-2.5 rounded-xl text-left text-xs text-slate-200 hover:bg-white/10 flex items-center justify-between transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl text-left text-xs text-slate-700 hover:bg-slate-100 flex items-center justify-between transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className="w-4 h-4 text-amber-400" />
-                      <span>{item.label}</span>
+                      <Icon className="w-4 h-4 text-[#8B2E24]" />
+                      <span className="font-medium text-slate-800">{item.label}</span>
                     </div>
-                    <span className="text-[10px] text-slate-500 font-mono">{item.href}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{item.href}</span>
                   </button>
                 );
               })}

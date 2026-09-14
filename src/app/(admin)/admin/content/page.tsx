@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2 } from 'lucide-react';
+import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X } from 'lucide-react';
 
 interface NewsItem {
   id: string;
@@ -65,6 +65,7 @@ export default function AdminContentPage() {
   const [deletingItem, setDeletingItem] = useState<{ type: 'NEWS' | 'PUBLICATION' | 'GOVERNANCE'; id: string; title: string } | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Form states
@@ -74,6 +75,7 @@ export default function AdminContentPage() {
     dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     blurb: '',
     content: '',
+    image_path: '',
   });
 
   const [pubForm, setPubForm] = useState({
@@ -91,6 +93,98 @@ export default function AdminContentPage() {
     chapterOrNote: '',
     sortOrder: 0,
   });
+
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFile(true);
+    setFeedback(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const fileExt = file.name.split('.').pop()?.toUpperCase() || 'PDF';
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        const autoMeta = `${fileExt} · ${sizeMb} MB · English & Dzongkha`;
+
+        if (isEdit && editingItem) {
+          setEditingItem({
+            ...editingItem,
+            data: {
+              ...editingItem.data,
+              fileUrl: data.url,
+              metaDetails: editingItem.data.metaDetails || autoMeta,
+            },
+          });
+        } else {
+          setPubForm((prev) => ({
+            ...prev,
+            fileUrl: data.url,
+            metaDetails: prev.metaDetails || autoMeta,
+          }));
+        }
+        setFeedback({ type: 'success', message: `✓ Document "${file.name}" uploaded successfully.` });
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Document upload failed.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error uploading document.' });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingFile(true);
+    setFeedback(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (isEdit && editingItem) {
+          setEditingItem({
+            ...editingItem,
+            data: {
+              ...editingItem.data,
+              image_path: data.url,
+            },
+          });
+        } else {
+          setNewsForm((prev) => ({
+            ...prev,
+            image_path: data.url,
+          }));
+        }
+        setFeedback({ type: 'success', message: `✓ Photo "${file.name}" uploaded successfully.` });
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Photo upload failed.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error uploading photo.' });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   const loadContent = async () => {
     setLoading(true);
@@ -459,7 +553,23 @@ export default function AdminContentPage() {
                 <tbody className="divide-y admin-divider">
                   {publications.map((p) => (
                     <tr key={p.id} className="admin-hover transition-colors">
-                      <td className="py-3 px-4 font-semibold admin-title">{p.title}</td>
+                      <td className="py-3 px-4 font-semibold admin-title">
+                        <div>{p.title}</div>
+                        {p.fileUrl ? (
+                          <a
+                            href={p.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] text-amber-700 hover:text-amber-800 underline font-normal mt-1"
+                          >
+                            <FileText className="w-3 h-3 text-amber-700 flex-shrink-0" />
+                            <span>View Document ({p.fileUrl.split('.').pop()?.toUpperCase() || 'FILE'})</span>
+                            <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic block mt-0.5 font-normal">No document attached</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 admin-text">{p.kind || p.category}</td>
                       <td className="py-3 px-4 font-mono font-medium admin-text">{p.year}</td>
                       <td className="py-3 px-4 font-mono admin-muted text-[11px]">{p.metaDetails}</td>
@@ -472,7 +582,7 @@ export default function AdminContentPage() {
                         </button>
                         <button
                           onClick={() => setDeletingItem({ type: 'PUBLICATION', id: p.id, title: p.title })}
-                          className="px-2 py-1 text-rose-300 hover:text-rose-200 border border-rose-400/30 hover:bg-rose-500/10 rounded text-[11px] inline-flex items-center gap-1"
+                          className="px-2 py-1 text-rose-700 hover:text-rose-800 border border-rose-300 hover:bg-rose-50 rounded text-[11px] inline-flex items-center gap-1 font-medium"
                         >
                           <Trash2 className="w-3 h-3" /> Delete
                         </button>
@@ -701,6 +811,42 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div>
+                    <label className="block font-medium admin-text mb-1">Article Photograph</label>
+                    {newsForm.image_path ? (
+                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
+                        <img
+                          src={newsForm.image_path}
+                          alt="Article preview"
+                          className="w-16 h-12 object-cover rounded border admin-border flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-mono truncate admin-text">{newsForm.image_path}</p>
+                          <span className="text-[10px] text-emerald-600 font-semibold">✓ Photo ready</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setNewsForm({ ...newsForm, image_path: '' })}
+                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
+                          title="Remove photo"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
+                        <Upload className="w-4 h-4 text-slate-500" />
+                        <span>{uploadingFile ? 'Uploading photo...' : 'Upload Article Photograph (JPG, PNG, WebP)'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingFile}
+                          onChange={(e) => handlePhotoUpload(e, false)}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
                 </>
               )}
 
@@ -748,6 +894,47 @@ export default function AdminContentPage() {
                       onChange={(e) => setPubForm({ ...pubForm, metaDetails: e.target.value })}
                       className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                     />
+                  </div>
+                  <div>
+                    <label className="block font-medium admin-text mb-1">Attached Document File (PDF, DOCX, XLSX up to 30MB)</label>
+                    {pubForm.fileUrl ? (
+                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
+                        <div className="w-9 h-9 rounded bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                          {pubForm.fileUrl.split('.').pop()?.toUpperCase() || 'PDF'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-mono truncate admin-text">{pubForm.fileUrl}</p>
+                          <a
+                            href={pubForm.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-amber-700 hover:underline inline-flex items-center gap-1 font-medium"
+                          >
+                            <ExternalLink className="w-3 h-3" /> Preview Document
+                          </a>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPubForm({ ...pubForm, fileUrl: '' })}
+                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
+                          title="Remove file"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
+                        <Upload className="w-4 h-4 text-slate-500" />
+                        <span>{uploadingFile ? 'Uploading document...' : 'Upload Document File (PDF, DOCX, XLSX)'}</span>
+                        <input
+                          type="file"
+                          accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
+                          disabled={uploadingFile}
+                          onChange={(e) => handleDocumentUpload(e, false)}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
                   </div>
                 </>
               )}
@@ -855,6 +1042,42 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div>
+                    <label className="block font-medium admin-text mb-1">Article Photograph</label>
+                    {editingItem.data.image_path ? (
+                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
+                        <img
+                          src={editingItem.data.image_path}
+                          alt="Article preview"
+                          className="w-16 h-12 object-cover rounded border admin-border flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-mono truncate admin-text">{editingItem.data.image_path}</p>
+                          <span className="text-[10px] text-emerald-600 font-semibold">✓ Photo attached</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingItem({ ...editingItem, data: { ...editingItem.data, image_path: '' } })}
+                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
+                          title="Remove photo"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
+                        <Upload className="w-4 h-4 text-slate-500" />
+                        <span>{uploadingFile ? 'Uploading photo...' : 'Upload Article Photograph (JPG, PNG, WebP)'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingFile}
+                          onChange={(e) => handlePhotoUpload(e, true)}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
                 </>
               )}
 
@@ -889,6 +1112,47 @@ export default function AdminContentPage() {
                         className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block font-medium admin-text mb-1">Attached Document File (PDF, DOCX, XLSX up to 30MB)</label>
+                    {editingItem.data.fileUrl ? (
+                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
+                        <div className="w-9 h-9 rounded bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                          {editingItem.data.fileUrl.split('.').pop()?.toUpperCase() || 'PDF'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-mono truncate admin-text">{editingItem.data.fileUrl}</p>
+                          <a
+                            href={editingItem.data.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-amber-700 hover:underline inline-flex items-center gap-1 font-medium"
+                          >
+                            <ExternalLink className="w-3 h-3" /> Preview Document
+                          </a>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingItem({ ...editingItem, data: { ...editingItem.data, fileUrl: '' } })}
+                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
+                          title="Remove file"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
+                        <Upload className="w-4 h-4 text-slate-500" />
+                        <span>{uploadingFile ? 'Uploading document...' : 'Upload Document File (PDF, DOCX, XLSX)'}</span>
+                        <input
+                          type="file"
+                          accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
+                          disabled={uploadingFile}
+                          onChange={(e) => handleDocumentUpload(e, true)}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
                   </div>
                 </>
               )}

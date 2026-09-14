@@ -1,208 +1,211 @@
-/* Admin-only Dark Glassmorphic design tokens. Public and member portal palettes remain untouched. */
+/* Admin High-Contrast Clean Light Theme */
 body:has(.hab-admin),
 body.hab-admin-body,
 html:has(.hab-admin) {
-  background-color: #020617 !important;
-  color: #f8fafc !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
 .hab-admin {
-  --admin-bg-base: #020617;
-  --admin-surface: rgba(15, 23, 42, 0.75);
-  --admin-surface-hover: rgba(30, 41, 59, 0.7);
-  --admin-inset: rgba(11, 20, 37, 0.85);
-  --admin-border: rgba(255, 255, 255, 0.10);
-  --admin-border-focus: rgba(251, 191, 36, 0.6);
-  --admin-text: #f1f5f9;
-  --admin-title: #f8fafc;
-  --admin-muted: #94a3b8;
-  --admin-focus: #fbbf24;
-  --accent: #fcd34d;
-  --accent-hover: #fde68a;
-  color-scheme: dark;
+  --admin-bg-base: #f8fafc;
+  --admin-surface: #ffffff;
+  --admin-surface-hover: #f1f5f9;
+  --admin-inset: #f8fafc;
+  --admin-border: #e2e8f0;
+  --admin-border-focus: #8b2e24;
+  --admin-text: #1e293b;
+  --admin-title: #0f172a;
+  --admin-muted: #64748b;
+  --admin-focus: #8b2e24;
+  --accent: #8b2e24;
+  --accent-hover: #73241c;
+  color-scheme: light;
   font-family: Figtree, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Glass Card & Surfaces */
+/* Card & Surface Tokens */
 .admin-card,
 .hab-admin .admin-card {
-  background: rgba(15, 23, 42, 0.82) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  border-radius: 0.875rem;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  border-radius: 0.75rem;
 }
 
 .admin-panel,
 .hab-admin .admin-panel {
-  background-color: rgba(11, 20, 37, 0.88) !important;
-  color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
 .admin-modal,
 .hab-admin .admin-modal {
-  background-color: rgba(15, 23, 42, 0.96) !important;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 25px 80px 0 rgba(0, 0, 0, 0.8);
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
 }
 
 /* Typography & Contrast */
 .admin-title,
-.hab-admin .admin-title { color: #f8fafc !important; }
+.hab-admin .admin-title { 
+  color: #0f172a !important; 
+  font-weight: 700;
+}
 .admin-text,
-.hab-admin .admin-text { color: #f1f5f9 !important; }
+.hab-admin .admin-text { 
+  color: #1e293b !important; 
+}
 .admin-muted,
-.hab-admin .admin-muted { color: #94a3b8 !important; }
+.hab-admin .admin-muted { 
+  color: #64748b !important; 
+}
 .admin-border,
-.hab-admin .admin-border { border-color: rgba(255, 255, 255, 0.12) !important; }
-.hab-admin .admin-divider > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.12); }
-.hab-admin .admin-hover:hover { background-color: rgba(255, 255, 255, 0.05); }
+.hab-admin .admin-border { 
+  border-color: #e2e8f0 !important; 
+}
+.hab-admin .admin-divider > :not([hidden]) ~ :not([hidden]) { 
+  border-color: #e2e8f0 !important; 
+}
+.hab-admin .admin-hover:hover { 
+  background-color: #f8fafc !important; 
+}
 
 /* Form Controls & Inputs */
 .admin-input,
 .hab-admin .admin-input {
-  background-color: rgba(15, 23, 42, 0.75) !important;
-  color: #f8fafc !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 0.5rem;
   accent-color: var(--admin-focus);
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-  backdrop-filter: blur(8px);
 }
 
 .hab-admin .admin-input::placeholder,
-.admin-input::placeholder { color: #64748b; opacity: 1; }
+.admin-input::placeholder { 
+  color: #94a3b8 !important; 
+  opacity: 1; 
+}
 .hab-admin .admin-input option,
-.admin-input option { background-color: #0f172a; color: #f8fafc; }
+.admin-input option { 
+  background-color: #ffffff; 
+  color: #0f172a; 
+}
 .hab-admin .admin-input:focus,
 .admin-input:focus {
   border-color: var(--admin-focus) !important;
   outline: 2px solid var(--admin-focus);
   outline-offset: 1px;
-  background-color: rgba(15, 23, 42, 0.95) !important;
+  background-color: #ffffff !important;
 }
-.hab-admin .admin-input:disabled { opacity: 0.5; cursor: not-allowed; }
-.hab-admin .admin-input[aria-invalid="true"] { border-color: #fb7185; }
+.hab-admin .admin-input:disabled { 
+  opacity: 0.6; 
+  background-color: #f1f5f9 !important;
+  cursor: not-allowed; 
+}
+.hab-admin .admin-input[aria-invalid="true"] { 
+  border-color: #e11d48; 
+}
 .hab-admin .admin-input:-webkit-autofill {
-  -webkit-text-fill-color: #f8fafc;
-  box-shadow: 0 0 0 1000px #0b1425 inset;
-  caret-color: #f8fafc;
+  -webkit-text-fill-color: #0f172a;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #0f172a;
 }
 
-/* Glass Buttons */
+/* Buttons */
 .hab-admin .admin-button-primary {
   background: linear-gradient(135deg, #8b2e24 0%, #ad3b30 100%);
-  color: #ffffff;
-  border: 1px solid rgba(248, 113, 113, 0.35);
-  box-shadow: 0 4px 15px rgba(139, 46, 36, 0.3);
+  color: #ffffff !important;
+  border: 1px solid #73241c;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-weight: 600;
   transition: all 160ms ease;
 }
 .hab-admin .admin-button-primary:hover {
-  background: linear-gradient(135deg, #a3372b 0%, #bd4539 100%);
-  border-color: rgba(248, 113, 113, 0.5);
-  box-shadow: 0 6px 20px rgba(139, 46, 36, 0.45);
+  background: linear-gradient(135deg, #73241c 0%, #8b2e24 100%);
+  box-shadow: 0 4px 12px rgba(139, 46, 36, 0.25);
 }
 
 .hab-admin .admin-button-secondary {
-  background-color: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--admin-border);
-  color: #e2e8f0;
-  backdrop-filter: blur(8px);
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155 !important;
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   transition: all 160ms ease;
 }
 .hab-admin .admin-button-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a !important;
 }
 
 .hab-admin :where(button, a, input, select, textarea):focus-visible {
   outline: 2px solid var(--admin-focus);
   outline-offset: 2px;
 }
-.hab-admin :where(button:disabled) { cursor: not-allowed; opacity: 0.5; }
-.hab-admin :where(input[type="checkbox"], input[type="radio"]) { accent-color: #fbbf24; }
+.hab-admin :where(button:disabled) { 
+  cursor: not-allowed; 
+  opacity: 0.5; 
+}
+.hab-admin :where(input[type="checkbox"], input[type="radio"]) { 
+  accent-color: #8b2e24; 
+}
 
 /* Scrollbars */
-.hab-admin .custom-scrollbar { scrollbar-width: thin; scrollbar-color: #475569 transparent; }
-.hab-admin ::-webkit-scrollbar { width: 6px; height: 6px; }
-.hab-admin ::-webkit-scrollbar-track { background: transparent; }
-.hab-admin ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 9999px; }
-.hab-admin ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
+.hab-admin .custom-scrollbar { 
+  scrollbar-width: thin; 
+  scrollbar-color: #cbd5e1 transparent; 
+}
+.hab-admin ::-webkit-scrollbar { 
+  width: 6px; 
+  height: 6px; 
+}
+.hab-admin ::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+.hab-admin ::-webkit-scrollbar-thumb { 
+  background: #cbd5e1; 
+  border-radius: 9999px; 
+}
+.hab-admin ::-webkit-scrollbar-thumb:hover { 
+  background: #94a3b8; 
+}
 
 .hab-admin .admin-main { min-width: 0; }
 
-/* Safety overrides against rogue light-mode utility classes inside admin */
-.hab-admin .bg-white {
-  background-color: rgba(15, 23, 42, 0.75) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #f1f5f9;
-}
-.hab-admin .bg-slate-50 {
-  background-color: rgba(15, 23, 42, 0.55) !important;
-}
-.hab-admin .bg-slate-100 {
-  background-color: rgba(30, 41, 59, 0.55) !important;
-}
-.hab-admin .text-slate-900 {
-  color: #f8fafc !important;
-}
-.hab-admin .text-slate-800 {
-  color: #f1f5f9 !important;
-}
-.hab-admin .text-slate-700 {
-  color: #e2e8f0 !important;
-}
-.hab-admin .text-slate-600 {
-  color: #cbd5e1 !important;
-}
-.hab-admin .text-slate-500 {
-  color: #94a3b8 !important;
-}
-.hab-admin .border-slate-100,
-.hab-admin .border-slate-200,
-.hab-admin .border-slate-300 {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-.hab-admin .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-.hab-admin .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Global Dark Glass Table Protection */
+/* Table High-Contrast Light Styles */
 .hab-admin table {
-  background-color: transparent !important;
-  color: #f1f5f9 !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
 }
 .hab-admin thead {
-  background-color: rgba(2, 6, 23, 0.85) !important;
-  color: #cbd5e1 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 .hab-admin tbody {
-  background-color: rgba(15, 23, 42, 0.75) !important;
-  color: #f1f5f9 !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
 }
 .hab-admin tr {
-  background-color: transparent !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: #f1f5f9 !important;
 }
 .hab-admin tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.04) !important;
+  background-color: #f8fafc !important;
 }
 .hab-admin th {
-  color: #cbd5e1 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #475569 !important;
+  font-weight: 600;
+  border-color: #e2e8f0 !important;
 }
 .hab-admin td {
-  color: #e2e8f0 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #1e293b !important;
+  border-color: #f1f5f9 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

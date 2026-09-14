@@ -96,30 +96,30 @@ export default function NewsPage() {
                 const slug = n.slug || n.id || `post-${idx}`;
 
                 return (
-                  <article key={slug} className="card news" data-cms-item>
-                    <Link className="news__shot" href={`/news/${slug}`}>
-                      <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+                  <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item>
+                    <Link href={`/news/${slug}`} className="block relative" style={{ minHeight: 190 }}>
+                      <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', height: '100%', minHeight: 190, overflow: 'hidden' }}>
                         <Image
                           src={imgSrc}
                           alt={n.title}
                           fill
-                          sizes="(max-width: 768px) 100vw, 40vw"
+                          sizes="(max-width: 768px) 100vw, 260px"
                           style={{ objectFit: 'cover' }}
                         />
                       </figure>
                     </Link>
 
-                    <div className="card__body">
+                    <div className="newsitem__body">
                       <div className="news__meta">
                         <span className="tag">{n.kind}</span>
                         <span className="news__date">{n.published_at || 'Recent'}</span>
                       </div>
-                      <h2 className="news__title clamp-2">
+                      <h2 className="newsitem__title">
                         <Link href={`/news/${slug}`}>{n.title}</Link>
                       </h2>
-                      <p className="card__text clamp-3">{n.blurb}</p>
+                      <p className="newsitem__blurb">{n.blurb}</p>
                       <Link className="news__more" href={`/news/${slug}`}>
-                        Read the full story →
+                        Read more →
                       </Link>
                     </div>
                   </article>

@@ -153,20 +153,20 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Top Banner / Hero Greeting */}
-      <GlassCard glow="amber" className="p-6 sm:p-8 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-950/90">
+      <GlassCard glow="amber" className="p-6 sm:p-8 bg-gradient-to-r from-amber-50/50 via-white to-slate-50 border border-slate-200 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-amber-400" />
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-amber-700" />
                 Live Operations Command
               </span>
-              <span className="text-xs text-slate-400 font-mono">AoA 2026 Mandate</span>
+              <span className="text-xs text-slate-500 font-mono">AoA 2026 Mandate</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Handicrafts Association of Bhutan
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
               Apex national body for Bhutan&apos;s 13 traditional arts and crafts (Zorig Chusum). Real-time e-commerce oversight, artisan governance, and order fulfillment.
             </p>
           </div>
@@ -198,7 +198,7 @@ export default function AdminDashboardPage() {
       </GlassCard>
 
       {loadError && (
-        <div id="admin-dashboard-error" role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/15 p-4 text-sm text-rose-200">
+        <div id="admin-dashboard-error" role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
           {loadError} {data ? 'Previously loaded data is shown below.' : 'Metrics below are unavailable until a successful refresh.'}
         </div>
       )}
@@ -251,24 +251,24 @@ export default function AdminDashboardPage() {
         {/* Left 2 Cols: Live Public Store & User Activity Stream */}
         <div className="lg:col-span-2 space-y-4">
           <GlassCard className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-3">
               <div>
-                <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                  <PackageCheck className="w-4 h-4 text-amber-400" />
+                <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <PackageCheck className="w-4 h-4 text-[#8B2E24]" />
                   Public Store &amp; User Activity
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Real-time checkouts, visitor inquiries, applications &amp; contributions
                 </p>
               </div>
 
               {/* Activity Stream Tabs */}
-              <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-xl border border-white/10 text-xs">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs">
                 <button
                   type="button"
                   onClick={() => setActivityTab('orders')}
                   className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                    activityTab === 'orders' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                    activityTab === 'orders' ? 'bg-[#8B2E24] text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Orders ({data?.recentOrders?.length ?? 0})
@@ -277,7 +277,7 @@ export default function AdminDashboardPage() {
                   type="button"
                   onClick={() => setActivityTab('inquiries')}
                   className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                    activityTab === 'inquiries' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                    activityTab === 'inquiries' ? 'bg-[#8B2E24] text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Inquiries ({data?.recentInquiries?.length ?? 0})
@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
                   type="button"
                   onClick={() => setActivityTab('applications')}
                   className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                    activityTab === 'applications' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                    activityTab === 'applications' ? 'bg-[#8B2E24] text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Artisans ({data?.recentApplications?.length ?? 0})
@@ -295,7 +295,7 @@ export default function AdminDashboardPage() {
                   type="button"
                   onClick={() => setActivityTab('donations')}
                   className={`px-3 py-1 rounded-lg font-medium transition-colors ${
-                    activityTab === 'donations' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+                    activityTab === 'donations' ? 'bg-[#8B2E24] text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Donations ({data?.recentDonations?.length ?? 0})
@@ -308,7 +308,7 @@ export default function AdminDashboardPage() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                    <tr className="text-slate-500 border-b border-slate-200 font-semibold uppercase tracking-wider text-[10.5px]">
                       <th className="pb-3 pr-4">Order #</th>
                       <th className="pb-3 px-4">Customer</th>
                       <th className="pb-3 px-4">Total</th>
@@ -317,7 +317,7 @@ export default function AdminDashboardPage() {
                       <th className="pb-3 pl-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-slate-200">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {loading ? (
                       <tr>
                         <td colSpan={6} className="py-8 text-center text-slate-500 font-mono">
@@ -326,23 +326,23 @@ export default function AdminDashboardPage() {
                       </tr>
                     ) : !data?.recentOrders || data.recentOrders.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                        <td colSpan={6} className="py-8 text-center text-slate-500">
                           {loadError ? 'Recent orders are unavailable.' : 'No recent orders found.'}
                         </td>
                       </tr>
                     ) : (
                       data.recentOrders.slice(0, 6).map((ord) => (
-                        <tr key={ord.id} className="hover:bg-white/5 transition-colors">
-                          <td className="py-3 pr-4 font-mono font-semibold text-white">
-                            <Link href={`/admin/orders`} className="hover:text-amber-400">
+                        <tr key={ord.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="py-3 pr-4 font-mono font-semibold text-slate-900">
+                            <Link href={`/admin/orders`} className="hover:text-[#8B2E24]">
                               {ord.id.length > 12 ? ord.id.slice(0, 12) : ord.id}
                             </Link>
                           </td>
                           <td className="py-3 px-4">
-                            <div className="font-medium text-white truncate max-w-[140px]">{ord.customer}</div>
-                            <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{ord.items}</div>
+                            <div className="font-medium text-slate-900 truncate max-w-[140px]">{ord.customer}</div>
+                            <div className="text-[10px] text-slate-500 truncate max-w-[140px]">{ord.items}</div>
                           </td>
-                          <td className="py-3 px-4 font-mono font-bold text-amber-300">
+                          <td className="py-3 px-4 font-mono font-bold text-amber-800">
                             {ord.total}
                           </td>
                           <td className="py-3 px-4">
@@ -354,7 +354,7 @@ export default function AdminDashboardPage() {
                           <td className="py-3 pl-4 text-right">
                             <Link
                               href={`/admin/orders`}
-                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-colors font-medium"
                             >
                               <span>Fulfill</span>
                               <ArrowUpRight className="w-3 h-3 ml-1" />
@@ -373,7 +373,7 @@ export default function AdminDashboardPage() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                    <tr className="text-slate-500 border-b border-slate-200 font-semibold uppercase tracking-wider text-[10.5px]">
                       <th className="pb-3 pr-4">Sender</th>
                       <th className="pb-3 px-4">Subject</th>
                       <th className="pb-3 px-4">Message Preview</th>
@@ -381,31 +381,31 @@ export default function AdminDashboardPage() {
                       <th className="pb-3 pl-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-slate-200">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {!data?.recentInquiries || data.recentInquiries.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-slate-400">
+                        <td colSpan={5} className="py-8 text-center text-slate-500">
                           No customer inquiries received yet.
                         </td>
                       </tr>
                     ) : (
                       data.recentInquiries.slice(0, 6).map((inq) => (
-                        <tr key={inq.id} className="hover:bg-white/5 transition-colors">
+                        <tr key={inq.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3 pr-4">
-                            <div className="font-semibold text-white">{inq.name}</div>
-                            <div className="text-[10px] text-slate-400">{inq.email}</div>
+                            <div className="font-semibold text-slate-900">{inq.name}</div>
+                            <div className="text-[10px] text-slate-500">{inq.email}</div>
                           </td>
-                          <td className="py-3 px-4 font-medium text-slate-300">{inq.subject}</td>
-                          <td className="py-3 px-4 text-slate-400 truncate max-w-[200px]">{inq.message}</td>
+                          <td className="py-3 px-4 font-medium text-slate-800">{inq.subject}</td>
+                          <td className="py-3 px-4 text-slate-600 truncate max-w-[200px]">{inq.message}</td>
                           <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">
                               {inq.status}
                             </span>
                           </td>
                           <td className="py-3 pl-4 text-right">
                             <Link
                               href="/admin/inquiries"
-                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-colors font-medium"
                             >
                               <span>Reply</span>
                               <ArrowUpRight className="w-3 h-3 ml-1" />
@@ -424,7 +424,7 @@ export default function AdminDashboardPage() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                    <tr className="text-slate-500 border-b border-slate-200 font-semibold uppercase tracking-wider text-[10.5px]">
                       <th className="pb-3 pr-4">Artisan Applicant</th>
                       <th className="pb-3 px-4">Craft</th>
                       <th className="pb-3 px-4">Dzongkhag</th>
@@ -433,32 +433,32 @@ export default function AdminDashboardPage() {
                       <th className="pb-3 pl-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-slate-200">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {!data?.recentApplications || data.recentApplications.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                        <td colSpan={6} className="py-8 text-center text-slate-500">
                           No pending membership applications.
                         </td>
                       </tr>
                     ) : (
                       data.recentApplications.slice(0, 6).map((app) => (
-                        <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                        <tr key={app.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3 pr-4">
-                            <div className="font-semibold text-white">{app.applicantName}</div>
-                            <div className="text-[10px] text-slate-400">{app.email}</div>
+                            <div className="font-semibold text-slate-900">{app.applicantName}</div>
+                            <div className="text-[10px] text-slate-500">{app.email}</div>
                           </td>
-                          <td className="py-3 px-4 uppercase text-amber-300 font-mono text-[11px]">{app.craftKey}</td>
-                          <td className="py-3 px-4 text-slate-300">{app.dzongkhag}</td>
-                          <td className="py-3 px-4 text-[10px] text-slate-400">{app.planTier}</td>
+                          <td className="py-3 px-4 uppercase text-amber-800 font-mono text-[11px] font-semibold">{app.craftKey}</td>
+                          <td className="py-3 px-4 text-slate-700">{app.dzongkhag}</td>
+                          <td className="py-3 px-4 text-[10px] text-slate-500">{app.planTier}</td>
                           <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                               {app.status}
                             </span>
                           </td>
                           <td className="py-3 pl-4 text-right">
                             <Link
                               href="/admin/applications"
-                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-colors font-medium"
                             >
                               <span>Review</span>
                               <ArrowUpRight className="w-3 h-3 ml-1" />
@@ -477,7 +477,7 @@ export default function AdminDashboardPage() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
+                    <tr className="text-slate-500 border-b border-slate-200 font-semibold uppercase tracking-wider text-[10.5px]">
                       <th className="pb-3 pr-4">Donor</th>
                       <th className="pb-3 px-4">Pillar</th>
                       <th className="pb-3 px-4">Amount</th>
@@ -486,32 +486,32 @@ export default function AdminDashboardPage() {
                       <th className="pb-3 pl-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-slate-200">
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
                     {!data?.recentDonations || data.recentDonations.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                        <td colSpan={6} className="py-8 text-center text-slate-500">
                           No recent public donations recorded.
                         </td>
                       </tr>
                     ) : (
                       data.recentDonations.slice(0, 6).map((don) => (
-                        <tr key={don.id} className="hover:bg-white/5 transition-colors">
+                        <tr key={don.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3 pr-4">
-                            <div className="font-semibold text-white">{don.donorName}</div>
-                            <div className="text-[10px] text-slate-400">{don.donorEmail}</div>
+                            <div className="font-semibold text-slate-900">{don.donorName}</div>
+                            <div className="text-[10px] text-slate-500">{don.donorEmail}</div>
                           </td>
-                          <td className="py-3 px-4 text-slate-300">{don.pillarTitle}</td>
-                          <td className="py-3 px-4 font-mono font-bold text-emerald-400">${don.amountUSD.toFixed(2)}</td>
-                          <td className="py-3 px-4 font-mono text-[10px] text-slate-400">{don.receiptNumber}</td>
+                          <td className="py-3 px-4 text-slate-700">{don.pillarTitle}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-emerald-700">${don.amountUSD.toFixed(2)}</td>
+                          <td className="py-3 px-4 font-mono text-[10px] text-slate-500">{don.receiptNumber}</td>
                           <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                               {don.status}
                             </span>
                           </td>
                           <td className="py-3 pl-4 text-right">
                             <Link
                               href="/admin/donate-settings"
-                              className="inline-flex items-center px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+                              className="inline-flex items-center px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-colors font-medium"
                             >
                               <span>Details</span>
                               <ArrowUpRight className="w-3 h-3 ml-1" />
@@ -531,89 +531,89 @@ export default function AdminDashboardPage() {
         <div className="space-y-4">
           {/* Quick Links Card */}
           <GlassCard glow="indigo" className="p-6">
-            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2 mb-3">
-              <Layers className="w-4 h-4 text-indigo-400" />
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 mb-3">
+              <Layers className="w-4 h-4 text-[#8B2E24]" />
               Quick Administrative Actions
             </h3>
             <div className="space-y-2">
               <Link
                 href="/admin/users"
-                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+                className="w-full p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between transition-colors group"
               >
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <ShieldCheck className="w-4 h-4 text-amber-700" />
                   <div>
-                    <div className="text-xs font-semibold text-white">Users &amp; Credentials</div>
-                    <div className="text-[10px] text-slate-400">Manage roles and reset passwords</div>
+                    <div className="text-xs font-semibold text-slate-900">Users &amp; Staff Logins</div>
+                    <div className="text-[10px] text-slate-500">Manage roles and reset passwords</div>
                   </div>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
               </Link>
 
               <Link
                 href="/admin/site-settings"
-                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+                className="w-full p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between transition-colors group"
               >
                 <div className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-rose-400" />
+                  <FileText className="w-4 h-4 text-rose-700" />
                   <div>
-                    <div className="text-xs font-semibold text-white">Website CMS Bands</div>
-                    <div className="text-[10px] text-slate-400">Hero slides, Assurances, About narrative</div>
+                    <div className="text-xs font-semibold text-slate-900">Website Content &amp; Settings</div>
+                    <div className="text-[10px] text-slate-500">Hero slides, Organization narrative &amp; footer</div>
                   </div>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
               </Link>
 
               <Link
                 href="/admin/navigation"
-                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+                className="w-full p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between transition-colors group"
               >
                 <div className="flex items-center gap-2.5">
-                  <Plus className="w-4 h-4 text-emerald-400" />
+                  <Plus className="w-4 h-4 text-emerald-700" />
                   <div>
-                    <div className="text-xs font-semibold text-white">Navigation Menus</div>
-                    <div className="text-[10px] text-slate-400">Configure header and footer columns</div>
+                    <div className="text-xs font-semibold text-slate-900">Navigation Menus</div>
+                    <div className="text-[10px] text-slate-500">Configure header and footer links</div>
                   </div>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
               </Link>
 
               <Link
                 href="/admin/inquiries"
-                className="w-full p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 flex items-center justify-between transition-colors group"
+                className="w-full p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between transition-colors group"
               >
                 <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                  <CheckCircle2 className="w-4 h-4 text-sky-700" />
                   <div>
-                    <div className="text-xs font-semibold text-white">Inquiries Inbox</div>
-                    <div className="text-[10px] text-slate-400">Customer and donor contact messages</div>
+                    <div className="text-xs font-semibold text-slate-900">Inquiries Inbox</div>
+                    <div className="text-[10px] text-slate-500">Customer and donor contact messages</div>
                   </div>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
               </Link>
             </div>
           </GlassCard>
 
           {/* Real-time Audit Trail */}
           <GlassCard className="p-6">
-            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2 mb-3">
-              <Clock className="w-4 h-4 text-slate-400" />
-              Immutable Security Audit Log
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-slate-500" />
+              Recent Security Audit Activity
             </h3>
             <div className="space-y-2.5 text-xs">
               {loading ? (
                 <p className="text-slate-500 font-mono text-[11px]">Querying audit logs...</p>
               ) : !data?.recentAuditLogs || data.recentAuditLogs.length === 0 ? (
-                <p className="text-slate-400 text-xs">No recent log entries.</p>
+                <p className="text-slate-500 text-xs">No recent log entries.</p>
               ) : (
                 data.recentAuditLogs.slice(0, 4).map((log) => (
-                  <div key={log.id} className="p-2.5 rounded-xl bg-slate-950/40 border border-white/5">
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
-                      <span className="text-amber-400 font-semibold">{log.actor}</span>
+                  <div key={log.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mb-1">
+                      <span className="text-amber-800 font-semibold">{log.actor}</span>
                       <span>{log.createdAt}</span>
                     </div>
-                    <div className="text-slate-300 font-mono text-[11px]">
-                      {log.action} <span className="text-slate-500">→</span> {log.target}
+                    <div className="text-slate-800 font-mono text-[11px]">
+                      {log.action} <span className="text-slate-400">→</span> {log.target}
                     </div>
                   </div>
                 ))

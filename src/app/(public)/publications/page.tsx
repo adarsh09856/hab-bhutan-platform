@@ -101,7 +101,13 @@ export default function PublicationsPage() {
                 {leadReport.abstract || 'Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.'}
               </p>
               <div className="publead__foot">
-                <a className="btn btn--accent" href={leadReport.file_url || '#pubList'} download>
+                <a
+                  className="btn btn--accent"
+                  href={leadReport.file_url && leadReport.file_url !== '#' ? leadReport.file_url : '#pubList'}
+                  target={leadReport.file_url && leadReport.file_url !== '#' ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  download
+                >
                   Download ↓
                 </a>
                 <span className="publead__meta" id="pubLeadMeta">
@@ -122,7 +128,14 @@ export default function PublicationsPage() {
             <p className="eyebrow eyebrow--muted eyebrow--sm">Also essential</p>
             <div id="pubSecondary">
               {secondaryReports.map((p, idx) => (
-                <a key={p.key || p.title} className="pubside" href={p.file_url || '#'} download>
+                <a
+                  key={p.key || p.title}
+                  className="pubside"
+                  href={p.file_url && p.file_url !== '#' ? p.file_url : '#pubList'}
+                  target={p.file_url && p.file_url !== '#' ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  download
+                >
                   <span className="pubside__cover" style={{ backgroundImage: `url(/assets/photos/${['hero-1-weaving.jpg', 'hero-4-textiles.jpg', 'hero-5-desho.jpg'][idx % 3]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <span className="pubside__body">
                     <span className="eyebrow eyebrow--accent eyebrow--sm">{p.kind} · {p.year}</span>
@@ -193,7 +206,14 @@ export default function PublicationsPage() {
         {filtered.length > 0 ? (
           <div className="publist" id="pubList">
             {filtered.map((p) => (
-              <a key={p.key || p.title} className="pubrow" href={p.file_url || '#'} download>
+              <a
+                key={p.key || p.title}
+                className="pubrow"
+                href={p.file_url && p.file_url !== '#' ? p.file_url : '#pubList'}
+                target={p.file_url && p.file_url !== '#' ? '_blank' : undefined}
+                rel="noopener noreferrer"
+                download
+              >
                 <span className="pubrow__kind">{p.kind}</span>
                 <span className="pubrow__title clamp-2">{p.title}</span>
                 <span className="pubrow__meta">{p.meta}</span>
