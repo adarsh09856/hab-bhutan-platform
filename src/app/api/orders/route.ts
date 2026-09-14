@@ -68,12 +68,22 @@ export async function POST(req: NextRequest) {
 
     const rateApplied = fxInfo.rate || 84.0;
     const orderNumber = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
-    const customerEmail = email || body.customerEmail || shippingAddress?.email || 'guest@handicraftsbhutan.org';
-    const customerFullName = customerName || body.customerName || shippingAddress?.fullName || 'Guest Collector';
+    const rawEmail = email || body.customerEmail || shippingAddress?.email || 'guest@handicraftsbhutan.org';
+    const customerEmail = String(rawEmail).trim().toLowerCase();
+    const customerFullName = String(customerName || body.customerName || shippingAddress?.fullName || 'Guest Collector').trim();
     const customerPhoneNum = phone || body.customerPhone || shippingAddress?.phone || null;
     const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
-    const rawPayment = String(paymentMethod || 'CARD').toUpperCase();
-    const normalizedPaymentMethod = ['CARD', 'MBOB', 'BANK_TRANSFER', 'CASH', 'CHEQUE'].includes(rawPayment) ? rawPayment : 'CARD';
+
+    // Strict normalization for PostgreSQL / Prisma PaymentMethod enum ('CARD' | 'MBOB' | 'BANK')
+    const rawPayment = String(paymentMethod || 'CARD').trim().toUpperCase();
+    let normalizedPaymentMethod: 'CARD' | 'MBOB' | 'BANK' = 'CARD';
+    if (rawPayment === 'MBOB' || rawPayment.includes('MBOB') || rawPayment.includes('MOBILE')) {
+      normalizedPaymentMethod = 'MBOB';
+    } else if (rawPayment === 'BANK' || rawPayment.includes('BANK') || rawPayment.includes('WIRE') || rawPayment.includes('TRANSFER')) {
+      normalizedPaymentMethod = 'BANK';
+    } else {
+      normalizedPaymentMethod = 'CARD';
+    }
 
     // Persist real order and line-items in PostgreSQL with canonical pricing & atomic stock decrement
     const result = await prisma.$transaction(async (tx) => {

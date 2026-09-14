@@ -35,6 +35,8 @@ export default function UtilityBar() {
         )}
         <span className="utility__spacer"></span>
         <nav className="utility__links" aria-label="Secondary">
+          <Link href="/track-order">Track order</Link>
+          <Link href="/account">My account</Link>
           <Link href="/contact">Contact us</Link>
           <Link href="/news">Tenders &amp; vacancies</Link>
           <Link href="/publications">Publications</Link>

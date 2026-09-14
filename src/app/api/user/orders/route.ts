@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       where: {
         OR: [
           { userId: session.id },
-          { customerEmail: cleanEmail },
+          { customerEmail: { equals: cleanEmail, mode: 'insensitive' } },
         ],
       },
       include: {

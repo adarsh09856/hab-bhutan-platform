@@ -234,6 +234,52 @@ export default function OrderConfirmationPage() {
             </div>
           </div>
 
+          {/* Payment Instructions for Bank Wire and mBoB */}
+          {order?.paymentMethod === 'BANK' && (
+            <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-3">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                <Building2 className="w-4 h-4 text-[#8B2E24]" />
+                <span>Bank Wire Transfer Instructions</span>
+              </div>
+              <p className="text-[#6B5A4C] leading-relaxed">
+                Please wire or deposit the total amount to HAB&apos;s official CSO treasury account. Your order will be marked <strong>PAID</strong> and dispatched immediately upon receipt:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-white/80 rounded-xl border border-amber-500/20 font-mono text-[11px] text-[#33261F]">
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Beneficiary Bank</span>
+                  <span className="font-bold">{siteSettings?.checkoutBankName || 'Bank of Bhutan Ltd (BOB)'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Account Name</span>
+                  <span className="font-bold">{siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Account Number</span>
+                  <span className="font-bold text-[#8B2E24]">{siteSettings?.checkoutAccountNumber || '1008472910'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">SWIFT / Routing Code</span>
+                  <span className="font-bold">{siteSettings?.checkoutSwiftCode || 'BHUBBTBT'}</span>
+                </div>
+              </div>
+              <div className="text-[11px] text-[#8B2E24] font-semibold flex items-center gap-1.5">
+                <span>⚠️ Important: Include reference <strong>{orderNumber}</strong> in your wire remarks.</span>
+              </div>
+            </div>
+          )}
+
+          {order?.paymentMethod === 'MBOB' && (
+            <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-3">
+              <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                <QrCode className="w-4 h-4 text-emerald-700" />
+                <span>Bhutan Mobile Pay (mBoB / BNB Pay)</span>
+              </div>
+              <p className="text-[#6B5A4C] leading-relaxed">
+                Thank you for your local order. If you have not already entered your transaction journal number, please send your payment screenshot with order reference <strong>{orderNumber}</strong> to our secretariat via WhatsApp at <strong>+975-2-338089</strong> or email <strong>officehab@gmail.com</strong>.
+              </p>
+            </div>
+          )}
+
           {/* Statutory Export Notice */}
           <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] text-[11px] text-[#6B5A4C] leading-relaxed">
             <strong>Customs &amp; Export Verification:</strong> Certified under Article 3 of the Articles of Association (2026 Edition) and Civil Society Organizations Act 2007. Parcel contains authentic contemporary handicraft work not subject to antique export restrictions.

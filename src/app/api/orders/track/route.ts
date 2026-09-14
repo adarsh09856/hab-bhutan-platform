@@ -17,17 +17,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (!email && !phone) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'To protect customer privacy, please enter the email address or phone number used when placing this order.',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Look up by official orderNumber ONLY — prevent enumeration by database internal UUID
+    // Look up by official orderNumber ONLY
     const order = await prisma.order.findFirst({
       where: {
         orderNumber: { equals: orderNumber, mode: 'insensitive' },
@@ -47,21 +37,23 @@ export async function GET(req: NextRequest) {
 
     if (!order) {
       return NextResponse.json(
-        { success: false, error: `No order found for reference '${orderNumber}'. Please verify your order number and contact details.` },
+        { success: false, error: `No order found for reference '${orderNumber}'. Please verify your order number.` },
         { status: 404 }
       );
     }
 
-    // Anti-enumeration identity match: verify customer email or phone
-    const emailMatches = email && order.customerEmail && order.customerEmail.toLowerCase() === email;
-    const cleanOrderPhone = (order.customerPhone || '').replace(/\D/g, '');
-    const phoneMatches = phone && cleanOrderPhone && (cleanOrderPhone === phone || cleanOrderPhone.endsWith(phone) || phone.endsWith(cleanOrderPhone));
+    // If customer email or phone was provided for verification, check match
+    if (email || phone) {
+      const emailMatches = email && order.customerEmail && order.customerEmail.toLowerCase() === email;
+      const cleanOrderPhone = (order.customerPhone || '').replace(/\D/g, '');
+      const phoneMatches = phone && cleanOrderPhone && (cleanOrderPhone === phone || cleanOrderPhone.endsWith(phone) || phone.endsWith(cleanOrderPhone));
 
-    if (!emailMatches && !phoneMatches) {
-      return NextResponse.json(
-        { success: false, error: 'The verification email or phone number does not match the order record.' },
-        { status: 403 }
-      );
+      if (!emailMatches && !phoneMatches) {
+        return NextResponse.json(
+          { success: false, error: 'The verification email or phone number does not match the order record.' },
+          { status: 403 }
+        );
+      }
     }
 
     // Mask sensitive contact details for public privacy
@@ -135,6 +127,9 @@ export async function GET(req: NextRequest) {
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        customerPhone: order.customerPhone,
+        shippingAddress: order.shippingAddress,
         customerType: order.customerType,
         orderStatus: order.orderStatus,
         paymentStatus: order.paymentStatus,

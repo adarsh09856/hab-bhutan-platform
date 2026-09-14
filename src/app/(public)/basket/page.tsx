@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 
 export default function BasketPage() {
+  const router = useRouter();
   const { fmt, currency } = useCurrency();
   const {
     items,
@@ -59,7 +61,7 @@ export default function BasketPage() {
 
     try {
       const selectedCurrency = paymentMethod === 'mbob' ? 'BTN' : (currency || 'USD');
-      const selectedPaymentMethod = paymentMethod === 'card' ? 'CARD' : paymentMethod === 'mbob' ? 'MBOB' : 'BANK_TRANSFER';
+      const selectedPaymentMethod = paymentMethod === 'card' ? 'CARD' : paymentMethod === 'mbob' ? 'MBOB' : 'BANK';
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -91,6 +93,12 @@ export default function BasketPage() {
       const data = await res.json();
       if (data.success && data.order?.orderNumber) {
         orderNum = data.order.orderNumber;
+        setConfirmedOrderNumber(orderNum);
+        setConfirmedEmail(customer.email.trim());
+        clearCart();
+        setIsSubmitting(false);
+        router.push(`/order-confirmation/${orderNum}`);
+        return;
       } else if (!res.ok && data.error) {
         setFormError(data.error);
         setIsSubmitting(false);
