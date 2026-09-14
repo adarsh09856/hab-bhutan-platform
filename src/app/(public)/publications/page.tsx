@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
@@ -107,24 +109,27 @@ export default function PublicationsPage() {
                 </span>
               </div>
             </div>
-            <figure className="frame frame--dark publead__cover" data-cms-img>
-              <figcaption className="frame__caption frame__caption--dark">
-                cover — {leadReport.title.toLowerCase()}
-              </figcaption>
+            <figure className="frame frame--dark publead__cover" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '24px', textAlign: 'center', background: 'linear-gradient(145deg, #2b1f1a 0%, #1a120e 100%)' }}>
+                <span className="eyebrow eyebrow--brass eyebrow--sm" style={{ marginBottom: 8 }}>{leadReport.kind} · {leadReport.year}</span>
+                <h3 style={{ fontFamily: 'var(--display)', fontSize: '20px', color: '#fff', margin: '0 0 10px', lineHeight: 1.25 }}>{leadReport.title}</h3>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>{leadReport.meta}</span>
+              </div>
             </figure>
           </div>
 
           <div className="publead__side">
             <p className="eyebrow eyebrow--muted eyebrow--sm">Also essential</p>
             <div id="pubSecondary">
-              {secondaryReports.map((p) => (
-                <div key={p.key || p.title} style={{ marginBottom: 16 }}>
-                  <span className="tag" style={{ fontSize: 10, padding: '2px 6px' }}>{p.kind}</span>
-                  <h4 style={{ fontFamily: 'var(--display)', fontSize: 16, margin: '4px 0 2px' }}>
-                    <a href={p.file_url || '#'} download className="hover:underline">{p.title}</a>
-                  </h4>
-                  <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)', margin: 0 }}>{p.year} · {p.meta}</p>
-                </div>
+              {secondaryReports.map((p, idx) => (
+                <a key={p.key || p.title} className="pubside" href={p.file_url || '#'} download>
+                  <span className="pubside__cover" style={{ backgroundImage: `url(/assets/photos/${['hero-1-weaving.jpg', 'hero-4-textiles.jpg', 'hero-5-desho.jpg'][idx % 3]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <span className="pubside__body">
+                    <span className="eyebrow eyebrow--accent eyebrow--sm">{p.kind} · {p.year}</span>
+                    <span className="pubside__title">{p.title}</span>
+                    <span className="pubside__meta">{p.meta} ↓</span>
+                  </span>
+                </a>
               ))}
             </div>
           </div>
@@ -188,20 +193,15 @@ export default function PublicationsPage() {
         {filtered.length > 0 ? (
           <div className="publist" id="pubList">
             {filtered.map((p) => (
-              <article key={p.key || p.title} className="pubcard">
-                <div className="pubcard__copy">
-                  <span className="tag">{p.kind}</span>
-                  <h3 className="pubcard__title">{p.title}</h3>
-                  <p className="pubcard__abstract">{p.abstract}</p>
-                </div>
-                <div className="pubcard__side">
-                  <span className="pubcard__year">{p.year}</span>
-                  <span className="pubcard__meta">{p.meta}</span>
-                  <a className="btn btn--accent btn--sm" href={p.file_url || '#'} download>
-                    Download ↓
-                  </a>
-                </div>
-              </article>
+              <a key={p.key || p.title} className="pubrow" href={p.file_url || '#'} download>
+                <span className="pubrow__kind">{p.kind}</span>
+                <span className="pubrow__title clamp-2">{p.title}</span>
+                <span className="pubrow__meta">{p.meta}</span>
+                <span className="pubrow__right">
+                  <span className="pubrow__year">{p.year}</span>
+                  <span className="pubrow__dl">Download ↓</span>
+                </span>
+              </a>
             ))}
           </div>
         ) : (

@@ -81,25 +81,69 @@ export async function GET() {
     }
 
     const events = rawEvents.map((e: any) => {
-      let day = e.day;
-      let mon = e.mon;
-      if (!day || !mon) {
-        if (e.dateDisplay) {
-          const parts = e.dateDisplay.trim().split(/[\s-]+/);
-          if (parts.length >= 2) {
-            day = parts[0].replace(/[^0-9]/g, '') || parts[0];
-            mon = parts[1].substring(0, 3).toUpperCase();
+      let day = '';
+      let mon = '';
+      let year = 2026;
+      let time = '';
+
+      if (e.schedule && typeof e.schedule === 'object') {
+        if (e.schedule.day) day = String(e.schedule.day);
+        if (e.schedule.mon) mon = String(e.schedule.mon).toUpperCase();
+        if (e.schedule.time) time = String(e.schedule.time);
+      }
+
+      if ((!day || !mon) && e.dateDisplay) {
+        const raw = String(e.dateDisplay).trim();
+        const fullMonths: Record<string, string> = {
+          january: 'JAN', february: 'FEB', march: 'MAR', april: 'APR', may: 'MAY', june: 'JUN',
+          july: 'JUL', august: 'AUG', september: 'SEP', october: 'OCT', november: 'NOV', december: 'DEC'
+        };
+        const abbrMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+        for (const [full, abbr] of Object.entries(fullMonths)) {
+          if (new RegExp(`\\b${full}\\b`, 'i').test(raw)) {
+            mon = abbr;
+            break;
           }
-        } else if (e.startDate) {
-          const dt = new Date(e.startDate);
-          day = String(dt.getDate()).padStart(2, '0');
-          mon = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        }
+        if (!mon) {
+          for (const abbr of abbrMonths) {
+            if (new RegExp(`\\b${abbr}\\b`, 'i').test(raw)) {
+              mon = abbr;
+              break;
+            }
+          }
+        }
+
+        const dayMatch = raw.match(/\b([0-2]?[0-9]|3[01])\b/);
+        if (dayMatch) {
+          day = dayMatch[1].padStart(2, '0');
+        }
+
+        const yearMatch = raw.match(/\b(202[4-9]|203[0-9])\b/);
+        if (yearMatch) {
+          year = parseInt(yearMatch[1], 10);
+        }
+
+        if (!time) {
+          const timeMatch = raw.match(/\b(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)(?:\s*[-–—]\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))?)\b/);
+          if (timeMatch) time = timeMatch[1];
         }
       }
+
+      if ((!day || !mon) && e.startDate) {
+        const dt = new Date(e.startDate);
+        day = String(dt.getDate()).padStart(2, '0');
+        mon = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        year = dt.getFullYear();
+      }
+
       return {
         ...e,
-        day: day || '12',
-        mon: mon || 'SEP',
+        day: day || e.day || '12',
+        mon: mon || e.mon || 'SEP',
+        year: year || e.year || 2026,
+        time: time || e.time || (typeof e.schedule === 'object' && e.schedule?.time) || 'All day',
         place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
         url: e.url || `/events/${e.key || e.id}`,
       };

@@ -126,22 +126,11 @@ export default function HeroSlider() {
         </>
       )}
 
-      {/* Bottom: caption + craft badge + dots */}
+      {/* Bottom: craft badge + dots */}
       <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-30 flex items-end justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          {slide.linkUrl ? (
-            <Link
-              href={slide.linkUrl}
-              className="font-mono text-[10px] sm:text-[11px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-[8px] sm:px-[10px] py-[4px] sm:py-[5px] rounded-[5px] border border-white/15 truncate block hover:bg-[#8B2E24]/85 transition-colors"
-            >
-              {slide.caption}
-            </Link>
-          ) : (
-            <span className="font-mono text-[10px] sm:text-[11px] text-[#F4F0E7] bg-[#33261F]/85 backdrop-blur-sm px-[8px] sm:px-[10px] py-[4px] sm:py-[5px] rounded-[5px] border border-white/15 truncate block">
-              {slide.caption}
-            </span>
-          )}
-        </div>
+        <span className="font-mono text-[9.5px] sm:text-[10.5px] text-[#F4F0E7]/80 bg-black/40 backdrop-blur-sm px-[6px] sm:px-[8px] py-[3px] sm:py-[4px] rounded-[4px] flex-none">
+          Zorig Chusum
+        </span>
 
         {/* Dot indicators */}
         {slides.length > 1 && (

@@ -5,27 +5,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 
+export const dynamic = 'force-dynamic';
+
 export default function EventsPage() {
   const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
   const [selectedKind, setSelectedKind] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/events')
+    fetch('/api/events', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
-          const normalized = d.events.map((e: any) => ({
-            ...e,
-            day: e.day || (e.dateDisplay ? e.dateDisplay.split(' ')[0] : '12'),
-            mon: e.mon || (e.dateDisplay ? e.dateDisplay.split(' ')[1] : 'SEP'),
-            year: e.year || 2026,
-            kind: e.kind || e.category || 'Exhibition',
-            place: e.place || e.location || 'Thimphu',
-            time: e.time || e.schedule?.time || e.dateDisplay || '',
-            summary: e.summary || (e.description?.slice(0, 160) + '...'),
-            who: e.who || 'Members & public',
-          }));
-          setEventsList(normalized);
+          setEventsList(d.events);
         }
       })
       .catch(() => {});

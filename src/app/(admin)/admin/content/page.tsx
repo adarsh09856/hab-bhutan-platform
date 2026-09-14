@@ -97,8 +97,8 @@ export default function AdminContentPage() {
     setFeedback(null);
     try {
       const [contentRes, policiesRes] = await Promise.all([
-        fetch('/api/admin/content', { credentials: 'include' }),
-        fetch('/api/admin/policies', { credentials: 'include' }),
+        fetch('/api/admin/content', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/admin/policies', { credentials: 'include', cache: 'no-store' }),
       ]);
 
       if (contentRes.ok) {

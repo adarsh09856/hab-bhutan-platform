@@ -31,7 +31,7 @@ export default function AdminCraftsPage() {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const loadCrafts = () => {
-    fetch('/api/admin/crafts', { credentials: 'include' })
+    fetch('/api/admin/crafts', { credentials: 'include', cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.crafts) setCrafts(d.crafts);

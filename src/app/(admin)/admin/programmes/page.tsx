@@ -45,7 +45,7 @@ export default function AdminProgrammesPage() {
   const loadPillars = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/programmes', { credentials: 'include' });
+      const res = await fetch('/api/admin/programmes', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) setPillars(data.pillars || []);

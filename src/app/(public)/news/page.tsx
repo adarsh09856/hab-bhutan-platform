@@ -5,13 +5,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 
+export const dynamic = 'force-dynamic';
+
 export default function NewsPage() {
   const [newsList, setNewsList] = useState<any[]>(() => CLIENT_DATA.news);
   const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
   const [selectedKind, setSelectedKind] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/news')
+    fetch('/api/news', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.articles && Array.isArray(d.articles) && d.articles.length > 0) {
@@ -27,6 +29,12 @@ export default function NewsPage() {
             }))
           );
         }
+      })
+      .catch(() => {});
+
+    fetch('/api/events', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
         if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
           setEventsList(d.events);
         }
@@ -130,11 +138,11 @@ export default function NewsPage() {
                 </Link>
               </div>
               <div id="newsEvents">
-                {eventsList.slice(0, 4).map((e) => (
-                  <Link key={e.key} className="eventrow" href={`/events/${e.key}`}>
+                {eventsList.slice(0, 4).map((e, idx) => (
+                  <Link key={e.key || e.id || idx} className="eventrow" href={e.url || `/events/${e.key || e.id}`}>
                     <span className="eventrow__date">
                       <strong>{e.day || '12'}</strong>
-                      <span>{e.mon || 'OCT'}</span>
+                      <span>{e.mon || 'SEP'}</span>
                     </span>
                     <span className="eventrow__body">
                       <span className="eventrow__title clamp-2">{e.title}</span>

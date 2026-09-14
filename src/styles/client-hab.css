@@ -2882,3 +2882,14 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
 .admin__tier{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px}
 .admin__tier > span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .admin__tier .input{padding:9px 10px;font-size:14px}
+
+/* Suppression of button-like caption overlays inside or under images */
+.gallery__cap,
+.carousel__cap,
+.frame:has(img) .frame__caption,
+.frame--square .frame__caption,
+.frame--banner .frame__caption,
+.frame--eventshot .frame__caption,
+.frame--wide16 .frame__caption {
+  display: none !important;
+}

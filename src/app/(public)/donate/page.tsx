@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -36,7 +38,7 @@ function DonateContent() {
 
   useEffect(() => {
     // Load dynamic pillars
-    fetch('/api/support-pillars')
+    fetch('/api/support-pillars', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.pillars && Array.isArray(d.pillars) && d.pillars.length > 0) {
@@ -53,7 +55,7 @@ function DonateContent() {
       .catch(() => {});
 
     // Load site settings for hero and tax notice
-    fetch('/api/site-settings')
+    fetch('/api/site-settings', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.setting) {

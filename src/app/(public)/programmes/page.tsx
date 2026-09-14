@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -29,7 +31,7 @@ export default function ProgrammesPage() {
   const [programmes, setProgrammes] = useState<ProgrammeItem[]>(DEFAULT_PROGRAMMES);
 
   useEffect(() => {
-    fetch('/api/programmes')
+    fetch('/api/programmes', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.pillars && Array.isArray(data.pillars) && data.pillars.length > 0) {

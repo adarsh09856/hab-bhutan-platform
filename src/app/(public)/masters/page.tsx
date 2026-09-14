@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,7 +13,7 @@ export default function MastersPage() {
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
-    fetch('/api/honours')
+    fetch('/api/honours', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.honours && Array.isArray(d.honours) && d.honours.length > 0) {
@@ -102,7 +104,6 @@ export default function MastersPage() {
                     sizes="(max-width: 768px) 100vw, 45vw"
                     style={{ objectFit: 'cover' }}
                   />
-                  <span className="carousel__cap">{s.cap}</span>
                 </div>
               ))}
             </div>

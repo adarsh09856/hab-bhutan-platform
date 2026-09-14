@@ -11,6 +11,9 @@ interface EventItem {
   title: string;
   category: string;
   dateDisplay: string;
+  day?: string;
+  mon?: string;
+  time?: string;
   location: string;
   venue?: string | null;
   craft?: string | null;
@@ -19,19 +22,23 @@ interface EventItem {
   registration?: string | null;
   isActive: boolean;
   sortOrder: number;
+  schedule?: any;
 }
 
-const EMPTY_FORM: Omit<EventItem, 'id'> = {
+const EMPTY_FORM = {
   key: '',
   title: '',
   category: 'Exhibition',
   dateDisplay: '',
+  day: '12',
+  mon: 'SEP',
+  time: '09:00 AM – 05:00 PM BST',
   location: 'Thimphu',
-  venue: '',
+  venue: 'Clock Tower Square',
   craft: '',
   organiser: 'Handicrafts Association of Bhutan',
   description: '',
-  registration: 'Open to the public',
+  registration: 'Open to the public · Free admission',
   isActive: true,
   sortOrder: 0,
 };
@@ -78,11 +85,15 @@ export default function AdminEventsPage() {
   };
 
   const openEdit = (ev: EventItem) => {
+    const sched = ev.schedule && typeof ev.schedule === 'object' ? ev.schedule : {};
     setForm({
       key: ev.key,
       title: ev.title,
       category: ev.category,
       dateDisplay: ev.dateDisplay,
+      day: ev.day || sched.day || '12',
+      mon: ev.mon || sched.mon || 'SEP',
+      time: ev.time || sched.time || '09:00 AM – 05:00 PM BST',
       location: ev.location,
       venue: ev.venue || '',
       craft: ev.craft || '',
@@ -253,7 +264,15 @@ export default function AdminEventsPage() {
                         {ev.category}
                       </span>
                     </td>
-                    <td className="px-5 py-4 admin-text">{ev.dateDisplay || 'TBD'}</td>
+                    <td className="px-5 py-4 admin-text">
+                      <div className="font-medium">{ev.dateDisplay || 'TBD'}</div>
+                      <div className="text-xs admin-muted flex items-center gap-1.5 mt-0.5">
+                        <span className="px-1.5 py-0.2 rounded bg-white/10 font-mono text-[10px] text-amber-300">
+                          {ev.day || '12'} {ev.mon || 'SEP'}
+                        </span>
+                        <span>{ev.time || 'All day'}</span>
+                      </div>
+                    </td>
                     <td className="px-5 py-4 admin-text">{ev.location}</td>
                     <td className="px-5 py-4 text-center">
                       {ev.isActive ? (
@@ -351,7 +370,7 @@ export default function AdminEventsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Date Display *</label>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Date Display (Public Range) *</label>
                   <input
                     type="text"
                     value={form.dateDisplay}
@@ -361,6 +380,54 @@ export default function AdminEventsPage() {
                     className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Event Timing / Hours</label>
+                  <input
+                    type="text"
+                    value={form.time || ''}
+                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                    placeholder="09:00 AM – 05:00 PM BST (or All day)"
+                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Badge Day *</label>
+                  <input
+                    type="text"
+                    value={form.day || ''}
+                    onChange={(e) => setForm({ ...form, day: e.target.value })}
+                    placeholder="12"
+                    maxLength={2}
+                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono text-center font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Badge Month *</label>
+                  <input
+                    type="text"
+                    value={form.mon || ''}
+                    onChange={(e) => setForm({ ...form, mon: e.target.value.toUpperCase() })}
+                    placeholder="SEP"
+                    maxLength={3}
+                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono text-center font-bold"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Specific Venue / Pavilion</label>
+                  <input
+                    type="text"
+                    value={form.venue || ''}
+                    onChange={(e) => setForm({ ...form, venue: e.target.value })}
+                    placeholder="Main Amphitheatre / Pavilion 3"
+                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold admin-muted uppercase mb-1">Location / Town *</label>
                   <input
@@ -372,9 +439,6 @@ export default function AdminEventsPage() {
                     className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold admin-muted uppercase mb-1">Craft Focus (optional)</label>
                   <input
@@ -385,16 +449,17 @@ export default function AdminEventsPage() {
                     className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Organiser</label>
-                  <input
-                    type="text"
-                    value={form.organiser || ''}
-                    onChange={(e) => setForm({ ...form, organiser: e.target.value })}
-                    placeholder="Handicrafts Association of Bhutan"
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Organiser</label>
+                <input
+                  type="text"
+                  value={form.organiser || ''}
+                  onChange={(e) => setForm({ ...form, organiser: e.target.value })}
+                  placeholder="Handicrafts Association of Bhutan"
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                />
               </div>
 
               <div>

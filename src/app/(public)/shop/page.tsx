@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -51,7 +53,7 @@ const PRODUCT_POOL = [
 ];
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.products && Array.isArray(data.products) && data.products.length > 0) {

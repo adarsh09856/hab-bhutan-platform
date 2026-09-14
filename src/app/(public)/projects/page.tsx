@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -161,7 +163,7 @@ export default function ProjectsPage() {
   const [statusTab, setStatusTab] = useState<'current' | 'past'>('current');
 
   useEffect(() => {
-    fetch('/api/projects')
+    fetch('/api/projects', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.projects && Array.isArray(data.projects) && data.projects.length > 0) {

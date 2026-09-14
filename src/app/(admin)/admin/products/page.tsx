@@ -67,8 +67,8 @@ export default function AdminProductsPage() {
     setActionError('');
     try {
       const [prodRes, memRes] = await Promise.all([
-        fetch('/api/admin/products', { credentials: 'include' }),
-        fetch('/api/admin/members', { credentials: 'include' }).catch(() => null),
+        fetch('/api/admin/products', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/admin/members', { credentials: 'include', cache: 'no-store' }).catch(() => null),
       ]);
 
       if (prodRes.ok) {

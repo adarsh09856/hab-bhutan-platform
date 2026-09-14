@@ -29,8 +29,16 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
 export default async function EventDetailPage({ params }: EventPageProps) {
   const { key } = await params;
   let dbEvent: any = null;
+  let dbOtherEvents: any[] = [];
   try {
-    dbEvent = await prisma.eventRecord.findUnique({ where: { key } });
+    [dbEvent, dbOtherEvents] = await Promise.all([
+      prisma.eventRecord.findUnique({ where: { key } }),
+      prisma.eventRecord.findMany({
+        where: { isActive: true, key: { not: key } },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+        take: 3,
+      }),
+    ]);
   } catch {}
 
   const fallback = getEventByKey(key);
@@ -40,21 +48,67 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     notFound();
   }
 
+  let day = '';
+  let mon = '';
+  let year = 2026;
+  let time = '';
+
+  if (rawEvent.schedule && typeof rawEvent.schedule === 'object') {
+    if (rawEvent.schedule.day) day = String(rawEvent.schedule.day);
+    if (rawEvent.schedule.mon) mon = String(rawEvent.schedule.mon).toUpperCase();
+    if (rawEvent.schedule.time) time = String(rawEvent.schedule.time);
+  }
+
+  if ((!day || !mon) && rawEvent.dateDisplay) {
+    const raw = String(rawEvent.dateDisplay).trim();
+    const fullMonths: Record<string, string> = {
+      january: 'JAN', february: 'FEB', march: 'MAR', april: 'APR', may: 'MAY', june: 'JUN',
+      july: 'JUL', august: 'AUG', september: 'SEP', october: 'OCT', november: 'NOV', december: 'DEC'
+    };
+    const abbrMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+    for (const [full, abbr] of Object.entries(fullMonths)) {
+      if (new RegExp(`\\b${full}\\b`, 'i').test(raw)) {
+        mon = abbr;
+        break;
+      }
+    }
+    if (!mon) {
+      for (const abbr of abbrMonths) {
+        if (new RegExp(`\\b${abbr}\\b`, 'i').test(raw)) {
+          mon = abbr;
+          break;
+        }
+      }
+    }
+
+    const dayMatch = raw.match(/\b([0-2]?[0-9]|3[01])\b/);
+    if (dayMatch) day = dayMatch[1].padStart(2, '0');
+
+    const yearMatch = raw.match(/\b(202[4-9]|203[0-9])\b/);
+    if (yearMatch) year = parseInt(yearMatch[1], 10);
+
+    if (!time) {
+      const timeMatch = raw.match(/\b(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)(?:\s*[-–—]\s*\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))?)\b/);
+      if (timeMatch) time = timeMatch[1];
+    }
+  }
+
   const event = {
     ...rawEvent,
-    day: rawEvent.day || (rawEvent.dateDisplay ? rawEvent.dateDisplay.split(' ')[0] : '12'),
-    mon: rawEvent.mon || (rawEvent.dateDisplay ? rawEvent.dateDisplay.split(' ')[1] : 'SEP'),
-    year: rawEvent.year || '2026',
+    day: day || rawEvent.day || '12',
+    mon: mon || rawEvent.mon || 'SEP',
+    year: year || rawEvent.year || '2026',
     kind: rawEvent.kind || rawEvent.category || 'Exhibition',
-    place: rawEvent.place || rawEvent.location || 'Thimphu',
-    time: rawEvent.time || rawEvent.schedule?.time || rawEvent.dateDisplay || '',
+    place: rawEvent.place || rawEvent.location || rawEvent.venue || 'Thimphu, Bhutan',
+    time: time || rawEvent.time || (typeof rawEvent.schedule === 'object' && rawEvent.schedule?.time) || 'All day',
     summary: rawEvent.summary || rawEvent.description?.slice(0, 160) + '...',
     detail: rawEvent.detail || rawEvent.description || '',
     who: rawEvent.who || rawEvent.registration || 'Open to all',
     contact: rawEvent.contact || 'officehab@gmail.com',
   };
 
-  const otherEvents = CLIENT_DATA.events.filter((e) => e.key !== event.key).slice(0, 3);
+  const otherEvents = (dbOtherEvents.length > 0 ? dbOtherEvents : CLIENT_DATA.events.filter((e) => e.key !== event.key)).slice(0, 3);
 
   return (
     <main id="main">

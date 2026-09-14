@@ -57,9 +57,9 @@ export default function AdminOrdersPage() {
 
     try {
       const [ordRes, prodRes, memRes] = await Promise.all([
-        fetch('/api/admin/orders', { credentials: 'include', signal: controller.signal }),
-        fetch('/api/admin/products', { credentials: 'include', signal: controller.signal }).catch(() => null),
-        fetch('/api/admin/members', { credentials: 'include', signal: controller.signal }).catch(() => null),
+        fetch('/api/admin/orders', { credentials: 'include', signal: controller.signal, cache: 'no-store' }),
+        fetch('/api/admin/products', { credentials: 'include', signal: controller.signal, cache: 'no-store' }).catch(() => null),
+        fetch('/api/admin/members', { credentials: 'include', signal: controller.signal, cache: 'no-store' }).catch(() => null),
       ]);
 
       if (ordRes.ok) {

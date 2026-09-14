@@ -22,10 +22,23 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const events = await prisma.eventRecord.findMany({
+    const rawEvents = await prisma.eventRecord.findMany({
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
-    return NextResponse.json({ success: true, events });
+
+    const events = rawEvents.map((ev) => {
+      const sched = ev.schedule && typeof ev.schedule === 'object' ? (ev.schedule as any) : {};
+      return {
+        ...ev,
+        day: sched.day || '',
+        mon: sched.mon || '',
+        time: sched.time || '',
+      };
+    });
+
+    const res = NextResponse.json({ success: true, events });
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    return res;
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch events' }, { status: 500 });
   }
@@ -37,11 +50,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, title, category, dateDisplay, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
+    const { key, title, category, dateDisplay, day, mon, time, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
 
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
+
+    const mergedSchedule = schedule && typeof schedule === 'object' 
+      ? { ...schedule, ...(day && { day }), ...(mon && { mon }), ...(time && { time }) }
+      : (day || mon || time ? { day, mon, time } : null);
 
     const event = await prisma.eventRecord.create({
       data: {
@@ -56,7 +73,7 @@ export async function POST(req: NextRequest) {
         craft: craft?.trim() || null,
         organiser: organiser?.trim() || null,
         description: description.trim(),
-        schedule: schedule || null,
+        schedule: mergedSchedule,
         speakers: speakers || null,
         registration: registration?.trim() || null,
         isActive: isActive !== undefined ? Boolean(isActive) : true,
@@ -86,13 +103,21 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, key, title, category, dateDisplay, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
+    const { id, key, title, category, dateDisplay, day, mon, time, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
 
     if (!id && !key) {
       return NextResponse.json({ error: 'id or key is required for update' }, { status: 400 });
     }
 
     const where = id ? { id } : { key };
+    const existing = await prisma.eventRecord.findUnique({ where });
+    const prevSchedule = (existing?.schedule && typeof existing.schedule === 'object' ? existing.schedule : {}) as any;
+    const mergedSchedule = schedule !== undefined 
+      ? schedule 
+      : ((day !== undefined || mon !== undefined || time !== undefined)
+          ? { ...prevSchedule, ...(day !== undefined && { day }), ...(mon !== undefined && { mon }), ...(time !== undefined && { time }) }
+          : undefined);
+
     const event = await prisma.eventRecord.update({
       where,
       data: {
@@ -106,7 +131,7 @@ export async function PUT(req: NextRequest) {
         ...(craft !== undefined && { craft: craft?.trim() || null }),
         ...(organiser !== undefined && { organiser: organiser?.trim() || null }),
         ...(description !== undefined && { description: description.trim() }),
-        ...(schedule !== undefined && { schedule }),
+        ...(mergedSchedule !== undefined && { schedule: mergedSchedule }),
         ...(speakers !== undefined && { speakers }),
         ...(registration !== undefined && { registration: registration?.trim() || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),

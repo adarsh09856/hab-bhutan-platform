@@ -112,7 +112,7 @@ export default function AdminSiteSettingsPage() {
     }, 1200);
 
     // Primary fetch from admin API with fallback to public site-settings API
-    fetch('/api/admin/site-settings', { credentials: 'include' })
+    fetch('/api/admin/site-settings', { credentials: 'include', cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (!isMounted) return;
@@ -125,7 +125,7 @@ export default function AdminSiteSettingsPage() {
           setLoading(false);
         } else {
           // Fallback to public settings endpoint
-          fetch('/api/site-settings')
+          fetch('/api/site-settings', { cache: 'no-store' })
             .then((r) => r.json())
             .then((pub) => {
               if (!isMounted) return;

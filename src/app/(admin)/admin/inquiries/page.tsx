@@ -51,7 +51,7 @@ export default function AdminInquiriesPage() {
   const loadInquiries = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/inquiries', { credentials: 'include' });
+      const res = await fetch('/api/admin/inquiries', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) setInquiries(data.inquiries || []);

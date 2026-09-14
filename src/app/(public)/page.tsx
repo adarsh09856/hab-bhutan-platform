@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -515,41 +517,19 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // H. Events from Admin (normalized to guarantee day, mon, place and url)
+    // H. Events from Admin (normalized to guarantee day, mon, time, place and url)
     fetch('/api/events', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.events && d.events.length > 0) {
-          const mappedEvents = d.events.slice(0, 3).map((e: any) => {
-            let day = e.day;
-            let mon = e.mon;
-            if (!day || !mon) {
-              if (e.dateDisplay) {
-                const parts = e.dateDisplay.trim().split(/[\s-]+/);
-                if (parts.length >= 2) {
-                  day = parts[0].replace(/[^0-9]/g, '') || parts[0];
-                  mon = parts[1].substring(0, 3).toUpperCase();
-                } else {
-                  day = '12';
-                  mon = 'SEP';
-                }
-              } else if (e.startDate) {
-                const dt = new Date(e.startDate);
-                day = String(dt.getDate()).padStart(2, '0');
-                mon = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-              } else {
-                day = '12';
-                mon = 'SEP';
-              }
-            }
-            return {
-              day: day || '12',
-              mon: mon || 'SEP',
-              title: e.title,
-              place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
-              url: e.url || `/events/${e.key || e.id}`,
-            };
-          });
+          const mappedEvents = d.events.slice(0, 3).map((e: any) => ({
+            day: e.day || '12',
+            mon: e.mon || 'SEP',
+            time: e.time || 'All day',
+            title: e.title,
+            place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
+            url: e.url || `/events/${e.key || e.id}`,
+          }));
           setEvents(mappedEvents);
         }
       })
@@ -672,7 +652,6 @@ export default function HomePage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = SCENE_POOL[idx % SCENE_POOL.length]; }}
                 />
-                <span className="carousel__cap">{s.caption}</span>
               </div>
             ))}
           </div>
@@ -896,7 +875,6 @@ export default function HomePage() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
                   />
-                  <span className="carousel__cap">{sl.cap}</span>
                 </div>
               ))}
             </div>
@@ -1260,7 +1238,9 @@ export default function HomePage() {
                     </span>
                     <span className="eventrow__body">
                       <span className="eventrow__title clamp-2">{ev.title}</span>
-                      <span className="eventrow__place clamp-1">{ev.place}</span>
+                      <span className="eventrow__place clamp-1">
+                        {ev.place}{ev.time && ev.time !== 'All day' ? ` · ${ev.time}` : ''}
+                      </span>
                     </span>
                   </Link>
                 ))}

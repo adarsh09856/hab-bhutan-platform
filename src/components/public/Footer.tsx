@@ -65,7 +65,7 @@ export default function Footer() {
   ]);
 
   useEffect(() => {
-    fetch('/api/site-settings')
+    fetch('/api/site-settings', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.setting) {
@@ -77,7 +77,7 @@ export default function Footer() {
       })
       .catch(() => {});
 
-    fetch('/api/navigation')
+    fetch('/api/navigation', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.footer && typeof data.footer === 'object') {

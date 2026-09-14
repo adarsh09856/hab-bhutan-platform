@@ -60,8 +60,8 @@ export default function AdminDonateSettingsPage() {
     setLoading(true);
     try {
       const [pRes, dRes] = await Promise.all([
-        fetch('/api/admin/support-pillars'),
-        fetch('/api/admin/donations'),
+        fetch('/api/admin/support-pillars', { cache: 'no-store' }),
+        fetch('/api/admin/donations', { cache: 'no-store' }),
       ]);
       const pData = await pRes.json();
       const dData = await dRes.json();
