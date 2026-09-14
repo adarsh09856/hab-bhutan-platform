@@ -63,14 +63,41 @@ async function getRecognisedMembers() {
 
 export default async function MembersPage() {
   const recognised = await getRecognisedMembers();
-  const total = Object.values(memberCounts).reduce((t, n) => t + n, 0);
+
+  // Dynamically query registered members to increment sector baseline census
+  const dynamicMemberCounts: Record<string, number> = { ...memberCounts };
+  const dynamicRegionCounts = regionCounts.map((r) => ({ ...r }));
+
+  try {
+    const dbMembers = await prisma.member.findMany({
+      select: { craftKey: true, dzongkhag: true },
+    });
+    dbMembers.forEach((m) => {
+      if (m.craftKey && dynamicMemberCounts[m.craftKey] !== undefined) {
+        dynamicMemberCounts[m.craftKey] += 1;
+      }
+      if (m.dzongkhag) {
+        const match = dynamicRegionCounts.find(
+          (r) => r.name.toLowerCase() === m.dzongkhag.toLowerCase()
+        );
+        if (match) {
+          match.n += 1;
+        } else {
+          const other = dynamicRegionCounts.find((r) => r.aggregate);
+          if (other) other.n += 1;
+        }
+      }
+    });
+  } catch {}
+
+  const total = Object.values(dynamicMemberCounts).reduce((t, n) => t + n, 0);
 
   const sortedCrafts = CLIENT_DATA.crafts.slice().sort((a, b) => {
-    return (memberCounts[b.key] || 0) - (memberCounts[a.key] || 0);
+    return (dynamicMemberCounts[b.key] || 0) - (dynamicMemberCounts[a.key] || 0);
   });
 
-  const regions = regionCounts.filter((r) => !r.aggregate);
-  const aggregate = regionCounts.find((r) => r.aggregate);
+  const regions = dynamicRegionCounts.filter((r) => !r.aggregate);
+  const aggregate = dynamicRegionCounts.find((r) => r.aggregate);
   const maxRegion = Math.max(...regions.map((r) => r.n), 1);
 
   return (
@@ -126,7 +153,7 @@ export default async function MembersPage() {
 
         <div className="countgrid" id="countGrid" data-cms-repeat>
           {sortedCrafts.map((c) => {
-            const n = memberCounts[c.key] || 0;
+            const n = dynamicMemberCounts[c.key] || 0;
             const share = Math.round((n / total) * 100);
 
             return (

@@ -2324,7 +2324,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .nav.is-open{display:flex}
   .nav__item{font-size:15px;padding:12px 10px}
   .menu{position:static}
-  .menu__panel,.menu__panel--wide,.menu__panel--narrow{position:static;width:auto;padding-top:8px}
+  .menu__panel,.menu__panel--wide,.menu__panel--narrow,.menu__panel--mid{position:static;width:auto;padding-top:8px}
   .menu__card{box-shadow:none}
   .menu__grid{grid-template-columns:repeat(2,1fr)}
   .header__inner{flex-wrap:wrap;gap:10px;padding-top:12px;padding-bottom:12px}

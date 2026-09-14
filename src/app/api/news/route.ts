@@ -49,18 +49,61 @@ const DEFAULT_EVENTS = [
 
 export async function GET() {
   try {
-    const [dbArticles, dbEvents] = await Promise.all([
+    const [dbArticles, dbEventRecords, dbCalendarEvents] = await Promise.all([
       prisma.newsArticle.findMany({
         where: { isPublished: true },
         orderBy: { createdAt: 'desc' },
+      }),
+      prisma.eventRecord.findMany({
+        where: { isActive: true },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       }),
       prisma.calendarEvent.findMany({
         orderBy: { createdAt: 'asc' },
       }),
     ]);
 
-    const articles = dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS;
-    const events = dbEvents.length > 0 ? dbEvents : DEFAULT_EVENTS;
+    const articles = (dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS).map((a: any) => ({
+      ...a,
+      date: a.dateString || a.date || a.published_at || 'Recent',
+      published_at: a.dateString || a.published_at || 'Recent',
+      slug: a.slug || a.id,
+      image_path: a.image_path || '/assets/photos/hero-4-textiles.jpg',
+    }));
+
+    let rawEvents: any[] = [];
+    if (dbEventRecords.length > 0) {
+      rawEvents = dbEventRecords;
+    } else if (dbCalendarEvents.length > 0) {
+      rawEvents = dbCalendarEvents;
+    } else {
+      rawEvents = DEFAULT_EVENTS;
+    }
+
+    const events = rawEvents.map((e: any) => {
+      let day = e.day;
+      let mon = e.mon;
+      if (!day || !mon) {
+        if (e.dateDisplay) {
+          const parts = e.dateDisplay.trim().split(/[\s-]+/);
+          if (parts.length >= 2) {
+            day = parts[0].replace(/[^0-9]/g, '') || parts[0];
+            mon = parts[1].substring(0, 3).toUpperCase();
+          }
+        } else if (e.startDate) {
+          const dt = new Date(e.startDate);
+          day = String(dt.getDate()).padStart(2, '0');
+          mon = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        }
+      }
+      return {
+        ...e,
+        day: day || '12',
+        mon: mon || 'SEP',
+        place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
+        url: e.url || `/events/${e.key || e.id}`,
+      };
+    });
 
     const res = NextResponse.json({
       success: true,

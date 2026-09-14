@@ -69,7 +69,66 @@ export default function Header() {
     }
   };
 
-  const crafts = CLIENT_DATA.crafts || [];
+  const [crafts, setCrafts] = useState<any[]>(() => CLIENT_DATA.crafts || []);
+  const [categories, setCategories] = useState<any[]>([
+    { key: 'individual-artisan', name: 'Individual Artisan', meta: 'Active · Nu. 500 / year' },
+    { key: 'craft-enterprise', name: 'Craft Enterprise', meta: 'Active · Nu. 2,000 / year' },
+    { key: 'cluster', name: 'Artisan Cluster', meta: 'Active · Nu. 3,000 / year' },
+    { key: 'associate', name: 'Affiliated Member', meta: 'Affiliated · Nu. 5,000 / year' },
+    { key: 'honorary', name: 'Honorary Member', meta: 'By Board resolution · no fee' },
+  ]);
+  const [navItems, setNavItems] = useState<any[]>([
+    { label: 'Home', href: '/' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Programmes', href: '/programmes' },
+    { label: 'Projects', href: '/projects' },
+    { label: 'News & Events', href: '/news' },
+  ]);
+
+  // Load dynamic CMS data from Admin endpoints
+  useEffect(() => {
+    // 1. Live Crafts for Shop Dropdown
+    fetch('/api/crafts', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.crafts && Array.isArray(d.crafts) && d.crafts.length > 0) {
+          setCrafts(d.crafts);
+        }
+      })
+      .catch(() => {});
+
+    // 2. Live Membership Categories for Dropdown
+    fetch('/api/membership-categories', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.categories && Array.isArray(d.categories) && d.categories.length > 0) {
+          setCategories(
+            d.categories.map((c: any) => ({
+              key: c.key,
+              name: c.name,
+              meta: c.duesBTN > 0 ? `Active · Nu. ${Number(c.duesBTN).toLocaleString()} / year` : (c.shortName || 'By Board resolution · no fee'),
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    // 3. Live Navigation Items
+    fetch('/api/navigation', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.header && Array.isArray(d.header) && d.header.length > 0) {
+          const mainLinks = d.header.filter((i: any) => !i.parent);
+          if (mainLinks.length >= 3) {
+            setNavItems([
+              { label: 'Home', href: '/' },
+              ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
+            ]);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <header className="header" id="siteHeader">
@@ -103,37 +162,16 @@ export default function Header() {
           id="primaryNav"
           aria-label="Primary"
         >
-          <Link
-            className={`nav__item nav__item--home ${pathname === '/' ? 'is-current' : ''}`}
-            href="/"
-            aria-current={pathname === '/' ? 'page' : undefined}
-          >
-            Home
-          </Link>
-          <Link
-            className={`nav__item ${pathname === '/about' ? 'is-current' : ''}`}
-            href="/about"
-          >
-            About Us
-          </Link>
-          <Link
-            className={`nav__item ${pathname === '/programmes' ? 'is-current' : ''}`}
-            href="/programmes"
-          >
-            Programmes
-          </Link>
-          <Link
-            className={`nav__item ${pathname === '/projects' ? 'is-current' : ''}`}
-            href="/projects"
-          >
-            Projects
-          </Link>
-          <Link
-            className={`nav__item ${pathname === '/news' ? 'is-current' : ''}`}
-            href="/news"
-          >
-            News &amp; Events
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              className={`nav__item ${item.href === '/' ? 'nav__item--home' : ''} ${pathname === item.href ? 'is-current' : ''}`}
+              href={item.href}
+              aria-current={pathname === item.href ? 'page' : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
 
           <div className="menu" data-menu ref={membersRef}>
             <button
@@ -157,34 +195,29 @@ export default function Header() {
               <div className="menu__card">
                 <p className="eyebrow eyebrow--muted eyebrow--sm">Membership categories</p>
                 <div className="menu__cats">
-                  <Link className="menu__cat" href="/membership-category?category=individual-artisan">
-                    <span className="menu__cat-name">Individual Artisan</span>
-                    <span className="menu__cat-meta">Active · Nu. 500 / year</span>
-                  </Link>
-                  <Link className="menu__cat" href="/membership-category?category=craft-enterprise">
-                    <span className="menu__cat-name">Craft Enterprise</span>
-                    <span className="menu__cat-meta">Active · Nu. 2,000 / year</span>
-                  </Link>
-                  <Link className="menu__cat" href="/membership-category?category=cluster">
-                    <span className="menu__cat-name">Artisan Cluster</span>
-                    <span className="menu__cat-meta">Active · Nu. 3,000 / year</span>
-                  </Link>
-                  <Link className="menu__cat" href="/membership-category?category=associate">
-                    <span className="menu__cat-name">Affiliated Member</span>
-                    <span className="menu__cat-meta">Affiliated · Nu. 5,000 / year</span>
-                  </Link>
-                  <Link className="menu__cat" href="/membership-category?category=honorary">
-                    <span className="menu__cat-name">Honorary Member</span>
-                    <span className="menu__cat-meta">By Board resolution · no fee</span>
-                  </Link>
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.key}
+                      className="menu__cat"
+                      href={`/membership-category?category=${cat.key}`}
+                      onClick={() => setMembersOpen(false)}
+                    >
+                      <span className="menu__cat-name">{cat.name}</span>
+                      <span className="menu__cat-meta">{cat.meta}</span>
+                    </Link>
+                  ))}
                 </div>
-                <div className="menu__footer" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'stretch' }}>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <Link className="btn btn--accent btn--sm" href="/register" style={{ flex: '1 1 auto', textAlign: 'center', whiteSpace: 'nowrap' }}>Register as a member</Link>
-                    <Link className="btn btn--outline btn--sm" href="/masters" style={{ flex: '1 1 auto', textAlign: 'center', whiteSpace: 'nowrap' }}>Accreditations &amp; awards</Link>
+                <div className="menu__footer" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--line)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <Link className="btn btn--accent btn--sm" href="/register" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '7px 10px', fontSize: '12px' }}>
+                      Register as a member
+                    </Link>
+                    <Link className="btn btn--outline btn--sm" href="/masters" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '7px 10px', fontSize: '12px' }}>
+                      Accreditations &amp; awards
+                    </Link>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '2px' }}>
-                    <Link className="menu__note" href="/membership#login" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                    <Link className="menu__note" href="/membership#login" onClick={() => setMembersOpen(false)} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: '12.5px' }}>
                       Member login &rarr;
                     </Link>
                   </div>

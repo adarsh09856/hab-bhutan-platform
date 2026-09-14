@@ -425,7 +425,14 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && d.products.length > 0) {
-          setProducts(d.products.slice(0, 8));
+          const mappedProducts = d.products.slice(0, 8).map((p: any) => ({
+            ...p,
+            price: p.priceUSD || p.price || 0,
+            priceUSD: p.priceUSD || p.price || 0,
+            craft_name: (p.craft?.name || p.craftKey || '').toUpperCase(),
+            image_path: p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`,
+          }));
+          setProducts(mappedProducts);
         }
       })
       .catch(() => {});
@@ -477,7 +484,13 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.pillars && d.pillars.length > 0) {
-          setProgrammes(d.pillars.slice(0, 3));
+          const mappedProgrammes = d.pillars.slice(0, 3).map((p: any) => ({
+            ref: p.ref || 'a',
+            title: p.title,
+            description: p.description,
+            url: `/programmes/${p.ref || 'a'}`,
+          }));
+          setProgrammes(mappedProgrammes);
         }
       })
       .catch(() => {});
@@ -487,17 +500,57 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.articles && d.articles.length > 0) {
-          setNews(d.articles.slice(0, 3));
+          const mappedNews = d.articles.slice(0, 3).map((a: any) => ({
+            id: a.id,
+            slug: a.slug || a.id,
+            kind: a.kind || 'Notice',
+            title: a.title,
+            blurb: a.blurb || a.summary || '',
+            date: a.dateString || a.date || a.published_at || 'Recent',
+            published_at: a.dateString || a.published_at || 'Recent',
+            image_path: a.image_path || a.imageUrl || '/assets/photos/hero-2-punakha.jpg',
+          }));
+          setNews(mappedNews);
         }
       })
       .catch(() => {});
 
-    // H. Events from Admin
+    // H. Events from Admin (normalized to guarantee day, mon, place and url)
     fetch('/api/events', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.events && d.events.length > 0) {
-          setEvents(d.events.slice(0, 3));
+          const mappedEvents = d.events.slice(0, 3).map((e: any) => {
+            let day = e.day;
+            let mon = e.mon;
+            if (!day || !mon) {
+              if (e.dateDisplay) {
+                const parts = e.dateDisplay.trim().split(/[\s-]+/);
+                if (parts.length >= 2) {
+                  day = parts[0].replace(/[^0-9]/g, '') || parts[0];
+                  mon = parts[1].substring(0, 3).toUpperCase();
+                } else {
+                  day = '12';
+                  mon = 'SEP';
+                }
+              } else if (e.startDate) {
+                const dt = new Date(e.startDate);
+                day = String(dt.getDate()).padStart(2, '0');
+                mon = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+              } else {
+                day = '12';
+                mon = 'SEP';
+              }
+            }
+            return {
+              day: day || '12',
+              mon: mon || 'SEP',
+              title: e.title,
+              place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
+              url: e.url || `/events/${e.key || e.id}`,
+            };
+          });
+          setEvents(mappedEvents);
         }
       })
       .catch(() => {});

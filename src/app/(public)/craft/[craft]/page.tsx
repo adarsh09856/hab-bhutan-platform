@@ -23,7 +23,7 @@ export default function CraftProfilePage() {
   const [members, setMembers] = useState<any[]>(() => (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === craft.key));
 
   useEffect(() => {
-    fetch(`/api/crafts?key=${encodeURIComponent(craftKey)}`)
+    fetch(`/api/crafts?key=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.craft) setCraft(d.craft);
@@ -31,7 +31,7 @@ export default function CraftProfilePage() {
       .catch(() => {});
 
     // Fetch live products for this craft
-    fetch(`/api/products?craft=${encodeURIComponent(craftKey)}`)
+    fetch(`/api/products?craft=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && Array.isArray(d.products) && d.products.length > 0) {
@@ -52,7 +52,7 @@ export default function CraftProfilePage() {
       .catch(() => {});
 
     // Fetch live clusters for this craft
-    fetch('/api/clusters')
+    fetch('/api/clusters', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.clusters && Array.isArray(d.clusters)) {
