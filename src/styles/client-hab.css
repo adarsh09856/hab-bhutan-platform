@@ -67,9 +67,9 @@
   --ph-dark-b:#463629;
 
   /* type */
-  --display:Marcellus, serif;
-  --ui:Figtree, system-ui, sans-serif;
-  --body:Lora, Georgia, serif;
+  --display:Marcellus, "Noto Serif Tibetan", "DDC Uchen", "Jomolhari", serif;
+  --ui:Figtree, system-ui, "Noto Sans Tibetan", "DDC Uchen", "Jomolhari", sans-serif;
+  --body:Lora, Georgia, "Noto Serif Tibetan", "DDC Uchen", "Jomolhari", serif;
   --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* geometry */

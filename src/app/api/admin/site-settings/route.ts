@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { setManualFxOverride } from '@/lib/fx';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,19 @@ export async function GET(req: NextRequest) {
   const user = await verifyAdmin(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
-  return NextResponse.json({ success: true, setting });
+  
+  const pg = (setting?.paymentGateways as Record<string, any>) || {};
+  const loc = pg.localization || {};
+  const enriched = setting ? {
+    ...setting,
+    defaultCurrency: loc.defaultCurrency || 'USD',
+    defaultLanguage: loc.defaultLanguage || 'en',
+    supportedCurrencies: loc.supportedCurrencies || ['USD', 'BTN'],
+    supportedLanguages: loc.supportedLanguages || ['en', 'dz'],
+    fxRate: loc.fxRate || 84.0,
+  } : null;
+
+  return NextResponse.json({ success: true, setting: enriched });
 }
 
 // Resilient upsert helper that safely catches schema mismatches and DB encoding constraints (e.g. WIN1252 vs UTF8)
@@ -249,6 +262,38 @@ export async function PUT(req: NextRequest) {
       wholesaleLeadTime: body.wholesaleLeadTime || '2-4 weeks',
     };
 
+    // Merge localization into paymentGateways safely
+    const existing = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { paymentGateways: true } });
+    const currentGateways = (existing?.paymentGateways as Record<string, any>) || {};
+    const currentLoc = currentGateways.localization || {};
+
+    const newLoc = {
+      ...currentLoc,
+      ...(body.defaultCurrency !== undefined && { defaultCurrency: body.defaultCurrency }),
+      ...(body.defaultLanguage !== undefined && { defaultLanguage: body.defaultLanguage }),
+      ...(body.supportedCurrencies !== undefined && { supportedCurrencies: body.supportedCurrencies }),
+      ...(body.supportedLanguages !== undefined && { supportedLanguages: body.supportedLanguages }),
+      ...(body.fxRate !== undefined && { fxRate: Number(body.fxRate) }),
+    };
+
+    const updatedPaymentGateways = {
+      ...currentGateways,
+      ...(body.paymentGateways || {}),
+      localization: newLoc,
+    };
+
+    updatePayload.paymentGateways = updatedPaymentGateways;
+    createPayload.paymentGateways = updatedPaymentGateways;
+
+    if (body.fxRate !== undefined && !isNaN(Number(body.fxRate)) && Number(body.fxRate) > 0) {
+      try {
+        const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+        await setManualFxOverride(Number(body.fxRate), 'Updated via Admin Site Settings Localization', user.id, clientIp);
+      } catch (fxErr) {
+        console.warn('Could not set FX override in fxRateRecord:', fxErr);
+      }
+    }
+
     const updated = await safeUpsertSiteSetting(updatePayload, createPayload);
 
     await logAudit({
@@ -260,7 +305,18 @@ export async function PUT(req: NextRequest) {
       entityId: 'default',
     });
 
-    return NextResponse.json({ success: true, setting: updated });
+    const updatedPg = (updated?.paymentGateways as Record<string, any>) || {};
+    const updatedLoc = updatedPg.localization || {};
+    const enrichedUpdated = updated ? {
+      ...updated,
+      defaultCurrency: updatedLoc.defaultCurrency || 'USD',
+      defaultLanguage: updatedLoc.defaultLanguage || 'en',
+      supportedCurrencies: updatedLoc.supportedCurrencies || ['USD', 'BTN'],
+      supportedLanguages: updatedLoc.supportedLanguages || ['en', 'dz'],
+      fxRate: updatedLoc.fxRate || 84.0,
+    } : updated;
+
+    return NextResponse.json({ success: true, setting: enrichedUpdated });
   } catch (error: any) {
     console.error('Error updating site settings:', error);
     return NextResponse.json({ 

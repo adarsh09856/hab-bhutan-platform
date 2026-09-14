@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
 
@@ -76,6 +77,7 @@ const PUNAKHA_SLIDES = [
 export default function HomePage() {
   const router = useRouter();
   const { currency, fmt } = useCurrency();
+  const { t } = useLanguage();
   const { addToCart } = useCart();
 
   // Dynamic States initialized with exact client reference fallbacks
@@ -746,14 +748,14 @@ export default function HomePage() {
       <section className="section" id="shop">
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Latest arrivals</p>
-            <h2 className="display display--band">New in the shop</h2>
+            <p className="eyebrow eyebrow--accent">{t('home.latest_arrivals', 'Latest arrivals')}</p>
+            <h2 className="display display--band">{t('home.new_in_shop', 'New in the shop')}</h2>
             <p className="section__lede">
               A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/shop">
-            Visit the shop →
+            {t('home.visit_shop', 'Visit the shop →')}
           </Link>
         </div>
         <div className="grid grid--4">
@@ -795,7 +797,7 @@ export default function HomePage() {
                       type="button"
                       onClick={() => addToCart(p.code)}
                     >
-                      Add
+                      {t('home.add_to_cart', 'Add')}
                     </button>
                   </div>
                 </div>

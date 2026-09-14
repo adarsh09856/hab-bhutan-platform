@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import { CartProvider } from '@/context/CartContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 
 export const metadata: Metadata = {
   title: 'Handicrafts Association of Bhutan · HAB',
@@ -24,11 +25,13 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <CurrencyProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </CurrencyProvider>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

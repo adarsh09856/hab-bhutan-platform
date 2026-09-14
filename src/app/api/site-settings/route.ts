@@ -72,7 +72,26 @@ export async function GET() {
         setting.aboutBandImageCaption = 'photo — HAB training workshop';
       }
     }
-    const response = NextResponse.json({ success: true, setting, settings: setting });
+    
+    // Extract localization safely from paymentGateways
+    const pg = (setting?.paymentGateways as Record<string, any>) || {};
+    const loc = pg.localization || {};
+    const defaultCurrency = loc.defaultCurrency || 'USD';
+    const defaultLanguage = loc.defaultLanguage || 'en';
+    const supportedCurrencies = loc.supportedCurrencies || ['USD', 'BTN'];
+    const supportedLanguages = loc.supportedLanguages || ['en', 'dz'];
+    const fxRate = loc.fxRate || 84.0;
+
+    const enriched = {
+      ...setting,
+      defaultCurrency,
+      defaultLanguage,
+      supportedCurrencies,
+      supportedLanguages,
+      fxRate,
+    };
+
+    const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
@@ -131,6 +150,11 @@ export async function GET() {
         membershipRightText: 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.',
         membershipRightCtaText: 'Apply for membership',
         membershipRightCtaLink: '/membership/apply',
+        defaultCurrency: 'USD',
+        defaultLanguage: 'en',
+        supportedCurrencies: ['USD', 'BTN'],
+        supportedLanguages: ['en', 'dz'],
+        fxRate: 84.0,
       };
       return NextResponse.json({
         success: true,

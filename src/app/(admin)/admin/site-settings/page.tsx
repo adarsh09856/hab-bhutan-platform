@@ -3,15 +3,20 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign } from 'lucide-react';
 
 export default function AdminSiteSettingsPage() {
-  const [tab, setTab] = useState<'HOMEPAGE' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
+  const [tab, setTab] = useState<'HOMEPAGE' | 'LOCALIZATION' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const [form, setForm] = useState({
+    defaultCurrency: 'USD',
+    defaultLanguage: 'en',
+    supportedCurrencies: ['USD', 'BTN'] as string[],
+    supportedLanguages: ['en', 'dz'] as string[],
+    fxRate: 84.0,
     announcementText: '',
     announcementLink: '',
     isAnnouncementOn: true,
@@ -279,6 +284,16 @@ export default function AdminSiteSettingsPage() {
         </button>
         <button
           type="button"
+          onClick={() => setTab('LOCALIZATION')}
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'LOCALIZATION' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+          }`}
+        >
+          <Globe className="w-4 h-4 text-amber-400" />
+          Currency &amp; Language
+        </button>
+        <button
+          type="button"
           onClick={() => setTab('ASSURANCES')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
             tab === 'ASSURANCES' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
@@ -390,6 +405,243 @@ export default function AdminSiteSettingsPage() {
       </div>
 
       <form onSubmit={handleSave} className="admin-card border admin-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+        {/* LOCALIZATION & CURRENCY TAB */}
+        {tab === 'LOCALIZATION' && (
+          <div className="space-y-8">
+            <div className="border-b border-white/10 pb-4">
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <Globe className="w-5 h-5 text-amber-400" />
+                Global Currency &amp; Language Controller
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Centrally control the public site&apos;s baseline store currency, primary language, and live exchange rate. Changes saved here reflect immediately on all public pages.
+              </p>
+            </div>
+
+            {/* Current Active Status Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Default Currency</span>
+                <div className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 text-xs font-mono">
+                    {form.defaultCurrency}
+                  </span>
+                  {form.defaultCurrency === 'USD' ? 'US Dollar ($)' : 'Bhutanese Ngultrum (Nu.)'}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Default Language</span>
+                <div className="text-sm font-bold text-emerald-300 flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-300 text-xs font-mono">
+                    {form.defaultLanguage.toUpperCase()}
+                  </span>
+                  {form.defaultLanguage === 'en' ? 'English' : 'རྫོང་ཁ (Dzongkha)'}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Exchange Rate Peg</span>
+                <div className="text-sm font-bold text-sky-300 font-mono">
+                  1 USD = Nu. {Number(form.fxRate || 84).toFixed(2)} BTN
+                </div>
+              </div>
+            </div>
+
+            {/* Currency Controller Section */}
+            <div className="space-y-4">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                1. Default Store Currency (Public Site Baseline)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                  onClick={() => setForm({ ...form, defaultCurrency: 'USD' })}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                    form.defaultCurrency === 'USD'
+                      ? 'border-amber-400 bg-amber-400/10 shadow-lg ring-1 ring-amber-400'
+                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                      <DollarSign className="w-4 h-4 text-amber-400" />
+                      USD — United States Dollar ($)
+                    </div>
+                    <input
+                      type="radio"
+                      name="defaultCurrency"
+                      checked={form.defaultCurrency === 'USD'}
+                      onChange={() => setForm({ ...form, defaultCurrency: 'USD' })}
+                      className="text-amber-400 focus:ring-amber-400 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Default prices appear in <strong>USD ($)</strong> across product cards, craft pages, and cart. International visitors see USD prices first.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setForm({ ...form, defaultCurrency: 'BTN' })}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                    form.defaultCurrency === 'BTN'
+                      ? 'border-amber-400 bg-amber-400/10 shadow-lg ring-1 ring-amber-400'
+                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                      <span className="font-mono text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-400/20">Nu.</span>
+                      BTN — Bhutanese Ngultrum (Nu.)
+                    </div>
+                    <input
+                      type="radio"
+                      name="defaultCurrency"
+                      checked={form.defaultCurrency === 'BTN'}
+                      onChange={() => setForm({ ...form, defaultCurrency: 'BTN' })}
+                      className="text-amber-400 focus:ring-amber-400 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Default prices appear in <strong>Ngultrum (Nu.)</strong> across product cards, craft pages, and cart. Local Bhutanese buyers see Nu. prices first.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Language Controller Section */}
+            <div className="space-y-4">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                2. Default Display Language (Public Site Baseline)
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                  onClick={() => setForm({ ...form, defaultLanguage: 'en' })}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                    form.defaultLanguage === 'en'
+                      ? 'border-emerald-400 bg-emerald-400/10 shadow-lg ring-1 ring-emerald-400'
+                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                      <Globe className="w-4 h-4 text-emerald-400" />
+                      English (en)
+                    </div>
+                    <input
+                      type="radio"
+                      name="defaultLanguage"
+                      checked={form.defaultLanguage === 'en'}
+                      onChange={() => setForm({ ...form, defaultLanguage: 'en' })}
+                      className="text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Standard English for navigation menus, search bar, dropdowns, buttons, and content descriptions.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setForm({ ...form, defaultLanguage: 'dz' })}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                    form.defaultLanguage === 'dz'
+                      ? 'border-emerald-400 bg-emerald-400/10 shadow-lg ring-1 ring-emerald-400'
+                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                      <Globe className="w-4 h-4 text-emerald-400" />
+                      Dzongkha — རྫོང་ཁ (dz)
+                    </div>
+                    <input
+                      type="radio"
+                      name="defaultLanguage"
+                      checked={form.defaultLanguage === 'dz'}
+                      onChange={() => setForm({ ...form, defaultLanguage: 'dz' })}
+                      className="text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Authentic national language of Bhutan for navigation, labels, search placeholders, and buttons.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Exchange Rate Controller Section */}
+            <div className="space-y-4">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                3. Live Exchange Rate (1 USD = X BTN)
+              </label>
+              <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-white">1 USD =</span>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="1"
+                        value={form.fxRate}
+                        onChange={(e) => setForm({ ...form, fxRate: parseFloat(e.target.value) || 0 })}
+                        className="w-32 px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-amber-300 font-bold"
+                        placeholder="84.00"
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-white">BTN (Nu.)</span>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, fxRate: 84.0 })}
+                      className="px-3 py-1.5 text-xs rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                    >
+                      RMA Baseline (84.00)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, fxRate: 85.5 })}
+                      className="px-3 py-1.5 text-xs rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                    >
+                      85.50
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, fxRate: 86.0 })}
+                      className="px-3 py-1.5 text-xs rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                    >
+                      86.00
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-black/20 border border-white/5 text-xs text-slate-400 space-y-1">
+                  <div className="font-semibold text-slate-300">Live Calculation Preview:</div>
+                  <div className="font-mono text-amber-300/90">
+                    • $25.00 USD &rarr; Nu. {(25 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
+                  </div>
+                  <div className="font-mono text-amber-300/90">
+                    • $100.00 USD &rarr; Nu. {(100 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
+                  </div>
+                  <div className="font-mono text-amber-300/90">
+                    • $500.00 USD &rarr; Nu. {(500 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Real-Time Sync Informative Callout */}
+            <div className="p-4 rounded-xl bg-amber-400/10 border border-amber-400/20 text-xs text-amber-200 flex items-start gap-3 leading-relaxed">
+              <Sparkles className="w-5 h-5 text-amber-400 flex-none mt-0.5" />
+              <div>
+                <strong className="text-white block mb-0.5">Two-Way Public &amp; Admin Sync</strong>
+                Public visitors can use the interactive chips in the header (<code>USD $ / Nu. BTN</code> and <code>EN / རྫོང་ཁ</code>) to switch on demand. Saving new defaults here immediately updates the baseline for all public visitors across the platform.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* HOMEPAGE TAB */}
         {tab === 'HOMEPAGE' && (
           <div className="space-y-6">

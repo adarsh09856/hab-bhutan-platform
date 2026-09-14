@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 
@@ -11,6 +12,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { currency, toggleCurrency } = useCurrency();
+  const { language, toggleLanguage, t } = useLanguage();
   const { cartCount } = useCart();
 
   const [membersOpen, setMembersOpen] = useState(false);
@@ -162,16 +164,26 @@ export default function Header() {
           id="primaryNav"
           aria-label="Primary"
         >
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              className={`nav__item ${item.href === '/' ? 'nav__item--home' : ''} ${pathname === item.href ? 'is-current' : ''}`}
-              href={item.href}
-              aria-current={pathname === item.href ? 'page' : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const translationKey = 
+              item.href === '/' ? 'nav.home' :
+              item.href === '/about' ? 'nav.about' :
+              item.href === '/programmes' ? 'nav.programmes' :
+              item.href === '/projects' ? 'nav.projects' :
+              item.href === '/news' ? 'nav.news' : null;
+            const label = translationKey ? t(translationKey, item.label) : item.label;
+
+            return (
+              <Link
+                key={item.href}
+                className={`nav__item ${item.href === '/' ? 'nav__item--home' : ''} ${pathname === item.href ? 'is-current' : ''}`}
+                href={item.href}
+                aria-current={pathname === item.href ? 'page' : undefined}
+              >
+                {label}
+              </Link>
+            );
+          })}
 
           <div className="menu" data-menu ref={membersRef}>
             <button
@@ -185,7 +197,7 @@ export default function Header() {
                 setShopOpen(false);
               }}
             >
-              Membership <span className="caret" aria-hidden="true">▾</span>
+              {t('nav.membership', 'Membership')} <span className="caret" aria-hidden="true">▾</span>
             </button>
             <div
               className="menu__panel menu__panel--mid"
@@ -193,7 +205,7 @@ export default function Header() {
               hidden={!membersOpen}
             >
               <div className="menu__card">
-                <p className="eyebrow eyebrow--muted eyebrow--sm">Membership categories</p>
+                <p className="eyebrow eyebrow--muted eyebrow--sm">{t('menu.categories', 'Membership categories')}</p>
                 <div className="menu__cats">
                   {categories.map((cat) => (
                     <Link
@@ -210,21 +222,43 @@ export default function Header() {
                 <div className="menu__footer" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                     <Link className="btn btn--accent btn--sm" href="/register" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '5px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      Register as member
+                      {t('menu.register', 'Register as member')}
                     </Link>
                     <Link className="btn btn--outline btn--sm" href="/masters" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '5px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      Awards &amp; honours
+                      {t('menu.awards', 'Awards & honours')}
                     </Link>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '2px' }}>
                     <Link className="menu__note" href="/membership#login" onClick={() => setMembersOpen(false)} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: '11.5px' }}>
-                      Member login &rarr;
+                      {t('menu.login', 'Member login →')}
                     </Link>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Mobile drawer quick currency & language toggles */}
+          {mobileNavOpen && (
+            <div style={{ display: 'flex', gap: '8px', padding: '12px 16px', borderTop: '1px solid var(--line)', marginTop: '8px' }}>
+              <button
+                type="button"
+                className="chip"
+                onClick={toggleCurrency}
+                style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
+              >
+                {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
+              </button>
+              <button
+                type="button"
+                className="chip"
+                onClick={toggleLanguage}
+                style={{ flex: 1, textAlign: 'center', fontWeight: 600, cursor: 'pointer' }}
+              >
+                {language === 'en' ? 'EN (English)' : 'རྫོང་ཁ (Dzongkha)'}
+              </button>
+            </div>
+          )}
         </nav>
 
         <span className="header__spacer"></span>
@@ -247,14 +281,14 @@ export default function Header() {
             }}
           >
             <span className="search__glyph" aria-hidden="true">⌕</span>
-            <span className="search__word">Search</span>
+            <span className="search__word">{t('nav.search', 'Search')}</span>
           </button>
           <input
             ref={searchInputRef}
             className="search__input"
             id="searchInput"
             type="search"
-            placeholder="Search crafts, members, publications"
+            placeholder={t('nav.search_placeholder', 'Search crafts, members, publications')}
             autoComplete="off"
             aria-label="Search crafts and members"
             value={searchQuery}
@@ -269,12 +303,25 @@ export default function Header() {
           <button
             className="chip"
             id="currencyToggle"
-            title="Switch currency"
+            title="Switch currency / དངུལ་ཀྲམ་བརྗེ་སོར"
             aria-live="polite"
             type="button"
             onClick={toggleCurrency}
+            style={{ cursor: 'pointer' }}
           >
             {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
+          </button>
+
+          <button
+            className="chip"
+            id="languageToggle"
+            title="Switch language / སྐད་ཡིག"
+            aria-live="polite"
+            type="button"
+            onClick={toggleLanguage}
+            style={{ fontWeight: 600, minWidth: '42px', textAlign: 'center', cursor: 'pointer' }}
+          >
+            {language === 'en' ? 'EN' : 'རྫོང་ཁ'}
           </button>
 
           <div className="menu" data-menu ref={shopRef}>
@@ -289,7 +336,7 @@ export default function Header() {
                 setMembersOpen(false);
               }}
             >
-              Shop <span className="caret" aria-hidden="true">▾</span>
+              {t('nav.shop', 'Shop')} <span className="caret" aria-hidden="true">▾</span>
             </button>
             <div
               className="menu__panel menu__panel--wide"
@@ -297,7 +344,7 @@ export default function Header() {
               hidden={!shopOpen}
             >
               <div className="menu__card">
-                <p className="eyebrow eyebrow--muted">Shop by craft category</p>
+                <p className="eyebrow eyebrow--muted">{t('menu.shop_by_craft', 'Shop by craft category')}</p>
                 <div className="menu__grid">
                   {crafts.map((c) => (
                     <Link
@@ -313,21 +360,21 @@ export default function Header() {
                 </div>
                 <div className="menu__footer">
                   <Link className="btn btn--ink btn--sm" href="/shop" onClick={() => setShopOpen(false)}>
-                    Shop home →
+                    {t('menu.shop_home', 'Shop home →')}
                   </Link>
                   <Link className="btn btn--outline btn--sm" href="/shop" onClick={() => setShopOpen(false)}>
-                    All products
+                    {t('menu.all_products', 'All products')}
                   </Link>
                 </div>
                 <Link className="menu__wholesale" href="/wholesale" onClick={() => setShopOpen(false)}>
-                  <span className="menu__wholesale-name">Wholesale &amp; Bulk Orders →</span>
+                  <span className="menu__wholesale-name">{t('menu.wholesale', 'Wholesale & Bulk Orders →')}</span>
                   <span className="menu__wholesale-note">Trade pricing, MOQs and made-to-order for retailers, hotels and distributors</span>
                 </Link>
               </div>
             </div>
           </div>
 
-          <Link className="basket" href="/basket" aria-label="Basket">
+          <Link className="basket" href="/basket" aria-label={t('nav.basket', 'Basket')}>
             <span aria-hidden="true">🧺</span>
             {cartCount > 0 ? (
               <span className="basket__count" id="basketCount">
