@@ -254,9 +254,6 @@ export default function ProjectsPage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">
-                  photo — {p.name.toLowerCase()}
-                </figcaption>
               </figure>
               <div className="projectcard__body">
                 <div className="projectcard__status">

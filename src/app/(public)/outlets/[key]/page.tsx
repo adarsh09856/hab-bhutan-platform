@@ -103,9 +103,6 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption">
-            {outlet.name} — authentic Bhutanese crafts validated by HAB
-          </figcaption>
         </figure>
       </section>
 

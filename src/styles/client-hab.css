@@ -355,7 +355,7 @@ textarea.input{line-height:1.5;resize:vertical}
 .menu__panel{position:absolute;top:100%;padding-top:10px;z-index:60}
 .menu__panel--narrow{left:0;width:250px}
 .menu__panel--wide{right:0;width:660px}
-.menu__panel--mid{left:0;width:340px}
+.menu__panel--mid{left:0;width:420px;max-width:min(420px,92vw)}
 .menu__cats{display:flex;flex-direction:column;gap:2px;margin-top:12px}
 .menu__cat{display:block;padding:11px 12px;border-radius:var(--radius-sm);color:var(--ink)}
 .menu__cat:hover{background:var(--hover-menu);color:var(--ink)}
@@ -380,10 +380,10 @@ textarea.input{line-height:1.5;resize:vertical}
 .menu__craft-name{display:block;font-family:var(--ui);font-weight:600;font-size:14px}
 .menu__craft-en{display:block;font-size:12.5px;color:var(--muted)}
 .menu__footer{
-  display:flex;gap:10px;align-items:center;margin-top:16px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;
   border-top:1px solid var(--line-soft);padding-top:16px;
 }
-.menu__note{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto}
+.menu__note{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
 
 /* Wholesale sits inside the existing Shop menu — present but subordinate to
    the thirteen retail categories above it. */
@@ -502,10 +502,15 @@ textarea.input{line-height:1.5;resize:vertical}
   object-fit:cover;object-position:center;
 }
 .frame.has-image{background:none;border-color:var(--line)}
-.frame.has-image .frame__caption{display:none}
+.frame.has-image .frame__caption,
+.frame:has(img) .frame__caption,
+.frame img ~ .frame__caption,
+.frame > img + figcaption {display:none !important}
 .frame__caption{
-  position:relative;z-index:2;font-family:var(--mono);font-size:11.5px;color:var(--ph-cap);
-  background:var(--surface);padding:6px 10px;border-radius:5px;
+  position:absolute;bottom:10px;left:10px;right:10px;z-index:2;
+  font-family:var(--mono);font-size:11.5px;line-height:1.3;
+  background:var(--surface);color:var(--ph-cap);
+  padding:5px 9px;border-radius:4px;width:fit-content;max-width:calc(100% - 20px);
 }
 .frame__caption--dark{background:var(--accent);color:var(--accent-body)}
 .frame__caption--sm{font-size:10.5px;padding:3px 7px}

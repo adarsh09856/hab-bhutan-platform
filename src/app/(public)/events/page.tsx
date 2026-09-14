@@ -119,9 +119,6 @@ export default function EventsPage() {
                       sizes="(max-width: 768px) 100vw, 30vw"
                       style={{ objectFit: 'cover' }}
                     />
-                    <figcaption className="frame__caption frame__caption--sm">
-                      photo — {e.title.toLowerCase()}
-                    </figcaption>
                   </figure>
                   <span className="eventcard__cal">
                     <span className="eventcard__day">{e.day || '12'}</span>

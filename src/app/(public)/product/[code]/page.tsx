@@ -136,9 +136,6 @@ export default function ProductDetailPage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
                 />
-                <figcaption className="frame__caption gallery__cap" id="prodMainCap">
-                  photo {activeThumb + 1} — {product.name.toLowerCase()}, view {activeThumb + 1}
-                </figcaption>
               </figure>
             </div>
 
@@ -339,7 +336,6 @@ export default function ProductDetailPage() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
                   />
-                  <figcaption className="frame__caption frame__caption--sm">{rp.code}</figcaption>
                 </figure>
                 <span className="product__ref">{rp.code}</span>
               </Link>

@@ -89,9 +89,6 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption">
-            Article 3.2 ({programme.ref}) — {programme.title}
-          </figcaption>
         </figure>
       </section>
 

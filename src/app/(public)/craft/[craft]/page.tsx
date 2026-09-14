@@ -267,7 +267,6 @@ export default function CraftProfilePage() {
                   alt={cap}
                   className="w-full h-full object-cover"
                 />
-                <figcaption className="frame__caption frame__caption--sm">{cap}</figcaption>
               </figure>
             </div>
           ))}
@@ -302,9 +301,6 @@ export default function CraftProfilePage() {
                       loading="lazy"
                       onError={(e) => { (e.target as HTMLImageElement).src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`; }}
                     />
-                    <figcaption className="frame__caption frame__caption--sm">
-                      photo — {p.name.toLowerCase()}
-                    </figcaption>
                   </figure>
                   <span className="product__ref">{p.code}</span>
                 </Link>
@@ -369,9 +365,6 @@ export default function CraftProfilePage() {
                       alt={c.name}
                       loading="lazy"
                     />
-                    <figcaption className="frame__caption frame__caption--sm">
-                      {c.name}
-                    </figcaption>
                   </figure>
                 </Link>
                 <div className="card__body">

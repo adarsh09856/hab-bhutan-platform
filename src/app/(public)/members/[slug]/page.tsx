@@ -99,7 +99,6 @@ export default function MemberProfilePage() {
               sizes="(max-width: 768px) 100vw, 380px"
               style={{ objectFit: 'cover' }}
             />
-            <figcaption className="frame__caption">portrait — the member at work</figcaption>
           </figure>
 
           <div>
@@ -150,9 +149,6 @@ export default function MemberProfilePage() {
                       sizes="(max-width: 768px) 100vw, 25vw"
                       style={{ objectFit: 'cover' }}
                     />
-                    <figcaption className="frame__caption frame__caption--sm">
-                      photo — {p.name.toLowerCase()}
-                    </figcaption>
                   </figure>
                   <span className="product__ref">{p.code}</span>
                 </Link>

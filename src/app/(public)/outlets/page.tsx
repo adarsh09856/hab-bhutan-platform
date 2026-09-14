@@ -110,9 +110,6 @@ export default async function OutletsPage() {
                 sizes="100vw"
                 style={{ objectFit: 'cover' }}
               />
-              <figcaption className="frame__caption">
-                Punakha Crafts Market — 24 stalls beside the Mo Chhu
-              </figcaption>
             </figure>
           </>
         )}

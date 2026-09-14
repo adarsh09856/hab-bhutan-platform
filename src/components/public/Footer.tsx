@@ -34,30 +34,32 @@ export default function Footer() {
       links: [
         { label: "E-shop", href: "/shop" },
         { label: "Wholesale & bulk orders", href: "/wholesale" },
-        { label: "Shipping & delivery policy", href: "/shipping" },
-        { label: "Returns & refunds", href: "/shipping#returns" },
-        { label: "National Craft Awards", href: "/masters" },
-        { label: "Terms of service", href: "/terms" },
-        { label: "Privacy policy", href: "/privacy" },
+        { label: "Shipping & delivery", href: "/shipping-policy" },
+        { label: "Returns", href: "/shipping-policy#returns" },
+        { label: "Track your order", href: "/contact?topic=order" },
+        { label: "Duty & customs", href: "/shipping-policy#duty" },
       ]
     },
     {
       title: "Members",
       links: [
-        { label: "Directory by category", href: "/members" },
-        { label: "Publications & downloads", href: "/publications" },
-        { label: "Accreditations & awards", href: "/masters" },
-        { label: "Apply for membership", href: "/membership/apply" },
+        { label: "Directory by category", href: "/membership" },
+        { label: "Publications", href: "/publications" },
+        { label: "Member shops & clusters", href: "/outlets" },
+        { label: "Member login", href: "/membership#login" },
+        { label: "Apply to join", href: "/register" },
       ]
     },
     {
       title: "Governance",
       links: [
-        { label: "Board of Trustees", href: "/about#governance" },
-        { label: "Secretariat", href: "/about#governance" },
+        { label: "Board of Trustees", href: "/about" },
+        { label: "Secretariat", href: "/about" },
         { label: "Annual reports", href: "/publications" },
         { label: "Audited accounts", href: "/publications" },
         { label: "Tenders & vacancies", href: "/news" },
+        { label: "Terms of service", href: "/terms" },
+        { label: "Privacy policy", href: "/privacy" },
       ]
     }
   ]);
@@ -136,7 +138,7 @@ export default function Footer() {
       </div>
 
       <div className="footer__bar">
-        <span>{settings.copyrightText} · {settings.csoRegistration}</span>
+        <span>© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043</span>
         <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
       </div>
     </footer>

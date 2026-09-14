@@ -104,9 +104,6 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption" id="dPhotoCap">
-            wide photo — {cluster.name.toLowerCase()}
-          </figcaption>
         </figure>
       </section>
 
@@ -189,9 +186,6 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
                       sizes="(max-width: 768px) 100vw, 25vw"
                       style={{ objectFit: 'cover' }}
                     />
-                    <figcaption className="frame__caption frame__caption--sm">
-                      photo — {p.name.toLowerCase()}
-                    </figcaption>
                   </figure>
                   <span className="product__ref">{p.code}</span>
                 </Link>

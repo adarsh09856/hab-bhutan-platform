@@ -223,9 +223,6 @@ const PRODUCT_POOL = [
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
                         />
-                        <figcaption className="frame__caption frame__caption--sm">
-                          {p.slot || p.code}
-                        </figcaption>
                       </figure>
                       <span className="product__ref">{p.code}</span>
                     </Link>

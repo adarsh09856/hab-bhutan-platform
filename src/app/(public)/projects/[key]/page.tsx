@@ -104,9 +104,6 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption">
-            {projectTitle} — {partnerName}
-          </figcaption>
         </figure>
       </section>
 

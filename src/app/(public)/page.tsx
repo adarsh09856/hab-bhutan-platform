@@ -86,6 +86,16 @@ export default function HomePage() {
     tagline: CLIENT_VERBATIM.tagline,
     heroParagraph: CLIENT_VERBATIM.heroPara,
     heroEyebrow: 'Civil Society Organization · Bhutan',
+    heroCtaPrimaryText: 'Meet the Makers →',
+    heroCtaPrimaryLink: '/masters',
+    assurance1Title: 'Tracked Origin',
+    assurance1Text: 'Materials, makers, and worldwide shipping are 100% traceable.',
+    assurance2Title: 'Registered Chain',
+    assurance2Text: 'Every artisan, supplier, and input is strictly verified.',
+    assurance3Title: 'Upfront & Fair',
+    assurance3Text: 'Pre-paid artisan pricing cuts out unethical markups.',
+    assurance4Title: 'Encrypted Escrow',
+    assurance4Text: 'Bulletproof 3-D Secure, mBoB, and bank transfers.',
     stats: [
       { value: '7,500', label: 'Micro & small enterprises in the network', url: '/members' },
       { value: '5,250', label: 'Women-led enterprises', url: '/members' },
@@ -97,56 +107,105 @@ export default function HomePage() {
     aboutBandPara2: 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and 195 affiliated stores exhibiting more than 100 unique handcrafted products.',
     aboutBandImageUrl: '/assets/photos/about-hab.jpg',
     aboutBandImageCaption: 'photo — HAB training workshop',
+    punakhaMarketNotice: CLIENT_VERBATIM.punakhaMarket,
+    membershipLeftTitle: 'Find a member',
+    membershipLeftText: 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.',
+    membershipRightTitle: 'Become a member',
+    membershipRightText: 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.',
+    membershipRightCtaText: 'Apply for membership',
     partnersList: CLIENT_VERBATIM.partners,
   });
 
   const [products, setProducts] = useState<any[]>([
     {
       code: 'LHA01',
-      name: 'Guru Rinpoche Mineral-Pigment Thangka',
+      name: 'Thangka Scroll',
       craftKey: 'lhazo',
-      craft_name: 'Lhazo · Painting',
-      maker: 'Sonam Thangka Studio, Paro',
-      price: 260,
-      priceUSD: 260,
+      craft_name: 'LHAZO',
+      maker: 'Sonam Thangka Studio',
+      price: 340,
+      priceUSD: 340,
       image_path: '/assets/photos/product-sad03.jpg',
       slot: 'photo 1 — thangka, full view',
     },
     {
       code: 'SAD03',
-      name: 'Yathra Wool Saddle Bag',
+      name: 'Yathra Saddle Bag',
       craftKey: 'thagzo',
-      craft_name: 'Thagzo · Weaving',
-      maker: 'Chumey Yathra House, Bumthang',
-      price: 120,
-      priceUSD: 120,
-      image_path: '/assets/photos/product-hhb01.jpg',
+      craft_name: 'THAGZO',
+      maker: 'Chumey Yathra House',
+      price: 158,
+      priceUSD: 158,
+      image_path: '/assets/photos/product-sad03.jpg',
       slot: 'photo 1 — saddle bag, full view',
     },
     {
       code: 'TRO04',
-      name: 'Hand-Chased Silver Koma Clasp Pair',
+      name: 'Silver Brooch (Koma)',
       craftKey: 'troezo',
-      craft_name: 'Troezo · Silver & Gold',
-      maker: 'Zorig Silversmiths, Thimphu',
-      price: 92,
-      priceUSD: 92,
-      image_path: '/assets/photos/product-lud01.jpg',
+      craft_name: 'TROEZO',
+      maker: 'Zorig Silversmiths',
+      price: 120,
+      priceUSD: 120,
+      image_path: '/assets/photos/product-tro04.jpg',
       slot: 'photo 1 — koma pair, full view',
     },
     {
       code: 'FTB04',
-      name: 'Two-Tier Bangchung Basket',
+      name: 'Bangchung Fruit Basket',
       craftKey: 'tshazo',
-      craft_name: 'Tshazo · Cane & Bamboo',
-      maker: 'Kheng Bamboo Collective, Zhemgang',
-      price: 34,
-      priceUSD: 34,
-      image_path: '/assets/photos/product-cam01.jpg',
+      craft_name: 'TSHAZO',
+      maker: 'Kheng Bamboo Collective',
+      price: 43,
+      priceUSD: 43,
+      image_path: '/assets/photos/product-ftb04.jpg',
       slot: 'photo 1 — bangchung basket, full view',
     },
+    {
+      code: 'DAP02',
+      name: 'Lacquered Bowl (Dapa)',
+      craftKey: 'shagzo',
+      craft_name: 'SHAGZO',
+      maker: 'Yangtse Turning Works',
+      price: 65,
+      priceUSD: 65,
+      image_path: '/assets/photos/product-dap02.jpg',
+      slot: 'photo 1 — dapa bowl, full view',
+    },
+    {
+      code: 'MAS01',
+      name: 'Carved Ritual Mask',
+      craftKey: 'parzo',
+      craft_name: 'PARZO',
+      maker: 'Kelzang Dorji Woodworks',
+      price: 87,
+      priceUSD: 87,
+      image_path: '/assets/photos/product-mas01.jpg',
+      slot: 'photo 1 — carved mask, full view',
+    },
+    {
+      code: 'DEZ01',
+      name: 'Desho Paper Set',
+      craftKey: 'dezo',
+      craft_name: 'DEZO',
+      maker: 'Jungshi Paper Works',
+      price: 22,
+      priceUSD: 22,
+      image_path: '/assets/photos/product-dez01.jpg',
+      slot: 'photo 1 — desho paper, full view',
+    },
+    {
+      code: 'CUS02',
+      name: 'Appliqué Cushion Cover',
+      craftKey: 'tshemzo',
+      craft_name: 'TSHEMZO',
+      maker: 'Norzin Tailoring',
+      price: 68,
+      priceUSD: 68,
+      image_path: '/assets/photos/product-cus02.jpg',
+      slot: 'photo 1 — cushion cover, full view',
+    },
   ]);
-
 
   const [clusters, setClusters] = useState<any[]>([
     {
@@ -183,30 +242,40 @@ export default function HomePage() {
 
   const [masters, setMasters] = useState<any[]>([
     {
-      name: 'Aum Karma Wangmo',
+      name: 'Ap Sonam Dorji',
       honour: 'Master Craftsperson',
       meta: 'Thagzo · Lhuentse · Since 1974',
       note: 'Fifty-one years at the backstrap loom, and teacher to eleven of the weavers now working in the Khoma cluster.',
       image_path: '/assets/photos/hero-1-weaving.jpg',
-      slot: 'photo — Aum Karma Wangmo at the loom',
+      slot: 'photo — Ap Sonam Dorji at the loom',
     },
     {
-      name: 'Lopen Ugyen Namgyel',
+      name: 'Aum Tshering Yangzom',
       honour: 'Master Craftsperson',
       meta: 'Lhazo · Paro · Since 1988',
       note: 'Thangka painter working only in mineral pigment, to the proportions set out in the classical treatises.',
-      image_path: '/assets/photos/hero-3-clay.jpg',
-      slot: 'photo — Lopen Ugyen Namgyel painting thangka',
+      image_path: '/assets/photos/hero-4-textiles.jpg',
+      slot: 'photo — Aum Tshering Yangzom painting thangka',
     },
     {
-      name: 'Sonam Dorji',
+      name: 'Lopen Karma Wangdi',
       honour: 'National Craft Award',
       meta: 'Tshazo · Zhemgang · Since 2019',
       note: 'Recognised for the grading standard now used across the Kheng bamboo cluster.',
-      image_path: '/assets/photos/hero-4-textiles.jpg',
-      slot: 'photo — Sonam Dorji weaving bangchung',
+      image_path: '/assets/photos/hero-5-desho.jpg',
+      slot: 'photo — Lopen Karma Wangdi weaving bangchung',
     },
   ]);
+
+  const [supportPillars, setSupportPillars] = useState<any[]>([
+    { key: 'grassroots', letter: 'G', title: 'Grassroots Benefit', line: 'Keeps rural creators trading through the lean season.', body: 'Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.' },
+    { key: 'impact', letter: 'I', title: 'Impact Crowdfunding & Enterprise', line: 'Buys the raw materials an artisan cannot afford upfront.', body: 'Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.' },
+    { key: 'cultural', letter: 'V', title: 'Vital Cultural Preservation', line: 'Funds critical master-to-apprentice placements.', body: 'Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.' },
+    { key: 'environment', letter: 'E', title: 'Environmental & Landscape Conservation', line: 'Replants the natural materials our crafts grow from.', body: 'Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.' },
+  ]);
+
+  const [craftsList, setCraftsList] = useState<any[]>(CRAFTS);
+  const [punakhaOutlet, setPunakhaOutlet] = useState<any>(null);
 
   const [programmes, setProgrammes] = useState<any[]>([
     {
@@ -226,24 +295,6 @@ export default function HomePage() {
       title: 'Trade Facilitation',
       description: 'Facilitate domestic and international trade through trade infrastructure, standards compliance, market linkages and export facilitation.',
       url: '/programmes/c',
-    },
-    {
-      ref: 'd',
-      title: 'Product Development',
-      description: 'Support innovation, quality enhancement and product diversification through design interventions and artisan–designer collaborations.',
-      url: '/programmes/d',
-    },
-    {
-      ref: 'e',
-      title: 'Branding and Market Development',
-      description: 'Steward a credible sector brand identity for Bhutanese handicrafts, promoting authenticity, cultural provenance and export distribution.',
-      url: '/programmes/e',
-    },
-    {
-      ref: 'f',
-      title: 'Capacity Development',
-      description: 'Strengthen productive, entrepreneurial, managerial and technical capacity through vocational training, mentorship and masterclasses.',
-      url: '/programmes/f',
     },
   ]);
 
@@ -313,7 +364,7 @@ export default function HomePage() {
   // 1. Dynamic API Bindings for Secretariat Admin Controls
   useEffect(() => {
     // A. Hero Slides from Admin
-    fetch('/api/hero-slides')
+    fetch('/api/hero-slides', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.slides && Array.isArray(d.slides)) {
@@ -327,7 +378,7 @@ export default function HomePage() {
       .catch(() => {});
 
     // B. Site Settings from Admin
-    fetch('/api/site-settings')
+    fetch('/api/site-settings', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.setting) {
@@ -336,6 +387,16 @@ export default function HomePage() {
             tagline: d.setting.tagline || prev.tagline,
             heroParagraph: d.setting.heroParagraph || prev.heroParagraph,
             heroEyebrow: d.setting.heroEyebrow || prev.heroEyebrow,
+            heroCtaPrimaryText: d.setting.heroCtaPrimaryText || prev.heroCtaPrimaryText,
+            heroCtaPrimaryLink: d.setting.heroCtaPrimaryLink || prev.heroCtaPrimaryLink,
+            assurance1Title: d.setting.assurance1Title || prev.assurance1Title,
+            assurance1Text: d.setting.assurance1Text || prev.assurance1Text,
+            assurance2Title: d.setting.assurance2Title || prev.assurance2Title,
+            assurance2Text: d.setting.assurance2Text || prev.assurance2Text,
+            assurance3Title: d.setting.assurance3Title || prev.assurance3Title,
+            assurance3Text: d.setting.assurance3Text || prev.assurance3Text,
+            assurance4Title: d.setting.assurance4Title || prev.assurance4Title,
+            assurance4Text: d.setting.assurance4Text || prev.assurance4Text,
             stats: [
               { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '/members' },
               { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '/members' },
@@ -347,24 +408,30 @@ export default function HomePage() {
             aboutBandPara2: d.setting.aboutBandPara2 || prev.aboutBandPara2,
             aboutBandImageUrl: d.setting.aboutBandImageUrl || prev.aboutBandImageUrl,
             aboutBandImageCaption: d.setting.aboutBandImageCaption || prev.aboutBandImageCaption,
+            punakhaMarketNotice: d.setting.punakhaMarketNotice || prev.punakhaMarketNotice,
+            membershipLeftTitle: d.setting.membershipLeftTitle || prev.membershipLeftTitle,
+            membershipLeftText: d.setting.membershipLeftText || prev.membershipLeftText,
+            membershipRightTitle: d.setting.membershipRightTitle || prev.membershipRightTitle,
+            membershipRightText: d.setting.membershipRightText || prev.membershipRightText,
+            membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
             partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
           }));
         }
       })
       .catch(() => {});
 
-    // C. Products from Admin
-    fetch('/api/products?limit=4')
+    // C. Products from Admin (2 rows = 8 products)
+    fetch('/api/products?limit=8', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && d.products.length > 0) {
-          setProducts(d.products);
+          setProducts(d.products.slice(0, 8));
         }
       })
       .catch(() => {});
 
     // D. Clusters from Admin
-    fetch('/api/clusters')
+    fetch('/api/clusters', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.clusters && d.clusters.length > 0) {
@@ -373,28 +440,50 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // E. Honours & Masters from Admin
-    fetch('/api/honours')
+    // E. Honours & Masters from Admin (mapped accurately to prevent blank badges and duplicate Taktsang photos)
+    fetch('/api/honours', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.masters && d.masters.length > 0) {
-          setMasters(d.masters.slice(0, 3));
+          const sceneFallbacks = [
+            '/assets/photos/hero-1-weaving.jpg',
+            '/assets/photos/hero-4-textiles.jpg',
+            '/assets/photos/hero-5-desho.jpg',
+            '/assets/photos/hero-3-clay.jpg',
+            '/assets/photos/hero-2-punakha.jpg',
+            '/assets/photos/about-hab.jpg'
+          ];
+          const formattedMasters = d.masters.slice(0, 3).map((m: any, idx: number) => {
+            const craftTitle = m.craft ? m.craft.charAt(0).toUpperCase() + m.craft.slice(1) : 'Master';
+            const awardLabel = m.awardType === 'NationalMaster' 
+              ? 'National Craft Award' 
+              : (m.awardType === 'RoyalSeal' ? 'Master Craftsperson' : (m.honour || 'Master Craftsperson'));
+            return {
+              name: m.name,
+              honour: awardLabel,
+              meta: `${craftTitle} · ${m.dzongkhag} · Since ${m.yearAwarded || 2020}`,
+              note: m.citation || m.note || 'Recognised for master craftsmanship and preservation of traditional techniques.',
+              image_path: m.portraitUrl || sceneFallbacks[idx % sceneFallbacks.length],
+              slot: `photo — ${m.name}`,
+            };
+          });
+          setMasters(formattedMasters);
         }
       })
       .catch(() => {});
 
-    // F. Programmes from Admin
-    fetch('/api/programmes')
+    // F. Programmes from Admin (ONLY 1 row = 3 cards)
+    fetch('/api/programmes', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.pillars && d.pillars.length > 0) {
-          setProgrammes(d.pillars.slice(0, 6));
+          setProgrammes(d.pillars.slice(0, 3));
         }
       })
       .catch(() => {});
 
     // G. News from Admin
-    fetch('/api/news')
+    fetch('/api/news', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.articles && d.articles.length > 0) {
@@ -404,7 +493,7 @@ export default function HomePage() {
       .catch(() => {});
 
     // H. Events from Admin
-    fetch('/api/events')
+    fetch('/api/events', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.events && d.events.length > 0) {
@@ -414,11 +503,54 @@ export default function HomePage() {
       .catch(() => {});
 
     // I. Publications from Admin
-    fetch('/api/publications')
+    fetch('/api/publications', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.publications && d.publications.length > 0) {
-          setPublications(d.publications.slice(0, 4));
+          const mapped = d.publications.map((p: any, idx: number) => ({
+            ...p,
+            kind: idx === 0 && !p.kind?.includes('Latest') ? `Latest · ${p.kind}` : p.kind,
+            meta: p.metaDetails || p.meta || 'PDF · 4.2 MB · English & Dzongkha',
+            file_url: p.fileUrl || p.file_url || '/publications',
+          }));
+          setPublications(mapped);
+        }
+      })
+      .catch(() => {});
+
+    // J. Crafts from Admin
+    fetch('/api/crafts', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.crafts && d.crafts.length > 0) {
+          setCraftsList(d.crafts);
+        }
+      })
+      .catch(() => {});
+
+    // K. Support Pillars from Admin
+    fetch('/api/support-pillars', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.pillars && d.pillars.length > 0) {
+          const mapped = d.pillars.map((p: any) => ({
+            key: p.key,
+            letter: p.letter || (p.key === 'grassroots' ? 'G' : p.key === 'impact' ? 'I' : p.key === 'cultural' || p.key === 'vital' ? 'V' : 'E'),
+            title: p.title,
+            line: p.tagline || p.line || (p.description?.split('.')[0] + '.'),
+            body: p.description || p.body,
+          }));
+          setSupportPillars(mapped);
+        }
+      })
+      .catch(() => {});
+
+    // L. Punakha Market Outlet from Admin
+    fetch('/api/outlets?key=punakha-market', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.outlet) {
+          setPunakhaOutlet(d.outlet);
         }
       })
       .catch(() => {});
@@ -574,9 +706,6 @@ export default function HomePage() {
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/about-hab.jpg'; }}
             />
-            <figcaption className="frame__caption frame__caption--dark">
-              {siteSettings.aboutBandImageCaption}
-            </figcaption>
           </figure>
         </div>
       </section>
@@ -596,9 +725,10 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid--4">
-          {products.slice(0, 4).map((p, pIdx) => {
+          {products.slice(0, 8).map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
             const productImg = p.image_path || (p.images && p.images[0]?.url) || `/images/products/${p.code.toLowerCase()}.jpg`;
+            const makerName = typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Registered Member');
             return (
               <article key={p.code} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`}>
@@ -609,7 +739,6 @@ export default function HomePage() {
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => { (e.target as HTMLImageElement).src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`; }}
                     />
-                    <figcaption className="frame__caption frame__caption--sm">{p.slot || p.code}</figcaption>
                   </figure>
                   <span className="product__ref">{p.code}</span>
                 </Link>
@@ -619,7 +748,7 @@ export default function HomePage() {
                     <Link href={`/product/${p.code}`}>{p.name}</Link>
                   </h3>
 
-                  <p className="card__meta clamp-1">{typeof p.maker === 'object' ? p.maker?.name : p.maker}</p>
+                  <p className="card__meta clamp-1">{makerName}</p>
                   <div className="card__foot">
                     <span className="price">{fmt(displayPrice)}</span>
                     <button
@@ -642,31 +771,31 @@ export default function HomePage() {
         <div className="assurance">
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">T</span>
-              <span>racked Origin</span>
+              <span className="assurance__initial">{siteSettings.assurance1Title?.charAt(0) || 'T'}</span>
+              <span>{siteSettings.assurance1Title ? siteSettings.assurance1Title.slice(1) : 'racked Origin'}</span>
             </h3>
-            <p className="assurance__body">Materials, makers, and worldwide shipping are 100% traceable.</p>
+            <p className="assurance__body">{siteSettings.assurance1Text || 'Materials, makers, and worldwide shipping are 100% traceable.'}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">R</span>
-              <span>egistered Chain</span>
+              <span className="assurance__initial">{siteSettings.assurance2Title?.charAt(0) || 'R'}</span>
+              <span>{siteSettings.assurance2Title ? siteSettings.assurance2Title.slice(1) : 'egistered Chain'}</span>
             </h3>
-            <p className="assurance__body">Every artisan, supplier, and input is strictly verified.</p>
+            <p className="assurance__body">{siteSettings.assurance2Text || 'Every artisan, supplier, and input is strictly verified.'}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">U</span>
-              <span>pfront &amp; Fair</span>
+              <span className="assurance__initial">{siteSettings.assurance3Title?.charAt(0) || 'U'}</span>
+              <span>{siteSettings.assurance3Title ? siteSettings.assurance3Title.slice(1) : 'pfront & Fair'}</span>
             </h3>
-            <p className="assurance__body">Pre-paid artisan pricing cuts out unethical markups.</p>
+            <p className="assurance__body">{siteSettings.assurance3Text || 'Pre-paid artisan pricing cuts out unethical markups.'}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">E</span>
-              <span>ncrypted Escrow</span>
+              <span className="assurance__initial">{siteSettings.assurance4Title?.charAt(0) || 'E'}</span>
+              <span>{siteSettings.assurance4Title ? siteSettings.assurance4Title.slice(1) : 'ncrypted Escrow'}</span>
             </h3>
-            <p className="assurance__body">Bulletproof 3-D Secure, mBoB, and bank transfers.</p>
+            <p className="assurance__body">{siteSettings.assurance4Text || 'Bulletproof 3-D Secure, mBoB, and bank transfers.'}</p>
           </div>
         </div>
       </section>
@@ -804,7 +933,6 @@ export default function HomePage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">{c.slot || c.name}</figcaption>
               </figure>
               <div className="card__body">
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{c.craft_name || c.craftKey}</p>
@@ -838,7 +966,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid--auto">
-          {CRAFTS.map((craft, idx) => {
+          {craftsList.map((craft, idx) => {
             const num = String(idx + 1).padStart(2, '0');
             return (
               <article key={craft.key} className="card craft">
@@ -850,8 +978,6 @@ export default function HomePage() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                   />
-                  <figcaption className="frame__caption frame__caption--sm">{craft.name}</figcaption>
-
                 </figure>
                 <div className="card__body">
                   <div className="craft__heading">
@@ -899,7 +1025,6 @@ export default function HomePage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">{m.slot || m.name}</figcaption>
               </figure>
               <div className="card__body">
                 <span className="honour__badge">{m.honour}</span>
@@ -928,7 +1053,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid--3">
-          {programmes.map((p, idx) => (
+          {programmes.slice(0, 3).map((p, idx) => (
             <article key={p.ref || idx} className="card programme">
               <div className="programme__head">
                 <span className="badge badge--ref">Art. 3.2({p.ref})</span>
@@ -959,50 +1084,19 @@ export default function HomePage() {
         </div>
 
         <div className="pillars" id="supportPillars">
-          <article className="pillar">
-            <h3 className="pillar__title">
-              <span className="pillar__initial">G</span>
-              <span>rassroots Benefit</span>
-            </h3>
-            <p className="pillar__line">Keeps rural creators trading through the lean season.</p>
-            <p className="pillar__body">Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.</p>
-            <Link className="pillar__give" href="/donate?pillar=grassroots">
-              Give Now →
-            </Link>
-          </article>
-          <article className="pillar">
-            <h3 className="pillar__title">
-              <span className="pillar__initial">I</span>
-              <span>mpact Crowdfunding &amp; Enterprise</span>
-            </h3>
-            <p className="pillar__line">Buys the raw materials an artisan cannot afford upfront.</p>
-            <p className="pillar__body">Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.</p>
-            <Link className="pillar__give" href="/donate?pillar=impact">
-              Give Now →
-            </Link>
-          </article>
-          <article className="pillar">
-            <h3 className="pillar__title">
-              <span className="pillar__initial">V</span>
-              <span>ital Cultural Preservation</span>
-            </h3>
-            <p className="pillar__line">Funds critical master-to-apprentice placements.</p>
-            <p className="pillar__body">Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.</p>
-            <Link className="pillar__give" href="/donate?pillar=cultural">
-              Give Now →
-            </Link>
-          </article>
-          <article className="pillar">
-            <h3 className="pillar__title">
-              <span className="pillar__initial">E</span>
-              <span>nvironmental &amp; Landscape Conservation</span>
-            </h3>
-            <p className="pillar__line">Replants the natural materials our crafts grow from.</p>
-            <p className="pillar__body">Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.</p>
-            <Link className="pillar__give" href="/donate?pillar=environment">
-              Give Now →
-            </Link>
-          </article>
+          {supportPillars.map((pillar) => (
+            <article key={pillar.key} className="pillar">
+              <h3 className="pillar__title">
+                <span className="pillar__initial">{pillar.letter}</span>
+                <span>{pillar.title ? pillar.title.slice(1) : ''}</span>
+              </h3>
+              <p className="pillar__line">{pillar.line}</p>
+              <p className="pillar__body">{pillar.body}</p>
+              <Link className="pillar__give" href={`/donate?pillar=${pillar.key}`}>
+                Give Now →
+              </Link>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -1011,9 +1105,9 @@ export default function HomePage() {
         <div className="duo">
           <div className="panel">
             <p className="eyebrow eyebrow--muted">Search the crafts</p>
-            <h3 className="display display--panel">Find a craft, a maker or a piece</h3>
+            <h3 className="display display--panel">{siteSettings.membershipLeftTitle || 'Find a craft, a maker or a piece'}</h3>
             <p className="panel__body">
-              Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.
+              {siteSettings.membershipLeftText || 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.'}
             </p>
             <form className="inline-form" onSubmit={handleMemberSearch}>
               <label className="visually-hidden" htmlFor="memberSearch">Search crafts, makers, clusters and products</label>
@@ -1031,15 +1125,15 @@ export default function HomePage() {
           </div>
           <div className="panel panel--accent">
             <p className="eyebrow eyebrow--onaccent">Join HAB</p>
-            <h3 className="display display--panel display--onaccent">Become a member</h3>
+            <h3 className="display display--panel display--onaccent">{siteSettings.membershipRightTitle || 'Become a member'}</h3>
             <p className="panel__body panel__body--onaccent">
-              Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.
+              {siteSettings.membershipRightText || 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.'}
             </p>
             <div className="actions">
-              <Link className="btn btn--light" href="/membership/apply">
-                Apply for membership
+              <Link className="btn btn--light" href="/register">
+                {siteSettings.membershipRightCtaText || 'Apply for membership'}
               </Link>
-              <Link className="btn btn--ghost" href="/login">
+              <Link className="btn btn--ghost" href="/membership#login">
                 Member login
               </Link>
             </div>
@@ -1073,7 +1167,6 @@ export default function HomePage() {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
                   />
-                  <figcaption className="frame__caption frame__caption--sm">{item.slot || item.title}</figcaption>
                 </figure>
                 <div className="card__body">
                   <div className="news__meta">
@@ -1141,13 +1234,18 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="grid grid--2">
-              {publications.map((pb, idx) => (
-                <Link key={idx} className="card pub" href={pb.file_url || '/publications'}>
-                  <span className="eyebrow eyebrow--accent eyebrow--sm">{pb.kind}</span>
-                  <span className="pub__title clamp-3">{pb.title}</span>
-                  <span className="pub__meta">{pb.meta}</span>
-                </Link>
-              ))}
+              {publications.slice(0, 2).map((pb, idx) => {
+                const metaText = pb.metaDetails || pb.meta || 'PDF · 4.2 MB · English & Dzongkha';
+                const fileLink = pb.fileUrl || pb.file_url || '/publications';
+                const kindText = pb.kind || (idx === 0 ? 'Latest · Annual report' : 'Strategy');
+                return (
+                  <Link key={pb.id || idx} className="card pub" href={fileLink}>
+                    <span className="eyebrow eyebrow--accent eyebrow--sm">{kindText}</span>
+                    <span className="pub__title clamp-3">{pb.title}</span>
+                    <span className="pub__meta">{metaText.includes('↓') ? metaText : `${metaText} ↓`}</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>

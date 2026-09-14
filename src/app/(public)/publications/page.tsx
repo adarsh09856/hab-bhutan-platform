@@ -11,7 +11,7 @@ export default function PublicationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetch('/api/publications')
+    fetch('/api/publications', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.publications && Array.isArray(d.publications) && d.publications.length > 0) {

@@ -81,9 +81,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption">
-            {event.title} — {event.place}
-          </figcaption>
         </figure>
       </section>
 

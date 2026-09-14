@@ -149,9 +149,6 @@ export default function AboutPage() {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
           />
-          <figcaption className="frame__caption">
-            photo — HAB artisan training workshop, Thimphu
-          </figcaption>
         </figure>
       </section>
 
@@ -256,7 +253,6 @@ export default function AboutPage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">{b.role}</figcaption>
               </figure>
               <div className="card__body">
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{b.role}</p>

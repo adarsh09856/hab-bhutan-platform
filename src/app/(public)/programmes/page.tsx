@@ -101,9 +101,6 @@ export default function ProgrammesPage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">
-                  photo — {p.title.toLowerCase()}
-                </figcaption>
               </figure>
               <div className="card__body">
                 <div className="programme__head">

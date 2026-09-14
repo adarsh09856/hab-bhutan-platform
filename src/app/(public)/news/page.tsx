@@ -98,9 +98,6 @@ export default function NewsPage() {
                           sizes="(max-width: 768px) 100vw, 40vw"
                           style={{ objectFit: 'cover' }}
                         />
-                        <figcaption className="frame__caption frame__caption--sm">
-                          photo — {n.kind.toLowerCase()}
-                        </figcaption>
                       </figure>
                     </Link>
 

@@ -178,10 +178,16 @@ export default function Header() {
                     <span className="menu__cat-meta">By Board resolution · no fee</span>
                   </Link>
                 </div>
-                <div className="menu__footer">
-                  <Link className="btn btn--accent btn--sm" href="/register">Register as a member</Link>
-                  <Link className="btn btn--outline btn--sm" href="/masters">Accreditations &amp; awards</Link>
-                  <Link className="menu__note" href="/membership#login">Member login</Link>
+                <div className="menu__footer" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'stretch' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <Link className="btn btn--accent btn--sm" href="/register" style={{ flex: '1 1 auto', textAlign: 'center', whiteSpace: 'nowrap' }}>Register as a member</Link>
+                    <Link className="btn btn--outline btn--sm" href="/masters" style={{ flex: '1 1 auto', textAlign: 'center', whiteSpace: 'nowrap' }}>Accreditations &amp; awards</Link>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '2px' }}>
+                    <Link className="menu__note" href="/membership#login" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                      Member login &rarr;
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

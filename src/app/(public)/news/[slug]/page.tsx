@@ -95,9 +95,6 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption">
-            {post.title} — {post.kind}
-          </figcaption>
         </figure>
       </section>
 

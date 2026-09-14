@@ -315,9 +315,6 @@ export default function MastersPage() {
                     sizes="(max-width: 768px) 100vw, 33vw"
                     style={{ objectFit: 'cover' }}
                   />
-                  <figcaption className="frame__caption frame__caption--sm">
-                    portrait — {craft.name.toLowerCase()} practitioner
-                  </figcaption>
                 </figure>
                 <div className="card__body">
                   <span className="honour__badge">{m.honour}</span>

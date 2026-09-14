@@ -80,9 +80,6 @@ export default async function ClustersPage() {
                     sizes="(max-width: 768px) 100vw, 40vw"
                     style={{ objectFit: 'cover' }}
                   />
-                  <figcaption className="frame__caption frame__caption--sm">
-                    photo — {row.name.toLowerCase()}
-                  </figcaption>
                 </figure>
 
                 <div className="clusterlist__body">
