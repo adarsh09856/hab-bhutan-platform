@@ -151,6 +151,21 @@ function DonateContent() {
                 Reference <strong>{refNumber}</strong>. A receipt is on its way to your email ({donorEmail}). Your gift of Nu. {amount.toLocaleString()} is recorded against{' '}
                 <span>{activePillar?.title}</span>, and its use will be reported in this year&apos;s annual report.
               </p>
+
+              {(payMethod === 'bank' || payMethod === 'mbob') && (
+                <div style={{ maxWidth: 480, margin: '20px auto', padding: '16px 20px', background: 'var(--surface, #f8f6f0)', border: '1px solid var(--border, #e5e0d8)', borderRadius: 8, textAlign: 'left', fontSize: 13, lineHeight: 1.6 }}>
+                  <p style={{ fontWeight: 700, color: 'var(--ink, #1f1d1a)', marginBottom: 8 }}>Bank Transfer / mBoB Payment Remittance:</p>
+                  <p style={{ margin: '3px 0' }}>• <strong>Bank:</strong> Bank of Bhutan Limited (Thimphu Main Branch)</p>
+                  <p style={{ margin: '3px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
+                  <p style={{ margin: '3px 0' }}>• <strong>Account No:</strong> 201104300189</p>
+                  <p style={{ margin: '3px 0' }}>• <strong>SWIFT Code:</strong> BOBTBLBT</p>
+                  <p style={{ margin: '3px 0' }}>• <strong>Transfer Reference:</strong> <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent, #9b1b30)' }}>{refNumber}</span></p>
+                  <p style={{ marginTop: 8, fontSize: 12, color: 'var(--muted, #666)' }}>
+                    Your donation will be reconciled upon receipt of funds. Official tax-deductible certificate (CSO/2011/043) is registered.
+                  </p>
+                </div>
+              )}
+
               <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
                 <Link className="btn btn--accent" href="/publications">
                   Read the annual report
@@ -324,6 +339,30 @@ function DonateContent() {
                       />
                       <span><strong>Bank Transfer</strong> (Direct wire to HAB BoB account)</span>
                     </label>
+
+                    {payMethod === 'bank' && (
+                      <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--surface, #f8f6f0)', border: '1px solid var(--border, #e5e0d8)', borderRadius: 6, fontSize: 13, lineHeight: 1.5 }}>
+                        <p style={{ fontWeight: 600, color: 'var(--ink, #1f1d1a)', marginBottom: 6 }}>Bank of Bhutan (BoB) Wire Details:</p>
+                        <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
+                        <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
+                        <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Thimphu Main Branch</p>
+                        <p style={{ margin: '2px 0' }}>• <strong>SWIFT / BIC:</strong> BOBTBLBT</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: 'var(--muted, #666)' }}>
+                          Please quote your full name or reference in the transfer remarks. Tax exemption receipts are issued under CSO/2011/043.
+                        </p>
+                      </div>
+                    )}
+
+                    {payMethod === 'mbob' && (
+                      <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--surface, #f8f6f0)', border: '1px solid var(--border, #e5e0d8)', borderRadius: 6, fontSize: 13, lineHeight: 1.5 }}>
+                        <p style={{ fontWeight: 600, color: 'var(--ink, #1f1d1a)', marginBottom: 6 }}>mBoB Mobile Banking / Bhutan QR:</p>
+                        <p style={{ margin: '2px 0' }}>• <strong>Account:</strong> 201104300189 (Handicrafts Association of Bhutan)</p>
+                        <p style={{ margin: '2px 0' }}>• <strong>Mobile / Office Contact:</strong> +975 2 328199</p>
+                        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: 'var(--muted, #666)' }}>
+                          Transfer via your mBoB or Bhutan national QR app using journal reference. Official tax receipt (CSO/2011/043) is automatically generated.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

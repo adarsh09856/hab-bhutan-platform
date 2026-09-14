@@ -18,6 +18,7 @@ export const TRANSLATIONS: Translations = {
   'nav.programmes': { en: 'Programmes', dz: 'ལས་རིམ' },
   'nav.projects': { en: 'Projects', dz: 'ལས་འགུལ' },
   'nav.news': { en: 'News & Events', dz: 'གནས་ཚུལ' },
+  'nav.donate': { en: 'Donate', dz: 'ཞལ་འདེབས' },
   'nav.membership': { en: 'Membership', dz: 'འཐུས་མི' },
   'nav.shop': { en: 'Shop', dz: 'ཚོང་ཁང' },
   'nav.search': { en: 'Search', dz: 'འཚོལ་ཞིབ' },

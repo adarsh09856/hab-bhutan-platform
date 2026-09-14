@@ -85,6 +85,7 @@ export default function Header() {
     { label: 'Programmes', href: '/programmes' },
     { label: 'Projects', href: '/projects' },
     { label: 'News & Events', href: '/news' },
+    { label: 'Donate', href: '/donate' },
   ]);
 
   // Load dynamic CMS data from Admin endpoints
@@ -122,10 +123,15 @@ export default function Header() {
         if (d?.header && Array.isArray(d.header) && d.header.length > 0) {
           const mainLinks = d.header.filter((i: any) => !i.parent);
           if (mainLinks.length >= 3) {
-            setNavItems([
+            const hasDonate = mainLinks.some((i: any) => i.href === '/donate');
+            const items = [
               { label: 'Home', href: '/' },
               ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
-            ]);
+            ];
+            if (!hasDonate) {
+              items.push({ label: 'Donate', href: '/donate' });
+            }
+            setNavItems(items);
           }
         }
       })
@@ -170,7 +176,8 @@ export default function Header() {
               item.href === '/about' ? 'nav.about' :
               item.href === '/programmes' ? 'nav.programmes' :
               item.href === '/projects' ? 'nav.projects' :
-              item.href === '/news' ? 'nav.news' : null;
+              item.href === '/news' ? 'nav.news' :
+              item.href === '/donate' ? 'nav.donate' : null;
             const label = translationKey ? t(translationKey, item.label) : item.label;
 
             return (
@@ -373,6 +380,27 @@ export default function Header() {
               </div>
             </div>
           </div>
+
+          <Link
+            className="chip"
+            href="/donate"
+            title="Donate to support Bhutanese artisans / ཞལ་འདེབས"
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '5px 9px',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#9b1b30',
+              borderColor: 'rgba(155, 27, 48, 0.4)',
+              backgroundColor: 'rgba(155, 27, 48, 0.06)',
+            }}
+          >
+            <span aria-hidden="true">♥</span>
+            <span>{t('nav.donate', 'Donate')}</span>
+          </Link>
 
           <Link
             className="chip"
