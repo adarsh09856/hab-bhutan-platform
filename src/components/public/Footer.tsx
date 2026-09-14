@@ -138,7 +138,7 @@ export default function Footer() {
       </div>
 
       <div className="footer__bar">
-        <span>© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043</span>
+        <span>{settings.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043'}</span>
         <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
       </div>
     </footer>

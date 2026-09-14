@@ -149,16 +149,19 @@ export default function ProductDetailPage() {
     jinzo: ['/assets/photos/hero-3-clay.jpg', '/assets/photos/product-mas01.jpg', '/assets/photos/hero-2-punakha.jpg'],
   };
 
-  const fallbacks = craftFallbacks[product.craftKey] || ['/assets/photos/product-hhb01.jpg', '/assets/photos/product-sad03.jpg', '/assets/photos/product-dap02.jpg'];
-  const primaryImg = product.image_path || (product.images && product.images[0]?.url) || fallbacks[0];
+  const primaryImg = product.image_path || (product.images && product.images[0]?.url) || `/assets/photos/product-${product.code.toLowerCase()}.jpg`;
 
-  const galleryImages: string[] = Array.isArray(product.gallery) && product.gallery.length >= 3
-    ? product.gallery
-    : [
-        primaryImg,
-        (product.images && product.images[1]?.url) || fallbacks[1] || fallbacks[0],
-        (product.images && product.images[2]?.url) || fallbacks[2] || fallbacks[0],
-      ];
+  // Build authentic gallery images without cross-craft photo bleeding
+  let galleryImages: string[] = [];
+  if (Array.isArray(product.gallery) && product.gallery.length > 0 && product.gallery[0].startsWith('/')) {
+    galleryImages = product.gallery;
+  } else if (Array.isArray(product.images) && product.images.length > 0) {
+    galleryImages = product.images.map((img: any) => (typeof img === 'string' ? img : img.url)).filter(Boolean);
+  }
+
+  if (galleryImages.length === 0) {
+    galleryImages = [primaryImg];
+  }
 
   return (
     <main id="main">
@@ -199,58 +202,55 @@ export default function ProductDetailPage() {
                       objectPosition: 'center',
                     }}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg';
+                      (e.target as HTMLImageElement).src = primaryImg;
                     }}
                   />
                 </div>
               ))}
-              <figcaption className="frame__caption gallery__cap" id="prodMainCap">
-                {product.name} — View {activeThumb + 1} of {galleryImages.length}
-              </figcaption>
             </div>
 
-            <div className="gallery__thumbs" id="prodThumbs">
-              {galleryImages.map((src, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`gallery__thumb ${activeThumb === i ? 'is-on' : ''}`}
-                  onClick={() => setActiveThumb(i)}
-                  aria-label={`View photograph ${i + 1}`}
-                  style={{
-                    position: 'relative',
-                    width: '88px',
-                    height: '66px',
-                    borderRadius: '9px',
-                    border: activeThumb === i ? '2px solid var(--accent)' : '1px solid var(--line)',
-                    overflow: 'hidden',
-                    padding: 0,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    justifyContent: 'flex-start',
-                  }}
-                >
-                  <img
-                    src={src}
-                    alt={`Thumbnail ${i + 1}`}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'center',
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg';
-                    }}
-                  />
-                  <span className="gallery__thumbcap" style={{ position: 'relative', zIndex: 2 }}>{i + 1}</span>
-                </button>
-              ))}
-            </div>
-            <p className="gallery__hint">Three views. Look before you add to the basket.</p>
+            {galleryImages.length > 1 && (
+              <>
+                <div className="gallery__thumbs" id="prodThumbs">
+                  {galleryImages.map((src, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`gallery__thumb ${activeThumb === i ? 'is-on' : ''}`}
+                      onClick={() => setActiveThumb(i)}
+                      aria-label={`View photograph ${i + 1}`}
+                      style={{
+                        position: 'relative',
+                        width: '88px',
+                        height: '66px',
+                        borderRadius: '9px',
+                        border: activeThumb === i ? '2px solid var(--accent)' : '1px solid var(--line)',
+                        overflow: 'hidden',
+                        padding: 0,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <img
+                        src={src}
+                        alt={`Thumbnail ${i + 1}`}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = primaryImg;
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="gallery__hint">{galleryImages.length} authentic views. Look before you add to the basket.</p>
+              </>
+            )}
           </div>
 
           {/* Right Column: Purchasing & Specifications */}

@@ -97,9 +97,6 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          <figcaption className="frame__caption">
-            {cat.name} — {cat.status}
-          </figcaption>
         </figure>
       </section>
 

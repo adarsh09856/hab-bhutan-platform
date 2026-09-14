@@ -1507,7 +1507,7 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 }
 .gallery__slide.is-on{opacity:1}
 .gallery__slide > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.gallery__cap{position:relative;z-index:2}
+.gallery__cap{display:none !important}
 .gallery__thumbs{display:flex;gap:10px;margin-top:12px}
 .gallery__thumb{
   position:relative;
@@ -1842,11 +1842,10 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 }
 .carousel__slide.is-on{opacity:1}
 .carousel__slide > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.carousel__slide.has-image .carousel__cap{display:none}
-.carousel__cap{
-  position:relative;z-index:2;font-family:var(--mono);font-size:11.5px;color:var(--ph-cap);
-  background:var(--surface);padding:6px 10px;border-radius:5px;
-}
+.carousel__slide.has-image .carousel__cap,
+.carousel__slide:has(img) .carousel__cap,
+.carousel__slide img ~ .carousel__cap,
+.carousel__cap{display:none !important}
 .carousel__nav{
   position:absolute;top:50%;transform:translateY(-50%);z-index:4;
   width:38px;height:38px;border-radius:50%;border:0;

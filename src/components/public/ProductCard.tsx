@@ -44,7 +44,7 @@ export default function ProductCard({
             }
           }}
         />
-        <span className="absolute bottom-2.5 left-2.5 z-10 font-mono text-[10px] text-[#33261F] bg-[#FFFCF8]/90 backdrop-blur-sm px-[8px] py-[3px] rounded-[4px] border border-[#E4DDD1]">
+        <span className="product__ref">
           {code}
         </span>
         {isOutOfStock && (
