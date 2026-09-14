@@ -422,12 +422,12 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // C. Products from Admin (1 row = 4 products)
-    fetch('/api/products?limit=4', { cache: 'no-store' })
+    // C. Products from Admin (2 rows = 8 products)
+    fetch('/api/products?limit=8', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && d.products.length > 0) {
-          const mappedProducts = d.products.slice(0, 4).map((p: any) => ({
+          const mappedProducts = d.products.slice(0, 8).map((p: any) => ({
             ...p,
             price: p.priceUSD || p.price || 0,
             priceUSD: p.priceUSD || p.price || 0,
@@ -757,7 +757,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid--4">
-          {products.slice(0, 4).map((p, pIdx) => {
+          {products.slice(0, 8).map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
             const productImg = p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
             const makerName = typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Registered Member');
