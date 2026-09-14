@@ -238,11 +238,11 @@ export default function AdminDonateSettingsPage() {
                           {p.key}
                         </span>
                         {p.isActive ? (
-                          <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
                             Active
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-xs bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                          <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700 border border-slate-200">
                             Hidden
                           </span>
                         )}
@@ -276,7 +276,7 @@ export default function AdminDonateSettingsPage() {
                         ${p.raisedAmountUSD.toLocaleString()} / ${p.targetAmountUSD.toLocaleString()} USD
                       </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-black/40 overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all"
                         style={{ width: `${pct}%` }}
@@ -296,7 +296,7 @@ export default function AdminDonateSettingsPage() {
           <div className="admin-card p-4 rounded-xl border admin-border flex items-center justify-between">
             <div>
               <span className="text-xs font-semibold admin-muted uppercase tracking-wider">Total Received</span>
-              <div className="text-2xl font-bold admin-title text-emerald-400 mt-0.5">
+              <div className="text-2xl font-bold admin-title text-emerald-700 mt-0.5">
                 ${totalDonationsUSD.toLocaleString()} USD
               </div>
             </div>
@@ -315,7 +315,7 @@ export default function AdminDonateSettingsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b admin-border bg-black/20 text-xs font-semibold admin-muted uppercase tracking-wider">
+                    <tr className="border-b admin-border bg-slate-50 text-xs font-semibold admin-muted uppercase tracking-wider">
                       <th className="px-5 py-3">Receipt / Date</th>
                       <th className="px-5 py-3">Donor</th>
                       <th className="px-5 py-3">Pillar</th>
@@ -326,7 +326,7 @@ export default function AdminDonateSettingsPage() {
                   </thead>
                   <tbody className="divide-y admin-border text-sm">
                     {donations.map((d) => (
-                      <tr key={d.id} className="hover:bg-white/[0.02]">
+                      <tr key={d.id} className="hover:bg-slate-50">
                         <td className="px-5 py-3.5">
                           <div className="font-mono text-xs admin-title">{d.receiptNumber}</div>
                           <div className="text-xs admin-muted">

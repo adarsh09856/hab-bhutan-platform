@@ -181,16 +181,16 @@ html:has(.hab-admin) {
 /* Table High-Contrast Light Styles */
 .hab-admin table {
   background-color: #ffffff !important;
-  color: #1e293b !important;
+  color: #0f172a !important;
 }
 .hab-admin thead {
   background-color: #f8fafc !important;
-  color: #475569 !important;
+  color: #334155 !important;
   border-bottom: 1px solid #e2e8f0 !important;
 }
 .hab-admin tbody {
   background-color: #ffffff !important;
-  color: #1e293b !important;
+  color: #0f172a !important;
 }
 .hab-admin tr {
   border-color: #f1f5f9 !important;
@@ -199,13 +199,113 @@ html:has(.hab-admin) {
   background-color: #f8fafc !important;
 }
 .hab-admin th {
-  color: #475569 !important;
-  font-weight: 600;
+  color: #334155 !important;
+  font-weight: 700;
   border-color: #e2e8f0 !important;
 }
 .hab-admin td {
-  color: #1e293b !important;
+  color: #0f172a !important;
   border-color: #f1f5f9 !important;
+}
+
+/* Systematic Overrides for Legacy Dark Utility Classes within Admin */
+.hab-admin div[class*="bg-slate-900"],
+.hab-admin div[class*="bg-slate-950"],
+.hab-admin div[class*="bg-slate-800"],
+.hab-admin section[class*="bg-slate-900"],
+.hab-admin section[class*="bg-slate-950"],
+.hab-admin section[class*="bg-slate-800"],
+.hab-admin article[class*="bg-slate-900"],
+.hab-admin [class*="bg-slate-900/"],
+.hab-admin [class*="bg-slate-950/"],
+.hab-admin [class*="bg-slate-800/"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+.hab-admin [class*="border-white/"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Force high contrast dark typography on text */
+.hab-admin h1[class*="text-white"],
+.hab-admin h2[class*="text-white"],
+.hab-admin h3[class*="text-white"],
+.hab-admin h4[class*="text-white"],
+.hab-admin p[class*="text-white"],
+.hab-admin span[class*="text-white"]:not(.admin-button-primary *):not([class*="bg-[#8B2E24]"] *):not([class*="bg-amber-800"] *):not([class*="bg-emerald-700"] *):not([class*="bg-emerald-800"] *),
+.hab-admin div[class*="text-white"]:not(.admin-button-primary *):not([class*="bg-[#8B2E24]"] *):not([class*="bg-amber-800"] *):not([class*="bg-emerald-700"] *):not([class*="bg-emerald-800"] *),
+.hab-admin [class*="text-slate-100"]:not(.admin-button-primary *):not([class*="bg-[#8B2E24]"] *):not([class*="bg-amber-800"] *),
+.hab-admin [class*="text-slate-200"]:not(.admin-button-primary *):not([class*="bg-[#8B2E24]"] *):not([class*="bg-amber-800"] *) {
+  color: #0f172a !important;
+}
+
+.hab-admin [class*="text-slate-300"],
+.hab-admin [class*="text-slate-400"] {
+  color: #475569 !important;
+}
+
+.hab-admin [class*="bg-slate-950/60"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.hab-admin input[type="text"],
+.hab-admin input[type="email"],
+.hab-admin input[type="password"],
+.hab-admin input[type="number"],
+.hab-admin input[type="search"],
+.hab-admin textarea,
+.hab-admin select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.hab-admin input::placeholder,
+.hab-admin textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* High contrast status badges */
+.hab-admin [class*="bg-amber-500/15"],
+.hab-admin [class*="bg-amber-400/20"],
+.hab-admin [class*="bg-amber-500/20"],
+.hab-admin [class*="bg-amber-400/10"] {
+  background-color: #fef3c7 !important;
+  border-color: #fcd34d !important;
+  color: #78350f !important;
+}
+
+.hab-admin [class*="bg-emerald-500/15"],
+.hab-admin [class*="bg-emerald-400/20"],
+.hab-admin [class*="bg-emerald-500/20"],
+.hab-admin [class*="bg-emerald-400/10"] {
+  background-color: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+
+.hab-admin [class*="bg-rose-500/15"],
+.hab-admin [class*="bg-rose-400/20"],
+.hab-admin [class*="bg-rose-500/20"],
+.hab-admin [class*="bg-rose-400/10"] {
+  background-color: #ffe4e6 !important;
+  border-color: #fda4af !important;
+  color: #9f1239 !important;
+}
+
+.hab-admin [class*="bg-sky-500/15"],
+.hab-admin [class*="bg-sky-400/20"],
+.hab-admin [class*="bg-sky-500/20"],
+.hab-admin [class*="bg-indigo-500/15"],
+.hab-admin [class*="bg-indigo-400/20"],
+.hab-admin [class*="bg-indigo-500/20"] {
+  background-color: #e0e7ff !important;
+  border-color: #a5b4fc !important;
+  color: #3730a3 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

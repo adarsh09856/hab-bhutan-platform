@@ -306,7 +306,7 @@ export default function AdminUsersPage() {
       {/* Main Glass Table Container */}
       <GlassCard className="p-6">
         {/* Filter Controls Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
             <input
@@ -314,7 +314,7 @@ export default function AdminUsersPage() {
               placeholder="Search by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-800/60 border border-white/10 text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-500/60"
+              className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-amber-500"
             />
           </div>
 
@@ -323,7 +323,7 @@ export default function AdminUsersPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 text-xs rounded-xl bg-slate-800/80 border border-white/10 text-slate-200 focus:outline-hidden"
+              className="px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-800 focus:outline-hidden"
             >
               <option value="ALL">All Roles</option>
               <option value="super_admin">Super Admin</option>
@@ -337,7 +337,7 @@ export default function AdminUsersPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 text-xs rounded-xl bg-slate-800/80 border border-white/10 text-slate-200 focus:outline-hidden"
+              className="px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-800 focus:outline-hidden"
             >
               <option value="ALL">All Status</option>
               <option value="ACTIVE">Active</option>
@@ -350,15 +350,15 @@ export default function AdminUsersPage() {
         <div className="overflow-x-auto mt-2">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="text-slate-400 border-b border-white/10 font-semibold uppercase tracking-wider text-[10.5px]">
-                <th className="py-3.5 pr-4">User</th>
+              <tr className="text-slate-600 border-b border-slate-200 bg-slate-50 font-semibold uppercase tracking-wider text-[10.5px]">
+                <th className="py-3.5 px-3">User</th>
                 <th className="py-3.5 px-4">Role &amp; Permissions</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">Joined Date</th>
                 <th className="py-3.5 pl-4 text-right">Credentials Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-200">
+            <tbody className="divide-y divide-slate-100 text-slate-800">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-10 text-center text-slate-500 font-mono">
@@ -367,22 +367,22 @@ export default function AdminUsersPage() {
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-slate-400">
+                  <td colSpan={5} className="py-10 text-center text-slate-500">
                     No matching user accounts found.
                   </td>
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
                     {/* User Profile */}
-                    <td className="py-3.5 pr-4">
+                    <td className="py-3.5 px-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center font-bold text-amber-400 text-xs flex-none">
+                        <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center font-bold text-amber-800 text-xs flex-none">
                           {u.name ? u.name[0].toUpperCase() : 'U'}
                         </div>
                         <div>
-                          <div className="font-semibold text-white">{u.name}</div>
-                          <div className="text-[11px] text-slate-400 font-mono">{u.email}</div>
+                          <div className="font-semibold text-slate-900">{u.name}</div>
+                          <div className="text-[11px] text-slate-500 font-mono">{u.email}</div>
                         </div>
                       </div>
                     </td>
@@ -390,8 +390,8 @@ export default function AdminUsersPage() {
                     {/* Role */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-slate-200">{u.role?.name || 'Custom Role'}</span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-slate-400">
+                        <span className="font-medium text-slate-800">{u.role?.name || 'Custom Role'}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-600">
                           v{u.role?.version || 1}
                         </span>
                       </div>
@@ -403,7 +403,7 @@ export default function AdminUsersPage() {
                     </td>
 
                     {/* Joined Date */}
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
                       {new Date(u.createdAt).toLocaleDateString()}
                     </td>
 
@@ -415,7 +415,7 @@ export default function AdminUsersPage() {
                             setEditRoleUser(u);
                             setSelectedRoleId(u.roleId);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-[11px] transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-[11px] transition-colors shadow-xs"
                           title="Change Role"
                         >
                           Change Role
@@ -424,7 +424,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleResetPassword(u)}
                           disabled={resetting}
-                          className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-medium flex items-center gap-1 transition-colors shadow-xs"
                           title="Reset Password"
                         >
                           <KeyRound className="w-3 h-3" />
@@ -435,8 +435,8 @@ export default function AdminUsersPage() {
                           onClick={() => handleToggleStatus(u)}
                           className={`p-1.5 rounded-lg border transition-colors ${
                             u.status === 'ACTIVE'
-                              ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/30'
-                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                              ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
                           }`}
                           title={u.status === 'ACTIVE' ? 'Suspend Account' : 'Reactivate Account'}
                         >
@@ -538,9 +538,9 @@ export default function AdminUsersPage() {
         width="md"
       >
         <form onSubmit={handleUpdateRole} className="space-y-4">
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-xs space-y-1">
-            <div className="text-slate-400">Current Role:</div>
-            <div className="text-white font-semibold">{editRoleUser?.role?.name} ({editRoleUser?.role?.slug})</div>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+            <div className="text-slate-600">Current Role:</div>
+            <div className="text-slate-900 font-semibold">{editRoleUser?.role?.name} ({editRoleUser?.role?.slug})</div>
           </div>
 
           <GlassSelect
@@ -579,34 +579,34 @@ export default function AdminUsersPage() {
 
       {/* Password Reset Modal */}
       {resetModalData && (
-        <div className="fixed inset-0 z-50 overflow-y-auto p-4 bg-black/70 backdrop-blur-md flex items-center justify-center">
-          <div className="relative w-full max-w-md bg-slate-900/90 backdrop-blur-2xl rounded-2xl border border-white/15 shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 overflow-y-auto p-4 bg-black/40 backdrop-blur-xs flex items-center justify-center">
+          <div className="relative w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center border border-amber-200">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Temporary Password Generated</h3>
-                <p className="text-xs text-slate-400">For {resetModalData.user?.email}</p>
+                <h3 className="text-base font-bold text-slate-900">Temporary Password Generated</h3>
+                <p className="text-xs text-slate-500">For {resetModalData.user?.email}</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               The user&apos;s previous sessions have been invalidated. Hand this temporary password to the user. They will be prompted to choose a new password on their next login.
             </p>
 
             {/* Password Box */}
-            <div className="p-3.5 rounded-xl bg-slate-950/80 border border-amber-500/40 flex items-center justify-between gap-2 font-mono text-sm text-amber-300">
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 flex items-center justify-between gap-2 font-mono text-sm text-amber-950">
               <span className="select-all font-bold">{resetModalData.tempPassword}</span>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(resetModalData.tempPassword || '');
                   setResetModalData({ ...resetModalData, copied: true });
                 }}
-                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs transition-colors"
                 title="Copy Password"
               >
-                {resetModalData.copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                {resetModalData.copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
 

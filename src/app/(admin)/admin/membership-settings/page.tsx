@@ -170,7 +170,7 @@ export default function AdminMembershipSettingsPage() {
           <button
             onClick={() => setActiveTab('TIERS')}
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${
-              activeTab === 'TIERS' ? 'admin-button-primary' : 'admin-panel admin-text hover:bg-slate-700'
+              activeTab === 'TIERS' ? 'admin-button-primary' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
             }`}
           >
             Tier Fees &amp; Banking
@@ -178,7 +178,7 @@ export default function AdminMembershipSettingsPage() {
           <button
             onClick={() => setActiveTab('LEDGER')}
             className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 ${
-              activeTab === 'LEDGER' ? 'admin-button-primary' : 'admin-panel admin-text hover:bg-slate-700'
+              activeTab === 'LEDGER' ? 'admin-button-primary' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
             }`}
           >
             <Users className="w-3.5 h-3.5" />

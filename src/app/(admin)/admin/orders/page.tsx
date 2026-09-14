@@ -465,11 +465,11 @@ export default function AdminOrdersPage() {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Package className="w-6 h-6 text-amber-400" />
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <Package className="w-6 h-6 text-amber-800" />
             Orders &amp; Consignment Dispatch
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Real-world fulfillment tracking, recipient delivery address inspection, carrier synchronization, and packing slips.
           </p>
         </div>
@@ -477,7 +477,7 @@ export default function AdminOrdersPage() {
           <button
             type="button"
             onClick={loadData}
-            className="px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-lg flex items-center gap-1.5 transition"
+            className="px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-1.5 transition shadow-xs"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Reload
@@ -492,27 +492,27 @@ export default function AdminOrdersPage() {
       </div>
 
       {successMsg && (
-        <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-xs font-medium rounded-md flex justify-between items-center print:hidden">
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-md flex justify-between items-center print:hidden">
           <span className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             {successMsg}
           </span>
-          <button onClick={() => setSuccessMsg('')} className="text-emerald-300 font-bold ml-2">✕</button>
+          <button onClick={() => setSuccessMsg('')} className="text-emerald-700 font-bold ml-2">✕</button>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3 bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-medium rounded-md flex justify-between items-center print:hidden">
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium rounded-md flex justify-between items-center print:hidden">
           <span className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
+            <AlertTriangle className="w-4 h-4 text-rose-600" />
             {errorMsg}
           </span>
-          <button onClick={() => setErrorMsg('')} className="text-rose-300 font-bold ml-2">✕</button>
+          <button onClick={() => setErrorMsg('')} className="text-rose-700 font-bold ml-2">✕</button>
         </div>
       )}
 
       {/* Filter Controls */}
-      <div className="flex gap-4 items-center admin-card bg-slate-900/80 p-4 border border-white/10 rounded-xl shadow-lg flex-wrap backdrop-blur-xl print:hidden">
+      <div className="flex gap-4 items-center bg-white p-4 border border-slate-200 rounded-xl shadow-xs flex-wrap print:hidden">
         <div className="relative flex-1 min-w-[280px]">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
@@ -520,37 +520,37 @@ export default function AdminOrdersPage() {
             placeholder="Search by order #, recipient name, street address, phone, email, tracking, mBoB ref..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full text-xs admin-input bg-slate-950/60 text-white placeholder-slate-400 border border-white/15 rounded-lg pl-9 pr-3.5 py-2.5 outline-none focus:border-amber-400 font-sans transition-colors"
+            className="w-full text-xs bg-white text-slate-900 placeholder-slate-400 border border-slate-300 rounded-lg pl-9 pr-3.5 py-2.5 outline-none focus:border-amber-800 font-sans transition-colors"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs admin-input bg-slate-950/60 text-white border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 transition-colors"
+          className="text-xs bg-white text-slate-900 border border-slate-300 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-800 transition-colors font-medium"
         >
-          <option value="ALL" className="bg-slate-900 text-white">All Order Statuses</option>
-          <option value="PROCESSING" className="bg-slate-900 text-white">Processing</option>
-          <option value="PAID" className="bg-slate-900 text-white">Paid (Awaiting Dispatch)</option>
-          <option value="SHIPPED" className="bg-slate-900 text-white">Shipped / Dispatched</option>
-          <option value="DELIVERED" className="bg-slate-900 text-white">Delivered</option>
-          <option value="PENDING_PAYMENT" className="bg-slate-900 text-white">Pending Payment</option>
-          <option value="CANCELLED" className="bg-slate-900 text-white">Cancelled</option>
-          <option value="REFUNDED" className="bg-slate-900 text-white">Refunded</option>
+          <option value="ALL">All Order Statuses</option>
+          <option value="PROCESSING">Processing</option>
+          <option value="PAID">Paid (Awaiting Dispatch)</option>
+          <option value="SHIPPED">Shipped / Dispatched</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="PENDING_PAYMENT">Pending Payment</option>
+          <option value="CANCELLED">Cancelled</option>
+          <option value="REFUNDED">Refunded</option>
         </select>
       </div>
 
       {/* Orders Table */}
-      <div className="admin-card bg-slate-900/80 border border-white/10 rounded-xl shadow-lg overflow-hidden backdrop-blur-xl print:hidden">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden print:hidden">
         {loading ? (
-          <div className="py-16 text-center text-slate-400 text-xs font-mono flex flex-col items-center justify-center gap-3">
-            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <div className="py-16 text-center text-slate-500 text-xs font-mono flex flex-col items-center justify-center gap-3">
+            <div className="w-6 h-6 border-2 border-amber-800 border-t-transparent rounded-full animate-spin" />
             <span>Loading order book and delivery registry from PostgreSQL...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="admin-panel border-b admin-border admin-text font-semibold uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
                   <th className="py-3.5 px-4">Order # &amp; Date</th>
                   <th className="py-3.5 px-4">Customer &amp; Contact</th>
                   <th className="py-3.5 px-4">Delivery Destination</th>
@@ -560,7 +560,7 @@ export default function AdminOrdersPage() {
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y admin-divider">
+              <tbody className="divide-y divide-slate-100">
                 {filteredOrders.map((o) => {
                   const addr = parseShippingAddress(o.shippingAddress);
                   const itemsList = Array.isArray(o.items) ? o.items : [];
@@ -569,49 +569,49 @@ export default function AdminOrdersPage() {
                   const courierCopyText = `${addr.fullName || o.customerName}\n${addr.street}\n${addr.city}, ${addr.country}${addr.postalCode ? ` ${addr.postalCode}` : ''}\nTel: ${effectivePhone || 'N/A'}`;
 
                   return (
-                    <tr key={o.id} className="hover:bg-slate-800/50 transition-colors">
+                    <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
                       {/* 1. Order Number & Date */}
-                      <td className="py-3 px-4 font-mono font-medium admin-title whitespace-nowrap">
-                        <div className="text-amber-300 font-semibold">{o.orderNumber}</div>
-                        <div className="text-[10px] admin-muted font-sans mt-0.5">
+                      <td className="py-3.5 px-4 font-mono font-medium whitespace-nowrap">
+                        <div className="text-amber-900 font-bold text-sm">{o.orderNumber}</div>
+                        <div className="text-[11px] text-slate-500 font-sans mt-0.5">
                           {new Date(o.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </div>
-                        <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-white/10">
+                        <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono border border-slate-200 font-semibold">
                           {o.customerType}
                         </span>
                       </td>
 
                       {/* 2. Customer & Contact */}
-                      <td className="py-3 px-4 min-w-[160px]">
-                        <div className="font-medium text-white">{o.customerName}</div>
-                        <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
-                          <Mail className="w-3 h-3 text-slate-500 shrink-0" />
+                      <td className="py-3.5 px-4 min-w-[160px]">
+                        <div className="font-bold text-slate-900">{o.customerName}</div>
+                        <div className="text-[11px] text-slate-600 font-mono flex items-center gap-1 mt-0.5">
+                          <Mail className="w-3 h-3 text-slate-400 shrink-0" />
                           <span className="truncate max-w-[150px]">{o.customerEmail}</span>
                         </div>
                         {effectivePhone && (
-                          <div className="text-[11px] text-emerald-400 font-mono flex items-center gap-1 mt-0.5">
-                            <Phone className="w-3 h-3 text-emerald-500 shrink-0" />
+                          <div className="text-[11px] text-emerald-700 font-mono flex items-center gap-1 mt-0.5 font-medium">
+                            <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
                             <span>{effectivePhone}</span>
                           </div>
                         )}
                         {o.customerMember && (
-                          <span className="inline-block mt-1 text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-200 font-semibold">
+                          <span className="inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
                             MEMBER: {o.customerMember.name}
                           </span>
                         )}
                       </td>
 
-                      {/* 3. Delivery Destination (Prominently Added) */}
-                      <td className="py-3 px-4 min-w-[240px]">
+                      {/* 3. Delivery Destination */}
+                      <td className="py-3.5 px-4 min-w-[240px]">
                         <div className="flex items-start justify-between gap-1.5">
                           <div className="space-y-0.5">
-                            <div className="font-medium text-slate-200 flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                              <span className="truncate max-w-[180px] font-semibold">
+                            <div className="font-semibold text-slate-900 flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                              <span className="truncate max-w-[180px]">
                                 {addr.street || (addr.isEmpty ? 'Counter Pickup' : 'No street recorded')}
                               </span>
                             </div>
-                            <div className="text-[11px] text-slate-400 pl-4">
+                            <div className="text-[11px] text-slate-600 pl-4 font-medium">
                               {[addr.city, addr.dzongkhag, addr.country].filter(Boolean).join(', ')}
                               {addr.postalCode && ` (${addr.postalCode})`}
                             </div>
@@ -623,10 +623,10 @@ export default function AdminOrdersPage() {
                             <button
                               type="button"
                               onClick={() => handleCopyAddress(o.id, courierCopyText)}
-                              className="px-2 py-1 text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-white/10 shrink-0 transition flex items-center gap-1"
+                              className="px-2 py-1 text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 rounded border border-slate-300 shrink-0 transition flex items-center gap-1 shadow-xs"
                               title="Copy delivery address for courier software"
                             >
-                              <Copy className="w-3 h-3" />
+                              <Copy className="w-3 h-3 text-slate-600" />
                               <span>{copyFeedback[o.id] ? 'Copied!' : 'Copy'}</span>
                             </button>
                           )}
@@ -634,63 +634,63 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* 4. Total & Payment */}
-                      <td className="py-3 px-4 font-mono font-semibold admin-title whitespace-nowrap">
-                        <div className="text-white">${Number(o.totalUSD).toFixed(2)}</div>
+                      <td className="py-3.5 px-4 font-mono font-semibold whitespace-nowrap">
+                        <div className="text-slate-900 font-bold text-sm">${Number(o.totalUSD).toFixed(2)}</div>
                         {o.currencyUsed === 'BTN' && (
-                          <div className="text-[10px] text-slate-400 font-sans font-normal">Nu. {o.totalPaidCurrency}</div>
+                          <div className="text-[11px] text-slate-600 font-sans font-medium">Nu. {o.totalPaidCurrency}</div>
                         )}
                         <div className="flex flex-wrap items-center gap-1 mt-1">
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             o.paymentStatus === 'PAID'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-                              : 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-amber-100 text-amber-900 border border-amber-300'
                           }`}>
                             {o.paymentStatus}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-300 border border-white/10">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-700 border border-slate-200 font-semibold">
                             {o.paymentMethod}
                           </span>
                         </div>
                         {o.mBOBTransactionRef && (
-                          <div className="text-[9px] text-teal-300 font-mono mt-0.5 truncate max-w-[130px]" title={`mBoB Journal: ${o.mBOBTransactionRef}`}>
+                          <div className="text-[10px] text-teal-800 font-mono mt-0.5 truncate max-w-[130px] font-semibold" title={`mBoB Journal: ${o.mBOBTransactionRef}`}>
                             Ref: {o.mBOBTransactionRef}
                           </div>
                         )}
                         {o.paymentMethod === 'COD' && o.paymentStatus !== 'PAID' && (
-                          <div className="text-[9px] text-amber-300 font-sans mt-0.5">
+                          <div className="text-[10px] text-amber-800 font-sans mt-0.5 font-medium">
                             Collect upon delivery
                           </div>
                         )}
                       </td>
 
                       {/* 5. Dispatch & Tracking */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="font-mono text-[10px] text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded border border-white/10">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span className="font-mono text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                           {o.shippingMethod}
                         </span>
                         {o.trackingNumber ? (
-                          <div className="font-mono text-[11px] text-indigo-300 font-medium mt-1 flex items-center gap-1">
-                            <Truck className="w-3 h-3 text-indigo-400" />
+                          <div className="font-mono text-[11px] text-indigo-700 font-bold mt-1 flex items-center gap-1">
+                            <Truck className="w-3 h-3 text-indigo-600" />
                             <span>{o.trackingNumber}</span>
                           </div>
                         ) : (
-                          <div className="text-[10px] text-slate-500 mt-0.5">No tracking assigned</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 italic">No tracking assigned</div>
                         )}
                       </td>
 
                       {/* 6. Order Status */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border ${
                             o.orderStatus === 'DELIVERED'
-                              ? 'bg-emerald-500/15 text-emerald-200'
+                              ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
                               : o.orderStatus === 'SHIPPED'
-                              ? 'bg-blue-500/20 text-blue-200'
+                              ? 'bg-blue-100 text-blue-900 border-blue-300'
                               : o.orderStatus === 'CANCELLED'
-                              ? 'bg-rose-500/15 text-rose-200'
+                              ? 'bg-rose-100 text-rose-900 border-rose-300'
                               : o.orderStatus === 'REFUNDED'
-                              ? 'bg-purple-500/20 text-purple-200'
-                              : 'bg-amber-500/15 text-amber-200'
+                              ? 'bg-purple-100 text-purple-900 border-purple-300'
+                              : 'bg-amber-100 text-amber-900 border-amber-300'
                           }`}
                         >
                           {o.orderStatus}
@@ -698,10 +698,10 @@ export default function AdminOrdersPage() {
                       </td>
 
                       {/* 7. Actions */}
-                      <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => setInspectingOrder(o)}
-                          className="px-2.5 py-1 text-xs font-semibold bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 rounded transition shadow-xs"
+                          className="px-2.5 py-1 text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-lg transition shadow-xs"
                         >
                           🔍 Inspect / Pack
                         </button>
@@ -711,7 +711,7 @@ export default function AdminOrdersPage() {
                               setFulfillingOrder(o);
                               setTrackingInput(o.trackingNumber || '');
                             }}
-                            className="px-2 py-1 text-xs font-semibold admin-button-primary rounded transition"
+                            className="px-2.5 py-1 text-xs font-semibold admin-button-primary rounded-lg transition"
                           >
                             Dispatch
                           </button>
@@ -776,33 +776,33 @@ export default function AdminOrdersPage() {
       {/* ORDER INSPECTOR & PACKING SLIP MODAL */}
       {/* ========================================================================= */}
       {inspectingOrder && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 sm:p-5 overflow-y-auto print:p-0 print:bg-white print:static">
-          <div className="admin-modal bg-slate-900 border border-white/15 rounded-2xl max-w-4xl w-full p-6 shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto print:max-w-none print:max-h-none print:border-none print:p-0 print:text-black">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-5 overflow-y-auto print:p-0 print:bg-white print:static">
+          <div className="admin-modal bg-white border border-slate-200 rounded-2xl max-w-4xl w-full p-6 shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto print:max-w-none print:max-h-none print:border-none print:p-0 print:text-black">
             {/* Modal Header */}
-            <div className="flex justify-between items-start border-b border-white/10 pb-4 print:hidden">
+            <div className="flex justify-between items-start border-b border-slate-200 pb-4 print:hidden">
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h2 className="text-xl font-bold text-white tracking-tight">Order #{inspectingOrder.orderNumber}</h2>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight">Order #{inspectingOrder.orderNumber}</h2>
                   <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
                     inspectingOrder.orderStatus === 'DELIVERED'
-                      ? 'bg-emerald-500/20 text-emerald-300'
+                      ? 'bg-emerald-100 text-emerald-800'
                       : inspectingOrder.orderStatus === 'SHIPPED'
-                      ? 'bg-blue-500/20 text-blue-300'
+                      ? 'bg-blue-100 text-blue-800'
                       : inspectingOrder.orderStatus === 'CANCELLED'
-                      ? 'bg-rose-500/20 text-rose-300'
-                      : 'bg-amber-500/20 text-amber-300'
+                      ? 'bg-rose-100 text-rose-800'
+                      : 'bg-amber-100 text-amber-800'
                   }`}>
                     {inspectingOrder.orderStatus}
                   </span>
                   <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                     inspectingOrder.paymentStatus === 'PAID'
-                      ? 'bg-emerald-500/20 text-emerald-300'
-                      : 'bg-amber-500/20 text-amber-300'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-amber-100 text-amber-800'
                   }`}>
                     {inspectingOrder.paymentStatus}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Placed on {new Date(inspectingOrder.createdAt).toLocaleString()} · Collector Type: {inspectingOrder.customerType}
                 </p>
               </div>
@@ -811,7 +811,7 @@ export default function AdminOrdersPage() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-white/15 rounded-lg flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-sm"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Print Packing Slip / Customs Invoice
@@ -819,7 +819,7 @@ export default function AdminOrdersPage() {
                 <button
                   type="button"
                   onClick={() => setInspectingOrder(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -852,16 +852,16 @@ export default function AdminOrdersPage() {
               return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   {/* Card 1: Delivery Destination */}
-                  <div className="p-4 rounded-xl bg-slate-950/70 border border-white/10 space-y-3 print:border-gray-300 print:bg-white print:text-black">
-                    <div className="flex justify-between items-center border-b border-white/10 pb-2 print:border-gray-200">
-                      <div className="font-bold text-white flex items-center gap-1.5 print:text-black">
-                        <MapPin className="w-4 h-4 text-amber-400 print:text-black" />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 print:border-gray-300 print:bg-white print:text-black">
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-2 print:border-gray-200">
+                      <div className="font-bold text-slate-900 flex items-center gap-1.5 print:text-black">
+                        <MapPin className="w-4 h-4 text-amber-600 print:text-black" />
                         <span>Delivery Destination (Consignee)</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleCopyAddress(inspectingOrder.id, courierFormattedText)}
-                        className="px-2 py-1 text-[11px] font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 rounded flex items-center gap-1 transition print:hidden"
+                        className="px-2 py-1 text-[11px] font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded flex items-center gap-1 transition print:hidden"
                       >
                         <Copy className="w-3 h-3" />
                         <span>{copyFeedback[inspectingOrder.id] ? '✓ Copied' : 'Copy for Courier'}</span>
@@ -869,22 +869,22 @@ export default function AdminOrdersPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="text-sm font-bold text-white print:text-black">
+                      <div className="text-sm font-bold text-slate-900 print:text-black">
                         {addr.fullName || inspectingOrder.customerName}
                       </div>
-                      <div className="text-slate-300 font-medium print:text-black">
+                      <div className="text-slate-700 font-medium print:text-black">
                         {addr.street || 'No street specified'}
                       </div>
-                      <div className="text-slate-400 print:text-gray-700">
+                      <div className="text-slate-500 print:text-gray-700">
                         {[addr.city, addr.dzongkhag, addr.country].filter(Boolean).join(', ')}
                         {addr.postalCode && ` · Postal: ${addr.postalCode}`}
                       </div>
                       <div className="pt-2 flex flex-col gap-1 text-[11px]">
-                        <div className="flex items-center gap-2 text-emerald-400 font-mono print:text-black">
-                          <Phone className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-2 text-emerald-700 font-mono print:text-black">
+                          <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span>{effectivePhone || 'No phone recorded'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400 font-mono print:text-black">
+                        <div className="flex items-center gap-2 text-slate-600 font-mono print:text-black">
                           <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                           <span>{inspectingOrder.customerEmail}</span>
                         </div>
@@ -893,16 +893,16 @@ export default function AdminOrdersPage() {
                   </div>
 
                   {/* Card 2: Payment Verification & Reconciliation */}
-                  <div className="p-4 rounded-xl bg-slate-950/70 border border-white/10 space-y-3 print:border-gray-300 print:bg-white print:text-black">
-                    <div className="flex justify-between items-center border-b border-white/10 pb-2 print:border-gray-200">
-                      <div className="font-bold text-white flex items-center gap-1.5 print:text-black">
-                        <CreditCard className="w-4 h-4 text-indigo-400 print:text-black" />
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 print:border-gray-300 print:bg-white print:text-black">
+                    <div className="flex justify-between items-center border-b border-slate-200 pb-2 print:border-gray-200">
+                      <div className="font-bold text-slate-900 flex items-center gap-1.5 print:text-black">
+                        <CreditCard className="w-4 h-4 text-indigo-600 print:text-black" />
                         <span>Payment &amp; Financial Settlement</span>
                       </div>
-                      <span className="font-mono text-white text-sm font-bold print:text-black">
+                      <span className="font-mono text-slate-900 text-sm font-bold print:text-black">
                         ${Number(inspectingOrder.totalUSD).toFixed(2)} USD
                         {inspectingOrder.currencyUsed === 'BTN' && (
-                          <span className="text-xs text-slate-400 font-sans font-normal ml-1">
+                          <span className="text-xs text-slate-500 font-sans font-normal ml-1">
                             (Nu. {inspectingOrder.totalPaidCurrency})
                           </span>
                         )}
@@ -911,17 +911,17 @@ export default function AdminOrdersPage() {
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400 print:text-gray-700">Payment Method:</span>
-                        <span className="font-semibold text-white font-mono print:text-black">{inspectingOrder.paymentMethod}</span>
+                        <span className="text-slate-500 print:text-gray-700">Payment Method:</span>
+                        <span className="font-semibold text-slate-900 font-mono print:text-black">{inspectingOrder.paymentMethod}</span>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-400 print:text-gray-700">Payment Status:</span>
+                        <span className="text-slate-500 print:text-gray-700">Payment Status:</span>
                         <div className="flex items-center gap-2">
                           <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                             inspectingOrder.paymentStatus === 'PAID'
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : 'bg-amber-500/20 text-amber-300'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-amber-100 text-amber-800'
                           }`}>
                             {inspectingOrder.paymentStatus}
                           </span>
@@ -930,7 +930,7 @@ export default function AdminOrdersPage() {
                               type="button"
                               onClick={() => handleMarkAsPaid(inspectingOrder.id)}
                               disabled={submitting}
-                              className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded transition print:hidden"
+                              className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded transition print:hidden"
                             >
                               ✓ Mark as PAID
                             </button>
@@ -940,12 +940,12 @@ export default function AdminOrdersPage() {
 
                       {/* mBoB Journal Display */}
                       {inspectingOrder.paymentMethod === 'MBOB' && (
-                        <div className="p-2.5 bg-teal-500/10 border border-teal-400/20 rounded-lg text-[11px] space-y-1">
-                          <div className="text-teal-300 font-semibold flex items-center gap-1">
-                            <QrCode className="w-3.5 h-3.5" />
+                        <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-lg text-[11px] space-y-1">
+                          <div className="text-teal-900 font-semibold flex items-center gap-1">
+                            <QrCode className="w-3.5 h-3.5 text-teal-700" />
                             <span>Customer mBoB Transaction Journal:</span>
                           </div>
-                          <div className="font-mono font-bold text-white text-xs pl-5">
+                          <div className="font-mono font-bold text-teal-950 text-xs pl-5">
                             {inspectingOrder.mBOBTransactionRef || 'No reference entered yet'}
                           </div>
                         </div>
@@ -953,20 +953,20 @@ export default function AdminOrdersPage() {
 
                       {/* COD Notice */}
                       {inspectingOrder.paymentMethod === 'COD' && (
-                        <div className="p-2.5 bg-amber-500/10 border border-amber-400/20 rounded-lg text-[11px] space-y-0.5 text-amber-200">
+                        <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] space-y-0.5 text-amber-900">
                           <div className="font-semibold flex items-center gap-1">
-                            <Banknote className="w-3.5 h-3.5 text-amber-400" />
+                            <Banknote className="w-3.5 h-3.5 text-amber-600" />
                             <span>Cash on Delivery (COD)</span>
                           </div>
-                          <p className="text-[10px] text-amber-300/80">
+                          <p className="text-[10px] text-amber-800">
                             Courier must collect Nu. {inspectingOrder.totalPaidCurrency || Math.round(inspectingOrder.totalUSD * 84)} upon parcel handover.
                           </p>
                         </div>
                       )}
 
                       {inspectingOrder.internalNotes && (
-                        <div className="text-[10px] text-slate-400 pt-1 border-t border-white/5">
-                          <span className="text-slate-500">Note: </span>
+                        <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
+                          <span className="text-slate-600 font-semibold">Note: </span>
                           <span>{inspectingOrder.internalNotes}</span>
                         </div>
                       )}
@@ -977,17 +977,17 @@ export default function AdminOrdersPage() {
             })()}
 
             {/* Pack Manifest (Line Items Checklist) */}
-            <div className="border border-white/10 rounded-xl overflow-hidden print:border-gray-300">
-              <div className="p-3 bg-slate-950/80 border-b border-white/10 font-bold text-xs text-white flex justify-between items-center print:bg-gray-100 print:text-black">
+            <div className="border border-slate-200 rounded-xl overflow-hidden print:border-gray-300">
+              <div className="p-3 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-900 flex justify-between items-center print:bg-gray-100 print:text-black">
                 <span>Items to Pack (Warehouse Manifest)</span>
-                <span className="text-slate-400 text-[11px] font-normal print:text-gray-600">
+                <span className="text-slate-500 text-[11px] font-normal print:text-gray-600">
                   Carrier: {inspectingOrder.shippingMethod} · Rate: Nu. {inspectingOrder.fxRateAtPurchase || 84}/$
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10 bg-slate-900/90 text-slate-400 font-semibold uppercase text-[10px] print:bg-white print:text-black print:border-gray-300">
+                    <tr className="border-b border-slate-200 bg-slate-100 text-slate-600 font-semibold uppercase text-[10px] print:bg-white print:text-black print:border-gray-300">
                       <th className="py-2.5 px-3">Item Code</th>
                       <th className="py-2.5 px-3">Craft Name &amp; Description</th>
                       <th className="py-2.5 px-3 text-center">Qty to Pack</th>
@@ -995,23 +995,23 @@ export default function AdminOrdersPage() {
                       <th className="py-2.5 px-3 text-right">Line Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 print:divide-gray-200">
+                  <tbody className="divide-y divide-slate-100 print:divide-gray-200">
                     {inspectingOrder.items && Array.isArray(inspectingOrder.items) && inspectingOrder.items.length > 0 ? (
                       inspectingOrder.items.map((it: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-800/30 print:text-black">
-                          <td className="py-2.5 px-3 font-mono font-bold text-amber-300 print:text-black">{it.code}</td>
+                        <tr key={idx} className="hover:bg-slate-50 print:text-black">
+                          <td className="py-2.5 px-3 font-mono font-bold text-amber-700 print:text-black">{it.code}</td>
                           <td className="py-2.5 px-3">
-                            <div className="font-semibold text-white print:text-black">{it.name}</div>
+                            <div className="font-semibold text-slate-900 print:text-black">{it.name}</div>
                           </td>
-                          <td className="py-2.5 px-3 text-center font-bold text-white print:text-black">
-                            <span className="px-2 py-0.5 bg-slate-800 rounded border border-white/10 print:border-none">
+                          <td className="py-2.5 px-3 text-center font-bold text-slate-900 print:text-black">
+                            <span className="px-2 py-0.5 bg-slate-100 rounded border border-slate-200 print:border-none">
                               {it.quantity}
                             </span>
                           </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-slate-300 print:text-black">
+                          <td className="py-2.5 px-3 text-right font-mono text-slate-600 print:text-black">
                             ${Number(it.priceUSD || 0).toFixed(2)}
                           </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-semibold text-white print:text-black">
+                          <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-900 print:text-black">
                             ${(Number(it.priceUSD || 0) * Number(it.quantity || 1)).toFixed(2)}
                           </td>
                         </tr>
@@ -1025,12 +1025,12 @@ export default function AdminOrdersPage() {
                     )}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t border-white/10 font-medium text-slate-300 text-xs print:border-gray-300 print:text-black">
+                    <tr className="border-t border-slate-200 font-medium text-slate-700 text-xs print:border-gray-300 print:text-black">
                       <td colSpan={3} className="py-2 px-3 text-slate-500 italic">
                         Shipping Fee: ${Number(inspectingOrder.shippingFeeUSD || 0).toFixed(2)} USD
                       </td>
                       <td className="py-2 px-3 text-right font-bold">Total Order Value:</td>
-                      <td className="py-2 px-3 text-right font-bold font-mono text-white text-sm print:text-black">
+                      <td className="py-2 px-3 text-right font-bold font-mono text-slate-900 text-sm print:text-black">
                         ${Number(inspectingOrder.totalUSD).toFixed(2)} USD
                       </td>
                     </tr>
@@ -1040,9 +1040,9 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Carrier Dispatch & Tracking Section (Admin Controls) */}
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-white/10 space-y-3 print:hidden">
-              <div className="font-bold text-white flex items-center gap-1.5 text-xs">
-                <Truck className="w-4 h-4 text-indigo-400" />
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 print:hidden">
+              <div className="font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                <Truck className="w-4 h-4 text-indigo-600" />
                 <span>Carrier Dispatch &amp; Tracking Synchronization</span>
               </div>
               <div className="flex gap-2">
@@ -1051,7 +1051,7 @@ export default function AdminOrdersPage() {
                   placeholder="Enter tracking code (e.g. BP-EMS-98124 or DHL-8821948)"
                   defaultValue={inspectingOrder.trackingNumber || ''}
                   id="inspectTrackingInput"
-                  className="flex-1 admin-input bg-slate-900 border border-white/15 rounded-lg px-3 py-2 text-xs font-mono text-white outline-none focus:border-amber-400"
+                  className="flex-1 admin-input bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 outline-none focus:border-amber-500"
                 />
                 <button
                   type="button"
@@ -1060,7 +1060,7 @@ export default function AdminOrdersPage() {
                     handleUpdateTracking(inspectingOrder.id, el?.value || '', false);
                   }}
                   disabled={submitting}
-                  className="px-3 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/15 rounded-lg transition"
+                  className="px-3 py-2 text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg transition"
                 >
                   Save Tracking
                 </button>
@@ -1081,9 +1081,9 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Cultural Export & Zorig Chusum Statutory Customs Statement (Printable) */}
-            <div className="p-4 rounded-xl bg-slate-950/40 border border-white/10 text-[11px] text-slate-400 leading-relaxed print:bg-white print:border-gray-400 print:text-black print:mt-4">
-              <div className="font-bold text-slate-300 mb-1 flex items-center gap-1.5 print:text-black">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 print:text-black" />
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 leading-relaxed print:bg-white print:border-gray-400 print:text-black print:mt-4">
+              <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5 print:text-black">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 print:text-black" />
                 <span>Statutory Heritage Certification &amp; Customs Export Declaration</span>
               </div>
               <p>
@@ -1102,7 +1102,7 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-between items-center pt-2 border-t border-white/10 print:hidden">
+            <div className="flex justify-between items-center pt-2 border-t border-slate-200 print:hidden">
               <button
                 type="button"
                 onClick={() => {
@@ -1154,10 +1154,10 @@ export default function AdminOrdersPage() {
             {(() => {
               const addr = parseShippingAddress(fulfillingOrder.shippingAddress);
               return (
-                <div className="p-3 bg-slate-950/60 rounded-lg border border-white/10 text-xs space-y-1">
-                  <div className="font-semibold text-white">Deliver to: {addr.fullName || fulfillingOrder.customerName}</div>
-                  <div className="text-slate-300">📍 {addr.formatted}</div>
-                  <div className="text-slate-400 font-mono">📞 {fulfillingOrder.customerPhone || addr.phone || 'No phone recorded'}</div>
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1">
+                  <div className="font-semibold text-slate-900">Deliver to: {addr.fullName || fulfillingOrder.customerName}</div>
+                  <div className="text-slate-700">📍 {addr.formatted}</div>
+                  <div className="text-slate-600 font-mono">📞 {fulfillingOrder.customerPhone || addr.phone || 'No phone recorded'}</div>
                 </div>
               );
             })()}
@@ -1237,11 +1237,11 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Customer Contact Details */}
-              <div className="p-3 bg-slate-950/50 rounded-lg border border-white/10 space-y-2.5">
-                <span className="font-semibold text-slate-200 block text-[11px]">Customer &amp; Contact Details</span>
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
+                <span className="font-semibold text-slate-900 block text-[11px]">Customer &amp; Contact Details</span>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="block text-slate-400 mb-1">Customer Name</label>
+                    <label className="block text-slate-600 mb-1">Customer Name</label>
                     <input
                       type="text"
                       value={editingOrder.customerName || ''}
@@ -1250,7 +1250,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Customer Email</label>
+                    <label className="block text-slate-600 mb-1">Customer Email</label>
                     <input
                       type="email"
                       value={editingOrder.customerEmail || ''}
@@ -1259,7 +1259,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Customer Phone</label>
+                    <label className="block text-slate-600 mb-1">Customer Phone</label>
                     <input
                       type="text"
                       value={editingOrder.customerPhone || ''}
@@ -1271,10 +1271,10 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Editable Delivery Destination */}
-              <div className="p-3 bg-slate-950/50 rounded-lg border border-white/10 space-y-2.5">
-                <span className="font-semibold text-slate-200 block text-[11px]">Delivery Address (Consignee)</span>
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
+                <span className="font-semibold text-slate-900 block text-[11px]">Delivery Address (Consignee)</span>
                 <div>
-                  <label className="block text-slate-400 mb-1">Street Address</label>
+                  <label className="block text-slate-600 mb-1">Street Address</label>
                   <input
                     type="text"
                     value={editingOrder.shippingAddress?.street || ''}
@@ -1288,7 +1288,7 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   <div>
-                    <label className="block text-slate-400 mb-1">City / Town</label>
+                    <label className="block text-slate-600 mb-1">City / Town</label>
                     <input
                       type="text"
                       value={editingOrder.shippingAddress?.city || ''}
@@ -1300,7 +1300,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Dzongkhag / State</label>
+                    <label className="block text-slate-600 mb-1">Dzongkhag / State</label>
                     <input
                       type="text"
                       value={editingOrder.shippingAddress?.dzongkhag || ''}
@@ -1312,7 +1312,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Country</label>
+                    <label className="block text-slate-600 mb-1">Country</label>
                     <input
                       type="text"
                       value={editingOrder.shippingAddress?.country || 'Bhutan'}
@@ -1324,7 +1324,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Postal Code</label>
+                    <label className="block text-slate-600 mb-1">Postal Code</label>
                     <input
                       type="text"
                       value={editingOrder.shippingAddress?.postalCode || ''}
@@ -1466,10 +1466,10 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Delivery Address Fields for Manual Order */}
-              <div className="p-3 bg-slate-950/50 rounded-lg border border-white/10 space-y-2.5">
-                <span className="font-semibold text-slate-200 block text-[11px]">Delivery Destination</span>
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
+                <span className="font-semibold text-slate-900 block text-[11px]">Delivery Destination</span>
                 <div>
-                  <label className="block text-slate-400 mb-1">Street Address</label>
+                  <label className="block text-slate-600 mb-1">Street Address</label>
                   <input
                     type="text"
                     placeholder="e.g. Changzamtog Road, Norzin Lam"
@@ -1483,7 +1483,7 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   <div>
-                    <label className="block text-slate-400 mb-1">City</label>
+                    <label className="block text-slate-600 mb-1">City</label>
                     <input
                       type="text"
                       value={orderForm.shippingAddress.city}
@@ -1495,7 +1495,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Dzongkhag</label>
+                    <label className="block text-slate-600 mb-1">Dzongkhag</label>
                     <input
                       type="text"
                       value={orderForm.shippingAddress.dzongkhag}
@@ -1507,7 +1507,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Country</label>
+                    <label className="block text-slate-600 mb-1">Country</label>
                     <input
                       type="text"
                       value={orderForm.shippingAddress.country}
@@ -1519,7 +1519,7 @@ export default function AdminOrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Postal Code</label>
+                    <label className="block text-slate-600 mb-1">Postal Code</label>
                     <input
                       type="text"
                       value={orderForm.shippingAddress.postalCode}
@@ -1580,7 +1580,7 @@ export default function AdminOrdersPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveItemFromOrder(item.code)}
-                            className="text-rose-300 hover:text-rose-200 font-bold px-1"
+                            className="text-rose-600 hover:text-rose-700 font-bold px-1"
                           >
                             ✕
                           </button>
@@ -1672,14 +1672,14 @@ export default function AdminOrdersPage() {
 
             {['SHIPPED', 'DELIVERED'].includes(cancellingOrder.orderStatus) ? (
               <div className="space-y-3">
-                <div className="p-3.5 bg-rose-500/15 border border-rose-400/25 rounded-lg text-xs text-rose-200 space-y-1.5">
-                  <p className="font-bold flex items-center gap-1.5 text-rose-100">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 space-y-1.5">
+                  <p className="font-bold flex items-center gap-1.5 text-rose-900">
                     <span>⛔</span> Cannot Cancel Shipped / Delivered Order
                   </p>
                   <p className="leading-relaxed">
                     Order <strong>{cancellingOrder.orderNumber}</strong> has already been marked as <strong>{cancellingOrder.orderStatus}</strong>. Physical items have left the secretariat facility and cannot automatically be restored into catalog inventory without corrupting stock counts.
                   </p>
-                  <p className="font-medium pt-1 text-rose-100">
+                  <p className="font-medium pt-1 text-rose-900">
                     To handle customer returns or refunds, please use the <strong>Edit</strong> action and update the order status to <strong>REFUNDED</strong>.
                   </p>
                 </div>
@@ -1737,7 +1737,7 @@ export default function AdminOrdersPage() {
       {showDeleteAttemptModal && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
           <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
-            <h3 className="font-bold admin-title text-base flex items-center gap-2 text-rose-300">
+            <h3 className="font-bold admin-title text-base flex items-center gap-2 text-rose-600">
               <span>⚠️</span> Order Deletion Prohibited
             </h3>
             <p className="text-xs admin-text leading-relaxed">

@@ -208,15 +208,15 @@ export default function AdminMembershipCategoriesPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-xs font-mono bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                      <span className="px-2 py-0.5 rounded text-xs font-mono bg-amber-50 text-amber-800 border border-amber-200">
                         {cat.key}
                       </span>
                       {cat.isActive ? (
-                        <span className="px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="px-2 py-0.5 rounded text-xs bg-emerald-50 text-emerald-800 border border-emerald-200">
                           Active
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-xs bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                        <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-700 border border-slate-200">
                           Disabled
                         </span>
                       )}
@@ -236,7 +236,7 @@ export default function AdminMembershipCategoriesPage() {
                     </button>
                     <button
                       onClick={() => handleDelete(cat.id, cat.name)}
-                      className="p-1.5 rounded hover:bg-white/10 text-rose-400 transition"
+                      className="p-1.5 rounded hover:bg-rose-50 text-rose-600 transition"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -244,10 +244,10 @@ export default function AdminMembershipCategoriesPage() {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-black/20 border admin-border flex items-center justify-between">
+                <div className="p-3 rounded-lg bg-slate-50 border admin-border flex items-center justify-between">
                   <div>
                     <span className="text-xs admin-muted uppercase tracking-wider block">Annual Dues</span>
-                    <span className="text-base font-bold admin-title text-amber-400">
+                    <span className="text-base font-bold admin-title text-amber-800">
                       Nu. {cat.duesBTN.toLocaleString()} / year
                     </span>
                   </div>

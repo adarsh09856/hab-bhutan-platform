@@ -281,8 +281,8 @@ export default function AdminProjectsPage() {
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
                       p.status === 'current'
-                        ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-slate-700/30 text-slate-300 border border-slate-600/40'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
                     }`}
                   >
                     {p.status === 'current' ? 'Active Programme' : 'Completed Archive'}

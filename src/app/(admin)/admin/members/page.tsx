@@ -250,8 +250,8 @@ export default function AdminMembersPage() {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Member CRM &amp; Artisans Registry</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Member CRM &amp; Artisans Registry</h1>
+          <p className="text-sm text-slate-600 mt-1">
             Complete management of certified Bhutanese handicraft enterprises, artisans, and guild members.
           </p>
         </div>
@@ -282,22 +282,22 @@ export default function AdminMembersPage() {
       )}
 
       {/* Filter controls */}
-      <div className="flex gap-4 items-center admin-card bg-slate-900/80 p-4 border border-white/10 rounded-xl shadow-lg flex-wrap backdrop-blur-xl">
+      <div className="flex gap-4 items-center bg-white p-4 border border-slate-200 rounded-xl shadow-sm flex-wrap">
         <input
           type="text"
           placeholder="Search by enterprise name, dzongkhag, registration #, CID..."
           value={filterQuery}
           onChange={(e) => setFilterQuery(e.target.value)}
-          className="flex-1 min-w-[240px] text-xs admin-input bg-slate-950/60 text-white placeholder-slate-400 border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 font-sans transition-colors"
+          className="flex-1 min-w-[240px] text-xs bg-white text-slate-900 placeholder-slate-400 border border-slate-300 rounded-lg px-3.5 py-2.5 outline-none focus:border-[#8b2e24] font-sans transition-colors shadow-sm"
         />
         <select
           value={filterCraft}
           onChange={(e) => setFilterCraft(e.target.value)}
-          className="text-xs admin-input bg-slate-950/60 text-white border border-white/15 rounded-lg px-3.5 py-2.5 outline-none focus:border-amber-400 transition-colors"
+          className="text-xs bg-white text-slate-900 border border-slate-300 rounded-lg px-3.5 py-2.5 outline-none focus:border-[#8b2e24] transition-colors cursor-pointer shadow-sm"
         >
-          <option value="" className="bg-slate-900 text-white">All 13 Traditional Crafts</option>
+          <option value="" className="bg-white text-slate-900">All 13 Traditional Crafts</option>
           {CRAFTS.map((c) => (
-            <option key={c.key} value={c.key} className="bg-slate-900 text-white">
+            <option key={c.key} value={c.key} className="bg-white text-slate-900">
               {c.name} ({c.english})
             </option>
           ))}
@@ -305,10 +305,10 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Member Table */}
-      <div className="admin-card bg-slate-900/80 border border-white/10 rounded-xl shadow-lg overflow-hidden backdrop-blur-xl">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-slate-400 text-xs font-mono flex flex-col items-center justify-center gap-3">
-            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <div className="py-16 text-center text-slate-500 text-xs font-mono flex flex-col items-center justify-center gap-3">
+            <div className="w-6 h-6 border-2 border-[#8b2e24] border-t-transparent rounded-full animate-spin" />
             <span>Loading artisan members from PostgreSQL...</span>
           </div>
         ) : (
@@ -558,7 +558,7 @@ export default function AdminMembersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-5 py-2 admin-button-primary text-white rounded font-semibold disabled:opacity-50 shadow-sm cursor-pointer"
                 >
                   {submitting ? 'Registering...' : 'Register Member'}
                 </button>
@@ -570,7 +570,7 @@ export default function AdminMembersPage() {
 
       {/* Edit Member Modal */}
       {editingMember && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="admin-card rounded-xl max-w-xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b admin-border pb-3">
               <div>
@@ -716,7 +716,7 @@ export default function AdminMembersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold disabled:opacity-50"
+                  className="px-5 py-2 admin-button-primary text-white rounded font-semibold disabled:opacity-50 shadow-sm cursor-pointer"
                 >
                   {submitting ? 'Saving Changes...' : 'Save Profile Changes'}
                 </button>
@@ -728,14 +728,14 @@ export default function AdminMembersPage() {
 
       {/* Delete Confirmation Modal with Guard Warning */}
       {deletingMember && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="admin-card rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
             <h3 className="font-bold admin-title text-base">Permanently Delete Member?</h3>
             <p className="text-xs admin-text leading-relaxed">
               Are you sure you want to permanently delete <strong className="admin-title">{deletingMember.name}</strong> ({deletingMember.regNumber})?
             </p>
 
-            <div className="p-3 bg-amber-500/15 border border-amber-500/30 rounded text-[11px] text-amber-300 space-y-1">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900 space-y-1">
               <div className="font-bold flex items-center gap-1">
                 <span>⚠️</span> Referential Integrity Safeguard
               </div>

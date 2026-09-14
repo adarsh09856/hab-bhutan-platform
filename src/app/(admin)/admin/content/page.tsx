@@ -683,11 +683,11 @@ export default function AdminContentPage() {
                     <tr key={p.id || p.slug} className="admin-hover transition-colors">
                       <td className="py-3 px-4">
                         <div className="font-semibold admin-title">{p.title}</div>
-                        <div className="font-mono text-[11px] text-indigo-300 mt-0.5">/{p.slug}</div>
+                        <div className="font-mono text-[11px] text-indigo-700 mt-0.5">/{p.slug}</div>
                       </td>
                       <td className="py-3 px-4">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          p.isActive ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-slate-500/15 text-slate-400 border border-slate-500/30'
+                          p.isActive ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-700 border border-slate-200'
                         }`}>
                           {p.isActive ? 'Active & Published' : 'Draft / Inactive'}
                         </span>

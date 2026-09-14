@@ -237,10 +237,10 @@ export default function AdminSiteSettingsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Website &amp; Global CMS Controls</h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Website &amp; Global CMS Controls</h1>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
             Centrally manage public header notices, homepage hero copy, impact statistics, contact directories, and footer disclaimers.
           </p>
         </div>
@@ -248,7 +248,7 @@ export default function AdminSiteSettingsPage() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 admin-button-primary px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-lg self-start sm:self-auto"
+          className="inline-flex items-center gap-2 admin-button-primary px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm self-start sm:self-auto"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Publishing live...' : 'Publish changes'}
@@ -257,23 +257,23 @@ export default function AdminSiteSettingsPage() {
 
       {feedback && (
         <div
-          className={`p-4 rounded-2xl flex items-center justify-between gap-3 text-xs font-medium backdrop-blur-xl border shadow-xl animate-in fade-in duration-200 ${
+          className={`p-4 rounded-2xl flex items-center justify-between gap-3 text-xs font-medium border shadow-sm animate-in fade-in duration-200 ${
             feedback.type === 'success'
-              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-200'
-              : 'bg-rose-500/15 border-rose-500/30 text-rose-200'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
           }`}
         >
           <div className="flex items-center gap-3">
             {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-none" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-none" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-rose-400 flex-none" />
+              <AlertCircle className="w-5 h-5 text-rose-600 flex-none" />
             )}
             <span className="leading-relaxed">{feedback.message}</span>
           </div>
           <button
             onClick={() => setFeedback(null)}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             ✕
           </button>
@@ -281,95 +281,95 @@ export default function AdminSiteSettingsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-white/10 gap-2 overflow-x-auto custom-scrollbar pb-1">
+      <div className="flex border-b border-slate-200 gap-2 overflow-x-auto custom-scrollbar pb-1">
         <button
           type="button"
           onClick={() => setTab('HOMEPAGE')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'HOMEPAGE' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'HOMEPAGE' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Home className="w-4 h-4 text-amber-400" />
+          <Home className="w-4 h-4 text-amber-600" />
           Hero &amp; Impact Metrics
         </button>
         <button
           type="button"
           onClick={() => setTab('LOCALIZATION')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'LOCALIZATION' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'LOCALIZATION' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Globe className="w-4 h-4 text-amber-400" />
+          <Globe className="w-4 h-4 text-amber-600" />
           Currency &amp; Language
         </button>
         <button
           type="button"
           onClick={() => setTab('ASSURANCES')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'ASSURANCES' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'ASSURANCES' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Shield className="w-4 h-4 text-amber-400" />
+          <Shield className="w-4 h-4 text-amber-600" />
           Assurances (4 Value Props)
         </button>
         <button
           type="button"
           onClick={() => setTab('ABOUT_BAND')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'ABOUT_BAND' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'ABOUT_BAND' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-400" />
+          <Sparkles className="w-4 h-4 text-amber-600" />
           About HAB Story Band
         </button>
         <button
           type="button"
           onClick={() => setTab('MEMBERSHIP')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'MEMBERSHIP' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'MEMBERSHIP' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Users className="w-4 h-4 text-amber-400" />
+          <Users className="w-4 h-4 text-amber-600" />
           Membership Callouts
         </button>
         <button
           type="button"
           onClick={() => setTab('ANNOUNCEMENT')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'ANNOUNCEMENT' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'ANNOUNCEMENT' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Megaphone className="w-4 h-4 text-amber-400" />
+          <Megaphone className="w-4 h-4 text-amber-600" />
           Header Notice Strip
         </button>
         <button
           type="button"
           onClick={() => setTab('CONTACT')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'CONTACT' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'CONTACT' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <Phone className="w-4 h-4 text-amber-400" />
+          <Phone className="w-4 h-4 text-amber-600" />
           Secretariat Directory
         </button>
         <button
           type="button"
           onClick={() => setTab('FOOTER')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'FOOTER' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'FOOTER' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 text-amber-400" />
+          <ShieldCheck className="w-4 h-4 text-amber-600" />
           Footer &amp; Legal
         </button>
         <button
           type="button"
           onClick={() => setTab('PARTNERS')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'PARTNERS' ? 'border-amber-400 text-amber-300 font-bold bg-white/5 rounded-t-xl' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-t-xl'
+            tab === 'PARTNERS' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
           }`}
         >
-          <HeartHandshake className="w-4 h-4 text-amber-400" />
+          <HeartHandshake className="w-4 h-4 text-amber-600" />
           Partners &amp; Donors
         </button>
         <button
@@ -418,19 +418,19 @@ export default function AdminSiteSettingsPage() {
         {/* LOCALIZATION & CURRENCY TAB */}
         {tab === 'LOCALIZATION' && (
           <div className="space-y-8">
-            <div className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-amber-400" />
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-amber-600" />
                   Global Currency &amp; Language Controller
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   Centrally control the public site&apos;s baseline store currency, primary language, and live exchange rate. Changes saved here reflect immediately on all public pages.
                 </p>
               </div>
               <Link
                 href="/admin/localization"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-colors flex-none self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold transition-colors flex-none self-start sm:self-auto shadow-xs"
               >
                 <span>Open Dedicated View</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -438,11 +438,11 @@ export default function AdminSiteSettingsPage() {
             </div>
 
             {/* Current Active Status Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
               <div className="space-y-1">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Default Currency</span>
-                <div className="text-sm font-bold text-amber-300 flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 text-xs font-mono">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-600">Default Currency</span>
+                <div className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-mono">
                     {form.defaultCurrency}
                   </span>
                   {form.defaultCurrency === 'USD' ? 'US Dollar ($)' : 'Bhutanese Ngultrum (Nu.)'}
@@ -450,9 +450,9 @@ export default function AdminSiteSettingsPage() {
               </div>
 
               <div className="space-y-1">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Default Language</span>
-                <div className="text-sm font-bold text-emerald-300 flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-emerald-400/20 text-emerald-300 text-xs font-mono">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-600">Default Language</span>
+                <div className="text-sm font-bold text-emerald-900 flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-mono">
                     {form.defaultLanguage.toUpperCase()}
                   </span>
                   {form.defaultLanguage === 'en' ? 'English' : 'རྫོང་ཁ (Dzongkha)'}
@@ -460,8 +460,8 @@ export default function AdminSiteSettingsPage() {
               </div>
 
               <div className="space-y-1">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">Exchange Rate Peg</span>
-                <div className="text-sm font-bold text-sky-300 font-mono">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-600">Exchange Rate Peg</span>
+                <div className="text-sm font-bold text-sky-900 font-mono">
                   1 USD = Nu. {Number(form.fxRate || 84).toFixed(2)} BTN
                 </div>
               </div>
@@ -469,7 +469,7 @@ export default function AdminSiteSettingsPage() {
 
             {/* Currency Controller Section */}
             <div className="space-y-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 1. Default Store Currency (Public Site Baseline)
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -477,13 +477,13 @@ export default function AdminSiteSettingsPage() {
                   onClick={() => setForm({ ...form, defaultCurrency: 'USD' })}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     form.defaultCurrency === 'USD'
-                      ? 'border-amber-400 bg-amber-400/10 shadow-lg ring-1 ring-amber-400'
-                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                      ? 'border-amber-600 bg-amber-50 shadow-sm ring-1 ring-amber-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 font-bold text-sm text-white">
-                      <DollarSign className="w-4 h-4 text-amber-400" />
+                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
+                      <DollarSign className="w-4 h-4 text-amber-600" />
                       USD — United States Dollar ($)
                     </div>
                     <input
@@ -491,10 +491,10 @@ export default function AdminSiteSettingsPage() {
                       name="defaultCurrency"
                       checked={form.defaultCurrency === 'USD'}
                       onChange={() => setForm({ ...form, defaultCurrency: 'USD' })}
-                      className="text-amber-400 focus:ring-amber-400 cursor-pointer"
+                      className="text-amber-600 focus:ring-amber-500 cursor-pointer"
                     />
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-600">
                     Default prices appear in <strong>USD ($)</strong> across product cards, craft pages, and cart. International visitors see USD prices first.
                   </p>
                 </div>
@@ -503,13 +503,13 @@ export default function AdminSiteSettingsPage() {
                   onClick={() => setForm({ ...form, defaultCurrency: 'BTN' })}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     form.defaultCurrency === 'BTN'
-                      ? 'border-amber-400 bg-amber-400/10 shadow-lg ring-1 ring-amber-400'
-                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                      ? 'border-amber-600 bg-amber-50 shadow-sm ring-1 ring-amber-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 font-bold text-sm text-white">
-                      <span className="font-mono text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-400/20">Nu.</span>
+                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
+                      <span className="font-mono text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-100">Nu.</span>
                       BTN — Bhutanese Ngultrum (Nu.)
                     </div>
                     <input
@@ -517,10 +517,10 @@ export default function AdminSiteSettingsPage() {
                       name="defaultCurrency"
                       checked={form.defaultCurrency === 'BTN'}
                       onChange={() => setForm({ ...form, defaultCurrency: 'BTN' })}
-                      className="text-amber-400 focus:ring-amber-400 cursor-pointer"
+                      className="text-amber-600 focus:ring-amber-500 cursor-pointer"
                     />
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-600">
                     Default prices appear in <strong>Ngultrum (Nu.)</strong> across product cards, craft pages, and cart. Local Bhutanese buyers see Nu. prices first.
                   </p>
                 </div>
@@ -529,7 +529,7 @@ export default function AdminSiteSettingsPage() {
 
             {/* Language Controller Section */}
             <div className="space-y-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 2. Default Display Language (Public Site Baseline)
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -537,13 +537,13 @@ export default function AdminSiteSettingsPage() {
                   onClick={() => setForm({ ...form, defaultLanguage: 'en' })}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     form.defaultLanguage === 'en'
-                      ? 'border-emerald-400 bg-emerald-400/10 shadow-lg ring-1 ring-emerald-400'
-                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                      ? 'border-emerald-600 bg-emerald-50 shadow-sm ring-1 ring-emerald-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 font-bold text-sm text-white">
-                      <Globe className="w-4 h-4 text-emerald-400" />
+                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
+                      <Globe className="w-4 h-4 text-emerald-600" />
                       English (en)
                     </div>
                     <input
@@ -551,10 +551,10 @@ export default function AdminSiteSettingsPage() {
                       name="defaultLanguage"
                       checked={form.defaultLanguage === 'en'}
                       onChange={() => setForm({ ...form, defaultLanguage: 'en' })}
-                      className="text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                      className="text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                     />
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-600">
                     Standard English for navigation menus, search bar, dropdowns, buttons, and content descriptions.
                   </p>
                 </div>
@@ -563,13 +563,13 @@ export default function AdminSiteSettingsPage() {
                   onClick={() => setForm({ ...form, defaultLanguage: 'dz' })}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     form.defaultLanguage === 'dz'
-                      ? 'border-emerald-400 bg-emerald-400/10 shadow-lg ring-1 ring-emerald-400'
-                      : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                      ? 'border-emerald-600 bg-emerald-50 shadow-sm ring-1 ring-emerald-600'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 font-bold text-sm text-white">
-                      <Globe className="w-4 h-4 text-emerald-400" />
+                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
+                      <Globe className="w-4 h-4 text-emerald-600" />
                       Dzongkha — རྫོང་ཁ (dz)
                     </div>
                     <input
@@ -577,10 +577,10 @@ export default function AdminSiteSettingsPage() {
                       name="defaultLanguage"
                       checked={form.defaultLanguage === 'dz'}
                       onChange={() => setForm({ ...form, defaultLanguage: 'dz' })}
-                      className="text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                      className="text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                     />
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-600">
                     Authentic national language of Bhutan for navigation, labels, search placeholders, and buttons.
                   </p>
                 </div>
@@ -589,13 +589,13 @@ export default function AdminSiteSettingsPage() {
 
             {/* Exchange Rate Controller Section */}
             <div className="space-y-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                 3. Live Exchange Rate (1 USD = X BTN)
               </label>
-              <div className="p-5 rounded-xl border border-white/10 bg-white/[0.02] space-y-4">
+              <div className="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-white">1 USD =</span>
+                    <span className="text-sm font-semibold text-slate-900">1 USD =</span>
                     <div className="relative">
                       <input
                         type="number"
@@ -603,47 +603,47 @@ export default function AdminSiteSettingsPage() {
                         min="1"
                         value={form.fxRate}
                         onChange={(e) => setForm({ ...form, fxRate: parseFloat(e.target.value) || 0 })}
-                        className="w-32 px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-amber-300 font-bold"
+                        className="w-32 px-3.5 py-2.5 admin-input bg-white border border-slate-300 rounded-lg text-sm font-mono text-amber-900 font-bold"
                         placeholder="84.00"
                       />
                     </div>
-                    <span className="text-sm font-semibold text-white">BTN (Nu.)</span>
+                    <span className="text-sm font-semibold text-slate-900">BTN (Nu.)</span>
                   </div>
 
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, fxRate: 84.0 })}
-                      className="px-3 py-1.5 text-xs rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                      className="px-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition-colors shadow-xs"
                     >
                       RMA Baseline (84.00)
                     </button>
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, fxRate: 85.5 })}
-                      className="px-3 py-1.5 text-xs rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                      className="px-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition-colors shadow-xs"
                     >
                       85.50
                     </button>
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, fxRate: 86.0 })}
-                      className="px-3 py-1.5 text-xs rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                      className="px-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition-colors shadow-xs"
                     >
                       86.00
                     </button>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-black/20 border border-white/5 text-xs text-slate-400 space-y-1">
-                  <div className="font-semibold text-slate-300">Live Calculation Preview:</div>
-                  <div className="font-mono text-amber-300/90">
+                <div className="p-3 rounded-lg bg-white border border-slate-200 text-xs text-slate-600 space-y-1">
+                  <div className="font-semibold text-slate-800">Live Calculation Preview:</div>
+                  <div className="font-mono text-amber-800">
                     • $25.00 USD &rarr; Nu. {(25 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
                   </div>
-                  <div className="font-mono text-amber-300/90">
+                  <div className="font-mono text-amber-800">
                     • $100.00 USD &rarr; Nu. {(100 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
                   </div>
-                  <div className="font-mono text-amber-300/90">
+                  <div className="font-mono text-amber-800">
                     • $500.00 USD &rarr; Nu. {(500 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
                   </div>
                 </div>

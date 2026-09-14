@@ -249,7 +249,7 @@ export default function AdminTradePage() {
             </h1>
             <GlassBadge variant="amber">Tier-Based Pricing</GlassBadge>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Manage volume pricing tiers, quote requests from the wholesale cart, and trade buyer account verifications.
           </p>
         </div>
@@ -258,9 +258,9 @@ export default function AdminTradePage() {
           <Link
             href="/wholesale-shop"
             target="_blank"
-            className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-medium border border-white/10 flex items-center gap-1.5 transition-colors"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-300 flex items-center gap-1.5 transition-colors shadow-xs"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
+            <ExternalLink className="w-3.5 h-3.5 text-amber-600" />
             Live B2B Catalogue
           </Link>
           <GlassButton variant="secondary" onClick={loadData} disabled={loading}>
@@ -305,13 +305,13 @@ export default function AdminTradePage() {
       {/* Tab Controls & Search Bar */}
       <GlassCard className="p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-2 p-1 bg-slate-950/40 rounded-xl border border-white/5">
+          <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
             <button
               onClick={() => setActiveTab('pricing')}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'pricing'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -322,17 +322,17 @@ export default function AdminTradePage() {
 
             <button
               onClick={() => setActiveTab('quotes')}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'quotes'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <span className="flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5" />
                 Quote Requests ({quotes.length})
                 {pendingQuotesCount > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-rose-500/30 text-rose-300 border border-rose-500/40">
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-bold">
                     {pendingQuotesCount}
                   </span>
                 )}
@@ -341,10 +341,10 @@ export default function AdminTradePage() {
 
             <button
               onClick={() => setActiveTab('buyers')}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'buyers'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -355,13 +355,13 @@ export default function AdminTradePage() {
           </div>
 
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder={`Search ${activeTab}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-slate-950/60 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/50"
+              className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#8b2e24] shadow-sm"
             />
           </div>
         </div>
@@ -380,60 +380,60 @@ export default function AdminTradePage() {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="font-mono text-xs text-[#8b2e24] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold">
                             {p.code}
                           </span>
-                          <span className="text-xs text-slate-400">{p.craftName}</span>
+                          <span className="text-xs text-slate-500 font-medium">{p.craftName}</span>
                         </div>
-                        <h3 className="font-semibold text-white mt-1 text-base leading-snug">{p.name}</h3>
+                        <h3 className="font-bold text-slate-900 mt-1 text-base leading-snug">{p.name}</h3>
                       </div>
                       <GlassBadge variant={t.is_active !== false ? 'emerald' : 'secondary'}>
                         {t.is_active !== false ? 'Active' : 'Disabled'}
                       </GlassBadge>
                     </div>
 
-                    <div className="flex items-center gap-3 py-2 px-3 bg-white/5 rounded-xl border border-white/5 mb-3 text-xs">
+                    <div className="flex items-center gap-3 py-2 px-3 bg-slate-50 rounded-xl border border-slate-200 mb-3 text-xs">
                       <div>
-                        <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Retail (B2C)</span>
-                        <span className="text-white font-semibold">${p.retailPrice} USD</span>
+                        <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-medium">Retail (B2C)</span>
+                        <span className="text-slate-900 font-bold">${p.retailPrice} USD</span>
                       </div>
-                      <div className="h-6 w-px bg-white/10" />
+                      <div className="h-6 w-px bg-slate-200" />
                       <div>
-                        <span className="text-slate-400 block text-[10px] uppercase tracking-wider">B2B MOQ</span>
-                        <span className="text-amber-300 font-semibold">{t.moq || 5} units</span>
+                        <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-medium">B2B MOQ</span>
+                        <span className="text-amber-800 font-bold">{t.moq || 5} units</span>
                       </div>
-                      <div className="h-6 w-px bg-white/10" />
+                      <div className="h-6 w-px bg-slate-200" />
                       <div>
-                        <span className="text-slate-400 block text-[10px] uppercase tracking-wider">Lead Time</span>
-                        <span className="text-slate-300 font-medium">{t.lead_time || '4–6 wks'}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-medium">Lead Time</span>
+                        <span className="text-slate-700 font-semibold">{t.lead_time || '4–6 wks'}</span>
                       </div>
                     </div>
 
                     {/* Quantity Tiers Preview */}
                     <div className="space-y-1 mb-4">
-                      <span className="text-[11px] uppercase tracking-wider text-slate-400 block font-medium">
+                      <span className="text-[11px] uppercase tracking-wider text-slate-500 block font-semibold">
                         Volume Pricing Breaks
                       </span>
                       <div className="grid grid-cols-2 gap-1.5 text-xs">
                         {tiers.map((tier: any, idx: number) => (
                           <div
                             key={idx}
-                            className="bg-slate-950/40 px-2.5 py-1.5 rounded-lg border border-white/5 flex items-center justify-between"
+                            className="bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center justify-between"
                           >
-                            <span className="text-slate-400">{tier[0]}+ pcs</span>
-                            <span className="text-emerald-400 font-medium">${tier[1]}</span>
+                            <span className="text-slate-600 font-medium">{tier[0]}+ pcs</span>
+                            <span className="text-emerald-700 font-bold">${tier[1]}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-xs text-slate-400 italic truncate max-w-[180px]">
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-xs text-slate-500 italic truncate max-w-[180px]">
                       {t.customisation || 'Standard production'}
                     </span>
                     <GlassButton size="sm" variant="secondary" onClick={() => handleOpenTermsDrawer(p)}>
-                      <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                      <Edit3 className="w-3.5 h-3.5 mr-1.5 text-[#8b2e24]" />
                       Edit Terms
                     </GlassButton>
                   </div>
@@ -450,7 +450,7 @@ export default function AdminTradePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-slate-950/40 text-slate-400 uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 uppercase tracking-wider text-[11px] font-semibold">
                   <th className="py-3.5 px-4">Quote Ref</th>
                   <th className="py-3.5 px-4">Buyer Organisation</th>
                   <th className="py-3.5 px-4">Contact</th>
@@ -459,20 +459,20 @@ export default function AdminTradePage() {
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {filteredQuotes.map((q) => (
-                  <tr key={q.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3 px-4 font-mono font-medium text-amber-300">
+                  <tr key={q.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-4 font-mono font-bold text-[#8b2e24]">
                       {q.reference}
                     </td>
-                    <td className="py-3 px-4 font-medium text-white">
+                    <td className="py-3 px-4 font-bold text-slate-900">
                       {q.buyerName}
                     </td>
-                    <td className="py-3 px-4 text-slate-300">
+                    <td className="py-3 px-4 text-slate-700">
                       <div>{q.email}</div>
                       <div className="text-[11px] text-slate-500">{q.phone}</div>
                     </td>
-                    <td className="py-3 px-4 text-slate-300 max-w-xs truncate">
+                    <td className="py-3 px-4 text-slate-700 max-w-xs truncate">
                       {q.subject}
                     </td>
                     <td className="py-3 px-4">
@@ -524,7 +524,7 @@ export default function AdminTradePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-white/10 bg-slate-950/40 text-slate-400 uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 uppercase tracking-wider text-[11px] font-semibold">
                   <th className="py-3.5 px-4">Business Name</th>
                   <th className="py-3.5 px-4">Contact Person</th>
                   <th className="py-3.5 px-4">Details / Reg ID</th>
@@ -532,19 +532,19 @@ export default function AdminTradePage() {
                   <th className="py-3.5 px-4 text-right">Verification</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {filteredBuyers.map((b) => (
-                  <tr key={b.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3 px-4 font-medium text-white">
+                  <tr key={b.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-4 font-medium text-slate-900">
                       <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                        <Building2 className="w-4 h-4 text-[#8b2e24] flex-shrink-0" />
                         <div>
-                          <p className="font-semibold text-white">{b.businessName}</p>
-                          <p className="text-[11px] text-slate-400">{b.email}</p>
+                          <p className="font-bold text-slate-900">{b.businessName}</p>
+                          <p className="text-[11px] text-slate-500">{b.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-slate-300">
+                    <td className="py-3 px-4 text-slate-700">
                       <div>{b.contactName}</div>
                       <div className="text-[11px] text-slate-500">{b.phone}</div>
                     </td>
@@ -607,33 +607,33 @@ export default function AdminTradePage() {
         subtitle={editingProduct?.name}
       >
         <div className="space-y-4 text-xs">
-          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-200">
-            Retail price is <span className="font-bold">${editingProduct?.retailPrice} USD</span>. Trade prices must be lower and tier-discounted based on ascending volume.
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 font-medium">
+            Retail price is <span className="font-bold text-[#8b2e24]">${editingProduct?.retailPrice} USD</span>. Trade prices must be lower and tier-discounted based on ascending volume.
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-400 mb-1">Minimum Order Qty (MOQ)</label>
+              <label className="block text-slate-700 mb-1 font-semibold">Minimum Order Qty (MOQ)</label>
               <input
                 type="number"
                 value={termsForm.moq}
                 onChange={(e) => setTermsForm({ ...termsForm, moq: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-sm"
               />
             </div>
             <div>
-              <label className="block text-slate-400 mb-1">Production Lead Time</label>
+              <label className="block text-slate-700 mb-1 font-semibold">Production Lead Time</label>
               <input
                 type="text"
                 value={termsForm.lead_time}
                 onChange={(e) => setTermsForm({ ...termsForm, lead_time: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-2 font-semibold uppercase tracking-wider text-[11px]">
+            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
               Tier 1 (Starting wholesale break)
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -642,20 +642,20 @@ export default function AdminTradePage() {
                 placeholder="Min Qty"
                 value={termsForm.q1}
                 onChange={(e) => setTermsForm({ ...termsForm, q1: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
               <input
                 type="number"
                 placeholder="Unit Price USD"
                 value={termsForm.p1}
                 onChange={(e) => setTermsForm({ ...termsForm, p1: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-2 font-semibold uppercase tracking-wider text-[11px]">
+            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
               Tier 2 (Mid-volume break)
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -664,20 +664,20 @@ export default function AdminTradePage() {
                 placeholder="Min Qty"
                 value={termsForm.q2}
                 onChange={(e) => setTermsForm({ ...termsForm, q2: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
               <input
                 type="number"
                 placeholder="Unit Price USD"
                 value={termsForm.p2}
                 onChange={(e) => setTermsForm({ ...termsForm, p2: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-2 font-semibold uppercase tracking-wider text-[11px]">
+            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
               Tier 3 (High-volume break)
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -686,20 +686,20 @@ export default function AdminTradePage() {
                 placeholder="Min Qty"
                 value={termsForm.q3}
                 onChange={(e) => setTermsForm({ ...termsForm, q3: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
               <input
                 type="number"
                 placeholder="Unit Price USD"
                 value={termsForm.p3}
                 onChange={(e) => setTermsForm({ ...termsForm, p3: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-2 font-semibold uppercase tracking-wider text-[11px]">
+            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
               Tier 4 (Container / bulk break)
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -708,25 +708,25 @@ export default function AdminTradePage() {
                 placeholder="Min Qty"
                 value={termsForm.q4}
                 onChange={(e) => setTermsForm({ ...termsForm, q4: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
               <input
                 type="number"
                 placeholder="Unit Price USD"
                 value={termsForm.p4}
                 onChange={(e) => setTermsForm({ ...termsForm, p4: Number(e.target.value) })}
-                className="px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white"
+                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1">Customisation &amp; Made-to-Order Notes</label>
+            <label className="block text-slate-700 mb-1 font-semibold">Customisation &amp; Made-to-Order Notes</label>
             <textarea
               rows={3}
               value={termsForm.customisation}
               onChange={(e) => setTermsForm({ ...termsForm, customisation: e.target.value })}
-              className="w-full px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-sm"
             />
           </div>
 
@@ -736,14 +736,14 @@ export default function AdminTradePage() {
               id="activeWholesaleCheck"
               checked={termsForm.is_active}
               onChange={(e) => setTermsForm({ ...termsForm, is_active: e.target.checked })}
-              className="rounded bg-slate-950 border-white/20 text-amber-500"
+              className="rounded border-slate-300 text-[#8b2e24] focus:ring-0"
             />
-            <label htmlFor="activeWholesaleCheck" className="text-slate-300">
+            <label htmlFor="activeWholesaleCheck" className="text-slate-700 font-medium">
               Enable in Wholesale (B2B) Catalog
             </label>
           </div>
 
-          <div className="pt-4 border-t border-white/10 flex justify-end gap-2">
+          <div className="pt-4 border-t border-slate-200 flex justify-end gap-2">
             <GlassButton variant="ghost" onClick={() => setEditingProduct(null)}>
               Cancel
             </GlassButton>
@@ -764,25 +764,25 @@ export default function AdminTradePage() {
       >
         <div className="space-y-4 text-xs">
           <div>
-            <span className="text-slate-400 block mb-1">Subject</span>
-            <p className="p-2.5 bg-slate-950 rounded-xl border border-white/10 text-white font-medium">
+            <span className="text-slate-700 block mb-1 font-semibold">Subject</span>
+            <p className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-900 font-medium">
               {selectedQuote?.subject}
             </p>
           </div>
 
           <div>
-            <span className="text-slate-400 block mb-1">Quotation Scope &amp; Line Items</span>
-            <pre className="p-3 bg-slate-950 rounded-xl border border-white/10 text-slate-200 font-mono text-[11px] whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto">
+            <span className="text-slate-700 block mb-1 font-semibold">Quotation Scope &amp; Line Items</span>
+            <pre className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-mono text-[11px] whitespace-pre-wrap leading-relaxed max-h-56 overflow-y-auto">
               {selectedQuote?.details}
             </pre>
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1">Quote Status</label>
+            <label className="block text-slate-700 mb-1 font-semibold">Quote Status</label>
             <select
               value={quoteStatus}
               onChange={(e) => setQuoteStatus(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-sm cursor-pointer"
             >
               <option value="new">NEW (Under Secretariat Review)</option>
               <option value="quoted">QUOTED (Pro-Forma Invoice Issued)</option>
@@ -793,17 +793,17 @@ export default function AdminTradePage() {
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1">Internal Secretariat Notes</label>
+            <label className="block text-slate-700 mb-1 font-semibold">Internal Secretariat Notes</label>
             <textarea
               rows={3}
               value={quoteNotes}
               onChange={(e) => setQuoteNotes(e.target.value)}
               placeholder="e.g. Quoted shipping via DHL at $340 USD; cluster confirmed delivery by 20 Nov."
-              className="w-full px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500"
+              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-sm"
             />
           </div>
 
-          <div className="pt-4 border-t border-white/10 flex justify-end gap-2">
+          <div className="pt-4 border-t border-slate-200 flex justify-end gap-2">
             <GlassButton variant="ghost" onClick={() => setSelectedQuote(null)}>
               Cancel
             </GlassButton>

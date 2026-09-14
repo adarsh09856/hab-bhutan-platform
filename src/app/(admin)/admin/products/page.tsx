@@ -71,12 +71,12 @@ function ImageUploadField({
 
   return (
     <div className="space-y-2">
-      <label className="block font-semibold text-slate-200 text-xs">{label}</label>
+      <label className="block font-semibold text-slate-800 text-xs">{label}</label>
 
       {/* Upload Zone & Live Preview */}
       {value ? (
-        <div className="relative rounded-xl border border-white/15 p-3.5 bg-white/[0.03] flex items-center gap-4">
-          <div className="w-20 h-20 rounded-lg overflow-hidden bg-black/40 flex-none border border-white/10 relative shadow-inner">
+        <div className="relative rounded-xl border border-slate-200 p-3.5 bg-slate-50 flex items-center gap-4">
+          <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 flex-none border border-slate-200 relative shadow-inner">
             <img
               src={value}
               alt="Product preview"
@@ -87,24 +87,24 @@ function ImageUploadField({
             />
           </div>
           <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="text-xs text-white font-medium truncate font-mono">
+            <div className="text-xs text-slate-900 font-medium truncate font-mono">
               {value.split('/').pop()}
             </div>
-            <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+            <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
               <CheckCircle className="w-3.5 h-3.5" /> Photo uploaded and attached
             </div>
             <div className="flex items-center gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-slate-200 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs"
               >
                 Change photo
               </button>
               <button
                 type="button"
                 onClick={() => onChange('')}
-                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
               >
                 Remove
               </button>
@@ -118,8 +118,8 @@ function ImageUploadField({
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
             uploading
-              ? 'border-amber-400 bg-amber-400/10'
-              : 'border-white/20 hover:border-amber-400/80 hover:bg-white/[0.03]'
+              ? 'border-amber-500 bg-amber-50'
+              : 'border-slate-300 hover:border-amber-500 hover:bg-slate-50'
           }`}
         >
           <input
@@ -134,14 +134,14 @@ function ImageUploadField({
             }}
           />
           <div className="flex flex-col items-center justify-center space-y-2">
-            <div className="w-11 h-11 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300">
+            <div className="w-11 h-11 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
               <Upload className={`w-5 h-5 ${uploading ? 'animate-bounce' : ''}`} />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-200">
+              <div className="text-xs font-bold text-slate-800">
                 {uploading ? 'Uploading image to server...' : 'Click to choose photo from computer/phone, or drag & drop here'}
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <p className="text-[11px] text-slate-500 mt-0.5">
                 Supports JPG, PNG, WEBP files up to 10MB
               </p>
             </div>
@@ -150,8 +150,8 @@ function ImageUploadField({
       )}
 
       {error && (
-        <p className="text-rose-300 text-[11px] flex items-center gap-1.5 p-2 rounded bg-rose-500/10 border border-rose-500/20">
-          <AlertTriangle className="w-3.5 h-3.5 flex-none text-rose-400" /> {error}
+        <p className="text-rose-700 text-[11px] flex items-center gap-1.5 p-2 rounded bg-rose-50 border border-rose-200">
+          <AlertTriangle className="w-3.5 h-3.5 flex-none text-rose-600" /> {error}
         </p>
       )}
 
@@ -160,7 +160,7 @@ function ImageUploadField({
         <button
           type="button"
           onClick={() => setShowManualUrl(!showManualUrl)}
-          className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors cursor-pointer underline"
+          className="text-[11px] text-slate-500 hover:text-amber-700 transition-colors cursor-pointer underline"
         >
           {showManualUrl ? '− Hide web link option' : '+ Or paste image web link manually'}
         </button>
@@ -729,7 +729,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono uppercase outline-none"
               />
-              <span className="text-[10.5px] text-slate-400 block mt-1">Unique tracking code for inventory.</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">Unique tracking code for inventory.</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">USD Price ($) *</label>
@@ -742,7 +742,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, priceUSD: e.target.value })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono outline-none"
               />
-              <span className="text-[10.5px] text-slate-400 block mt-1">Price in USD (auto-converted to Nu. on website).</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">Price in USD (auto-converted to Nu. on website).</span>
             </div>
           </div>
 
@@ -756,7 +756,7 @@ export default function AdminProductsPage() {
               onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
               className="w-full admin-input border rounded-lg px-3 py-2 outline-none"
             />
-            <span className="text-[10.5px] text-slate-400 block mt-1">Full descriptive title shown on public store and receipts.</span>
+            <span className="text-[10.5px] text-slate-500 block mt-1">Full descriptive title shown on public store and receipts.</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -771,7 +771,7 @@ export default function AdminProductsPage() {
                   <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
                 ))}
               </select>
-              <span className="text-[10.5px] text-slate-400 block mt-1">One of the 13 Bhutanese Arts (Zorig Chusum).</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">One of the 13 Bhutanese Arts (Zorig Chusum).</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Origin Dzongkhag</label>
@@ -782,7 +782,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, region: e.target.value })}
                 className="w-full admin-input border rounded-lg px-3 py-2"
               />
-              <span className="text-[10.5px] text-slate-400 block mt-1">District where the item was handcrafted.</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">District where the item was handcrafted.</span>
             </div>
           </div>
 
@@ -801,7 +801,7 @@ export default function AdminProductsPage() {
                   </option>
                 ))}
               </select>
-              <span className="text-[10.5px] text-slate-400 block mt-1">Credit registered master artisan or weaving cluster.</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">Credit registered master artisan or weaving cluster.</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Initial Stock Count</label>
@@ -812,7 +812,7 @@ export default function AdminProductsPage() {
                 onChange={(e) => setAddForm({ ...addForm, stock: parseInt(e.target.value) || 0 })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono"
               />
-              <span className="text-[10.5px] text-slate-400 block mt-1">Number of physical items currently available in inventory.</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">Number of physical items currently available in inventory.</span>
             </div>
           </div>
 
@@ -832,7 +832,7 @@ export default function AdminProductsPage() {
               onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
               className="w-full admin-input border rounded-lg px-3 py-2"
             />
-            <span className="text-[10.5px] text-slate-400 block mt-1">Story, materials used, techniques, and cultural symbolism.</span>
+            <span className="text-[10.5px] text-slate-500 block mt-1">Story, materials used, techniques, and cultural symbolism.</span>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t admin-border">
@@ -977,12 +977,12 @@ export default function AdminProductsPage() {
               Are you sure you want to permanently delete <strong className="admin-title">{deletingProduct.name}</strong>?
             </p>
 
-            <div className="p-3.5 bg-amber-500/15 border border-amber-400/25 rounded-lg text-amber-100 space-y-1.5">
-              <div className="font-bold flex items-center gap-1.5 text-amber-200">
-                <AlertTriangle className="w-4 h-4 text-amber-300" />
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-amber-950">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
                 Referential Integrity Safeguard
               </div>
-              <p className="leading-normal">
+              <p className="leading-normal text-amber-800">
                 If this product is linked to existing customer orders, permanent deletion is prevented to maintain legal and financial audit logs. In that case, you should <strong>Archive</strong> it instead.
               </p>
             </div>
