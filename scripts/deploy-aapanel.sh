@@ -40,6 +40,7 @@ npx prisma migrate deploy
 
 echo "🌱 [4/6] Verifying Seed & Master Catalog Data..."
 npm run prisma:seed
+node scripts/reset-admin.js "HabAdminProduction2026!#"
 
 echo "🏗️ [5/6] Compiling Next.js Production Build on Linux..."
 npm run build

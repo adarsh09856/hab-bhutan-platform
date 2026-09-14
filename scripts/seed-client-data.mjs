@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
 
@@ -770,6 +771,250 @@ async function main() {
       });
     }
     console.log(`✓ Seeded ${data.members.length} member profiles.`);
+  }
+
+  
+  // 17. Seed Immutable Roles
+  const superAdminRole = await prisma.role.upsert({
+    where: { slug_version: { slug: 'super_admin', version: 1 } },
+    update: {},
+    create: {
+      name: 'Super Admin',
+      slug: 'super_admin',
+      version: 1,
+      status: 'ACTIVE',
+      permissions: ['*'],
+    },
+  });
+
+  const staffRole = await prisma.role.upsert({
+    where: { slug_version: { slug: 'staff_operator', version: 1 } },
+    update: {},
+    create: {
+      name: 'Staff Operator',
+      slug: 'staff_operator',
+      version: 1,
+      status: 'ACTIVE',
+      permissions: [
+        'applications:view',
+        'applications:review',
+        'applications:approve',
+        'applications:reject',
+        'members:view',
+        'members:verify',
+        'products:create',
+        'products:review',
+        'products:publish',
+        'orders:view',
+        'orders:fulfill',
+        'content:edit',
+      ],
+    },
+  });
+
+  const trusteeRole = await prisma.role.upsert({
+    where: { slug_version: { slug: 'trustee_viewer', version: 1 } },
+    update: {},
+    create: {
+      name: 'Board of Trustees Viewer',
+      slug: 'trustee_viewer',
+      version: 1,
+      status: 'ACTIVE',
+      permissions: ['members:view', 'orders:view', 'reports:view', 'dues:view'],
+    },
+  });
+
+  const memberRole = await prisma.role.upsert({
+    where: { slug_version: { slug: 'member', version: 1 } },
+    update: {},
+    create: {
+      name: 'Artisan Member',
+      slug: 'member',
+      version: 1,
+      status: 'ACTIVE',
+      permissions: ['products:create', 'PORTAL_ACCESS', 'PRODUCTS_SUBMIT', 'DUES_PAY'],
+    },
+  });
+
+  const customerRole = await prisma.role.upsert({
+    where: { slug_version: { slug: 'customer', version: 1 } },
+    update: {},
+    create: {
+      name: 'Customer Buyer',
+      slug: 'customer',
+      version: 1,
+      status: 'ACTIVE',
+      permissions: ['orders:read_own', 'profile:edit'],
+    },
+  });
+  console.log('✓ Seeded roles.');
+
+  // 18. Seed Super Admin User & Demo Member
+  const adminEmail = 'admin@handicraftsbhutan.org';
+  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'HabAdminProduction2026!#';
+  const adminHash = bcrypt.hashSync(adminPassword, 12);
+
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      roleId: superAdminRole.id,
+      status: 'ACTIVE',
+      mustChangePassword: false,
+    },
+    create: {
+      email: adminEmail,
+      name: 'HAB Secretariat Admin',
+      passwordHash: adminHash,
+      roleId: superAdminRole.id,
+      status: 'ACTIVE',
+      mustChangePassword: false,
+    },
+  });
+
+  const memberEmail = 'member@handicraftsbhutan.org';
+  const memberHash = bcrypt.hashSync('ArtisanMember2026!', 10);
+  await prisma.user.upsert({
+    where: { email: memberEmail },
+    update: {
+      roleId: memberRole.id,
+      status: 'ACTIVE',
+      mustChangePassword: false,
+    },
+    create: {
+      email: memberEmail,
+      name: 'Choki Wangmo (Khoma Weavers)',
+      passwordHash: memberHash,
+      roleId: memberRole.id,
+      status: 'ACTIVE',
+      mustChangePassword: false,
+    },
+  });
+  console.log('✓ Seeded Super Admin & Member accounts.');
+
+  // 19. Seed Governance (AoA 2026 Structure)
+  const existingGovCount = await prisma.governanceRecord.count();
+  if (existingGovCount === 0) {
+    const govRecords = [
+      { category: "BOARD_OF_TRUSTEES", roleTitle: "Chairperson", individualName: "Dasho Sangay Wangchuk", chapterOrNote: "Elected 2024 · Master artisan representative", sortOrder: 1 },
+      { category: "BOARD_OF_TRUSTEES", roleTitle: "Vice-Chairperson", individualName: "Pema Lhamo", chapterOrNote: "Elected 2024 · Craft enterprise owner, Thimphu", sortOrder: 2 },
+      { category: "BOARD_OF_TRUSTEES", roleTitle: "Trustee — Finance & Audit", individualName: "Kinley Tshering", chapterOrNote: "Chairs the finance & endowment committee", sortOrder: 3 },
+      { category: "BOARD_OF_TRUSTEES", roleTitle: "Trustee — Sector Membership", individualName: "Choki Wangmo", chapterOrNote: "Eastern dzongkhags representative, Khoma", sortOrder: 4 },
+      { category: "BOARD_OF_TRUSTEES", roleTitle: "Trustee — Zorig Chusum Heritage", individualName: "Lopen Tenzin Dorji", chapterOrNote: "Co-opted expert, Institute of Zorig Chusum", sortOrder: 5 },
+      { category: "SECRETARIAT", roleTitle: "Executive Director", individualName: "Secretariat Executive Director", chapterOrNote: "+975-77654508 · Secretariat lead", sortOrder: 1 },
+      { category: "SECRETARIAT", roleTitle: "Programmes & Donor Projects", individualName: "Programme Manager", chapterOrNote: "Donor projects, training, M&E", sortOrder: 2 },
+      { category: "SECRETARIAT", roleTitle: "Marketing & E-shop Desk", individualName: "Marketing Lead", chapterOrNote: "+975-17462636 · Retail and wholesale", sortOrder: 3 },
+      { category: "SECRETARIAT", roleTitle: "Finance & Administration", individualName: "Finance Officer", chapterOrNote: "Accounts, audit compliance, payroll", sortOrder: 4 },
+      { category: "SECRETARIAT", roleTitle: "Membership Services", individualName: "Member Liaison Officer", chapterOrNote: "Applications, directory, dues collection", sortOrder: 5 },
+      { category: "SECRETARIAT", roleTitle: "Trade Facilitation", individualName: "Trade Desk Officer", chapterOrNote: "Export documentation, buyer liaison", sortOrder: 6 },
+      { category: "DZONGKHAG_CHAPTER", roleTitle: "Lhuentse Chapter", individualName: "Khoma Craft Community", chapterOrNote: "Kisuthara silk weaving cluster", sortOrder: 1 },
+      { category: "DZONGKHAG_CHAPTER", roleTitle: "Zhemgang Chapter", individualName: "Kheng Bamboo Group", chapterOrNote: "Bamboo and cane basketry", sortOrder: 2 },
+      { category: "DZONGKHAG_CHAPTER", roleTitle: "Bumthang Chapter", individualName: "Chumey Yathra Producers", chapterOrNote: "Yathra wool weaving", sortOrder: 3 },
+      { category: "DZONGKHAG_CHAPTER", roleTitle: "Trashiyangtse Chapter", individualName: "Yangtse Woodworkers & Turners", chapterOrNote: "Dapa bowls and carving", sortOrder: 4 }
+    ];
+    for (const g of govRecords) {
+      await prisma.governanceRecord.create({ data: g });
+    }
+    console.log(`✓ Seeded ${govRecords.length} governance records.`);
+  }
+
+  // 20. Seed Support Pillars (GIVE)
+  const existingSupportPillars = await prisma.supportPillar.count();
+  if (existingSupportPillars === 0) {
+    const pillars = [
+      { key: "grassroots", title: "Grassroots Benefit", description: "Keeps rural creators trading through the lean season. Every ngultrum funds market access and logistics.", targetAmountUSD: 25000, raisedAmountUSD: 18450, iconEmoji: "🌱", sortOrder: 1, isActive: true },
+      { key: "impact", title: "Impact Crowdfunding & Enterprise", description: "Revolving micro-supply funds providing raw materials for artisan orders upfront.", targetAmountUSD: 35000, raisedAmountUSD: 24600, iconEmoji: "✨", sortOrder: 2, isActive: true },
+      { key: "cultural", title: "Vital Cultural Preservation", description: "Master-apprentice stipends transmitting endangered traditional techniques to youth.", targetAmountUSD: 30000, raisedAmountUSD: 21800, iconEmoji: "🏛️", sortOrder: 3, isActive: true },
+      { key: "environment", title: "Environmental & Landscape Conservation", description: "Natural dye botanical replanting and sustainable bamboo forest harvesting.", targetAmountUSD: 20000, raisedAmountUSD: 14200, iconEmoji: "🌿", sortOrder: 4, isActive: true }
+    ];
+    for (const sp of pillars) {
+      await prisma.supportPillar.create({ data: sp });
+    }
+    console.log(`✓ Seeded ${pillars.length} support pillars.`);
+  }
+
+  // 21. Seed Calendar Events
+  const existingEvents = await prisma.calendarEvent.count();
+  if (existingEvents === 0) {
+    const events = [
+      { day: "12", mon: "SEP", title: "Craft bazaar, day one", place: "Clock Tower Square, Thimphu" },
+      { day: "27", mon: "SEP", title: "Export documentation clinic", place: "HAB office, Metog Lam" },
+      { day: "08", mon: "OCT", title: "Members' general assembly", place: "Thimphu" },
+      { day: "15", mon: "NOV", title: "National Craft Awards Exhibition", place: "Royal Textile Academy" },
+      { day: "02", mon: "DEC", title: "Winter Buyer Showcase", place: "Centenary Crafts Market" }
+    ];
+    for (const ev of events) {
+      await prisma.calendarEvent.create({ data: ev });
+    }
+    console.log(`✓ Seeded ${events.length} calendar events.`);
+  }
+
+  // 22. Seed Default Navigation Items
+  const existingNavCount = await prisma.navigationItem.count();
+  if (existingNavCount === 0) {
+    const navItems = [
+      { menuType: "HEADER", label: "About Us", href: "/about", sortOrder: 1, isActive: true, isExternal: false },
+      { menuType: "HEADER", label: "Programmes", href: "/programmes", sortOrder: 2, isActive: true, isExternal: false },
+      { menuType: "HEADER", label: "Projects", href: "/projects", sortOrder: 3, isActive: true, isExternal: false },
+      { menuType: "HEADER", label: "News & Events", href: "/news", sortOrder: 4, isActive: true, isExternal: false },
+      { menuType: "HEADER", label: "Artisan Directory", href: "/members", sortOrder: 5, isActive: true, isExternal: false },
+      { menuType: "HEADER", label: "Publications", href: "/publications", sortOrder: 6, isActive: true, isExternal: false },
+      { menuType: "HEADER", label: "Wholesale", href: "/wholesale", sortOrder: 7, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Association", label: "About HAB", href: "/about", sortOrder: 1, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Association", label: "Programmes", href: "/programmes", sortOrder: 2, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Association", label: "Projects", href: "/projects", sortOrder: 3, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Association", label: "Membership", href: "/membership", sortOrder: 4, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Association", label: "News & events", href: "/news", sortOrder: 5, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Association", label: "Contact us", href: "/contact", sortOrder: 6, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Shop & support", label: "E-shop", href: "/shop", sortOrder: 1, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Shop & support", label: "Wholesale & bulk", href: "/wholesale", sortOrder: 2, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Shop & support", label: "Shipping policy", href: "/shipping", sortOrder: 3, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Shop & support", label: "Terms of service", href: "/terms", sortOrder: 4, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Shop & support", label: "Privacy policy", href: "/privacy", sortOrder: 5, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Members", label: "Directory", href: "/members", sortOrder: 1, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Members", label: "Publications", href: "/publications", sortOrder: 2, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Members", label: "Accreditations", href: "/masters", sortOrder: 3, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Members", label: "Apply to join", href: "/membership/apply", sortOrder: 4, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Governance", label: "Board of Trustees", href: "/about#governance", sortOrder: 1, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Governance", label: "Secretariat", href: "/about#governance", sortOrder: 2, isActive: true, isExternal: false },
+      { menuType: "FOOTER", column: "Governance", label: "Annual reports", href: "/publications", sortOrder: 3, isActive: true, isExternal: false }
+    ];
+    for (const ni of navItems) {
+      await prisma.navigationItem.create({ data: ni });
+    }
+    console.log(`✓ Seeded ${navItems.length} navigation items.`);
+  }
+
+  // 23. Seed Membership Setting
+  const existingMemberSetting = await prisma.membershipSetting.findUnique({ where: { id: 'default' } });
+  if (!existingMemberSetting) {
+    await prisma.membershipSetting.create({
+      data: {
+        id: 'default',
+        activeDuesBTN: 1200,
+        associateDuesBTN: 2500,
+        institutionalDuesBTN: 10000,
+        bankName: 'Bank of Bhutan (BoB)',
+        accountNumber: '200847291038',
+        accountTitle: 'Handicrafts Association of Bhutan',
+        mbobQrUrl: '/images/mbob_qr_placeholder.png',
+      },
+    });
+    console.log('✓ Seeded default MembershipSetting.');
+  }
+
+  // 24. Seed Baseline FX Rate
+  const existingFx = await prisma.fxRateRecord.count();
+  if (existingFx === 0) {
+    await prisma.fxRateRecord.create({
+      data: {
+        rate: 84.0,
+        source: 'RMA_FEED',
+        status: 'FRESH',
+        isManualOverride: false,
+        notes: 'Initial seed baseline rate',
+      },
+    });
+    console.log('✓ Seeded baseline FX rate.');
   }
 
   console.log('🎉 Seed completed successfully!');
