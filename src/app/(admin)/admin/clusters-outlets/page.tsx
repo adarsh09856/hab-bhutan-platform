@@ -92,8 +92,8 @@ export default function AdminClustersOutletsPage() {
     setLoading(true);
     try {
       const [cRes, oRes] = await Promise.all([
-        fetch('/api/admin/clusters', { credentials: 'include' }),
-        fetch('/api/admin/outlets', { credentials: 'include' }),
+        fetch('/api/admin/clusters', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/admin/outlets', { credentials: 'include', cache: 'no-store' }),
       ]);
       const cData = await cRes.json();
       const oData = await oRes.json();

@@ -50,6 +50,7 @@ export default function AdminMembersPage() {
     try {
       const res = await fetch('/api/admin/members', {
         credentials: 'include',
+        cache: 'no-store',
         signal: controller.signal,
       });
       if (res.ok) {

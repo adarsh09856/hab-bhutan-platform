@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
     try {
       setRefreshing(true);
       setLoadError('');
-      const res = await fetch('/api/admin/dashboard', { credentials: 'include', signal: controller.signal });
+      const res = await fetch('/api/admin/dashboard', { credentials: 'include', cache: 'no-store', signal: controller.signal });
       if (!res.ok) throw new Error(`Dashboard unavailable (HTTP ${res.status}).`);
       const json = await res.json();
       if (!json.success) throw new Error('Dashboard metrics could not be loaded.');

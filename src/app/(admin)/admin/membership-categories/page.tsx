@@ -48,7 +48,7 @@ export default function AdminMembershipCategoriesPage() {
   const loadCategories = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/membership-categories');
+      const res = await fetch('/api/admin/membership-categories', { cache: 'no-store' });
       const data = await res.json();
       if (data.categories) setCategories(data.categories);
     } catch {

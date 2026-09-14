@@ -41,7 +41,7 @@ export default function AdminPoliciesPage() {
   const loadPolicies = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/policies');
+      const res = await fetch('/api/admin/policies', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.policies)) {

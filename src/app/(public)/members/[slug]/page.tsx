@@ -39,7 +39,7 @@ export default function MemberProfilePage() {
 
   useEffect(() => {
     if (!decodedName) return;
-    fetch(`/api/members?slug=${encodeURIComponent(decodedName)}`)
+    fetch(`/api/members?slug=${encodeURIComponent(decodedName)}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.member) {
@@ -54,7 +54,7 @@ export default function MemberProfilePage() {
       })
       .catch(() => {});
 
-    fetch(`/api/products?craft=${encodeURIComponent(member?.craft_key || 'thagzo')}`)
+    fetch(`/api/products?craft=${encodeURIComponent(member?.craft_key || 'thagzo')}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && Array.isArray(d.products) && d.products.length > 0) {

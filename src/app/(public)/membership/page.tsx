@@ -24,7 +24,7 @@ export default function MembershipPage() {
   const [categories, setCategories] = useState<any[]>(() => CLIENT_DATA.membershipCategories || []);
 
   useEffect(() => {
-    fetch('/api/membership-categories')
+    fetch('/api/membership-categories', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.categories && Array.isArray(d.categories) && d.categories.length > 0) {

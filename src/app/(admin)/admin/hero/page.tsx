@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Slide {
   id: string;
@@ -27,7 +28,7 @@ export default function HeroSlidesAdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const r = await fetch('/api/admin/hero-slides');
+    const r = await fetch('/api/admin/hero-slides', { cache: 'no-store' });
     const d = await r.json();
     setSlides(d.slides || []);
     setLoading(false);

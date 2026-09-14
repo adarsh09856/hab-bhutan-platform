@@ -59,7 +59,7 @@ export default function AdminEventsPage() {
   const loadEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/events');
+      const res = await fetch('/api/admin/events', { cache: 'no-store' });
       const data = await res.json();
       if (data.events) setEvents(data.events);
     } catch {

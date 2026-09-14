@@ -90,7 +90,7 @@ function AdminSettingsContent() {
 
   const loadGatewaysAndEmails = async () => {
     try {
-      const res = await fetch('/api/admin/site-settings', { credentials: 'include' });
+      const res = await fetch('/api/admin/site-settings', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const d = await res.json();
         if (d?.setting?.paymentGateways) {
@@ -146,7 +146,7 @@ function AdminSettingsContent() {
 
   const loadFX = async () => {
     try {
-      const res = await fetch('/api/fx', { credentials: 'include' });
+      const res = await fetch('/api/fx', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setFxData(data.data);
@@ -158,7 +158,7 @@ function AdminSettingsContent() {
 
   const loadUsers = async () => {
     try {
-      const res = await fetch('/api/admin/users', { credentials: 'include' });
+      const res = await fetch('/api/admin/users', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users || []);
@@ -170,7 +170,7 @@ function AdminSettingsContent() {
 
   const loadRoles = async () => {
     try {
-      const res = await fetch('/api/admin/roles', { credentials: 'include' });
+      const res = await fetch('/api/admin/roles', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setRoles(data.roles || []);
@@ -185,7 +185,7 @@ function AdminSettingsContent() {
       const url = actorFilter === 'ALL'
         ? '/api/admin/audit?limit=50'
         : `/api/admin/audit?actorType=${actorFilter}&limit=50`;
-      const res = await fetch(url, { credentials: 'include' });
+      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setAuditLogs(data.logs || []);

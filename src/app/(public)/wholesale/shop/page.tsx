@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -72,7 +74,7 @@ function WholesaleShopContent() {
   const [productsList, setProductsList] = useState<any[]>(() => CLIENT_DATA.products);
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.products && Array.isArray(data.products) && data.products.length > 0) {

@@ -48,7 +48,7 @@ export default function AdminMediaPage() {
   const loadMedia = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/media');
+      const res = await fetch('/api/admin/media', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {

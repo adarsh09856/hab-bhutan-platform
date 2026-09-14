@@ -89,8 +89,8 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       const [usersRes, rolesRes] = await Promise.all([
-        fetch('/api/admin/users', { credentials: 'include' }),
-        fetch('/api/admin/roles', { credentials: 'include' }),
+        fetch('/api/admin/users', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/admin/roles', { credentials: 'include', cache: 'no-store' }),
       ]);
 
       if (usersRes.ok) {

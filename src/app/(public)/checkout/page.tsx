@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -60,7 +62,7 @@ export default function CheckoutPage() {
   const [siteSettings, setSiteSettings] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/site-settings')
+    fetch('/api/site-settings', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.setting || d?.settings) {
@@ -72,7 +74,7 @@ export default function CheckoutPage() {
 
   // Attempt to autofill from user profile if logged in
   useEffect(() => {
-    fetch('/api/user/profile')
+    fetch('/api/user/profile', { cache: 'no-store' })
       .then((res) => {
         if (res.ok) return res.json();
         return null;

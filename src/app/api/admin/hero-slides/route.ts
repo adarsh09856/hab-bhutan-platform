@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 
+export const dynamic = 'force-dynamic';
+
 async function verifyAdmin(req: NextRequest) {
   const user = await getSessionUser(req);
   if (!user) return null;

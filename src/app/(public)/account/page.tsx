@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -85,8 +87,8 @@ export default function AccountPage() {
     try {
       setLoading(true);
       const [profileRes, ordersRes] = await Promise.all([
-        fetch('/api/user/profile'),
-        fetch('/api/user/orders'),
+        fetch('/api/user/profile', { cache: 'no-store' }),
+        fetch('/api/user/orders', { cache: 'no-store' }),
       ]);
 
       if (profileRes.status === 401) {

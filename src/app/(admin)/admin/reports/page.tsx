@@ -83,7 +83,7 @@ export default function AdminReportsPage() {
     setLoading(true);
     setActionError('');
     try {
-      const res = await fetch(`/api/admin/reports?range=${dateRange}`, { credentials: 'include' });
+      const res = await fetch(`/api/admin/reports?range=${dateRange}`, { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.metrics) setMetrics(data.metrics);

@@ -146,7 +146,7 @@ export default function AdminSiteSettingsPage() {
       })
       .catch(() => {
         // Fallback to public settings endpoint on network error
-        fetch('/api/site-settings')
+        fetch('/api/site-settings', { cache: 'no-store' })
           .then((r) => r.json())
           .then((pub) => {
             if (!isMounted) return;

@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -46,7 +48,7 @@ function TrackOrderContent() {
       const isEmail = contact.includes('@');
       const paramKey = isEmail ? 'email' : 'phone';
       const url = `/api/orders/track?order=${encodeURIComponent(orderId.trim())}&${paramKey}=${encodeURIComponent(contact.trim())}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
 
       if (!res.ok || !data.success) {

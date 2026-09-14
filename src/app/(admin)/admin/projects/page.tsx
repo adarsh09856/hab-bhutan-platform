@@ -49,7 +49,7 @@ export default function AdminProjectsPage() {
   const loadProjects = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/projects', { credentials: 'include' });
+      const res = await fetch('/api/admin/projects', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setProjects(data.projects || []);

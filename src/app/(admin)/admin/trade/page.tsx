@@ -77,7 +77,7 @@ export default function AdminTradePage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/trade');
+      const res = await fetch('/api/admin/trade', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success) {

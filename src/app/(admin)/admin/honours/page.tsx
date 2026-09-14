@@ -48,7 +48,7 @@ export default function AdminHonoursPage() {
   const loadHonours = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/honours');
+      const res = await fetch('/api/admin/honours', { cache: 'no-store' });
       const data = await res.json();
       if (data.honours) setHonours(data.honours);
     } catch {

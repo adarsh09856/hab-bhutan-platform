@@ -43,7 +43,7 @@ export default function AdminNavigationPage() {
   const loadItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/navigation', { credentials: 'include' });
+      const res = await fetch('/api/admin/navigation', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setItems(data.items || []);

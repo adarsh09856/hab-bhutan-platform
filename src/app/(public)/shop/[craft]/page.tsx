@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -20,7 +22,7 @@ function ShopGridContent() {
   const collectionParam = searchParams.get('collection');
 
   React.useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.products && data.products.length > 0) {

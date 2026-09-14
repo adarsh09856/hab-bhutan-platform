@@ -50,7 +50,7 @@ export default function AdminMembershipSettingsPage() {
 
   const loadData = async () => {
     try {
-      const res = await fetch('/api/admin/membership-settings', { credentials: 'include' });
+      const res = await fetch('/api/admin/membership-settings', { credentials: 'include', cache: 'no-store' });
       const d = await res.json();
       if (d?.setting) setForm(d.setting);
       if (d?.members) setMembers(d.members);

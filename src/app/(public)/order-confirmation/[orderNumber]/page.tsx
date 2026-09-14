@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -25,7 +27,7 @@ export default function OrderConfirmationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/site-settings')
+    fetch('/api/site-settings', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.setting || data?.settings) {
@@ -38,7 +40,7 @@ export default function OrderConfirmationPage() {
   useEffect(() => {
     if (!orderNumber) return;
 
-    fetch(`/api/orders/track?order=${encodeURIComponent(orderNumber)}`)
+    fetch(`/api/orders/track?order=${encodeURIComponent(orderNumber)}`, { cache: 'no-store' })
       .then((res) => {
         if (res.ok) return res.json();
         return null;
