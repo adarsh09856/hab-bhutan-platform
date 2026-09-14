@@ -3,7 +3,8 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save } from 'lucide-react';
+import Link from 'next/link';
+import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save, Globe } from 'lucide-react';
 import { PERMISSION_CATEGORIES, Permission } from '@/lib/permissions';
 
 function AdminSettingsContent() {
@@ -491,6 +492,12 @@ function AdminSettingsContent() {
 
       {/* Tabs */}
       <div className="border-b admin-border flex space-x-4 sm:space-x-6 text-xs font-medium admin-text overflow-x-auto scrollbar-none whitespace-nowrap pb-px">
+        <Link
+          href="/admin/localization"
+          className="pb-3 flex items-center gap-1.5 border-b-2 border-transparent text-amber-400 hover:text-amber-300 font-bold transition-colors"
+        >
+          <Globe className="w-4 h-4 text-amber-400" /> Currency &amp; Language Settings →
+        </Link>
         <button
           onClick={() => setActiveTab('FX')}
           className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
@@ -536,6 +543,29 @@ function AdminSettingsContent() {
       {/* Tab 1: RMA FX Engine */}
       {activeTab === 'FX' && (
         <div className="space-y-6">
+          {/* Prominent Currency & Language Callout Banner */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-slate-900 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-none">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  Global Store Currency &amp; Language Settings
+                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold">CONTROL</span>
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Set baseline display currency (USD $ / BTN Nu.), default language (English / རྫོང་ཁ Dzongkha), and enabled public customer switchers.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin/localization"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-md flex-none self-start sm:self-auto"
+            >
+              Open Currency &amp; Language Settings →
+            </Link>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="admin-card p-5 rounded-lg border admin-border shadow-sm space-y-2">
               <span className="text-[11px] font-medium admin-muted uppercase">Effective Exchange Rate</span>

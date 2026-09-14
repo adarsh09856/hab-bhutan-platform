@@ -171,7 +171,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       group: '4. Website & Pages',
       items: [
-        { label: 'Website CMS & Settings', href: '/admin/site-settings', icon: Globe },
+        { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'USD/BTN' },
+        { label: 'Website CMS & Settings', href: '/admin/site-settings', icon: LayoutDashboard },
         { label: 'Homepage Banners & Slides', href: '/admin/hero', icon: Sparkles },
         { label: 'Menus & Navigation Links', href: '/admin/navigation', icon: Navigation },
         { label: 'Photo & Media Library', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
@@ -197,6 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       group: '7. Settings & Administration',
       items: [
+        { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'Store FX' },
         { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Staff' },
         { label: 'Sales & Financial Reports', href: '/admin/reports', icon: BarChart3 },
         { label: 'System Health & Settings', href: '/admin/settings', icon: Settings },
@@ -297,12 +299,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span>Storefront</span>
           </Link>
 
-          {/* FX Status Pill */}
-          {health?.fx && (
-            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-white/10 text-[11px] font-mono text-amber-300">
-              <span>USD/BTN: Nu. {health.fx.rate != null ? Number(health.fx.rate).toFixed(2) : '86.50'}</span>
-            </div>
-          )}
+          {/* Currency & Language Header Pill */}
+          <Link
+            href="/admin/localization"
+            title="Manage Store Currency & Language Settings"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-mono text-amber-300 transition-colors"
+          >
+            <Globe className="w-3.5 h-3.5 text-amber-400" />
+            <span>Currency &amp; Language</span>
+            {health?.fx?.rate && (
+              <span className="hidden xl:inline text-[10px] text-amber-400/70 border-l border-amber-500/30 pl-1.5 ml-1">
+                Nu. {Number(health.fx.rate).toFixed(2)}
+              </span>
+            )}
+          </Link>
 
           {/* User profile dropdown button */}
           <div className="flex items-center gap-2 pl-2 border-l border-white/10">

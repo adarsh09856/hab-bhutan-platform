@@ -3,10 +3,20 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign } from 'lucide-react';
+import Link from 'next/link';
+import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign, ExternalLink, ArrowRight } from 'lucide-react';
 
 export default function AdminSiteSettingsPage() {
   const [tab, setTab] = useState<'HOMEPAGE' | 'LOCALIZATION' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const qTab = new URLSearchParams(window.location.search).get('tab');
+      if (qTab && ['HOMEPAGE', 'LOCALIZATION', 'ASSURANCES', 'ABOUT_BAND', 'MEMBERSHIP', 'ANNOUNCEMENT', 'CONTACT', 'FOOTER', 'PARTNERS', 'ABOUT_PAGE', 'WHOLESALE', 'CHECKOUT', 'DONATE', 'TRUST'].includes(qTab)) {
+        setTab(qTab as any);
+      }
+    }
+  }, []);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -408,14 +418,23 @@ export default function AdminSiteSettingsPage() {
         {/* LOCALIZATION & CURRENCY TAB */}
         {tab === 'LOCALIZATION' && (
           <div className="space-y-8">
-            <div className="border-b border-white/10 pb-4">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Globe className="w-5 h-5 text-amber-400" />
-                Global Currency &amp; Language Controller
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Centrally control the public site&apos;s baseline store currency, primary language, and live exchange rate. Changes saved here reflect immediately on all public pages.
-              </p>
+            <div className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-white flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-amber-400" />
+                  Global Currency &amp; Language Controller
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Centrally control the public site&apos;s baseline store currency, primary language, and live exchange rate. Changes saved here reflect immediately on all public pages.
+                </p>
+              </div>
+              <Link
+                href="/admin/localization"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold transition-colors flex-none self-start sm:self-auto"
+              >
+                <span>Open Dedicated View</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
 
             {/* Current Active Status Bar */}
