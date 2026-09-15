@@ -36,7 +36,7 @@ export default function TypographyStylingPage() {
   };
 
   useEffect(() => {
-    // Load existing settings from localStorage or API
+    // 1. Check localStorage for instant values
     try {
       const g = localStorage.getItem('hab_font_scale');
       if (g) setGlobalScale(parseFloat(g));
@@ -53,6 +53,23 @@ export default function TypographyStylingPage() {
       const pb = localStorage.getItem('hab_scale_publications');
       if (pb) setPublicationsScale(parseFloat(pb));
     } catch {}
+
+    // 2. Fetch server-persisted settings
+    fetch('/api/admin/site-settings', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        const styling = d?.setting?.paymentGateways?.styling;
+        if (styling) {
+          if (styling.globalScale) setGlobalScale(styling.globalScale);
+          if (styling.voice) setVoice(styling.voice);
+          if (styling.homeScale) setHomeScale(styling.homeScale);
+          if (styling.aboutScale) setAboutScale(styling.aboutScale);
+          if (styling.shopScale) setShopScale(styling.shopScale);
+          if (styling.programmesScale) setProgrammesScale(styling.programmesScale);
+          if (styling.publicationsScale) setPublicationsScale(styling.publicationsScale);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleApplyPreset = (scale: number) => {
@@ -64,7 +81,7 @@ export default function TypographyStylingPage() {
     setPublicationsScale(scale);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setGlobalScale(1.0);
     setVoice('heritage');
     setHomeScale(1.0);
@@ -72,8 +89,39 @@ export default function TypographyStylingPage() {
     setShopScale(1.0);
     setProgrammesScale(1.0);
     setPublicationsScale(1.0);
-    showToast('success', 'Reset all text sizes to 100% standard baseline.');
+
+    try {
+      localStorage.removeItem('hab_font_scale');
+      localStorage.removeItem('hab.tweaks.voice');
+      localStorage.removeItem('hab_scale_home');
+      localStorage.removeItem('hab_scale_about');
+      localStorage.removeItem('hab_scale_shop');
+      localStorage.removeItem('hab_scale_programmes');
+      localStorage.removeItem('hab_scale_publications');
+      document.documentElement.style.removeProperty('--hab-font-scale');
+
+      await fetch('/api/admin/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentGateways: {
+            styling: {
+              globalScale: 1.0,
+              voice: 'heritage',
+              homeScale: 1.0,
+              aboutScale: 1.0,
+              shopScale: 1.0,
+              programmesScale: 1.0,
+              publicationsScale: 1.0,
+            },
+          },
+        }),
+      });
+    } catch {}
+
+    showToast('success', 'Reset all text sizes and styling to 100% factory baseline.');
   };
+
 
   const handleSave = async () => {
     setSaving(true);

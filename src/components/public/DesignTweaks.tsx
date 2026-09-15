@@ -10,6 +10,10 @@ export default function DesignTweaks() {
 
   useEffect(() => {
     try {
+      const savedScale = localStorage.getItem('hab_font_scale');
+      if (savedScale) {
+        document.documentElement.style.setProperty('--hab-font-scale', savedScale);
+      }
       const savedVoice = localStorage.getItem('hab.tweaks.voice') as any;
       const savedPresence = localStorage.getItem('hab.tweaks.presence') as any;
       const savedRhythm = localStorage.getItem('hab.tweaks.rhythm') as any;
@@ -26,8 +30,24 @@ export default function DesignTweaks() {
         setRhythm(savedRhythm);
         document.documentElement.setAttribute('data-rhythm', savedRhythm);
       }
+
+      // Sync server-persisted styling from site-settings for first-time visitors
+      fetch('/api/site-settings', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((data) => {
+          const styling = data?.setting?.paymentGateways?.styling;
+          if (styling?.globalScale && !savedScale) {
+            document.documentElement.style.setProperty('--hab-font-scale', String(styling.globalScale));
+          }
+          if (styling?.voice && !savedVoice) {
+            setVoice(styling.voice);
+            document.documentElement.setAttribute('data-voice', styling.voice);
+          }
+        })
+        .catch(() => {});
     } catch {}
   }, []);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -74,12 +94,15 @@ export default function DesignTweaks() {
     document.documentElement.removeAttribute('data-voice');
     document.documentElement.removeAttribute('data-presence');
     document.documentElement.removeAttribute('data-rhythm');
+    document.documentElement.style.removeProperty('--hab-font-scale');
     try {
       localStorage.removeItem('hab.tweaks.voice');
       localStorage.removeItem('hab.tweaks.presence');
       localStorage.removeItem('hab.tweaks.rhythm');
+      localStorage.removeItem('hab_font_scale');
     } catch {}
   };
+
 
   return (
     <>

@@ -19,7 +19,13 @@
   --brass: #C9A46A;
   --on-dark: #F1ECE2;
   --on-dark-body: #D2C2AE;
+  --hab-font-scale: 1;
 }
+
+html:not(:has(.hab-admin)) {
+  font-size: calc(16px * var(--hab-font-scale, 1));
+}
+
 
 body {
   margin: 0;
