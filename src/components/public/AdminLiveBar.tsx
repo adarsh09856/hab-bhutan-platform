@@ -95,7 +95,7 @@ export default function AdminLiveBar() {
         </div>
         <div className="flex items-center gap-1.5">
           <span className="font-semibold text-white">HAB Admin</span>
-          <span className="text-slate-500">·</span>
+          <span className="text-slate-500">|</span>
           <span className="text-amber-400 font-mono text-[11px] truncate max-w-[140px]">{adminName}</span>
         </div>
 
@@ -154,9 +154,10 @@ export default function AdminLiveBar() {
         </Link>
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors"
         >
-          <span>Admin Console ?</span>
+          <span>Admin Console</span>
+          <ExternalLink className="w-3 h-3 text-white/80" />
         </Link>
       </div>
     </div>
