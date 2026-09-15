@@ -735,7 +735,7 @@ export default function AdminMembersPage() {
               Are you sure you want to permanently delete <strong className="admin-title">{deletingMember.name}</strong> ({deletingMember.regNumber})?
             </p>
 
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-900 space-y-1">
+            <div className="p-3 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-900 space-y-1">
               <div className="font-bold flex items-center gap-1">
                 <span>⚠️</span> Referential Integrity Safeguard
               </div>

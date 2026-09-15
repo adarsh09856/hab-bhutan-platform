@@ -380,7 +380,7 @@ export default function AdminTradePage() {
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-[#8b2e24] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold">
+                          <span className="font-mono text-xs text-[#8b2e24] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-semibold">
                             {p.code}
                           </span>
                           <span className="text-xs text-slate-500 font-medium">{p.craftName}</span>
@@ -400,7 +400,7 @@ export default function AdminTradePage() {
                       <div className="h-6 w-px bg-slate-200" />
                       <div>
                         <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-medium">B2B MOQ</span>
-                        <span className="text-amber-800 font-bold">{t.moq || 5} units</span>
+                        <span className="text-slate-800 font-bold">{t.moq || 5} units</span>
                       </div>
                       <div className="h-6 w-px bg-slate-200" />
                       <div>
@@ -607,7 +607,7 @@ export default function AdminTradePage() {
         subtitle={editingProduct?.name}
       >
         <div className="space-y-4 text-xs">
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 font-medium">
+          <div className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-900 font-medium">
             Retail price is <span className="font-bold text-[#8b2e24]">${editingProduct?.retailPrice} USD</span>. Trade prices must be lower and tier-discounted based on ascending volume.
           </div>
 

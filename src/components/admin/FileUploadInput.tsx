@@ -225,7 +225,7 @@ export default function FileUploadInput({
               onClick={() => !uploading && !disabled && fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
                 isDragging
-                  ? 'border-[#8B2E24] bg-amber-50/50'
+                  ? 'border-[#8B2E24] bg-slate-100'
                   : 'border-slate-300 hover:border-slate-400 bg-slate-50/60 hover:bg-slate-100/60'
               } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
             >

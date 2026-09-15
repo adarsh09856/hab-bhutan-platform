@@ -288,90 +288,90 @@ export default function AdminSiteSettingsPage() {
           type="button"
           onClick={() => setTab('HOMEPAGE')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'HOMEPAGE' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'HOMEPAGE' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Home className="w-4 h-4 text-amber-600" />
+          <Home className="w-4 h-4 text-[#8B2E24]" />
           Hero &amp; Impact Metrics
         </button>
         <button
           type="button"
           onClick={() => setTab('LOCALIZATION')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'LOCALIZATION' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'LOCALIZATION' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Globe className="w-4 h-4 text-amber-600" />
+          <Globe className="w-4 h-4 text-[#8B2E24]" />
           Currency &amp; Language
         </button>
         <button
           type="button"
           onClick={() => setTab('ASSURANCES')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'ASSURANCES' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'ASSURANCES' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Shield className="w-4 h-4 text-amber-600" />
+          <Shield className="w-4 h-4 text-[#8B2E24]" />
           Assurances (4 Value Props)
         </button>
         <button
           type="button"
           onClick={() => setTab('ABOUT_BAND')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'ABOUT_BAND' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'ABOUT_BAND' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-600" />
+          <Sparkles className="w-4 h-4 text-[#8B2E24]" />
           About HAB Story Band
         </button>
         <button
           type="button"
           onClick={() => setTab('MEMBERSHIP')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'MEMBERSHIP' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'MEMBERSHIP' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Users className="w-4 h-4 text-amber-600" />
+          <Users className="w-4 h-4 text-[#8B2E24]" />
           Membership Callouts
         </button>
         <button
           type="button"
           onClick={() => setTab('ANNOUNCEMENT')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'ANNOUNCEMENT' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'ANNOUNCEMENT' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Megaphone className="w-4 h-4 text-amber-600" />
+          <Megaphone className="w-4 h-4 text-[#8B2E24]" />
           Header Notice Strip
         </button>
         <button
           type="button"
           onClick={() => setTab('CONTACT')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'CONTACT' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'CONTACT' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Phone className="w-4 h-4 text-amber-600" />
+          <Phone className="w-4 h-4 text-[#8B2E24]" />
           Secretariat Directory
         </button>
         <button
           type="button"
           onClick={() => setTab('FOOTER')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'FOOTER' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'FOOTER' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 text-amber-600" />
+          <ShieldCheck className="w-4 h-4 text-[#8B2E24]" />
           Footer &amp; Legal
         </button>
         <button
           type="button"
           onClick={() => setTab('PARTNERS')}
           className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-            tab === 'PARTNERS' ? 'border-amber-600 text-amber-900 font-bold bg-amber-50 rounded-t-xl' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-t-xl'
+            tab === 'PARTNERS' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <HeartHandshake className="w-4 h-4 text-amber-600" />
+          <HeartHandshake className="w-4 h-4 text-[#8B2E24]" />
           Partners &amp; Donors
         </button>
         <button
@@ -432,7 +432,7 @@ export default function AdminSiteSettingsPage() {
               </div>
               <Link
                 href="/admin/localization"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-semibold transition-colors flex-none self-start sm:self-auto shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-semibold transition-colors flex-none self-start sm:self-auto shadow-xs"
               >
                 <span>Open Dedicated View</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -443,8 +443,8 @@ export default function AdminSiteSettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
               <div className="space-y-1">
                 <span className="text-[11px] font-mono uppercase tracking-wider text-slate-600">Default Currency</span>
-                <div className="text-sm font-bold text-amber-900 flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs font-mono">
+                <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-800 text-xs font-mono font-semibold">
                     {form.defaultCurrency}
                   </span>
                   {form.defaultCurrency === 'USD' ? 'US Dollar ($)' : 'Bhutanese Ngultrum (Nu.)'}
@@ -479,13 +479,13 @@ export default function AdminSiteSettingsPage() {
                   onClick={() => setForm({ ...form, defaultCurrency: 'USD' })}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     form.defaultCurrency === 'USD'
-                      ? 'border-amber-600 bg-amber-50 shadow-sm ring-1 ring-amber-600'
+                      ? 'border-[#8B2E24] bg-white shadow-sm ring-2 ring-[#8B2E24]/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
-                      <DollarSign className="w-4 h-4 text-amber-600" />
+                      <DollarSign className="w-4 h-4 text-[#8B2E24]" />
                       USD — United States Dollar ($)
                     </div>
                     <input
@@ -493,7 +493,7 @@ export default function AdminSiteSettingsPage() {
                       name="defaultCurrency"
                       checked={form.defaultCurrency === 'USD'}
                       onChange={() => setForm({ ...form, defaultCurrency: 'USD' })}
-                      className="text-amber-600 focus:ring-amber-500 cursor-pointer"
+                      className="text-[#8B2E24] focus:ring-[#8B2E24] cursor-pointer"
                     />
                   </div>
                   <p className="text-xs text-slate-600">
@@ -505,13 +505,13 @@ export default function AdminSiteSettingsPage() {
                   onClick={() => setForm({ ...form, defaultCurrency: 'BTN' })}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     form.defaultCurrency === 'BTN'
-                      ? 'border-amber-600 bg-amber-50 shadow-sm ring-1 ring-amber-600'
+                      ? 'border-[#8B2E24] bg-white shadow-sm ring-2 ring-[#8B2E24]/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
-                      <span className="font-mono text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-100">Nu.</span>
+                      <span className="font-mono text-[#8B2E24] text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">Nu.</span>
                       BTN — Bhutanese Ngultrum (Nu.)
                     </div>
                     <input
@@ -605,7 +605,7 @@ export default function AdminSiteSettingsPage() {
                         min="1"
                         value={form.fxRate}
                         onChange={(e) => setForm({ ...form, fxRate: parseFloat(e.target.value) || 0 })}
-                        className="w-32 px-3.5 py-2.5 admin-input bg-white border border-slate-300 rounded-lg text-sm font-mono text-amber-900 font-bold"
+                        className="w-32 px-3.5 py-2.5 admin-input bg-white border border-slate-300 rounded-lg text-sm font-mono text-slate-900 font-bold"
                         placeholder="84.00"
                       />
                     </div>
@@ -639,13 +639,13 @@ export default function AdminSiteSettingsPage() {
 
                 <div className="p-3 rounded-lg bg-white border border-slate-200 text-xs text-slate-600 space-y-1">
                   <div className="font-semibold text-slate-800">Live Calculation Preview:</div>
-                  <div className="font-mono text-amber-800">
+                  <div className="font-mono text-slate-800">
                     • $25.00 USD &rarr; Nu. {(25 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
                   </div>
-                  <div className="font-mono text-amber-800">
+                  <div className="font-mono text-slate-800">
                     • $100.00 USD &rarr; Nu. {(100 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
                   </div>
-                  <div className="font-mono text-amber-800">
+                  <div className="font-mono text-slate-800">
                     • $500.00 USD &rarr; Nu. {(500 * (Number(form.fxRate) || 84)).toLocaleString()} BTN
                   </div>
                 </div>

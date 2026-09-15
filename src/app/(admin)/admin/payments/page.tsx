@@ -212,7 +212,7 @@ export default function AdminPaymentsPage() {
                   onClick={() => setConfig({ ...config, card: { ...config.card, mode: 'TEST' } })}
                   className={`px-3 py-1 rounded text-xs font-semibold transition ${
                     config.card.mode === 'TEST'
-                      ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-sm'
+                      ? 'bg-amber-100 text-slate-900 border border-slate-300 shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -233,7 +233,7 @@ export default function AdminPaymentsPage() {
             </div>
 
             {config.card.mode === 'TEST' ? (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 leading-relaxed">
+              <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-900 leading-relaxed">
                 <strong>Sandbox Active:</strong> Checkouts will be simulated. Customers can test card payments, and orders will be marked with a test tag so staff can distinguish demo orders from real bank settlements.
               </div>
             ) : (
@@ -301,7 +301,7 @@ export default function AdminPaymentsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-start border-b border-slate-100 pb-3">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+                <div className="p-2.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200">
                   <Banknote className="w-5 h-5" />
                 </div>
                 <div>

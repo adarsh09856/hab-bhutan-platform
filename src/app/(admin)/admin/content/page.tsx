@@ -562,7 +562,7 @@ export default function AdminContentPage() {
                             href={p.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] text-amber-700 hover:text-amber-800 underline font-normal mt-1"
+                            className="inline-flex items-center gap-1 text-[11px] text-amber-700 hover:text-slate-800 underline font-normal mt-1"
                           >
                             <FileText className="w-3 h-3 text-amber-700 flex-shrink-0" />
                             <span>View Document ({p.fileUrl.split('.').pop()?.toUpperCase() || 'FILE'})</span>
@@ -883,7 +883,7 @@ export default function AdminContentPage() {
                     <label className="block font-medium admin-text mb-1">Attached Document File (PDF, DOCX, XLSX up to 30MB)</label>
                     {pubForm.fileUrl ? (
                       <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
-                        <div className="w-9 h-9 rounded bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        <div className="w-9 h-9 rounded bg-amber-100 text-slate-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
                           {pubForm.fileUrl.split('.').pop()?.toUpperCase() || 'PDF'}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1083,7 +1083,7 @@ export default function AdminContentPage() {
                     <label className="block font-medium admin-text mb-1">Attached Document File (PDF, DOCX, XLSX up to 30MB)</label>
                     {editingItem.data.fileUrl ? (
                       <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
-                        <div className="w-9 h-9 rounded bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        <div className="w-9 h-9 rounded bg-amber-100 text-slate-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
                           {editingItem.data.fileUrl.split('.').pop()?.toUpperCase() || 'PDF'}
                         </div>
                         <div className="flex-1 min-w-0">

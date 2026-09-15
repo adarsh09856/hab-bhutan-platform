@@ -192,7 +192,7 @@ export default function AdminLocalizationPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-[#8b2e24]">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[#8b2e24]">
               <Globe className="w-4 h-4" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Currency &amp; Language Settings</h1>
@@ -254,7 +254,7 @@ export default function AdminLocalizationPage() {
             <DollarSign className="w-3.5 h-3.5 text-[#8b2e24]" /> Default Store Currency
           </span>
           <div className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-900 text-xs font-mono font-bold border border-amber-300">
+            <span className="px-2.5 py-0.5 rounded-lg bg-amber-100 text-slate-900 text-xs font-mono font-bold border border-slate-300">
               {form.defaultCurrency}
             </span>
             <span>{form.defaultCurrency === 'USD' ? 'US Dollar ($)' : 'Bhutanese Ngultrum (Nu.)'}</span>
@@ -305,7 +305,7 @@ export default function AdminLocalizationPage() {
               onClick={() => setForm({ ...form, defaultCurrency: 'USD' })}
               className={`p-5 rounded-xl border cursor-pointer transition-all relative select-none ${
                 form.defaultCurrency === 'USD'
-                  ? 'border-[#8b2e24] bg-amber-50/50 shadow-sm ring-2 ring-[#8b2e24]/30'
+                  ? 'border-[#8b2e24] bg-slate-50 shadow-sm ring-2 ring-[#8b2e24]/30'
                   : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'
               }`}
             >
@@ -413,7 +413,7 @@ export default function AdminLocalizationPage() {
               onClick={() => setForm({ ...form, defaultLanguage: 'dz' })}
               className={`p-5 rounded-xl border cursor-pointer transition-all relative select-none ${
                 form.defaultLanguage === 'dz'
-                  ? 'border-[#8b2e24] bg-amber-50/50 shadow-sm ring-2 ring-[#8b2e24]/30'
+                  ? 'border-[#8b2e24] bg-slate-50 shadow-sm ring-2 ring-[#8b2e24]/30'
                   : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'
               }`}
             >

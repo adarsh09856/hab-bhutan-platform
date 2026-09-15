@@ -64,7 +64,7 @@ export function GlassStatWidget({
   onClick,
 }: GlassStatWidgetProps) {
   const iconGlows = {
-    amber: 'bg-amber-50 text-amber-800 border border-amber-200',
+    amber: 'bg-slate-100 text-[#8B2E24] border border-slate-200',
     rose: 'bg-rose-50 text-rose-700 border border-rose-200',
     emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
     indigo: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
@@ -180,7 +180,7 @@ export function GlassBadge({
 
   const styles = {
     emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-    amber: 'bg-amber-50 text-amber-800 border-amber-200',
+    amber: 'bg-slate-100 text-slate-800 border-slate-200',
     rose: 'bg-rose-50 text-rose-800 border-rose-200',
     blue: 'bg-sky-50 text-sky-800 border-sky-200',
     indigo: 'bg-indigo-50 text-indigo-800 border-indigo-200',

@@ -189,7 +189,7 @@ export default function AdminPoliciesPage() {
                 onClick={() => handleSelectPolicy(p.slug)}
                 className={`w-full text-left p-3.5 rounded-xl border transition-all flex flex-col gap-1 cursor-pointer ${
                   isSelected
-                    ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-sm ring-1 ring-amber-300'
+                    ? 'bg-slate-100 border-slate-300 text-slate-900 shadow-sm ring-1 ring-amber-300'
                     : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-2xs'
                 }`}
               >
@@ -208,7 +208,7 @@ export default function AdminPoliciesPage() {
           <GlassCard className="p-6 space-y-5" glow="amber">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div>
-                <span className="text-xs font-mono text-[#8b2e24] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-semibold">
+                <span className="text-xs font-mono text-[#8b2e24] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-semibold">
                   /{selectedSlug}
                 </span>
                 <p className="text-xs text-slate-500 mt-1">

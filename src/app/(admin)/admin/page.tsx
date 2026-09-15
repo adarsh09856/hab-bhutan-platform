@@ -157,7 +157,7 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200 flex items-center gap-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold uppercase tracking-wider bg-amber-100 text-slate-900 border border-slate-200 flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3 text-amber-700" />
                 Live Operations Command
               </span>
@@ -342,7 +342,7 @@ export default function AdminDashboardPage() {
                             <div className="font-medium text-slate-900 truncate max-w-[140px]">{ord.customer}</div>
                             <div className="text-[10px] text-slate-500 truncate max-w-[140px]">{ord.items}</div>
                           </td>
-                          <td className="py-3 px-4 font-mono font-bold text-amber-800">
+                          <td className="py-3 px-4 font-mono font-bold text-slate-800">
                             {ord.total}
                           </td>
                           <td className="py-3 px-4">
@@ -447,11 +447,11 @@ export default function AdminDashboardPage() {
                             <div className="font-semibold text-slate-900">{app.applicantName}</div>
                             <div className="text-[10px] text-slate-500">{app.email}</div>
                           </td>
-                          <td className="py-3 px-4 uppercase text-amber-800 font-mono text-[11px] font-semibold">{app.craftKey}</td>
+                          <td className="py-3 px-4 uppercase text-slate-800 font-mono text-[11px] font-semibold">{app.craftKey}</td>
                           <td className="py-3 px-4 text-slate-700">{app.dzongkhag}</td>
                           <td className="py-3 px-4 text-[10px] text-slate-500">{app.planTier}</td>
                           <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                               {app.status}
                             </span>
                           </td>
@@ -609,7 +609,7 @@ export default function AdminDashboardPage() {
                 data.recentAuditLogs.slice(0, 4).map((log) => (
                   <div key={log.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
                     <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 mb-1">
-                      <span className="text-amber-800 font-semibold">{log.actor}</span>
+                      <span className="text-slate-800 font-semibold">{log.actor}</span>
                       <span>{log.createdAt}</span>
                     </div>
                     <div className="text-slate-800 font-mono text-[11px]">

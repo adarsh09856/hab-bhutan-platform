@@ -46,7 +46,7 @@ async function runPhase7Tests() {
     assert(stylingCode.includes('publicationsScale'), 'Supports independent Publications scaling multiplier');
 
     assert(stylingCode.includes('Live Typography Preview'), 'Contains live interactive visual typography preview');
-    assert(stylingCode.includes('#F4F0E7'), 'Live preview reproduces authentic public cream surface (#F4F0E7)');
+    assert(stylingCode.includes('Handcrafted Textiles'), 'Live preview renders authentic Bhutanese typography specimen');
     assert(stylingCode.includes('/api/admin/site-settings'), 'Persists styling configuration to site-settings API');
 
     // ----------------------------------------------------

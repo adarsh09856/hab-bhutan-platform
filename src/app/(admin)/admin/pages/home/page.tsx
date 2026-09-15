@@ -437,7 +437,7 @@ export default function HomePageStudio() {
 
           {/* Modal / Form for Slide */}
           {slideFormOpen && (
-            <div className="bg-white rounded-2xl border-2 border-amber-200 p-6 shadow-md space-y-4">
+            <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-md space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <h3 className="text-base font-bold text-slate-900">
                   {editingSlideId ? 'Edit Hero Slide' : 'Create New Hero Slide'}
@@ -634,7 +634,7 @@ export default function HomePageStudio() {
           </div>
 
           <div className="space-y-4 max-w-3xl">
-            <div className="flex items-center gap-3 p-4 bg-amber-50/60 border border-amber-200 rounded-xl">
+            <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <input
                 type="checkbox"
                 id="isAnnouncementOn"

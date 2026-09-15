@@ -821,12 +821,12 @@ export default function AdminProductsPage() {
               Are you sure you want to permanently delete <strong className="admin-title">{deletingProduct.name}</strong>?
             </p>
 
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 space-y-1.5">
-              <div className="font-bold flex items-center gap-1.5 text-amber-950">
+            <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-900 space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5 text-slate-950">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 Referential Integrity Safeguard
               </div>
-              <p className="leading-normal text-amber-800">
+              <p className="leading-normal text-slate-800">
                 If this product is linked to existing customer orders, permanent deletion is prevented to maintain legal and financial audit logs. In that case, you should <strong>Archive</strong> it instead.
               </p>
             </div>

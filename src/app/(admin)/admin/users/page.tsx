@@ -377,7 +377,7 @@ export default function AdminUsersPage() {
                     {/* User Profile */}
                     <td className="py-3.5 px-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center font-bold text-amber-800 text-xs flex-none">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-800 text-xs flex-none">
                           {u.name ? u.name[0].toUpperCase() : 'U'}
                         </div>
                         <div>
@@ -424,7 +424,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => handleResetPassword(u)}
                           disabled={resetting}
-                          className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-medium flex items-center gap-1 transition-colors shadow-xs"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 text-[11px] font-medium flex items-center gap-1 transition-colors shadow-xs"
                           title="Reset Password"
                         >
                           <KeyRound className="w-3 h-3" />
@@ -582,7 +582,7 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto p-4 bg-black/40 backdrop-blur-xs flex items-center justify-center">
           <div className="relative w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center border border-amber-200">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center border border-slate-200">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div>
@@ -596,7 +596,7 @@ export default function AdminUsersPage() {
             </p>
 
             {/* Password Box */}
-            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 flex items-center justify-between gap-2 font-mono text-sm text-amber-950">
+            <div className="p-3.5 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-between gap-2 font-mono text-sm text-slate-950">
               <span className="select-all font-bold">{resetModalData.tempPassword}</span>
               <button
                 onClick={() => {

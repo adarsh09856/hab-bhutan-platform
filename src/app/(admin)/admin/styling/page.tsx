@@ -237,7 +237,7 @@ export default function TypographyStylingPage() {
                 onClick={() => handleApplyPreset(0.92)}
                 className={`p-4 rounded-xl border text-center transition-all ${
                   globalScale === 0.92
-                    ? 'border-[#8B2E24] bg-amber-50/50 text-[#8B2E24] ring-2 ring-amber-200 font-bold'
+                    ? 'border-[#8B2E24] bg-slate-50 text-[#8B2E24] ring-2 ring-[#8B2E24]/20 font-bold'
                     : 'border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
@@ -251,7 +251,7 @@ export default function TypographyStylingPage() {
                 onClick={() => handleApplyPreset(1.0)}
                 className={`p-4 rounded-xl border text-center transition-all ${
                   globalScale === 1.0
-                    ? 'border-[#8B2E24] bg-amber-50/50 text-[#8B2E24] ring-2 ring-amber-200 font-bold'
+                    ? 'border-[#8B2E24] bg-slate-50 text-[#8B2E24] ring-2 ring-[#8B2E24]/20 font-bold'
                     : 'border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
@@ -265,7 +265,7 @@ export default function TypographyStylingPage() {
                 onClick={() => handleApplyPreset(1.10)}
                 className={`p-4 rounded-xl border text-center transition-all ${
                   globalScale === 1.10
-                    ? 'border-[#8B2E24] bg-amber-50/50 text-[#8B2E24] ring-2 ring-amber-200 font-bold'
+                    ? 'border-[#8B2E24] bg-slate-50 text-[#8B2E24] ring-2 ring-[#8B2E24]/20 font-bold'
                     : 'border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
@@ -276,51 +276,49 @@ export default function TypographyStylingPage() {
             </div>
           </div>
 
-          {/* Typographic Voice */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-bold text-slate-900">2. Typographic Voice</h2>
-            <p className="text-xs text-slate-500">
-              Controls the font pairing harmony across the association website.
-            </p>
-
-            <div className="grid grid-cols-3 gap-3">
+          {/* Voice selector */}
+          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">
+              2. Typographic Voice
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setVoice('heritage')}
-                className={`p-3.5 rounded-xl border text-left transition-all ${
+                className={`p-4 rounded-xl border text-left transition-all ${
                   voice === 'heritage'
-                    ? 'border-[#8B2E24] bg-amber-50/50 text-[#8B2E24] ring-1 ring-amber-300'
+                    ? 'border-[#8B2E24] bg-slate-50 text-[#8B2E24] ring-1 ring-[#8B2E24]/20'
                     : 'border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="font-serif font-bold text-sm block">Heritage</span>
-                <span className="text-[11px] text-slate-500 block mt-1">Marcellus + Lora Serif</span>
+                <span className="font-bold block text-sm">Heritage</span>
+                <span className="text-xs text-slate-500 block mt-1 font-serif">Marcellus &amp; Lora</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setVoice('editorial')}
-                className={`p-3.5 rounded-xl border text-left transition-all ${
+                className={`p-4 rounded-xl border text-left transition-all ${
                   voice === 'editorial'
-                    ? 'border-[#8B2E24] bg-amber-50/50 text-[#8B2E24] ring-1 ring-amber-300'
+                    ? 'border-[#8B2E24] bg-slate-50 text-[#8B2E24] ring-1 ring-[#8B2E24]/20'
                     : 'border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="font-sans font-bold text-sm block">Editorial</span>
-                <span className="text-[11px] text-slate-500 block mt-1">Marcellus + Figtree Sans</span>
+                <span className="font-bold block text-sm">Editorial</span>
+                <span className="text-xs text-slate-500 block mt-1 font-serif">Curated magazine tone</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setVoice('institutional')}
-                className={`p-3.5 rounded-xl border text-left transition-all ${
+                className={`p-4 rounded-xl border text-left transition-all ${
                   voice === 'institutional'
-                    ? 'border-[#8B2E24] bg-amber-50/50 text-[#8B2E24] ring-1 ring-amber-300'
+                    ? 'border-[#8B2E24] bg-slate-50 text-[#8B2E24] ring-1 ring-[#8B2E24]/20'
                     : 'border-slate-200 hover:border-slate-300 text-slate-700'
                 }`}
               >
-                <span className="font-sans font-bold text-sm block">Institutional</span>
-                <span className="text-[11px] text-slate-500 block mt-1">Clean Figtree Pure Sans</span>
+                <span className="font-bold block text-sm">Institutional</span>
+                <span className="text-xs text-slate-500 block mt-1 font-sans">Figtree clean modern</span>
               </button>
             </div>
           </div>
@@ -423,7 +421,7 @@ export default function TypographyStylingPage() {
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs sticky top-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-amber-700" />
+                <Eye className="w-4 h-4 text-[#8B2E24]" />
                 <h3 className="text-sm font-bold text-slate-900">Live Typography Preview</h3>
               </div>
               <span className="text-[11px] font-mono text-slate-500">
@@ -431,9 +429,9 @@ export default function TypographyStylingPage() {
               </span>
             </div>
 
-            {/* Preview Box styled as authentic public cream paper */}
+            {/* Preview Box styled as crisp clean light preview surface */}
             <div
-              className="p-5 rounded-xl border border-[#E4DDD1] bg-[#F4F0E7] text-[#33261F] transition-all space-y-3"
+              className="p-5 rounded-xl border border-slate-200 bg-white text-slate-900 shadow-xs transition-all space-y-3"
               style={{
                 fontSize: `${14 * globalScale}px`,
                 fontFamily: voice === 'institutional' ? 'Figtree, sans-serif' : 'Lora, Georgia, serif',
@@ -443,11 +441,11 @@ export default function TypographyStylingPage() {
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#8B2E24] text-white">
                   HAB Validated
                 </span>
-                <span className="text-xs text-[#6B5A4C] font-mono">Thimphu, Bhutan</span>
+                <span className="text-xs text-slate-500 font-mono">Thimphu, Bhutan</span>
               </div>
 
               <h4
-                className="font-bold leading-tight text-[#33261F]"
+                className="font-bold leading-tight text-slate-900"
                 style={{
                   fontSize: `${20 * globalScale}px`,
                   fontFamily: voice === 'institutional' ? 'Figtree, sans-serif' : 'Marcellus, serif',
@@ -456,13 +454,13 @@ export default function TypographyStylingPage() {
                 Handcrafted Textiles &amp; Woodturning of Zorig Chusum
               </h4>
 
-              <p className="leading-relaxed text-[#4A3C33]">
+              <p className="leading-relaxed text-slate-600">
                 Handicrafts Association of Bhutan stewards indigenous master craftsmanship across all twenty dzongkhags. Every piece is validated for traditional authenticity and fair artisan compensation.
               </p>
 
-              <div className="pt-2 flex items-center justify-between border-t border-[#E4DDD1]">
+              <div className="pt-2 flex items-center justify-between border-t border-slate-100">
                 <span className="font-bold text-[#8B2E24]">Nu. 2,850 · $34.00</span>
-                <span className="text-xs text-[#6B5A4C] underline font-medium">Explore Details →</span>
+                <span className="text-xs text-[#8B2E24] underline font-medium">Explore Details →</span>
               </div>
             </div>
 

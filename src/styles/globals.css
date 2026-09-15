@@ -42,6 +42,21 @@ body.hab-admin-body,
   background-color: #f8fafc !important;
   background: #f8fafc !important;
   color: #0f172a !important;
+  --bg: #f8fafc !important;
+  --surface: #ffffff !important;
+  --line: #e2e8f0 !important;
+  --line-soft: #f1f5f9 !important;
+  --field-border: #cbd5e1 !important;
+  --muted: #64748b !important;
+  --ink: #0f172a !important;
+  --ink-2: #1e293b !important;
+  --on-dark: #0f172a !important;
+  --on-dark-body: #334155 !important;
+  --dark-line: #e2e8f0 !important;
+  --dark-line-2: #e2e8f0 !important;
+  --dark-surface-2: #ffffff !important;
+  --hover-nav: #f1f5f9 !important;
+  --hover-menu: #f8fafc !important;
 }
 
 * {

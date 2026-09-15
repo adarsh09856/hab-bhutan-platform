@@ -430,7 +430,7 @@ SWIFT Code: BOBTBLBT`;
           onClick={() => setActiveTab('pillars')}
           className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
             activeTab === 'pillars'
-              ? 'border-amber-600 text-amber-800'
+              ? 'border-amber-600 text-slate-800'
               : 'border-transparent admin-muted hover:text-slate-900'
           }`}
         >
@@ -442,7 +442,7 @@ SWIFT Code: BOBTBLBT`;
           onClick={() => setActiveTab('donations')}
           className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
             activeTab === 'donations'
-              ? 'border-amber-600 text-amber-800'
+              ? 'border-amber-600 text-slate-800'
               : 'border-transparent admin-muted hover:text-slate-900'
           }`}
         >
@@ -454,7 +454,7 @@ SWIFT Code: BOBTBLBT`;
           onClick={() => setActiveTab('banking')}
           className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
             activeTab === 'banking'
-              ? 'border-amber-600 text-amber-800'
+              ? 'border-amber-600 text-slate-800'
               : 'border-transparent admin-muted hover:text-slate-900'
           }`}
         >
@@ -479,7 +479,7 @@ SWIFT Code: BOBTBLBT`;
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-xs font-mono bg-amber-50 text-amber-800 border border-amber-200">
+                          <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-800 border border-slate-200">
                             {p.key}
                           </span>
                           <button
@@ -568,7 +568,7 @@ SWIFT Code: BOBTBLBT`;
 
             <div className="admin-card p-4 rounded-xl border admin-border">
               <span className="text-xs font-semibold admin-muted uppercase tracking-wider">Average Gift</span>
-              <div className="text-2xl font-bold admin-title text-amber-800 mt-1">
+              <div className="text-2xl font-bold admin-title text-slate-800 mt-1">
                 ${donations.length > 0 ? Math.round(totalDonationsUSD / donations.length).toLocaleString() : '0'} USD
               </div>
               <p className="text-xs admin-muted mt-0.5">Across all support pillars</p>
@@ -677,7 +677,7 @@ SWIFT Code: BOBTBLBT`;
                         </td>
 
                         <td className="px-5 py-3.5">
-                          <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-800 border border-amber-200">
+                          <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-800 border border-slate-200">
                             {d.frequency === 'MONTHLY' ? 'Monthly' : 'One-Time'}
                           </span>
                         </td>
@@ -690,7 +690,7 @@ SWIFT Code: BOBTBLBT`;
                               d.status === 'COMPLETED'
                                 ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                                 : d.status === 'PENDING'
-                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                ? 'bg-slate-100 text-slate-800 border-slate-200'
                                 : 'bg-rose-50 text-rose-800 border-rose-200'
                             }`}
                           >
@@ -767,12 +767,12 @@ SWIFT Code: BOBTBLBT`;
 
               <div className="p-4 rounded-lg bg-slate-50 border admin-border space-y-1">
                 <span className="text-xs admin-muted uppercase tracking-wider font-semibold">Account Number</span>
-                <p className="text-sm font-mono font-bold text-amber-800">201104300189</p>
+                <p className="text-sm font-mono font-bold text-slate-800">201104300189</p>
               </div>
 
               <div className="p-4 rounded-lg bg-slate-50 border admin-border space-y-1">
                 <span className="text-xs admin-muted uppercase tracking-wider font-semibold">SWIFT / BIC Code</span>
-                <p className="text-sm font-mono font-bold text-amber-800">BOBTBLBT</p>
+                <p className="text-sm font-mono font-bold text-slate-800">BOBTBLBT</p>
               </div>
             </div>
           </div>
@@ -1102,8 +1102,8 @@ SWIFT Code: BOBTBLBT`;
 
             {/* Receipt Body */}
             <div className="space-y-6 text-slate-800">
-              <div className="text-center py-2 bg-amber-50 rounded-lg border border-amber-200">
-                <span className="text-xs uppercase font-bold tracking-widest text-amber-900">
+              <div className="text-center py-2 bg-slate-100 rounded-lg border border-slate-200">
+                <span className="text-xs uppercase font-bold tracking-widest text-slate-900">
                   Official Tax Exemption Receipt
                 </span>
               </div>

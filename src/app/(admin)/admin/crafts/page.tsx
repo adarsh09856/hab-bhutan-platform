@@ -288,7 +288,7 @@ export default function AdminCraftsPage() {
                 <td className="px-5 py-4 font-semibold text-slate-900">
                   {c.name} <span className="text-xs text-slate-500 font-normal">({c.english})</span>
                 </td>
-                <td className="px-5 py-4 font-serif text-base text-amber-800 font-medium">
+                <td className="px-5 py-4 font-serif text-base text-slate-800 font-medium">
                   {c.dzongkha || '—'}
                 </td>
                 <td className="px-5 py-4 text-xs text-slate-600 max-w-xs truncate">

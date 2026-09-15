@@ -145,10 +145,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       group: '1. Website Pages',
       items: [
+        { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
         { label: 'All Pages Directory', href: '/admin/pages', icon: Layers, badge: 'All 15' },
         { label: 'Homepage Studio (A–Z)', href: '/admin/pages/home', icon: LayoutDashboard, badge: 'Studio' },
         { label: 'About Us Studio', href: '/admin/pages/about', icon: BookOpen, badge: 'Studio' },
-        { label: 'Hero Slideshow', href: '/admin/hero', icon: ImageIcon, badge: 'Hero' },
         { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen, badge: 'A–K' },
         { label: 'Donor Projects', href: '/admin/projects', icon: FolderKanban },
         { label: 'Outlets & Craft Shops', href: '/admin/clusters-outlets', icon: Store },
@@ -157,7 +157,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'News & Stories', href: '/admin/content', icon: FileText },
         { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
         { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
-        { label: 'B2B Wholesale Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
         { label: 'Customer Inquiries', href: '/admin/inquiries', icon: Mail },
         { label: 'Policies & Rules', href: '/admin/policies', icon: ShieldCheck },
         { label: 'The 13 Crafts', href: '/admin/crafts', icon: Palette },
@@ -166,11 +165,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       group: '2. Shop & E-Commerce',
       items: [
+        { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag },
         { label: 'Online Orders', href: '/admin/orders', icon: Package },
         { label: 'Counter Billing (Online POS)', href: '/admin/pos', icon: Store, badge: 'Live POS' },
-        { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag },
         { label: 'Payment Settings', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
-        { label: 'Wholesale Accounts', href: '/admin/wholesale', icon: BadgePercent, badge: 'Wholesale' },
+        { label: 'Wholesale Accounts & Orders', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
       ],
     },
     {
@@ -196,7 +195,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       group: '5. Overview & Reports',
       items: [
-        { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
         { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
         { label: 'System Status', href: '/admin/settings', icon: Settings },
       ],
@@ -226,7 +224,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="hab-admin min-h-screen bg-slate-50 text-slate-900 flex flex-col relative overflow-x-hidden selection:bg-amber-500/20 selection:text-amber-900">
+    <div className="hab-admin min-h-screen bg-slate-50 text-slate-900 flex flex-col relative overflow-x-hidden selection:bg-[#8B2E24]/20 selection:text-slate-900">
       {/* Top Clean Header */}
       <header className="sticky top-0 z-40 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 shadow-xs">
         {/* Left: Mobile hamburger & breadcrumbs */}
@@ -295,12 +293,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link
             href="/admin/localization"
             title="Manage Store Currency & Language Settings"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-xs font-mono text-amber-900 transition-colors"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-xs font-mono text-slate-700 transition-colors"
           >
-            <Globe className="w-3.5 h-3.5 text-amber-700" />
+            <Globe className="w-3.5 h-3.5 text-slate-500" />
             <span>Currency &amp; Language</span>
             {health?.fx?.rate && (
-              <span className="hidden xl:inline text-[10px] text-amber-800 border-l border-amber-300 pl-1.5 ml-1 font-semibold">
+              <span className="hidden xl:inline text-[10px] text-slate-600 border-l border-slate-300 pl-1.5 ml-1 font-semibold">
                 Nu. {Number(health.fx.rate).toFixed(2)}
               </span>
             )}
@@ -315,7 +313,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="text-xs font-semibold text-slate-800 leading-tight">
                 {health?.user?.name || 'Administrator'}
               </div>
-              <div className="text-[10px] text-amber-800 font-mono font-medium">
+              <div className="text-[10px] text-[#8B2E24] font-mono font-medium">
                 {health?.user?.role || 'Super Admin'}
               </div>
             </div>
@@ -339,7 +337,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div>
                 <span className="font-bold text-sm tracking-tight text-slate-900 block">HAB Secretariat</span>
-                <span className="text-[10px] text-amber-800 font-mono font-semibold tracking-wider block">ADMIN CONSOLE</span>
+                <span className="text-[10px] text-[#8B2E24] font-mono font-semibold tracking-wider block">ADMIN CONSOLE</span>
               </div>
             </Link>
 
@@ -450,7 +448,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="text-slate-800 font-semibold text-xs truncate">
                   {health?.user?.name || 'Staff Administrator'}
                 </div>
-                <div className="text-[10.5px] text-amber-800 font-mono font-medium">
+                <div className="text-[10.5px] text-[#8B2E24] font-mono font-medium">
                   {health?.user?.role || 'Super Admin'}
                 </div>
               </div>

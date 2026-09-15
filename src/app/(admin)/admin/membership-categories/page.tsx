@@ -208,7 +208,7 @@ export default function AdminMembershipCategoriesPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-xs font-mono bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-800 border border-slate-200">
                         {cat.key}
                       </span>
                       {cat.isActive ? (
@@ -247,7 +247,7 @@ export default function AdminMembershipCategoriesPage() {
                 <div className="p-3 rounded-lg bg-slate-50 border admin-border flex items-center justify-between">
                   <div>
                     <span className="text-xs admin-muted uppercase tracking-wider block">Annual Dues</span>
-                    <span className="text-base font-bold admin-title text-amber-800">
+                    <span className="text-base font-bold admin-title text-slate-800">
                       Nu. {cat.duesBTN.toLocaleString()} / year
                     </span>
                   </div>

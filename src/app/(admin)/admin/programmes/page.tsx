@@ -189,7 +189,7 @@ export default function AdminProgrammesPage() {
             <GlassCard key={p.id} glow="amber" className="admin-card p-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="font-mono text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                  <span className="font-mono text-xs font-bold text-slate-800 bg-amber-100 border border-slate-300 px-2.5 py-0.5 rounded-full">
                     Pillar {String(p.ref || '').toUpperCase()}
                   </span>
                   <GlassBadge status={p.isActive ? 'ACTIVE' : 'SUSPENDED'} />

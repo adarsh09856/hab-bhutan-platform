@@ -261,7 +261,7 @@ export default function AdminEventsPage() {
                       <div className="text-xs admin-muted font-mono mt-0.5">key: {ev.key}</div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
                         {ev.category}
                       </span>
                     </td>

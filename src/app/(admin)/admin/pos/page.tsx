@@ -312,7 +312,7 @@ export default function OnlinePosConsole() {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <h1 className="text-xl font-bold admin-title flex items-center gap-2">
-              <Store className="w-5 h-5 text-amber-800" />
+              <Store className="w-5 h-5 text-slate-800" />
               Counter Billing (Online POS)
             </h1>
             <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -330,7 +330,7 @@ export default function OnlinePosConsole() {
             <button
               onClick={() => setCurrency('BTN')}
               className={`px-3 py-1 rounded-md transition ${
-                currency === 'BTN' ? 'bg-white text-amber-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                currency === 'BTN' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Nu. BTN
@@ -338,7 +338,7 @@ export default function OnlinePosConsole() {
             <button
               onClick={() => setCurrency('USD')}
               className={`px-3 py-1 rounded-md transition ${
-                currency === 'USD' ? 'bg-white text-amber-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                currency === 'USD' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               USD $
@@ -450,7 +450,7 @@ export default function OnlinePosConsole() {
                         </span>
                       </div>
 
-                      <span className="text-[10px] font-semibold text-amber-800 block uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-slate-800 block uppercase tracking-wider">
                         {p.craft?.name || p.craftKey || 'Handicraft'}
                       </span>
                       <h4 className="text-xs font-bold admin-title line-clamp-2 mt-0.5 leading-tight">
@@ -497,9 +497,9 @@ export default function OnlinePosConsole() {
         <div className="lg:col-span-5 admin-card border admin-border rounded-xl shadow-lg p-4 space-y-4 sticky top-4">
           <div className="flex items-center justify-between border-b admin-border pb-3">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-amber-800" />
+              <ShoppingCart className="w-5 h-5 text-slate-800" />
               <h2 className="text-base font-bold admin-title">Register Cart</h2>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-slate-900">
                 {cart.reduce((s, i) => s + i.quantity, 0)}
               </span>
             </div>
@@ -617,7 +617,7 @@ export default function OnlinePosConsole() {
                 onClick={() => setPaymentMethod('CASH')}
                 className={`py-2 px-2 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1 transition ${
                   paymentMethod === 'CASH'
-                    ? 'border-amber-800 bg-amber-50 text-amber-900 ring-2 ring-amber-800/20'
+                    ? 'border-amber-800 bg-slate-100 text-slate-900 ring-2 ring-amber-800/20'
                     : 'border-slate-200 hover:bg-slate-50 text-slate-700'
                 }`}
               >
@@ -629,7 +629,7 @@ export default function OnlinePosConsole() {
                 onClick={() => setPaymentMethod('MBOB')}
                 className={`py-2 px-2 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1 transition ${
                   paymentMethod === 'MBOB'
-                    ? 'border-amber-800 bg-amber-50 text-amber-900 ring-2 ring-amber-800/20'
+                    ? 'border-amber-800 bg-slate-100 text-slate-900 ring-2 ring-amber-800/20'
                     : 'border-slate-200 hover:bg-slate-50 text-slate-700'
                 }`}
               >
@@ -641,7 +641,7 @@ export default function OnlinePosConsole() {
                 onClick={() => setPaymentMethod('CARD')}
                 className={`py-2 px-2 rounded-lg border text-xs font-semibold flex flex-col items-center gap-1 transition ${
                   paymentMethod === 'CARD'
-                    ? 'border-amber-800 bg-amber-50 text-amber-900 ring-2 ring-amber-800/20'
+                    ? 'border-amber-800 bg-slate-100 text-slate-900 ring-2 ring-amber-800/20'
                     : 'border-slate-200 hover:bg-slate-50 text-slate-700'
                 }`}
               >
@@ -742,7 +742,7 @@ export default function OnlinePosConsole() {
             </div>
             <div className="flex justify-between text-base font-bold admin-title pt-1 border-t admin-border">
               <span>Grand Total:</span>
-              <span className="font-mono text-amber-900 text-lg">
+              <span className="font-mono text-slate-900 text-lg">
                 {currency === 'BTN' ? `Nu. ${cartSubtotalBTN.toLocaleString()}` : `$${cartSubtotalUSD.toFixed(2)}`}
               </span>
             </div>

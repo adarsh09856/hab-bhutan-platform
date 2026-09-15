@@ -185,7 +185,7 @@ export default function AdminMediaPage() {
                 onClick={() => setCategoryFilter(cat)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   categoryFilter === cat
-                    ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs'
+                    ? 'bg-amber-100 text-slate-900 border border-slate-300 shadow-2xs'
                     : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50'
                 }`}
               >
@@ -237,7 +237,7 @@ export default function AdminMediaPage() {
               {/* Slot Details */}
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-[10px] text-[#8b2e24] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 font-semibold">
+                  <span className="font-mono text-[10px] text-[#8b2e24] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 font-semibold">
                     {slot.key}
                   </span>
                 </div>
@@ -277,7 +277,7 @@ export default function AdminMediaPage() {
         subtitle={editingSlot?.key}
       >
         <div className="space-y-4 text-xs">
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 font-medium">
+          <div className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-900 font-medium">
             Enter a relative URL (e.g. <span className="font-mono font-bold">/assets/photos/...</span>) or external CDN link to immediately update this image asset.
           </div>
 
