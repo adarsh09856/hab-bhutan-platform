@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { Store, MapPin, Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Eye, Star } from 'lucide-react';
 import Link from 'next/link';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface Cluster {
   id: string;
@@ -541,13 +542,11 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div>
-                <label className="block admin-muted mb-1">Detailed Heritage Story</label>
-                <textarea
-                  rows={4}
-                  className="admin-input w-full p-2 rounded"
+                <RichTextEditor
+                  label="Detailed Heritage Story *"
                   value={clusterForm.story}
-                  onChange={(e) => setClusterForm({ ...clusterForm, story: e.target.value })}
-                  required
+                  onChange={(html) => setClusterForm({ ...clusterForm, story: html })}
+                  hint="The cultural origin story, techniques, and master artisans of this cluster."
                 />
               </div>
 
@@ -674,13 +673,11 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div>
-                <label className="block admin-muted mb-1">Long Editorial Description</label>
-                <textarea
-                  rows={3}
-                  className="admin-input w-full p-2 rounded"
+                <RichTextEditor
+                  label="Long Editorial Description *"
                   value={outletForm.longDescription}
-                  onChange={(e) => setOutletForm({ ...outletForm, longDescription: e.target.value })}
-                  required
+                  onChange={(html) => setOutletForm({ ...outletForm, longDescription: html })}
+                  hint="Detailed visitor overview, atmosphere, and craft products offered."
                 />
               </div>
 

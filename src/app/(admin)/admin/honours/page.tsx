@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { Award, Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import FileUploadInput from '@/components/admin/FileUploadInput';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface HonourItem {
   id: string;
@@ -311,14 +313,21 @@ export default function AdminHonoursPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Citation / Bio *</label>
-                <textarea
-                  rows={4}
+                <FileUploadInput
+                  label="Master Artisan Portrait Photograph"
+                  value={form.portraitUrl || ''}
+                  onChange={(url) => setForm({ ...form, portraitUrl: url })}
+                  accept="image/*"
+                  hint="Upload a portrait photo of the master craftsperson (JPG, PNG, WebP)."
+                />
+              </div>
+
+              <div>
+                <RichTextEditor
+                  label="Citation / Living Heritage Narrative *"
                   value={form.citation}
-                  onChange={(e) => setForm({ ...form, citation: e.target.value })}
-                  placeholder="Fifty-one years at the backstrap loom, and teacher to eleven weavers..."
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  onChange={(html) => setForm({ ...form, citation: html })}
+                  hint="Fifty-one years at the backstrap loom, and teacher to eleven weavers..."
                 />
               </div>
 

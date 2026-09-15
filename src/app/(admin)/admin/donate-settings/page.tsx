@@ -22,6 +22,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface Pillar {
   id: string;
@@ -838,14 +839,11 @@ SWIFT Code: BOBTBLBT`;
               </div>
 
               <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Description *</label>
-                <textarea
-                  rows={3}
+                <RichTextEditor
+                  label="Description & Impact Narrative *"
                   value={pillarForm.description}
-                  onChange={(e) => setPillarForm({ ...pillarForm, description: e.target.value })}
-                  placeholder="Describe where funds go and the impact on Bhutanese craftspeople..."
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  onChange={(html) => setPillarForm({ ...pillarForm, description: html })}
+                  hint="Describe where funds go and the impact on Bhutanese craftspeople..."
                 />
               </div>
 

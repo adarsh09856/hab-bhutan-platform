@@ -21,6 +21,7 @@ import {
   GlassDrawer, 
   GlassInput 
 } from '@/components/admin/GlassUI';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface PillarRecord {
   id: string;
@@ -66,8 +67,9 @@ export default function AdminProgrammesPage() {
       setEditingPillar(pillar);
       setActivitiesInput(Array.isArray(pillar.activities) ? pillar.activities.join('\n') : '');
     } else {
+      const nextLetter = String.fromCharCode(65 + Math.min(pillars.length, 25)); // A, B, C...
       setEditingPillar({
-        ref: `3.2.${pillars.length + 1}`,
+        ref: nextLetter,
         title: '',
         description: '',
         sortOrder: pillars.length + 1,
@@ -187,8 +189,8 @@ export default function AdminProgrammesPage() {
             <GlassCard key={p.id} glow="amber" className="admin-card p-5 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="font-mono text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
-                    Article {p.ref}
+                  <span className="font-mono text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                    Pillar {String(p.ref || '').toUpperCase()}
                   </span>
                   <GlassBadge status={p.isActive ? 'ACTIVE' : 'SUSPENDED'} />
                 </div>
@@ -255,12 +257,12 @@ export default function AdminProgrammesPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <GlassInput
-              label="Article Reference *"
+              label="Pillar Letter (A, B, C ... K) *"
               required
-              placeholder="e.g. 3.2.1"
+              placeholder="e.g. A"
               value={editingPillar?.ref || ''}
-              onChange={(e) => setEditingPillar({ ...editingPillar, ref: e.target.value })}
-              className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all"
+              onChange={(e) => setEditingPillar({ ...editingPillar, ref: e.target.value.toUpperCase() })}
+              className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all uppercase font-mono font-bold"
             />
 
             <GlassInput
@@ -282,15 +284,11 @@ export default function AdminProgrammesPage() {
           />
 
           <div>
-            <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
-              Description / Mandate Narrative *
-            </label>
-            <textarea
-              rows={4}
-              required
+            <RichTextEditor
+              label="Description / Mandate Narrative *"
               value={editingPillar?.description || ''}
-              onChange={(e) => setEditingPillar({ ...editingPillar, description: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl admin-input border text-xs focus:outline-hidden"
+              onChange={(html) => setEditingPillar({ ...editingPillar, description: html })}
+              hint="Detailed explanation of this programme pillar."
             />
           </div>
 

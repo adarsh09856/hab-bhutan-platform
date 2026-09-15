@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X } from 'lucide-react';
+import FileUploadInput from '@/components/admin/FileUploadInput';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface NewsItem {
   id: string;
@@ -812,40 +814,22 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div>
-                    <label className="block font-medium admin-text mb-1">Article Photograph</label>
-                    {newsForm.image_path ? (
-                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
-                        <img
-                          src={newsForm.image_path}
-                          alt="Article preview"
-                          className="w-16 h-12 object-cover rounded border admin-border flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-mono truncate admin-text">{newsForm.image_path}</p>
-                          <span className="text-[10px] text-emerald-600 font-semibold">✓ Photo ready</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setNewsForm({ ...newsForm, image_path: '' })}
-                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
-                          title="Remove photo"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
-                        <Upload className="w-4 h-4 text-slate-500" />
-                        <span>{uploadingFile ? 'Uploading photo...' : 'Upload Article Photograph (JPG, PNG, WebP)'}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          disabled={uploadingFile}
-                          onChange={(e) => handlePhotoUpload(e, false)}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
+                    <FileUploadInput
+                      label="Article Cover Photograph"
+                      value={newsForm.image_path}
+                      onChange={(url) => setNewsForm({ ...newsForm, image_path: url })}
+                      accept="image/*"
+                      hint="Upload cover photo for the article (JPG, PNG, WebP)."
+                    />
+                  </div>
+
+                  <div>
+                    <RichTextEditor
+                      label="Full Article Story / Content"
+                      value={newsForm.content}
+                      onChange={(html) => setNewsForm({ ...newsForm, content: html })}
+                      hint="Detailed article narrative, quotes, and reports."
+                    />
                   </div>
                 </>
               )}
@@ -1043,40 +1027,22 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div>
-                    <label className="block font-medium admin-text mb-1">Article Photograph</label>
-                    {editingItem.data.image_path ? (
-                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
-                        <img
-                          src={editingItem.data.image_path}
-                          alt="Article preview"
-                          className="w-16 h-12 object-cover rounded border admin-border flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-mono truncate admin-text">{editingItem.data.image_path}</p>
-                          <span className="text-[10px] text-emerald-600 font-semibold">✓ Photo attached</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setEditingItem({ ...editingItem, data: { ...editingItem.data, image_path: '' } })}
-                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
-                          title="Remove photo"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
-                        <Upload className="w-4 h-4 text-slate-500" />
-                        <span>{uploadingFile ? 'Uploading photo...' : 'Upload Article Photograph (JPG, PNG, WebP)'}</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          disabled={uploadingFile}
-                          onChange={(e) => handlePhotoUpload(e, true)}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
+                    <FileUploadInput
+                      label="Article Cover Photograph"
+                      value={editingItem.data.image_path || ''}
+                      onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, image_path: url } })}
+                      accept="image/*"
+                      hint="Upload cover photo for the article (JPG, PNG, WebP)."
+                    />
+                  </div>
+
+                  <div>
+                    <RichTextEditor
+                      label="Full Article Story / Content"
+                      value={editingItem.data.content || ''}
+                      onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, content: html } })}
+                      hint="Detailed article narrative, quotes, and reports."
+                    />
                   </div>
                 </>
               )}

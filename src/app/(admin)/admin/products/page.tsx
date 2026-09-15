@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 // Intuitive, non-technical drag-and-drop & file picker photo uploader
 function ImageUploadField({
@@ -824,15 +825,12 @@ export default function AdminProductsPage() {
           />
 
           <div>
-            <label className="block font-medium admin-text mb-1">Curatorial Provenance &amp; Materials</label>
-            <textarea
-              rows={3}
-              placeholder="Carved from Himalayan pine wood, cured in natural oil pigments according to Zorig Chusum canons..."
+            <RichTextEditor
+              label="Curatorial Provenance, Materials & Cultural Context"
               value={addForm.description}
-              onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
-              className="w-full admin-input border rounded-lg px-3 py-2"
+              onChange={(html) => setAddForm({ ...addForm, description: html })}
+              hint="Story, materials used, techniques, and cultural symbolism."
             />
-            <span className="text-[10.5px] text-slate-500 block mt-1">Story, materials used, techniques, and cultural symbolism.</span>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t admin-border">
@@ -934,12 +932,11 @@ export default function AdminProductsPage() {
             />
 
             <div>
-              <label className="block font-medium admin-text mb-1">Description &amp; Cultural Context</label>
-              <textarea
-                rows={3}
+              <RichTextEditor
+                label="Description & Cultural Context"
                 value={editForm.description}
-                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                className="w-full admin-input border rounded-lg px-3 py-2"
+                onChange={(html) => setEditForm({ ...editForm, description: html })}
+                hint="Story, materials used, techniques, and cultural symbolism."
               />
             </div>
 

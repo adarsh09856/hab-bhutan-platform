@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface Slide {
   id: string;
@@ -46,16 +47,23 @@ export default function HeroSlidesAdminPage() {
   };
 
   const handleSave = async () => {
-    if (!form.imageUrl.trim() || !form.caption.trim() || !form.altText.trim()) {
-      flash('Image URL, Caption, and Alt Text are required.'); return;
+    if (!form.imageUrl.trim() || !form.caption.trim()) {
+      flash('Please upload a slide photograph and enter a caption.'); return;
     }
     setSaving(true);
     const url = editId ? `/api/admin/hero-slides/${editId}` : '/api/admin/hero-slides';
     const method = editId ? 'PUT' : 'POST';
-    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+    const r = await fetch(url, { 
+      method, 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({
+        ...form,
+        altText: form.altText.trim() || form.caption.trim(),
+      }) 
+    });
     setSaving(false);
     if (r.ok) {
-      flash(editId ? 'Slide updated.' : 'Slide added.');
+      flash(editId ? 'Slide updated successfully.' : 'New slide added successfully.');
       setShowForm(false);
       setEditId(null);
       load();
@@ -107,18 +115,16 @@ export default function HeroSlidesAdminPage() {
           <h2 className="text-base font-bold admin-title mb-4">{editId ? 'Edit Slide' : 'Add New Slide'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Image URL *</label>
-              <input
-                type="text"
+              <FileUploadInput
+                label="Hero Slide Photograph *"
                 value={form.imageUrl}
-                onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
-                placeholder="/images/hero/slide1.jpg or https://..."
-                className="w-full border admin-input rounded-lg px-3 py-2 text-sm focus:outline-none"
+                onChange={(url) => setForm(f => ({ ...f, imageUrl: url }))}
+                accept="image/*"
+                hint="Choose an image file from your computer or drag & drop. Recommended resolution: 1920x800px."
               />
-              <p className="text-xs admin-muted mt-1">Upload image to /public/images/hero/ on the server, then enter the path here.</p>
             </div>
             <div>
-              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Caption *</label>
+              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Slide Caption *</label>
               <input
                 type="text"
                 value={form.caption}
@@ -128,34 +134,34 @@ export default function HeroSlidesAdminPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Alt Text * (accessibility)</label>
+              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Image Description (for screen readers)</label>
               <input
                 type="text"
                 value={form.altText}
                 onChange={e => setForm(f => ({ ...f, altText: e.target.value }))}
-                placeholder="Description of the image for screen readers"
+                placeholder="Description of the craft or artisan"
                 className="w-full border admin-input rounded-lg px-3 py-2 text-sm focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Link URL (optional)</label>
+              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Button Destination Link (optional)</label>
               <input
                 type="text"
                 value={form.linkUrl}
                 onChange={e => setForm(f => ({ ...f, linkUrl: e.target.value }))}
-                placeholder="/shop or https://..."
+                placeholder="/shop or /about or https://..."
                 className="w-full border admin-input rounded-lg px-3 py-2 text-sm focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Sort Order</label>
+              <label className="block text-xs font-semibold admin-muted uppercase mb-1">Display Sort Order</label>
               <input
                 type="number"
                 value={form.sortOrder}
                 onChange={e => setForm(f => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))}
                 className="w-full border admin-input rounded-lg px-3 py-2 text-sm focus:outline-none"
               />
-              <p className="text-xs admin-muted mt-1">Lower number = shown first</p>
+              <p className="text-xs admin-muted mt-1">Lower number = shown first (e.g. 1, 2, 3)</p>
             </div>
             <div className="flex items-center gap-3 pt-5">
               <input
@@ -165,22 +171,9 @@ export default function HeroSlidesAdminPage() {
                 onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
                 className="w-4 h-4 accent-crm-primary"
               />
-              <label htmlFor="isActive" className="text-sm admin-title font-medium">Active (visible on homepage)</label>
+              <label htmlFor="isActive" className="text-sm admin-title font-medium">Active (visible on homepage slider)</label>
             </div>
           </div>
-
-          {/* Image preview */}
-          {form.imageUrl && (
-            <div className="mt-4">
-              <p className="text-xs admin-muted mb-1">Preview:</p>
-              <img
-                src={form.imageUrl}
-                alt={form.altText || 'Preview'}
-                className="h-32 rounded-lg object-cover border border-crm-border"
-                onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
-              />
-            </div>
-          )}
 
           <div className="flex gap-3 mt-4">
             <button

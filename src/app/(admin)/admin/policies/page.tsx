@@ -21,6 +21,7 @@ import {
   GlassBadge, 
   GlassButton 
 } from '@/components/admin/GlassUI';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 export default function AdminPoliciesPage() {
   const [policies, setPolicies] = useState<any[]>([]);
@@ -232,15 +233,12 @@ export default function AdminPoliciesPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs text-slate-700 font-semibold">Policy Document Body</label>
-                <span className="text-[10px] text-slate-500">Supports standard text with numbered sections</span>
-              </div>
-              <textarea
-                rows={18}
+              <RichTextEditor
+                label="Policy Document Clauses & Body"
                 value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 text-xs font-mono leading-relaxed focus:outline-none focus:border-[#8b2e24] resize-y shadow-sm"
+                onChange={(html) => setEditContent(html)}
+                minHeight="360px"
+                hint="Supports headings, numbered articles, bullet points, hyperlinks, and brand colors."
               />
             </div>
           </GlassCard>

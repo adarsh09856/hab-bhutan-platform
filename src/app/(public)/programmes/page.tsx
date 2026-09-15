@@ -106,7 +106,7 @@ export default function ProgrammesPage() {
               </figure>
               <div className="card__body">
                 <div className="programme__head">
-                  <span className="badge badge--ref">Art. 3.2({p.ref})</span>
+                  <span className="badge badge--ref">{String(p.ref || '').toUpperCase()}</span>
                   <h3 className="card__title clamp-2">{p.title}</h3>
                 </div>
                 <p className="card__text programme__desc clamp-4">{p.description}</p>

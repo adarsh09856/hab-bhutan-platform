@@ -13,12 +13,12 @@ export default function AdminRootLayout({
 }) {
   return (
     <div
-      className="hab-admin min-h-screen bg-[#020617] text-slate-100 antialiased"
-      style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc' }}
+      className="hab-admin min-h-screen bg-slate-50 text-slate-900 antialiased"
+      style={{ backgroundColor: '#f8fafc', minHeight: '100vh', color: '#0f172a' }}
     >
       <script
         dangerouslySetInnerHTML={{
-          __html: `document.documentElement.style.backgroundColor='#020617';document.body.style.backgroundColor='#020617';document.body.classList.add('hab-admin-body');`,
+          __html: `document.documentElement.style.backgroundColor='#f8fafc';document.body.style.backgroundColor='#f8fafc';document.body.classList.add('hab-admin-body');`,
         }}
       />
       {children}

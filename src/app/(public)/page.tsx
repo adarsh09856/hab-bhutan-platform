@@ -211,6 +211,36 @@ export default function HomePage() {
     },
   ]);
 
+  const [outlets, setOutlets] = useState<any[]>([
+    {
+      key: 'thimphu-outlet',
+      type: 'Outlet',
+      name: 'HAB Craft Outlet, Thimphu',
+      place: 'Metog Lam, Thimphu',
+      note: 'The association’s own shop at the secretariat, carrying work from all thirteen crafts.',
+      hours: 'Mon–Sat, 09:00 – 17:00',
+      image_path: '/assets/photos/hero-5-desho.jpg',
+    },
+    {
+      key: 'paro-airport',
+      type: 'Outlet',
+      name: 'Paro Departures Counter',
+      place: 'Paro International Airport',
+      note: 'Last-minute purchases with export paperwork issued at the counter.',
+      hours: 'Aligned to departures',
+      image_path: '/assets/photos/hero-4-textiles.jpg',
+    },
+    {
+      key: 'bumthang-outlet',
+      type: 'Outlet',
+      name: 'Chumey Yathra Outlet',
+      place: 'Chumey, Bumthang',
+      note: 'Yathra wool sold at the loom, alongside the weaving shed.',
+      hours: 'Daily, 08:00 – 17:00',
+      image_path: '/assets/photos/hero-1-weaving.jpg',
+    },
+  ]);
+
   const [clusters, setClusters] = useState<any[]>([
     {
       key: 'khoma',
@@ -357,10 +387,10 @@ export default function HomePage() {
   ]);
 
   const [publications, setPublications] = useState<any[]>([
-    { kind: 'Latest · Annual report', title: 'Annual Report 2025', meta: 'PDF · 4.2 MB · English & Dzongkha', file_url: '/publications' },
-    { kind: 'Strategy', title: 'Five-Year Strategic Plan 2026–2030', meta: 'PDF · 3.6 MB · Board approved', file_url: '/publications' },
-    { kind: 'Sector study', title: 'Zorig Chusum Value Chain Assessment', meta: 'PDF · 2.8 MB · 96 pages', file_url: '/publications' },
-    { kind: 'Accounts', title: 'Audited Financial Statements 2025', meta: 'PDF · 1.1 MB · Independent auditor', file_url: '/publications' },
+    { kind: 'Latest · Annual reports', title: 'HAB Annual Craft Sector Impact Report 7582', meta: 'PDF · Document', file_url: '/publications' },
+    { kind: 'Annual reports', title: 'HAB Annual Craft Sector Impact Report 5637', meta: 'PDF · Document', file_url: '/publications' },
+    { kind: 'Strategy', title: 'Five-Year Strategic Plan 2026–2030', meta: 'PDF · Document', file_url: '/publications' },
+    { kind: 'Sector study', title: 'Zorig Chusum Value Chain Assessment', meta: 'PDF · Document', file_url: '/publications' },
   ]);
 
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
@@ -950,6 +980,30 @@ export default function HomePage() {
           </div>
         </article>
 
+        {/* Physical outlets grid (3 columns matching index.html lines 346-360 & Image 2) */}
+        <div className="grid grid--3" style={{ marginBottom: '48px', marginTop: '32px' }}>
+          {outlets.map((o) => (
+            <Link key={o.key} className="card outlet" href={`/outlet?outlet=${o.key}`} style={{ color: 'inherit' }}>
+              <figure className="frame frame--wide16">
+                <img
+                  src={o.image_path || '/assets/photos/hero-2-punakha.jpg'}
+                  alt={o.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
+                />
+                <figcaption className="frame__caption frame__caption--sm">{o.name}</figcaption>
+              </figure>
+              <div className="card__body">
+                <span className="tag">{o.type || 'Outlet'}</span>
+                <h3 className="card__title clamp-2">{o.name}</h3>
+                <p className="card__meta clamp-1">{o.place}</p>
+                <p className="card__text clamp-3">{o.note || o.description}</p>
+                {o.hours && <p className="outlet__hours">{o.hours}</p>}
+              </div>
+            </Link>
+          ))}
+        </div>
+
         {/* Artisan clusters subhead */}
         <div className="subhead" id="clusters">
           <div>
@@ -1096,7 +1150,7 @@ export default function HomePage() {
           {programmes.slice(0, 3).map((p, idx) => (
             <article key={p.ref || idx} className="card programme">
               <div className="programme__head">
-                <span className="badge badge--ref">Art. 3.2({p.ref})</span>
+                <span className="badge badge--ref">{String(p.ref || '').toUpperCase()}</span>
                 <h3 className="card__title clamp-3">{p.title}</h3>
               </div>
               <p className="card__text programme__desc">{p.description}</p>

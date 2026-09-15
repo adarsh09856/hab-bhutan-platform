@@ -33,9 +33,9 @@ html:has(.hab-admin),
 body:has(.hab-admin),
 body.hab-admin-body,
 .hab-admin {
-  background-color: #020617 !important;
-  background: #020617 !important;
-  color: #f8fafc !important;
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
 }
 
 * {
@@ -114,3 +114,15 @@ img {
     transition-delay: 0s !important;
   }
 }
+
+/* Front-End Visual Edit Mode (Logged-in Admins Only) */
+body.hab-visual-edit-on [data-hab-section] {
+  position: relative;
+  transition: outline 0.15s ease-in-out;
+}
+
+body.hab-visual-edit-on [data-hab-section]:hover {
+  outline: 2px dashed #8B2E24;
+  outline-offset: 4px;
+}
+
