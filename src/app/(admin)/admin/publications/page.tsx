@@ -19,6 +19,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface Publication {
   id: string;

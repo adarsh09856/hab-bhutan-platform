@@ -26,6 +26,7 @@ import {
   GlassDrawer, 
   GlassInput 
 } from '@/components/admin/GlassUI';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 export default function AdminMediaPage() {
   const [slots, setSlots] = useState<any[]>([]);
@@ -281,31 +282,13 @@ export default function AdminMediaPage() {
           </div>
 
           <div>
-            <label className="block text-slate-700 mb-1 font-semibold">Image URL / Path</label>
-            <input
-              type="text"
+            <FileUploadInput
+              label="Image Photograph / File"
               value={editUrl}
-              onChange={(e) => setEditUrl(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 font-mono focus:outline-none focus:border-[#8b2e24] shadow-sm"
+              onChange={(url) => setEditUrl(url)}
+              accept="image/*,application/pdf"
+              hint="Supports JPG, PNG, WEBP, SVG, and documents up to 30MB"
             />
-          </div>
-
-          <div>
-            <label className="block text-slate-700 mb-1 font-semibold">Live Image Preview</label>
-            <div className="w-full h-48 bg-slate-50 rounded-xl border border-slate-200 overflow-hidden flex items-center justify-center relative shadow-xs">
-              {editUrl ? (
-                <img
-                  src={editUrl}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                  onError={(e: any) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ) : (
-                <span className="text-slate-400 italic">No image URL specified</span>
-              )}
-            </div>
           </div>
 
           <div>

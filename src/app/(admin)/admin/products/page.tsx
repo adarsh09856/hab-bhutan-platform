@@ -22,164 +22,7 @@ import {
 import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
 import RichTextEditor from '@/components/admin/RichTextEditor';
-
-// Intuitive, non-technical drag-and-drop & file picker photo uploader
-function ImageUploadField({
-  value,
-  onChange,
-  label = 'Product Photograph',
-}: {
-  value: string;
-  onChange: (url: string) => void;
-  label?: string;
-}) {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const [showManualUrl, setShowManualUrl] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFile = async (file: File) => {
-    if (!file) return;
-    setError('');
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: fd,
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (res.ok && data.success && data.url) {
-        onChange(data.url);
-      } else {
-        setError(data.error || 'Failed to upload photo. Please check format and try again.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Upload connection error.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <label className="block font-semibold text-slate-800 text-xs">{label}</label>
-
-      {/* Upload Zone & Live Preview */}
-      {value ? (
-        <div className="relative rounded-xl border border-slate-200 p-3.5 bg-slate-50 flex items-center gap-4">
-          <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 flex-none border border-slate-200 relative shadow-inner">
-            <img
-              src={value}
-              alt="Product preview"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg';
-              }}
-            />
-          </div>
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="text-xs text-slate-900 font-medium truncate font-mono">
-              {value.split('/').pop()}
-            </div>
-            <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" /> Photo uploaded and attached
-            </div>
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer shadow-xs"
-              >
-                Change photo
-              </button>
-              <button
-                type="button"
-                onClick={() => onChange('')}
-                className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-            uploading
-              ? 'border-amber-500 bg-amber-50'
-              : 'border-slate-300 hover:border-amber-500 hover:bg-slate-50'
-          }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                handleFile(e.target.files[0]);
-              }
-            }}
-          />
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <div className="w-11 h-11 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
-              <Upload className={`w-5 h-5 ${uploading ? 'animate-bounce' : ''}`} />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-800">
-                {uploading ? 'Uploading image to server...' : 'Click to choose photo from computer/phone, or drag & drop here'}
-              </div>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Supports JPG, PNG, WEBP files up to 10MB
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <p className="text-rose-700 text-[11px] flex items-center gap-1.5 p-2 rounded bg-rose-50 border border-rose-200">
-          <AlertTriangle className="w-3.5 h-3.5 flex-none text-rose-600" /> {error}
-        </p>
-      )}
-
-      {/* Optional fallback for advanced manual URL entry */}
-      <div className="pt-1">
-        <button
-          type="button"
-          onClick={() => setShowManualUrl(!showManualUrl)}
-          className="text-[11px] text-slate-500 hover:text-amber-700 transition-colors cursor-pointer underline"
-        >
-          {showManualUrl ? '− Hide web link option' : '+ Or paste image web link manually'}
-        </button>
-        {showManualUrl && (
-          <div className="mt-1.5">
-            <input
-              type="text"
-              placeholder="e.g. /assets/photos/product-sample.jpg or https://..."
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              className="w-full admin-input border rounded-lg px-3 py-2 font-mono text-[11px]"
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -818,10 +661,12 @@ export default function AdminProductsPage() {
           </div>
 
           {/* Photo Uploader Component */}
-          <ImageUploadField
+          <FileUploadInput
             value={addForm.imageUrl}
             onChange={(url) => setAddForm({ ...addForm, imageUrl: url, images: url ? [{ url, role: 'primary' }] : [] })}
-            label="Product Photograph (Upload from your computer or phone)"
+            label="Product Photograph (Upload from computer/phone, or drag & drop)"
+            accept="image/*"
+            hint="Supports JPG, PNG, WEBP, SVG up to 30MB"
           />
 
           <div>
@@ -925,10 +770,12 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Photo Uploader Component */}
-            <ImageUploadField
+            <FileUploadInput
               value={editForm.imageUrl}
               onChange={(url) => setEditForm({ ...editForm, imageUrl: url, images: url ? [{ url, role: 'primary' }] : [] })}
-              label="Product Photograph (Upload from your computer or phone)"
+              label="Product Photograph (Upload from computer/phone, or drag & drop)"
+              accept="image/*"
+              hint="Supports JPG, PNG, WEBP, SVG up to 30MB"
             />
 
             <div>

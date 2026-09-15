@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign, ExternalLink, ArrowRight } from 'lucide-react';
+import FileUploadInput from '@/components/admin/FileUploadInput';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 export default function AdminSiteSettingsPage() {
   const [tab, setTab] = useState<'HOMEPAGE' | 'LOCALIZATION' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
@@ -970,42 +972,31 @@ export default function AdminSiteSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
-                Narrative Paragraph 1
-              </label>
-              <textarea
-                rows={3}
+              <RichTextEditor
+                label="Narrative Paragraph 1"
                 value={form.aboutBandPara1}
-                onChange={(e) => setForm({ ...form, aboutBandPara1: e.target.value })}
+                onChange={(html) => setForm({ ...form, aboutBandPara1: html })}
                 placeholder="Handicrafts Association of Bhutan (HAB) plays a critical role in the Bhutanese handicrafts sector..."
-                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
-                Narrative Paragraph 2
-              </label>
-              <textarea
-                rows={3}
+              <RichTextEditor
+                label="Narrative Paragraph 2"
                 value={form.aboutBandPara2}
-                onChange={(e) => setForm({ ...form, aboutBandPara2: e.target.value })}
+                onChange={(html) => setForm({ ...form, aboutBandPara2: html })}
                 placeholder="Our nationwide network supports more than 7,500 micro and small craft enterprises..."
-                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
-                  Featured Image URL or Path
-                </label>
-                <input
-                  type="text"
+                <FileUploadInput
+                  label="Featured Story Image"
                   value={form.aboutBandImageUrl}
-                  onChange={(e) => setForm({ ...form, aboutBandImageUrl: e.target.value })}
-                  placeholder="/images/training_workshop.jpg"
-                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                  onChange={(url) => setForm({ ...form, aboutBandImageUrl: url })}
+                  accept="image/*"
+                  hint="Upload photo from computer/phone for the homepage story card"
                 />
               </div>
 

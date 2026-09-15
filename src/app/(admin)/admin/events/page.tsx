@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Edit2, Trash2, CheckCircle, XCircle, Search } from 'lucide-react';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 interface EventItem {
   id: string;
@@ -463,14 +464,12 @@ export default function AdminEventsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Description / Summary *</label>
-                <textarea
-                  rows={4}
+                <RichTextEditor
+                  label="Event Description & Schedule Details *"
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onChange={(html) => setForm({ ...form, description: html })}
                   placeholder="Forty member enterprises exhibit across three days, with live demonstrations..."
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  hint="Include programme details, artisan workshops, and exhibition highlights."
                 />
               </div>
 

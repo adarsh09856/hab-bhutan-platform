@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
+import FileUploadInput from '@/components/admin/FileUploadInput';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 const DZONGKHAGS = [
   'Thimphu', 'Paro', 'Punakha', 'Wangdue Phodrang', 'Chhukha', 'Haa', 'Samtse',
@@ -525,24 +527,22 @@ export default function AdminMembersPage() {
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block admin-text font-semibold mb-1">Portrait Image URL</label>
-                  <input
-                    type="text"
+                  <FileUploadInput
+                    label="Artisan Portrait / Workshop Photo"
                     value={createForm.portraitUrl}
-                    onChange={(e) => setCreateForm({ ...createForm, portraitUrl: e.target.value })}
-                    placeholder="/images/artisan-default.jpg"
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono text-[11px]"
+                    onChange={(url) => setCreateForm({ ...createForm, portraitUrl: url })}
+                    accept="image/*"
+                    hint="Upload portrait photo of the master artisan or craft workshop"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block admin-text font-semibold mb-1">Artisan Bio &amp; Craft Background</label>
-                  <textarea
-                    rows={3}
+                  <RichTextEditor
+                    label="Artisan Bio & Craft Background"
                     value={createForm.bio}
-                    onChange={(e) => setCreateForm({ ...createForm, bio: e.target.value })}
+                    onChange={(html) => setCreateForm({ ...createForm, bio: html })}
                     placeholder="Generational weaver specialising in natural dye yathra and bura silks..."
-                    className="w-full border border-slate-300 rounded px-3 py-2"
+                    hint="Mastery lineage, techniques used, awards, and historical heritage."
                   />
                 </div>
               </div>
@@ -684,23 +684,23 @@ export default function AdminMembersPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Portrait URL</label>
-                  <input
-                    type="text"
+                <div className="col-span-2">
+                  <FileUploadInput
+                    label="Artisan Portrait / Workshop Photo"
                     value={editingMember.portraitUrl || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, portraitUrl: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono text-[11px]"
+                    onChange={(url) => setEditingMember({ ...editingMember, portraitUrl: url })}
+                    accept="image/*"
+                    hint="Upload portrait photo of the master artisan or craft workshop"
                   />
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block admin-text font-semibold mb-1">Artisan Bio</label>
-                  <textarea
-                    rows={3}
+                  <RichTextEditor
+                    label="Artisan Bio & Craft Background"
                     value={editingMember.bio || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, bio: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2"
+                    onChange={(html) => setEditingMember({ ...editingMember, bio: html })}
+                    placeholder="Generational weaver specialising in natural dye yathra and bura silks..."
+                    hint="Mastery lineage, techniques used, awards, and historical heritage."
                   />
                 </div>
               </div>
