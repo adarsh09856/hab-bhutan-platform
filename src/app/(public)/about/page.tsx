@@ -4,6 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
+
 
 export default function AboutPage() {
   const [siteSettings, setSiteSettings] = useState<any>(null);
@@ -125,7 +127,8 @@ export default function AboutPage() {
     <main id="main">
 
       {/* 1. Page Hero & Facts */}
-      <section className="section">
+      <section className="section relative" data-hab-section="about-hero">
+        <SectionEditBadge label="Who We Are / Mandate" studioHref="/admin/pages/about#mandate" />
         <p className="crumbs">
           <Link href="/">Home</Link> / About us
         </p>
@@ -155,7 +158,8 @@ export default function AboutPage() {
       </section>
 
       {/* 2. Vision & Mission Band */}
-      <section className="band">
+      <section className="band relative" data-hab-section="about-vision">
+        <SectionEditBadge label="Vision & Mission" studioHref="/admin/pages/about#vision" />
         <div className="band__inner vm">
           <div>
             <p className="eyebrow eyebrow--brass">Vision</p>
@@ -171,7 +175,9 @@ export default function AboutPage() {
       </section>
 
       {/* 3. Objectives */}
-      <section className="section">
+      <section className="section relative" data-hab-section="about-objectives">
+        <SectionEditBadge label="Strategic Objectives" studioHref="/admin/pages/about#mandate" />
+
         <div className="longread">
           <div>
             <p className="eyebrow eyebrow--accent">Objectives</p>
@@ -210,7 +216,8 @@ export default function AboutPage() {
       </section>
 
       {/* 5. Governance */}
-      <section className="section" id="governance">
+      <section className="section relative" id="governance" data-hab-section="about-governance">
+        <SectionEditBadge label="Governance Structure" studioHref="/admin/pages/about#board" />
         <div className="govwrap">
           <aside className="govintro">
             <p className="eyebrow eyebrow--accent">Governance</p>
@@ -242,7 +249,8 @@ export default function AboutPage() {
       </section>
 
       {/* 6. Board of Trustees */}
-      <section className="section">
+      <section className="section relative" data-hab-section="about-board">
+        <SectionEditBadge label="Board of Trustees" studioHref="/admin/pages/about#board" />
         <p className="eyebrow eyebrow--accent">Board of Trustees</p>
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Oversight body</h2>
         <div className="grid grid--people">
@@ -267,8 +275,10 @@ export default function AboutPage() {
       </section>
 
       {/* 7. Secretariat */}
-      <section className="section">
+      <section className="section relative" data-hab-section="about-team">
+        <SectionEditBadge label="Secretariat Team" studioHref="/admin/pages/about#team" />
         <p className="eyebrow eyebrow--accent">Secretariat</p>
+
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Our team</h2>
         <div className="grid grid--team">
           {teamList.map((t, idx) => (

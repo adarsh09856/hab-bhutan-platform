@@ -9,6 +9,8 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
+
 
 interface HeroSlide {
   id: string;
@@ -650,7 +652,8 @@ export default function HomePage() {
     <main id="main">
 
       {/* ========================= 1. HERO ========================= */}
-      <section className="section hero">
+      <section className="section hero relative" data-hab-section="hero">
+        <SectionEditBadge label="Hero Slideshow" studioHref="/admin/hero" />
         <div className="hero__copy">
           <p className="eyebrow eyebrow--accent">{siteSettings.heroEyebrow}</p>
           <h1 className="display display--hero">{siteSettings.tagline}</h1>
@@ -664,61 +667,43 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="carousel" aria-label="Who we are and what we do">
-          <div className="carousel__track">
-            {heroSlides.map((s, idx) => (
-              <div
-                key={s.id || idx}
-                className={`carousel__slide ${idx === currentHero ? 'is-on' : ''}`}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  opacity: idx === currentHero ? 1 : 0,
-                  transition: 'opacity .6s ease',
-                  zIndex: idx === currentHero ? 1 : 0,
-                }}
-              >
-                <img
-                  src={s.imageUrl}
-                  alt={s.altText || s.caption}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = SCENE_POOL[idx % SCENE_POOL.length]; }}
+        <div className="hero__visual">
+          <figure className="frame frame--hero has-image">
+            <img
+              src={heroSlides[currentHero]?.imageUrl || '/assets/photos/hero-1-weaving.jpg'}
+              alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || 'HAB craft artisan'}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes('hero-1-weaving.jpg')) {
+                  target.src = '/assets/photos/hero-1-weaving.jpg';
+                }
+              }}
+            />
+          </figure>
+          <div className="hero__meta">
+            <span className="caption">
+              {heroSlides[currentHero]?.caption || `photo ${currentHero + 1} — Bhutanese artisan craft`}
+            </span>
+            <div className="dots" role="tablist" aria-label="Hero carousel controls">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  className={`dot ${i === currentHero ? 'is-active' : ''}`}
+                  onClick={() => setCurrentHero(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  type="button"
                 />
-              </div>
-            ))}
-          </div>
-          <button
-            className="carousel__nav carousel__nav--prev"
-            type="button"
-            onClick={() => setCurrentHero((c) => (c - 1 + heroSlides.length) % heroSlides.length)}
-            aria-label="Previous photograph"
-          >
-            ‹
-          </button>
-          <button
-            className="carousel__nav carousel__nav--next"
-            type="button"
-            onClick={() => setCurrentHero((c) => (c + 1) % heroSlides.length)}
-            aria-label="Next photograph"
-          >
-            ›
-          </button>
-          <div className="carousel__dots">
-            {heroSlides.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className={`carousel__dot ${idx === currentHero ? 'is-on' : ''}`}
-                onClick={() => setCurrentHero(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
+              ))}
+            </div>
           </div>
         </div>
+
       </section>
 
       {/* ========================= 2. STATS ========================= */}
-      <section className="section section--tight">
+      <section className="section section--tight relative" data-hab-section="stats">
+        <SectionEditBadge label="Stats & Impact Counters" studioHref="/admin/site-settings" />
         <div className="stats">
           {siteSettings.stats.map((st, idx) => (
             <Link key={idx} href={st.url} className="stats__cell" style={{ color: 'inherit' }}>
@@ -730,7 +715,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 3. B2C / B2B GATEWAY ========================= */}
-      <section className="section section--tight" id="buy">
+      <section className="section section--tight relative" id="buy" data-hab-section="buy">
+        <SectionEditBadge label="Retail & Trade Gateway" studioHref="/admin/trade" />
         <div className="buyband">
           <div className="buyband__copy">
             <p className="eyebrow eyebrow--accent">Two ways to buy</p>
@@ -752,7 +738,9 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 4. ABOUT BAND ========================= */}
-      <section className="band" id="about">
+      <section className="band relative" id="about" data-hab-section="about">
+        <SectionEditBadge label="About HAB Band" studioHref="/admin/pages/about" />
+
         <div className="band__inner about">
           <div>
             <p className="eyebrow eyebrow--brass">About us</p>
@@ -775,7 +763,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 5. NEW IN THE SHOP ========================= */}
-      <section className="section" id="shop">
+      <section className="section relative" id="shop" data-hab-section="shop">
+        <SectionEditBadge label="Featured Crafts Shop" studioHref="/admin/products" />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">{t('home.latest_arrivals', 'Latest arrivals')}</p>
@@ -838,7 +827,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 6. ASSURANCE ========================= */}
-      <section className="section section--tight">
+      <section className="section section--tight relative" data-hab-section="assurance">
+        <SectionEditBadge label="Trust & Assurances" studioHref="/admin/site-settings" />
         <div className="assurance">
           <div className="assurance__cell">
             <h3 className="assurance__title">
@@ -872,7 +862,9 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 7. OUTLETS & PUNAKHA MARKET ========================= */}
-      <section className="section" id="outlets">
+      <section className="section relative" id="outlets" data-hab-section="outlets">
+        <SectionEditBadge label="Outlets & Punakha Market" studioHref="/admin/clusters-outlets" />
+
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Visit us in person</p>
@@ -1045,7 +1037,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 8. 13 CRAFTS ========================= */}
-      <section className="section" id="crafts">
+      <section className="section relative" id="crafts" data-hab-section="crafts">
+        <SectionEditBadge label="13 Crafts of Bhutan" studioHref="/admin/crafts" />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Zorig Chusum</p>
@@ -1095,7 +1088,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 9. MASTER CRAFTSPEOPLE ========================= */}
-      <section className="section" id="masters">
+      <section className="section relative" id="masters" data-hab-section="masters">
+        <SectionEditBadge label="Living Treasures & Honours" studioHref="/admin/honours" />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Recognised by the association</p>
@@ -1132,7 +1126,9 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 10. PROGRAMMES ========================= */}
-      <section className="section" id="programmes">
+      <section className="section relative" id="programmes" data-hab-section="programmes">
+        <SectionEditBadge label="Training Programmes (A–K)" studioHref="/admin/programmes" />
+
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Programmes &amp; projects</p>
@@ -1163,7 +1159,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 11. SUPPORT US ========================= */}
-      <section className="section support" id="support">
+      <section className="section support relative" id="support" data-hab-section="support">
+        <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Support us</p>
@@ -1195,7 +1192,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 12. MEMBERSHIP DUO ========================= */}
-      <section className="section" id="membership">
+      <section className="section relative" id="membership" data-hab-section="membership">
+        <SectionEditBadge label="Artisan Directory & Apply" studioHref="/admin/members" />
         <div className="duo">
           <div className="panel">
             <p className="eyebrow eyebrow--muted">Search the crafts</p>
@@ -1236,7 +1234,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 13. NEWSROOM & EVENTS ========================= */}
-      <section className="section" id="news">
+      <section className="section relative" id="news" data-hab-section="news">
+        <SectionEditBadge label="News & Events" studioHref="/admin/content" />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Newsroom</p>
@@ -1316,7 +1315,8 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 14. PUBLICATIONS ========================= */}
-      <section className="section" id="publications">
+      <section className="section relative" id="publications" data-hab-section="publications">
+        <SectionEditBadge label="Reports & Publications" studioHref="/admin/publications" />
         <div className="rule-top">
           <div className="pubs">
             <div>
@@ -1348,7 +1348,9 @@ export default function HomePage() {
       </section>
 
       {/* ========================= 15. PARTNERS ========================= */}
-      <section className="section section--last">
+      <section className="section section--last relative" data-hab-section="partners">
+        <SectionEditBadge label="Development Partners" studioHref="/admin/site-settings" />
+
         <p className="eyebrow eyebrow--muted">Development Partners</p>
         <div className="partners">
           {siteSettings.partnersList.map((partner: any, idx: number) => {

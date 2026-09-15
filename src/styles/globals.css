@@ -126,3 +126,12 @@ body.hab-visual-edit-on [data-hab-section]:hover {
   outline-offset: 4px;
 }
 
+.hab-section-edit-badge {
+  display: none !important;
+}
+
+body.hab-visual-edit-on .hab-section-edit-badge {
+  display: flex !important;
+}
+
+
