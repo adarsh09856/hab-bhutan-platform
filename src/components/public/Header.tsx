@@ -2,12 +2,37 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+
+const CATEGORY_THUMBNAIL_MAP: Record<string, string> = {
+  'individual-artisan': '/assets/photos/hero-1-weaving.jpg',
+  'craft-enterprise': '/assets/photos/hero-4-textiles.jpg',
+  'cluster': '/assets/photos/hero-2-punakha.jpg',
+  'associate': '/assets/photos/about-hab.jpg',
+  'honorary': '/assets/photos/hero-3-clay.jpg',
+};
+
+const CRAFT_THUMBNAIL_MAP: Record<string, string> = {
+  thagzo: '/assets/photos/hero-1-weaving.jpg',
+  tshazo: '/assets/photos/hero-4-textiles.jpg',
+  shagzo: '/assets/photos/product-hhb01.jpg',
+  lhadri: '/assets/photos/hero-2-punakha.jpg',
+  jimzo: '/assets/photos/hero-3-clay.jpg',
+  dezo: '/assets/photos/hero-5-desho.jpg',
+  troezo: '/assets/photos/about-hab.jpg',
+  garzo: '/assets/photos/hero-4-textiles.jpg',
+  chezo: '/assets/photos/hero-2-punakha.jpg',
+  parzo: '/assets/photos/hero-3-clay.jpg',
+  lugzo: '/assets/photos/hero-1-weaving.jpg',
+  shingzo: '/assets/photos/product-cam01.jpg',
+  dzozo: '/assets/photos/product-hhb01.jpg',
+};
 
 export default function Header() {
   const pathname = usePathname();
@@ -228,12 +253,23 @@ export default function Header() {
                   {categories.map((cat) => (
                     <Link
                       key={cat.key}
-                      className="menu__cat"
+                      className="menu__cat group flex items-center gap-3"
                       href={`/membership-category?category=${cat.key}`}
                       onClick={() => setMembersOpen(false)}
                     >
-                      <span className="menu__cat-name">{cat.name}</span>
-                      <span className="menu__cat-meta">{cat.meta}</span>
+                      <div className="w-8 h-8 rounded-full overflow-hidden relative flex-shrink-0 bg-stone-100 border border-[#E4DDD1] shadow-2xs group-hover:scale-105 transition-transform">
+                        <Image
+                          src={CATEGORY_THUMBNAIL_MAP[cat.key] || '/assets/photos/hero-1-weaving.jpg'}
+                          alt={cat.name}
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="menu__cat-name group-hover:text-[#8B2E24] transition-colors">{cat.name}</span>
+                        <span className="menu__cat-meta">{cat.meta}</span>
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -364,12 +400,23 @@ export default function Header() {
                   {crafts.map((c) => (
                     <Link
                       key={c.key}
-                      className="menu__craft"
+                      className="menu__craft group flex items-center gap-2.5"
                       href={`/shop/${c.key}`}
                       onClick={() => setShopOpen(false)}
                     >
-                      <span className="menu__craft-name">{c.name}</span>
-                      <span className="menu__craft-en">{c.english || ''}</span>
+                      <div className="w-8 h-8 rounded-md overflow-hidden relative flex-shrink-0 bg-stone-100 border border-[#E4DDD1] shadow-2xs group-hover:scale-105 transition-transform">
+                        <Image
+                          src={CRAFT_THUMBNAIL_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
+                          alt={c.name}
+                          fill
+                          sizes="32px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="menu__craft-name group-hover:text-[#8B2E24] transition-colors">{c.name}</span>
+                        <span className="menu__craft-en clamp-1">{c.english || ''}</span>
+                      </div>
                     </Link>
                   ))}
                 </div>

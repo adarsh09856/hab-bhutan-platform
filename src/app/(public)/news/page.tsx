@@ -49,12 +49,21 @@ export default function NewsPage() {
     ? newsList
     : newsList.filter((n) => n.kind === selectedKind);
 
+  const NEWS_PHOTO_MAP: Record<string, string> = {
+    'trade-facilitation-desk-autumn': '/assets/photos/hero-2-punakha.jpg',
+    'natural-dye-training-lhuentse': '/assets/photos/hero-1-weaving.jpg',
+    'craft-bazaar-clock-tower': '/assets/photos/hero-4-textiles.jpg',
+    'annual-report-2025': '/assets/photos/hero-5-desho.jpg',
+    'product-innovation-lab': '/assets/photos/hero-3-clay.jpg',
+  };
+
   const photoPool = [
     '/assets/photos/about-hab.jpg',
     '/assets/photos/hero-4-textiles.jpg',
     '/assets/photos/hero-1-weaving.jpg',
     '/assets/photos/hero-5-desho.jpg',
     '/assets/photos/hero-2-punakha.jpg',
+    '/assets/photos/hero-3-clay.jpg',
   ];
 
   return (
@@ -94,8 +103,8 @@ export default function NewsPage() {
 
             <div className="newslist" id="newsList" data-cms-repeat>
               {filtered.map((n, idx) => {
-                const imgSrc = n.image_path || photoPool[idx % photoPool.length];
                 const slug = n.slug || n.id || `post-${idx}`;
+                const imgSrc = n.image_path || n.imageUrl || n.image_url || NEWS_PHOTO_MAP[slug] || photoPool[idx % photoPool.length];
 
                 return (
                   <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item>

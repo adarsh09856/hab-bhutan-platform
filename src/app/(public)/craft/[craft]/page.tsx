@@ -129,6 +129,14 @@ export default function CraftProfilePage() {
       {/* 1. Hero & Breadcrumbs */}
       <section className="section relative" data-hab-section="craft">
         <SectionEditBadge label="13 Zorig Chusum Crafts" studioHref="/admin/crafts" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/#crafts">
+            <span aria-hidden="true">←</span> Back to The 13 Crafts
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#crafts">Zorig Chusum</Link> / <span>{craft.name}</span>
         </p>

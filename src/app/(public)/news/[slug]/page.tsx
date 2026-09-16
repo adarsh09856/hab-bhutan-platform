@@ -60,15 +60,24 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     .filter((n) => (n.slug || n.id) !== (post.slug || post.id))
     .slice(0, 3);
 
+  const NEWS_PHOTO_MAP: Record<string, string> = {
+    'trade-facilitation-desk-autumn': '/assets/photos/hero-2-punakha.jpg',
+    'natural-dye-training-lhuentse': '/assets/photos/hero-1-weaving.jpg',
+    'craft-bazaar-clock-tower': '/assets/photos/hero-4-textiles.jpg',
+    'annual-report-2025': '/assets/photos/hero-5-desho.jpg',
+    'product-innovation-lab': '/assets/photos/hero-3-clay.jpg',
+  };
+
   const photoPool = [
     '/assets/photos/about-hab.jpg',
     '/assets/photos/hero-4-textiles.jpg',
     '/assets/photos/hero-1-weaving.jpg',
     '/assets/photos/hero-5-desho.jpg',
     '/assets/photos/hero-2-punakha.jpg',
+    '/assets/photos/hero-3-clay.jpg',
   ];
   const postIndex = CLIENT_DATA.news.findIndex((n) => (n.slug || n.id) === (post.slug || post.id));
-  const bannerImg = photoPool[postIndex % photoPool.length];
+  const bannerImg = post.image_path || post.imageUrl || post.image_url || NEWS_PHOTO_MAP[post.slug || post.id] || photoPool[postIndex >= 0 ? postIndex % photoPool.length : 0];
 
   const displayDate = post.published_at || post.date || post.created_at || 'Recent';
 
@@ -76,6 +85,14 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     <main id="main">
       <section className="section relative" data-hab-section="news-post">
         <SectionEditBadge label="News & Stories Studio" studioHref="/admin/content" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/news">
+            <span aria-hidden="true">←</span> Back to News &amp; events
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / {post.title}
         </p>
@@ -88,7 +105,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           <p className="lede lede--wide">{post.blurb || post.summary}</p>
         </div>
 
-        <figure className="frame frame--banner" style={{ position: 'relative', height: 420, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={post.title}
@@ -130,25 +147,36 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           </div>
 
           <div className="grid grid--3">
-            {otherNews.map((on) => (
-              <article key={on.slug || on.id} className="card news">
-                <div className="card__body">
-                  <div className="news__meta" style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
-                    <span className="tag">{on.kind}</span>
-                    <span className="news__date" style={{ color: 'var(--muted)', fontSize: 13 }}>
-                      {on.published_at || on.date || on.created_at}
-                    </span>
+            {otherNews.map((on, idx) => {
+              const slugKey = on.slug || on.id || '';
+              const cardImg = (on as any).image_path || (on as any).imageUrl || (on as any).image_url || (slugKey ? NEWS_PHOTO_MAP[slugKey] : undefined) || photoPool[idx % photoPool.length];
+
+              return (
+                <Link key={on.slug || on.id} className="card news" href={`/news/${on.slug || on.id}`}>
+                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                    <Image
+                      src={cardImg}
+                      alt={on.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </figure>
+                  <div className="card__body">
+                    <div className="news__meta" style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
+                      <span className="tag">{on.kind}</span>
+                      <span className="news__date" style={{ color: 'var(--muted)', fontSize: 13 }}>
+                        {on.published_at || on.date || on.created_at}
+                      </span>
+                    </div>
+                    <h3 className="news__title clamp-2" style={{ marginBottom: 8 }}>
+                      {on.title}
+                    </h3>
+                    <p className="card__text clamp-3">{on.blurb || on.summary}</p>
                   </div>
-                  <h3 className="news__title clamp-2" style={{ marginBottom: 8 }}>
-                    <Link href={`/news/${on.slug || on.id}`}>{on.title}</Link>
-                  </h3>
-                  <p className="card__text clamp-3">{on.blurb || on.summary}</p>
-                  <Link className="link-accent" href={`/news/${on.slug || on.id}`} style={{ marginTop: 12, display: 'inline-block' }}>
-                    Read story →
-                  </Link>
-                </div>
-              </article>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

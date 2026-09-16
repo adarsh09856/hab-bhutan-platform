@@ -37,6 +37,15 @@ export default function EventsPage() {
     return eventsList.filter((e) => (e.kind || e.category) === selectedKind);
   }, [selectedKind, eventsList]);
 
+  const EVENT_PHOTO_MAP: Record<string, string> = {
+    'craft-bazaar-2026': '/assets/photos/hero-4-textiles.jpg',
+    'export-clinic-sep': '/assets/photos/hero-2-punakha.jpg',
+    'sector-forum-2026': '/assets/photos/about-hab.jpg',
+    'dye-training-nov': '/assets/photos/hero-1-weaving.jpg',
+    'buyer-mission-nov': '/assets/photos/hero-5-desho.jpg',
+    'apprentice-intake-dec': '/assets/photos/hero-3-clay.jpg',
+  };
+
   const photoPool = [
     '/assets/photos/hero-4-textiles.jpg',
     '/assets/photos/hero-1-weaving.jpg',
@@ -99,7 +108,7 @@ export default function EventsPage() {
         {/* Events List */}
         <div className="eventlist" id="eventList" data-cms-repeat>
           {filteredEvents.map((e, idx) => {
-            const imgSrc = e.bannerUrl || e.imageUrl || e.image_path || photoPool[idx % photoPool.length];
+            const imgSrc = e.bannerUrl || e.imageUrl || e.image_path || e.image_url || EVENT_PHOTO_MAP[e.key] || photoPool[idx % photoPool.length];
 
             return (
               <article key={e.key} id={e.key} className="eventcard" data-cms-item>

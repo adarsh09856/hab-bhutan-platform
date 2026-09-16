@@ -53,7 +53,7 @@ export default function AdminLiveBar() {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && !pathname.startsWith('/admin')) {
       document.body.classList.add('has-admin-live-bar');
     } else {
       document.body.classList.remove('has-admin-live-bar');
@@ -61,10 +61,10 @@ export default function AdminLiveBar() {
     return () => {
       document.body.classList.remove('has-admin-live-bar');
     };
-  }, [isAdmin]);
+  }, [isAdmin, pathname]);
 
   useEffect(() => {
-    if (editMode) {
+    if (editMode && !pathname.startsWith('/admin')) {
       document.body.classList.add('hab-visual-edit-on');
     } else {
       document.body.classList.remove('hab-visual-edit-on');
@@ -72,10 +72,10 @@ export default function AdminLiveBar() {
     return () => {
       document.body.classList.remove('hab-visual-edit-on');
     };
-  }, [editMode]);
+  }, [editMode, pathname]);
 
-  // If not logged in as admin, render nothing (100% hidden from normal visitors)
-  if (loading || !isAdmin) {
+  // If not logged in as admin or inside admin console, render nothing
+  if (loading || !isAdmin || pathname.startsWith('/admin')) {
     return null;
   }
 

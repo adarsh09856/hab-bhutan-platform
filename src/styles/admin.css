@@ -3,6 +3,8 @@ body:has(.hab-admin),
 body.hab-admin-body,
 html:has(.hab-admin),
 .hab-admin {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
   background-color: #f8fafc !important;
   background: #f8fafc !important;
   color: #0f172a !important;

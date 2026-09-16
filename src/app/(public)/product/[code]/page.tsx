@@ -172,6 +172,14 @@ export default function ProductDetailPage() {
       {/* 1. Breadcrumbs & Product Detail */}
       <section className="section relative" data-hab-section="product-detail">
         <SectionEditBadge label="Products Studio" studioHref="/admin/products" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href={`/shop?craft=${product.craftKey}`}>
+            <span aria-hidden="true">←</span> Back to {craft ? craft.name : 'E-shop'}
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / <Link href="/wholesale">Wholesale &amp; bulk orders</Link> / <Link href={`/shop?craft=${product.craftKey}`}>{craft ? craft.name : product.craftKey}</Link> / <span>{product.code}</span>
         </p>

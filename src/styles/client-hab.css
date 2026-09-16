@@ -2928,18 +2928,18 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
   box-shadow: 0 1px 8px rgba(31,29,26,0.08);
 }
 
-/* Body padding: push content below fixed chrome (utility 38px + header 74px = 112px) */
-body {
+/* Body padding: push content below fixed chrome (utility 38px + header 74px = 112px) - only for public storefront */
+body:not(.hab-admin-body):not(:has(.hab-admin)) {
   padding-top: calc(var(--utility-h, 38px) + var(--header-h, 74px));
 }
 
 /* When admin is logged in: AdminLiveBar is 36px fixed — push everything down 36px more */
-body.has-admin-live-bar .utility {
+body:not(.hab-admin-body):not(:has(.hab-admin)).has-admin-live-bar .utility {
   top: 36px;
 }
-body.has-admin-live-bar .header {
+body:not(.hab-admin-body):not(:has(.hab-admin)).has-admin-live-bar .header {
   top: calc(36px + var(--utility-h, 38px));
 }
-body.has-admin-live-bar {
+body:not(.hab-admin-body):not(:has(.hab-admin)).has-admin-live-bar {
   padding-top: calc(36px + var(--utility-h, 38px) + var(--header-h, 74px));
 }

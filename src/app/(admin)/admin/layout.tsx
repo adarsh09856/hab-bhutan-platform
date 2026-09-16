@@ -91,10 +91,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     document.body.classList.add('hab-admin-body');
+    document.body.classList.remove('has-admin-live-bar');
     document.documentElement.style.backgroundColor = '#f8fafc';
     document.body.style.backgroundColor = '#f8fafc';
+    document.body.style.paddingTop = '0px';
+    document.body.style.marginTop = '0px';
     return () => {
       document.body.classList.remove('hab-admin-body');
+      document.body.style.paddingTop = '';
+      document.body.style.marginTop = '';
     };
   }, []);
 

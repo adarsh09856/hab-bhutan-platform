@@ -90,6 +90,14 @@ export default function MemberProfilePage() {
       {/* 1. Breadcrumb & Member Hero */}
       <section className="section relative" data-hab-section="member-profile">
         <SectionEditBadge label="Members Studio" studioHref="/admin/members" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/members">
+            <span aria-hidden="true">←</span> Back to Members
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/members">Members</Link> / <span>{member.name}</span>
         </p>

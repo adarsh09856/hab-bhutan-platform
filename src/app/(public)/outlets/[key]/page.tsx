@@ -80,10 +80,20 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
     }
   } catch {}
 
+  const bannerImg = (outlet as any).imageUrl || (outlet as any).bannerUrl || '/assets/photos/hero-2-punakha.jpg';
+
   return (
     <main id="main">
       <section className="section relative" data-hab-section="outlet-detail">
         <SectionEditBadge label="Outlets Studio" studioHref="/admin/clusters-outlets" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/outlets">
+            <span aria-hidden="true">←</span> Back to Outlets &amp; clusters
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> / {outlet.name}
         </p>
@@ -96,9 +106,9 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           <p className="lede lede--wide">{outlet.description || outlet.note}</p>
         </div>
 
-        <figure className="frame frame--banner" style={{ position: 'relative', height: 440, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
-            src="/assets/photos/hero-2-punakha.jpg"
+            src={bannerImg}
             alt={outlet.name}
             fill
             priority
@@ -179,28 +189,26 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           <h2 className="display display--sub">Other outlets &amp; markets</h2>
           <div className="grid grid--3" style={{ marginTop: 22 }}>
             {others.map((row) => (
-              <article key={row.key} className="card outlet">
-                <Link href={`/outlets/${row.key}`}>
-                  <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
-                    <Image
-                      src="/assets/photos/hero-4-textiles.jpg"
-                      alt={row.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                </Link>
+              <Link key={row.key} className="card outlet" href={`/outlets/${row.key}`}>
+                <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                  <Image
+                    src="/assets/photos/hero-4-textiles.jpg"
+                    alt={row.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </figure>
                 <div className="card__body">
-                  <span className="tag">{row.type}</span>
-                  <h3 className="card__title clamp-2">
-                    <Link href={`/outlets/${row.key}`}>{row.name}</Link>
+                  <span className="tag" style={{ marginBottom: 4 }}>{row.type}</span>
+                  <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
+                    {row.name}
                   </h3>
-                  <p className="card__meta clamp-1">{row.place}</p>
+                  <p className="card__meta clamp-1" style={{ marginBottom: 4 }}>{row.place}</p>
                   <p className="card__text clamp-3">{row.note}</p>
                   {row.hours && <p className="outlet__hours">{row.hours}</p>}
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>

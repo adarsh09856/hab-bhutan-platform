@@ -78,13 +78,21 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
     '/assets/photos/hero-3-clay.jpg',
     '/assets/photos/hero-2-punakha.jpg',
   ];
-  const bannerImg = photoPool[currentIndex % photoPool.length];
+  const bannerImg = (cluster as any).imageUrl || (cluster as any).bannerUrl || photoPool[currentIndex >= 0 ? currentIndex % photoPool.length : 0];
 
   return (
     <main id="main">
       {/* 1. Breadcrumbs & Detail Hero */}
       <section className="section relative" data-hab-section="cluster-detail">
         <SectionEditBadge label="Clusters Studio" studioHref="/admin/clusters-outlets" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/outlets">
+            <span aria-hidden="true">←</span> Back to Outlets &amp; clusters
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> / <span>{cluster.name}</span>
         </p>
@@ -97,7 +105,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
           <p className="lede lede--wide" id="dStand">{cluster.summary}</p>
         </div>
 
-        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', height: 440, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={cluster.name}

@@ -109,12 +109,31 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     contact: rawEvent.contact || 'officehab@gmail.com',
   };
 
+  const EVENT_PHOTO_MAP: Record<string, string> = {
+    'craft-bazaar-2026': '/assets/photos/hero-4-textiles.jpg',
+    'export-clinic-sep': '/assets/photos/hero-2-punakha.jpg',
+    'sector-forum-2026': '/assets/photos/about-hab.jpg',
+    'dye-training-nov': '/assets/photos/hero-1-weaving.jpg',
+    'buyer-mission-nov': '/assets/photos/hero-5-desho.jpg',
+    'apprentice-intake-dec': '/assets/photos/hero-3-clay.jpg',
+  };
+
+  const bannerImg = event.bannerUrl || event.imageUrl || event.image_url || event.image_path || EVENT_PHOTO_MAP[event.key] || '/assets/photos/hero-4-textiles.jpg';
+
   const otherEvents = (dbOtherEvents.length > 0 ? dbOtherEvents : CLIENT_DATA.events.filter((e) => e.key !== event.key)).slice(0, 3);
 
   return (
     <main id="main">
       <section className="section relative" data-hab-section="event-detail">
         <SectionEditBadge label="Events Studio" studioHref="/admin/events" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/events">
+            <span aria-hidden="true">←</span> Back to Events
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> /{' '}
           <Link href="/events">Events</Link> / {event.title}
@@ -128,9 +147,9 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           <p className="lede lede--wide">{event.summary}</p>
         </div>
 
-        <figure className="frame frame--banner" style={{ position: 'relative', height: 420, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
-            src="/assets/photos/hero-4-textiles.jpg"
+            src={bannerImg}
             alt={event.title}
             fill
             priority
@@ -211,21 +230,32 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             </Link>
           </div>
           <div className="grid grid--3">
-            {otherEvents.map((oe) => (
-              <article key={oe.key} className="card">
-                <div className="card__body">
-                  <span className="tag" style={{ marginBottom: 8, display: 'inline-block' }}>{oe.kind}</span>
-                  <p className="card__meta">{oe.day} {oe.mon} {oe.year} · {oe.place}</p>
-                  <h3 className="card__title clamp-2">
-                    <Link href={`/events/${oe.key}`}>{oe.title}</Link>
-                  </h3>
-                  <p className="card__text clamp-3">{oe.summary}</p>
-                  <Link className="link-accent" href={`/events/${oe.key}`}>
-                    View detail →
-                  </Link>
-                </div>
-              </article>
-            ))}
+            {otherEvents.map((oe) => {
+              const oeImg = oe.bannerUrl || oe.imageUrl || oe.image_url || oe.image_path || EVENT_PHOTO_MAP[oe.key] || '/assets/photos/hero-4-textiles.jpg';
+
+              return (
+                <Link key={oe.key} className="card" href={`/events/${oe.key}`}>
+                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                    <Image
+                      src={oeImg}
+                      alt={oe.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </figure>
+                  <div className="card__body">
+                    <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>
+                      {oe.day} {oe.mon} · {oe.kind}
+                    </p>
+                    <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
+                      {oe.title}
+                    </h3>
+                    <p className="card__text clamp-2">{oe.place}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

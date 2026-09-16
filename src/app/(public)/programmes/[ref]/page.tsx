@@ -70,6 +70,14 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
     <main id="main">
       <section className="section relative" data-hab-section="programme-detail">
         <SectionEditBadge label="Programmes Studio" studioHref="/admin/programmes" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/programmes">
+            <span aria-hidden="true">←</span> Back to Programmes
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/programmes">Programmes</Link> / {programme.title}
         </p>
@@ -82,7 +90,7 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
           <p className="lede lede--wide">{programme.description}</p>
         </div>
 
-        <figure className="frame frame--banner" style={{ position: 'relative', height: 420, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={programme.title}
@@ -127,20 +135,31 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
             </Link>
           </div>
           <div className="grid grid--3">
-            {relatedProjects.map((pr) => (
-              <article key={pr.key} className="card">
-                <div className="card__body">
-                  <p className="eyebrow eyebrow--accent eyebrow--sm">{pr.period}</p>
-                  <h3 className="card__title clamp-2">
-                    <Link href={`/projects/${pr.key}`}>{pr.title}</Link>
-                  </h3>
-                  <p className="card__text clamp-3">{pr.summary}</p>
-                  <Link className="link-accent" href={`/projects/${pr.key}`}>
-                    Read project report →
-                  </Link>
-                </div>
-              </article>
-            ))}
+            {relatedProjects.map((pr, idx) => {
+              const prImg = (pr as any).bannerUrl || (pr as any).imageUrl || (pr as any).image_path || photoPool[idx % photoPool.length] || '/assets/photos/about-hab.jpg';
+              const prTitle = pr.title || (pr as any).name || 'Project';
+
+              return (
+                <Link key={pr.key} className="card" href={`/projects/${pr.key}`}>
+                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                    <Image
+                      src={prImg}
+                      alt={prTitle}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </figure>
+                  <div className="card__body">
+                    <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>{pr.period}</p>
+                    <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
+                      {prTitle}
+                    </h3>
+                    <p className="card__text clamp-3">{pr.summary}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

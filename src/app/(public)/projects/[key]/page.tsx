@@ -79,12 +79,20 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
     '/assets/photos/hero-2-punakha.jpg',
     '/assets/photos/about-hab.jpg',
   ];
-  const bannerImg = photoPool[currentIndex % photoPool.length];
+  const bannerImg = project.bannerUrl || project.imageUrl || project.image_url || photoPool[currentIndex % photoPool.length];
 
   return (
     <main id="main">
       <section className="section relative" data-hab-section="project-detail">
         <SectionEditBadge label="Projects Studio" studioHref="/admin/projects" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/projects">
+            <span aria-hidden="true">←</span> Back to Projects
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/projects">Projects</Link> / {projectTitle}
         </p>
@@ -97,7 +105,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           <p className="lede lede--wide">{project.summary}</p>
         </div>
 
-        <figure className="frame frame--banner" style={{ position: 'relative', height: 420, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={projectTitle}
@@ -183,23 +191,34 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             </Link>
           </div>
           <div className="grid grid--3">
-            {otherProjects.map((r) => (
-              <article key={r.key} className="card">
-                <div className="card__body">
-                  <span className={`tag ${r.status.toLowerCase().includes('completed') ? 'tag--done' : ''}`}>
-                    {r.status}
-                  </span>
-                  <h3 className="card__title clamp-2" style={{ marginTop: 8 }}>
-                    <Link href={`/projects/${r.key}`}>{r.title}</Link>
-                  </h3>
-                  <p className="card__meta">{r.period} · {r.funder}</p>
-                  <p className="card__text clamp-3">{r.summary}</p>
-                  <Link className="link-accent" href={`/projects/${r.key}`}>
-                    Read project detail →
-                  </Link>
-                </div>
-              </article>
-            ))}
+            {otherProjects.map((r, idx) => {
+              const rImg = (r as any).bannerUrl || (r as any).imageUrl || (r as any).image_url || photoPool[idx % photoPool.length] || '/assets/photos/about-hab.jpg';
+              const rTitle = r.title || (r as any).name || 'Project';
+
+              return (
+                <Link key={r.key} className="card" href={`/projects/${r.key}`}>
+                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                    <Image
+                      src={rImg}
+                      alt={rTitle}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </figure>
+                  <div className="card__body">
+                    <span className={`tag ${r.status.toLowerCase().includes('completed') ? 'tag--done' : ''}`} style={{ marginBottom: 4 }}>
+                      {r.status}
+                    </span>
+                    <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
+                      {rTitle}
+                    </h3>
+                    <p className="card__meta" style={{ marginBottom: 4 }}>{r.period} · {r.funder}</p>
+                    <p className="card__text clamp-3">{r.summary}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

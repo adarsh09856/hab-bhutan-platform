@@ -55,6 +55,14 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
 
   const otherCategories = CLIENT_DATA.membershipCategories.filter((c) => c.key !== cat.key);
 
+  const CATEGORY_PHOTO_MAP: Record<string, string> = {
+    'individual-artisan': '/assets/photos/hero-1-weaving.jpg',
+    'craft-enterprise': '/assets/photos/hero-4-textiles.jpg',
+    'cluster': '/assets/photos/hero-2-punakha.jpg',
+    'associate': '/assets/photos/about-hab.jpg',
+    'honorary': '/assets/photos/hero-3-clay.jpg',
+  };
+
   const photoPool = [
     '/assets/photos/hero-1-weaving.jpg',
     '/assets/photos/hero-4-textiles.jpg',
@@ -63,7 +71,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
     '/assets/photos/hero-2-punakha.jpg',
   ];
   const catIndex = CLIENT_DATA.membershipCategories.findIndex((c) => c.key === cat.key);
-  const bannerImg = rawCat.imageUrl || rawCat.bannerUrl || photoPool[catIndex >= 0 ? catIndex % photoPool.length : 0];
+  const bannerImg = rawCat.imageUrl || rawCat.bannerUrl || rawCat.image_path || CATEGORY_PHOTO_MAP[cat.key] || photoPool[catIndex >= 0 ? catIndex % photoPool.length : 0];
 
   const applyTierMapping: Record<string, string> = {
     'individual-artisan': 'individual',
@@ -78,6 +86,14 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
     <main id="main">
       <section className="section relative" data-hab-section="membership-category">
         <SectionEditBadge label="Membership Categories Studio" studioHref="/admin/membership-categories" />
+        
+        {/* Blueprint Backbar */}
+        <div className="backbar">
+          <Link className="backbar__link" href="/#membership">
+            <span aria-hidden="true">←</span> Back to Membership
+          </Link>
+        </div>
+
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#membership">Membership</Link> / {cat.name}
         </p>
@@ -90,7 +106,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
           <p className="lede lede--wide">{cat.tagline}</p>
         </div>
 
-        <figure className="frame frame--banner" style={{ position: 'relative', height: 420, overflow: 'hidden', marginTop: 24 }}>
+        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={cat.name}
@@ -216,21 +232,31 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
           <p className="eyebrow eyebrow--accent">Other categories</p>
           <h2 className="display display--sub">Not the right fit?</h2>
           <div className="grid grid--3" style={{ marginTop: 22 }}>
-            {otherCategories.map((oc) => (
-              <article key={oc.key} className="card">
-                <div className="card__body">
-                  <p className="eyebrow eyebrow--accent eyebrow--sm">{oc.status}</p>
-                  <h3 className="card__title">
-                    <Link href={`/membership/${oc.key}`}>{oc.name}</Link>
-                  </h3>
-                  <p className="card__text clamp-3">{oc.tagline}</p>
-                  <p className="catcard__fee">{oc.fee} / year</p>
-                  <Link className="link-accent" href={`/membership/${oc.key}`}>
-                    Learn more →
-                  </Link>
-                </div>
-              </article>
-            ))}
+            {otherCategories.map((oc, idx) => {
+              const catImg = (oc as any).imageUrl || (oc as any).bannerUrl || (oc as any).image_path || CATEGORY_PHOTO_MAP[oc.key] || photoPool[idx % photoPool.length];
+
+              return (
+                <Link key={oc.key} className="card" href={`/membership/${oc.key}`}>
+                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                    <Image
+                      src={catImg}
+                      alt={oc.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </figure>
+                  <div className="card__body">
+                    <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>{oc.status}</p>
+                    <h3 className="card__title" style={{ marginBottom: 4 }}>
+                      {oc.name}
+                    </h3>
+                    <p className="card__text clamp-3">{oc.tagline}</p>
+                    <p className="catcard__fee" style={{ marginTop: 'auto', paddingTop: 8 }}>{oc.fee} / year</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
