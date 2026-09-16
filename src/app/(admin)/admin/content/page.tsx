@@ -881,45 +881,13 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div>
-                    <label className="block font-medium admin-text mb-1">Attached Document File (PDF, DOCX, XLSX up to 30MB)</label>
-                    {pubForm.fileUrl ? (
-                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
-                        <div className="w-9 h-9 rounded bg-amber-100 text-slate-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                          {pubForm.fileUrl.split('.').pop()?.toUpperCase() || 'PDF'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-mono truncate admin-text">{pubForm.fileUrl}</p>
-                          <a
-                            href={pubForm.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] text-amber-700 hover:underline inline-flex items-center gap-1 font-medium"
-                          >
-                            <ExternalLink className="w-3 h-3" /> Preview Document
-                          </a>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setPubForm({ ...pubForm, fileUrl: '' })}
-                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
-                          title="Remove file"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
-                        <Upload className="w-4 h-4 text-slate-500" />
-                        <span>{uploadingFile ? 'Uploading document...' : 'Upload Document File (PDF, DOCX, XLSX)'}</span>
-                        <input
-                          type="file"
-                          accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
-                          disabled={uploadingFile}
-                          onChange={(e) => handleDocumentUpload(e, false)}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
+                    <FileUploadInput
+                      label="Attached Document File (PDF, DOC, DOCX up to 30MB)"
+                      value={pubForm.fileUrl || ''}
+                      onChange={(url) => setPubForm({ ...pubForm, fileUrl: url })}
+                      accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
+                      hint="Upload or replace document file. Stored securely on server."
+                    />
                   </div>
                 </>
               )}
@@ -1084,45 +1052,13 @@ export default function AdminContentPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block font-medium admin-text mb-1">Attached Document File (PDF, DOCX, XLSX up to 30MB)</label>
-                    {editingItem.data.fileUrl ? (
-                      <div className="flex items-center gap-3 p-2 border admin-border rounded-lg bg-slate-50">
-                        <div className="w-9 h-9 rounded bg-amber-100 text-slate-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                          {editingItem.data.fileUrl.split('.').pop()?.toUpperCase() || 'PDF'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-mono truncate admin-text">{editingItem.data.fileUrl}</p>
-                          <a
-                            href={editingItem.data.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] text-amber-700 hover:underline inline-flex items-center gap-1 font-medium"
-                          >
-                            <ExternalLink className="w-3 h-3" /> Preview Document
-                          </a>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setEditingItem({ ...editingItem, data: { ...editingItem.data, fileUrl: '' } })}
-                          className="p-1 text-rose-600 hover:bg-rose-100 rounded"
-                          title="Remove file"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex items-center justify-center gap-2 px-3 py-2.5 border border-dashed admin-border rounded-lg cursor-pointer hover:bg-slate-50 transition text-xs admin-text">
-                        <Upload className="w-4 h-4 text-slate-500" />
-                        <span>{uploadingFile ? 'Uploading document...' : 'Upload Document File (PDF, DOCX, XLSX)'}</span>
-                        <input
-                          type="file"
-                          accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
-                          disabled={uploadingFile}
-                          onChange={(e) => handleDocumentUpload(e, true)}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
+                    <FileUploadInput
+                      label="Attached Document File (PDF, DOC, DOCX up to 30MB)"
+                      value={editingItem.data.fileUrl || ''}
+                      onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, fileUrl: url } })}
+                      accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
+                      hint="Upload or replace document file. Stored securely on server."
+                    />
                   </div>
                 </>
               )}

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useMemo } from 'react';
 import { CreditCard, Save, CheckCircle2, AlertCircle, Users, Calendar, ShieldCheck, Clock, RefreshCw, Search } from 'lucide-react';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton } from '@/components/admin/AdminUI';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface MemberDuesItem {
   id: string;
@@ -296,13 +297,12 @@ export default function AdminMembershipSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold admin-text mb-1.5">mBoB QR Image URL (Optional)</label>
-                <input
-                  type="text"
+                <FileUploadInput
+                  label="mBoB QR Code Image"
                   value={form.mbobQrUrl || ''}
-                  onChange={(e) => setForm({ ...form, mbobQrUrl: e.target.value })}
-                  placeholder="/images/mbob_qr.png"
-                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm font-mono"
+                  onChange={(url) => setForm({ ...form, mbobQrUrl: url })}
+                  accept="image/*"
+                  hint="Upload or replace official mBoB QR code artwork (JPG, PNG, SVG)"
                 />
               </div>
             </div>

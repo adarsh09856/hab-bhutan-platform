@@ -18,6 +18,8 @@ interface Project {
   activities: string[];
   results: { n: string; l: string }[];
   image_path?: string;
+  coverPhotoUrl?: string;
+  reportPdfUrl?: string;
 }
 
 const DEFAULT_PROJECTS: Project[] = [
@@ -253,7 +255,7 @@ export default function ProjectsPage() {
             <article key={p.key || idx} className="projectcard" id={p.key}>
               <figure className="frame frame--projshot">
                 <img
-                  src={p.image_path || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  src={p.coverPhotoUrl || p.image_path || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
                   alt={p.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}

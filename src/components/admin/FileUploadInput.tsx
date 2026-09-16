@@ -151,8 +151,27 @@ export default function FileUploadInput({
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Always mounted hidden file input to ensure Replace button and drag/drop always work */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            onChange={handleFileChange}
+            disabled={disabled || uploading}
+            className="hidden"
+          />
+
           {value ? (
-            <div className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-xs">
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`flex items-center gap-3 p-3 bg-white border rounded-xl shadow-xs transition-all ${
+                isDragging
+                  ? 'border-[#8B2E24] bg-red-50/20 ring-2 ring-[#8B2E24]/20'
+                  : 'border-slate-200'
+              }`}
+            >
               {isPdf ? (
                 <div className="w-12 h-12 rounded-lg bg-rose-50 border border-rose-200 flex flex-col items-center justify-center text-rose-600 flex-shrink-0">
                   <FileText className="w-6 h-6" />
@@ -194,6 +213,11 @@ export default function FileUploadInput({
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
+                {isDragging && (
+                  <p className="text-[10px] text-[#8B2E24] font-medium mt-0.5 animate-pulse">
+                    Drop here to replace this file
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -201,16 +225,17 @@ export default function FileUploadInput({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || disabled}
-                  className="px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors flex items-center gap-1"
+                  className="px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="Choose a new file to replace the current one"
                 >
-                  <RefreshCw className={`w-3 h-3 ${uploading ? 'animate-spin' : ''}`} />
-                  <span>Replace</span>
+                  <RefreshCw className={`w-3 h-3 ${uploading ? 'animate-spin text-[#8B2E24]' : ''}`} />
+                  <span>{uploading ? 'Uploading...' : 'Replace'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange('')}
-                  disabled={disabled}
-                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                  disabled={disabled || uploading}
+                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                   title="Remove file"
                 >
                   <X className="w-4 h-4" />
@@ -229,15 +254,6 @@ export default function FileUploadInput({
                   : 'border-slate-300 hover:border-slate-400 bg-slate-50/60 hover:bg-slate-100/60'
               } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={accept}
-                onChange={handleFileChange}
-                disabled={disabled || uploading}
-                className="hidden"
-              />
-
               {uploading ? (
                 <div className="py-2 flex flex-col items-center justify-center space-y-2">
                   <Loader2 className="w-6 h-6 text-[#8B2E24] animate-spin" />

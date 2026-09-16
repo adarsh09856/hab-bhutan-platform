@@ -161,12 +161,12 @@ export default function CraftProfilePage() {
           <div className="flipper" tabIndex={0} aria-label="Photographs of this craft">
             {slideCaptions.map((cap, i) => {
               const flipperImgs = [
-                `/images/crafts/${craft.key}.jpg`,
+                (craft as any).bannerUrl || `/images/crafts/${craft.key}.jpg`,
                 products[0]?.hero_image ? (products[0].hero_image.startsWith('/') ? products[0].hero_image : `/${products[0].hero_image}`) : '/assets/photos/hero-4-textiles.jpg',
                 products[1]?.hero_image ? (products[1].hero_image.startsWith('/') ? products[1].hero_image : `/${products[1].hero_image}`) : '/assets/photos/hero-3-clay.jpg',
               ];
               const fallbacks = [
-                `/images/crafts/${craft.key}.jpg`,
+                (craft as any).bannerUrl || `/images/crafts/${craft.key}.jpg`,
                 '/assets/photos/hero-4-textiles.jpg',
                 '/assets/photos/hero-3-clay.jpg',
               ];

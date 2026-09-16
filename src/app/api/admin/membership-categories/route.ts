@@ -104,14 +104,17 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'id or key required for update' }, { status: 400 });
     }
 
-    let docs = documents;
-    if (bannerImageUrl !== undefined) {
-      docs = typeof documents === 'object' && documents !== null
-        ? { ...documents, bannerImageUrl }
-        : { bannerImageUrl };
-    }
-
     const where = id ? { id } : { key };
+    const existing = await prisma.membershipCategory.findUnique({ where });
+    const existingDocs = existing?.documents && typeof existing.documents === 'object' ? (existing.documents as any) : {};
+    let docs = documents !== undefined ? documents : existingDocs;
+    if (bannerImageUrl !== undefined) {
+      docs = {
+        ...existingDocs,
+        ...(typeof docs === 'object' && docs !== null ? docs : {}),
+        bannerImageUrl: bannerImageUrl ? String(bannerImageUrl).trim() : null,
+      };
+    }
     const category = await prisma.membershipCategory.update({
       where,
       data: {

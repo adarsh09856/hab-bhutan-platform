@@ -71,6 +71,10 @@ export async function GET(req: NextRequest) {
         year = dt.getFullYear();
       }
 
+      const sched = (e.schedule && typeof e.schedule === 'object') ? (e.schedule as any) : {};
+      const eventImg = sched.imageUrl || e.imageUrl || null;
+      const eventPdf = sched.pdfUrl || e.pdfUrl || null;
+
       return {
         ...e,
         day: day || e.day || '12',
@@ -81,6 +85,9 @@ export async function GET(req: NextRequest) {
         place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
         summary: e.summary || (e.description ? e.description.slice(0, 160) : ''),
         url: e.url || `/events/${e.key || e.id}`,
+        imageUrl: eventImg,
+        bannerUrl: eventImg,
+        pdfUrl: eventPdf,
       };
     };
 
