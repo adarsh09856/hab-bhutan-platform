@@ -1,4 +1,16 @@
 /* Admin High-Contrast Clean Light Theme */
+html:has(.hab-admin),
+body.hab-admin-body {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.hab-admin {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 body:has(.hab-admin),
 body.hab-admin-body,
 html:has(.hab-admin),
@@ -192,7 +204,11 @@ html:has(.hab-admin),
   background: #94a3b8; 
 }
 
-.hab-admin .admin-main { min-width: 0; }
+.hab-admin .admin-main {
+  min-width: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Table High-Contrast Light Styles */
 .hab-admin table {

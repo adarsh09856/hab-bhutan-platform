@@ -96,12 +96,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     document.body.style.backgroundColor = '#f8fafc';
     document.body.style.paddingTop = '0px';
     document.body.style.marginTop = '0px';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     return () => {
       document.body.classList.remove('hab-admin-body');
+      document.documentElement.style.backgroundColor = '';
+      document.body.style.backgroundColor = '';
       document.body.style.paddingTop = '';
       document.body.style.marginTop = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, []);
+
+  // Reset scroll position of main content container on navigation
+  useEffect(() => {
+    const mainEl = document.getElementById('admin-main');
+    if (mainEl) {
+      mainEl.scrollTop = 0;
+    }
+  }, [pathname]);
 
   useEffect(() => {
     let isMounted = true;
@@ -252,13 +266,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const breadcrumbs = getBreadcrumbs();
 
   if (isLoginPage) {
-    return <div className="hab-admin min-h-screen bg-slate-50 text-slate-900">{children}</div>;
+    return <div className="hab-admin h-full overflow-y-auto bg-slate-50 text-slate-900">{children}</div>;
   }
 
   return (
-    <div className="hab-admin min-h-screen bg-slate-50 text-slate-900 flex flex-col relative overflow-x-hidden selection:bg-[#8B2E24]/20 selection:text-slate-900">
-      {/* Top Clean Header */}
-      <header className="sticky top-0 z-40 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 shadow-xs">
+    <div className="hab-admin h-full flex-1 flex flex-col relative overflow-hidden selection:bg-[#8B2E24]/20 selection:text-slate-900">
+      {/* Top Clean Header - Strictly Pinned */}
+      <header className="shrink-0 z-40 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 shadow-xs">
         {/* Left: Mobile hamburger & breadcrumbs */}
         <div className="flex items-center gap-3">
           <button
@@ -354,15 +368,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Layout Container */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Light Sidebar */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+        {/* Light Sidebar - Fixed & Independent */}
         <aside id="admin-sidebar"
-          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 shadow-lg lg:shadow-none transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col ${
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 shadow-xl lg:shadow-none transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 flex flex-col shrink-0 h-full overflow-hidden ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {/* Logo & Header */}
-          <div className="h-16 px-5 border-b border-slate-200 flex items-center justify-between">
+          <div className="h-16 shrink-0 px-5 border-b border-slate-200 flex items-center justify-between">
             <Link href="/admin" className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-[#8B2E24] text-white flex items-center justify-center font-bold text-sm shadow-xs">
                 HAB
@@ -384,7 +398,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Fast inline search */}
-          <div className="px-4 pt-3 pb-1">
+          <div className="px-4 pt-3 pb-1 shrink-0">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
               <input
@@ -408,7 +422,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Navigation Items */}
-          <nav className="p-3 flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+          <nav className="p-3 flex-1 min-h-0 overflow-y-auto space-y-3 custom-scrollbar">
             {navGroups.map((group) => {
               const visibleItems = group.items.filter((item) =>
                 !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
@@ -484,7 +498,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
 
           {/* Live System Health Footer */}
-          <div className="p-3.5 border-t border-slate-200 bg-slate-50 text-xs space-y-2">
+          <div className="p-3.5 shrink-0 border-t border-slate-200 bg-slate-50 text-xs space-y-2">
             <div className="flex items-center justify-between text-[11px] font-mono text-slate-600">
               <div className="flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full ${health?.database?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
@@ -524,9 +538,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           />
         )}
 
-        {/* Main Content Area */}
-        <main id="admin-main" className="admin-main flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
-          {children}
+        {/* Main Content Area - Scrollable Independently */}
+        <main
+          id="admin-main"
+          className="admin-main flex-1 min-h-0 h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 w-full custom-scrollbar"
+        >
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
 
