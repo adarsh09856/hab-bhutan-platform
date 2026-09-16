@@ -77,6 +77,12 @@ export default function AdminMembershipSettingsPage() {
         credentials: 'include',
         body: JSON.stringify(form),
       });
+
+      if (res.status === 401) {
+        setFeedback({ type: 'error', message: 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.' });
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({ type: 'success', message: 'Membership tier fees & payment instructions saved successfully!' });

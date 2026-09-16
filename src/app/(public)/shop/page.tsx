@@ -46,6 +46,17 @@ function ShopContent() {
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
   const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || '');
 
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q !== null) {
+      setSearchQuery(q);
+    }
+    const craft = searchParams.get('craft');
+    if (craft !== null) {
+      setSelectedCraft(craft);
+    }
+  }, [searchParams]);
+
 const PRODUCT_POOL = [
   '/assets/photos/product-sad03.jpg',
   '/assets/photos/product-hhb01.jpg',

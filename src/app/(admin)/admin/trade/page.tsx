@@ -110,6 +110,10 @@ export default function AdminTradePage() {
           payload: { catalogPdfUrl, lookbookCoverUrl },
         }),
       });
+      if (res.status === 401) {
+        showToast('Your session has expired. Please open /admin/login to re-authenticate.');
+        return;
+      }
       if (res.ok) {
         showToast('Wholesale catalog and lookbook media saved!');
       }

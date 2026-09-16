@@ -27,6 +27,8 @@ export default function FileUploadInput({
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imgError, setImgError] = useState(false);
+  const [cacheBuster, setCacheBuster] = useState(Date.now());
   const [showManualUrl, setShowManualUrl] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,11 +59,17 @@ export default function FileUploadInput({
         credentials: 'include',
       });
 
+      if (res.status === 401) {
+        throw new Error('Your staff session has expired. Please open /admin/login in a new tab to re-authenticate, then retry.');
+      }
+
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Upload failed. Please try again.');
       }
 
+      setCacheBuster(Date.now());
+      setImgError(false);
       onChange(data.url);
     } catch (err: any) {
       setError(err.message || 'Error uploading file to server.');
@@ -177,20 +185,19 @@ export default function FileUploadInput({
                   <FileText className="w-6 h-6" />
                   <span className="text-[9px] font-bold uppercase font-mono mt-0.5">PDF</span>
                 </div>
-              ) : isImage ? (
+              ) : isImage && !imgError ? (
                 <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
                   <img
-                    src={value}
+                    src={value.startsWith('data:') ? value : `${value}${value.includes('?') ? '&' : '?'}v=${cacheBuster}`}
                     alt="Preview"
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
+                    onError={() => setImgError(true)}
                   />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 flex-shrink-0">
-                  <FileText className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex flex-col items-center justify-center text-slate-500 flex-shrink-0">
+                  <ImageIcon className="w-5 h-5 text-slate-400" />
+                  <span className="text-[8px] text-slate-400 font-mono">IMAGE</span>
                 </div>
               )}
 

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
+import { AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 
@@ -100,10 +101,19 @@ export default function AdminMembersPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(createForm),
       });
+
+      if (res.status === 401) {
+        setActionError('Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.');
+        return;
+      }
+
       const data = await res.json();
 
       if (res.ok && data.success) {
         setActionSuccess(`✓ Member "${data.member.name}" successfully registered (${data.member.regNumber}).`);
+        if (data.member) {
+          setMembers((prev) => [data.member, ...prev]);
+        }
         setShowCreateModal(false);
         setCreateForm({
           name: '',
@@ -155,10 +165,19 @@ export default function AdminMembersPage() {
           duesExpiryDate: editingMember.duesExpiryDate,
         }),
       });
+
+      if (res.status === 401) {
+        setActionError('Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.');
+        return;
+      }
+
       const data = await res.json();
 
       if (res.ok && data.success) {
         setActionSuccess(`✓ Member "${data.member.name}" profile successfully updated.`);
+        if (data.member) {
+          setMembers((prev) => prev.map((m) => (m.id === data.member.id ? { ...m, ...data.member } : m)));
+        }
         setEditingMember(null);
         if (selectedMember?.id === editingMember.id) {
           setSelectedMember(data.member);
@@ -419,6 +438,20 @@ export default function AdminMembersPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                {actionError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Unable to register member</p>
+                      <p className="mt-0.5">{actionError}</p>
+                      {(actionError.toLowerCase().includes('session') || actionError.toLowerCase().includes('unauthorized') || actionError.includes('401')) && (
+                        <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                          Open /admin/login in a new tab to log in &rarr;
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="col-span-2">
                     <label className="block text-slate-700 font-semibold mb-1">Artisan / Enterprise Name *</label>
@@ -596,6 +629,20 @@ export default function AdminMembersPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                {actionError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Unable to update member profile</p>
+                      <p className="mt-0.5">{actionError}</p>
+                      {(actionError.toLowerCase().includes('session') || actionError.toLowerCase().includes('unauthorized') || actionError.includes('401')) && (
+                        <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                          Open /admin/login in a new tab to log in &rarr;
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="col-span-2">
                     <label className="block text-slate-700 font-semibold mb-1">Artisan / Enterprise Name *</label>

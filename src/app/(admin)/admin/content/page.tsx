@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X } from 'lucide-react';
+import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 
@@ -269,6 +269,11 @@ export default function AdminContentPage() {
         body: JSON.stringify(payload),
       });
 
+      if (res.status === 401) {
+        setFeedback({ type: 'error', message: 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.' });
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({ type: 'success', message: `✓ ${createModalType} record successfully created.` });
@@ -302,6 +307,11 @@ export default function AdminContentPage() {
           ...editingItem.data,
         }),
       });
+
+      if (res.status === 401) {
+        setFeedback({ type: 'error', message: 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.' });
+        return;
+      }
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -768,6 +778,20 @@ export default function AdminContentPage() {
 
             <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-3 text-xs">
+              {feedback?.type === 'error' && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Unable to create record</p>
+                    <p className="mt-0.5">{feedback.message}</p>
+                    {(feedback.message.toLowerCase().includes('session') || feedback.message.toLowerCase().includes('unauthorized') || feedback.message.includes('401')) && (
+                      <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                        Open /admin/login in a new tab to log in &rarr;
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               {createModalType === 'NEWS' && (
                 <>
                   <div>
@@ -977,6 +1001,20 @@ export default function AdminContentPage() {
 
             <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-3 text-xs">
+              {feedback?.type === 'error' && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Unable to save changes</p>
+                    <p className="mt-0.5">{feedback.message}</p>
+                    {(feedback.message.toLowerCase().includes('session') || feedback.message.toLowerCase().includes('unauthorized') || feedback.message.includes('401')) && (
+                      <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                        Open /admin/login in a new tab to log in &rarr;
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               {editingItem.type === 'NEWS' && (
                 <>
                   <div>

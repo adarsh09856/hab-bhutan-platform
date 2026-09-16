@@ -56,9 +56,18 @@ export default function AdminCraftsPage() {
         credentials: 'include',
         body: JSON.stringify(editing),
       });
+
+      if (res.status === 401) {
+        setFeedback({ type: 'error', message: 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.' });
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({ type: 'success', message: `${editing.name} (${editing.english}) updated successfully!` });
+        if (data.craft) {
+          setCrafts((prev) => prev.map((c) => (c.id === data.craft.id ? { ...c, ...data.craft } : c)));
+        }
         setEditing(null);
         loadCrafts();
       } else {
@@ -118,6 +127,20 @@ export default function AdminCraftsPage() {
 
             {/* Scrollable Body */}
             <form id="craftForm" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
+              {feedback?.type === 'error' && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Unable to save craft</p>
+                    <p className="mt-0.5">{feedback.message}</p>
+                    {(feedback.message.toLowerCase().includes('session') || feedback.message.toLowerCase().includes('unauthorized') || feedback.message.includes('401')) && (
+                      <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                        Open /admin/login in a new tab to log in &rarr;
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Romanized Dzongkha Name</label>

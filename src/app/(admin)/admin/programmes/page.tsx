@@ -112,8 +112,16 @@ export default function AdminProgrammesPage() {
         }),
       });
 
+      if (res.status === 401) {
+        setError('Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.');
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
+        if (data.pillar) {
+          setPillars((prev) => isNew ? [...prev, data.pillar] : prev.map((p) => p.id === data.pillar.id ? { ...p, ...data.pillar } : p));
+        }
         setEditingPillar(null);
         loadPillars();
       } else {
@@ -251,9 +259,16 @@ export default function AdminProgrammesPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           {error && (
-            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-none" />
-              <span>{error}</span>
+            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 flex-none mt-0.5" />
+              <div className="flex-1">
+                <p>{error}</p>
+                {(error.toLowerCase().includes('session') || error.toLowerCase().includes('unauthorized') || error.includes('401')) && (
+                  <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-200">
+                    Open /admin/login in a new tab &rarr;
+                  </a>
+                )}
+              </div>
             </div>
           )}
 

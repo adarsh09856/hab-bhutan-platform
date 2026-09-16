@@ -150,12 +150,20 @@ export default function AdminProjectsPage() {
         body: JSON.stringify(body),
       });
 
+      if (res.status === 401) {
+        setFeedback({ type: 'error', message: 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.' });
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({
           type: 'success',
           message: editingProject ? 'Project updated successfully.' : 'New project added successfully.',
         });
+        if (data.project) {
+          setProjects((prev) => editingProject ? prev.map((p) => p.id === data.project.id ? { ...p, ...data.project } : p) : [data.project, ...prev]);
+        }
         setShowModal(false);
         loadProjects();
       } else {
@@ -399,6 +407,20 @@ export default function AdminProjectsPage() {
 
             {/* Scrollable Body */}
             <form id="projectForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
+              {feedback?.type === 'error' && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Unable to save project</p>
+                    <p className="mt-0.5">{feedback.message}</p>
+                    {(feedback.message.toLowerCase().includes('session') || feedback.message.toLowerCase().includes('unauthorized') || feedback.message.includes('401')) && (
+                      <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                        Open /admin/login in a new tab to log in &rarr;
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">

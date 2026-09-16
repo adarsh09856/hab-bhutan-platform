@@ -45,9 +45,13 @@ export default function Header() {
   const [shopOpen, setShopOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [liveResults, setLiveResults] = useState<any[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveTotal, setLiveTotal] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLFormElement>(null);
   const membersRef = useRef<HTMLDivElement>(null);
   const shopRef = useRef<HTMLDivElement>(null);
 
@@ -58,27 +62,61 @@ export default function Header() {
         setMembersOpen(false);
         setShopOpen(false);
         setSearchOpen(false);
-        setMobileNavOpen(false);
+        setLiveResults([]);
       }
     };
+
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (membersRef.current && !membersRef.current.contains(target)) {
+      if (membersRef.current && !membersRef.current.contains(e.target as Node)) {
         setMembersOpen(false);
       }
-      if (shopRef.current && !shopRef.current.contains(target)) {
+      if (shopRef.current && !shopRef.current.contains(e.target as Node)) {
         setShopOpen(false);
       }
-      if (!target.closest('.search') && !searchQuery) {
-        setSearchOpen(false);
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        if (!searchQuery.trim()) setSearchOpen(false);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+
+    document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, [searchQuery]);
+
+  // Debounced live search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setLiveResults([]);
+      setLiveTotal(0);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLiveLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLiveTotal(data.total || 0);
+          const combined = [
+            ...(data.results?.products || []).slice(0, 3),
+            ...(data.results?.crafts || []).slice(0, 2),
+            ...(data.results?.members || []).slice(0, 2),
+            ...(data.results?.news || []).slice(0, 2),
+          ];
+          setLiveResults(combined);
+        }
+      } catch (err) {
+        console.error('Live search error:', err);
+      } finally {
+        setLiveLoading(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
   // Close mobile nav on route change
@@ -92,8 +130,9 @@ export default function Header() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
+      setLiveResults([]);
     }
   };
 
@@ -313,6 +352,7 @@ export default function Header() {
         <span className="header__spacer"></span>
 
         <form
+          ref={searchContainerRef}
           className={`search ${searchOpen ? 'is-open' : ''}`}
           role="search"
           id="searchForm"
@@ -362,6 +402,154 @@ export default function Header() {
               }
             }}
           />
+
+          {/* Instant live search results dropdown */}
+          {searchOpen && searchQuery.trim().length > 0 && (
+            <div
+              className="search__dropdown"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                width: 'min(420px, 92vw)',
+                marginTop: '8px',
+                background: '#ffffff',
+                borderRadius: '12px',
+                boxShadow: '0 20px 35px -5px rgba(0, 0, 0, 0.15), 0 0 1px 1px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #e2e8f0',
+                overflow: 'hidden',
+                zIndex: 9999,
+                color: '#1e293b',
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  padding: '8px 12px',
+                  background: '#f8fafc',
+                  borderBottom: '1px solid #f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '11px',
+                  color: '#64748b',
+                  fontWeight: 600,
+                }}
+              >
+                <span>{liveLoading ? 'Searching...' : `Found ${liveTotal} match${liveTotal === 1 ? '' : 'es'}`}</span>
+                <span style={{ fontSize: '10px', color: '#94a3b8' }}>Press Enter for full results</span>
+              </div>
+
+              <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                {liveResults.map((item) => (
+                  <button
+                    key={`${item.category}-${item.id}`}
+                    type="button"
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setLiveResults([]);
+                      router.push(item.url);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: '1px solid #f8fafc',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }}
+                  >
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt=""
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '8px',
+                          objectFit: 'cover',
+                          background: '#f1f5f9',
+                          border: '1px solid #e2e8f0',
+                          flexShrink: 0,
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '8px',
+                          background: '#fff1f2',
+                          color: '#8B2E24',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.category.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.title}
+                        </span>
+                        <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', padding: '1px 5px', borderRadius: '4px', background: '#f1f5f9', color: '#475569' }}>
+                          {item.category}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#8B2E24', fontWeight: 500, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.subtitle}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+
+                {liveResults.length === 0 && !liveLoading && (
+                  <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: '12px', color: '#94a3b8' }}>
+                    No instant matches. Press Enter for global search.
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSearchSubmit}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: '#fdf2f2',
+                  border: 'none',
+                  borderTop: '1px solid #fecdd3',
+                  color: '#8B2E24',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  display: 'block',
+                }}
+              >
+                View all results for &ldquo;{searchQuery}&rdquo; &rarr;
+              </button>
+            </div>
+          )}
         </form>
 
         <div className="header__actions">

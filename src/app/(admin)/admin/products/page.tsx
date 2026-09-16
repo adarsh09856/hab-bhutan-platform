@@ -17,7 +17,8 @@ import {
   Archive,
   Image as ImageIcon,
   X,
-  AlertTriangle
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
@@ -110,9 +111,15 @@ export default function AdminProductsPage() {
         body: JSON.stringify(addForm),
       });
 
+      if (res.status === 401) {
+        setActionError('Your session has expired. Please open /admin/login in a new tab to log in, then click Add Product again.');
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setActionSuccess(`Product "${data.product.name}" (${data.product.code}) successfully added to catalog.`);
+        setProducts((prev) => [data.product, ...prev]);
         setShowAddModal(false);
         setAddForm({
           code: '',
@@ -190,9 +197,15 @@ export default function AdminProductsPage() {
         body: JSON.stringify(editForm),
       });
 
+      if (res.status === 401) {
+        setActionError('Your session has expired. Please open /admin/login in a new tab to log in, then click Save again.');
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setActionSuccess(`Product "${data.product.name}" (${data.product.code}) updated successfully.`);
+        setProducts((prev) => prev.map((p) => (p.id === data.product.id ? { ...p, ...data.product } : p)));
         setEditingProduct(null);
         await loadData();
       } else {
@@ -562,6 +575,20 @@ export default function AdminProductsPage() {
         maxWidth="xl"
       >
         <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+          {actionError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-semibold">Unable to create product</p>
+                <p className="mt-0.5">{actionError}</p>
+                {(actionError.toLowerCase().includes('session') || actionError.toLowerCase().includes('unauthorized') || actionError.includes('401')) && (
+                  <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                    Open /admin/login in a new tab to log in &rarr;
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-medium admin-text mb-1">Product Code (SKU) *</label>
@@ -707,6 +734,20 @@ export default function AdminProductsPage() {
           maxWidth="xl"
         >
           <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+            {actionError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold">Unable to save changes</p>
+                  <p className="mt-0.5">{actionError}</p>
+                  {(actionError.toLowerCase().includes('session') || actionError.toLowerCase().includes('unauthorized') || actionError.includes('401')) && (
+                    <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                      Open /admin/login in a new tab to log in &rarr;
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
             <div>
               <label className="block font-medium admin-text mb-1">Product Title</label>
               <input

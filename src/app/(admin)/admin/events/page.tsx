@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Edit2, Trash2, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Calendar, Plus, Edit2, Trash2, CheckCircle, XCircle, Search, AlertCircle } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
@@ -134,9 +134,17 @@ export default function AdminEventsPage() {
         body: JSON.stringify(payload),
       });
 
+      if (res.status === 401) {
+        showFlash('error', 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.');
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         showFlash('success', editId ? 'Event updated successfully.' : 'Event created successfully.');
+        if (data.event) {
+          setEvents((prev) => editId ? prev.map((ev) => ev.id === data.event.id ? { ...ev, ...data.event } : ev) : [data.event, ...prev]);
+        }
         setShowModal(false);
         loadEvents();
       } else {
@@ -344,6 +352,20 @@ export default function AdminEventsPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                {flashMsg?.type === 'error' && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Unable to save event</p>
+                      <p className="mt-0.5">{flashMsg.text}</p>
+                      {(flashMsg.text.toLowerCase().includes('session') || flashMsg.text.toLowerCase().includes('unauthorized') || flashMsg.text.includes('401')) && (
+                        <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                          Open /admin/login in a new tab to log in &rarr;
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Key / Slug *</label>

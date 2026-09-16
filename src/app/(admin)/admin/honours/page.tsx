@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Award, Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Award, Plus, Edit2, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 
@@ -110,9 +110,17 @@ export default function AdminHonoursPage() {
         body: JSON.stringify(payload),
       });
 
+      if (res.status === 401) {
+        showFlash('error', 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.');
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         showFlash('success', editId ? 'Honour record updated.' : 'Honour record created.');
+        if (data.honour) {
+          setHonours((prev) => editId ? prev.map((h) => h.id === data.honour.id ? { ...h, ...data.honour } : h) : [data.honour, ...prev]);
+        }
         setShowModal(false);
         loadHonours();
       } else {
@@ -255,6 +263,20 @@ export default function AdminHonoursPage() {
 
             {/* Scrollable Form Body */}
             <form id="honourForm" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
+              {flashMsg?.type === 'error' && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Unable to save honour record</p>
+                    <p className="mt-0.5">{flashMsg.text}</p>
+                    {(flashMsg.text.toLowerCase().includes('session') || flashMsg.text.toLowerCase().includes('unauthorized') || flashMsg.text.includes('401')) && (
+                      <a href="/admin/login" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 underline font-bold text-rose-800">
+                        Open /admin/login in a new tab to log in &rarr;
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Master Artisan Name *</label>
                 <input

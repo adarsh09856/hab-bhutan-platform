@@ -255,6 +255,11 @@ export default function AdminSiteSettingsPage() {
         credentials: 'include',
         body: JSON.stringify(form),
       });
+      if (res.status === 401) {
+        setFeedback({ type: 'error', message: 'Your session has expired. Please open /admin/login in a new tab to re-authenticate, then click Save again.' });
+        return;
+      }
+
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({ type: 'success', message: 'Site settings successfully updated and live across all public pages!' });
