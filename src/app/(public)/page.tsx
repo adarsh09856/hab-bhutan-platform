@@ -738,11 +738,6 @@ export default function HomePage() {
               ))}
             </div>
           </figure>
-          <div className="hero__meta mt-2 flex items-center justify-between text-xs text-stone-600">
-            <span className="caption font-mono text-[11.5px] text-stone-600">
-              {heroSlides[currentHero]?.caption || `photo ${currentHero + 1} — artisan at the loom, Khoma`}
-            </span>
-          </div>
         </div>
       </section>
 
