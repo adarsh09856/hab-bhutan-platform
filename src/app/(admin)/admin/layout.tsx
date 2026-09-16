@@ -277,7 +277,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
             id="admin-sidebar-toggle"
             aria-label="Toggle sidebar"
             aria-expanded={sidebarOpen}
@@ -391,7 +391,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               id="admin-sidebar-close"
               aria-label="Close sidebar"
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-slate-500 hover:text-slate-800 p-1 rounded-lg"
+              className="lg:hidden text-slate-500 hover:text-slate-800 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

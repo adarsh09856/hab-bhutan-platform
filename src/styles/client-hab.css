@@ -373,9 +373,9 @@ textarea.input{line-height:1.5;resize:vertical}
 .caret{font-size:9px;opacity:.75}
 
 .nav-toggle{
-  display:none;width:42px;height:42px;border:1px solid var(--line);
+  display:none;width:44px;height:44px;border:1px solid var(--line);
   border-radius:var(--radius-sm);background:var(--surface);
-  flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;
 }
 .nav-toggle span{display:block;width:18px;height:2px;background:var(--ink)}
 
@@ -2355,13 +2355,34 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
     flex-direction:column;align-items:stretch;gap:2px;
     background:var(--surface);border-bottom:1px solid var(--line);
     padding:12px var(--gutter) 18px;display:none;
+    max-height:calc(100dvh - var(--header-h, 74px));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    box-shadow:0 18px 44px rgba(58,42,33,.18);
+    z-index:100;
   }
   .nav.is-open{display:flex}
-  .nav__item{font-size:15px;padding:12px 10px}
+  .nav__item{font-size:15px;padding:12px 10px;min-height:44px;display:flex;align-items:center}
   .menu{position:static}
-  .menu__panel,.menu__panel--wide,.menu__panel--narrow,.menu__panel--mid{position:static;width:auto;padding-top:8px}
+  .menu__panel,.menu__panel--narrow,.menu__panel--mid{position:static;width:auto;padding-top:8px}
+  .menu__panel--wide{
+    position:absolute !important;
+    right:0 !important;
+    left:auto !important;
+    top:100% !important;
+    width:min(440px,calc(100vw - 20px)) !important;
+    max-height:calc(100dvh - 88px) !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    background:var(--surface) !important;
+    border:1px solid var(--line) !important;
+    border-radius:12px !important;
+    box-shadow:0 20px 48px rgba(58,42,33,.22) !important;
+    z-index:110 !important;
+  }
   .menu__card{box-shadow:none}
-  .menu__grid{grid-template-columns:repeat(2,1fr)}
+  .menu__grid{grid-template-columns:repeat(2,1fr);gap:8px}
   .header__inner{flex-wrap:wrap;gap:10px;padding-top:12px;padding-bottom:12px}
   .header__spacer{display:none}
   .search{order:3;width:100%;height:auto}
@@ -2514,9 +2535,10 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .assurance--5,.grid--5,.milestones,.valuegrid{grid-template-columns:1fr}
   .filterbar{grid-template-columns:1fr}
   .formgrid{grid-template-columns:1fr}
-  .field--wide{grid-column:span 1}
-  .basketline{flex-wrap:wrap}
-  .basketline__total{width:auto}
+  .basketline{flex-wrap:wrap;gap:12px;padding:16px 14px}
+  .basketline__thumb{width:72px;height:72px}
+  .basketline__total{width:auto;margin-left:auto}
+  .basketline__remove{min-height:36px;padding:4px 8px;cursor:pointer}
   .tabs{gap:8px}
   .project{padding:24px 22px}
   .publead__copy{padding:26px 22px}
@@ -2549,6 +2571,20 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .btn--xs,.admin__rowbtn{min-height:38px}
   .frame--hero{aspect-ratio:4/3}
   .section__head{flex-direction:column;align-items:flex-start;gap:14px}
+}
+
+@media (max-width:380px){
+  :root{--gutter:14px}
+  .logo__img{height:30px;max-width:180px;object-fit:contain}
+  .header__inner{gap:6px;padding:8px 12px}
+  .chip{padding:6px 8px;font-size:11px}
+  .btn--sm{padding:8px 10px;font-size:12px}
+  .display--hero{font-size:30px}
+  .display--band{font-size:24px}
+  .display--page{font-size:28px}
+  .menu__panel--wide{width:calc(100vw - 16px) !important;right:-6px !important}
+  .menu__grid{grid-template-columns:1fr;gap:6px}
+  .partners{grid-template-columns:1fr}
 }
 
 @media print{
@@ -2823,6 +2859,13 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
 .payinstruct:last-child{margin-bottom:0}
 .paysteps{margin:0;padding-left:18px;font-size:14px;line-height:1.65;color:var(--ink-2)}
 .paysteps li{margin-bottom:5px}
+
+@media (max-width: 639px){
+  .paymethod__head{padding:12px 14px;flex-wrap:wrap;gap:8px}
+  .paymethod__brands{width:100%;justify-content:flex-start;padding-left:28px}
+  .paymethod__body{padding:0 14px 16px 14px}
+  .payform{gap:10px}
+}
 
 /* ---------- Award list ---------- */
 .award--plain{grid-template-columns:minmax(0,1fr)}

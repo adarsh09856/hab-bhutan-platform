@@ -210,11 +210,27 @@ html:has(.hab-admin),
   -webkit-overflow-scrolling: touch;
 }
 
-/* Table High-Contrast Light Styles */
+/* Universal Table Responsive Containment for all devices */
+.hab-admin div:has(> table),
+.hab-admin .admin-card:has(table),
+.hab-admin .overflow-x-auto {
+  max-width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 .hab-admin table {
   background-color: #ffffff !important;
   color: #0f172a !important;
+  min-width: 580px;
 }
+
+@media (min-width: 1024px) {
+  .hab-admin table {
+    min-width: 100%;
+  }
+}
+
 .hab-admin thead {
   background-color: #f8fafc !important;
   color: #334155 !important;
@@ -238,6 +254,25 @@ html:has(.hab-admin),
 .hab-admin td {
   color: #0f172a !important;
   border-color: #f1f5f9 !important;
+}
+
+/* Universal Modal Dialog Constraints across Mobile/Tablet */
+.hab-admin .admin-modal,
+.hab-admin div:has(> .admin-modal) {
+  max-height: 92dvh !important;
+  max-width: min(100%, 96vw) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive Admin Page Toolbars & Small Mobile Padding */
+@media (max-width: 768px) {
+  .hab-admin .admin-main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-top: 16px !important;
+    padding-bottom: 24px !important;
+  }
 }
 
 /* Systematic Overrides for Legacy Dark Utility Classes within Admin */

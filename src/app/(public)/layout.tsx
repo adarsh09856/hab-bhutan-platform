@@ -14,11 +14,11 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#F4F0E7] text-[#33261F]">
+    <div className="min-h-screen w-full flex flex-col bg-[#F4F0E7] text-[#33261F] overflow-x-clip">
       <AdminLiveBar />
       <UtilityBar />
       <Header />
-      <div className="hab-public-shell flex-1">{children}</div>
+      <div className="hab-public-shell flex-1 w-full overflow-x-clip">{children}</div>
       <Footer />
       <AdminDrawer />
       <AskHabAssistant />

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
 interface Slide {
@@ -81,15 +81,35 @@ export default function HeroSlider() {
     return () => clearInterval(t);
   }, [paused, next, slides.length]);
 
-  const slide = slides[current];
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setPaused(true);
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setPaused(false);
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        next();
+      } else {
+        prev();
+      }
+    }
+    touchStartX.current = null;
+  };
 
   return (
     <div
       className="aspect-[4/3] sm:aspect-[4/3.2] rounded-[14px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Slides */}
       {slides.map((s, i) => (

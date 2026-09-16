@@ -35,6 +35,35 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Responsive Viewport Stability: Prevent accidental horizontal overflow on mobile screens */
+html:not(:has(.hab-admin)),
+body:not(.hab-admin-body) {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+@supports not (overflow-x: clip) {
+  html:not(:has(.hab-admin)),
+  body:not(.hab-admin-body) {
+    overflow-x: hidden;
+  }
+}
+
+/* Prevent iOS Safari disruptive auto-zoom on input focus */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 html:has(.hab-admin),
 body:has(.hab-admin),
 body.hab-admin-body,
