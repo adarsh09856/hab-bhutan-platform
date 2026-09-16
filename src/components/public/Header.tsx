@@ -111,7 +111,6 @@ export default function Header() {
     { label: 'Programmes', href: '/programmes' },
     { label: 'Projects', href: '/projects' },
     { label: 'News & Events', href: '/news' },
-    { label: 'Donate', href: '/donate' },
   ]);
 
   // Load dynamic CMS data from Admin endpoints
@@ -147,16 +146,12 @@ export default function Header() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.header && Array.isArray(d.header) && d.header.length > 0) {
-          const mainLinks = d.header.filter((i: any) => !i.parent);
+          const mainLinks = d.header.filter((i: any) => !i.parent && i.href !== '/donate');
           if (mainLinks.length >= 3) {
-            const hasDonate = mainLinks.some((i: any) => i.href === '/donate');
             const items = [
               { label: 'Home', href: '/' },
               ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
             ];
-            if (!hasDonate) {
-              items.push({ label: 'Donate', href: '/donate' });
-            }
             setNavItems(items);
           }
         }
@@ -322,6 +317,14 @@ export default function Header() {
           role="search"
           id="searchForm"
           onSubmit={handleSearchSubmit}
+          onMouseEnter={() => {
+            setSearchOpen(true);
+          }}
+          onMouseLeave={() => {
+            if (!searchQuery.trim() && document.activeElement !== searchInputRef.current) {
+              setSearchOpen(false);
+            }
+          }}
         >
           <button
             className="search__btn"
@@ -347,8 +350,16 @@ export default function Header() {
             aria-label="Search crafts and members"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchOpen(true)}
             onBlur={() => {
               if (!searchQuery.trim()) setSearchOpen(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setSearchQuery('');
+                setSearchOpen(false);
+                searchInputRef.current?.blur();
+              }
             }}
           />
         </form>

@@ -272,10 +272,43 @@ textarea.input{line-height:1.5;resize:vertical}
 .utility__links a{color:var(--on-dark-body);white-space:nowrap}
 .utility__links a:hover{color:#fff}
 .utility__rule{width:1px;height:15px;background:var(--dark-line)}
-.utility__lang{display:flex;gap:6px;white-space:nowrap}
-.utility__lang a{color:var(--on-dark-body)}
-.utility__lang a.is-active{color:var(--on-dark)}
-.utility__lang span{opacity:.5}
+.utility__lang{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+  padding:2px 8px;
+  border-radius:9999px;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  color:var(--on-dark-body);
+}
+.utility__lang:hover{
+  background:rgba(255,255,255,0.14);
+  color:#fff;
+  box-shadow:0 0 10px rgba(255,255,255,0.06);
+}
+.utility__lang a,
+.utility__lang span{
+  transition:color .18s ease, opacity .18s ease;
+}
+.utility__lang .is-active,
+.utility__lang a.is-active{
+  color:#fff !important;
+  font-weight:700;
+  opacity:1 !important;
+}
+.utility__lang span:not(.is-active):not([aria-hidden]),
+.utility__lang a:not(.is-active){
+  opacity:.65;
+}
+.utility__lang:hover span:not(.is-active):not([aria-hidden]),
+.utility__lang:hover a:not(.is-active){
+  opacity:.95;
+  color:#fff;
+}
+.utility__lang span[aria-hidden]{
+  opacity:.35;
+}
 
 /* .header position/z-index now defined at end of file (fixed) */
 
@@ -414,8 +447,12 @@ textarea.input{line-height:1.5;resize:vertical}
   outline:none;font-family:var(--ui);font-size:14px;color:var(--ink);
   transition:width .22s cubic-bezier(.22,.7,.24,1),opacity .16s ease;
 }
-.search.is-open .search__input{width:300px;padding:0 14px;opacity:1;pointer-events:auto;z-index:60}
-.search.is-open .search__btn{opacity:0;pointer-events:none}
+.search.is-open .search__input,
+.search:hover .search__input,
+.search:focus-within .search__input{width:300px;padding:0 14px;opacity:1;pointer-events:auto;z-index:60}
+.search.is-open .search__btn,
+.search:hover .search__btn,
+.search:focus-within .search__btn{opacity:0;pointer-events:none}
 
 .basket{
   position:relative;width:42px;height:42px;border-radius:var(--radius-sm);
@@ -2928,18 +2965,24 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
   box-shadow: 0 1px 8px rgba(31,29,26,0.08);
 }
 
-/* Body padding: push content below fixed chrome (utility 38px + header 74px = 112px) - only for public storefront */
-body:not(.hab-admin-body):not(:has(.hab-admin)) {
+/* Public content padding: push content below fixed chrome (utility 38px + header 74px = 112px) - only for public storefront */
+.hab-public-shell {
   padding-top: calc(var(--utility-h, 38px) + var(--header-h, 74px));
 }
 
 /* When admin is logged in: AdminLiveBar is 36px fixed — push everything down 36px more */
-body:not(.hab-admin-body):not(:has(.hab-admin)).has-admin-live-bar .utility {
+body.has-admin-live-bar .utility {
   top: 36px;
 }
-body:not(.hab-admin-body):not(:has(.hab-admin)).has-admin-live-bar .header {
+body.has-admin-live-bar .header {
   top: calc(36px + var(--utility-h, 38px));
 }
-body:not(.hab-admin-body):not(:has(.hab-admin)).has-admin-live-bar {
+body.has-admin-live-bar .hab-public-shell {
   padding-top: calc(36px + var(--utility-h, 38px) + var(--header-h, 74px));
+}
+
+body.hab-admin-body,
+.hab-admin {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
 }

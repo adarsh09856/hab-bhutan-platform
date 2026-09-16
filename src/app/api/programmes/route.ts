@@ -5,9 +5,25 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const pillars = await prisma.programmePillar.findMany({
+    const rawPillars = await prisma.programmePillar.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
+    });
+
+    const pillars = rawPillars.map((p: any) => {
+      let activities: string[] = [];
+      let imageUrl = '';
+      if (Array.isArray(p.activities)) {
+        activities = p.activities;
+      } else if (p.activities && typeof p.activities === 'object') {
+        activities = p.activities.list || [];
+        imageUrl = p.activities.imageUrl || '';
+      }
+      return {
+        ...p,
+        activities,
+        imageUrl,
+      };
     });
 
     const res = NextResponse.json({ success: true, pillars });

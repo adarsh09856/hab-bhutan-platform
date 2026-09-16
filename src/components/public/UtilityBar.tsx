@@ -56,7 +56,7 @@ export default function UtilityBar() {
           type="button"
           onClick={toggleLanguage}
           className="utility__lang"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, font: 'inherit', color: 'inherit' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, font: 'inherit', color: 'inherit' }}
           title="Switch language / སྐད་ཡིག"
         >
           <span className={language === 'en' ? 'is-active' : ''}>EN</span>

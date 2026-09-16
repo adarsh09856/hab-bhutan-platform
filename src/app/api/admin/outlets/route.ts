@@ -16,14 +16,45 @@ async function verifyAdmin(req: NextRequest) {
   return isStaff ? user : null;
 }
 
+function packOutletNote(note?: string | null, imageUrl?: string | null, currentNote?: string | null) {
+  let cleanNote = note !== undefined ? (note?.trim() || '') : (currentNote?.trim() || '');
+  let finalImg = imageUrl !== undefined ? (imageUrl?.trim() || null) : null;
+  if (imageUrl === undefined && currentNote) {
+    const match = currentNote.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+    if (match) finalImg = match[1].trim();
+  }
+  cleanNote = cleanNote.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+  if (finalImg) {
+    return cleanNote ? `${cleanNote}\n<!-- HAB_IMAGE: ${finalImg} -->` : `<!-- HAB_IMAGE: ${finalImg} -->`;
+  }
+  return cleanNote || null;
+}
+
+function unpackOutlet(outlet: any) {
+  if (!outlet) return outlet;
+  let note = outlet.note || '';
+  let imageUrl = null;
+  const match = note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+  if (match) {
+    imageUrl = match[1].trim();
+    note = note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+  }
+  return {
+    ...outlet,
+    note: note || null,
+    imageUrl: imageUrl || null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const user = await verifyAdmin(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const outlets = await prisma.outletRecord.findMany({
+    const rawOutlets = await prisma.outletRecord.findMany({
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
+    const outlets = rawOutlets.map(unpackOutlet);
     return NextResponse.json({ success: true, outlets });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch outlets' }, { status: 500 });
@@ -52,6 +83,7 @@ export async function POST(req: NextRequest) {
       payment,
       gettingThere,
       facilities,
+      imageUrl,
     } = body;
 
     if (!key || !name || !place) {
@@ -66,7 +98,7 @@ export async function POST(req: NextRequest) {
         sortOrder: Number(sortOrder) || 0,
         isFeatured: Boolean(isFeatured),
         place: place.trim(),
-        note: note?.trim() || null,
+        note: packOutletNote(note, imageUrl),
         description: description?.trim() || '',
         longDescription: longDescription?.trim() || description?.trim() || '',
         hours: hours?.trim() || '09:00 - 18:00 daily',
@@ -88,7 +120,7 @@ export async function POST(req: NextRequest) {
       details: { key: outlet.key, name: outlet.name },
     });
 
-    return NextResponse.json({ success: true, outlet });
+    return NextResponse.json({ success: true, outlet: unpackOutlet(outlet) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create outlet' }, { status: 500 });
   }
@@ -117,11 +149,20 @@ export async function PUT(req: NextRequest) {
       payment,
       gettingThere,
       facilities,
+      imageUrl,
     } = body;
 
     if (!id && !key) {
       return NextResponse.json({ error: 'id or key is required' }, { status: 400 });
     }
+
+    const existing = await prisma.outletRecord.findUnique({
+      where: id ? { id } : { key },
+    });
+
+    const packedNote = (note !== undefined || imageUrl !== undefined)
+      ? packOutletNote(note, imageUrl, existing?.note)
+      : undefined;
 
     const updated = await prisma.outletRecord.update({
       where: id ? { id } : { key },
@@ -131,7 +172,7 @@ export async function PUT(req: NextRequest) {
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) }),
         ...(isFeatured !== undefined && { isFeatured: Boolean(isFeatured) }),
         ...(place !== undefined && { place: place.trim() }),
-        ...(note !== undefined && { note: note?.trim() || null }),
+        ...(packedNote !== undefined && { note: packedNote }),
         ...(description !== undefined && { description: description.trim() }),
         ...(longDescription !== undefined && { longDescription: longDescription.trim() }),
         ...(hours !== undefined && { hours: hours.trim() }),
@@ -153,7 +194,7 @@ export async function PUT(req: NextRequest) {
       details: { key: updated.key, name: updated.name },
     });
 
-    return NextResponse.json({ success: true, outlet: updated });
+    return NextResponse.json({ success: true, outlet: unpackOutlet(updated) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update outlet' }, { status: 500 });
   }

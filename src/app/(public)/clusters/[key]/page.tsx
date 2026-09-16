@@ -16,6 +16,15 @@ async function resolveCluster(key: string) {
   try {
     const c = await prisma.clusterRecord.findUnique({ where: { key } });
     if (c) {
+      let visitor_note = c.visitorNote || undefined;
+      let imageUrl: string | undefined = undefined;
+      if (visitor_note && visitor_note.includes('<!-- HAB_IMAGE:')) {
+        const match = visitor_note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+        if (match) {
+          imageUrl = match[1].trim();
+          visitor_note = visitor_note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim() || undefined;
+        }
+      }
       return {
         key: c.key,
         name: c.name,
@@ -27,7 +36,8 @@ async function resolveCluster(key: string) {
         sort_order: c.sortOrder,
         summary: c.summary,
         story: c.story,
-        visitor_note: c.visitorNote || undefined,
+        visitor_note,
+        imageUrl,
       };
     }
   } catch {}

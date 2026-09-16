@@ -18,19 +18,31 @@ async function getClusters() {
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
     if (dbClusters.length > 0) {
-      return dbClusters.map((c) => ({
-        key: c.key,
-        name: c.name,
-        craft_key: c.craftKey,
-        dzongkhag: c.dzongkhag,
-        members: c.members,
-        established: c.established,
-        is_featured: c.isFeatured,
-        sort_order: c.sortOrder,
-        summary: c.summary,
-        story: c.story,
-        visitor_note: c.visitorNote || undefined,
-      }));
+      return dbClusters.map((c) => {
+        let visitor_note = c.visitorNote || undefined;
+        let imageUrl: string | undefined = undefined;
+        if (visitor_note && visitor_note.includes('<!-- HAB_IMAGE:')) {
+          const match = visitor_note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+          if (match) {
+            imageUrl = match[1].trim();
+            visitor_note = visitor_note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim() || undefined;
+          }
+        }
+        return {
+          key: c.key,
+          name: c.name,
+          craft_key: c.craftKey,
+          dzongkhag: c.dzongkhag,
+          members: c.members,
+          established: c.established,
+          is_featured: c.isFeatured,
+          sort_order: c.sortOrder,
+          summary: c.summary,
+          story: c.story,
+          visitor_note,
+          imageUrl,
+        };
+      });
     }
   } catch {}
   return CLIENT_DATA.clusters;
@@ -65,12 +77,12 @@ export default async function ClustersPage() {
         </p>
 
         <div className="clusterlist" id="clusterList" data-cms-repeat>
-          {clusters.map((row, idx) => {
+          {clusters.map((row: any, idx: number) => {
             const craft = CLIENT_DATA.crafts.find((cr) => cr.key === row.craft_key) || {
               name: '',
               english: '',
             };
-            const imgSrc = photoPool[idx % photoPool.length];
+            const imgSrc = row.imageUrl || photoPool[idx % photoPool.length];
 
             return (
               <article key={row.key} id={row.key} className="clusterlist__item" data-cms-item>

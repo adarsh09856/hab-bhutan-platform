@@ -41,12 +41,20 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
     notFound();
   }
 
+  let customImg = rawProg.imageUrl || rawProg.image_path || '';
+  if (!customImg && rawProg.activities && typeof rawProg.activities === 'object' && !Array.isArray(rawProg.activities)) {
+    customImg = (rawProg.activities as any).imageUrl || '';
+  }
+
   const programme = {
     ...rawProg,
     title: rawProg.title,
     ref: rawProg.ref,
     description: rawProg.description,
-    activities: Array.isArray(rawProg.activities) ? rawProg.activities : (rawProg.activities?.items || []),
+    imageUrl: customImg,
+    activities: Array.isArray(rawProg.activities)
+      ? rawProg.activities
+      : (rawProg.activities?.list || rawProg.activities?.items || []),
   };
 
   const allProgrammes = CLIENT_DATA.programmes;
@@ -62,7 +70,7 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
     '/assets/photos/hero-2-punakha.jpg',
     '/assets/photos/about-hab.jpg',
   ];
-  const bannerImg = photoPool[currentIndex % photoPool.length];
+  const bannerImg = customImg || photoPool[currentIndex >= 0 ? currentIndex % photoPool.length : 0];
 
   const relatedProjects = CLIENT_DATA.projects.slice(0, 3);
 

@@ -70,8 +70,9 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
     '/assets/photos/hero-3-clay.jpg',
     '/assets/photos/hero-2-punakha.jpg',
   ];
+  const docs = rawCat.documents && typeof rawCat.documents === 'object' ? (rawCat.documents as any) : {};
   const catIndex = CLIENT_DATA.membershipCategories.findIndex((c) => c.key === cat.key);
-  const bannerImg = rawCat.imageUrl || rawCat.bannerUrl || rawCat.image_path || CATEGORY_PHOTO_MAP[cat.key] || photoPool[catIndex >= 0 ? catIndex % photoPool.length : 0];
+  const bannerImg = rawCat.bannerImageUrl || docs.bannerImageUrl || rawCat.imageUrl || rawCat.bannerUrl || rawCat.image_path || CATEGORY_PHOTO_MAP[cat.key] || photoPool[catIndex >= 0 ? catIndex % photoPool.length : 0];
 
   const applyTierMapping: Record<string, string> = {
     'individual-artisan': 'individual',

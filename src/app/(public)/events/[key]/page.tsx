@@ -95,14 +95,18 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     }
   }
 
+  const sched = rawEvent.schedule && typeof rawEvent.schedule === 'object' ? (rawEvent.schedule as any) : {};
+
   const event = {
     ...rawEvent,
+    imageUrl: sched.imageUrl || rawEvent.imageUrl || null,
+    pdfUrl: sched.pdfUrl || rawEvent.pdfUrl || null,
     day: day || rawEvent.day || '12',
     mon: mon || rawEvent.mon || 'SEP',
     year: year || rawEvent.year || '2026',
     kind: rawEvent.kind || rawEvent.category || 'Exhibition',
     place: rawEvent.place || rawEvent.location || rawEvent.venue || 'Thimphu, Bhutan',
-    time: time || rawEvent.time || (typeof rawEvent.schedule === 'object' && rawEvent.schedule?.time) || 'All day',
+    time: time || rawEvent.time || sched.time || 'All day',
     summary: rawEvent.summary || rawEvent.description?.slice(0, 160) + '...',
     detail: rawEvent.detail || rawEvent.description || '',
     who: rawEvent.who || rawEvent.registration || 'Open to all',

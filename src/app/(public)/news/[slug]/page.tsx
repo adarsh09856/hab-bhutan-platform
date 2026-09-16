@@ -45,6 +45,16 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     notFound();
   }
 
+  let image_path = rawPost.image_path || rawPost.imageUrl || rawPost.image_url || '';
+  let cleanContent = rawPost.content || rawPost.body || rawPost.blurb || '';
+  if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
+    const match = cleanContent.match(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->/);
+    if (match) {
+      image_path = match[1].trim();
+      cleanContent = cleanContent.replace(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->\s*/, '');
+    }
+  }
+
   const post = {
     ...rawPost,
     id: rawPost.id || rawPost.slug || 'news-item',
@@ -52,7 +62,8 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     title: rawPost.title,
     kind: rawPost.kind || 'Programs',
     blurb: rawPost.blurb || rawPost.summary || '',
-    body: rawPost.content || rawPost.body || rawPost.blurb || '',
+    body: cleanContent,
+    image_path,
     published_at: rawPost.dateString || rawPost.published_at || rawPost.date || 'Recent',
   };
 
@@ -77,7 +88,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     '/assets/photos/hero-3-clay.jpg',
   ];
   const postIndex = CLIENT_DATA.news.findIndex((n) => (n.slug || n.id) === (post.slug || post.id));
-  const bannerImg = post.image_path || post.imageUrl || post.image_url || NEWS_PHOTO_MAP[post.slug || post.id] || photoPool[postIndex >= 0 ? postIndex % photoPool.length : 0];
+  const bannerImg = post.image_path || NEWS_PHOTO_MAP[post.slug || post.id] || photoPool[postIndex >= 0 ? postIndex % photoPool.length : 0];
 
   const displayDate = post.published_at || post.date || post.created_at || 'Recent';
 

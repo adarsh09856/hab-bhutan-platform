@@ -4,6 +4,23 @@ import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
+function unpackCluster(cluster: any) {
+  if (!cluster) return cluster;
+  let visitorNote = cluster.visitorNote || cluster.visitor_note || '';
+  let imageUrl = cluster.imageUrl || null;
+  const match = visitorNote.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+  if (match) {
+    imageUrl = match[1].trim();
+    visitorNote = visitorNote.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+  }
+  return {
+    ...cluster,
+    visitorNote: visitorNote || null,
+    visitor_note: visitorNote || null,
+    imageUrl: imageUrl || null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -14,10 +31,10 @@ export async function GET(req: NextRequest) {
         where: { key },
       });
       if (cluster) {
-        return NextResponse.json({ success: true, cluster });
+        return NextResponse.json({ success: true, cluster: unpackCluster(cluster) });
       }
       const fallback = CLIENT_DATA.clusters.find((c) => c.key === key);
-      return NextResponse.json({ success: true, cluster: fallback || null });
+      return NextResponse.json({ success: true, cluster: fallback ? unpackCluster(fallback) : null });
     }
 
     const clusters = await prisma.clusterRecord.findMany({
@@ -26,16 +43,16 @@ export async function GET(req: NextRequest) {
 
     let res: NextResponse;
     if (clusters.length > 0) {
-      res = NextResponse.json({ success: true, clusters });
+      res = NextResponse.json({ success: true, clusters: clusters.map(unpackCluster) });
     } else {
-      res = NextResponse.json({ success: true, clusters: CLIENT_DATA.clusters });
+      res = NextResponse.json({ success: true, clusters: CLIENT_DATA.clusters.map(unpackCluster) });
     }
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');
     res.headers.set('Expires', '0');
     return res;
   } catch {
-    const res = NextResponse.json({ success: true, clusters: CLIENT_DATA.clusters });
+    const res = NextResponse.json({ success: true, clusters: CLIENT_DATA.clusters.map(unpackCluster) });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     return res;
   }

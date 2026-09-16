@@ -16,14 +16,45 @@ async function verifyAdmin(req: NextRequest) {
   return isStaff ? user : null;
 }
 
+function packVisitorNote(visitorNote?: string | null, imageUrl?: string | null, currentNote?: string | null) {
+  let note = visitorNote !== undefined ? (visitorNote?.trim() || '') : (currentNote?.trim() || '');
+  let finalImg = imageUrl !== undefined ? (imageUrl?.trim() || null) : null;
+  if (imageUrl === undefined && currentNote) {
+    const match = currentNote.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+    if (match) finalImg = match[1].trim();
+  }
+  note = note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+  if (finalImg) {
+    return note ? `${note}\n<!-- HAB_IMAGE: ${finalImg} -->` : `<!-- HAB_IMAGE: ${finalImg} -->`;
+  }
+  return note || null;
+}
+
+function unpackCluster(cluster: any) {
+  if (!cluster) return cluster;
+  let visitorNote = cluster.visitorNote || '';
+  let imageUrl = null;
+  const match = visitorNote.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+  if (match) {
+    imageUrl = match[1].trim();
+    visitorNote = visitorNote.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+  }
+  return {
+    ...cluster,
+    visitorNote: visitorNote || null,
+    imageUrl: imageUrl || null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const user = await verifyAdmin(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const clusters = await prisma.clusterRecord.findMany({
+    const rawClusters = await prisma.clusterRecord.findMany({
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
+    const clusters = rawClusters.map(unpackCluster);
     return NextResponse.json({ success: true, clusters });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch clusters' }, { status: 500 });
@@ -36,7 +67,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, name, craftKey, dzongkhag, members, established, isFeatured, sortOrder, summary, story, visitorNote } = body;
+    const { key, name, craftKey, dzongkhag, members, established, isFeatured, sortOrder, summary, story, visitorNote, imageUrl } = body;
 
     if (!key || !name || !craftKey || !dzongkhag) {
       return NextResponse.json({ error: 'key, name, craftKey, and dzongkhag are required' }, { status: 400 });
@@ -54,7 +85,7 @@ export async function POST(req: NextRequest) {
         sortOrder: Number(sortOrder) || 0,
         summary: summary?.trim() || '',
         story: story?.trim() || '',
-        visitorNote: visitorNote?.trim() || null,
+        visitorNote: packVisitorNote(visitorNote, imageUrl),
       },
     });
 
@@ -68,7 +99,7 @@ export async function POST(req: NextRequest) {
       details: { key: cluster.key, name: cluster.name },
     });
 
-    return NextResponse.json({ success: true, cluster });
+    return NextResponse.json({ success: true, cluster: unpackCluster(cluster) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create cluster' }, { status: 500 });
   }
@@ -80,11 +111,19 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, key, name, craftKey, dzongkhag, members, established, isFeatured, sortOrder, summary, story, visitorNote } = body;
+    const { id, key, name, craftKey, dzongkhag, members, established, isFeatured, sortOrder, summary, story, visitorNote, imageUrl } = body;
 
     if (!id && !key) {
       return NextResponse.json({ error: 'id or key is required' }, { status: 400 });
     }
+
+    const existing = await prisma.clusterRecord.findUnique({
+      where: id ? { id } : { key },
+    });
+
+    const packedNote = (visitorNote !== undefined || imageUrl !== undefined)
+      ? packVisitorNote(visitorNote, imageUrl, existing?.visitorNote)
+      : undefined;
 
     const updated = await prisma.clusterRecord.update({
       where: id ? { id } : { key },
@@ -98,7 +137,7 @@ export async function PUT(req: NextRequest) {
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) }),
         ...(summary !== undefined && { summary: summary.trim() }),
         ...(story !== undefined && { story: story.trim() }),
-        ...(visitorNote !== undefined && { visitorNote: visitorNote?.trim() || null }),
+        ...(packedNote !== undefined && { visitorNote: packedNote }),
       },
     });
 
@@ -112,7 +151,7 @@ export async function PUT(req: NextRequest) {
       details: { key: updated.key, name: updated.name },
     });
 
-    return NextResponse.json({ success: true, cluster: updated });
+    return NextResponse.json({ success: true, cluster: unpackCluster(updated) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update cluster' }, { status: 500 });
   }

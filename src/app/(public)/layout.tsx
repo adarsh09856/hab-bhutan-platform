@@ -18,7 +18,7 @@ export default function PublicLayout({
       <AdminLiveBar />
       <UtilityBar />
       <Header />
-      <div className="flex-1">{children}</div>
+      <div className="hab-public-shell flex-1">{children}</div>
       <Footer />
       <AdminDrawer />
       <AskHabAssistant />

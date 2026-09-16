@@ -22,39 +22,63 @@ async function getOutletsData() {
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
     const outlets = dbOutlets.length > 0
-      ? dbOutlets.map(o => ({
-          key: o.key,
-          type: o.type,
-          name: o.name,
-          sort_order: o.sortOrder,
-          is_featured: o.isFeatured,
-          place: o.place,
-          note: o.note || '',
-          description: o.description,
-          long_description: o.longDescription,
-          hours: o.hours,
-          stalls: o.stalls || '',
-          crafts_on_site: o.craftsOnSite || '',
-          payment: o.payment || '',
-          getting_there: o.gettingThere || '',
-          facilities: o.facilities || '',
-        }))
+      ? dbOutlets.map(o => {
+          let note = o.note || '';
+          let imageUrl: string | undefined = undefined;
+          if (note.includes('<!-- HAB_IMAGE:')) {
+            const match = note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+            if (match) {
+              imageUrl = match[1].trim();
+              note = note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+            }
+          }
+          return {
+            key: o.key,
+            type: o.type,
+            name: o.name,
+            sort_order: o.sortOrder,
+            is_featured: o.isFeatured,
+            place: o.place,
+            note,
+            description: o.description,
+            long_description: o.longDescription,
+            hours: o.hours,
+            stalls: o.stalls || '',
+            crafts_on_site: o.craftsOnSite || '',
+            payment: o.payment || '',
+            getting_there: o.gettingThere || '',
+            facilities: o.facilities || '',
+            imageUrl,
+          };
+        })
       : CLIENT_DATA.outlets;
 
     const clusters = dbClusters.length > 0
-      ? dbClusters.map(c => ({
-          key: c.key,
-          name: c.name,
-          craft_key: c.craftKey,
-          dzongkhag: c.dzongkhag,
-          members: c.members,
-          established: c.established,
-          is_featured: c.isFeatured,
-          sort_order: c.sortOrder,
-          summary: c.summary,
-          story: c.story,
-          visitor_note: c.visitorNote || undefined,
-        }))
+      ? dbClusters.map(c => {
+          let visitor_note = c.visitorNote || undefined;
+          let imageUrl: string | undefined = undefined;
+          if (visitor_note && visitor_note.includes('<!-- HAB_IMAGE:')) {
+            const match = visitor_note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+            if (match) {
+              imageUrl = match[1].trim();
+              visitor_note = visitor_note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim() || undefined;
+            }
+          }
+          return {
+            key: c.key,
+            name: c.name,
+            craft_key: c.craftKey,
+            dzongkhag: c.dzongkhag,
+            members: c.members,
+            established: c.established,
+            is_featured: c.isFeatured,
+            sort_order: c.sortOrder,
+            summary: c.summary,
+            story: c.story,
+            visitor_note,
+            imageUrl,
+          };
+        })
       : CLIENT_DATA.clusters;
 
     return { outlets, clusters };
@@ -105,7 +129,7 @@ export default async function OutletsPage() {
 
             <figure className="frame frame--banner" style={{ position: 'relative', height: 440, overflow: 'hidden', marginTop: 24 }}>
               <Image
-                src="/assets/photos/hero-2-punakha.jpg"
+                src={(featured as any)?.imageUrl || "/assets/photos/hero-2-punakha.jpg"}
                 alt={featured.name}
                 fill
                 priority
@@ -157,12 +181,12 @@ export default async function OutletsPage() {
         </div>
 
         <div className="grid grid--3">
-          {otherOutlets.map((o, idx) => (
+          {otherOutlets.map((o: any, idx: number) => (
             <article key={o.key} className="card outlet">
               <Link href={`/outlets/${o.key}`}>
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
-                    src={SCENE_POOL[idx % SCENE_POOL.length]}
+                    src={o.imageUrl || SCENE_POOL[idx % SCENE_POOL.length]}
                     alt={o.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -203,7 +227,7 @@ export default async function OutletsPage() {
         </div>
 
         <div className="grid grid--3">
-          {clusters.slice(0, 3).map((c, idx) => {
+          {clusters.slice(0, 3).map((c: any, idx: number) => {
             const craft = CLIENT_DATA.crafts.find((cr) => cr.key === c.craft_key);
 
             return (
@@ -211,7 +235,7 @@ export default async function OutletsPage() {
                 <Link href={`/clusters/${c.key}`}>
                   <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
-                      src={SCENE_POOL[(idx + 2) % SCENE_POOL.length]}
+                      src={c.imageUrl || SCENE_POOL[(idx + 2) % SCENE_POOL.length]}
                       alt={c.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"

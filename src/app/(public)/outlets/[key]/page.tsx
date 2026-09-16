@@ -17,6 +17,15 @@ async function resolveOutlet(key: string) {
   try {
     const o = await prisma.outletRecord.findUnique({ where: { key } });
     if (o) {
+      let note = o.note || '';
+      let imageUrl: string | undefined = undefined;
+      if (note.includes('<!-- HAB_IMAGE:')) {
+        const match = note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+        if (match) {
+          imageUrl = match[1].trim();
+          note = note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+        }
+      }
       return {
         key: o.key,
         type: o.type,
@@ -24,7 +33,7 @@ async function resolveOutlet(key: string) {
         sort_order: o.sortOrder,
         is_featured: o.isFeatured,
         place: o.place,
-        note: o.note || '',
+        note,
         description: o.description,
         long_description: o.longDescription,
         hours: o.hours,
@@ -33,6 +42,7 @@ async function resolveOutlet(key: string) {
         payment: o.payment || '',
         getting_there: o.gettingThere || '',
         facilities: o.facilities || '',
+        imageUrl,
       };
     }
   } catch {}
@@ -62,21 +72,33 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
   try {
     const dbAll = await prisma.outletRecord.findMany({ where: { NOT: { key: outlet.key } }, orderBy: { sortOrder: 'asc' } });
     if (dbAll.length > 0) {
-      others = dbAll.map(o => ({
-        key: o.key,
-        type: o.type,
-        name: o.name,
-        place: o.place,
-        note: o.note || '',
-        description: o.description,
-        long_description: o.longDescription,
-        hours: o.hours,
-        stalls: o.stalls || '',
-        crafts_on_site: o.craftsOnSite || '',
-        payment: o.payment || '',
-        getting_there: o.gettingThere || '',
-        facilities: o.facilities || '',
-      }));
+      others = dbAll.map(o => {
+        let note = o.note || '';
+        let imageUrl: string | undefined = undefined;
+        if (note.includes('<!-- HAB_IMAGE:')) {
+          const match = note.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/);
+          if (match) {
+            imageUrl = match[1].trim();
+            note = note.replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+          }
+        }
+        return {
+          key: o.key,
+          type: o.type,
+          name: o.name,
+          place: o.place,
+          note,
+          description: o.description,
+          long_description: o.longDescription,
+          hours: o.hours,
+          stalls: o.stalls || '',
+          crafts_on_site: o.craftsOnSite || '',
+          payment: o.payment || '',
+          getting_there: o.gettingThere || '',
+          facilities: o.facilities || '',
+          imageUrl,
+        };
+      });
     }
   } catch {}
 

@@ -17,14 +17,24 @@ async function verifyAdmin(req: NextRequest) {
   return isStaff ? user : null;
 }
 
+function unpackCategory(cat: any) {
+  if (!cat) return cat;
+  const docs = cat.documents && typeof cat.documents === 'object' ? (cat.documents as any) : {};
+  return {
+    ...cat,
+    bannerImageUrl: docs.bannerImageUrl || cat.bannerImageUrl || null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const user = await verifyAdmin(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const categories = await prisma.membershipCategory.findMany({
+    const rawCategories = await prisma.membershipCategory.findMany({
       orderBy: [{ sortOrder: 'asc' }, { duesBTN: 'asc' }],
     });
+    const categories = rawCategories.map(unpackCategory);
     return NextResponse.json({ success: true, categories });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch membership categories' }, { status: 500 });
@@ -37,10 +47,17 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, name, shortName, duesBTN, duesUSD, description, eligibility, benefits, documents, isActive, sortOrder } = body;
+    const { key, name, shortName, duesBTN, duesUSD, description, eligibility, benefits, documents, isActive, sortOrder, bannerImageUrl } = body;
 
     if (!key || !name || !description) {
       return NextResponse.json({ error: 'key, name, and description are required' }, { status: 400 });
+    }
+
+    let docs = documents;
+    if (bannerImageUrl !== undefined) {
+      docs = typeof documents === 'object' && documents !== null
+        ? { ...documents, bannerImageUrl }
+        : { bannerImageUrl };
     }
 
     const category = await prisma.membershipCategory.create({
@@ -53,7 +70,7 @@ export async function POST(req: NextRequest) {
         description: description.trim(),
         eligibility: eligibility || null,
         benefits: benefits || null,
-        documents: documents || null,
+        documents: docs || null,
         isActive: isActive !== undefined ? Boolean(isActive) : true,
         sortOrder: Number(sortOrder) || 0,
       },
@@ -69,7 +86,7 @@ export async function POST(req: NextRequest) {
       details: { key: category.key, name: category.name },
     });
 
-    return NextResponse.json({ success: true, category });
+    return NextResponse.json({ success: true, category: unpackCategory(category) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create membership category' }, { status: 500 });
   }
@@ -81,10 +98,17 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, key, name, shortName, duesBTN, duesUSD, description, eligibility, benefits, documents, isActive, sortOrder } = body;
+    const { id, key, name, shortName, duesBTN, duesUSD, description, eligibility, benefits, documents, isActive, sortOrder, bannerImageUrl } = body;
 
     if (!id && !key) {
       return NextResponse.json({ error: 'id or key required for update' }, { status: 400 });
+    }
+
+    let docs = documents;
+    if (bannerImageUrl !== undefined) {
+      docs = typeof documents === 'object' && documents !== null
+        ? { ...documents, bannerImageUrl }
+        : { bannerImageUrl };
     }
 
     const where = id ? { id } : { key };
@@ -98,7 +122,7 @@ export async function PUT(req: NextRequest) {
         ...(description !== undefined && { description: description.trim() }),
         ...(eligibility !== undefined && { eligibility }),
         ...(benefits !== undefined && { benefits }),
-        ...(documents !== undefined && { documents }),
+        ...(docs !== undefined && { documents: docs }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
       },

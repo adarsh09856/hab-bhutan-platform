@@ -33,6 +33,12 @@ function DonateContent() {
   const [message, setMessage] = useState<string>('');
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [payMethod, setPayMethod] = useState<string>('card');
+  const [cardNumber, setCardNumber] = useState<string>('');
+  const [cardExp, setCardExp] = useState<string>('');
+  const [cardCvc, setCardCvc] = useState<string>('');
+  const [cardName, setCardName] = useState<string>('');
+  const [mobilePhone, setMobilePhone] = useState<string>('');
+  const [bankRef, setBankRef] = useState<string>('');
   const [refNumber, setRefNumber] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -318,60 +324,180 @@ function DonateContent() {
                     </p>
                   </div>
                   <div className="paymethods" style={{ marginTop: 16 }}>
-                    <label className="paymethod" style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0' }}>
-                      <input
-                        type="radio"
-                        name="payMethod"
-                        value="card"
-                        checked={payMethod === 'card'}
-                        onChange={(e) => setPayMethod(e.target.value)}
-                      />
-                      <span><strong>International card</strong> (Visa, Mastercard, 3-D Secure, in USD)</span>
-                    </label>
-                    <label className="paymethod" style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0' }}>
-                      <input
-                        type="radio"
-                        name="payMethod"
-                        value="mbob"
-                        checked={payMethod === 'mbob'}
-                        onChange={(e) => setPayMethod(e.target.value)}
-                      />
-                      <span><strong>Bhutan mobile pay</strong> (mBoB / RMA-approved wallets, in Nu.)</span>
-                    </label>
-                    <label className="paymethod" style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0' }}>
-                      <input
-                        type="radio"
-                        name="payMethod"
-                        value="bank"
-                        checked={payMethod === 'bank'}
-                        onChange={(e) => setPayMethod(e.target.value)}
-                      />
-                      <span><strong>Bank transfer</strong> (BNB / BOB account, invoice issued on order)</span>
-                    </label>
-
-                    {payMethod === 'bank' && (
-                      <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--surface, #f8f6f0)', border: '1px solid var(--border, #e5e0d8)', borderRadius: 6, fontSize: 13, lineHeight: 1.5 }}>
-                        <p style={{ fontWeight: 600, color: 'var(--ink, #1f1d1a)', marginBottom: 6 }}>Bank of Bhutan (BoB) Wire Details:</p>
-                        <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
-                        <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
-                        <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Thimphu Main Branch</p>
-                        <p style={{ margin: '2px 0' }}>• <strong>SWIFT / BIC:</strong> BOBTBLBT</p>
-                        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: 'var(--muted, #666)' }}>
-                          Please quote your full name or reference in the transfer remarks. Tax exemption receipts are issued under CSO/2011/043.
-                        </p>
+                    {/* Method 1: International Card */}
+                    <div className={`paymethod ${payMethod === 'card' ? 'is-active' : ''}`}>
+                      <button
+                        type="button"
+                        className="paymethod__head"
+                        aria-expanded={payMethod === 'card'}
+                        onClick={() => setPayMethod('card')}
+                      >
+                        <span className="paymethod__radio"></span>
+                        <span className="paymethod__label">
+                          <span className="paymethod__name">International card</span>
+                          <span className="paymethod__note">Visa, Mastercard, Amex, 3-D Secure · charged in USD</span>
+                        </span>
+                        <span className="paymethod__brands">
+                          <span className="cardchip">VISA</span>
+                          <span className="cardchip">Mastercard</span>
+                          <span className="cardchip">AMEX</span>
+                        </span>
+                      </button>
+                      <div className="paymethod__body">
+                        <div className="payform">
+                          <label className="payfield payfield--full">
+                            <span className="payfield__label">Card number</span>
+                            <div className="payfield__wrap">
+                              <input
+                                className="payinput font-mono"
+                                type="text"
+                                placeholder="1234 1234 1234 1234"
+                                maxLength={19}
+                                value={cardNumber}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                  setCardNumber(val.replace(/(.{4})/g, '$1 ').trim());
+                                }}
+                              />
+                              <span className="payfield__mark is-known">
+                                {cardNumber.startsWith('4') ? 'VISA' : cardNumber.startsWith('5') ? 'MC' : cardNumber.startsWith('3') ? 'AMEX' : ''}
+                              </span>
+                            </div>
+                          </label>
+                          <label className="payfield">
+                            <span className="payfield__label">Expiry</span>
+                            <input
+                              className="payinput font-mono"
+                              type="text"
+                              placeholder="MM / YY"
+                              maxLength={7}
+                              value={cardExp}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                setCardExp(val.length > 2 ? `${val.slice(0, 2)} / ${val.slice(2)}` : val);
+                              }}
+                            />
+                          </label>
+                          <label className="payfield">
+                            <span className="payfield__label">Security code</span>
+                            <div className="payfield__wrap">
+                              <input
+                                className="payinput font-mono"
+                                type="text"
+                                placeholder="CVC"
+                                maxLength={4}
+                                value={cardCvc}
+                                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                              />
+                              <span className="payfield__mark">3 digits</span>
+                            </div>
+                          </label>
+                          <label className="payfield payfield--full">
+                            <span className="payfield__label">Name on card</span>
+                            <input
+                              className="payinput"
+                              type="text"
+                              placeholder="As printed on card"
+                              value={cardName}
+                              onChange={(e) => setCardName(e.target.value)}
+                            />
+                          </label>
+                          <p className="payform__note">
+                            Your gift is processed in USD by our accredited gateway with 3-D Secure. HAB never sees or stores card numbers.
+                          </p>
+                        </div>
                       </div>
-                    )}
+                    </div>
 
-                    {payMethod === 'mbob' && (
-                      <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--surface, #f8f6f0)', border: '1px solid var(--border, #e5e0d8)', borderRadius: 6, fontSize: 13, lineHeight: 1.5 }}>
-                        <p style={{ fontWeight: 600, color: 'var(--ink, #1f1d1a)', marginBottom: 6 }}>mBoB Mobile Banking / Bhutan QR:</p>
-                        <p style={{ margin: '2px 0' }}>• <strong>Account:</strong> 201104300189 (Handicrafts Association of Bhutan)</p>
-                        <p style={{ margin: '2px 0' }}>• <strong>Mobile / Office Contact:</strong> +975 2 328199</p>
-                        <p style={{ margin: '6px 0 0 0', fontSize: 12, color: 'var(--muted, #666)' }}>
-                          Transfer via your mBoB or Bhutan national QR app using journal reference. Official tax receipt (CSO/2011/043) is automatically generated.
+                    {/* Method 2: mBoB / Mobile Banking */}
+                    <div className={`paymethod ${payMethod === 'mbob' ? 'is-active' : ''}`}>
+                      <button
+                        type="button"
+                        className="paymethod__head"
+                        aria-expanded={payMethod === 'mbob'}
+                        onClick={() => setPayMethod('mbob')}
+                      >
+                        <span className="paymethod__radio"></span>
+                        <span className="paymethod__label">
+                          <span className="paymethod__name">Bhutan mobile pay (mBoB)</span>
+                          <span className="paymethod__note">mBoB, BNB Pay and RMA-approved wallets in Nu.</span>
+                        </span>
+                        <span className="paymethod__brands">
+                          <span className="cardchip">mBoB</span>
+                          <span className="cardchip">BNB Pay</span>
+                          <span className="cardchip">T-Bank</span>
+                        </span>
+                      </button>
+                      <div className="paymethod__body">
+                        <p className="payinstruct">
+                          Pay in Nu. from mBoB or another RMA-approved Bhutanese wallet. A payment request is generated for your gift of Nu. {amount.toLocaleString()}.
                         </p>
+                        <div className="payform">
+                          <label className="payfield payfield--full">
+                            <span className="payfield__label">Mobile number registered to wallet</span>
+                            <input
+                              className="payinput font-mono"
+                              type="tel"
+                              placeholder="+975 17 123456"
+                              value={mobilePhone}
+                              onChange={(e) => setMobilePhone(e.target.value)}
+                            />
+                          </label>
+                        </div>
+                        <ol className="paysteps" style={{ marginTop: 12 }}>
+                          <li>Submit your gift — a payment prompt is sent to your wallet application.</li>
+                          <li>Approve the payment request in your mBoB or BNB mobile app within 15 minutes.</li>
+                          <li>Your official CSO donation receipt (CSO/2011/043) arrives by email automatically.</li>
+                        </ol>
                       </div>
-                    )}
+                    </div>
+
+                    {/* Method 3: Bank Transfer Remittance */}
+                    <div className={`paymethod ${payMethod === 'bank' ? 'is-active' : ''}`}>
+                      <button
+                        type="button"
+                        className="paymethod__head"
+                        aria-expanded={payMethod === 'bank'}
+                        onClick={() => setPayMethod('bank')}
+                      >
+                        <span className="paymethod__radio"></span>
+                        <span className="paymethod__label">
+                          <span className="paymethod__name">Bank transfer remittance</span>
+                          <span className="paymethod__note">Bank of Bhutan / Bhutan National Bank wire</span>
+                        </span>
+                        <span className="paymethod__brands">
+                          <span className="cardchip">BOB</span>
+                          <span className="cardchip">BNB</span>
+                        </span>
+                      </button>
+                      <div className="paymethod__body">
+                        <p className="payinstruct">
+                          We issue a tax-deductible CSO receipt with the HAB accounts at Bank of Bhutan (BoB) and Bhutan National Bank (BNB).
+                        </p>
+                        <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, fontSize: 13, lineHeight: 1.6 }}>
+                          <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bank of Bhutan Limited (Thimphu Main Branch)</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Thimphu Main Branch</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>SWIFT / BIC:</strong> BOBTBLBT</p>
+                          <p style={{ margin: '4px 0 0 0', fontSize: 12, color: 'var(--muted)' }}>
+                            Transfer remarks should quote your name. Official receipt (CSO/2011/043) is issued upon clearance.
+                          </p>
+                        </div>
+                        <div className="payform">
+                          <label className="payfield payfield--full">
+                            <span className="payfield__label">Company or Remittance Reference (Optional)</span>
+                            <input
+                              className="payinput"
+                              type="text"
+                              placeholder="e.g. Donor Name or Corporate CSR Ref"
+                              value={bankRef}
+                              onChange={(e) => setBankRef(e.target.value)}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

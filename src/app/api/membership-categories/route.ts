@@ -4,6 +4,15 @@ import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
+function unpackCategory(cat: any) {
+  if (!cat) return cat;
+  const docs = cat.documents && typeof cat.documents === 'object' ? (cat.documents as any) : {};
+  return {
+    ...cat,
+    bannerImageUrl: docs.bannerImageUrl || cat.bannerImageUrl || null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -14,10 +23,10 @@ export async function GET(req: NextRequest) {
         where: { key },
       });
       if (category) {
-        return NextResponse.json({ success: true, category });
+        return NextResponse.json({ success: true, category: unpackCategory(category) });
       }
       const fallback = CLIENT_DATA.membershipCategories?.find((c: any) => c.key === key);
-      return NextResponse.json({ success: true, category: fallback || null });
+      return NextResponse.json({ success: true, category: fallback ? unpackCategory(fallback) : null });
     }
 
     const categories = await prisma.membershipCategory.findMany({
@@ -26,11 +35,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (categories.length > 0) {
-      return NextResponse.json({ success: true, categories });
+      return NextResponse.json({ success: true, categories: categories.map(unpackCategory) });
     }
 
-    return NextResponse.json({ success: true, categories: CLIENT_DATA.membershipCategories || [] });
+    return NextResponse.json({ success: true, categories: (CLIENT_DATA.membershipCategories || []).map(unpackCategory) });
   } catch {
-    return NextResponse.json({ success: true, categories: CLIENT_DATA.membershipCategories || [] });
+    return NextResponse.json({ success: true, categories: (CLIENT_DATA.membershipCategories || []).map(unpackCategory) });
   }
 }
