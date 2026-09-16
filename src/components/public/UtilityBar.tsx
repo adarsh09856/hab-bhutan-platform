@@ -21,6 +21,17 @@ export default function UtilityBar() {
         }
       })
       .catch(() => {});
+
+    const handleUpdate = (e: any) => {
+      if (e.detail?.announcementText !== undefined) setAnnouncement(e.detail.announcementText);
+      if (e.detail?.announcementLink !== undefined) setAnnouncementLink(e.detail.announcementLink || null);
+      if (e.detail?.isAnnouncementOn !== undefined) setVisible(Boolean(e.detail.isAnnouncementOn));
+    };
+
+    window.addEventListener('hab:header-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('hab:header-updated', handleUpdate);
+    };
   }, []);
 
   if (!visible) return null;

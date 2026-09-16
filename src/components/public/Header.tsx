@@ -9,6 +9,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import HeaderLiveEditor from '@/components/public/HeaderLiveEditor';
 
 const CATEGORY_THUMBNAIL_MAP: Record<string, string> = {
   'individual-artisan': '/assets/photos/hero-1-weaving.jpg',
@@ -49,6 +50,7 @@ export default function Header() {
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveTotal, setLiveTotal] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [headerLiveEditOpen, setHeaderLiveEditOpen] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLFormElement>(null);
@@ -186,21 +188,40 @@ export default function Header() {
       .then((d) => {
         if (d?.header && Array.isArray(d.header) && d.header.length > 0) {
           const mainLinks = d.header.filter((i: any) => !i.parent && i.href !== '/donate');
-          if (mainLinks.length >= 3) {
-            const items = [
-              { label: 'Home', href: '/' },
-              ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
-            ];
+          if (mainLinks.length > 0) {
+            const hasHome = mainLinks.some((i: any) => i.href === '/');
+            const items = hasHome
+              ? mainLinks.map((i: any) => ({ label: i.label, href: i.href }))
+              : [
+                  { label: 'Home', href: '/' },
+                  ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
+                ];
             setNavItems(items);
           }
         }
       })
       .catch(() => {});
+
+    // 4. Listen for real-time header changes
+    const handleLiveHeaderUpdate = (e: any) => {
+      if (e.detail?.navItems && Array.isArray(e.detail.navItems) && e.detail.navItems.length > 0) {
+        setNavItems(e.detail.navItems);
+      }
+    };
+    window.addEventListener('hab:header-updated', handleLiveHeaderUpdate);
+    return () => {
+      window.removeEventListener('hab:header-updated', handleLiveHeaderUpdate);
+    };
   }, []);
 
   return (
     <header className="header" id="siteHeader" data-hab-section="header">
-      <SectionEditBadge label="Header Navigation" studioHref="/admin/menus" />
+      <SectionEditBadge
+        label="Header & Navigation"
+        studioHref="/admin/navigation"
+        onQuickEdit={() => setHeaderLiveEditOpen(true)}
+        className="top-2 left-6 z-50"
+      />
       <div className="header__inner">
         <Link className="logo" href="/" id="logoLockup" aria-label="Handicrafts Association of Bhutan — home">
           <img
@@ -649,6 +670,17 @@ export default function Header() {
           </Link>
         </div>
       </div>
+
+      <HeaderLiveEditor
+        isOpen={headerLiveEditOpen}
+        onClose={() => setHeaderLiveEditOpen(false)}
+        onSaved={(newNav) => {
+          if (newNav && newNav.length > 0) {
+            setNavItems(newNav);
+          }
+          router.refresh();
+        }}
+      />
     </header>
   );
 }
