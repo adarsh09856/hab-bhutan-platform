@@ -389,10 +389,38 @@ export default function HomePage() {
   ]);
 
   const [publications, setPublications] = useState<any[]>([
-    { kind: 'Latest · Annual reports', title: 'HAB Annual Craft Sector Impact Report 7582', meta: 'PDF · Document', file_url: '/publications' },
-    { kind: 'Annual reports', title: 'HAB Annual Craft Sector Impact Report 5637', meta: 'PDF · Document', file_url: '/publications' },
-    { kind: 'Strategy', title: 'Five-Year Strategic Plan 2026–2030', meta: 'PDF · Document', file_url: '/publications' },
-    { kind: 'Sector study', title: 'Zorig Chusum Value Chain Assessment', meta: 'PDF · Document', file_url: '/publications' },
+    {
+      id: 'pub-01',
+      kind: 'Latest · Annual report',
+      title: 'Annual Report 2025',
+      meta: 'PDF · 4.2 MB · English & Dzongkha',
+      file_url: '/publications',
+      isFeatured: true,
+    },
+    {
+      id: 'pub-02',
+      kind: 'Strategy',
+      title: 'Five-Year Strategic Plan 2026–2030',
+      meta: 'PDF · 3.6 MB · Board approved',
+      file_url: '/publications',
+      isFeatured: true,
+    },
+    {
+      id: 'pub-03',
+      kind: 'Sector study',
+      title: 'Zorig Chusum Value Chain Assessment',
+      meta: 'PDF · 2.8 MB · 96 pages',
+      file_url: '/publications',
+      isFeatured: true,
+    },
+    {
+      id: 'pub-04',
+      kind: 'Accounts',
+      title: 'Audited Financial Statements 2025',
+      meta: 'PDF · 1.1 MB · Independent auditor',
+      file_url: '/publications',
+      isFeatured: true,
+    },
   ]);
 
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
@@ -577,20 +605,29 @@ export default function HomePage() {
       .catch(() => {});
 
     // I. Publications from Admin
-    fetch('/api/publications', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.publications && d.publications.length > 0) {
-          const mapped = d.publications.map((p: any, idx: number) => ({
-            ...p,
-            kind: idx === 0 && !p.kind?.includes('Latest') ? `Latest · ${p.kind}` : p.kind,
-            meta: p.metaDetails || p.meta || 'PDF · 4.2 MB · English & Dzongkha',
-            file_url: p.fileUrl || p.file_url || '/publications',
-          }));
-          setPublications(mapped);
-        }
-      })
-      .catch(() => {});
+    const loadPublications = () => {
+      fetch('/api/publications?featured=true', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.publications && Array.isArray(d.publications) && d.publications.length > 0) {
+            const featured = d.publications.filter((p: any) => p.isFeatured !== false);
+            const mapped = featured.slice(0, 4).map((p: any, idx: number) => {
+              const rawKind = (p.kind || 'Annual report').replace(/^Latest\s*·\s*/i, '');
+              return {
+                ...p,
+                kind: idx === 0 ? `Latest · ${rawKind}` : rawKind,
+                meta: p.metaDetails || p.meta || 'PDF · 4.2 MB · English & Dzongkha',
+                file_url: p.fileUrl || p.file_url || '/publications',
+              };
+            });
+            if (mapped.length > 0) {
+              setPublications(mapped);
+            }
+          }
+        })
+        .catch(() => {});
+    };
+    loadPublications();
 
     // J. Crafts from Admin
     fetch('/api/crafts', { cache: 'no-store' })
@@ -632,10 +669,14 @@ export default function HomePage() {
     // Listen for live updates broadcast from admin studios
     window.addEventListener('hab:hero-slides-updated', loadHeroSlides);
     window.addEventListener('hab:settings-updated', loadSiteSettings);
+    window.addEventListener('hab:publication-updated', loadPublications);
+    window.addEventListener('hab:content-updated', loadPublications);
 
     return () => {
       window.removeEventListener('hab:hero-slides-updated', loadHeroSlides);
       window.removeEventListener('hab:settings-updated', loadSiteSettings);
+      window.removeEventListener('hab:publication-updated', loadPublications);
+      window.removeEventListener('hab:content-updated', loadPublications);
     };
   }, []);
 
@@ -1370,15 +1411,17 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="grid grid--2">
-              {publications.slice(0, 2).map((pb, idx) => {
+              {publications.slice(0, 4).map((pb, idx) => {
                 const metaText = pb.metaDetails || pb.meta || 'PDF · 4.2 MB · English & Dzongkha';
                 const fileLink = pb.fileUrl || pb.file_url || '/publications';
-                const kindText = pb.kind || (idx === 0 ? 'Latest · Annual report' : 'Strategy');
+                const rawKind = (pb.kind || (idx === 0 ? 'Annual report' : 'Strategy')).replace(/^Latest\s*·\s*/i, '');
+                const kindText = idx === 0 ? `Latest · ${rawKind}` : rawKind;
+                const displayMeta = metaText.endsWith('↓') ? metaText : `${metaText} ↓`;
                 return (
                   <Link key={pb.id || idx} className="card pub" href={fileLink}>
                     <span className="eyebrow eyebrow--accent eyebrow--sm">{kindText}</span>
                     <span className="pub__title clamp-3">{pb.title}</span>
-                    <span className="pub__meta">{metaText.includes('↓') ? metaText : `${metaText} ↓`}</span>
+                    <span className="pub__meta">{displayMeta}</span>
                   </Link>
                 );
               })}

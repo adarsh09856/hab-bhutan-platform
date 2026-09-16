@@ -139,6 +139,10 @@ export default function PublicationsStudio() {
         setFormOpen(false);
         setEditingId(null);
         loadPublications();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:publication-updated'));
+          window.dispatchEvent(new CustomEvent('hab:content-updated'));
+        }
       } else {
         showToast('error', data.error || 'Failed to save publication.');
       }
@@ -156,6 +160,10 @@ export default function PublicationsStudio() {
       if (res.ok) {
         showToast('success', 'Publication deleted successfully.');
         setPublications(publications.filter((p) => p.id !== id));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:publication-updated'));
+          window.dispatchEvent(new CustomEvent('hab:content-updated'));
+        }
       } else {
         showToast('error', 'Failed to delete publication.');
       }
