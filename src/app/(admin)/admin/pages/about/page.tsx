@@ -17,9 +17,9 @@ import {
   AlertCircle, 
   ExternalLink,
   Target,
-  Heart
 } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface GovRecord {
   id: string;
@@ -45,6 +45,7 @@ export default function AboutPageStudio() {
     missionTitle: 'Promoting sustainability, inclusiveness and resilience',
     missionBody: 'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.',
     csoRegistration: '2011 · CSO/2011/043',
+    aboutBandImageUrl: '/assets/photos/about-hab.jpg',
   });
 
   // Governance records state
@@ -348,6 +349,16 @@ export default function AboutPageStudio() {
                 value={settings.aboutMandateText}
                 onChange={(html) => setSettings((s) => ({ ...s, aboutMandateText: html }))}
                 hint="Opening lead section detailing HAB's founding under Royal Patronage and legal CSO standing."
+              />
+            </div>
+
+            <div className="pt-2">
+              <FileUploadInput
+                value={settings.aboutBandImageUrl || ''}
+                onChange={(url) => setSettings((s) => ({ ...s, aboutBandImageUrl: url }))}
+                label="About Page Hero Image"
+                accept="image/*"
+                hint="Supports JPG, PNG, WebP up to 15MB"
               />
             </div>
 

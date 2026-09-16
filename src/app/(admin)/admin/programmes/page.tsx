@@ -22,6 +22,7 @@ import {
   GlassInput 
 } from '@/components/admin/GlassUI';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface PillarRecord {
   id: string;
@@ -29,6 +30,7 @@ interface PillarRecord {
   title: string;
   description: string;
   activities: string[];
+  imageUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
 }
@@ -289,6 +291,16 @@ export default function AdminProgrammesPage() {
               value={editingPillar?.description || ''}
               onChange={(html) => setEditingPillar({ ...editingPillar, description: html })}
               hint="Detailed explanation of this programme pillar."
+            />
+          </div>
+
+          <div>
+            <FileUploadInput
+              label="Programme Banner / Cover Photograph"
+              value={editingPillar?.imageUrl || ''}
+              onChange={(url) => setEditingPillar({ ...editingPillar, imageUrl: url })}
+              accept="image/*"
+              hint="Upload high-quality photo representing this pillar (JPG, PNG, WebP)"
             />
           </div>
 

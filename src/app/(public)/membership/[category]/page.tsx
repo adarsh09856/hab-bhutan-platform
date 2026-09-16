@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getMembershipCategoryByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,7 +63,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
     '/assets/photos/hero-2-punakha.jpg',
   ];
   const catIndex = CLIENT_DATA.membershipCategories.findIndex((c) => c.key === cat.key);
-  const bannerImg = photoPool[catIndex % photoPool.length];
+  const bannerImg = rawCat.imageUrl || rawCat.bannerUrl || photoPool[catIndex >= 0 ? catIndex % photoPool.length : 0];
 
   const applyTierMapping: Record<string, string> = {
     'individual-artisan': 'individual',
@@ -75,7 +76,8 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="membership-category">
+        <SectionEditBadge label="Membership Categories Studio" studioHref="/admin/membership-categories" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#membership">Membership</Link> / {cat.name}
         </p>

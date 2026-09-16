@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
         day: sched.day || '',
         mon: sched.mon || '',
         time: sched.time || '',
+        imageUrl: sched.imageUrl || '',
+        pdfUrl: sched.pdfUrl || '',
       };
     });
 
@@ -50,15 +52,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, title, category, dateDisplay, day, mon, time, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
+    const { key, title, category, dateDisplay, day, mon, time, imageUrl, pdfUrl, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
 
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
 
     const mergedSchedule = schedule && typeof schedule === 'object' 
-      ? { ...schedule, ...(day && { day }), ...(mon && { mon }), ...(time && { time }) }
-      : (day || mon || time ? { day, mon, time } : null);
+      ? { ...schedule, ...(day && { day }), ...(mon && { mon }), ...(time && { time }), ...(imageUrl && { imageUrl }), ...(pdfUrl && { pdfUrl }) }
+      : (day || mon || time || imageUrl || pdfUrl ? { day, mon, time, imageUrl, pdfUrl } : null);
 
     const event = await prisma.eventRecord.create({
       data: {
@@ -103,7 +105,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, key, title, category, dateDisplay, day, mon, time, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
+    const { id, key, title, category, dateDisplay, day, mon, time, imageUrl, pdfUrl, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
 
     if (!id && !key) {
       return NextResponse.json({ error: 'id or key is required for update' }, { status: 400 });
@@ -114,8 +116,15 @@ export async function PUT(req: NextRequest) {
     const prevSchedule = (existing?.schedule && typeof existing.schedule === 'object' ? existing.schedule : {}) as any;
     const mergedSchedule = schedule !== undefined 
       ? schedule 
-      : ((day !== undefined || mon !== undefined || time !== undefined)
-          ? { ...prevSchedule, ...(day !== undefined && { day }), ...(mon !== undefined && { mon }), ...(time !== undefined && { time }) }
+      : ((day !== undefined || mon !== undefined || time !== undefined || imageUrl !== undefined || pdfUrl !== undefined)
+          ? { 
+              ...prevSchedule, 
+              ...(day !== undefined && { day }), 
+              ...(mon !== undefined && { mon }), 
+              ...(time !== undefined && { time }),
+              ...(imageUrl !== undefined && { imageUrl }),
+              ...(pdfUrl !== undefined && { pdfUrl })
+            }
           : undefined);
 
     const event = await prisma.eventRecord.update({

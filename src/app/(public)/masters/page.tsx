@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function MastersPage() {
   const [activeTab, setActiveTab] = useState<string>('');
@@ -60,7 +61,8 @@ export default function MastersPage() {
   return (
     <main id="main">
       {/* 1. Hero & Carousel */}
-      <section className="section">
+      <section className="section relative" data-hab-section="masters">
+        <SectionEditBadge label="Honours & Masters Studio" studioHref="/admin/honours" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Accreditations &amp; awards
         </p>

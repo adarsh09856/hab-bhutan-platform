@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { Palette, Edit2, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface Craft {
   id: string;
@@ -94,23 +95,29 @@ export default function AdminCraftsPage() {
 
       {/* Edit Modal */}
       {editing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Palette className="w-5 h-5 text-[#8b2e24]" />
-                Edit {editing.name} ({editing.english})
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-[#8b2e24]" />
+                  Edit {editing.name} ({editing.english})
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">Classical Zorig Chusum discipline</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="text-slate-400 hover:text-slate-700 font-bold text-xl cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors font-bold text-base cursor-pointer"
+                title="Close dialog"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4 text-sm">
+            {/* Scrollable Body */}
+            <form id="craftForm" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Romanized Dzongkha Name</label>
@@ -118,7 +125,7 @@ export default function AdminCraftsPage() {
                     type="text"
                     value={editing.name}
                     onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                     required
                   />
                 </div>
@@ -128,7 +135,7 @@ export default function AdminCraftsPage() {
                     type="text"
                     value={editing.english}
                     onChange={(e) => setEditing({ ...editing, english: e.target.value })}
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                     required
                   />
                 </div>
@@ -142,7 +149,7 @@ export default function AdminCraftsPage() {
                     value={editing.dzongkha || ''}
                     onChange={(e) => setEditing({ ...editing, dzongkha: e.target.value })}
                     placeholder="ཐག་བཟོ།"
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm font-serif"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs font-serif"
                   />
                 </div>
                 <div>
@@ -151,7 +158,7 @@ export default function AdminCraftsPage() {
                     type="number"
                     value={editing.sortOrder}
                     onChange={(e) => setEditing({ ...editing, sortOrder: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                   />
                 </div>
               </div>
@@ -162,7 +169,7 @@ export default function AdminCraftsPage() {
                   rows={3}
                   value={editing.description}
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                   required
                 />
               </div>
@@ -175,7 +182,7 @@ export default function AdminCraftsPage() {
                     value={editing.technique || ''}
                     onChange={(e) => setEditing({ ...editing, technique: e.target.value })}
                     placeholder="e.g. Backstrap and pedal looms"
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                   />
                 </div>
                 <div>
@@ -185,7 +192,7 @@ export default function AdminCraftsPage() {
                     value={editing.materials || ''}
                     onChange={(e) => setEditing({ ...editing, materials: e.target.value })}
                     placeholder="e.g. Silk, wool, cotton, nettle"
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                   />
                 </div>
                 <div>
@@ -195,7 +202,7 @@ export default function AdminCraftsPage() {
                     value={editing.practisedIn || ''}
                     onChange={(e) => setEditing({ ...editing, practisedIn: e.target.value })}
                     placeholder="e.g. Lhuentse, Trashigang"
-                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                    className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                   />
                 </div>
               </div>
@@ -203,11 +210,11 @@ export default function AdminCraftsPage() {
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Historical Origins &amp; Heritage Narrative</label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={editing.history || ''}
                   onChange={(e) => setEditing({ ...editing, history: e.target.value })}
                   placeholder="Historical background of this craft in Bhutan..."
-                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                 />
               </div>
 
@@ -218,20 +225,18 @@ export default function AdminCraftsPage() {
                   value={editing.shopNote || ''}
                   onChange={(e) => setEditing({ ...editing, shopNote: e.target.value })}
                   placeholder="Custom note shown if not sold online directly"
-                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Hero / Banner Image URL</label>
-                <input
-                  type="text"
-                  value={editing.bannerUrl || ''}
-                  onChange={(e) => setEditing({ ...editing, bannerUrl: e.target.value })}
-                  placeholder="/images/crafts/thagzo.jpg"
-                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-sm"
-                />
-              </div>
+              {/* Photo Uploader Component */}
+              <FileUploadInput
+                label="Craft Hero / Banner Image"
+                value={editing.bannerUrl || ''}
+                onChange={(url) => setEditing({ ...editing, bannerUrl: url })}
+                accept="image/*"
+                hint="Upload craft photo from your computer or phone (JPG, PNG, WebP)"
+              />
 
               <div className="flex items-center gap-3 pt-2">
                 <input
@@ -241,29 +246,31 @@ export default function AdminCraftsPage() {
                   onChange={(e) => setEditing({ ...editing, isActive: e.target.checked })}
                   className="w-4 h-4 text-[#8b2e24] rounded border-slate-300 focus:ring-0"
                 />
-                <label htmlFor="activeCheck" className="text-sm font-medium text-slate-700 cursor-pointer">
+                <label htmlFor="activeCheck" className="text-xs sm:text-sm font-medium text-slate-700 cursor-pointer">
                   Active in public craft navigation &amp; catalog filters
                 </label>
               </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setEditing(null)}
-                  className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm text-xs font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-5 py-2 admin-button-primary font-semibold rounded-lg disabled:opacity-50 cursor-pointer flex items-center gap-2 shadow-sm text-xs"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-200 cursor-pointer text-xs sm:text-sm font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="craftForm"
+                disabled={saving}
+                className="px-5 py-2 bg-[#8b2e24] hover:bg-[#73241c] text-white font-semibold rounded-xl disabled:opacity-50 cursor-pointer flex items-center gap-2 shadow-xs text-xs sm:text-sm transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
           </div>
         </div>
       )}

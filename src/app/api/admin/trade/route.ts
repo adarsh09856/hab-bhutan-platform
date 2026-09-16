@@ -177,6 +177,8 @@ export async function GET() {
       buyers,
       wholesaleMoq: siteSetting?.wholesaleMoq || 5,
       wholesaleLeadTime: siteSetting?.wholesaleLeadTime || '2 to 4 weeks depending on batch size',
+      catalogPdfUrl: (siteSetting?.wholesaleAssurances as any)?.catalogPdfUrl || '',
+      lookbookCoverUrl: (siteSetting?.wholesaleAssurances as any)?.lookbookCoverUrl || '',
     });
   } catch (err: any) {
     console.error('Error fetching trade data:', err);
@@ -242,6 +244,33 @@ export async function PATCH(request: Request) {
         // Fallback ok
       }
       return NextResponse.json({ success: true, message: 'Wholesale terms saved for SKU ' + productCode });
+    }
+
+    if (action === 'save_catalog') {
+      const { catalogPdfUrl, lookbookCoverUrl } = payload;
+      try {
+        const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+        const existingAssurances = (setting?.wholesaleAssurances as Record<string, any>) || {};
+        const updated = {
+          ...existingAssurances,
+          catalogPdfUrl,
+          lookbookCoverUrl,
+        };
+        await (prisma.siteSetting as any).upsert({
+          where: { id: 'default' },
+          create: {
+            id: 'default',
+            wholesaleAssurances: updated,
+            heroParagraph: 'Handicrafts Association of Bhutan promotes living craft heritage across all dzongkhags.',
+            footerAbout: 'Apex Civil Society Organization established under the CSO Act of Bhutan 2007.',
+            partnersList: [],
+          },
+          update: { wholesaleAssurances: updated },
+        });
+      } catch (e: any) {
+        console.error('Error saving wholesale catalog:', e);
+      }
+      return NextResponse.json({ success: true, message: 'Wholesale B2B catalog and lookbook saved.' });
     }
 
     return NextResponse.json({ success: false, error: 'Unknown action' }, { status: 400 });

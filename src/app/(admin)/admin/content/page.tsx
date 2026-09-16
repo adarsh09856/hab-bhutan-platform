@@ -759,14 +759,15 @@ export default function AdminContentPage() {
 
       {/* Create Modal */}
       {createModalType && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="admin-modal rounded-xl max-w-lg w-full p-6 shadow-2xl border admin-border space-y-4 my-8">
-            <div className="flex justify-between items-center border-b admin-border pb-3">
-              <h3 className="font-bold admin-title text-base">Create {createModalType} Record</h3>
-              <button onClick={() => setCreateModalType(null)} className="admin-muted admin-hover font-bold">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 text-base">Create {createModalType} Record</h3>
+              <button onClick={() => setCreateModalType(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">✕</button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 space-y-3 text-xs">
               {createModalType === 'NEWS' && (
                 <>
                   <div>
@@ -974,18 +975,20 @@ export default function AdminContentPage() {
                 </>
               )}
 
-              <div className="flex justify-end gap-2 pt-3 border-t admin-border">
+              </div>
+
+              <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setCreateModalType(null)}
-                  className="px-3 py-1.5 admin-button-secondary border rounded"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
+                  className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-colors shadow-xs"
                 >
                   {submitting ? 'Creating...' : 'Save & Publish'}
                 </button>
@@ -997,14 +1000,15 @@ export default function AdminContentPage() {
 
       {/* Edit Modal */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="admin-modal rounded-xl max-w-lg w-full p-6 shadow-2xl border admin-border space-y-4 my-8">
-            <div className="flex justify-between items-center border-b admin-border pb-3">
-              <h3 className="font-bold admin-title text-base">Edit {editingItem.type} Record</h3>
-              <button onClick={() => setEditingItem(null)} className="admin-muted admin-hover font-bold">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 text-base">Edit {editingItem.type} Record</h3>
+              <button onClick={() => setEditingItem(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">✕</button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 space-y-3 text-xs">
               {editingItem.type === 'NEWS' && (
                 <>
                   <div>
@@ -1159,18 +1163,20 @@ export default function AdminContentPage() {
                 </>
               )}
 
-              <div className="flex justify-end gap-2 pt-3 border-t admin-border">
+              </div>
+
+              <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="px-3 py-1.5 admin-button-secondary border rounded"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
+                  className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-colors shadow-xs"
                 >
                   {submitting ? 'Saving...' : 'Save Changes'}
                 </button>

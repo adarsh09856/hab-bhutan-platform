@@ -23,6 +23,8 @@ dist/
 
 # Documentation & PDF security guards (never commit md or pdf)
 *.md
+!README.md
+!MANUAL.md
 *.pdf
 
 # Debug and Logs

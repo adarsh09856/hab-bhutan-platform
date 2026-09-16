@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getOutletByKey } from '@/lib/client-data';
 
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,7 +82,8 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="outlet-detail">
+        <SectionEditBadge label="Outlets Studio" studioHref="/admin/clusters-outlets" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> / {outlet.name}
         </p>

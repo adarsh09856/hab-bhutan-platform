@@ -23,6 +23,7 @@ import {
   Check,
 } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface Pillar {
   id: string;
@@ -835,6 +836,16 @@ SWIFT Code: BOBTBLBT`;
                   placeholder="e.g. Artisan Emergency Relief Fund"
                   required
                   className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <FileUploadInput
+                  value={pillarForm.iconEmoji || ''}
+                  onChange={(url) => setPillarForm({ ...pillarForm, iconEmoji: url })}
+                  label="Pillar Icon or Artwork"
+                  accept="image/*"
+                  hint="Upload an icon or banner image (PNG, SVG, JPG, WebP) or enter an emoji"
                 />
               </div>
 

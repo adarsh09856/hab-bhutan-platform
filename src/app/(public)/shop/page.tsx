@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS } from '@/lib/data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 interface ProductItem {
   code: string;
@@ -122,8 +123,8 @@ const PRODUCT_POOL = [
 
   return (
     <main id="main">
-
-      <section className="section">
+      <section className="section relative" data-hab-section="shop">
+        <SectionEditBadge label="Shop / Products Studio" studioHref="/admin/products" />
         {/* 1. Breadcrumbs */}
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/shop" onClick={() => setSelectedCraft('')}>E-shop</Link> / <span>{activeCraftMeta ? activeCraftMeta.name : 'All crafts'}</span>

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function ContactContent() {
   const searchParams = useSearchParams();
@@ -92,7 +93,8 @@ function ContactContent() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="contact">
+        <SectionEditBadge label="Contact Settings" studioHref="/admin/site-settings?tab=CONTACT" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Contact us
         </p>

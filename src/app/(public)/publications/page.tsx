@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<any[]>(() => CLIENT_DATA.publications || []);
@@ -71,7 +72,8 @@ export default function PublicationsPage() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="publications">
+        <SectionEditBadge label="Publications & Research Studio" studioHref="/admin/publications" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Publications
         </p>

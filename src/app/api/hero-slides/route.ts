@@ -54,12 +54,8 @@ export async function GET() {
       select: { id: true, imageUrl: true, caption: true, altText: true, linkUrl: true, sortOrder: true },
     });
     
-    // Normalize and ensure we ALWAYS have at least 5 slides to slide through
-    let effectiveSlides = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
-    if (effectiveSlides.length < 5) {
-      const needed = 5 - effectiveSlides.length;
-      effectiveSlides = [...effectiveSlides, ...DEFAULT_SLIDES.slice(effectiveSlides.length, effectiveSlides.length + needed)];
-    }
+    // If database has active slides, use them directly; fallback to DEFAULT_SLIDES only if none exist
+    const effectiveSlides = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
 
     const normalized = effectiveSlides.map((s, idx) => {
       let img = s.imageUrl;

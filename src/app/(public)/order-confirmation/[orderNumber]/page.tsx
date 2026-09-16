@@ -18,6 +18,7 @@ import {
   Phone,
   Banknote
 } from 'lucide-react';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function OrderConfirmationPage() {
   const params = useParams();
@@ -56,7 +57,8 @@ export default function OrderConfirmationPage() {
   }, [orderNumber]);
 
   return (
-    <main className="min-h-[85vh] bg-[#FBF9F5] py-10 px-4 sm:px-6 lg:px-10 font-figtree">
+    <main className="min-h-[85vh] bg-[#FBF9F5] py-10 px-4 sm:px-6 lg:px-10 font-figtree relative" data-hab-section="order-confirmation">
+      <SectionEditBadge label="Orders & Fulfillment Studio" studioHref="/admin/orders" />
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Success Banner */}
         <div className="bg-white rounded-2xl border border-[#E4DDD1] p-8 text-center shadow-xs space-y-4 print:shadow-none print:border-none">

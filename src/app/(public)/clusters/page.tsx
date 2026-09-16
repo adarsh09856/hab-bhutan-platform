@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import prisma from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +49,8 @@ export default async function ClustersPage() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="clusters">
+        <SectionEditBadge label="Artisan Clusters" studioHref="/admin/clusters-outlets" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#clusters">Clusters</Link> / All
         </p>

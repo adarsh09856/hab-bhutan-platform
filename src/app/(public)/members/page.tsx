@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,7 +104,8 @@ export default async function MembersPage() {
   return (
     <main id="main">
       {/* 1. Page Hero */}
-      <section className="section">
+      <section className="section relative" data-hab-section="members">
+        <SectionEditBadge label="Members Studio" studioHref="/admin/members" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Members
         </p>

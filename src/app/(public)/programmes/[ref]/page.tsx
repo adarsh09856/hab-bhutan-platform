@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +68,8 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="programme-detail">
+        <SectionEditBadge label="Programmes Studio" studioHref="/admin/programmes" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/programmes">Programmes</Link> / {programme.title}
         </p>

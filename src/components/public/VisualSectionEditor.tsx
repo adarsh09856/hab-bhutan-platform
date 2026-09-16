@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save, AlertCircle, CheckCircle2, Loader2, Edit3, Trash2, Plus } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -35,6 +35,14 @@ export default function VisualSectionEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -73,11 +81,13 @@ export default function VisualSectionEditor({
     }
   };
 
+
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-2xl my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        {/* Sticky Header */}
+        <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#8B2E24] text-white flex items-center justify-center">
               <Edit3 className="w-4 h-4" />
@@ -100,57 +110,74 @@ export default function VisualSectionEditor({
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSave} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-          {error && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
+        {/* Scrollable Form Body */}
+        <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+          <div className="p-5 space-y-4 flex-1 overflow-y-auto">
+            {error && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
-          {success && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-              <span>Changes saved successfully to database! Updating live page...</span>
-            </div>
-          )}
+            {success && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                <span>Changes saved successfully to database! Updating live page...</span>
+              </div>
+            )}
 
-          {fields.map((field) => {
-            const val = formData[field.key] ?? '';
+            {fields.map((field) => {
+              const val = formData[field.key] ?? '';
 
-            if (field.type === 'image') {
-              return (
-                <div key={field.key} className="pt-2">
-                  <FileUploadInput
-                    label={field.label}
-                    value={val}
-                    onChange={(newUrl) => handleFieldChange(field.key, newUrl)}
-                  />
-                </div>
-              );
-            }
+              if (field.type === 'image') {
+                return (
+                  <div key={field.key} className="pt-2">
+                    <FileUploadInput
+                      label={field.label}
+                      value={val}
+                      onChange={(newUrl) => handleFieldChange(field.key, newUrl)}
+                    />
+                  </div>
+                );
+              }
 
-            if (field.type === 'richtext') {
-              return (
-                <div key={field.key} className="pt-2">
-                  <RichTextEditor
-                    label={field.label}
-                    value={val}
-                    onChange={(html) => handleFieldChange(field.key, html)}
-                  />
-                </div>
-              );
-            }
+              if (field.type === 'richtext') {
+                return (
+                  <div key={field.key} className="pt-2">
+                    <RichTextEditor
+                      label={field.label}
+                      value={val}
+                      onChange={(html) => handleFieldChange(field.key, html)}
+                    />
+                  </div>
+                );
+              }
 
-            if (field.type === 'textarea') {
+              if (field.type === 'textarea') {
+                return (
+                  <div key={field.key} className="space-y-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                      {field.label}
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={val}
+                      onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                      placeholder={field.placeholder}
+                      className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+                    />
+                  </div>
+                );
+              }
+
               return (
                 <div key={field.key} className="space-y-1">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                     {field.label}
                   </label>
-                  <textarea
-                    rows={3}
+                  <input
+                    type="text"
                     value={val}
                     onChange={(e) => handleFieldChange(field.key, e.target.value)}
                     placeholder={field.placeholder}
@@ -158,26 +185,11 @@ export default function VisualSectionEditor({
                   />
                 </div>
               );
-            }
+            })}
+          </div>
 
-            return (
-              <div key={field.key} className="space-y-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                  {field.label}
-                </label>
-                <input
-                  type={field.type === 'number' ? 'number' : 'text'}
-                  value={val}
-                  onChange={(e) => handleFieldChange(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
-                />
-              </div>
-            );
-          })}
-
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
+          {/* Sticky Footer */}
+          <div className="flex-shrink-0 p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}

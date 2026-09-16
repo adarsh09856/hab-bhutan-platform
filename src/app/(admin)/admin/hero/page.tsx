@@ -67,6 +67,9 @@ export default function HeroSlidesAdminPage() {
       setShowForm(false);
       setEditId(null);
       load();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+      }
     } else {
       const d = await r.json();
       flash(d.error || 'Save failed.');
@@ -78,6 +81,9 @@ export default function HeroSlidesAdminPage() {
     await fetch(`/api/admin/hero-slides/${id}`, { method: 'DELETE' });
     flash('Slide deleted.');
     load();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+    }
   };
 
   const toggleActive = async (s: Slide) => {
@@ -86,6 +92,9 @@ export default function HeroSlidesAdminPage() {
       body: JSON.stringify({ isActive: !s.isActive }),
     });
     load();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+    }
   };
 
   return (

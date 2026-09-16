@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { CLIENT_DATA, getCraftByKey } from '@/lib/client-data';
 import { useCurrency } from '@/context/CurrencyContext';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function MemberProfilePage() {
   const params = useParams();
@@ -49,6 +50,7 @@ export default function MemberProfilePage() {
             dzongkhag: d.member.dzongkhag,
             member_since: d.member.joinYear || 2020,
             blurb: d.member.bio || member.blurb,
+            portraitUrl: d.member.portraitUrl || d.member.imageUrl || d.member.image_path || '',
           });
         }
       })
@@ -81,11 +83,13 @@ export default function MemberProfilePage() {
   };
 
   const cluster = CLIENT_DATA.clusters.find((c) => c.craft_key === craft.key) || CLIENT_DATA.clusters[0];
+  const portraitImg = member.portraitUrl || member.imageUrl || member.image_path || '/assets/photos/hero-1-weaving.jpg';
 
   return (
     <main id="main">
       {/* 1. Breadcrumb & Member Hero */}
-      <section className="section">
+      <section className="section relative" data-hab-section="member-profile">
+        <SectionEditBadge label="Members Studio" studioHref="/admin/members" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/members">Members</Link> / <span>{member.name}</span>
         </p>
@@ -93,7 +97,7 @@ export default function MemberProfilePage() {
         <div className="memberhero">
           <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
             <Image
-              src="/assets/photos/hero-1-weaving.jpg"
+              src={portraitImg}
               alt={member.name}
               fill
               sizes="(max-width: 768px) 100vw, 380px"

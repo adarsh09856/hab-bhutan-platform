@@ -21,6 +21,7 @@ import {
   ShoppingBag,
   Info
 } from 'lucide-react';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -211,7 +212,8 @@ export default function CheckoutPage() {
 
   return (
     <main className="min-h-[85vh] bg-[#FBF9F5] py-8 sm:py-12 px-4 sm:px-6 lg:px-10 font-figtree">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8 relative" data-hab-section="checkout">
+        <SectionEditBadge label="Orders & Checkout Studio" studioHref="/admin/orders" />
         {/* Breadcrumb & Step Tracker */}
         <div>
           <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-2">

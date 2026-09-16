@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,8 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="news-post">
+        <SectionEditBadge label="News & Stories Studio" studioHref="/admin/content" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / {post.title}
         </p>

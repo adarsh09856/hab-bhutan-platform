@@ -21,6 +21,7 @@ import {
   FileText,
   Printer
 } from 'lucide-react';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 interface OrderItemData {
   id: string;
@@ -207,7 +208,8 @@ export default function AccountPage() {
 
   return (
     <main className="min-h-[85vh] bg-[#FBF9F5] py-8 sm:py-12 px-4 sm:px-6 lg:px-10 font-figtree">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 relative" data-hab-section="account">
+        <SectionEditBadge label="User Accounts & Roles Studio" studioHref="/admin/users" />
         {/* User Account Header Banner */}
         <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-xs">
           <div className="flex items-center gap-4">

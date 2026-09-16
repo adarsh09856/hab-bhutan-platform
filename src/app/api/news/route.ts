@@ -63,13 +63,25 @@ export async function GET() {
       }),
     ]);
 
-    const articles = (dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS).map((a: any) => ({
-      ...a,
-      date: a.dateString || a.date || a.published_at || 'Recent',
-      published_at: a.dateString || a.published_at || 'Recent',
-      slug: a.slug || a.id,
-      image_path: a.image_path || '/assets/photos/hero-4-textiles.jpg',
-    }));
+    const articles = (dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS).map((a: any) => {
+      let image_path = a.image_path || '';
+      let cleanContent = a.content || '';
+      if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
+        const match = cleanContent.match(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->/);
+        if (match) {
+          image_path = match[1];
+          cleanContent = cleanContent.replace(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->\s*/, '');
+        }
+      }
+      return {
+        ...a,
+        date: a.dateString || a.date || a.published_at || 'Recent',
+        published_at: a.dateString || a.published_at || 'Recent',
+        slug: a.slug || a.id,
+        image_path: image_path || a.image_path || '/assets/photos/hero-4-textiles.jpg',
+        content: cleanContent,
+      };
+    });
 
     let rawEvents: any[] = [];
     if (dbEventRecords.length > 0) {

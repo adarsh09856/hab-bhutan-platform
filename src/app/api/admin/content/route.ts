@@ -21,9 +21,26 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    const newsMapped = news.map((n: any) => {
+      let image_path = '';
+      let cleanContent = n.content || '';
+      if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
+        const match = cleanContent.match(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->/);
+        if (match) {
+          image_path = match[1];
+          cleanContent = cleanContent.replace(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->\s*/, '');
+        }
+      }
+      return {
+        ...n,
+        image_path,
+        content: cleanContent,
+      };
+    });
+
     return NextResponse.json({
       success: true,
-      news,
+      news: newsMapped,
       publications,
       governance,
     });
@@ -48,13 +65,18 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: 'Article title is required.' }, { status: 400 });
       }
 
+      let finalContent = data.content || '';
+      if (data.image_path) {
+        finalContent = `<!-- HAB_COVER_IMAGE: ${data.image_path} -->\n` + finalContent;
+      }
+
       const article = await prisma.newsArticle.create({
         data: {
           kind: data.kind || data.category || 'Programs',
           title: data.title.trim(),
           dateString: data.dateString || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           blurb: data.blurb || data.excerpt || '',
-          content: data.content || null,
+          content: finalContent || null,
           isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
         },
       });
@@ -164,8 +186,20 @@ export async function PATCH(req: NextRequest) {
       if (data.kind || data.category) updateData.kind = data.kind || data.category;
       if (data.dateString) updateData.dateString = data.dateString;
       if (data.blurb !== undefined || data.excerpt !== undefined) updateData.blurb = data.blurb ?? data.excerpt;
-      if (data.content !== undefined) updateData.content = data.content;
       if (data.isPublished !== undefined) updateData.isPublished = Boolean(data.isPublished);
+
+      if (data.content !== undefined || data.image_path !== undefined) {
+        let contentToSave = data.content !== undefined ? data.content : '';
+        if (data.content === undefined && data.image_path) {
+          const existing = await prisma.newsArticle.findUnique({ where: { id } });
+          contentToSave = existing?.content || '';
+        }
+        contentToSave = contentToSave.replace(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->\s*/g, '');
+        if (data.image_path) {
+          contentToSave = `<!-- HAB_COVER_IMAGE: ${data.image_path} -->\n` + contentToSave;
+        }
+        updateData.content = contentToSave;
+      }
 
       const updated = await prisma.newsArticle.update({
         where: { id },

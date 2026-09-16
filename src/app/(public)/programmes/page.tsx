@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 interface ProgrammeItem {
   ref: string;
@@ -51,7 +52,8 @@ export default function ProgrammesPage() {
     <main id="main">
 
       {/* 1. Header & Mandate */}
-      <section className="section">
+      <section className="section relative" data-hab-section="programmes">
+        <SectionEditBadge label="Programme Pillars" studioHref="/admin/programmes" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Programmes
         </p>

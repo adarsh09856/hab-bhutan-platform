@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,8 @@ export default function EventsPage() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="events">
+        <SectionEditBadge label="Events & Exhibitions" studioHref="/admin/events" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / Events
         </p>
@@ -97,7 +99,7 @@ export default function EventsPage() {
         {/* Events List */}
         <div className="eventlist" id="eventList" data-cms-repeat>
           {filteredEvents.map((e, idx) => {
-            const imgSrc = photoPool[idx % photoPool.length];
+            const imgSrc = e.bannerUrl || e.imageUrl || e.image_path || photoPool[idx % photoPool.length];
 
             return (
               <article key={e.key} id={e.key} className="eventcard" data-cms-item>

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Edit2, Trash2, CheckCircle, XCircle, Search } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface EventItem {
   id: string;
@@ -15,6 +16,8 @@ interface EventItem {
   day?: string;
   mon?: string;
   time?: string;
+  imageUrl?: string;
+  pdfUrl?: string;
   location: string;
   venue?: string | null;
   craft?: string | null;
@@ -34,6 +37,8 @@ const EMPTY_FORM = {
   day: '12',
   mon: 'SEP',
   time: '09:00 AM – 05:00 PM BST',
+  imageUrl: '',
+  pdfUrl: '',
   location: 'Thimphu',
   venue: 'Clock Tower Square',
   craft: '',
@@ -95,6 +100,8 @@ export default function AdminEventsPage() {
       day: ev.day || sched.day || '12',
       mon: ev.mon || sched.mon || 'SEP',
       time: ev.time || sched.time || '09:00 AM – 05:00 PM BST',
+      imageUrl: ev.imageUrl || sched.imageUrl || '',
+      pdfUrl: ev.pdfUrl || sched.pdfUrl || '',
       location: ev.location,
       venue: ev.venue || '',
       craft: ev.craft || '',
@@ -313,213 +320,242 @@ export default function AdminEventsPage() {
 
       {/* Modal for Create/Edit */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="admin-card w-full max-w-2xl rounded-2xl border admin-border p-6 space-y-5 my-8">
-            <div className="flex items-center justify-between border-b admin-border pb-4">
-              <h2 className="text-lg font-bold admin-title">
-                {editId ? 'Edit Event' : 'Add New Event'}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  {editId ? 'Edit Event' : 'Add New Event'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Manage exhibition or masterclass details and public assets.
+                </p>
+              </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="admin-muted hover:text-white text-lg font-bold"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+                aria-label="Close dialog"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Key / Slug *</label>
+                    <input
+                      type="text"
+                      value={form.key}
+                      onChange={(e) => setForm({ ...form, key: e.target.value })}
+                      placeholder="craft-bazaar-2026"
+                      disabled={!!editId}
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Category *</label>
+                    <select
+                      value={form.category}
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    >
+                      {CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Key / Slug *</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Event Title *</label>
                   <input
                     type="text"
-                    value={form.key}
-                    onChange={(e) => setForm({ ...form, key: e.target.value })}
-                    placeholder="craft-bazaar-2026"
-                    disabled={!!editId}
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    placeholder="Zorig Chusum craft bazaar"
                     required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Category *</label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Date Display (Public Range) *</label>
+                    <input
+                      type="text"
+                      value={form.dateDisplay}
+                      onChange={(e) => setForm({ ...form, dateDisplay: e.target.value })}
+                      placeholder="12–14 September 2026"
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Event Timing / Hours</label>
+                    <input
+                      type="text"
+                      value={form.time || ''}
+                      onChange={(e) => setForm({ ...form, time: e.target.value })}
+                      placeholder="09:00 AM – 05:00 PM BST (or All day)"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Event Title *</label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="Zorig Chusum craft bazaar"
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Badge Day *</label>
+                    <input
+                      type="text"
+                      value={form.day || ''}
+                      onChange={(e) => setForm({ ...form, day: e.target.value })}
+                      placeholder="12"
+                      maxLength={2}
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 font-mono text-center font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Badge Month *</label>
+                    <input
+                      type="text"
+                      value={form.mon || ''}
+                      onChange={(e) => setForm({ ...form, mon: e.target.value.toUpperCase() })}
+                      placeholder="SEP"
+                      maxLength={3}
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 font-mono text-center font-bold"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Specific Venue / Pavilion</label>
+                    <input
+                      type="text"
+                      value={form.venue || ''}
+                      onChange={(e) => setForm({ ...form, venue: e.target.value })}
+                      placeholder="Main Amphitheatre / Pavilion 3"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Location / Town *</label>
+                    <input
+                      type="text"
+                      value={form.location}
+                      onChange={(e) => setForm({ ...form, location: e.target.value })}
+                      placeholder="Clock Tower Square, Thimphu"
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Craft Focus (optional)</label>
+                    <input
+                      type="text"
+                      value={form.craft || ''}
+                      onChange={(e) => setForm({ ...form, craft: e.target.value })}
+                      placeholder="All 13 crafts, or thagzo, shingzo..."
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                </div>
+
+                {/* Direct Image and Document Uploads */}
+                <div className="space-y-3 pt-2">
+                  <FileUploadInput
+                    label="Event Banner / Promotional Poster"
+                    value={form.imageUrl || ''}
+                    onChange={(url) => setForm({ ...form, imageUrl: url })}
+                    accept="image/*"
+                    hint="Upload high-res banner image for exhibition listings."
+                  />
+                  <FileUploadInput
+                    label="Event Brochure / Schedule PDF Document"
+                    value={form.pdfUrl || ''}
+                    onChange={(url) => setForm({ ...form, pdfUrl: url })}
+                    accept="application/pdf"
+                    hint="Optional PDF download for public visitors (brochure, agenda)."
+                  />
+                </div>
+
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Date Display (Public Range) *</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Organiser</label>
                   <input
                     type="text"
-                    value={form.dateDisplay}
-                    onChange={(e) => setForm({ ...form, dateDisplay: e.target.value })}
-                    placeholder="12–14 September 2026"
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    value={form.organiser || ''}
+                    onChange={(e) => setForm({ ...form, organiser: e.target.value })}
+                    placeholder="Handicrafts Association of Bhutan"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Event Timing / Hours</label>
+                  <RichTextEditor
+                    label="Event Description & Schedule Details *"
+                    value={form.description}
+                    onChange={(html) => setForm({ ...form, description: html })}
+                    placeholder="Forty member enterprises exhibit across three days, with live demonstrations..."
+                    hint="Include programme details, artisan workshops, and exhibition highlights."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Registration / Target Audience</label>
                   <input
                     type="text"
-                    value={form.time || ''}
-                    onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    placeholder="09:00 AM – 05:00 PM BST (or All day)"
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    value={form.registration || ''}
+                    onChange={(e) => setForm({ ...form, registration: e.target.value })}
+                    placeholder="Open to public · Free entry"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Sort Order</label>
+                    <input
+                      type="number"
+                      value={form.sortOrder}
+                      onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-4">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={form.isActive}
+                      onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                      className="w-4 h-4 accent-[#8B2E24] rounded"
+                    />
+                    <label htmlFor="isActive" className="text-xs text-slate-800 font-medium">
+                      Active (visible on public events page)
+                    </label>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Badge Day *</label>
-                  <input
-                    type="text"
-                    value={form.day || ''}
-                    onChange={(e) => setForm({ ...form, day: e.target.value })}
-                    placeholder="12"
-                    maxLength={2}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Badge Month *</label>
-                  <input
-                    type="text"
-                    value={form.mon || ''}
-                    onChange={(e) => setForm({ ...form, mon: e.target.value.toUpperCase() })}
-                    placeholder="SEP"
-                    maxLength={3}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono text-center font-bold"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Specific Venue / Pavilion</label>
-                  <input
-                    type="text"
-                    value={form.venue || ''}
-                    onChange={(e) => setForm({ ...form, venue: e.target.value })}
-                    placeholder="Main Amphitheatre / Pavilion 3"
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Location / Town *</label>
-                  <input
-                    type="text"
-                    value={form.location}
-                    onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    placeholder="Clock Tower Square, Thimphu"
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Craft Focus (optional)</label>
-                  <input
-                    type="text"
-                    value={form.craft || ''}
-                    onChange={(e) => setForm({ ...form, craft: e.target.value })}
-                    placeholder="All 13 crafts, or thagzo, shingzo..."
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Organiser</label>
-                <input
-                  type="text"
-                  value={form.organiser || ''}
-                  onChange={(e) => setForm({ ...form, organiser: e.target.value })}
-                  placeholder="Handicrafts Association of Bhutan"
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <RichTextEditor
-                  label="Event Description & Schedule Details *"
-                  value={form.description}
-                  onChange={(html) => setForm({ ...form, description: html })}
-                  placeholder="Forty member enterprises exhibit across three days, with live demonstrations..."
-                  hint="Include programme details, artisan workshops, and exhibition highlights."
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Registration / Target Audience</label>
-                <input
-                  type="text"
-                  value={form.registration || ''}
-                  onChange={(e) => setForm({ ...form, registration: e.target.value })}
-                  placeholder="Open to public · Free entry"
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-2">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Sort Order</label>
-                  <input
-                    type="number"
-                    value={form.sortOrder}
-                    onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-                <div className="flex items-center gap-2 pt-4">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="w-4 h-4 accent-amber-500 rounded"
-                  />
-                  <label htmlFor="isActive" className="text-sm admin-title font-medium">
-                    Active (visible on public events page)
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t admin-border">
+              {/* Sticky Footer */}
+              <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm rounded-lg admin-button-secondary font-medium"
+                  className="px-4 py-2 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 text-sm rounded-lg admin-button-primary font-medium disabled:opacity-50"
+                  className="px-5 py-2 text-xs rounded-lg bg-[#8B2E24] hover:bg-[#73241c] text-white font-semibold transition-colors disabled:opacity-50 shadow-xs"
                 >
                   {saving ? 'Saving...' : editId ? 'Save Changes' : 'Create Event'}
                 </button>

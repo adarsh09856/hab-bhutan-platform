@@ -49,8 +49,8 @@ export default function HeroSlider() {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  useEffect(() => {
-    fetch('/api/hero-slides')
+  const fetchSlides = useCallback(() => {
+    fetch('/api/hero-slides', { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => {
         if (data.slides && data.slides.length > 0) {
@@ -59,6 +59,13 @@ export default function HeroSlider() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    fetchSlides();
+    const handleUpdate = () => fetchSlides();
+    window.addEventListener('hab:hero-slides-updated', handleUpdate);
+    return () => window.removeEventListener('hab:hero-slides-updated', handleUpdate);
+  }, [fetchSlides]);
 
   const next = useCallback(() => {
     setCurrent((c) => (c + 1) % slides.length);

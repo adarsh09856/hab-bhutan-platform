@@ -233,65 +233,72 @@ export default function AdminHonoursPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="admin-card w-full max-w-lg rounded-2xl border admin-border p-6 space-y-4">
-            <div className="flex items-center justify-between border-b admin-border pb-3">
-              <h2 className="text-lg font-bold admin-title">
-                {editId ? 'Edit Honour Record' : 'Add Master Honour'}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/70 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-2xl my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  {editId ? 'Edit Honour Record' : 'Add Master Honour'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">Living Treasures & National Masters</p>
+              </div>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
-                className="admin-muted hover:text-white text-lg font-bold"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors font-bold text-base"
+                title="Close modal"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
+            {/* Scrollable Form Body */}
+            <form id="honourForm" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Master Artisan Name *</label>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Master Artisan Name *</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Ap Sonam Dorji"
                   required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Craft Discipline *</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Craft Discipline *</label>
                   <input
                     type="text"
                     value={form.craft}
                     onChange={(e) => setForm({ ...form, craft: e.target.value })}
                     placeholder="thagzo, shingzo, troezo..."
                     required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Dzongkhag *</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Dzongkhag *</label>
                   <input
                     type="text"
                     value={form.dzongkhag}
                     onChange={(e) => setForm({ ...form, dzongkhag: e.target.value })}
                     placeholder="Lhuentse, Paro, Thimphu..."
                     required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Award Type *</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Award Type *</label>
                   <select
                     value={form.awardType}
                     onChange={(e) => setForm({ ...form, awardType: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   >
                     {AWARD_TYPES.map((a) => (
                       <option key={a.value} value={a.value}>
@@ -301,13 +308,13 @@ export default function AdminHonoursPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Year Awarded *</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Year Awarded *</label>
                   <input
                     type="number"
                     value={form.yearAwarded}
                     onChange={(e) => setForm({ ...form, yearAwarded: Number(e.target.value) || 2026 })}
                     required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   />
                 </div>
               </div>
@@ -333,12 +340,12 @@ export default function AdminHonoursPage() {
 
               <div className="grid grid-cols-2 gap-4 items-center">
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Sort Order</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Sort Order</label>
                   <input
                     type="number"
                     value={form.sortOrder}
                     onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   />
                 </div>
                 <div className="flex items-center gap-2 pt-4">
@@ -347,31 +354,33 @@ export default function AdminHonoursPage() {
                     id="isActiveHonour"
                     checked={form.isActive}
                     onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="w-4 h-4 accent-amber-500 rounded"
+                    className="w-4 h-4 accent-[#8B2E24] rounded"
                   />
-                  <label htmlFor="isActiveHonour" className="text-sm admin-title font-medium">
+                  <label htmlFor="isActiveHonour" className="text-sm text-slate-800 font-medium">
                     Active (visible on /masters)
                   </label>
                 </div>
               </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t admin-border">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm rounded-lg admin-button-secondary font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-5 py-2 text-sm rounded-lg admin-button-primary font-medium disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : editId ? 'Save Changes' : 'Create Honour'}
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 px-5 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-200 hover:bg-slate-300 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="honourForm"
+                disabled={saving}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : editId ? 'Save Changes' : 'Create Honour'}
+              </button>
+            </div>
           </div>
         </div>
       )}

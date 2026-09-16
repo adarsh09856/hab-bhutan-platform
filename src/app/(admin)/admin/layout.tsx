@@ -40,7 +40,8 @@ import {
   Heart,
   Award,
   Layers,
-  CreditCard
+  CreditCard,
+  ChevronDown
 } from 'lucide-react';
 
 interface HealthData {
@@ -67,6 +68,7 @@ interface HealthData {
 
 interface NavGroup {
   group: string;
+  key: string;
   items: {
     label: string;
     href: string;
@@ -141,9 +143,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    pages: true,
+    shop: true,
+    community: true,
+    settings: true,
+    reports: false,
+  });
+
+  const toggleGroup = (key: string) => {
+    setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const navGroups: NavGroup[] = [
     {
       group: '1. Website Pages',
+      key: 'pages',
       items: [
         { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
         { label: 'All Pages Directory', href: '/admin/pages', icon: Layers, badge: 'All 15' },
@@ -164,6 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       group: '2. Shop & E-Commerce',
+      key: 'shop',
       items: [
         { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag },
         { label: 'Online Orders', href: '/admin/orders', icon: Package },
@@ -174,6 +190,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       group: '3. Artisans & Community',
+      key: 'community',
       items: [
         { label: 'Artisan Directory', href: '/admin/members', icon: Users },
         { label: 'New Member Applications', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
@@ -183,6 +200,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       group: '4. Settings & Customization',
+      key: 'settings',
       items: [
         { label: 'Website Settings', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
         { label: 'Typography Styler', href: '/admin/styling', icon: Sparkles, badge: 'Fonts' },
@@ -194,12 +212,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       group: '5. Overview & Reports',
+      key: 'reports',
       items: [
         { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
         { label: 'System Status', href: '/admin/settings', icon: Settings },
       ],
     },
   ];
+
+  useEffect(() => {
+    for (const group of navGroups) {
+      if (group.items.some((item) => pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href)))) {
+        setOpenGroups((prev) => ({ ...prev, [group.key]: true }));
+      }
+    }
+  }, [pathname]);
 
   // Helper to generate dynamic breadcrumbs
   const getBreadcrumbs = () => {
@@ -376,7 +403,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Navigation Items */}
-          <nav className="p-3 flex-1 overflow-y-auto space-y-4 custom-scrollbar">
+          <nav className="p-3 flex-1 overflow-y-auto space-y-3 custom-scrollbar">
             {navGroups.map((group) => {
               const visibleItems = group.items.filter((item) =>
                 !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
@@ -384,50 +411,68 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               if (visibleItems.length === 0) return null;
 
+              const isOpen = quickSearch ? true : (openGroups[group.key] ?? true);
+
               return (
                 <div key={group.group} className="pt-1">
-                  <div className="px-3 pb-1 mb-1 border-b border-slate-100 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    <span>{group.group}</span>
-                    <span className="text-[10px] font-mono font-normal text-slate-400">{visibleItems.length}</span>
-                  </div>
-                  <div className="space-y-0.5">
-                    {visibleItems.map((item) => {
-                      const Icon = item.icon;
-                      const isActive =
-                        item.href === '/admin'
-                          ? pathname === '/admin'
-                          : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.key)}
+                    className="w-full px-2.5 py-1.5 mb-1 rounded-lg flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                          isOpen ? 'transform rotate-0 text-[#8B2E24]' : 'transform -rotate-90 text-slate-400'
+                        }`}
+                      />
+                      <span>{group.group}</span>
+                    </div>
+                    <span className="text-[10px] font-mono font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                      {visibleItems.length}
+                    </span>
+                  </button>
 
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between group ${
-                            isActive
-                              ? 'bg-[#8B2E24] text-white shadow-xs font-semibold'
-                              : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <Icon
-                              className={`w-4 h-4 flex-none transition-colors ${
-                                isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-900'
-                              }`}
-                            />
-                            <span className="truncate">{item.label}</span>
-                          </div>
-                          {item.badge && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-medium ${
-                              isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
-                            }`}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
+                  {isOpen && (
+                    <div className="space-y-0.5 pl-1.5 border-l-2 border-slate-100 ml-2 animate-in fade-in duration-150">
+                      {visibleItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive =
+                          item.href === '/admin'
+                            ? pathname === '/admin'
+                            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between group ${
+                              isActive
+                                ? 'bg-[#8B2E24] text-white shadow-xs font-semibold'
+                                : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <Icon
+                                className={`w-4 h-4 flex-none transition-colors ${
+                                  isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-900'
+                                }`}
+                              />
+                              <span className="truncate">{item.label}</span>
+                            </div>
+                            {item.badge && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-medium ${
+                                isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                              }`}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}

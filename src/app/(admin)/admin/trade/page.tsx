@@ -36,12 +36,16 @@ import {
   GlassInput, 
   GlassSelect 
 } from '@/components/admin/GlassUI';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 export default function AdminTradePage() {
-  const [activeTab, setActiveTab] = useState<'pricing' | 'quotes' | 'buyers'>('pricing');
+  const [activeTab, setActiveTab] = useState<'pricing' | 'quotes' | 'buyers' | 'catalog'>('pricing');
   const [products, setProducts] = useState<any[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [buyers, setBuyers] = useState<any[]>([]);
+  const [catalogPdfUrl, setCatalogPdfUrl] = useState('');
+  const [lookbookCoverUrl, setLookbookCoverUrl] = useState('');
+  const [savingCatalog, setSavingCatalog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -84,12 +88,35 @@ export default function AdminTradePage() {
           setProducts(data.products || []);
           setQuotes(data.quotes || []);
           setBuyers(data.buyers || []);
+          if (data.catalogPdfUrl !== undefined) setCatalogPdfUrl(data.catalogPdfUrl || '');
+          if (data.lookbookCoverUrl !== undefined) setLookbookCoverUrl(data.lookbookCoverUrl || '');
         }
       }
     } catch (err) {
       console.error('Failed to load trade data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveCatalog = async () => {
+    setSavingCatalog(true);
+    try {
+      const res = await fetch('/api/admin/trade', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_catalog',
+          payload: { catalogPdfUrl, lookbookCoverUrl },
+        }),
+      });
+      if (res.ok) {
+        showToast('Wholesale catalog and lookbook media saved!');
+      }
+    } catch {
+      showToast('Error saving wholesale media');
+    } finally {
+      setSavingCatalog(false);
     }
   };
 
@@ -352,6 +379,20 @@ export default function AdminTradePage() {
                 Trade Buyers ({buyers.length})
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('catalog')}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'catalog'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                B2B Catalog &amp; Media
+              </span>
+            </button>
           </div>
 
           <div className="relative w-full md:w-80">
@@ -595,6 +636,66 @@ export default function AdminTradePage() {
                 )}
               </tbody>
             </table>
+          </div>
+        </GlassCard>
+      )}
+
+      {/* Tab 4: B2B Catalog & Media Upload */}
+      {activeTab === 'catalog' && (
+        <GlassCard className="p-6 space-y-6">
+          <div className="border-b border-slate-200 pb-4">
+            <h2 className="text-lg font-bold text-slate-900">B2B Wholesale Catalog &amp; Lookbook</h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Upload the official wholesale export catalog PDF and promotional lookbook cover images for institutional buyers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#8B2E24]" />
+                Official Wholesale Catalog (PDF)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Full export catalog containing export pricing, dimensions, packaging specifications, and customs classifications.
+              </p>
+              <FileUploadInput
+                value={catalogPdfUrl}
+                onChange={setCatalogPdfUrl}
+                label="Wholesale Catalog PDF Document"
+                accept="application/pdf"
+                hint="Supports PDF documents up to 50MB"
+              />
+            </div>
+
+            <div className="space-y-4 p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Package className="w-4 h-4 text-indigo-600" />
+                B2B Lookbook Cover Photo
+              </h3>
+              <p className="text-xs text-slate-500">
+                Hero visual showcasing curated artisanal handicraft lines for international distributors and boutique hotel buyers.
+              </p>
+              <FileUploadInput
+                value={lookbookCoverUrl}
+                onChange={setLookbookCoverUrl}
+                label="Lookbook Hero Artwork / Photo"
+                accept="image/*"
+                hint="Supports JPG, PNG, WebP up to 20MB"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-slate-200">
+            <button
+              type="button"
+              onClick={handleSaveCatalog}
+              disabled={savingCatalog}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#8B2E24] hover:bg-[#72241c] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{savingCatalog ? 'Saving media...' : 'Save B2B Catalog Materials'}</span>
+            </button>
           </div>
         </GlassCard>
       )}

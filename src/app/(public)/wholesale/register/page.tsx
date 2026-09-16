@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function WholesaleRegisterPage() {
   const [formData, setFormData] = useState({
@@ -127,7 +128,8 @@ export default function WholesaleRegisterPage() {
 
   return (
     <main id="main">
-      <section className="section section--narrow">
+      <section className="section section--narrow relative" data-hab-section="wholesale-register">
+        <SectionEditBadge label="Wholesale Trade Studio" studioHref="/admin/trade" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/wholesale">Wholesale &amp; bulk orders</Link> / Register
         </p>

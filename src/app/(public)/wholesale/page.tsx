@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA, getCountsByCraft } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +53,8 @@ export default async function WholesalePage() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="wholesale">
+        <SectionEditBadge label="Wholesale & Trade Studio" studioHref="/admin/trade" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / Wholesale &amp; bulk orders
         </p>

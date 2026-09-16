@@ -13,6 +13,7 @@ import {
 } from '@/lib/client-data';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function CraftProfilePage() {
   const params = useParams();
@@ -126,7 +127,8 @@ export default function CraftProfilePage() {
   return (
     <main id="main">
       {/* 1. Hero & Breadcrumbs */}
-      <section className="section">
+      <section className="section relative" data-hab-section="craft">
+        <SectionEditBadge label="13 Zorig Chusum Crafts" studioHref="/admin/crafts" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#crafts">Zorig Chusum</Link> / <span>{craft.name}</span>
         </p>

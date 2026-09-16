@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA, getTierPrice } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function WholesaleCartPage() {
   const [basket, setBasket] = useState<Record<string, number>>({});
@@ -166,7 +167,8 @@ export default function WholesaleCartPage() {
         </Link>
       </div>
 
-      <section className="section section--narrow">
+      <section className="section section--narrow relative" data-hab-section="wholesale-cart">
+        <SectionEditBadge label="Wholesale & Trade Studio" studioHref="/admin/trade" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/wholesale">Wholesale</Link> / Quote basket
         </p>

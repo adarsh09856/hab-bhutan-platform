@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getClusterByKey, getCraftByKey, getProductsForCraft } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,7 +83,8 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
   return (
     <main id="main">
       {/* 1. Breadcrumbs & Detail Hero */}
-      <section className="section">
+      <section className="section relative" data-hab-section="cluster-detail">
+        <SectionEditBadge label="Clusters Studio" studioHref="/admin/clusters-outlets" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> / <span>{cluster.name}</span>
         </p>

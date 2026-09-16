@@ -399,166 +399,172 @@ export default function AdminMembersPage() {
 
       {/* Register New Member Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="admin-card rounded-xl max-w-xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b admin-border pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
-                <h3 className="font-bold admin-title text-base">Register New Member Artisan</h3>
-                <p className="text-xs admin-muted">Directly accredit an artisan enterprise into the national registry.</p>
+                <h3 className="font-bold text-slate-900 text-base">Register New Member Artisan</h3>
+                <p className="text-xs text-slate-500">Directly accredit an artisan enterprise into the national registry.</p>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="admin-muted hover:admin-text font-bold"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+                aria-label="Close dialog"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="block admin-text font-semibold mb-1">Artisan / Enterprise Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={createForm.name}
-                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                    placeholder="e.g. Tshering Handicrafts or Pema Lhaden"
-                    className="w-full border border-slate-300 rounded px-3 py-2 focus:border-slate-500 outline-none"
-                  />
-                </div>
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-slate-700 font-semibold mb-1">Artisan / Enterprise Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={createForm.name}
+                      onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                      placeholder="e.g. Tshering Handicrafts or Pema Lhaden"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:border-[#8B2E24] outline-none"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Craft Tradition *</label>
-                  <select
-                    value={createForm.craftKey}
-                    onChange={(e) => setCreateForm({ ...createForm, craftKey: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    {CRAFTS.map((c) => (
-                      <option key={c.key} value={c.key}>
-                        {c.name} ({c.english})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Craft Tradition *</label>
+                    <select
+                      value={createForm.craftKey}
+                      onChange={(e) => setCreateForm({ ...createForm, craftKey: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      {CRAFTS.map((c) => (
+                        <option key={c.key} value={c.key}>
+                          {c.name} ({c.english})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Dzongkhag *</label>
-                  <select
-                    value={createForm.dzongkhag}
-                    onChange={(e) => setCreateForm({ ...createForm, dzongkhag: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    {DZONGKHAGS.map((dz) => (
-                      <option key={dz} value={dz}>{dz}</option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Dzongkhag *</label>
+                    <select
+                      value={createForm.dzongkhag}
+                      onChange={(e) => setCreateForm({ ...createForm, dzongkhag: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      {DZONGKHAGS.map((dz) => (
+                        <option key={dz} value={dz}>{dz}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Citizenship ID (11 Digits) *</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={11}
-                    value={createForm.cidNumber}
-                    onChange={(e) => setCreateForm({ ...createForm, cidNumber: e.target.value })}
-                    placeholder="10702001489"
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Citizenship ID (11 Digits) *</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={11}
+                      value={createForm.cidNumber}
+                      onChange={(e) => setCreateForm({ ...createForm, cidNumber: e.target.value })}
+                      placeholder="10702001489"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Trade License / Reg No.</label>
-                  <input
-                    type="text"
-                    value={createForm.businessLicense}
-                    onChange={(e) => setCreateForm({ ...createForm, businessLicense: e.target.value })}
-                    placeholder="RGoB/CRA/2026/0491"
-                    className="w-full border border-slate-300 rounded px-3 py-2"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Trade License / Reg No.</label>
+                    <input
+                      type="text"
+                      value={createForm.businessLicense}
+                      onChange={(e) => setCreateForm({ ...createForm, businessLicense: e.target.value })}
+                      placeholder="RGoB/CRA/2026/0491"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Membership Tier</label>
-                  <select
-                    value={createForm.tier}
-                    onChange={(e) => setCreateForm({ ...createForm, tier: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    <option value="ACTIVE_SECTOR_MEMBER">Active Sector Member</option>
-                    <option value="ASSOCIATE_SECTOR_MEMBER">Associate Sector Member</option>
-                    <option value="INSTITUTIONAL">Institutional</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Membership Tier</label>
+                    <select
+                      value={createForm.tier}
+                      onChange={(e) => setCreateForm({ ...createForm, tier: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      <option value="ACTIVE_SECTOR_MEMBER">Active Sector Member</option>
+                      <option value="ASSOCIATE_SECTOR_MEMBER">Associate Sector Member</option>
+                      <option value="INSTITUTIONAL">Institutional</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Initial Status</label>
-                  <select
-                    value={createForm.status}
-                    onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    <option value="VERIFIED">Verified</option>
-                    <option value="PENDING">Pending Verification</option>
-                    <option value="SUSPENDED">Suspended</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Initial Status</label>
+                    <select
+                      value={createForm.status}
+                      onChange={(e) => setCreateForm({ ...createForm, status: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      <option value="VERIFIED">Verified</option>
+                      <option value="PENDING">Pending Verification</option>
+                      <option value="SUSPENDED">Suspended</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Join Year</label>
-                  <input
-                    type="number"
-                    value={createForm.joinYear}
-                    onChange={(e) => setCreateForm({ ...createForm, joinYear: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Join Year</label>
+                    <input
+                      type="number"
+                      value={createForm.joinYear}
+                      onChange={(e) => setCreateForm({ ...createForm, joinYear: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Dues Expiry Date</label>
-                  <input
-                    type="date"
-                    value={createForm.duesExpiryDate}
-                    onChange={(e) => setCreateForm({ ...createForm, duesExpiryDate: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Dues Expiry Date</label>
+                    <input
+                      type="date"
+                      value={createForm.duesExpiryDate}
+                      onChange={(e) => setCreateForm({ ...createForm, duesExpiryDate: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                    />
+                  </div>
 
-                <div className="col-span-2">
-                  <FileUploadInput
-                    label="Artisan Portrait / Workshop Photo"
-                    value={createForm.portraitUrl}
-                    onChange={(url) => setCreateForm({ ...createForm, portraitUrl: url })}
-                    accept="image/*"
-                    hint="Upload portrait photo of the master artisan or craft workshop"
-                  />
-                </div>
+                  <div className="col-span-2">
+                    <FileUploadInput
+                      label="Artisan Portrait / Workshop Photo"
+                      value={createForm.portraitUrl}
+                      onChange={(url) => setCreateForm({ ...createForm, portraitUrl: url })}
+                      accept="image/*"
+                      hint="Upload portrait photo of the master artisan or craft workshop"
+                    />
+                  </div>
 
-                <div className="col-span-2">
-                  <RichTextEditor
-                    label="Artisan Bio & Craft Background"
-                    value={createForm.bio}
-                    onChange={(html) => setCreateForm({ ...createForm, bio: html })}
-                    placeholder="Generational weaver specialising in natural dye yathra and bura silks..."
-                    hint="Mastery lineage, techniques used, awards, and historical heritage."
-                  />
+                  <div className="col-span-2">
+                    <RichTextEditor
+                      label="Artisan Bio & Craft Background"
+                      value={createForm.bio}
+                      onChange={(html) => setCreateForm({ ...createForm, bio: html })}
+                      placeholder="Generational weaver specialising in natural dye yathra and bura silks..."
+                      hint="Mastery lineage, techniques used, awards, and historical heritage."
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t admin-border">
+              {/* Sticky Footer */}
+              <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 border border-slate-300 rounded admin-text hover:admin-panel font-medium"
+                  className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 admin-button-primary text-white rounded font-semibold disabled:opacity-50 shadow-sm cursor-pointer"
+                  className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-lg font-semibold disabled:opacity-50 shadow-xs cursor-pointer"
                 >
                   {submitting ? 'Registering...' : 'Register Member'}
                 </button>
@@ -570,153 +576,159 @@ export default function AdminMembersPage() {
 
       {/* Edit Member Modal */}
       {editingMember && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="admin-card rounded-xl max-w-xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b admin-border pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
-                <h3 className="font-bold admin-title text-base">Edit Member: {editingMember.name}</h3>
-                <p className="text-xs admin-muted font-mono">Reg: {editingMember.regNumber}</p>
+                <h3 className="font-bold text-slate-900 text-base">Edit Member: {editingMember.name}</h3>
+                <p className="text-xs text-slate-500 font-mono">Reg: {editingMember.regNumber}</p>
               </div>
               <button
                 onClick={() => setEditingMember(null)}
-                className="admin-muted hover:admin-text font-bold"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+                aria-label="Close dialog"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="block admin-text font-semibold mb-1">Artisan / Enterprise Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingMember.name}
-                    onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 focus:border-slate-500 outline-none"
-                  />
-                </div>
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-slate-700 font-semibold mb-1">Artisan / Enterprise Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingMember.name}
+                      onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:border-[#8B2E24] outline-none"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Craft Tradition</label>
-                  <select
-                    value={editingMember.craftKey}
-                    onChange={(e) => setEditingMember({ ...editingMember, craftKey: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    {CRAFTS.map((c) => (
-                      <option key={c.key} value={c.key}>
-                        {c.name} ({c.english})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Craft Tradition</label>
+                    <select
+                      value={editingMember.craftKey}
+                      onChange={(e) => setEditingMember({ ...editingMember, craftKey: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      {CRAFTS.map((c) => (
+                        <option key={c.key} value={c.key}>
+                          {c.name} ({c.english})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Dzongkhag</label>
-                  <select
-                    value={editingMember.dzongkhag}
-                    onChange={(e) => setEditingMember({ ...editingMember, dzongkhag: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    {DZONGKHAGS.map((dz) => (
-                      <option key={dz} value={dz}>{dz}</option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Dzongkhag</label>
+                    <select
+                      value={editingMember.dzongkhag}
+                      onChange={(e) => setEditingMember({ ...editingMember, dzongkhag: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      {DZONGKHAGS.map((dz) => (
+                        <option key={dz} value={dz}>{dz}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Citizenship ID (11 Digits)</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={11}
-                    value={editingMember.cidNumber || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, cidNumber: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Citizenship ID (11 Digits)</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={11}
+                      value={editingMember.cidNumber || ''}
+                      onChange={(e) => setEditingMember({ ...editingMember, cidNumber: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Trade License / Reg No.</label>
-                  <input
-                    type="text"
-                    value={editingMember.businessLicense || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, businessLicense: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Trade License / Reg No.</label>
+                    <input
+                      type="text"
+                      value={editingMember.businessLicense || ''}
+                      onChange={(e) => setEditingMember({ ...editingMember, businessLicense: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Membership Tier</label>
-                  <select
-                    value={editingMember.tier}
-                    onChange={(e) => setEditingMember({ ...editingMember, tier: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    <option value="ACTIVE_SECTOR_MEMBER">Active Sector Member</option>
-                    <option value="ASSOCIATE_SECTOR_MEMBER">Associate Sector Member</option>
-                    <option value="INSTITUTIONAL">Institutional</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Membership Tier</label>
+                    <select
+                      value={editingMember.tier}
+                      onChange={(e) => setEditingMember({ ...editingMember, tier: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      <option value="ACTIVE_SECTOR_MEMBER">Active Sector Member</option>
+                      <option value="ASSOCIATE_SECTOR_MEMBER">Associate Sector Member</option>
+                      <option value="INSTITUTIONAL">Institutional</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Status</label>
-                  <select
-                    value={editingMember.status}
-                    onChange={(e) => setEditingMember({ ...editingMember, status: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 admin-card"
-                  >
-                    <option value="VERIFIED">Verified</option>
-                    <option value="PENDING">Pending Verification</option>
-                    <option value="SUSPENDED">Suspended</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Status</label>
+                    <select
+                      value={editingMember.status}
+                      onChange={(e) => setEditingMember({ ...editingMember, status: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                    >
+                      <option value="VERIFIED">Verified</option>
+                      <option value="PENDING">Pending Verification</option>
+                      <option value="SUSPENDED">Suspended</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block admin-text font-semibold mb-1">Dues Expiry Date</label>
-                  <input
-                    type="date"
-                    value={editingMember.duesExpiryDate || ''}
-                    onChange={(e) => setEditingMember({ ...editingMember, duesExpiryDate: e.target.value })}
-                    className="w-full border border-slate-300 rounded px-3 py-2 font-mono"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Dues Expiry Date</label>
+                    <input
+                      type="date"
+                      value={editingMember.duesExpiryDate || ''}
+                      onChange={(e) => setEditingMember({ ...editingMember, duesExpiryDate: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
+                    />
+                  </div>
 
-                <div className="col-span-2">
-                  <FileUploadInput
-                    label="Artisan Portrait / Workshop Photo"
-                    value={editingMember.portraitUrl || ''}
-                    onChange={(url) => setEditingMember({ ...editingMember, portraitUrl: url })}
-                    accept="image/*"
-                    hint="Upload portrait photo of the master artisan or craft workshop"
-                  />
-                </div>
+                  <div className="col-span-2">
+                    <FileUploadInput
+                      label="Artisan Portrait / Workshop Photo"
+                      value={editingMember.portraitUrl || ''}
+                      onChange={(url) => setEditingMember({ ...editingMember, portraitUrl: url })}
+                      accept="image/*"
+                      hint="Upload portrait photo of the master artisan or craft workshop"
+                    />
+                  </div>
 
-                <div className="col-span-2">
-                  <RichTextEditor
-                    label="Artisan Bio & Craft Background"
-                    value={editingMember.bio || ''}
-                    onChange={(html) => setEditingMember({ ...editingMember, bio: html })}
-                    placeholder="Generational weaver specialising in natural dye yathra and bura silks..."
-                    hint="Mastery lineage, techniques used, awards, and historical heritage."
-                  />
+                  <div className="col-span-2">
+                    <RichTextEditor
+                      label="Artisan Bio & Craft Background"
+                      value={editingMember.bio || ''}
+                      onChange={(html) => setEditingMember({ ...editingMember, bio: html })}
+                      placeholder="Generational weaver specialising in natural dye yathra and bura silks..."
+                      hint="Mastery lineage, techniques used, awards, and historical heritage."
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t admin-border">
+              {/* Sticky Footer */}
+              <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setEditingMember(null)}
-                  className="px-4 py-2 border border-slate-300 rounded admin-text hover:admin-panel font-medium"
+                  className="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 admin-button-primary text-white rounded font-semibold disabled:opacity-50 shadow-sm cursor-pointer"
+                  className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-lg font-semibold disabled:opacity-50 shadow-xs cursor-pointer"
                 >
                   {submitting ? 'Saving Changes...' : 'Save Profile Changes'}
                 </button>

@@ -260,12 +260,11 @@ textarea.input{line-height:1.5;resize:vertical}
    CHROME — utility bar, header, menus
    ========================================================================== */
 
-.utility{background:var(--ink);color:var(--on-dark-body);overflow:hidden}
+/* .utility position/z-index now defined at end of file (fixed) */
 .utility__inner{
   max-width:var(--shell);margin:0 auto;padding:0 var(--gutter);
   min-height:var(--utility-h);display:flex;align-items:center;gap:18px;
   font-family:var(--mono);font-size:11px;letter-spacing:.05em;
-  overflow:hidden;
 }
 .utility__status{color:var(--on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:480px}
 .utility__spacer{flex:1}
@@ -278,13 +277,8 @@ textarea.input{line-height:1.5;resize:vertical}
 .utility__lang a.is-active{color:var(--on-dark)}
 .utility__lang span{opacity:.5}
 
-.header{
-  position:sticky;top:0;z-index:50;
-  background:rgba(244,240,231,.94);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);
-}
+/* .header position/z-index now defined at end of file (fixed) */
+
 .header__inner{
   max-width:var(--shell);margin:0 auto;padding:0 var(--gutter);
   min-height:var(--header-h);display:flex;align-items:center;gap:10px;
@@ -2897,4 +2891,55 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
 .frame--eventshot .frame__caption,
 .frame--wide16 .frame__caption {
   display: none !important;
+}
+
+/* ============================================================
+   FIXED CHROME — AdminLiveBar (36px) + UtilityBar (38px) + Header (74px)
+   All three are position:fixed so they always stay on screen during scroll.
+   Body gets padding-top to push page content below all three bars.
+   ============================================================ */
+
+/* AdminLiveBar: fixed at very top, z=60 (handled in component as z-[60]) */
+
+/* UtilityBar: fixed just below AdminLiveBar when admin logged in */
+.utility {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 55;
+  background: var(--ink);
+  color: var(--on-dark-body);
+  overflow: hidden;
+}
+
+/* Header: fixed below UtilityBar */
+.header {
+  position: fixed !important;
+  top: var(--utility-h, 38px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(244, 240, 231, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid #E4DDD1;
+  transition: top 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 8px rgba(31,29,26,0.08);
+}
+
+/* Body padding: push content below fixed chrome (utility 38px + header 74px = 112px) */
+body {
+  padding-top: calc(var(--utility-h, 38px) + var(--header-h, 74px));
+}
+
+/* When admin is logged in: AdminLiveBar is 36px fixed — push everything down 36px more */
+body.has-admin-live-bar .utility {
+  top: 36px;
+}
+body.has-admin-live-bar .header {
+  top: calc(36px + var(--utility-h, 38px));
+}
+body.has-admin-live-bar {
+  padding-top: calc(36px + var(--utility-h, 38px) + var(--header-h, 74px));
 }

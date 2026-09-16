@@ -7,6 +7,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function Header() {
   const pathname = usePathname();
@@ -139,7 +140,8 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="header" id="siteHeader">
+    <header className="header" id="siteHeader" data-hab-section="header">
+      <SectionEditBadge label="Header Navigation" studioHref="/admin/menus" />
       <div className="header__inner">
         <Link className="logo" href="/" id="logoLockup" aria-label="Handicrafts Association of Bhutan — home">
           <img
@@ -192,7 +194,16 @@ export default function Header() {
             );
           })}
 
-          <div className="menu" data-menu ref={membersRef}>
+          <div
+            className="menu"
+            data-menu
+            ref={membersRef}
+            onMouseEnter={() => {
+              setMembersOpen(true);
+              setShopOpen(false);
+            }}
+            onMouseLeave={() => setMembersOpen(false)}
+          >
             <button
               className="nav__item nav__item--trigger"
               id="membersTrigger"
@@ -319,19 +330,16 @@ export default function Header() {
             {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
           </button>
 
-          <button
-            className="chip"
-            id="languageToggle"
-            title="Switch language / སྐད་ཡིག"
-            aria-live="polite"
-            type="button"
-            onClick={toggleLanguage}
-            style={{ fontWeight: 600, minWidth: '42px', textAlign: 'center', cursor: 'pointer' }}
+          <div
+            className="menu"
+            data-menu
+            ref={shopRef}
+            onMouseEnter={() => {
+              setShopOpen(true);
+              setMembersOpen(false);
+            }}
+            onMouseLeave={() => setShopOpen(false)}
           >
-            {language === 'en' ? 'EN' : 'རྫོང་ཁ'}
-          </button>
-
-          <div className="menu" data-menu ref={shopRef}>
             <button
               className="btn btn--accent btn--sm"
               id="shopTrigger"
@@ -380,37 +388,6 @@ export default function Header() {
               </div>
             </div>
           </div>
-
-          <Link
-            className="chip"
-            href="/donate"
-            title="Donate to support Bhutanese artisans / ཞལ་འདེབས"
-            style={{
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '5px 9px',
-              fontSize: '11px',
-              fontWeight: 700,
-              color: '#9b1b30',
-              borderColor: 'rgba(155, 27, 48, 0.4)',
-              backgroundColor: 'rgba(155, 27, 48, 0.06)',
-            }}
-          >
-            <span aria-hidden="true">♥</span>
-            <span>{t('nav.donate', 'Donate')}</span>
-          </Link>
-
-          <Link
-            className="chip"
-            href="/account"
-            title="Customer Account & Order History"
-            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '5px 8px', fontSize: '11px', fontWeight: 600 }}
-          >
-            <span aria-hidden="true">👤</span>
-            <span>Account</span>
-          </Link>
 
           <Link className="basket" href="/basket" aria-label={t('nav.basket', 'Basket')}>
             <span aria-hidden="true">🧺</span>

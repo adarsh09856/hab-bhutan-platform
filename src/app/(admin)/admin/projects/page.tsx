@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Briefcase, Calendar, Building, DollarSign } from 'lucide-react';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface ProjectRecord {
   id: string;
@@ -16,6 +17,8 @@ interface ProjectRecord {
   summary: string;
   activities: string[];
   results: string[];
+  coverPhotoUrl?: string;
+  reportPdfUrl?: string;
   createdAt: string;
 }
 
@@ -41,6 +44,8 @@ export default function AdminProjectsPage() {
     summary: '',
     activities: [] as string[],
     results: [] as string[],
+    coverPhotoUrl: '',
+    reportPdfUrl: '',
   });
 
   const [activityInput, setActivityInput] = useState('');
@@ -80,6 +85,8 @@ export default function AdminProjectsPage() {
       summary: '',
       activities: [],
       results: [],
+      coverPhotoUrl: '',
+      reportPdfUrl: '',
     });
     setActivityInput('');
     setResultInput('');
@@ -98,6 +105,8 @@ export default function AdminProjectsPage() {
       summary: p.summary,
       activities: Array.isArray(p.activities) ? p.activities : [],
       results: Array.isArray(p.results) ? p.results : [],
+      coverPhotoUrl: (p as any).coverPhotoUrl || '',
+      reportPdfUrl: (p as any).reportPdfUrl || '',
     });
     setActivityInput('');
     setResultInput('');
@@ -368,31 +377,37 @@ export default function AdminProjectsPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="admin-modal rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 my-8">
-            <div className="flex items-center justify-between border-b admin-border pb-4">
-              <h2 className="text-lg font-bold admin-title">
-                {editingProject ? 'Edit Project' : 'Add New Project'}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  {editingProject ? 'Edit Project' : 'Add New Project'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">Development partner and donor interventions</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="admin-muted admin-hover font-bold text-lg cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors font-bold text-base cursor-pointer"
+                title="Close dialog"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Scrollable Body */}
+            <form id="projectForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Project Status
                   </label>
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="w-full px-3.5 py-2 border admin-input rounded-lg text-sm"
+                    className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   >
                     <option value="current">Active / Current</option>
                     <option value="completed">Completed / Archive</option>
@@ -400,7 +415,7 @@ export default function AdminProjectsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Progress Percentage ({form.progressPercent}%)
                   </label>
                   <input
@@ -409,13 +424,13 @@ export default function AdminProjectsPage() {
                     max="100"
                     value={form.progressPercent}
                     onChange={(e) => setForm({ ...form, progressPercent: Number(e.target.value) })}
-                    className="w-full mt-2 accent-amber-400"
+                    className="w-full mt-2 accent-[#8B2E24]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Project Name *
                 </label>
                 <input
@@ -424,13 +439,13 @@ export default function AdminProjectsPage() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. EU SWITCH-Asia Craft Sustainable Value Chain"
-                  className="w-full px-3.5 py-2 border admin-input rounded-lg text-sm"
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Funding Partner *
                   </label>
                   <input
@@ -439,12 +454,12 @@ export default function AdminProjectsPage() {
                     value={form.partner}
                     onChange={(e) => setForm({ ...form, partner: e.target.value })}
                     placeholder="e.g. European Union / Helvetas"
-                    className="w-full px-3.5 py-2 border admin-input rounded-lg text-sm"
+                    className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Period
                   </label>
                   <input
@@ -452,12 +467,12 @@ export default function AdminProjectsPage() {
                     value={form.period}
                     onChange={(e) => setForm({ ...form, period: e.target.value })}
                     placeholder="e.g. 2024 – 2027"
-                    className="w-full px-3.5 py-2 border admin-input rounded-lg text-sm"
+                    className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Budget / Grant
                   </label>
                   <input
@@ -465,13 +480,13 @@ export default function AdminProjectsPage() {
                     value={form.budget}
                     onChange={(e) => setForm({ ...form, budget: e.target.value })}
                     placeholder="e.g. EUR 850,000"
-                    className="w-full px-3.5 py-2 border admin-input rounded-lg text-sm"
+                    className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Summary &amp; Objectives *
                 </label>
                 <textarea
@@ -480,13 +495,13 @@ export default function AdminProjectsPage() {
                   value={form.summary}
                   onChange={(e) => setForm({ ...form, summary: e.target.value })}
                   placeholder="Comprehensive description of the project, rural beneficiaries, and target outcomes..."
-                  className="w-full px-3.5 py-2 border admin-input rounded-lg text-sm"
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                 />
               </div>
 
               {/* Activities input */}
               <div>
-                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Key Activities &amp; Workstreams
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -496,24 +511,24 @@ export default function AdminProjectsPage() {
                     onChange={(e) => setActivityInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addActivity(); } }}
                     placeholder="Add an activity (e.g. Natural dye training for 150 weavers)"
-                    className="flex-1 px-3.5 py-2 border admin-input rounded-lg text-sm"
+                    className="flex-1 px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-xs focus:outline-hidden focus:border-[#8B2E24]"
                   />
                   <button
                     type="button"
                     onClick={addActivity}
-                    className="px-3.5 py-2 admin-button-secondary rounded-lg text-xs font-semibold cursor-pointer"
+                    className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold cursor-pointer"
                   >
                     Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {form.activities.map((act, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 admin-panel border admin-border rounded-full text-xs admin-text">
+                    <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-700">
                       <span>{act}</span>
                       <button
                         type="button"
                         onClick={() => removeActivity(i)}
-                        className="admin-muted hover:text-rose-300 font-bold cursor-pointer"
+                        className="text-slate-400 hover:text-rose-600 font-bold cursor-pointer"
                       >
                         ×
                       </button>
@@ -524,7 +539,7 @@ export default function AdminProjectsPage() {
 
               {/* Results input */}
               <div>
-                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Key Outcomes &amp; Impact Results
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -534,24 +549,24 @@ export default function AdminProjectsPage() {
                     onChange={(e) => setResultInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addResult(); } }}
                     placeholder="Add an outcome (e.g. 35% household income uplift in eastern dzongkhags)"
-                    className="flex-1 px-3.5 py-2 border admin-input rounded-lg text-sm"
+                    className="flex-1 px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 text-xs focus:outline-hidden focus:border-[#8B2E24]"
                   />
                   <button
                     type="button"
                     onClick={addResult}
-                    className="px-3.5 py-2 admin-button-secondary rounded-lg text-xs font-semibold cursor-pointer"
+                    className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold cursor-pointer"
                   >
                     Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {form.results.map((res, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/15 border border-emerald-500/30 rounded-full text-xs text-emerald-300">
+                    <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800">
                       <span>{res}</span>
                       <button
                         type="button"
                         onClick={() => removeResult(i)}
-                        className="text-emerald-300 hover:text-rose-300 font-bold cursor-pointer"
+                        className="text-emerald-500 hover:text-rose-600 font-bold cursor-pointer"
                       >
                         ×
                       </button>
@@ -560,23 +575,42 @@ export default function AdminProjectsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t admin-border">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border admin-button-secondary rounded-lg text-sm font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 admin-button-primary rounded-lg text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-sm"
-                >
-                  {submitting ? 'Saving...' : editingProject ? 'Update Project' : 'Create Project'}
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-200">
+                <FileUploadInput
+                  value={form.coverPhotoUrl}
+                  onChange={(url) => setForm({ ...form, coverPhotoUrl: url })}
+                  label="Project Cover Photo"
+                  accept="image/*"
+                  hint="Promotional photo for project card (JPG, PNG, WebP)"
+                />
+                <FileUploadInput
+                  value={form.reportPdfUrl}
+                  onChange={(url) => setForm({ ...form, reportPdfUrl: url })}
+                  label="Evaluation Report (PDF)"
+                  accept="application/pdf"
+                  hint="Full donor impact evaluation or audit report PDF"
+                />
               </div>
             </form>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 border border-slate-300 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="projectForm"
+                disabled={submitting}
+                className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-xs transition-colors"
+              >
+                {submitting ? 'Saving...' : editingProject ? 'Update Project' : 'Create Project'}
+              </button>
+            </div>
           </div>
         </div>
       )}

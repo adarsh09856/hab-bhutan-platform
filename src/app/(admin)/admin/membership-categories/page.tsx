@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { Users, Plus, Edit2, Trash2, CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface CategoryItem {
   id: string;
@@ -13,9 +14,10 @@ interface CategoryItem {
   duesBTN: number;
   duesUSD: number;
   description: string;
+  bannerImageUrl?: string;
   eligibility?: string[] | null;
   benefits?: string[] | null;
-  documents?: string[] | null;
+  documents?: any;
   isActive: boolean;
   sortOrder: number;
 }
@@ -27,9 +29,10 @@ const EMPTY_CAT: Omit<CategoryItem, 'id'> = {
   duesBTN: 1200,
   duesUSD: 15,
   description: '',
+  bannerImageUrl: '',
   eligibility: [],
   benefits: [],
-  documents: [],
+  documents: null,
   isActive: true,
   sortOrder: 0,
 };
@@ -76,6 +79,10 @@ export default function AdminMembershipCategoriesPage() {
   };
 
   const openEdit = (cat: CategoryItem) => {
+    const bannerUrl = (typeof cat.documents === 'object' && cat.documents?.bannerImageUrl)
+      ? cat.documents.bannerImageUrl
+      : (typeof cat.documents === 'string' && cat.documents.startsWith('/') ? cat.documents : '');
+
     setForm({
       key: cat.key,
       name: cat.name,
@@ -83,9 +90,10 @@ export default function AdminMembershipCategoriesPage() {
       duesBTN: cat.duesBTN,
       duesUSD: cat.duesUSD,
       description: cat.description,
+      bannerImageUrl: cat.bannerImageUrl || bannerUrl || '',
       eligibility: cat.eligibility || [],
       benefits: cat.benefits || [],
-      documents: cat.documents || [],
+      documents: cat.documents || null,
       isActive: cat.isActive,
       sortOrder: cat.sortOrder,
     });
@@ -111,6 +119,10 @@ export default function AdminMembershipCategoriesPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const documentsObj = typeof form.documents === 'object' && form.documents !== null
+      ? { ...form.documents, bannerImageUrl: form.bannerImageUrl }
+      : { bannerImageUrl: form.bannerImageUrl };
+
     setSaving(true);
     try {
       const url = '/api/admin/membership-categories';
@@ -118,6 +130,7 @@ export default function AdminMembershipCategoriesPage() {
       const payload = {
         ...(editId ? { id: editId } : {}),
         ...form,
+        documents: documentsObj,
         eligibility,
         benefits,
       };
@@ -289,144 +302,166 @@ export default function AdminMembershipCategoriesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="admin-card w-full max-w-xl rounded-2xl border admin-border p-6 space-y-4 my-8">
-            <div className="flex items-center justify-between border-b admin-border pb-3">
-              <h2 className="text-lg font-bold admin-title">
-                {editId ? 'Edit Membership Category' : 'Add Membership Category'}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  {editId ? 'Edit Membership Category' : 'Add Membership Category'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Configure membership tiers, annual dues, benefits, and category visual banner.
+                </p>
+              </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="admin-muted hover:text-white text-lg font-bold"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+                aria-label="Close dialog"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Category Key *</label>
+                    <input
+                      type="text"
+                      value={form.key}
+                      onChange={(e) => setForm({ ...form, key: e.target.value })}
+                      placeholder="individual-artisan"
+                      disabled={!!editId}
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Category Name *</label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      placeholder="Individual Artisan"
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Annual Dues (BTN) *</label>
+                    <input
+                      type="number"
+                      value={form.duesBTN}
+                      onChange={(e) => setForm({ ...form, duesBTN: Number(e.target.value) || 0 })}
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Annual Dues (USD) *</label>
+                    <input
+                      type="number"
+                      value={form.duesUSD}
+                      onChange={(e) => setForm({ ...form, duesUSD: Number(e.target.value) || 0 })}
+                      required
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                </div>
+
+                {/* Inline Category Banner Image Upload */}
+                <div className="pt-1">
+                  <FileUploadInput
+                    label="Category Hero Banner Photograph"
+                    value={form.bannerImageUrl || ''}
+                    onChange={(url) => setForm({ ...form, bannerImageUrl: url })}
+                    accept="image/*"
+                    hint="Upload banner photograph for public category page (e.g. Taktsang / Khoma artisan)."
+                  />
+                </div>
+
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Category Key *</label>
-                  <input
-                    type="text"
-                    value={form.key}
-                    onChange={(e) => setForm({ ...form, key: e.target.value })}
-                    placeholder="individual-artisan"
-                    disabled={!!editId}
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Description *</label>
+                  <textarea
+                    rows={3}
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="The core membership of the association for practicing artisans..."
                     required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Category Name *</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Individual Artisan"
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Annual Dues (BTN) *</label>
-                  <input
-                    type="number"
-                    value={form.duesBTN}
-                    onChange={(e) => setForm({ ...form, duesBTN: Number(e.target.value) || 0 })}
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Annual Dues (USD) *</label>
-                  <input
-                    type="number"
-                    value={form.duesUSD}
-                    onChange={(e) => setForm({ ...form, duesUSD: Number(e.target.value) || 0 })}
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Description *</label>
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="The core membership of the association for practicing artisans..."
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
-                  Eligibility Criteria (one per line)
-                </label>
-                <textarea
-                  rows={3}
-                  value={eligibilityText}
-                  onChange={(e) => setEligibilityText(e.target.value)}
-                  placeholder="Bhutanese citizen holding valid CID&#10;Practising one of 13 crafts&#10;No business license required"
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
-                  Member Benefits (one per line)
-                </label>
-                <textarea
-                  rows={3}
-                  value={benefitsText}
-                  onChange={(e) => setBenefitsText(e.target.value)}
-                  placeholder="Listing in public directory&#10;Preferential access to skills training&#10;Consignment to central shop"
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 items-center">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Sort Order</label>
-                  <input
-                    type="number"
-                    value={form.sortOrder}
-                    onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-                <div className="flex items-center gap-2 pt-4">
-                  <input
-                    type="checkbox"
-                    id="isActiveCat"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="w-4 h-4 accent-amber-500 rounded"
-                  />
-                  <label htmlFor="isActiveCat" className="text-sm admin-title font-medium">
-                    Active (visible on /membership)
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                    Eligibility Criteria (one per line)
                   </label>
+                  <textarea
+                    rows={3}
+                    value={eligibilityText}
+                    onChange={(e) => setEligibilityText(e.target.value)}
+                    placeholder="Bhutanese citizen holding valid CID&#10;Practising one of 13 crafts&#10;No business license required"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                    Member Benefits (one per line)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={benefitsText}
+                    onChange={(e) => setBenefitsText(e.target.value)}
+                    placeholder="Listing in public directory&#10;Preferential access to skills training&#10;Consignment to central shop"
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 items-center">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Sort Order</label>
+                    <input
+                      type="number"
+                      value={form.sortOrder}
+                      onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-4">
+                    <input
+                      type="checkbox"
+                      id="isActiveCat"
+                      checked={form.isActive}
+                      onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                      className="w-4 h-4 accent-[#8B2E24] rounded"
+                    />
+                    <label htmlFor="isActiveCat" className="text-xs text-slate-800 font-medium">
+                      Active (visible on /membership)
+                    </label>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t admin-border">
+              {/* Sticky Footer */}
+              <div className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm rounded-lg admin-button-secondary font-medium"
+                  className="px-4 py-2 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 text-sm rounded-lg admin-button-primary font-medium disabled:opacity-50"
+                  className="px-5 py-2 text-xs rounded-lg bg-[#8B2E24] hover:bg-[#73241c] text-white font-semibold transition-colors disabled:opacity-50 shadow-xs"
                 >
                   {saving ? 'Saving...' : editId ? 'Save Changes' : 'Create Category'}
                 </button>

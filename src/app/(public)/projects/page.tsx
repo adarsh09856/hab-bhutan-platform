@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 interface Project {
   key: string;
@@ -197,7 +198,8 @@ export default function ProjectsPage() {
     <main id="main">
 
       {/* 1. Hero & Stats */}
-      <section className="section">
+      <section className="section relative" data-hab-section="projects">
+        <SectionEditBadge label="Donor Projects" studioHref="/admin/projects" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Projects
         </p>

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { CLIENT_DATA, getCountsByCraft, getTierPrice, ProductData, WholesaleTermData } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function WholesaleShopContent() {
   const searchParams = useSearchParams();
@@ -150,7 +151,8 @@ function WholesaleShopContent() {
   }, [productsList, selectedCraft, sortOrder]);
 
   return (
-    <main id="main">
+    <main id="main" className="relative" data-hab-section="wholesale-shop">
+      <SectionEditBadge label="Wholesale & Trade Studio" studioHref="/admin/trade" />
       {toastMessage && (
         <div className="toast" role="status" aria-live="polite" style={{ display: 'block' }}>
           {toastMessage}

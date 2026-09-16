@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 import prisma from '@/lib/prisma';
 
@@ -78,7 +79,8 @@ export default async function OutletsPage() {
   return (
     <main id="main">
       {/* Featured Market Hero */}
-      <section className="section">
+      <section className="section relative" data-hab-section="outlets">
+        <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Outlets &amp; clusters
         </p>

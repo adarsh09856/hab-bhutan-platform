@@ -19,6 +19,7 @@ import {
   Building2,
   Calendar
 } from 'lucide-react';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
@@ -92,7 +93,8 @@ function TrackOrderContent() {
   };
 
   return (
-    <main className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24 font-figtree">
+    <main className="w-full max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24 font-figtree relative" data-hab-section="track-order">
+      <SectionEditBadge label="Orders & Fulfillment Studio" studioHref="/admin/orders" />
       {/* Breadcrumbs */}
       <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6">
         <Link href="/" className="hover:underline">Home</Link> /{' '}

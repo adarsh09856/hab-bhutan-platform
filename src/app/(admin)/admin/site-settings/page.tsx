@@ -4,9 +4,27 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign, ExternalLink, ArrowRight } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign, ExternalLink, ArrowRight, Plus, Trash2, Edit3, Image as ImageIcon } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import { AdminModal } from '@/components/admin/AdminUI';
+
+interface PartnerItem {
+  name: string;
+  logoUrl?: string;
+  websiteUrl?: string;
+}
+
+const normalizePartner = (p: any): PartnerItem => {
+  if (typeof p === 'string') {
+    return { name: p, logoUrl: '', websiteUrl: '' };
+  }
+  return {
+    name: p?.name || '',
+    logoUrl: p?.logoUrl || p?.logo_path || '',
+    websiteUrl: p?.websiteUrl || p?.url || '',
+  };
+};
 
 export default function AdminSiteSettingsPage() {
   const [tab, setTab] = useState<'HOMEPAGE' | 'LOCALIZATION' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
@@ -55,7 +73,7 @@ export default function AdminSiteSettingsPage() {
     csoRegistration: '',
     copyrightText: '',
     punakhaMarketNotice: '',
-    partnersList: [] as string[],
+    partnersList: [] as PartnerItem[],
     // Assurances Band CMS
     assurance1Title: '',
     assurance1Text: '',
@@ -118,7 +136,45 @@ export default function AdminSiteSettingsPage() {
     donateTaxNotice: '',
   });
 
-  const [partnerInput, setPartnerInput] = useState('');
+  const [partnerModalOpen, setPartnerModalOpen] = useState(false);
+  const [partnerEditingIdx, setPartnerEditingIdx] = useState<number | null>(null);
+  const [partnerForm, setPartnerForm] = useState<PartnerItem>({
+    name: '',
+    logoUrl: '',
+    websiteUrl: '',
+  });
+
+  const openAddPartner = () => {
+    setPartnerEditingIdx(null);
+    setPartnerForm({ name: '', logoUrl: '', websiteUrl: '' });
+    setPartnerModalOpen(true);
+  };
+
+  const openEditPartner = (idx: number) => {
+    const p = normalizePartner(form.partnersList[idx]);
+    setPartnerEditingIdx(idx);
+    setPartnerForm(p);
+    setPartnerModalOpen(true);
+  };
+
+  const savePartnerModal = () => {
+    if (!partnerForm.name.trim()) return;
+    const current = (form.partnersList || []).map(normalizePartner);
+    let nextList: PartnerItem[];
+    if (partnerEditingIdx !== null && partnerEditingIdx >= 0) {
+      nextList = [...current];
+      nextList[partnerEditingIdx] = partnerForm;
+    } else {
+      nextList = [...current, partnerForm];
+    }
+    setForm((prev) => ({ ...prev, partnersList: nextList }));
+    setPartnerModalOpen(false);
+  };
+
+  const removePartner = (idx: number) => {
+    const current = (form.partnersList || []).map(normalizePartner);
+    setForm((prev) => ({ ...prev, partnersList: current.filter((_, i) => i !== idx) }));
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -137,7 +193,7 @@ export default function AdminSiteSettingsPage() {
           setForm((prev) => ({
             ...prev,
             ...d.setting,
-            partnersList: Array.isArray(d.setting.partnersList) ? d.setting.partnersList : prev.partnersList,
+            partnersList: Array.isArray(d.setting.partnersList) ? d.setting.partnersList.map(normalizePartner) : prev.partnersList,
           }));
           setLoading(false);
         } else {
@@ -151,7 +207,7 @@ export default function AdminSiteSettingsPage() {
                 setForm((prev) => ({
                   ...prev,
                   ...s,
-                  partnersList: Array.isArray(s.partnersList) ? s.partnersList : prev.partnersList,
+                  partnersList: Array.isArray(s.partnersList) ? s.partnersList.map(normalizePartner) : prev.partnersList,
                 }));
               }
             })
@@ -172,7 +228,7 @@ export default function AdminSiteSettingsPage() {
               setForm((prev) => ({
                 ...prev,
                 ...s,
-                partnersList: Array.isArray(s.partnersList) ? s.partnersList : prev.partnersList,
+                partnersList: Array.isArray(s.partnersList) ? s.partnersList.map(normalizePartner) : prev.partnersList,
               }));
             }
           })
@@ -214,18 +270,6 @@ export default function AdminSiteSettingsPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const addPartner = () => {
-    if (!partnerInput.trim()) return;
-    if (!form.partnersList.includes(partnerInput.trim())) {
-      setForm({ ...form, partnersList: [...form.partnersList, partnerInput.trim()] });
-    }
-    setPartnerInput('');
-  };
-
-  const removePartner = (p: string) => {
-    setForm({ ...form, partnersList: form.partnersList.filter((x) => x !== p) });
   };
 
   if (loading) {
@@ -1328,42 +1372,96 @@ export default function AdminSiteSettingsPage() {
         {/* PARTNERS TAB */}
         {tab === 'PARTNERS' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Partner &amp; Donor Organizations</h2>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={partnerInput}
-                onChange={(e) => setPartnerInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPartner(); } }}
-                placeholder="Enter partner name (e.g. EU SWITCH-Asia, Helvetas)"
-                className="flex-1 px-3.5 py-2 admin-input border rounded-lg text-sm"
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+              <div>
+                <h2 className="text-base font-bold admin-title">Partner &amp; Donor Organizations</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Manage institutional partners, development funders, and ministries displayed on the homepage.
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={addPartner}
-                className="px-4 py-2 admin-button-secondary rounded-lg text-sm font-semibold cursor-pointer"
+                onClick={openAddPartner}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#8B2E24] hover:bg-[#72241c] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
               >
-                Add Partner
+                <Plus className="w-4 h-4" />
+                <span>Add Partner Organization</span>
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2 pt-3">
-              {form.partnersList.map((p) => (
-                <span
-                  key={p}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-500/15 border admin-border rounded-full text-xs font-medium admin-text"
-                >
-                  {p}
-                  <button
-                    type="button"
-                    onClick={() => removePartner(p)}
-                    className="admin-muted hover:text-rose-300 font-bold ml-1 cursor-pointer"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
+            {form.partnersList.length === 0 ? (
+              <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
+                <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-sm font-bold text-slate-700">No partner organizations added yet</p>
+                <p className="text-xs text-slate-500 mt-1">Click &ldquo;Add Partner Organization&rdquo; to add your first partner with their logo.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                {form.partnersList.map((item, idx) => {
+                  const p = normalizePartner(item);
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all gap-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-12 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center p-1 overflow-hidden flex-shrink-0">
+                          {p.logoUrl ? (
+                            <img
+                              src={p.logoUrl}
+                              alt={p.name}
+                              className="max-h-10 max-w-full object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <span className="text-[10px] font-mono text-slate-400 font-bold uppercase">No Logo</span>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-bold text-slate-900 truncate" title={p.name}>
+                            {p.name}
+                          </h4>
+                          {p.websiteUrl ? (
+                            <a
+                              href={p.websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[11px] text-[#8B2E24] hover:underline flex items-center gap-1 mt-0.5 truncate"
+                            >
+                              <span className="truncate">{p.websiteUrl.replace(/^https?:\/\//, '')}</span>
+                              <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">No website link</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-1.5 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => openEditPartner(idx)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Edit3 className="w-3 h-3 text-slate-500" />
+                          <span>Edit / Logo</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removePartner(idx)}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Remove partner"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -1638,6 +1736,72 @@ export default function AdminSiteSettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* PARTNER ADD / EDIT MODAL */}
+      <AdminModal
+        isOpen={partnerModalOpen}
+        onClose={() => setPartnerModalOpen(false)}
+        title={partnerEditingIdx !== null ? 'Edit Partner Organization' : 'Add Partner Organization'}
+        subtitle="Manage partner identity, official website, and transparent logo artwork."
+        maxWidth="md"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setPartnerModalOpen(false)}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-300 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={savePartnerModal}
+              disabled={!partnerForm.name.trim()}
+              className="px-5 py-2 text-xs font-bold text-white bg-[#8B2E24] hover:bg-[#72241c] rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Save Partner
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Partner / Organization Name <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={partnerForm.name}
+              onChange={(e) => setPartnerForm({ ...partnerForm, name: e.target.value })}
+              placeholder="e.g. EU SWITCH-Asia, UNDP Bhutan, Helvetas"
+              className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Partner Website URL <span className="text-[11px] font-normal text-slate-400 lowercase">(optional)</span>
+            </label>
+            <input
+              type="url"
+              value={partnerForm.websiteUrl || ''}
+              onChange={(e) => setPartnerForm({ ...partnerForm, websiteUrl: e.target.value })}
+              placeholder="https://www.switch-asia.eu"
+              className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+            />
+          </div>
+
+          <div>
+            <FileUploadInput
+              value={partnerForm.logoUrl || ''}
+              onChange={(url) => setPartnerForm({ ...partnerForm, logoUrl: url })}
+              label="Partner Logo Artwork"
+              accept="image/png,image/svg+xml,image/webp,image/jpeg"
+              hint="Supports transparent PNG, SVG, WebP, JPG (44px display height on public site)"
+            />
+          </div>
+        </div>
+      </AdminModal>
     </div>
   );
 }

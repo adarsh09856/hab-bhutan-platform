@@ -6,6 +6,7 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function DonateContent() {
   const searchParams = useSearchParams();
@@ -133,7 +134,8 @@ function DonateContent() {
 
   return (
     <main id="main">
-      <section className="section section--narrow">
+      <section className="section section--narrow relative" data-hab-section="donate">
+        <SectionEditBadge label="Donations & Appeals" studioHref="/admin/donate-settings" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#support">Support us</Link> / Donate
         </p>
@@ -182,6 +184,7 @@ function DonateContent() {
             <div className="pillars pillars--pick" style={{ marginTop: 24 }}>
               {pillars.map((p) => {
                 const isActive = p.key === selectedPillar;
+                const isImageIcon = p.iconEmoji && (p.iconEmoji.startsWith('/') || p.iconEmoji.startsWith('http'));
                 return (
                   <button
                     key={p.key}
@@ -190,9 +193,15 @@ function DonateContent() {
                     onClick={() => setSelectedPillar(p.key)}
                     style={{ textAlign: 'left', cursor: 'pointer', border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)' }}
                   >
-                    <h2 className="pillar__title">
-                      <span className="pillar__initial">{p.letter}</span>
-                      <span>{p.title.slice(p.letter.length)}</span>
+                    <h2 className="pillar__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {isImageIcon ? (
+                        <span className="pillar__initial" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img src={p.iconEmoji} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                        </span>
+                      ) : (
+                        <span className="pillar__initial">{p.letter}</span>
+                      )}
+                      <span>{isImageIcon ? p.title : (p.title.startsWith(p.letter) ? p.title.slice(p.letter.length) : p.title)}</span>
                     </h2>
                     <p className="pillar__line">{p.line}</p>
                   </button>
@@ -317,7 +326,7 @@ function DonateContent() {
                         checked={payMethod === 'card'}
                         onChange={(e) => setPayMethod(e.target.value)}
                       />
-                      <span><strong>Credit / Debit Card</strong> (Visa, Mastercard, JCB, UnionPay)</span>
+                      <span><strong>International card</strong> (Visa, Mastercard, 3-D Secure, in USD)</span>
                     </label>
                     <label className="paymethod" style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0' }}>
                       <input
@@ -327,7 +336,7 @@ function DonateContent() {
                         checked={payMethod === 'mbob'}
                         onChange={(e) => setPayMethod(e.target.value)}
                       />
-                      <span><strong>mBoB / Bhutan QR</strong> (Local banking app)</span>
+                      <span><strong>Bhutan mobile pay</strong> (mBoB / RMA-approved wallets, in Nu.)</span>
                     </label>
                     <label className="paymethod" style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '10px 0' }}>
                       <input
@@ -337,7 +346,7 @@ function DonateContent() {
                         checked={payMethod === 'bank'}
                         onChange={(e) => setPayMethod(e.target.value)}
                       />
-                      <span><strong>Bank Transfer</strong> (Direct wire to HAB BoB account)</span>
+                      <span><strong>Bank transfer</strong> (BNB / BOB account, invoice issued on order)</span>
                     </label>
 
                     {payMethod === 'bank' && (

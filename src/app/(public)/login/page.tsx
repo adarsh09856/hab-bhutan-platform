@@ -4,6 +4,7 @@ import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ShoppingBag, ShieldCheck, Truck, ArrowRight, UserPlus, Package } from 'lucide-react';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function LoginForm() {
   const router = useRouter();
@@ -203,7 +204,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-16">
+    <main className="w-full max-w-[1080px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-16 relative" data-hab-section="login">
+      <SectionEditBadge label="Auth & Security Studio" studioHref="/admin/users" />
       <Suspense fallback={<div className="text-center py-20 font-figtree text-[#6B5A4C]">Loading login form...</div>}>
         <LoginForm />
       </Suspense>

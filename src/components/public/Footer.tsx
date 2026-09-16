@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCurrency } from '@/context/CurrencyContext';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function Footer() {
   const { currency } = useCurrency();
@@ -97,7 +98,8 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="footer" id="contact">
+    <footer className="footer relative" id="contact" data-hab-section="footer">
+      <SectionEditBadge label="Footer & Global Settings" studioHref="/admin/site-settings?tab=FOOTER" />
       <div className="signoff">
         <div className="signoff__inner">
           <Link className="signoff__logo" href="/" aria-label="Handicrafts Association of Bhutan — home">

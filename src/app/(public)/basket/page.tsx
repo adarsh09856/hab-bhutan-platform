@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function BasketPage() {
   const router = useRouter();
@@ -126,7 +127,8 @@ export default function BasketPage() {
 
   return (
     <main id="main">
-      <section className="section section--narrow">
+      <section className="section section--narrow relative" data-hab-section="basket-checkout">
+        <SectionEditBadge label="Orders & POS Studio" studioHref="/admin/orders" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Basket &amp; checkout
         </p>

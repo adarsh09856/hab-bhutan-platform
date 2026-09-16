@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
 import { useRouter } from 'next/navigation';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function MembershipPage() {
   const router = useRouter();
@@ -44,7 +45,8 @@ export default function MembershipPage() {
 
   return (
     <main id="main">
-      <section className="section section--narrow">
+      <section className="section section--narrow relative" data-hab-section="membership">
+        <SectionEditBadge label="Membership Categories Studio" studioHref="/admin/membership-categories" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Membership / Apply
         </p>

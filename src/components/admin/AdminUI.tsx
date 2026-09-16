@@ -130,6 +130,7 @@ interface AdminModalProps {
   subtitle?: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+  footer?: React.ReactNode;
 }
 
 export function AdminModal({
@@ -139,13 +140,20 @@ export function AdminModal({
   subtitle,
   children,
   maxWidth = 'lg',
+  footer,
 }: AdminModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) onClose();
     };
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -161,26 +169,32 @@ export function AdminModal({
   }[maxWidth];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div 
-        className={`w-full ${maxWidthClasses} bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-[0_25px_80px_rgba(0,0,0,0.85)] border border-white/15 overflow-hidden flex flex-col max-h-[90vh] text-white`}
+        className={`relative w-full ${maxWidthClasses} bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-4.5 border-b border-white/10 flex items-center justify-between bg-slate-950/50">
+        <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">{title}</h2>
-            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-1 space-y-4 text-slate-200">
+        <div className="p-6 overflow-y-auto flex-1 space-y-4 text-slate-700">
           {children}
         </div>
+        {footer && (
+          <div className="flex-shrink-0 px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

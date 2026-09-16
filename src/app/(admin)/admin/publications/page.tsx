@@ -273,121 +273,131 @@ export default function PublicationsStudio() {
 
       {/* Modal / Form */}
       {formOpen && (
-        <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-md space-y-4 max-w-2xl mx-auto">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <h3 className="text-base font-bold text-slate-900">
-              {editingId ? 'Edit Publication / Report' : 'Upload New Report / PDF'}
-            </h3>
-            <button
-              type="button"
-              onClick={() => setFormOpen(false)}
-              className="text-xs text-slate-400 hover:text-slate-700"
-            >
-              Cancel
-            </button>
-          </div>
-
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Publication Title *
-              </label>
-              <input
-                type="text"
-                required
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. HAB Annual Craft Sector Impact Report 7582"
-                className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                  Document Category *
-                </label>
-                <select
-                  value={form.kind}
-                  onChange={(e) => setForm({ ...form, kind: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
-                >
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  {editingId ? 'Edit Publication / Report' : 'Upload New Report / PDF'}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">Official publications, reports and guidelines</p>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                  Publication Year *
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={form.year}
-                  onChange={(e) => setForm({ ...form, year: parseInt(e.target.value, 10) || 2026 })}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Format / Meta Note
-              </label>
-              <input
-                type="text"
-                value={form.metaDetails}
-                onChange={(e) => setForm({ ...form, metaDetails: e.target.value })}
-                placeholder="e.g. PDF · Document · 4.2 MB · English & Dzongkha"
-                className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
-              />
-            </div>
-
-            <div>
-              <FileUploadInput
-                label="Attached Document File (PDF, DOC, DOCX up to 30MB)"
-                value={form.fileUrl}
-                onChange={(url) => setForm({ ...form, fileUrl: url })}
-                accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
-                hint="Drag and drop or choose from your computer. Files are stored securely on the server."
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="pubFeatured"
-                checked={form.isFeatured}
-                onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                className="w-4 h-4 accent-[#8B2E24] rounded-sm"
-              />
-              <label htmlFor="pubFeatured" className="text-xs font-bold text-slate-800 cursor-pointer">
-                Featured Document (Highlighted in top publications band)
-              </label>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setFormOpen(false)}
-                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors font-bold text-base cursor-pointer"
+                title="Close dialog"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <form id="pubForm" onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Publication Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. HAB Annual Craft Sector Impact Report 7582"
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Document Category *
+                  </label>
+                  <select
+                    value={form.kind}
+                    onChange={(e) => setForm({ ...form, kind: e.target.value })}
+                    className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Publication Year *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={form.year}
+                    onChange={(e) => setForm({ ...form, year: parseInt(e.target.value, 10) || 2026 })}
+                    className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Format / Meta Note
+                </label>
+                <input
+                  type="text"
+                  value={form.metaDetails}
+                  onChange={(e) => setForm({ ...form, metaDetails: e.target.value })}
+                  placeholder="e.g. PDF · Document · 4.2 MB · English & Dzongkha"
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+              </div>
+
+              <div>
+                <FileUploadInput
+                  label="Attached Document File (PDF, DOC, DOCX up to 30MB)"
+                  value={form.fileUrl}
+                  onChange={(url) => setForm({ ...form, fileUrl: url })}
+                  accept="application/pdf,.doc,.docx,.xls,.xlsx,.csv,text/plain"
+                  hint="Drag and drop or choose from your computer. Files are stored securely on the server."
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="pubFeatured"
+                  checked={form.isFeatured}
+                  onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+                  className="w-4 h-4 accent-[#8B2E24] rounded-sm"
+                />
+                <label htmlFor="pubFeatured" className="text-xs font-bold text-slate-800 cursor-pointer">
+                  Featured Document (Highlighted in top publications band)
+                </label>
+              </div>
+            </form>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setFormOpen(false)}
+                className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-200 border border-slate-300 rounded-xl cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
+                form="pubForm"
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs sm:text-sm font-semibold shadow-xs disabled:opacity-50 cursor-pointer transition-colors"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>{editingId ? 'Save Updates' : 'Publish Report'}</span>
+                <span>{saving ? 'Saving...' : editingId ? 'Update Publication' : 'Publish Document'}</span>
               </button>
             </div>
-          </form>
+          </div>
         </div>
       )}
 

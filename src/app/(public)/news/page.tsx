@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export default function NewsPage() {
               title: a.title,
               blurb: a.blurb || a.summary || '',
               published_at: a.dateString || a.published_at || 'Recent',
-              image_path: a.image_path || '/assets/photos/hero-4-textiles.jpg',
+              image_path: a.image_path || '',
             }))
           );
         }
@@ -58,7 +59,8 @@ export default function NewsPage() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="news">
+        <SectionEditBadge label="News & Stories" studioHref="/admin/content" />
         <p className="crumbs">
           <Link href="/">Home</Link> / News &amp; events
         </p>

@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Store, MapPin, Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Eye, Star } from 'lucide-react';
 import Link from 'next/link';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface Cluster {
   id: string;
@@ -20,6 +21,7 @@ interface Cluster {
   summary: string;
   story: string;
   visitorNote?: string | null;
+  imageUrl?: string | null;
 }
 
 interface Outlet {
@@ -39,6 +41,7 @@ interface Outlet {
   payment?: string | null;
   gettingThere?: string | null;
   facilities?: string | null;
+  imageUrl?: string | null;
 }
 
 export default function AdminClustersOutletsPage() {
@@ -63,6 +66,7 @@ export default function AdminClustersOutletsPage() {
     summary: '',
     story: '',
     visitorNote: '',
+    imageUrl: '',
   });
 
   // Outlet Modals
@@ -84,6 +88,7 @@ export default function AdminClustersOutletsPage() {
     payment: 'Cash, card and mBoB accepted',
     gettingThere: '',
     facilities: '',
+    imageUrl: '',
   });
 
   const [deleting, setDeleting] = useState<{ type: 'CLUSTER' | 'OUTLET'; id: string; name: string } | null>(null);
@@ -229,6 +234,7 @@ export default function AdminClustersOutletsPage() {
                   summary: '',
                   story: '',
                   visitorNote: '',
+                  imageUrl: '',
                 });
               }}
               className="admin-button-primary flex items-center gap-1.5 text-xs py-2 px-3 rounded-lg"
@@ -257,6 +263,7 @@ export default function AdminClustersOutletsPage() {
                   payment: 'Cash, card and mBoB accepted',
                   gettingThere: '',
                   facilities: '',
+                  imageUrl: '',
                 });
               }}
               className="admin-button-primary flex items-center gap-1.5 text-xs py-2 px-3 rounded-lg"
@@ -349,6 +356,7 @@ export default function AdminClustersOutletsPage() {
                           summary: c.summary,
                           story: c.story,
                           visitorNote: c.visitorNote || '',
+                          imageUrl: c.imageUrl || '',
                         });
                       }}
                       className="p-1.5 rounded admin-hover text-slate-300 hover:text-white"
@@ -428,6 +436,7 @@ export default function AdminClustersOutletsPage() {
                           payment: o.payment || '',
                           gettingThere: o.gettingThere || '',
                           facilities: o.facilities || '',
+                          imageUrl: o.imageUrl || '',
                         });
                       }}
                       className="p-1.5 rounded admin-hover text-slate-300 hover:text-white"
@@ -466,17 +475,33 @@ export default function AdminClustersOutletsPage() {
 
       {/* Cluster Edit/Create Modal */}
       {editingCluster && (
-        <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="admin-modal w-full max-w-2xl rounded-xl p-6 space-y-4 my-8">
-            <h2 className="text-lg font-bold admin-title">
-              {isNewCluster ? 'Add New Artisan Cluster' : `Edit Cluster: ${editingCluster.name}`}
-            </h2>
-            <form onSubmit={handleSaveCluster} className="space-y-4 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  {isNewCluster ? 'Add New Artisan Cluster' : `Edit Cluster: ${editingCluster.name}`}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">Regional artisan collective & geographical indication</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCluster(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors font-bold text-base cursor-pointer"
+                title="Close dialog"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <form id="clusterForm" onSubmit={handleSaveCluster} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block admin-muted mb-1">Cluster Key (URL slug)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Cluster Key (URL slug)</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.key}
                     onChange={(e) => setClusterForm({ ...clusterForm, key: e.target.value })}
                     disabled={!isNewCluster}
@@ -484,46 +509,46 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Cluster Name</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Cluster Name</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.name}
                     onChange={(e) => setClusterForm({ ...clusterForm, name: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Primary Craft Key</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Primary Craft Key</label>
                   <input
-                    className="admin-input w-full p-2 rounded font-mono"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.craftKey}
                     onChange={(e) => setClusterForm({ ...clusterForm, craftKey: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Dzongkhag</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Dzongkhag</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.dzongkhag}
                     onChange={(e) => setClusterForm({ ...clusterForm, dzongkhag: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Artisan Members Count</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Artisan Members Count</label>
                   <input
                     type="number"
-                    className="admin-input w-full p-2 rounded font-mono"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.members}
                     onChange={(e) => setClusterForm({ ...clusterForm, members: Number(e.target.value) })}
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Established Year</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Established Year</label>
                   <input
                     type="number"
-                    className="admin-input w-full p-2 rounded font-mono"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.established}
                     onChange={(e) => setClusterForm({ ...clusterForm, established: Number(e.target.value) })}
                   />
@@ -531,10 +556,10 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div>
-                <label className="block admin-muted mb-1">Short Summary</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Short Summary</label>
                 <textarea
                   rows={2}
-                  className="admin-input w-full p-2 rounded"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   value={clusterForm.summary}
                   onChange={(e) => setClusterForm({ ...clusterForm, summary: e.target.value })}
                   required
@@ -551,61 +576,89 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div>
-                <label className="block admin-muted mb-1">Visitor Note</label>
+                <FileUploadInput
+                  label="Cluster Landscape Photograph"
+                  value={clusterForm.imageUrl}
+                  onChange={(url) => setClusterForm({ ...clusterForm, imageUrl: url })}
+                  accept="image/*"
+                  hint="Scenic village or workshop photograph representing this cluster."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Visitor Note</label>
                 <input
-                  className="admin-input w-full p-2 rounded"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   value={clusterForm.visitorNote}
                   onChange={(e) => setClusterForm({ ...clusterForm, visitorNote: e.target.value })}
                   placeholder="e.g. Best visited between October and May"
                 />
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 pt-1">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={clusterForm.isFeatured}
                     onChange={(e) => setClusterForm({ ...clusterForm, isFeatured: e.target.checked })}
-                    className="rounded"
+                    className="w-4 h-4 accent-[#8B2E24] rounded"
                   />
-                  <span>Featured Cluster</span>
+                  <span className="text-xs font-medium text-slate-700">Featured Cluster</span>
                 </label>
               </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t admin-border">
-                <button
-                  type="button"
-                  onClick={() => setEditingCluster(null)}
-                  className="admin-button-secondary py-2 px-4 rounded text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="admin-button-primary py-2 px-4 rounded text-xs"
-                >
-                  {submitting ? 'Saving...' : 'Save Cluster'}
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setEditingCluster(null)}
+                className="px-4 py-2 border border-slate-300 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="clusterForm"
+                disabled={submitting}
+                className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-xs transition-colors"
+              >
+                {submitting ? 'Saving...' : 'Save Cluster'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Outlet Edit/Create Modal */}
       {editingOutlet && (
-        <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="admin-modal w-full max-w-2xl rounded-xl p-6 space-y-4 my-8">
-            <h2 className="text-lg font-bold admin-title">
-              {isNewOutlet ? 'Add New Outlet / Market' : `Edit Outlet: ${editingOutlet.name}`}
-            </h2>
-            <form onSubmit={handleSaveOutlet} className="space-y-4 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
+            {/* Sticky Header */}
+            <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                  {isNewOutlet ? 'Add New Outlet / Market' : `Edit Outlet: ${editingOutlet.name}`}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">Physical craft shops, airport counters & weekend market</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingOutlet(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors font-bold text-base cursor-pointer"
+                title="Close dialog"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <form id="outletForm" onSubmit={handleSaveOutlet} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs sm:text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block admin-muted mb-1">Outlet Key (URL slug)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Outlet Key (URL slug)</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.key}
                     onChange={(e) => setOutletForm({ ...outletForm, key: e.target.value })}
                     disabled={!isNewOutlet}
@@ -613,18 +666,18 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Outlet Name</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Outlet Name</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.name}
                     onChange={(e) => setOutletForm({ ...outletForm, name: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Type</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Type</label>
                   <select
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.type}
                     onChange={(e) => setOutletForm({ ...outletForm, type: e.target.value })}
                   >
@@ -634,26 +687,26 @@ export default function AdminClustersOutletsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Location / Place</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Location / Place</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.place}
                     onChange={(e) => setOutletForm({ ...outletForm, place: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Opening Hours</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Opening Hours</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.hours}
                     onChange={(e) => setOutletForm({ ...outletForm, hours: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Stalls</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Stalls</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.stalls}
                     onChange={(e) => setOutletForm({ ...outletForm, stalls: e.target.value })}
                     placeholder="e.g. 32 covered stalls"
@@ -662,10 +715,10 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div>
-                <label className="block admin-muted mb-1">Short Description</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Short Description</label>
                 <textarea
                   rows={2}
-                  className="admin-input w-full p-2 rounded"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   value={outletForm.description}
                   onChange={(e) => setOutletForm({ ...outletForm, description: e.target.value })}
                   required
@@ -683,52 +736,64 @@ export default function AdminClustersOutletsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block admin-muted mb-1">Crafts on Site</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Crafts on Site</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.craftsOnSite}
                     onChange={(e) => setOutletForm({ ...outletForm, craftsOnSite: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block admin-muted mb-1">Payment Accepted</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Payment Accepted</label>
                   <input
-                    className="admin-input w-full p-2 rounded"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.payment}
                     onChange={(e) => setOutletForm({ ...outletForm, payment: e.target.value })}
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div>
+                <FileUploadInput
+                  label="Outlet Storefront / Counter Photograph"
+                  value={outletForm.imageUrl}
+                  onChange={(url) => setOutletForm({ ...outletForm, imageUrl: url })}
+                  accept="image/*"
+                  hint="Exterior or interior shop photograph representing this outlet."
+                />
+              </div>
+
+              <div className="flex items-center gap-4 pt-1">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={outletForm.isFeatured}
                     onChange={(e) => setOutletForm({ ...outletForm, isFeatured: e.target.checked })}
-                    className="rounded"
+                    className="w-4 h-4 accent-[#8B2E24] rounded"
                   />
-                  <span>Featured Market (Highlights banner)</span>
+                  <span className="text-xs font-medium text-slate-700">Featured Market (Highlights banner)</span>
                 </label>
               </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t admin-border">
-                <button
-                  type="button"
-                  onClick={() => setEditingOutlet(null)}
-                  className="admin-button-secondary py-2 px-4 rounded text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="admin-button-primary py-2 px-4 rounded text-xs"
-                >
-                  {submitting ? 'Saving...' : 'Save Outlet'}
-                </button>
-              </div>
             </form>
+
+            {/* Sticky Footer */}
+            <div className="flex-shrink-0 p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setEditingOutlet(null)}
+                className="px-4 py-2 border border-slate-300 hover:bg-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="outletForm"
+                disabled={submitting}
+                className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-xs transition-colors"
+              >
+                {submitting ? 'Saving...' : 'Save Outlet'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,8 @@ export default async function PrivacyPolicyPage() {
 
   return (
     <main id="main">
-      <section className="section">
+      <section className="section relative" data-hab-section="privacy-policy">
+        <SectionEditBadge label="Policies Studio" studioHref="/admin/policies" />
         <p className="crumbs">
           <Link href="/">Home</Link> / {pageTitle}
         </p>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function RegisterContent() {
   const searchParams = useSearchParams();
@@ -129,7 +130,8 @@ function RegisterContent() {
 
   return (
     <main id="main">
-      <section className="section section--narrow">
+      <section className="section section--narrow relative" data-hab-section="membership-apply">
+        <SectionEditBadge label="Membership Categories Studio" studioHref="/admin/membership-categories" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/membership">Membership</Link> / Register
         </p>

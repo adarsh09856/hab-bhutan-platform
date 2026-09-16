@@ -14,7 +14,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen w-full overflow-x-hidden flex flex-col bg-[#F4F0E7] text-[#33261F]">
+    <div className="min-h-screen w-full flex flex-col bg-[#F4F0E7] text-[#33261F]">
       <AdminLiveBar />
       <UtilityBar />
       <Header />

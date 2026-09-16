@@ -400,61 +400,68 @@ export default function HomePage() {
   // 1. Dynamic API Bindings for Secretariat Admin Controls
   useEffect(() => {
     // A. Hero Slides from Admin
-    fetch('/api/hero-slides', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.slides && Array.isArray(d.slides)) {
-          if (d.slides.length >= 2) {
-            setHeroSlides(d.slides);
-          } else if (d.slides.length === 1) {
-            setHeroSlides([d.slides[0], ...DEFAULT_HERO_SLIDES.slice(1)]);
+    const loadHeroSlides = () => {
+      fetch('/api/hero-slides', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.slides && Array.isArray(d.slides)) {
+            if (d.slides.length >= 2) {
+              setHeroSlides(d.slides);
+            } else if (d.slides.length === 1) {
+              setHeroSlides([d.slides[0], ...DEFAULT_HERO_SLIDES.slice(1)]);
+            }
           }
-        }
-      })
-      .catch(() => {});
+        })
+        .catch(() => {});
+    };
 
     // B. Site Settings from Admin
-    fetch('/api/site-settings', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.setting) {
-          setSiteSettings((prev) => ({
-            ...prev,
-            tagline: d.setting.tagline || prev.tagline,
-            heroParagraph: d.setting.heroParagraph || prev.heroParagraph,
-            heroEyebrow: d.setting.heroEyebrow || prev.heroEyebrow,
-            heroCtaPrimaryText: d.setting.heroCtaPrimaryText || prev.heroCtaPrimaryText,
-            heroCtaPrimaryLink: d.setting.heroCtaPrimaryLink || prev.heroCtaPrimaryLink,
-            assurance1Title: d.setting.assurance1Title || prev.assurance1Title,
-            assurance1Text: d.setting.assurance1Text || prev.assurance1Text,
-            assurance2Title: d.setting.assurance2Title || prev.assurance2Title,
-            assurance2Text: d.setting.assurance2Text || prev.assurance2Text,
-            assurance3Title: d.setting.assurance3Title || prev.assurance3Title,
-            assurance3Text: d.setting.assurance3Text || prev.assurance3Text,
-            assurance4Title: d.setting.assurance4Title || prev.assurance4Title,
-            assurance4Text: d.setting.assurance4Text || prev.assurance4Text,
-            stats: [
-              { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '/members' },
-              { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '/members' },
-              { value: d.setting.stat3Number || '195', label: d.setting.stat3Label || 'Affiliated stores across Bhutan', url: '/outlets' },
-              { value: d.setting.stat4Number || '13', label: d.setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
-            ],
-            aboutBandTitle: d.setting.aboutBandTitle || prev.aboutBandTitle,
-            aboutBandPara1: d.setting.aboutBandPara1 || prev.aboutBandPara1,
-            aboutBandPara2: d.setting.aboutBandPara2 || prev.aboutBandPara2,
-            aboutBandImageUrl: d.setting.aboutBandImageUrl || prev.aboutBandImageUrl,
-            aboutBandImageCaption: d.setting.aboutBandImageCaption || prev.aboutBandImageCaption,
-            punakhaMarketNotice: d.setting.punakhaMarketNotice || prev.punakhaMarketNotice,
-            membershipLeftTitle: d.setting.membershipLeftTitle || prev.membershipLeftTitle,
-            membershipLeftText: d.setting.membershipLeftText || prev.membershipLeftText,
-            membershipRightTitle: d.setting.membershipRightTitle || prev.membershipRightTitle,
-            membershipRightText: d.setting.membershipRightText || prev.membershipRightText,
-            membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
-            partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
-          }));
-        }
-      })
-      .catch(() => {});
+    const loadSiteSettings = () => {
+      fetch('/api/site-settings', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.setting) {
+            setSiteSettings((prev) => ({
+              ...prev,
+              tagline: d.setting.tagline || prev.tagline,
+              heroParagraph: d.setting.heroParagraph || prev.heroParagraph,
+              heroEyebrow: d.setting.heroEyebrow || prev.heroEyebrow,
+              heroCtaPrimaryText: d.setting.heroCtaPrimaryText || prev.heroCtaPrimaryText,
+              heroCtaPrimaryLink: d.setting.heroCtaPrimaryLink || prev.heroCtaPrimaryLink,
+              assurance1Title: d.setting.assurance1Title || prev.assurance1Title,
+              assurance1Text: d.setting.assurance1Text || prev.assurance1Text,
+              assurance2Title: d.setting.assurance2Title || prev.assurance2Title,
+              assurance2Text: d.setting.assurance2Text || prev.assurance2Text,
+              assurance3Title: d.setting.assurance3Title || prev.assurance3Title,
+              assurance3Text: d.setting.assurance3Text || prev.assurance3Text,
+              assurance4Title: d.setting.assurance4Title || prev.assurance4Title,
+              assurance4Text: d.setting.assurance4Text || prev.assurance4Text,
+              stats: [
+                { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '/members' },
+                { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '/members' },
+                { value: d.setting.stat3Number || '195', label: d.setting.stat3Label || 'Affiliated stores across Bhutan', url: '/outlets' },
+                { value: d.setting.stat4Number || '13', label: d.setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
+              ],
+              aboutBandTitle: d.setting.aboutBandTitle || prev.aboutBandTitle,
+              aboutBandPara1: d.setting.aboutBandPara1 || prev.aboutBandPara1,
+              aboutBandPara2: d.setting.aboutBandPara2 || prev.aboutBandPara2,
+              aboutBandImageUrl: d.setting.aboutBandImageUrl || prev.aboutBandImageUrl,
+              aboutBandImageCaption: d.setting.aboutBandImageCaption || prev.aboutBandImageCaption,
+              punakhaMarketNotice: d.setting.punakhaMarketNotice || prev.punakhaMarketNotice,
+              membershipLeftTitle: d.setting.membershipLeftTitle || prev.membershipLeftTitle,
+              membershipLeftText: d.setting.membershipLeftText || prev.membershipLeftText,
+              membershipRightTitle: d.setting.membershipRightTitle || prev.membershipRightTitle,
+              membershipRightText: d.setting.membershipRightText || prev.membershipRightText,
+              membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
+              partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
+            }));
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadHeroSlides();
+    loadSiteSettings();
 
     // C. Products from Admin (2 rows = 8 products)
     fetch('/api/products?limit=8', { cache: 'no-store' })
@@ -621,6 +628,15 @@ export default function HomePage() {
         }
       })
       .catch(() => {});
+
+    // Listen for live updates broadcast from admin studios
+    window.addEventListener('hab:hero-slides-updated', loadHeroSlides);
+    window.addEventListener('hab:settings-updated', loadSiteSettings);
+
+    return () => {
+      window.removeEventListener('hab:hero-slides-updated', loadHeroSlides);
+      window.removeEventListener('hab:settings-updated', loadSiteSettings);
+    };
   }, []);
 
   // Carousel Timers
@@ -660,15 +676,21 @@ export default function HomePage() {
           <p className="lede">
             Handicrafts Association of Bhutan supports <Link href="/members">local artisans</Link> in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
           </p>
-          <div className="actions">
-            <Link className="btn btn--accent" href="/masters">
-              Meet the Makers →
+          <div className="actions flex flex-wrap items-center gap-3">
+            <Link className="btn btn--ink" href="/about">
+              Our mission
+            </Link>
+            <Link className="btn btn--outline" href="/shop">
+              Shop the crafts →
+            </Link>
+            <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/members">
+              Find a member
             </Link>
           </div>
         </div>
 
         <div className="hero__visual">
-          <figure className="frame frame--hero has-image">
+          <figure className="frame frame--hero has-image relative overflow-hidden rounded-[16px] shadow-sm group">
             <img
               src={heroSlides[currentHero]?.imageUrl || '/assets/photos/hero-1-weaving.jpg'}
               alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || 'HAB craft artisan'}
@@ -680,25 +702,48 @@ export default function HomePage() {
                 }
               }}
             />
-          </figure>
-          <div className="hero__meta">
-            <span className="caption">
-              {heroSlides[currentHero]?.caption || `photo ${currentHero + 1} — Bhutanese artisan craft`}
-            </span>
-            <div className="dots" role="tablist" aria-label="Hero carousel controls">
-              {heroSlides.map((_, i) => (
+
+            {/* Navigation Chevrons */}
+            <button
+              onClick={() => setCurrentHero((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none"
+              aria-label="Previous slide"
+              type="button"
+            >
+              ‹
+            </button>
+            <button
+              onClick={() => setCurrentHero((prev) => (prev + 1) % heroSlides.length)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none"
+              aria-label="Next slide"
+              type="button"
+            >
+              ›
+            </button>
+
+            {/* Floating bottom-left dots pill */}
+            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-xs">
+              {heroSlides.slice(0, 5).map((_, i) => (
                 <button
                   key={i}
-                  className={`dot ${i === currentHero ? 'is-active' : ''}`}
+                  className={`h-2 rounded-full transition-all cursor-pointer ${
+                    i === currentHero
+                      ? 'bg-[#8B2E24] w-4.5 ring-1 ring-white/60'
+                      : 'bg-white/60 hover:bg-white w-2'
+                  }`}
                   onClick={() => setCurrentHero(i)}
                   aria-label={`Go to slide ${i + 1}`}
                   type="button"
                 />
               ))}
             </div>
+          </figure>
+          <div className="hero__meta mt-2 flex items-center justify-between text-xs text-stone-600">
+            <span className="caption font-mono text-[11.5px] text-stone-600">
+              {heroSlides[currentHero]?.caption || `photo ${currentHero + 1} — artisan at the loom, Khoma`}
+            </span>
           </div>
         </div>
-
       </section>
 
       {/* ========================= 2. STATS ========================= */}
@@ -1355,11 +1400,39 @@ export default function HomePage() {
         <div className="partners">
           {siteSettings.partnersList.map((partner: any, idx: number) => {
             const name = typeof partner === 'string' ? partner : partner.name;
-            return (
-              <div key={idx} className="partners__cell">
-                <span className="partners__name">{name}</span>
+            const logoUrl = typeof partner === 'object' ? (partner.logoUrl || partner.logo_path) : null;
+            const websiteUrl = typeof partner === 'object' ? (partner.websiteUrl || partner.url) : null;
+
+            const cell = (
+              <div key={idx} className="partners__cell" title={name}>
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={name}
+                    className="partners__logo"
+                  />
+                ) : (
+                  <span className="partners__name">{name}</span>
+                )}
               </div>
             );
+
+            if (websiteUrl) {
+              return (
+                <a
+                  key={idx}
+                  href={websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-90 transition-opacity"
+                  title={`${name} — Visit partner site`}
+                >
+                  {cell}
+                </a>
+              );
+            }
+
+            return cell;
           })}
         </div>
       </section>
