@@ -148,10 +148,16 @@ img {
   -ms-overflow-style: none !important;  /* IE/Edge */
   scrollbar-width: none !important;      /* Firefox */
 }
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;              /* Chrome/Safari/Opera */
+.no-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar-button,
+.no-scrollbar::-webkit-scrollbar-thumb,
+.no-scrollbar::-webkit-scrollbar-track,
+.no-scrollbar::-webkit-scrollbar-corner {
+  display: none !important;              /* Chrome/Safari/Opera/Edge */
   width: 0 !important;
   height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* Accessibility: respect user preferences for reduced motion */

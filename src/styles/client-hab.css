@@ -263,15 +263,20 @@ textarea.input{line-height:1.5;resize:vertical}
 /* .utility position/z-index now defined at end of file (fixed) */
 .utility__inner{
   max-width:var(--shell);margin:0 auto;padding:0 var(--gutter);
-  min-height:var(--utility-h);display:flex;align-items:center;gap:18px;
+  height:var(--utility-h);max-height:var(--utility-h);min-height:var(--utility-h);
+  display:flex;align-items:center;gap:18px;flex-wrap:nowrap !important;
+  overflow:hidden !important;
   font-family:var(--mono);font-size:11px;letter-spacing:.05em;
 }
-.utility__status{color:var(--on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:480px}
-.utility__spacer{flex:1}
-.utility__links{display:flex;gap:18px;overflow:hidden}
-.utility__links a{color:var(--on-dark-body);white-space:nowrap}
+.utility__status{
+  color:var(--on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  min-width:0;flex:1 1 auto;
+}
+.utility__spacer{display:none}
+.utility__links{display:flex;align-items:center;gap:18px;flex-shrink:0 !important;white-space:nowrap;overflow:visible}
+.utility__links a{color:var(--on-dark-body);white-space:nowrap;flex-shrink:0}
 .utility__links a:hover{color:#fff}
-.utility__rule{width:1px;height:15px;background:var(--dark-line)}
+.utility__rule{width:1px;height:15px;background:var(--dark-line);flex-shrink:0}
 .utility__lang{
   display:inline-flex;
   align-items:center;
@@ -2399,7 +2404,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .band{padding:64px 0;margin-top:60px}
   .utility__links{display:none}
   /* .utility__trade is intentionally NOT hidden here */
-  .utility__inner{flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+  .utility__inner{flex-wrap:nowrap !important;overflow:hidden !important;height:var(--utility-h);max-height:var(--utility-h);padding-top:0;padding-bottom:0}
   .partners{grid-template-columns:repeat(3,1fr)}
   .admin__drawer{width:100%}
 }
@@ -2988,10 +2993,23 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
   top: 0;
   left: 0;
   right: 0;
+  height: var(--utility-h, 38px) !important;
+  max-height: var(--utility-h, 38px) !important;
   z-index: 55;
   background: var(--ink);
   color: var(--on-dark-body);
-  overflow: hidden;
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.utility::-webkit-scrollbar,
+.utility::-webkit-scrollbar-button,
+.utility::-webkit-scrollbar-thumb,
+.utility::-webkit-scrollbar-track,
+.utility::-webkit-scrollbar-corner {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Header: fixed below UtilityBar */

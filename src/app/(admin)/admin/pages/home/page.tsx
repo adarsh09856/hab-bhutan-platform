@@ -293,6 +293,9 @@ export default function HomePageStudio() {
           const d = await resSlides.json();
           setSlides(d.slides || []);
         }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+        }
       } else {
         showToast('error', data.error || 'Failed to save slide.');
       }
@@ -310,6 +313,9 @@ export default function HomePageStudio() {
       if (res.ok) {
         showToast('success', 'Slide deleted successfully.');
         setSlides(slides.filter((s) => s.id !== id));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+        }
       } else {
         showToast('error', 'Failed to delete slide.');
       }
@@ -328,6 +334,9 @@ export default function HomePageStudio() {
       if (res.ok) {
         setSlides(slides.map((s) => (s.id === slide.id ? { ...s, isActive: !s.isActive } : s)));
         showToast('success', `Slide ${slide.isActive ? 'hidden' : 'activated'}!`);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+        }
       }
     } catch (e) {
       showToast('error', 'Failed to update slide status.');

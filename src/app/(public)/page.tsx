@@ -760,40 +760,65 @@ export default function HomePage() {
               }}
             />
 
-            {/* Navigation Chevrons */}
-            <button
-              onClick={() => setCurrentHero((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none"
-              aria-label="Previous slide"
-              type="button"
-            >
-              ‹
-            </button>
-            <button
-              onClick={() => setCurrentHero((prev) => (prev + 1) % heroSlides.length)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none"
-              aria-label="Next slide"
-              type="button"
-            >
-              ›
-            </button>
+            {/* Gradient overlay for contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
-            {/* Floating bottom-left dots pill */}
-            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-xs">
-              {heroSlides.slice(0, 5).map((_, i) => (
-                <button
-                  key={i}
-                  className={`h-2 rounded-full transition-all cursor-pointer ${
-                    i === currentHero
-                      ? 'bg-[#8B2E24] w-4.5 ring-1 ring-white/60'
-                      : 'bg-white/60 hover:bg-white w-2'
-                  }`}
-                  onClick={() => setCurrentHero(i)}
-                  aria-label={`Go to slide ${i + 1}`}
-                  type="button"
-                />
-              ))}
+            {/* Top-right slide counter & craft tag */}
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-2">
+              <span className="font-mono text-[10px] sm:text-[11px] text-white/90 bg-black/50 backdrop-blur-xs px-2.5 py-1 rounded-full border border-white/10">
+                {currentHero + 1} / {heroSlides.length}
+              </span>
             </div>
+
+            {/* Bottom caption overlay */}
+            {heroSlides[currentHero]?.caption && (
+              <div className="absolute bottom-11 sm:bottom-12 left-3 sm:left-4 right-14 z-10 pointer-events-none">
+                <span className="inline-block text-[11px] sm:text-xs text-white/95 font-medium bg-black/60 backdrop-blur-xs px-3 py-1 rounded-lg border border-white/15 line-clamp-1 shadow-sm">
+                  {heroSlides[currentHero].caption}
+                </span>
+              </div>
+            )}
+
+            {/* Navigation Chevrons */}
+            {heroSlides.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentHero((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
+                  className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none border border-white/10"
+                  aria-label="Previous slide"
+                  type="button"
+                >
+                  ‹
+                </button>
+                <button
+                  onClick={() => setCurrentHero((prev) => (prev + 1) % heroSlides.length)}
+                  className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none border border-white/10"
+                  aria-label="Next slide"
+                  type="button"
+                >
+                  ›
+                </button>
+              </>
+            )}
+
+            {/* Floating bottom-left dots pill — Dynamic for all slides */}
+            {heroSlides.length > 1 && (
+              <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-xs max-w-[85%] overflow-x-auto no-scrollbar border border-white/10">
+                {heroSlides.map((_, i) => (
+                  <button
+                    key={i}
+                    className={`h-2 rounded-full transition-all cursor-pointer flex-shrink-0 ${
+                      i === currentHero
+                        ? 'bg-[#8B2E24] w-4.5 ring-1 ring-white/60'
+                        : 'bg-white/60 hover:bg-white w-2'
+                    }`}
+                    onClick={() => setCurrentHero(i)}
+                    aria-label={`Go to slide ${i + 1}`}
+                    type="button"
+                  />
+                ))}
+              </div>
+            )}
           </figure>
         </div>
       </section>

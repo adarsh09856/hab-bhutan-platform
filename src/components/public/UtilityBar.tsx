@@ -37,37 +37,91 @@ export default function UtilityBar() {
   if (!visible) return null;
 
   return (
-    <div className="utility no-scrollbar" style={{ overflow: 'hidden' }}>
-      <div className="utility__inner no-scrollbar" style={{ overflow: 'hidden' }}>
+    <div
+      className="utility no-scrollbar"
+      style={{
+        overflow: 'hidden',
+        height: 'var(--utility-h, 38px)',
+        maxHeight: 'var(--utility-h, 38px)',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+      }}
+    >
+      <div
+        className="utility__inner no-scrollbar"
+        style={{
+          overflow: 'hidden',
+          flexWrap: 'nowrap',
+          height: '100%',
+          maxHeight: 'var(--utility-h, 38px)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+        }}
+      >
         {announcementLink ? (
-          <Link href={announcementLink} className="utility__status no-scrollbar" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Link
+            href={announcementLink}
+            className="utility__status no-scrollbar"
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              flex: '1 1 auto',
+            }}
+          >
             {announcement}
           </Link>
         ) : (
-          <span className="utility__status no-scrollbar" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span
+            className="utility__status no-scrollbar"
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              flex: '1 1 auto',
+            }}
+          >
             {announcement}
           </span>
         )}
-        <span className="utility__spacer"></span>
-        <nav className="utility__links no-scrollbar" aria-label="Secondary" style={{ overflow: 'hidden', flexShrink: 1 }}>
-          <Link href="/track-order" style={{ color: 'var(--brass)', fontWeight: 600 }}>
+
+        <nav
+          className="utility__links no-scrollbar"
+          aria-label="Secondary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '18px',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Link href="/track-order" style={{ color: 'var(--brass)', fontWeight: 600, flexShrink: 0 }}>
             Track order
           </Link>
-          <Link href="/contact">Contact us</Link>
-          <Link href="/news">Tenders</Link>
-          <Link href="/publications">Publications</Link>
-          <Link href="/donate">Donate</Link>
+          <Link href="/contact" style={{ flexShrink: 0 }}>Contact us</Link>
+          <Link href="/news" style={{ flexShrink: 0 }}>Tenders</Link>
+          <Link href="/publications" style={{ flexShrink: 0 }}>Publications</Link>
+          <Link href="/donate" style={{ flexShrink: 0 }}>Donate</Link>
         </nav>
-        <Link className="utility__trade" href="/wholesale" style={{ flexShrink: 0 }}>
+
+        <Link className="utility__trade" href="/wholesale" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           <span className="utility__trade-long">Trade &amp; wholesale buyers</span>
           <span className="utility__trade-short">Trade buyers</span>
         </Link>
+
         <span className="utility__rule" aria-hidden="true" style={{ flexShrink: 0 }}></span>
+
         <button
           type="button"
           onClick={toggleLanguage}
           className="utility__lang"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, font: 'inherit', color: 'inherit' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, font: 'inherit', color: 'inherit', whiteSpace: 'nowrap' }}
           title="Switch language / སྐད་ཡིག"
         >
           <span className={language === 'en' ? 'is-active' : ''}>EN</span>
