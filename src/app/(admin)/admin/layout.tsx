@@ -163,11 +163,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    pages: true,
-    shop: true,
-    community: true,
-    settings: true,
-    reports: false,
+    content: true,
+    store: true,
+    artisans: true,
+    settings: false,
   });
 
   const toggleGroup = (key: string) => {
@@ -176,65 +175,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: '1. Website Pages',
-      key: 'pages',
+      group: '1. Content & Web',
+      key: 'content',
       items: [
-        { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
-        { label: 'All Pages Directory', href: '/admin/pages', icon: Layers, badge: 'All 15' },
-        { label: 'Homepage Studio (A–Z)', href: '/admin/pages/home', icon: LayoutDashboard, badge: 'Studio' },
+        { label: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
+        { label: 'All Pages Directory', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
+        { label: 'Homepage Studio', href: '/admin/pages/home', icon: LayoutDashboard, badge: 'Studio' },
         { label: 'About Us Studio', href: '/admin/pages/about', icon: BookOpen, badge: 'Studio' },
-        { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen, badge: 'A–K' },
+        { label: 'News & Stories', href: '/admin/content', icon: FileText },
+        { label: 'Reports & Publications', href: '/admin/publications', icon: FileText, badge: 'PDFs' },
+        { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
+        { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
         { label: 'Donor Projects', href: '/admin/projects', icon: FolderKanban },
         { label: 'Outlets & Craft Shops', href: '/admin/clusters-outlets', icon: Store },
-        { label: 'Master Artisans & Honours', href: '/admin/honours', icon: Award },
-        { label: 'Reports & Publications', href: '/admin/publications', icon: FileText, badge: 'PDFs' },
-        { label: 'News & Stories', href: '/admin/content', icon: FileText },
-        { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
-        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
-        { label: 'Customer Inquiries', href: '/admin/inquiries', icon: Mail },
-        { label: 'Policies & Rules', href: '/admin/policies', icon: ShieldCheck },
         { label: 'The 13 Crafts', href: '/admin/crafts', icon: Palette },
+        { label: 'Master Artisans', href: '/admin/honours', icon: Award },
+        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
+        { label: 'Inquiries & Contact', href: '/admin/inquiries', icon: Mail },
       ],
     },
     {
-      group: '2. Shop & E-Commerce',
-      key: 'shop',
+      group: '2. Store & POS',
+      key: 'store',
       items: [
-        { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag },
-        { label: 'Online Orders', href: '/admin/orders', icon: Package },
-        { label: 'Counter Billing (Online POS)', href: '/admin/pos', icon: Store, badge: 'Live POS' },
-        { label: 'Payment Settings', href: '/admin/payments', icon: CreditCard, badge: 'Gateways' },
-        { label: 'Wholesale Accounts & Orders', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
+        { label: 'Customer Orders', href: '/admin/orders', icon: Package, badge: 'Track' },
+        { label: 'Counter Billing (POS)', href: '/admin/pos', icon: Store, badge: 'Live POS' },
+        { label: 'B2B Wholesale Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
       ],
     },
     {
-      group: '3. Artisans & Community',
-      key: 'community',
+      group: '3. Artisans & Members',
+      key: 'artisans',
       items: [
         { label: 'Artisan Directory', href: '/admin/members', icon: Users },
         { label: 'New Member Applications', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
-        { label: 'Membership Types', href: '/admin/membership-categories', icon: Layers },
-        { label: 'Membership Fees & Renewals', href: '/admin/membership-settings', icon: BadgePercent },
+        { label: 'Membership Tiers', href: '/admin/membership-categories', icon: Layers },
+        { label: 'Annual Dues & Renewals', href: '/admin/membership-settings', icon: BadgePercent },
       ],
     },
     {
-      group: '4. Settings & Customization',
+      group: '4. Settings & Security',
       key: 'settings',
       items: [
-        { label: 'Website Settings', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
-        { label: 'Typography Styler', href: '/admin/styling', icon: Sparkles, badge: 'Fonts' },
-        { label: 'Menus & Links', href: '/admin/navigation', icon: Navigation },
-        { label: 'Photo & Document Library', href: '/admin/media', icon: ImageIcon, badge: 'Assets' },
+        { label: 'Site Settings & Contacts', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
+        { label: 'Navigation Menus', href: '/admin/navigation', icon: Navigation },
+        { label: 'Media Library', href: '/admin/media', icon: ImageIcon, badge: 'Files' },
         { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'USD/BTN' },
-        { label: 'Staff Logins', href: '/admin/users', icon: ShieldCheck, badge: 'Staff' },
-      ],
-    },
-    {
-      group: '5. Overview & Reports',
-      key: 'reports',
-      items: [
-        { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
-        { label: 'System Status', href: '/admin/settings', icon: Settings },
+        { label: 'Payment Gateways', href: '/admin/payments', icon: CreditCard },
+        { label: 'Policies & Legal', href: '/admin/policies', icon: ShieldCheck },
+        { label: 'Staff Users & Access', href: '/admin/users', icon: ShieldCheck, badge: 'Security' },
+        { label: 'System Health & Logs', href: '/admin/settings', icon: Settings },
       ],
     },
   ];
@@ -418,6 +410,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="grid grid-cols-3 gap-1.5 mt-2.5">
+              <Link
+                href="/admin/products"
+                className="flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg bg-slate-50 hover:bg-[#8B2E24]/10 hover:text-[#8B2E24] text-[10px] font-semibold text-slate-600 border border-slate-200 hover:border-[#8B2E24]/30 transition-all text-center"
+                title="Manage or add products"
+              >
+                <ShoppingBag className="w-3 h-3 text-[#8B2E24]" />
+                <span>+ Product</span>
+              </Link>
+              <Link
+                href="/admin/content"
+                className="flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg bg-slate-50 hover:bg-[#8B2E24]/10 hover:text-[#8B2E24] text-[10px] font-semibold text-slate-600 border border-slate-200 hover:border-[#8B2E24]/30 transition-all text-center"
+                title="Publish story or news"
+              >
+                <FileText className="w-3 h-3 text-[#8B2E24]" />
+                <span>+ Story</span>
+              </Link>
+              <Link
+                href="/admin/pos"
+                className="flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 text-[10px] font-semibold text-slate-600 border border-slate-200 hover:border-emerald-300 transition-all text-center"
+                title="Open counter billing POS"
+              >
+                <Store className="w-3 h-3 text-emerald-600" />
+                <span>POS Sale</span>
+              </Link>
             </div>
           </div>
 
