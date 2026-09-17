@@ -6,6 +6,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 function ContactContent() {
   const searchParams = useSearchParams();
@@ -27,14 +28,30 @@ function ContactContent() {
   const [refNumber, setRefNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [settings, setSettings] = useState<any>(null);
+  const [liveEditOpen, setLiveEditOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/site-settings', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.setting) setSettings(d.setting);
-      })
-      .catch(() => {});
+    const loadSettings = () => {
+      fetch('/api/site-settings', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.setting) setSettings(d.setting);
+        })
+        .catch(() => {});
+    };
+    loadSettings();
+
+    const handleUpdate = (e: any) => {
+      if (e.detail) {
+        setSettings((prev: any) => ({ ...prev, ...e.detail }));
+      } else {
+        loadSettings();
+      }
+    };
+    window.addEventListener('hab:settings-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('hab:settings-updated', handleUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -94,7 +111,11 @@ function ContactContent() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="contact">
-        <SectionEditBadge label="Contact Settings" studioHref="/admin/site-settings?tab=CONTACT" />
+        <SectionEditBadge
+          label="Contact Settings"
+          studioHref="/admin/site-settings?tab=CONTACT"
+          onQuickEdit={() => setLiveEditOpen(true)}
+        />
         <p className="crumbs">
           <Link href="/">Home</Link> / Contact us
         </p>
@@ -305,6 +326,17 @@ function ContactContent() {
           </div>
         )}
       </section>
+
+      <UniversalLiveSectionEditor
+        isOpen={liveEditOpen}
+        onClose={() => setLiveEditOpen(false)}
+        sectionType="contact"
+        sectionTitle="Secretariat Contact & Info"
+        studioHref="/admin/site-settings?tab=CONTACT"
+        onSaved={(updated) => {
+          if (updated) setSettings((prev: any) => ({ ...prev, ...updated }));
+        }}
+      />
     </main>
   );
 }

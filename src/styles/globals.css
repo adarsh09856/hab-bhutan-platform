@@ -143,13 +143,15 @@ img {
   background: repeating-linear-gradient(135deg, #42332A 0 9px, #463629 9px 18px);
 }
 
-/* Hide scrollbar but keep scroll behaviour (used on mobile filter rails) */
+/* Hide scrollbar but keep scroll behaviour (used on top bars, navigation, mobile filter rails) */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE/Edge */
-  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none !important;  /* IE/Edge */
+  scrollbar-width: none !important;      /* Firefox */
 }
 .no-scrollbar::-webkit-scrollbar {
-  display: none;              /* Chrome/Safari/Opera */
+  display: none !important;              /* Chrome/Safari/Opera */
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* Accessibility: respect user preferences for reduced motion */

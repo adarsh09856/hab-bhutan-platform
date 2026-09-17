@@ -37,19 +37,19 @@ export default function UtilityBar() {
   if (!visible) return null;
 
   return (
-    <div className="utility" style={{ overflow: 'hidden' }}>
-      <div className="utility__inner" style={{ overflow: 'hidden' }}>
+    <div className="utility no-scrollbar" style={{ overflow: 'hidden' }}>
+      <div className="utility__inner no-scrollbar" style={{ overflow: 'hidden' }}>
         {announcementLink ? (
-          <Link href={announcementLink} className="utility__status" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Link href={announcementLink} className="utility__status no-scrollbar" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {announcement}
           </Link>
         ) : (
-          <span className="utility__status" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span className="utility__status no-scrollbar" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {announcement}
           </span>
         )}
         <span className="utility__spacer"></span>
-        <nav className="utility__links" aria-label="Secondary" style={{ overflow: 'hidden', flexShrink: 1 }}>
+        <nav className="utility__links no-scrollbar" aria-label="Secondary" style={{ overflow: 'hidden', flexShrink: 1 }}>
           <Link href="/track-order" style={{ color: 'var(--brass)', fontWeight: 600 }}>
             Track order
           </Link>

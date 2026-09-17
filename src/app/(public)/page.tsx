@@ -10,6 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 
 interface HeroSlide {
@@ -424,6 +425,17 @@ export default function HomePage() {
   ]);
 
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  const [liveEditorOpen, setLiveEditorOpen] = useState(false);
+  const [liveEditorType, setLiveEditorType] = useState<SectionType>('hero');
+  const [liveEditorTitle, setLiveEditorTitle] = useState('');
+  const [liveEditorStudio, setLiveEditorStudio] = useState('');
+
+  const openQuickEdit = (type: SectionType, title?: string, studio?: string) => {
+    setLiveEditorType(type);
+    setLiveEditorTitle(title || '');
+    setLiveEditorStudio(studio || '');
+    setLiveEditorOpen(true);
+  };
 
   // 1. Dynamic API Bindings for Secretariat Admin Controls
   useEffect(() => {
@@ -710,7 +722,11 @@ export default function HomePage() {
 
       {/* ========================= 1. HERO ========================= */}
       <section className="section hero relative" data-hab-section="hero">
-        <SectionEditBadge label="Hero Slideshow" studioHref="/admin/hero" />
+        <SectionEditBadge
+          label="Hero & Mission"
+          studioHref="/admin/hero"
+          onQuickEdit={() => openQuickEdit('hero', 'Hero Section & Mission', '/admin/hero')}
+        />
         <div className="hero__copy">
           <p className="eyebrow eyebrow--accent">{siteSettings.heroEyebrow}</p>
           <h1 className="display display--hero">{siteSettings.tagline}</h1>
@@ -784,7 +800,11 @@ export default function HomePage() {
 
       {/* ========================= 2. STATS ========================= */}
       <section className="section section--tight relative" data-hab-section="stats">
-        <SectionEditBadge label="Stats & Impact Counters" studioHref="/admin/site-settings" />
+        <SectionEditBadge
+          label="Stats & Impact Counters"
+          studioHref="/admin/site-settings"
+          onQuickEdit={() => openQuickEdit('stats', 'Stats & Impact Counters', '/admin/site-settings')}
+        />
         <div className="stats">
           {siteSettings.stats.map((st, idx) => (
             <Link key={idx} href={st.url} className="stats__cell" style={{ color: 'inherit' }}>
@@ -797,7 +817,11 @@ export default function HomePage() {
 
       {/* ========================= 3. B2C / B2B GATEWAY ========================= */}
       <section className="section section--tight relative" id="buy" data-hab-section="buy">
-        <SectionEditBadge label="Retail & Trade Gateway" studioHref="/admin/trade" />
+        <SectionEditBadge
+          label="Retail & Trade Gateway"
+          studioHref="/admin/trade"
+          onQuickEdit={() => openQuickEdit('buy', 'Retail & Trade Gateways', '/admin/trade')}
+        />
         <div className="buyband">
           <div className="buyband__copy">
             <p className="eyebrow eyebrow--accent">Two ways to buy</p>
@@ -820,7 +844,11 @@ export default function HomePage() {
 
       {/* ========================= 4. ABOUT BAND ========================= */}
       <section className="band relative" id="about" data-hab-section="about">
-        <SectionEditBadge label="About HAB Band" studioHref="/admin/pages/about" />
+        <SectionEditBadge
+          label="About HAB Band"
+          studioHref="/admin/pages/about"
+          onQuickEdit={() => openQuickEdit('about', 'About HAB Band', '/admin/pages/about')}
+        />
 
         <div className="band__inner about">
           <div>
@@ -909,7 +937,11 @@ export default function HomePage() {
 
       {/* ========================= 6. ASSURANCE ========================= */}
       <section className="section section--tight relative" data-hab-section="assurance">
-        <SectionEditBadge label="Trust & Assurances" studioHref="/admin/site-settings" />
+        <SectionEditBadge
+          label="Trust & Assurances"
+          studioHref="/admin/site-settings"
+          onQuickEdit={() => openQuickEdit('assurances', 'Quality Assurances Band', '/admin/site-settings')}
+        />
         <div className="assurance">
           <div className="assurance__cell">
             <h3 className="assurance__title">
@@ -1274,7 +1306,11 @@ export default function HomePage() {
 
       {/* ========================= 12. MEMBERSHIP DUO ========================= */}
       <section className="section relative" id="membership" data-hab-section="membership">
-        <SectionEditBadge label="Artisan Directory & Apply" studioHref="/admin/members" />
+        <SectionEditBadge
+          label="Artisan Directory & Apply"
+          studioHref="/admin/members"
+          onQuickEdit={() => openQuickEdit('membership', 'Membership Callouts', '/admin/membership-categories')}
+        />
         <div className="duo">
           <div className="panel">
             <p className="eyebrow eyebrow--muted">Search the crafts</p>
@@ -1475,6 +1511,26 @@ export default function HomePage() {
         </div>
       </section>
 
+      <UniversalLiveSectionEditor
+        isOpen={liveEditorOpen}
+        onClose={() => setLiveEditorOpen(false)}
+        sectionType={liveEditorType}
+        sectionTitle={liveEditorTitle}
+        onSaved={(updated) => {
+          if (updated) {
+            setSiteSettings((prev) => ({
+              ...prev,
+              ...updated,
+              stats: [
+                { value: updated.stat1Number || prev.stats[0]?.value, label: updated.stat1Label || prev.stats[0]?.label, url: '/members' },
+                { value: updated.stat2Number || prev.stats[1]?.value, label: updated.stat2Label || prev.stats[1]?.label, url: '/members' },
+                { value: updated.stat3Number || prev.stats[2]?.value, label: updated.stat3Label || prev.stats[2]?.label, url: '/outlets' },
+                { value: updated.stat4Number || prev.stats[3]?.value, label: updated.stat4Label || prev.stats[3]?.label, url: '/shop' },
+              ],
+            }));
+          }
+        }}
+      />
     </main>
   );
 }

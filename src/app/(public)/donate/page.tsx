@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 function DonateContent() {
   const searchParams = useSearchParams();
@@ -42,6 +43,7 @@ function DonateContent() {
   const [refNumber, setRefNumber] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [liveEditOpen, setLiveEditOpen] = useState(false);
 
   useEffect(() => {
     // Load dynamic pillars
@@ -62,16 +64,34 @@ function DonateContent() {
       .catch(() => {});
 
     // Load site settings for hero and tax notice
-    fetch('/api/site-settings', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.setting) {
-          if (d.setting.donateHeroTitle) setHeroTitle(d.setting.donateHeroTitle);
-          if (d.setting.donateHeroLede) setHeroLede(d.setting.donateHeroLede);
-          if (d.setting.donateTaxNotice) setTaxNotice(d.setting.donateTaxNotice);
-        }
-      })
-      .catch(() => {});
+    const loadSettings = () => {
+      fetch('/api/site-settings', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.setting) {
+            if (d.setting.donateHeroTitle) setHeroTitle(d.setting.donateHeroTitle);
+            if (d.setting.donateHeroLede) setHeroLede(d.setting.donateHeroLede);
+            if (d.setting.donateTaxNotice) setTaxNotice(d.setting.donateTaxNotice);
+          }
+        })
+        .catch(() => {});
+    };
+    loadSettings();
+
+    const handleSettingsUpdate = (e: any) => {
+      const s = e.detail;
+      if (s) {
+        if (s.donateHeroTitle) setHeroTitle(s.donateHeroTitle);
+        if (s.donateHeroLede) setHeroLede(s.donateHeroLede);
+        if (s.donateTaxNotice) setTaxNotice(s.donateTaxNotice);
+      } else {
+        loadSettings();
+      }
+    };
+    window.addEventListener('hab:settings-updated', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('hab:settings-updated', handleSettingsUpdate);
+    };
   }, [presetPillar]);
 
   useEffect(() => {
@@ -141,7 +161,11 @@ function DonateContent() {
   return (
     <main id="main">
       <section className="section section--narrow relative" data-hab-section="donate">
-        <SectionEditBadge label="Donations & Appeals" studioHref="/admin/donate-settings" />
+        <SectionEditBadge
+          label="Donations & Appeals"
+          studioHref="/admin/donate-settings"
+          onQuickEdit={() => setLiveEditOpen(true)}
+        />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#support">Support us</Link> / Donate
         </p>
@@ -545,6 +569,19 @@ function DonateContent() {
           </>
         )}
       </section>
+
+      <UniversalLiveSectionEditor
+        isOpen={liveEditOpen}
+        onClose={() => setLiveEditOpen(false)}
+        sectionType="donate"
+        sectionTitle="Donation Section & Tax Notice"
+        studioHref="/admin/donate-settings"
+        onSaved={(s) => {
+          if (s?.donateHeroTitle) setHeroTitle(s.donateHeroTitle);
+          if (s?.donateHeroLede) setHeroLede(s.donateHeroLede);
+          if (s?.donateTaxNotice) setTaxNotice(s.donateTaxNotice);
+        }}
+      />
     </main>
   );
 }

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 
 export default function AboutPage() {
@@ -15,18 +16,32 @@ export default function AboutPage() {
     milestones: Array<{ y: string; t: string }>;
   } | null>(null);
 
+  const [liveEditorOpen, setLiveEditorOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<{
+    type: SectionType;
+    title: string;
+    studioHref: string;
+  }>({
+    type: 'about-page',
+    title: 'Who We Are / Mandate',
+    studioHref: '/admin/pages/about#mandate',
+  });
+
   useEffect(() => {
     // 1. Dynamic API: Site Settings
-    fetch('/api/site-settings', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.setting) {
-          setSiteSettings(data.setting);
-        } else if (data?.settings) {
-          setSiteSettings(data.settings);
-        }
-      })
-      .catch(() => {});
+    const loadSettings = () => {
+      fetch('/api/site-settings', { cache: 'no-store' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.setting) {
+            setSiteSettings(data.setting);
+          } else if (data?.settings) {
+            setSiteSettings(data.settings);
+          }
+        })
+        .catch(() => {});
+    };
+    loadSettings();
 
     // 2. Dynamic API: Governance & Team
     fetch('/api/governance', { cache: 'no-store' })
@@ -41,6 +56,20 @@ export default function AboutPage() {
         }
       })
       .catch(() => {});
+
+    // 3. Live Sync Listener
+    const handleSettingsUpdate = (e: any) => {
+      const updated = e.detail;
+      if (updated) {
+        setSiteSettings(updated);
+      } else {
+        loadSettings();
+      }
+    };
+    window.addEventListener('hab:settings-updated', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('hab:settings-updated', handleSettingsUpdate);
+    };
   }, []);
 
   const s = siteSettings;
@@ -128,7 +157,18 @@ export default function AboutPage() {
 
       {/* 1. Page Hero & Facts */}
       <section className="section relative" data-hab-section="about-hero">
-        <SectionEditBadge label="Who We Are / Mandate" studioHref="/admin/pages/about#mandate" />
+        <SectionEditBadge
+          label="Who We Are / Mandate"
+          studioHref="/admin/pages/about#mandate"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Who We Are & Mandate CMS',
+              studioHref: '/admin/pages/about#mandate',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <p className="crumbs">
           <Link href="/">Home</Link> / About us
         </p>
@@ -159,7 +199,18 @@ export default function AboutPage() {
 
       {/* 2. Vision & Mission Band */}
       <section className="band relative" data-hab-section="about-vision">
-        <SectionEditBadge label="Vision & Mission" studioHref="/admin/pages/about#vision" />
+        <SectionEditBadge
+          label="Vision & Mission"
+          studioHref="/admin/pages/about#vision"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Vision & Mission CMS',
+              studioHref: '/admin/pages/about#vision',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <div className="band__inner vm">
           <div>
             <p className="eyebrow eyebrow--brass">Vision</p>
@@ -176,7 +227,18 @@ export default function AboutPage() {
 
       {/* 3. Objectives */}
       <section className="section relative" data-hab-section="about-objectives">
-        <SectionEditBadge label="Strategic Objectives" studioHref="/admin/pages/about#mandate" />
+        <SectionEditBadge
+          label="Strategic Objectives"
+          studioHref="/admin/pages/about#mandate"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Strategic Objectives CMS',
+              studioHref: '/admin/pages/about#mandate',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
 
         <div className="longread">
           <div>
@@ -217,7 +279,18 @@ export default function AboutPage() {
 
       {/* 5. Governance */}
       <section className="section relative" id="governance" data-hab-section="about-governance">
-        <SectionEditBadge label="Governance Structure" studioHref="/admin/pages/about#board" />
+        <SectionEditBadge
+          label="Governance Structure"
+          studioHref="/admin/pages/about#board"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Governance & Board CMS',
+              studioHref: '/admin/pages/about#board',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <div className="govwrap">
           <aside className="govintro">
             <p className="eyebrow eyebrow--accent">Governance</p>
@@ -321,6 +394,17 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <UniversalLiveSectionEditor
+        isOpen={liveEditorOpen}
+        onClose={() => setLiveEditorOpen(false)}
+        sectionType={activeSection.type}
+        sectionTitle={activeSection.title}
+        studioHref={activeSection.studioHref}
+        onSaved={(updated) => {
+          if (updated) setSiteSettings(updated);
+        }}
+      />
 
     </main>
   );

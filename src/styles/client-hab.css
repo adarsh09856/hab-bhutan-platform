@@ -381,6 +381,7 @@ textarea.input{line-height:1.5;resize:vertical}
 
 .menu{position:relative}
 .menu__panel{position:absolute;top:100%;padding-top:6px;z-index:100}
+.menu__panel::before{content:"";position:absolute;top:-14px;left:0;right:0;height:14px;background:transparent}
 .menu__panel--narrow{left:0;width:250px}
 .menu__panel--wide{right:0;width:660px;max-width:min(660px,calc(100vw - 24px))}
 .menu__panel--mid{left:0;width:340px;max-width:min(340px,calc(100vw - 24px))}

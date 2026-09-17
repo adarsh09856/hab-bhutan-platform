@@ -347,6 +347,77 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Mobile-only Shop accordion in drawer */}
+          <div className="menu lg:hidden">
+            <button
+              className="nav__item nav__item--trigger"
+              type="button"
+              onClick={() => {
+                setShopOpen(!shopOpen);
+                setMembersOpen(false);
+              }}
+            >
+              {t('nav.shop', 'Shop the 13 Crafts')} <span className="caret" aria-hidden="true">{shopOpen ? '▴' : '▾'}</span>
+            </button>
+            {shopOpen && (
+              <div className="menu__card" style={{ marginTop: '6px', padding: '10px', boxShadow: 'none' }}>
+                <p className="eyebrow eyebrow--muted eyebrow--sm" style={{ marginBottom: '8px' }}>
+                  {t('menu.shop_by_craft', 'Shop by craft category')}
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                  {crafts.map((c) => (
+                    <Link
+                      key={c.key}
+                      href={`/shop/${c.key}`}
+                      onClick={() => {
+                        setShopOpen(false);
+                        setMobileNavOpen(false);
+                      }}
+                      className="group flex items-center gap-2 p-1.5 rounded-lg bg-white border border-[#E4DDD1] text-xs hover:border-[#8B2E24] transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded overflow-hidden relative shrink-0 bg-stone-100">
+                        <Image
+                          src={CRAFT_THUMBNAIL_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
+                          alt={c.name}
+                          fill
+                          sizes="24px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block font-semibold text-[11px] truncate text-[#33261F] group-hover:text-[#8B2E24]">{c.name}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--line)' }}>
+                  <Link
+                    className="btn btn--accent btn--sm"
+                    href="/shop"
+                    onClick={() => {
+                      setShopOpen(false);
+                      setMobileNavOpen(false);
+                    }}
+                    style={{ textAlign: 'center', fontSize: '11px', padding: '6px 4px' }}
+                  >
+                    {t('menu.all_products', 'All products')}
+                  </Link>
+                  <Link
+                    className="btn btn--outline btn--sm"
+                    href="/wholesale"
+                    onClick={() => {
+                      setShopOpen(false);
+                      setMobileNavOpen(false);
+                    }}
+                    style={{ textAlign: 'center', fontSize: '11px', padding: '6px 4px' }}
+                  >
+                    {t('menu.wholesale', 'Wholesale')}
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Mobile drawer quick currency & language toggles */}
           {mobileNavOpen && (
             <div style={{ display: 'flex', gap: '8px', padding: '12px 16px', borderTop: '1px solid var(--line)', marginTop: '8px' }}>
@@ -586,8 +657,16 @@ export default function Header() {
             {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
           </button>
 
+          <Link
+            href="/shop"
+            className="btn btn--accent btn--sm lg:hidden"
+            style={{ padding: '6px 10px', fontSize: '12px' }}
+          >
+            {t('nav.shop', 'Shop')}
+          </Link>
+
           <div
-            className="menu"
+            className="menu hidden lg:block"
             data-menu
             ref={shopRef}
             onMouseEnter={() => {

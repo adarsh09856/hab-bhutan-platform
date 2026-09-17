@@ -101,7 +101,7 @@ export default function AdminLiveBar() {
     <>
     {/* Spacer so content doesn't hide behind fixed bar */}
     <div style={{ height: 36 }} aria-hidden="true" />
-    <div className="fixed top-0 left-0 right-0 z-[60] bg-slate-900 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs border-b border-slate-700 shadow-md flex items-center justify-between gap-2 select-none overflow-x-auto whitespace-nowrap">
+    <div className="fixed top-0 left-0 right-0 z-[60] bg-slate-900 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs border-b border-slate-700 shadow-md flex items-center justify-between gap-2 select-none overflow-x-auto whitespace-nowrap no-scrollbar">
       {/* Left: Admin identity & Quick Studio Link */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
         <div className="w-5 h-5 rounded-md bg-[#8B2E24] text-white flex items-center justify-center font-bold text-[10px] shadow-xs flex-shrink-0">
