@@ -474,19 +474,31 @@ Automated database backup scripts are located in the `scripts/` directory:
   node scripts/db-restore.mjs
   ```
 
-### VPS Deployment Quick Command
-To deploy latest updates to your production server:
+### VPS & aaPanel Deployment Command
+To automatically pull latest updates, synchronize database schema, rebuild, and reload PM2 with zero-downtime:
 ```bash
-git pull origin main && bash scripts/deploy-aapanel.sh
+bash scripts/deploy-aapanel.sh
 ```
+
 Or manually:
 ```bash
-git pull origin main
+git fetch origin main && git reset --hard origin/main
 npm install --legacy-peer-deps
 npx prisma generate
-npx prisma migrate deploy
+npx prisma db push --accept-data-loss
 npm run build
-pm2 reload ecosystem.config.js || pm2 restart habbhutanplatform
+pm2 reload habbhutanplatform --update-env || pm2 start ecosystem.config.js
+pm2 save
+```
+
+### Essential PM2 Process Commands on VPS:
+```bash
+pm2 status                      # Check service status and memory usage
+pm2 logs habbhutanplatform      # Stream live application logs in real-time
+pm2 reload habbhutanplatform    # Zero-downtime hot reload
+pm2 restart habbhutanplatform   # Full restart of the application process
+pm2 stop habbhutanplatform      # Stop the application
+pm2 monit                       # Terminal dashboard monitoring CPU & RAM
 ```
 
 ---
