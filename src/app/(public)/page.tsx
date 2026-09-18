@@ -1275,7 +1275,7 @@ export default function HomePage() {
               Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association.
             </p>
           </div>
-          <Link className="link-accent" href="/programmes">
+          <Link className="btn btn--ink btn--sm" href="/programmes">
             All eleven programme areas →
           </Link>
         </div>
@@ -1288,9 +1288,11 @@ export default function HomePage() {
                 <h3 className="card__title clamp-3">{p.title}</h3>
               </div>
               <p className="card__text programme__desc">{p.description}</p>
-              <Link className="link-accent programme__toggle" href={`/programmes/${p.ref}`}>
-                Read more →
-              </Link>
+              <div style={{ marginTop: 'auto', paddingTop: 14 }}>
+                <Link className="btn btn--ink btn--sm" href={`/programmes/${p.ref}`}>
+                  View programme →
+                </Link>
+              </div>
             </article>
           ))}
         </div>

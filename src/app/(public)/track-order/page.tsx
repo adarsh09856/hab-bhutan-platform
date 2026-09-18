@@ -205,6 +205,20 @@ function TrackOrderContent() {
                   Destination: {orderData.shippingDestination?.city}, {orderData.shippingDestination?.country}
                 </span>
               </div>
+              {orderData.trackingNumber && (
+                <div className="mt-2.5 inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-mono">
+                  <Truck className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                  <span>Courier Reference: <strong>{orderData.trackingNumber}</strong> ({orderData.shippingMethod || 'Bhutan Post / EMS'})</span>
+                  <a
+                    href="https://www.bhutanpost.bt/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#8B2E24] hover:underline font-sans font-bold flex items-center gap-1 ml-1"
+                  >
+                    Bhutan Post Tracking &rarr;
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="text-right">

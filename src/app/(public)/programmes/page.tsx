@@ -2,9 +2,10 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 interface ProgrammeItem {
   ref: string;
@@ -30,8 +31,9 @@ const DEFAULT_PROGRAMMES: ProgrammeItem[] = [
 
 export default function ProgrammesPage() {
   const [programmes, setProgrammes] = useState<ProgrammeItem[]>(DEFAULT_PROGRAMMES);
+  const [liveEditOpen, setLiveEditOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchProgrammes = useCallback(() => {
     fetch('/api/programmes', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
@@ -48,12 +50,31 @@ export default function ProgrammesPage() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    fetchProgrammes();
+
+    const handleUpdate = () => {
+      fetchProgrammes();
+    };
+
+    window.addEventListener('hab:settings-updated', handleUpdate);
+    window.addEventListener('hab:content-updated', handleUpdate);
+    return () => {
+      window.removeEventListener('hab:settings-updated', handleUpdate);
+      window.removeEventListener('hab:content-updated', handleUpdate);
+    };
+  }, [fetchProgrammes]);
+
   return (
     <main id="main">
 
       {/* 1. Header & Mandate */}
       <section className="section relative" data-hab-section="programmes">
-        <SectionEditBadge label="Programme Pillars" studioHref="/admin/programmes" />
+        <SectionEditBadge
+          label="Programme Pillars"
+          studioHref="/admin/programmes"
+          onQuickEdit={() => setLiveEditOpen(true)}
+        />
         <p className="crumbs">
           <Link href="/">Home</Link> / Programmes
         </p>
@@ -142,6 +163,18 @@ export default function ProgrammesPage() {
           </div>
         </div>
       </section>
+
+      {/* 4. In-Place Live Section Editor */}
+      <UniversalLiveSectionEditor
+        isOpen={liveEditOpen}
+        onClose={() => setLiveEditOpen(false)}
+        sectionType="programmes"
+        sectionTitle="Programmes & Strategic Pillars"
+        studioHref="/admin/programmes"
+        onSaved={() => {
+          fetchProgrammes();
+        }}
+      />
 
     </main>
   );

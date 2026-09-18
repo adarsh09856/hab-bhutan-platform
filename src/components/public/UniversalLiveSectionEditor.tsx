@@ -36,7 +36,8 @@ export type SectionType =
   | 'contact'
   | 'policies'
   | 'punakha'
-  | 'footer';
+  | 'footer'
+  | 'programmes';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -300,6 +301,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Contact & Secretariate Info'
       : sectionType === 'footer'
       ? 'Footer, Policies & Social Links'
+      : sectionType === 'programmes'
+      ? 'Programmes & Strategic Pillars'
       : 'Live Section Editor');
 
   const defaultStudioHref =
@@ -320,6 +323,8 @@ export default function UniversalLiveSectionEditor({
       ? '/admin/site-settings?tab=CONTACT'
       : sectionType === 'footer'
       ? '/admin/site-settings?tab=FOOTER'
+      : sectionType === 'programmes'
+      ? '/admin/programmes'
       : '/admin/site-settings');
 
   return createPortal(
@@ -845,6 +850,63 @@ export default function UniversalLiveSectionEditor({
                               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                             />
                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionType === 'programmes' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">All 11 Statutory Programmes (A–K)</span>
+                            <span className="text-[11px] text-amber-800">
+                              Directly edit pillar narratives, objectives, and photos in the Programmes Studio.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/programmes"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Section Eyebrow
+                          </label>
+                          <input
+                            type="text"
+                            value={form.programmesEyebrow || 'What we run'}
+                            onChange={(e) => updateField('programmesEyebrow', e.target.value)}
+                            placeholder="What we run"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Section Headline
+                          </label>
+                          <input
+                            type="text"
+                            value={form.programmesTitle || 'Our Programmes'}
+                            onChange={(e) => updateField('programmesTitle', e.target.value)}
+                            placeholder="Our Programmes"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Mandate Lede / Description
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.programmesLede || 'The objects are construed broadly: each is a standing programme area, not a fixed project.'}
+                            onChange={(e) => updateField('programmesLede', e.target.value)}
+                            placeholder="The objects are construed broadly: each is a standing programme area, not a fixed project."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
                         </div>
                       </div>
                     )}
