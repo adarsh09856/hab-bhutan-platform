@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Package, Palette, Users, Newspaper, Calendar, Award, ArrowRight, Loader2, FileText, ChevronRight } from 'lucide-react';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 interface SearchItem {
   id: string;
@@ -118,7 +119,12 @@ function SearchContent() {
         </nav>
 
         {/* Search Header */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-8">
+        <div className="relative bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs mb-8">
+          <SectionEditBadge
+            label="Catalog &amp; Studios"
+            studioHref="/admin/products"
+            className="top-4 right-4 z-20"
+          />
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Search Bhutan Handicrafts Association
           </h1>
