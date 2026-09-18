@@ -233,20 +233,6 @@ export default function Header() {
           />
         </Link>
 
-        <button
-          className="nav-toggle"
-          id="navToggle"
-          aria-expanded={mobileNavOpen}
-          aria-controls="primaryNav"
-          aria-label="Open menu"
-          type="button"
-          onClick={() => setMobileNavOpen(!mobileNavOpen)}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
         <nav
           className={`nav ${mobileNavOpen ? 'is-open' : ''}`}
           id="primaryNav"
@@ -747,6 +733,20 @@ export default function Header() {
               </span>
             )}
           </Link>
+
+          <button
+            className="nav-toggle"
+            id="navToggle"
+            aria-expanded={mobileNavOpen}
+            aria-controls="primaryNav"
+            aria-label="Open menu"
+            type="button"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </div>
       </div>
 

@@ -381,6 +381,7 @@ textarea.input{line-height:1.5;resize:vertical}
   display:none;width:44px;height:44px;border:1px solid var(--line);
   border-radius:var(--radius-sm);background:var(--surface);
   flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;
+  flex-shrink:0;
 }
 .nav-toggle span{display:block;width:18px;height:2px;background:var(--ink)}
 
@@ -2035,7 +2036,7 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 }
 
 .hero__copy .display--hero{
-  font-size:clamp(46px, 4.4vw, 66px);
+  font-size:clamp(28px, 4.4vw, 66px);
   line-height:1.06;
   letter-spacing:-.016em;
   margin-bottom:28px;
@@ -2355,7 +2356,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .triptych{grid-template-columns:1fr 1fr}
   .triptych__cell:first-child{grid-row:auto}
   .triptych__cell:first-child .frame{min-height:0;aspect-ratio:16/9}
-  .nav-toggle{display:flex}
+  .nav-toggle{display:flex !important;flex-shrink:0}
   .nav{
     position:absolute;top:100%;left:0;right:0;
     flex-direction:column;align-items:stretch;gap:2px;
@@ -2556,7 +2557,9 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .outlet-deep{padding:26px 22px}
   .clusterlist__body{padding:24px 22px}
   .newsrow .grid--3{grid-template-columns:1fr}
-  .display--hero{font-size:36px;line-height:1.08}
+  .hero__copy .display--hero,
+  .display--hero{font-size:clamp(26px, 7.5vw, 34px) !important;line-height:1.12}
+  .hero__copy .lede{font-size:15.5px;line-height:1.55;margin-bottom:22px}
   .display--band{font-size:28px}
   .display--sub{font-size:25px}
   .display--panel{font-size:22px}
@@ -2585,7 +2588,10 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .header__inner{gap:6px;padding:8px 12px}
   .chip{padding:6px 8px;font-size:11px}
   .btn--sm{padding:8px 10px;font-size:12px}
-  .display--hero{font-size:30px}
+  .hero__copy .display--hero,
+  .display--hero{font-size:clamp(22px, 6.5vw, 26px) !important;line-height:1.14}
+  .nav-toggle{width:38px;height:38px}
+  .nav-toggle span{width:16px}
   .display--band{font-size:24px}
   .display--page{font-size:28px}
   .menu__panel--wide{width:calc(100vw - 16px) !important;right:-6px !important}
