@@ -68,7 +68,7 @@ function ContactContent() {
     { key: 'events', label: 'Events & registration' },
     { key: 'awards', label: 'Awards & nominations' },
     { key: 'press', label: 'Press & partnerships' },
-    { key: 'other', label: 'Something else' },
+    { key: 'others', label: 'Others' },
   ];
 
   const currentTopicLabel = topics.find((t) => t.key === topic)?.label || 'General enquiry';
@@ -95,7 +95,7 @@ function ContactContent() {
           email: formData.email.trim(),
           org: formData.org.trim(),
           country: formData.country.trim(),
-          subject: formData.subject.trim() || currentTopicLabel,
+          subject: formData.subject.trim() ? `[${currentTopicLabel}] ${formData.subject.trim()}` : `[${currentTopicLabel}] General enquiry`,
           message: formData.message.trim(),
           refNumber: ref,
         }),
@@ -316,6 +316,10 @@ function ContactContent() {
                 <div className="contact-aside__row">
                   <span className="contact-aside__k">Events &amp; nominations</span>
                   <span className="contact-aside__v">Programmes desk</span>
+                </div>
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Others &amp; general subjects</span>
+                  <span className="contact-aside__v">General Secretariat desk</span>
                 </div>
                 <p className="footnote" style={{ marginTop: 18 }}>
                   Before you write: shipping times and free-delivery conditions are set out in the{' '}

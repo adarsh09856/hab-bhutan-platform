@@ -220,6 +220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       key: 'settings',
       items: [
         { label: 'Site Settings & Contacts', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
+        { label: 'Typography & Styling', href: '/admin/styling', icon: Palette },
         { label: 'Navigation Menus', href: '/admin/navigation', icon: Navigation },
         { label: 'Media Library', href: '/admin/media', icon: ImageIcon, badge: 'Files' },
         { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'USD/BTN' },

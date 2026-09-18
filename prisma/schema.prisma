@@ -438,6 +438,11 @@ model SiteSetting {
   footerAbout          String   @db.Text
   csoRegistration      String   @default("CSO Registration: CSO/2011/043 · Thimphu, Kingdom of Bhutan")
   copyrightText        String   @default("© 2026 Handicrafts Association of Bhutan. All rights reserved.")
+  facebookUrl          String?
+  instagramUrl         String?
+  twitterUrl           String?
+  youtubeUrl           String?
+  tiktokUrl            String?
   punakhaMarketNotice  String   @default("The only authentic crafts market validated and managed by HAB")
   partnersList         Json
 

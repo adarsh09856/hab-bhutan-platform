@@ -17,6 +17,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    if (!email && !phone) {
+      return NextResponse.json(
+        { success: false, error: 'Customer email or phone number is required to verify order ownership.' },
+        { status: 400 }
+      );
+    }
+
     // Look up by official orderNumber ONLY
     const order = await prisma.order.findFirst({
       where: {

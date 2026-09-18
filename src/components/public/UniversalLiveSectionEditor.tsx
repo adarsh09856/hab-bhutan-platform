@@ -35,7 +35,8 @@ export type SectionType =
   | 'donate'
   | 'contact'
   | 'policies'
-  | 'punakha';
+  | 'punakha'
+  | 'footer';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -195,6 +196,15 @@ export default function UniversalLiveSectionEditor({
         // Punakha
         punakhaMarketNotice: s.punakhaMarketNotice || 'Validated and managed by HAB for authentic Bhutanese craft provenance.',
         csoRegistration: s.csoRegistration || '2011 · CSO/2011/043',
+
+        // Footer & Social Links
+        facebookUrl: s.facebookUrl || '',
+        instagramUrl: s.instagramUrl || '',
+        twitterUrl: s.twitterUrl || '',
+        youtubeUrl: s.youtubeUrl || '',
+        tiktokUrl: s.tiktokUrl || '',
+        footerAbout: s.footerAbout || 'A registered Civil Society Organization under the CSO Act of Bhutan 2007. Established 2005.',
+        copyrightText: s.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved.',
       });
 
       if (heroData?.slides && Array.isArray(heroData.slides)) {
@@ -288,6 +298,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Donations & Philanthropy'
       : sectionType === 'contact'
       ? 'Contact & Secretariate Info'
+      : sectionType === 'footer'
+      ? 'Footer, Policies & Social Links'
       : 'Live Section Editor');
 
   const defaultStudioHref =
@@ -306,6 +318,8 @@ export default function UniversalLiveSectionEditor({
       ? '/admin/donate-settings'
       : sectionType === 'contact'
       ? '/admin/site-settings?tab=CONTACT'
+      : sectionType === 'footer'
+      ? '/admin/site-settings?tab=FOOTER'
       : '/admin/site-settings');
 
   return createPortal(
@@ -373,7 +387,7 @@ export default function UniversalLiveSectionEditor({
             }
           >
             <Link2 className="w-3.5 h-3.5" />
-            <span>Call-to-Action Buttons</span>
+            <span>{sectionType === 'footer' ? 'Social Links' : 'Call-to-Action Buttons'}</span>
           </button>
 
           {(sectionType === 'hero' || sectionType === 'about') && (
@@ -767,6 +781,73 @@ export default function UniversalLiveSectionEditor({
                         </div>
                       </div>
                     )}
+
+                    {sectionType === 'footer' && (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Footer Organization Description / Blurb
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.footerAbout || ''}
+                            onChange={(e) => updateField('footerAbout', e.target.value)}
+                            placeholder="A registered Civil Society Organization under the CSO Act of Bhutan 2007..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Copyright & Registration Line
+                          </label>
+                          <input
+                            type="text"
+                            value={form.copyrightText || ''}
+                            onChange={(e) => updateField('copyrightText', e.target.value)}
+                            placeholder="© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Office Address</label>
+                            <input
+                              type="text"
+                              value={form.officeAddress || ''}
+                              onChange={(e) => updateField('officeAddress', e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Official Email</label>
+                            <input
+                              type="email"
+                              value={form.officialEmail || ''}
+                              onChange={(e) => updateField('officialEmail', e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Office Telephone</label>
+                            <input
+                              type="text"
+                              value={form.officePhone || ''}
+                              onChange={(e) => updateField('officePhone', e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">CSO Registration ID</label>
+                            <input
+                              type="text"
+                              value={form.csoRegistration || ''}
+                              onChange={(e) => updateField('csoRegistration', e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -878,6 +959,66 @@ export default function UniversalLiveSectionEditor({
                               value={form.membershipLeftCtaLink || ''}
                               onChange={(e) => updateField('membershipLeftCtaLink', e.target.value)}
                               placeholder="/register"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionType === 'footer' && (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed">
+                          <strong>Zero Dummy Links Policy:</strong> Social media links only appear in the public footer if you provide a valid URL below. Leaving a field blank completely hides that icon from the website.
+                        </div>
+                        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">Facebook Page URL</label>
+                            <input
+                              type="url"
+                              value={form.facebookUrl || ''}
+                              onChange={(e) => updateField('facebookUrl', e.target.value)}
+                              placeholder="https://facebook.com/handicraftsbhutan (Leave blank if none)"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">Instagram Profile URL</label>
+                            <input
+                              type="url"
+                              value={form.instagramUrl || ''}
+                              onChange={(e) => updateField('instagramUrl', e.target.value)}
+                              placeholder="https://instagram.com/handicraftsbhutan (Leave blank if none)"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">X / Twitter URL</label>
+                            <input
+                              type="url"
+                              value={form.twitterUrl || ''}
+                              onChange={(e) => updateField('twitterUrl', e.target.value)}
+                              placeholder="https://x.com/handicraftsbhutan (Leave blank if none)"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">YouTube Channel URL</label>
+                            <input
+                              type="url"
+                              value={form.youtubeUrl || ''}
+                              onChange={(e) => updateField('youtubeUrl', e.target.value)}
+                              placeholder="https://youtube.com/@handicraftsbhutan (Leave blank if none)"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 mb-1">TikTok Profile URL</label>
+                            <input
+                              type="url"
+                              value={form.tiktokUrl || ''}
+                              onChange={(e) => updateField('tiktokUrl', e.target.value)}
+                              placeholder="https://tiktok.com/@handicraftsbhutan (Leave blank if none)"
                               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                             />
                           </div>

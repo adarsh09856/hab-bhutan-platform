@@ -72,6 +72,11 @@ export default function AdminSiteSettingsPage() {
     footerAbout: '',
     csoRegistration: '',
     copyrightText: '',
+    facebookUrl: '',
+    instagramUrl: '',
+    twitterUrl: '',
+    youtubeUrl: '',
+    tiktokUrl: '',
     punakhaMarketNotice: '',
     partnersList: [] as PartnerItem[],
     // Assurances Band CMS
@@ -1370,6 +1375,80 @@ export default function AdminSiteSettingsPage() {
                 onChange={(e) => setForm({ ...form, punakhaMarketNotice: e.target.value })}
                 className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
               />
+            </div>
+
+            <div className="pt-6 border-t border-slate-200">
+              <h3 className="text-sm font-bold admin-title mb-1">Official Social Media Profiles</h3>
+              <p className="text-xs text-slate-500 mb-4">
+                Enter your genuine organization links below. Leave any field blank if you do not have that account — no dummy or placeholder icons will ever be shown on the public site.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                    Facebook Page URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://facebook.com/yourpage (or leave blank)"
+                    value={form.facebookUrl}
+                    onChange={(e) => setForm({ ...form, facebookUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                    Instagram Profile URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://instagram.com/yourprofile (or leave blank)"
+                    value={form.instagramUrl}
+                    onChange={(e) => setForm({ ...form, instagramUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                    X (Twitter) Profile URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://x.com/yourhandle (or leave blank)"
+                    value={form.twitterUrl}
+                    onChange={(e) => setForm({ ...form, twitterUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                    YouTube Channel URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://youtube.com/@yourchannel (or leave blank)"
+                    value={form.youtubeUrl}
+                    onChange={(e) => setForm({ ...form, youtubeUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-xs"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                    TikTok Profile URL
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://tiktok.com/@yourhandle (or leave blank)"
+                    value={form.tiktokUrl}
+                    onChange={(e) => setForm({ ...form, tiktokUrl: e.target.value })}
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-xs"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

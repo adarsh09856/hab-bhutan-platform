@@ -25,7 +25,7 @@ const DEFAULT_FOOTER_COLUMNS = [
   { id: 'f-8', column: 'Shop & support', label: 'Wholesale & bulk orders', href: '/wholesale', sortOrder: 2, isActive: true },
   { id: 'f-9', column: 'Shop & support', label: 'Shipping & delivery', href: '/shipping-policy', sortOrder: 3, isActive: true },
   { id: 'f-10', column: 'Shop & support', label: 'Returns', href: '/shipping-policy#returns', sortOrder: 4, isActive: true },
-  { id: 'f-11', column: 'Shop & support', label: 'Track your order', href: '/contact?topic=order', sortOrder: 5, isActive: true },
+  { id: 'f-11', column: 'Shop & support', label: 'Track your order', href: '/track-order', sortOrder: 5, isActive: true },
   { id: 'f-12', column: 'Shop & support', label: 'Duty & customs', href: '/shipping-policy#duty', sortOrder: 6, isActive: true },
 
   { id: 'f-13', column: 'Members', label: 'Directory by category', href: '/membership', sortOrder: 1, isActive: true },

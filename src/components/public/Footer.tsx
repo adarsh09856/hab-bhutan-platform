@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCurrency } from '@/context/CurrencyContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 export default function Footer() {
   const { currency } = useCurrency();
+  const [liveEditOpen, setLiveEditOpen] = useState(false);
   const [settings, setSettings] = useState({
     officeAddress: 'Metog Lam, Thimphu, Bhutan',
     officePhone: '+975-2-338089',
@@ -35,10 +37,10 @@ export default function Footer() {
       links: [
         { label: "E-shop", href: "/shop" },
         { label: "Wholesale & bulk orders", href: "/wholesale" },
-        { label: "Shipping & delivery", href: "/shipping-policy" },
-        { label: "Returns", href: "/shipping-policy#returns" },
-        { label: "Track your order", href: "/contact?topic=order" },
-        { label: "Duty & customs", href: "/shipping-policy#duty" },
+        { label: "Shipping & delivery policy", href: "/shipping-policy" },
+        { label: "Returns & refunds policy", href: "/shipping-policy#returns" },
+        { label: "Track your order", href: "/track-order" },
+        { label: "Duties & customs policy", href: "/shipping-policy#duty" },
       ]
     },
     {
@@ -66,40 +68,75 @@ export default function Footer() {
   ]);
 
   useEffect(() => {
-    fetch('/api/site-settings', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.setting) {
-          setSettings((prev) => ({
-            ...prev,
-            ...data.setting,
-          }));
-        }
-      })
-      .catch(() => {});
-
-    fetch('/api/navigation', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.footer && typeof data.footer === 'object') {
-          const cols = Object.keys(data.footer).map((colTitle) => ({
-            title: colTitle,
-            links: data.footer[colTitle].map((l: any) => ({
-              label: l.label,
-              href: l.href,
-            })),
-          }));
-          if (cols.length > 0) {
-            setFooterCols(cols);
+    const loadSettings = () => {
+      fetch('/api/site-settings', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.setting) {
+            setSettings((prev) => ({
+              ...prev,
+              ...data.setting,
+            }));
           }
-        }
-      })
-      .catch(() => {});
+        })
+        .catch(() => {});
+    };
+
+    loadSettings();
+
+    const loadNav = () => {
+      fetch('/api/navigation', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.footer && typeof data.footer === 'object') {
+            const cols = Object.keys(data.footer).map((colTitle) => ({
+              title: colTitle,
+              links: data.footer[colTitle].map((l: any) => ({
+                label: l.label,
+                href: l.href,
+              })),
+            }));
+            if (cols.length > 0) {
+              setFooterCols(cols);
+            }
+          }
+        })
+        .catch(() => {});
+    };
+
+    loadNav();
+
+    const handleUpdate = (e: any) => {
+      if (e?.detail) {
+        setSettings((prev: any) => ({ ...prev, ...e.detail }));
+      } else {
+        loadSettings();
+      }
+    };
+
+    window.addEventListener('hab:settings-updated', handleUpdate);
+    window.addEventListener('hab:header-updated', loadNav);
+    return () => {
+      window.removeEventListener('hab:settings-updated', handleUpdate);
+      window.removeEventListener('hab:header-updated', loadNav);
+    };
   }, []);
+
+  const hasSocial = Boolean(
+    (settings as any).facebookUrl ||
+    (settings as any).instagramUrl ||
+    (settings as any).twitterUrl ||
+    (settings as any).youtubeUrl ||
+    (settings as any).tiktokUrl
+  );
 
   return (
     <footer className="footer relative" id="contact" data-hab-section="footer">
-      <SectionEditBadge label="Footer & Global Settings" studioHref="/admin/site-settings?tab=FOOTER" />
+      <SectionEditBadge
+        label="Footer & Global Settings"
+        studioHref="/admin/site-settings?tab=FOOTER"
+        onQuickEdit={() => setLiveEditOpen(true)}
+      />
       <div className="signoff">
         <div className="signoff__inner">
           <Link className="signoff__logo" href="/" aria-label="Handicrafts Association of Bhutan — home">
@@ -109,13 +146,35 @@ export default function Footer() {
             <p className="signoff__name">Handicrafts Association of Bhutan</p>
             <p className="signoff__line">{settings.footerAbout}</p>
           </div>
-          <div className="signoff__social">
-            <a className="social__link" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook</a>
-            <a className="social__link" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a className="social__link" href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
-            <a className="social__link" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube</a>
-            <a className="social__link" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">TikTok</a>
-          </div>
+          {hasSocial && (
+            <div className="signoff__social">
+              {(settings as any).facebookUrl && (
+                <a className="social__link" href={(settings as any).facebookUrl} target="_blank" rel="noopener noreferrer">
+                  Facebook
+                </a>
+              )}
+              {(settings as any).instagramUrl && (
+                <a className="social__link" href={(settings as any).instagramUrl} target="_blank" rel="noopener noreferrer">
+                  Instagram
+                </a>
+              )}
+              {(settings as any).twitterUrl && (
+                <a className="social__link" href={(settings as any).twitterUrl} target="_blank" rel="noopener noreferrer">
+                  X
+                </a>
+              )}
+              {(settings as any).youtubeUrl && (
+                <a className="social__link" href={(settings as any).youtubeUrl} target="_blank" rel="noopener noreferrer">
+                  YouTube
+                </a>
+              )}
+              {(settings as any).tiktokUrl && (
+                <a className="social__link" href={(settings as any).tiktokUrl} target="_blank" rel="noopener noreferrer">
+                  TikTok
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -143,6 +202,17 @@ export default function Footer() {
         <span>{settings.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043'}</span>
         <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
       </div>
+
+      <UniversalLiveSectionEditor
+        isOpen={liveEditOpen}
+        onClose={() => setLiveEditOpen(false)}
+        sectionType="footer"
+        sectionTitle="Footer, Policies & Social Links"
+        studioHref="/admin/site-settings?tab=FOOTER"
+        onSaved={(updated) => {
+          if (updated) setSettings((prev) => ({ ...prev, ...updated }));
+        }}
+      />
     </footer>
   );
 }

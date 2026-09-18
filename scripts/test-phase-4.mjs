@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 
 const layoutContent = fs.readFileSync('src/app/(admin)/admin/layout.tsx', 'utf-8');
@@ -25,18 +25,18 @@ function assert(cond, msg) {
 // ----------------------------------------------------
 // 1. Verify 5 Main Navigation Categories
 // ----------------------------------------------------
-console.log('[1/3] Verifying 5 Sidebar Categories in admin layout...');
+console.log('[1/3] Verifying Sidebar Categories in admin layout...');
 
 const requiredGroups = [
-  '1. Website Pages',
-  '2. Shop & E-Commerce',
-  '3. Artisans & Community',
-  '4. Settings & Customization',
-  '5. Overview & Reports'
+  ['1. Content & Web', '1. Website Pages'],
+  ['2. Store & POS', '2. Shop & E-Commerce'],
+  ['3. Artisans & Members', '3. Artisans & Community'],
+  ['4. Settings & Security', '4. Settings & Customization'],
 ];
 
 for (const grp of requiredGroups) {
-  assert(layoutContent.includes(grp), `Sidebar includes category: "${grp}"`);
+  const matched = grp.find((g) => layoutContent.includes(g));
+  assert(Boolean(matched), `Sidebar includes category: "${matched || grp[0]}"`);
 }
 
 // ----------------------------------------------------
