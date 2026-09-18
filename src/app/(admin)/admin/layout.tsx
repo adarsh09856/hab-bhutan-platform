@@ -166,7 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     content: true,
     store: true,
     artisans: true,
-    settings: false,
+    settings: true,
   });
 
   const toggleGroup = (key: string) => {

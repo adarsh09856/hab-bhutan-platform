@@ -136,6 +136,7 @@ export default function Footer() {
         label="Footer & Global Settings"
         studioHref="/admin/site-settings?tab=FOOTER"
         onQuickEdit={() => setLiveEditOpen(true)}
+        className="top-4 right-4 sm:right-8 z-50"
       />
       <div className="signoff">
         <div className="signoff__inner">

@@ -431,41 +431,41 @@ export default function AdminSiteSettingsPage() {
         <button
           type="button"
           onClick={() => setTab('ABOUT_PAGE')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'ABOUT_PAGE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'ABOUT_PAGE' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="w-4 h-4 text-[#8B2E24]" />
           About Page Mandate
         </button>
         <button
           type="button"
           onClick={() => setTab('WHOLESALE')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'WHOLESALE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'WHOLESALE' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Shield className="w-4 h-4" />
+          <Shield className="w-4 h-4 text-[#8B2E24]" />
           Wholesale &amp; Sourcing
         </button>
         <button
           type="button"
           onClick={() => setTab('CHECKOUT')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'CHECKOUT' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'CHECKOUT' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <ShieldCheck className="w-4 h-4" />
+          <ShieldCheck className="w-4 h-4 text-[#8B2E24]" />
           Checkout &amp; Shipping
         </button>
         <button
           type="button"
           onClick={() => setTab('DONATE')}
-          className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-            tab === 'DONATE' ? 'border-indigo-400 text-indigo-300' : 'border-transparent admin-muted admin-hover'
+          className={`px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+            tab === 'DONATE' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <HeartHandshake className="w-4 h-4" />
+          <HeartHandshake className="w-4 h-4 text-[#8B2E24]" />
           Donate Page Notices
         </button>
       </div>
@@ -707,10 +707,10 @@ export default function AdminSiteSettingsPage() {
             </div>
 
             {/* Real-Time Sync Informative Callout */}
-            <div className="p-4 rounded-xl bg-amber-400/10 border border-amber-400/20 text-xs text-amber-200 flex items-start gap-3 leading-relaxed">
-              <Sparkles className="w-5 h-5 text-amber-400 flex-none mt-0.5" />
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3 leading-relaxed">
+              <Sparkles className="w-5 h-5 text-amber-600 flex-none mt-0.5" />
               <div>
-                <strong className="text-white block mb-0.5">Two-Way Public &amp; Admin Sync</strong>
+                <strong className="text-amber-950 font-bold block mb-0.5">Two-Way Public &amp; Admin Sync</strong>
                 Public visitors can use the interactive chips in the header (<code>USD $ / Nu. BTN</code> and <code>EN / རྫོང་ཁ</code>) to switch on demand. Saving new defaults here immediately updates the baseline for all public visitors across the platform.
               </div>
             </div>

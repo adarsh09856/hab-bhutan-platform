@@ -185,7 +185,7 @@ body.hab-visual-edit-on [data-hab-section]:hover {
 }
 
 .hab-section-edit-badge {
-  display: none !important;
+  display: flex !important;
 }
 
 body.hab-visual-edit-on .hab-section-edit-badge {

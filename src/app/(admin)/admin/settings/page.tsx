@@ -467,7 +467,7 @@ function AdminSettingsContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b admin-border pb-5">
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
-            <Settings className="w-5 h-5 text-indigo-300" />
+            <Settings className="w-5 h-5 text-[#8B2E24]" />
             System Administration, RMA FX Engine &amp; RBAC
           </h1>
           <p className="text-sm admin-muted mt-1">
@@ -477,66 +477,71 @@ function AdminSettingsContent() {
       </div>
 
       {actionSuccess && (
-        <div className="p-3 bg-emerald-500/15 border border-emerald-400/25 text-emerald-200 text-xs font-medium rounded-md flex justify-between items-center">
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-lg flex justify-between items-center shadow-xs">
           <span>{actionSuccess}</span>
-          <button onClick={() => setActionSuccess('')} className="font-bold ml-2">✕</button>
+          <button onClick={() => setActionSuccess('')} className="font-bold ml-2 text-emerald-800 hover:text-emerald-950">✕</button>
         </div>
       )}
 
       {actionError && (
-        <div className="p-3 bg-rose-500/15 border border-rose-400/25 text-rose-200 text-xs font-medium rounded-md flex justify-between items-center">
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-lg flex justify-between items-center shadow-xs">
           <span>{actionError}</span>
-          <button onClick={() => setActionError('')} className="font-bold ml-2">✕</button>
+          <button onClick={() => setActionError('')} className="font-bold ml-2 text-rose-800 hover:text-rose-950">✕</button>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="border-b admin-border flex space-x-4 sm:space-x-6 text-xs font-medium admin-text overflow-x-auto scrollbar-none whitespace-nowrap pb-px">
+      <div className="border-b border-slate-200 flex gap-2 text-xs font-medium text-slate-700 overflow-x-auto scrollbar-none whitespace-nowrap pb-px">
         <Link
           href="/admin/localization"
-          className="pb-3 flex items-center gap-1.5 border-b-2 border-transparent text-amber-400 hover:text-amber-300 font-bold transition-colors"
+          className="px-4 py-2.5 flex items-center gap-1.5 border-b-2 border-transparent text-[#8B2E24] hover:bg-slate-100 rounded-t-xl font-bold transition-all"
         >
-          <Globe className="w-4 h-4 text-amber-400" /> Currency &amp; Language Settings →
+          <Globe className="w-4 h-4 text-[#8B2E24]" /> Currency &amp; Language Settings →
         </Link>
         <button
+          type="button"
           onClick={() => setActiveTab('FX')}
-          className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
-            activeTab === 'FX' ? 'border-indigo-400 text-indigo-300 font-semibold' : 'border-transparent hover:text-slate-100'
+          className={`px-4 py-2.5 flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'FX' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <RefreshCw className="w-4 h-4" /> Royal Monetary Authority (RMA) FX Engine
+          <RefreshCw className="w-4 h-4 text-[#8B2E24]" /> Royal Monetary Authority (RMA) FX Engine
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('USERS')}
-          className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
-            activeTab === 'USERS' ? 'border-indigo-400 text-indigo-300 font-semibold' : 'border-transparent hover:text-slate-100'
+          className={`px-4 py-2.5 flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'USERS' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Users className="w-4 h-4" /> Staff Operator Accounts ({users.length})
+          <Users className="w-4 h-4 text-[#8B2E24]" /> Staff Operator Accounts ({users.length})
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('RBAC')}
-          className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
-            activeTab === 'RBAC' ? 'border-indigo-400 text-indigo-300 font-semibold' : 'border-transparent hover:text-slate-100'
+          className={`px-4 py-2.5 flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'RBAC' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Key className="w-4 h-4" /> Immutable RBAC Roles &amp; Revisions ({roles.length})
+          <Key className="w-4 h-4 text-[#8B2E24]" /> Immutable RBAC Roles &amp; Revisions ({roles.length})
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('GATEWAYS')}
-          className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
-            activeTab === 'GATEWAYS' ? 'border-indigo-400 text-indigo-300 font-semibold' : 'border-transparent hover:text-slate-100'
+          className={`px-4 py-2.5 flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'GATEWAYS' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <CreditCard className="w-4 h-4" /> Gateways &amp; Notifications
+          <CreditCard className="w-4 h-4 text-[#8B2E24]" /> Gateways &amp; Notifications
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('AUDIT')}
-          className={`pb-3 flex items-center gap-1.5 border-b-2 transition-colors ${
-            activeTab === 'AUDIT' ? 'border-indigo-400 text-indigo-300 font-semibold' : 'border-transparent hover:text-slate-100'
+          className={`px-4 py-2.5 flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'AUDIT' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <History className="w-4 h-4" /> Cryptographic Audit Trail ({auditLogs.length})
+          <History className="w-4 h-4 text-[#8B2E24]" /> Cryptographic Audit Trail ({auditLogs.length})
         </button>
       </div>
 
@@ -544,24 +549,24 @@ function AdminSettingsContent() {
       {activeTab === 'FX' && (
         <div className="space-y-6">
           {/* Prominent Currency & Language Callout Banner */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-slate-900 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+          <div className="p-5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-none">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 flex-none">
                 <Globe className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   Global Store Currency &amp; Language Settings
-                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold">CONTROL</span>
+                  <span className="px-2 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px] font-mono font-bold">CONTROL</span>
                 </h3>
-                <p className="text-xs text-slate-300 mt-0.5">
+                <p className="text-xs text-slate-600 mt-0.5">
                   Set baseline display currency (USD $ / BTN Nu.), default language (English / རྫོང་ཁ Dzongkha), and enabled public customer switchers.
                 </p>
               </div>
             </div>
             <Link
               href="/admin/localization"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-md flex-none self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#72241C] text-white text-xs font-bold transition-all shadow-xs flex-none self-start sm:self-auto"
             >
               Open Currency &amp; Language Settings →
             </Link>
@@ -581,10 +586,10 @@ function AdminSettingsContent() {
                 <span
                   className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${
                     fxData?.isManualOverride
-                      ? 'bg-amber-500/15 text-amber-200'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
                       : fxData?.status === 'FRESH'
-                      ? 'bg-emerald-500/15 text-emerald-200'
-                      : 'bg-rose-500/15 text-rose-200'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                      : 'bg-rose-100 text-rose-800 border border-rose-200'
                   }`}
                 >
                   {fxData?.isManualOverride ? 'MANUAL OVERRIDE' : fxData?.status || 'FRESH'}
@@ -600,11 +605,11 @@ function AdminSettingsContent() {
               <span className="text-[11px] font-medium admin-muted uppercase">Checkout Gating Guard</span>
               <div className="flex items-center gap-2">
                 {fxData?.blocked ? (
-                  <span className="text-rose-300 font-semibold text-xs flex items-center gap-1">
+                  <span className="text-rose-700 font-semibold text-xs flex items-center gap-1">
                     <AlertTriangle className="w-4 h-4" /> BTN Checkout Suspended (&gt;72h stale)
                   </span>
                 ) : (
-                  <span className="text-emerald-300 font-semibold text-xs flex items-center gap-1">
+                  <span className="text-emerald-700 font-semibold text-xs flex items-center gap-1">
                     <CheckCircle className="w-4 h-4" /> Active &amp; Unblocked
                   </span>
                 )}
@@ -706,7 +711,7 @@ function AdminSettingsContent() {
                     <td className="py-3 px-4 font-semibold admin-title">{u.name}</td>
                     <td className="py-3 px-4 font-mono admin-text">{u.email}</td>
                     <td className="py-3 px-4">
-                      <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 font-semibold">
+                      <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200 font-semibold">
                         {u.role?.name || 'Unassigned'} (v{u.role?.version || 1})
                       </span>
                     </td>
@@ -714,8 +719,8 @@ function AdminSettingsContent() {
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
                           u.status === 'ACTIVE'
-                            ? 'bg-emerald-500/15 text-emerald-200'
-                            : 'bg-rose-500/15 text-rose-200'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            : 'bg-rose-100 text-rose-800 border border-rose-200'
                         }`}
                       >
                         {u.status}
@@ -723,11 +728,11 @@ function AdminSettingsContent() {
                     </td>
                     <td className="py-3 px-4">
                       {u.twoFactorEnabled ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-400/25">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">
                           <CheckCircle className="w-3 h-3" /> Enrolled
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium admin-muted admin-panel px-2 py-0.5 rounded">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                           Not Enrolled
                         </span>
                       )}
@@ -745,7 +750,7 @@ function AdminSettingsContent() {
                       {u.status === 'ACTIVE' && (
                         <button
                           onClick={() => setDeactivatingUser(u)}
-                          className="px-2 py-1 text-rose-300 hover:text-rose-200 border border-rose-400/25 rounded text-[11px]"
+                          className="px-2 py-1 text-rose-700 hover:text-rose-800 hover:bg-rose-50 border border-rose-200 rounded text-[11px]"
                         >
                           Deactivate
                         </button>
@@ -813,8 +818,8 @@ function AdminSettingsContent() {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
                             r.status === 'ACTIVE'
-                              ? 'bg-emerald-500/15 text-emerald-200'
-                              : 'admin-panel admin-text'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-700 border border-slate-200'
                           }`}
                         >
                           {r.status}
@@ -823,7 +828,7 @@ function AdminSettingsContent() {
                       <td className="py-3 px-4 font-mono admin-text">{r.userCount} assigned</td>
                       <td className="py-3 px-4 admin-text">
                         {isWildcard ? (
-                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 font-bold">
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-200 font-bold">
                             Full Wildcard (*)
                           </span>
                         ) : (
@@ -836,7 +841,7 @@ function AdminSettingsContent() {
                         {r.status === 'ACTIVE' && (
                           <button
                             onClick={() => setRetiringRole(r)}
-                            className="px-2 py-1 text-rose-300 hover:text-rose-200 border border-rose-400/25 hover:bg-rose-500/15 rounded text-[11px]"
+                            className="px-2 py-1 text-rose-700 hover:text-rose-800 border border-rose-200 hover:bg-rose-50 rounded text-[11px]"
                           >
                             Retire &amp; Reassign
                           </button>
@@ -862,16 +867,16 @@ function AdminSettingsContent() {
       {activeTab === 'GATEWAYS' && (
         <div className="space-y-6">
           {/* Org Info Banner */}
-          <div className="p-4 bg-indigo-500/15 border border-indigo-400/25 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
             <div>
-              <div className="font-bold text-indigo-100 text-sm">Civil Society Organization Info &amp; Contact Registry</div>
-              <p className="text-indigo-200 mt-0.5">
+              <div className="font-bold text-slate-900 text-sm">Civil Society Organization Info &amp; Contact Registry</div>
+              <p className="text-slate-600 mt-0.5">
                 Official CSO registration (CSO/2011/043), head office address, official phones, and contact emails are canonically maintained under Website &amp; Global CMS.
               </p>
             </div>
             <a
               href="/admin/site-settings"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 admin-button-primary rounded-lg font-semibold shrink-0 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#8B2E24] hover:bg-[#72241C] text-white rounded-lg font-semibold shrink-0 transition-colors shadow-xs"
             >
               <ExternalLink className="w-3.5 h-3.5" /> Manage Org Info
             </a>
@@ -883,7 +888,7 @@ function AdminSettingsContent() {
               <div className="flex justify-between items-center border-b admin-border pb-3">
                 <div>
                   <h3 className="font-bold admin-title text-sm flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-indigo-300" />
+                    <CreditCard className="w-4 h-4 text-[#8B2E24]" />
                     Payment Gateways Configuration (Masked Credentials)
                   </h3>
                   <p className="text-xs admin-muted mt-0.5">
@@ -1008,7 +1013,7 @@ function AdminSettingsContent() {
             <div className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5">
               <div className="border-b admin-border pb-3">
                 <h3 className="font-bold admin-title text-sm flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-indigo-300" />
+                  <Mail className="w-4 h-4 text-[#8B2E24]" />
                   Email Notification Templates (Customizable Subjects &amp; Bodies)
                 </h3>
                 <p className="text-xs admin-muted mt-0.5">
@@ -1206,7 +1211,7 @@ function AdminSettingsContent() {
                         {log.actorType}
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-mono font-medium text-indigo-300">{log.action}</td>
+                    <td className="py-3 px-4 font-mono font-bold text-[#8B2E24]">{log.action}</td>
                     <td className="py-3 px-4 font-mono admin-text">
                       {log.entityType} <span className="admin-muted">({log.entityId?.slice(0, 10)})</span>
                     </td>
@@ -1235,7 +1240,7 @@ function AdminSettingsContent() {
           <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4 my-8">
             <div className="flex justify-between items-center border-b admin-border pb-3">
               <h3 className="font-bold admin-title text-base">Create Staff Operator Account</h3>
-              <button onClick={() => setShowCreateUserModal(false)} className="admin-muted hover:text-slate-100 font-bold">✕</button>
+              <button onClick={() => setShowCreateUserModal(false)} className="text-slate-400 hover:text-slate-700 font-bold text-base">✕</button>
             </div>
 
             <form onSubmit={handleCreateUser} className="space-y-3 text-xs">
@@ -1319,7 +1324,7 @@ function AdminSettingsContent() {
           <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4 my-8">
             <div className="flex justify-between items-center border-b admin-border pb-3">
               <h3 className="font-bold admin-title text-base">Edit Staff User: {editingUser.name}</h3>
-              <button onClick={() => setEditingUser(null)} className="admin-muted hover:text-slate-100 font-bold">✕</button>
+              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-700 font-bold text-base">✕</button>
             </div>
 
             <form onSubmit={handleSaveEditUser} className="space-y-3 text-xs">
@@ -1443,7 +1448,7 @@ function AdminSettingsContent() {
                 <h3 className="font-bold admin-title text-base">Publish New Role Revision</h3>
                 <p className="text-xs admin-muted">Immutable revision matrix covering all granular permissions.</p>
               </div>
-              <button onClick={() => setShowCreateRoleModal(false)} className="admin-muted hover:text-slate-100 font-bold">✕</button>
+              <button onClick={() => setShowCreateRoleModal(false)} className="text-slate-400 hover:text-slate-700 font-bold text-base">✕</button>
             </div>
 
             <form onSubmit={handleCreateRole} className="space-y-4 text-xs">
@@ -1490,9 +1495,9 @@ function AdminSettingsContent() {
                     <button
                       type="button"
                       onClick={() => togglePermission('*')}
-                      className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border transition ${
+                      className={`px-2.5 py-1 rounded font-mono text-[10px] font-bold border transition ${
                         roleForm.selectedPermissions.has('*')
-                          ? 'bg-purple-500/20 text-purple-200 border-purple-400/30'
+                          ? 'bg-purple-100 text-purple-900 border-purple-300'
                           : 'admin-button-secondary'
                       }`}
                     >
@@ -1513,7 +1518,7 @@ function AdminSettingsContent() {
                           <button
                             type="button"
                             onClick={() => toggleCategoryAll(catSlugs, !allSelected)}
-                            className="text-[10px] font-semibold text-indigo-300 hover:text-indigo-200"
+                            className="text-[10px] font-semibold text-[#8B2E24] hover:underline cursor-pointer"
                           >
                             {allSelected ? 'Deselect All' : 'Select All'}
                           </button>
@@ -1532,7 +1537,7 @@ function AdminSettingsContent() {
                                   type="checkbox"
                                   checked={checked}
                                   onChange={() => togglePermission(p.slug)}
-                                  className="mt-0.5 rounded admin-border text-indigo-300 focus:ring-indigo-500"
+                                  className="mt-0.5 rounded border-slate-300 text-[#8B2E24] focus:ring-[#8B2E24]"
                                 />
                                 <div>
                                   <div className="font-semibold admin-title text-[11px]">{p.label}</div>
