@@ -180,7 +180,7 @@ export default function BasketPage() {
                     const craft = CLIENT_DATA.crafts.find((c) => c.key === line.craftKey) || { name: line.craftKey || 'Craft' };
                     return (
                       <div key={line.code} className="basketline">
-                        <span className="basketline__thumb" style={{ position: 'relative', overflow: 'hidden', display: 'block', width: '86px', height: '86px', borderRadius: '8px', background: 'var(--panel-soft, #f5efe6)', flexShrink: 0 }}>
+                        <span className="basketline__thumb" style={{ position: 'relative', overflow: 'hidden', display: 'block', borderRadius: '8px', background: 'var(--panel-soft, #f5efe6)', flexShrink: 0 }}>
                           <img
                             src={line.imageUrl || `/images/products/${line.code.toLowerCase()}.jpg`}
                             alt={line.name}

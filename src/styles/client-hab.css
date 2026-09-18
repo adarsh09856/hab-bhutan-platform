@@ -1394,9 +1394,9 @@ a.card:hover{color:inherit;border-color:var(--ink)}
   width:86px;height:86px;border-radius:9px;flex:none;
   background:repeating-linear-gradient(135deg,var(--ph-a) 0 8px,var(--ph-b) 8px 16px);
 }
-.basketline__body{flex:1;min-width:0}
-.basketline__name{font-family:var(--ui);font-weight:600;font-size:var(--t-card-m);margin:3px 0}
-.basketline__total{width:96px;text-align:right;font-family:var(--ui);font-weight:700;font-size:16px}
+.basketline__body{flex:1;min-width:0;overflow:hidden}
+.basketline__name{font-family:var(--ui);font-weight:600;font-size:var(--t-card-m);margin:3px 0;word-break:break-word;overflow-wrap:anywhere}
+.basketline__total{width:96px;text-align:right;font-family:var(--ui);font-weight:700;font-size:16px;flex-shrink:0}
 .basketline__remove{
   background:none;border:0;color:var(--muted);font-size:13.5px;font-family:var(--body);padding:0;
 }
@@ -2542,10 +2542,13 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .assurance--5,.grid--5,.milestones,.valuegrid{grid-template-columns:1fr}
   .filterbar{grid-template-columns:1fr}
   .formgrid{grid-template-columns:1fr}
-  .basketline{flex-wrap:wrap;gap:12px;padding:16px 14px}
-  .basketline__thumb{width:72px;height:72px}
-  .basketline__total{width:auto;margin-left:auto}
-  .basketline__remove{min-height:36px;padding:4px 8px;cursor:pointer}
+  .basketline{display:grid;grid-template-columns:72px 1fr;gap:10px 12px;padding:14px;align-items:start}
+  .basketline__thumb{width:72px !important;height:72px !important;grid-row:1/4;flex:none}
+  .basketline__body{grid-column:2;min-width:0;overflow:hidden}
+  .basketline__name{word-break:break-word;overflow-wrap:anywhere}
+  .qty{grid-column:2;width:fit-content}
+  .basketline__total{width:auto;text-align:left;grid-column:2;font-size:15px}
+  .basketline__remove{grid-column:2;min-height:36px;padding:4px 0;cursor:pointer;text-align:left}
   .tabs{gap:8px}
   .project{padding:24px 22px}
   .publead__copy{padding:26px 22px}
@@ -2580,6 +2583,65 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .btn--xs,.admin__rowbtn{min-height:38px}
   .frame--hero{aspect-ratio:4/3}
   .section__head{flex-direction:column;align-items:flex-start;gap:14px}
+
+  /* ── shop page: rail becomes a horizontal scroll strip on mobile ──────── */
+  .shopgrid{grid-template-columns:1fr;gap:18px}
+  .rail{position:static;border-radius:8px}
+  .rail__row{padding:10px 12px}
+
+  /* ── product detail page ─────────────────────────────────────────────── */
+  .proddetail{grid-template-columns:1fr;gap:24px}
+  .prodbuy__price{font-size:22px}
+  .prodbuy__actions{flex-direction:column}
+  .prodbuy__add{min-width:0;width:100%}
+  .prodbuy__qty{width:100%}
+  .gallery__thumbs{gap:7px}
+  .gallery__thumb{width:60px;height:46px}
+
+  /* ── checkout ────────────────────────────────────────────────────────── */
+  .checkout{grid-template-columns:1fr}
+  .summary{position:static}
+  .formgrid{grid-template-columns:1fr}
+  .field--wide{grid-column:1}
+  .payopt{padding:12px}
+  .payopt__label{gap:10px;flex-wrap:wrap}
+
+  /* ── about / hero ────────────────────────────────────────────────────── */
+  .about{grid-template-columns:1fr;gap:28px}
+  .pagehero{grid-template-columns:1fr;gap:24px}
+  .duo{grid-template-columns:1fr}
+  .ctaband{grid-template-columns:1fr;gap:20px;padding:26px 22px}
+
+  /* ── contact, donate, register, apply forms ──────────────────────────── */
+  .inline-form{flex-direction:column}
+  .inline-form .input{width:100%}
+  .actions{flex-direction:column}
+  .actions .btn{width:100%;justify-content:center}
+
+  /* ── track-order milestones stepper ─────────────────────────────────── */
+  .milestones{grid-template-columns:1fr}
+  .milestone{padding:18px 16px}
+
+  /* ── memberhero, govrow, teamrow ─────────────────────────────────────── */
+  .memberhero{grid-template-columns:1fr;gap:24px}
+  .govrow{grid-template-columns:1fr;gap:12px;padding:18px 20px}
+  .teamrow{padding:16px;gap:12px}
+  .teamrow__avatar{width:52px;height:52px}
+
+  /* ── news item ───────────────────────────────────────────────────────── */
+  .newsitem{grid-template-columns:1fr}
+
+  /* ── steps (membership / checkout progress) ──────────────────────────── */
+  .step{min-width:120px}
+
+  /* ── signoff logo area on very small screens ─────────────────────────── */
+  .signoff__inner{padding:24px var(--gutter) 20px;gap:18px}
+  .signoff__logo .logo__img{height:46px}
+  .signoff__name{font-size:18px}
+
+  /* ── search expand: full width on phone ─────────────────────────────── */
+  .search.is-open .search__input,
+  .search:focus-within .search__input{width:calc(100vw - 140px);max-width:280px}
 }
 
 @media (max-width:380px){
@@ -2597,6 +2659,12 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .menu__panel--wide{width:calc(100vw - 16px) !important;right:-6px !important}
   .menu__grid{grid-template-columns:1fr;gap:6px}
   .partners{grid-template-columns:1fr}
+  /* basket grid tighter on very small phones */
+  .basketline{grid-template-columns:60px 1fr;gap:8px 10px;padding:12px}
+  .basketline__thumb{width:60px !important;height:60px !important}
+  .basketline__total{font-size:14px}
+  /* prevent any single column from going to 0-width */
+  .shopgrid,.checkout,.formgrid{grid-template-columns:1fr}
 }
 
 @media print{
