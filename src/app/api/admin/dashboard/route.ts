@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
       recentInquiries,
       recentApplications,
       recentDonations,
+      lowStockItems,
     ] = await Promise.all([
       prisma.order.findMany({
         orderBy: { createdAt: 'desc' },
@@ -135,6 +136,24 @@ export async function GET(req: NextRequest) {
         take: 8,
         include: {
           pillar: { select: { title: true } },
+        },
+      }),
+      prisma.product.findMany({
+        where: {
+          stock: { lt: 3 },
+          status: 'PUBLISHED',
+        },
+        orderBy: { stock: 'asc' },
+        take: 6,
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          stock: true,
+          priceUSD: true,
+          region: true,
+          maker: { select: { name: true } },
+          craft: { select: { name: true } },
         },
       }),
     ]);
@@ -278,6 +297,16 @@ export async function GET(req: NextRequest) {
         action: log.action,
         target: `${log.entityType}: ${log.entityId}`,
         createdAt: log.createdAt,
+      })),
+      lowStockItems: lowStockItems.map((p) => ({
+        id: p.id,
+        code: p.code,
+        name: p.name,
+        stock: p.stock,
+        priceUSD: p.priceUSD,
+        region: p.region,
+        makerName: p.maker?.name || 'HAB Guild',
+        craftName: p.craft?.name || 'Zorig Chusum',
       })),
     });
   } catch (err: any) {

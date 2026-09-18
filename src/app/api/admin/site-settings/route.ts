@@ -162,6 +162,7 @@ export async function PUT(req: NextRequest) {
       ...(body.supportReturnsSubtext !== undefined && { supportReturnsSubtext: body.supportReturnsSubtext }),
       // Gateways & Email Templates CMS
       ...(body.emailTemplates !== undefined && { emailTemplates: body.emailTemplates }),
+      ...(body.emailSettings !== undefined && { emailSettings: body.emailSettings }),
       ...(body.paymentGateways !== undefined && { paymentGateways: body.paymentGateways }),
       // Wholesale & Bulk Orders CMS
       ...(body.wholesaleMoq !== undefined && { wholesaleMoq: Number(body.wholesaleMoq) || 5 }),

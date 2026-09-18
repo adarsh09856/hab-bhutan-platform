@@ -31,7 +31,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [craftFilter, setCraftFilter] = useState('ALL');
-  const [stockFilter, setStockFilter] = useState<'ALL' | 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK'>('ALL');
+  const [stockFilter, setStockFilter] = useState<'ALL' | 'IN_STOCK' | 'LOW_STOCK' | 'CRITICAL_LOW' | 'OUT_OF_STOCK'>('ALL');
   
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -321,6 +321,8 @@ export default function AdminProductsPage() {
         ? stockVal > 5
         : stockFilter === 'LOW_STOCK'
         ? stockVal > 0 && stockVal <= 5
+        : stockFilter === 'CRITICAL_LOW'
+        ? stockVal > 0 && stockVal < 3
         : stockVal === 0;
     return matchesSearch && matchesCraft && matchesStock;
   });
@@ -428,6 +430,7 @@ export default function AdminProductsPage() {
             <option value="ALL">All Stock Levels</option>
             <option value="IN_STOCK">In Stock (&gt;5)</option>
             <option value="LOW_STOCK">Low Stock (1–5)</option>
+            <option value="CRITICAL_LOW">⚠️ Critical Low Stock (&lt;3)</option>
             <option value="OUT_OF_STOCK">Out of Stock (0)</option>
           </select>
         </div>
@@ -514,8 +517,13 @@ export default function AdminProductsPage() {
                           />
                           {stockVal > 5 ? (
                             <AdminBadge variant="success" size="sm" dot>In Stock</AdminBadge>
+                          ) : stockVal >= 3 ? (
+                            <AdminBadge variant="warning" size="sm" dot>Low ({stockVal})</AdminBadge>
                           ) : stockVal > 0 ? (
-                            <AdminBadge variant="warning" size="sm" dot>Low</AdminBadge>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                              Critical ({stockVal})
+                            </span>
                           ) : (
                             <AdminBadge variant="danger" size="sm" dot>Out</AdminBadge>
                           )}

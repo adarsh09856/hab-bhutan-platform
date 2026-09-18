@@ -24,8 +24,10 @@ import {
   Sparkles,
   ShieldCheck,
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  FileText
 } from 'lucide-react';
+import OrderInvoiceModal from '@/components/public/OrderInvoiceModal';
 
 interface ProductItem {
   id: string;
@@ -88,6 +90,7 @@ export default function OnlinePosConsole() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [completedReceipt, setCompletedReceipt] = useState<CompletedReceipt | null>(null);
+  const [showFullInvoice, setShowFullInvoice] = useState(false);
 
   const receiptRef = useRef<HTMLDivElement>(null);
 
@@ -786,6 +789,13 @@ export default function OnlinePosConsole() {
               </span>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
+                  onClick={() => setShowFullInvoice(true)}
+                  className="px-3 py-1 bg-stone-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:bg-stone-900 shadow-sm"
+                >
+                  <FileText className="w-3.5 h-3.5" /> Official Invoice
+                </button>
+                <button
                   onClick={handlePrint}
                   className="px-3 py-1 bg-amber-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:bg-amber-900 shadow-sm"
                 >
@@ -939,6 +949,33 @@ export default function OnlinePosConsole() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Official Tax Invoice Modal for POS */}
+      {completedReceipt && showFullInvoice && (
+        <OrderInvoiceModal
+          isOpen={showFullInvoice}
+          onClose={() => setShowFullInvoice(false)}
+          order={{
+            orderNumber: completedReceipt.orderNumber,
+            createdAt: completedReceipt.date,
+            customerName: completedReceipt.customerName,
+            customerPhone: completedReceipt.customerPhone,
+            paymentMethod: completedReceipt.paymentMethod,
+            paymentStatus: 'PAID',
+            orderStatus: 'DELIVERED',
+            totalUSD: completedReceipt.totalUSD,
+            totalPaidCurrency: completedReceipt.totalBTN,
+            currencyUsed: completedReceipt.currency,
+            items: completedReceipt.items.map((item) => ({
+              code: item.code,
+              name: item.name,
+              priceUSD: item.priceUSD,
+              priceBTN: item.priceBTN,
+              quantity: item.quantity,
+            })),
+          }}
+        />
       )}
     </div>
   );

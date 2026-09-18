@@ -16,9 +16,11 @@ import {
   ShieldCheck,
   Mail,
   Phone,
-  Banknote
+  Banknote,
+  FileText
 } from 'lucide-react';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import OrderInvoiceModal from '@/components/public/OrderInvoiceModal';
 
 export default function OrderConfirmationPage() {
   const params = useParams();
@@ -27,6 +29,7 @@ export default function OrderConfirmationPage() {
   const [order, setOrder] = useState<any | null>(null);
   const [siteSettings, setSiteSettings] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   useEffect(() => {
     fetch('/api/site-settings', { cache: 'no-store' })
@@ -86,11 +89,20 @@ export default function OrderConfirmationPage() {
           {/* Quick Actions (Print, Track, Shop) */}
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3 print:hidden">
             <button
+              type="button"
+              onClick={() => setShowInvoiceModal(true)}
+              className="px-4 py-2 rounded-xl bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Tax Invoice &amp; Thermal Slip</span>
+            </button>
+
+            <button
               onClick={() => window.print()}
               className="px-4 py-2 rounded-xl border border-[#E4DDD1] hover:bg-[#EDE5D6]/50 text-xs font-semibold text-[#33261F] flex items-center gap-1.5 transition-colors"
             >
               <Printer className="w-4 h-4" />
-              <span>Print Official Receipt</span>
+              <span>Print Page</span>
             </button>
 
             <Link
@@ -318,6 +330,14 @@ export default function OrderConfirmationPage() {
           </div>
         </div>
       </div>
+
+      {/* Official CSO Tax Invoice & POS Slip Modal */}
+      <OrderInvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => setShowInvoiceModal(false)}
+        order={order}
+        siteSettings={siteSettings}
+      />
     </main>
   );
 }

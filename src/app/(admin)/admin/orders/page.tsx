@@ -21,8 +21,10 @@ import {
   ShieldCheck,
   Search,
   RefreshCw,
-  X
+  X,
+  FileText
 } from 'lucide-react';
+import OrderInvoiceModal from '@/components/public/OrderInvoiceModal';
 
 function parseShippingAddress(addr: any) {
   if (!addr) {
@@ -68,6 +70,7 @@ export default function AdminOrdersPage() {
 
   // Modals
   const [inspectingOrder, setInspectingOrder] = useState<any | null>(null);
+  const [invoiceModalOrder, setInvoiceModalOrder] = useState<any | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState<any | null>(null);
   const [cancellingOrder, setCancellingOrder] = useState<any | null>(null);
@@ -705,6 +708,13 @@ export default function AdminOrdersPage() {
                         >
                           🔍 Inspect / Pack
                         </button>
+                        <button
+                          onClick={() => setInvoiceModalOrder(o)}
+                          className="px-2.5 py-1 text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-lg transition shadow-xs inline-flex items-center gap-1"
+                        >
+                          <FileText className="w-3 h-3" />
+                          <span>Invoice</span>
+                        </button>
                         {o.orderStatus !== 'CANCELLED' && o.orderStatus !== 'DELIVERED' && (
                           <button
                             onClick={() => {
@@ -810,11 +820,19 @@ export default function AdminOrdersPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  onClick={() => setInvoiceModalOrder(inspectingOrder)}
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-amber-800 hover:bg-amber-900 rounded-lg flex items-center gap-1.5 transition shadow-xs"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Tax Invoice &amp; Thermal Slip
+                </button>
+                <button
+                  type="button"
                   onClick={() => window.print()}
                   className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg flex items-center gap-1.5 transition shadow-sm"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  Print Packing Slip / Customs Invoice
+                  Print Packing Slip
                 </button>
                 <button
                   type="button"
@@ -1758,6 +1776,32 @@ export default function AdminOrdersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Official CSO Tax Invoice & POS Slip Modal */}
+      {invoiceModalOrder && (
+        <OrderInvoiceModal
+          isOpen={!!invoiceModalOrder}
+          onClose={() => setInvoiceModalOrder(null)}
+          order={{
+            orderNumber: invoiceModalOrder.orderNumber,
+            createdAt: invoiceModalOrder.createdAt,
+            customerName: invoiceModalOrder.customerName,
+            customerEmail: invoiceModalOrder.customerEmail,
+            customerPhone: invoiceModalOrder.customerPhone,
+            customerType: invoiceModalOrder.customerType,
+            shippingAddress: invoiceModalOrder.shippingAddress,
+            shippingMethod: invoiceModalOrder.shippingMethod,
+            paymentMethod: invoiceModalOrder.paymentMethod,
+            paymentStatus: invoiceModalOrder.paymentStatus,
+            orderStatus: invoiceModalOrder.orderStatus,
+            trackingNumber: invoiceModalOrder.trackingNumber,
+            totalUSD: invoiceModalOrder.totalUSD,
+            totalPaidCurrency: invoiceModalOrder.totalPaidCurrency,
+            currencyUsed: invoiceModalOrder.currencyUsed,
+            items: invoiceModalOrder.orderItems || invoiceModalOrder.items,
+          }}
+        />
       )}
     </div>
   );

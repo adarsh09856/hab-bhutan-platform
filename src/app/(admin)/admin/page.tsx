@@ -110,6 +110,16 @@ interface DashboardData {
     status: string;
     createdAt: string;
   }[];
+  lowStockItems?: {
+    id: string;
+    code: string;
+    name: string;
+    stock: number;
+    priceUSD: number;
+    region: string;
+    makerName: string;
+    craftName: string;
+  }[];
 }
 
 export default function AdminDashboardPage() {
@@ -591,6 +601,61 @@ export default function AdminDashboardPage() {
                 </div>
                 <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
               </Link>
+            </div>
+          </GlassCard>
+
+          {/* Automated Low-Stock & Artisan Inventory Alert Widget */}
+          <GlassCard glow="rose" className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600" />
+                Artisan Inventory Alerts (&lt;3)
+              </h3>
+              <Link
+                href="/admin/products"
+                className="text-[11px] font-bold text-[#8B2E24] hover:underline"
+              >
+                Stock Studio &rarr;
+              </Link>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              {loading ? (
+                <p className="text-slate-500 font-mono text-[11px]">Monitoring craft reserves...</p>
+              ) : !data?.lowStockItems || data.lowStockItems.length === 0 ? (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>All master artisan items sufficiently stocked (&ge;3 units).</span>
+                </div>
+              ) : (
+                data.lowStockItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between transition-colors"
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                        <span className="truncate max-w-[140px]">{item.name}</span>
+                        <span className="font-mono text-[10px] text-slate-500">({item.code})</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        {item.makerName} · {item.region}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span
+                        className={`inline-block font-mono font-bold px-2 py-0.5 rounded text-[10.5px] ${
+                          item.stock === 0
+                            ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        }`}
+                      >
+                        {item.stock === 0 ? 'Out of Stock' : `${item.stock} left`}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </GlassCard>
 

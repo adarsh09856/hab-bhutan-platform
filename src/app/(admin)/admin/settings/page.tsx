@@ -89,6 +89,19 @@ function AdminSettingsContent() {
     },
   });
 
+  const [smtpSettings, setSmtpSettings] = useState({
+    host: '',
+    port: 587,
+    secure: false,
+    username: '',
+    password: '',
+    fromName: 'Handicrafts Association of Bhutan',
+    fromEmail: 'officehab@gmail.com',
+  });
+  const [testEmailRecipient, setTestEmailRecipient] = useState('');
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [testEmailFeedback, setTestEmailFeedback] = useState<{ success: boolean; message: string } | null>(null);
+
   const loadGatewaysAndEmails = async () => {
     try {
       const res = await fetch('/api/admin/site-settings', { credentials: 'include', cache: 'no-store' });
@@ -99,6 +112,9 @@ function AdminSettingsContent() {
         }
         if (d?.setting?.emailTemplates) {
           setEmailTemplates((prev) => ({ ...prev, ...d.setting.emailTemplates }));
+        }
+        if (d?.setting?.emailSettings) {
+          setSmtpSettings((prev) => ({ ...prev, ...d.setting.emailSettings }));
         }
       }
     } catch (err) {
@@ -119,6 +135,7 @@ function AdminSettingsContent() {
           rmaApiSecret: isUpdatingRmaSecret && newRmaSecret ? newRmaSecret : gatewayConfig.rmaApiSecret,
         },
         emailTemplates,
+        emailSettings: smtpSettings,
       };
 
       const res = await fetch('/api/admin/site-settings', {
@@ -130,7 +147,7 @@ function AdminSettingsContent() {
 
       const d = await res.json();
       if (res.ok && d.success) {
-        setActionSuccess('✓ Payment gateways and email notification templates saved successfully.');
+        setActionSuccess('✓ Outbound SMTP settings, gateways, and email templates saved successfully.');
         setIsUpdatingStripeSecret(false);
         setIsUpdatingRmaSecret(false);
         setNewStripeSecret('');
@@ -142,6 +159,36 @@ function AdminSettingsContent() {
       setActionError(err.message || 'Network error saving settings.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmailRecipient || !testEmailRecipient.includes('@')) {
+      setTestEmailFeedback({ success: false, message: 'Please enter a valid recipient email address.' });
+      return;
+    }
+    setTestingEmail(true);
+    setTestEmailFeedback(null);
+    try {
+      const res = await fetch('/api/admin/email/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          toEmail: testEmailRecipient,
+          ...smtpSettings,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTestEmailFeedback({ success: true, message: data.message });
+      } else {
+        setTestEmailFeedback({ success: false, message: data.error || 'Failed to dispatch test email.' });
+      }
+    } catch (err: any) {
+      setTestEmailFeedback({ success: false, message: err.message || 'Network error connecting to email service.' });
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -1139,6 +1186,161 @@ function AdminSettingsContent() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Outbound SMTP Server & Live Test Engine */}
+            <div className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5">
+              <div className="flex justify-between items-center border-b admin-border pb-3 flex-wrap gap-2">
+                <div>
+                  <h3 className="font-bold admin-title text-sm flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-emerald-600" />
+                    Outbound SMTP Server Configuration (Production / Simulated Relay)
+                  </h3>
+                  <p className="text-xs admin-muted mt-0.5">
+                    Configure your live mail transport (e.g. Gmail SMTP, SendGrid, Amazon SES, or custom Bhutanese mail server). Fallback to zero-crash simulation mode if unconfigured.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Nodemailer Engine Ready
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div>
+                  <label className="block font-semibold admin-text mb-1">SMTP Host</label>
+                  <input
+                    type="text"
+                    value={smtpSettings.host}
+                    onChange={(e) => setSmtpSettings({ ...smtpSettings, host: e.target.value })}
+                    placeholder="smtp.gmail.com or mail.hab.org.bt"
+                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold admin-text mb-1">SMTP Port</label>
+                  <input
+                    type="number"
+                    value={smtpSettings.port}
+                    onChange={(e) => setSmtpSettings({ ...smtpSettings, port: parseInt(e.target.value, 10) || 587 })}
+                    placeholder="587 or 465"
+                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div className="flex items-end pb-1.5">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={smtpSettings.secure}
+                      onChange={(e) => setSmtpSettings({ ...smtpSettings, secure: e.target.checked })}
+                      className="rounded border-slate-300 text-[#8B2E24] focus:ring-[#8B2E24]"
+                    />
+                    <span className="text-xs font-semibold admin-text">Use SSL / TLS (Port 465)</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-semibold admin-text mb-1">SMTP Username / Auth User</label>
+                  <input
+                    type="text"
+                    value={smtpSettings.username}
+                    onChange={(e) => setSmtpSettings({ ...smtpSettings, username: e.target.value })}
+                    placeholder="notifications@hab.org.bt"
+                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold admin-text mb-1">SMTP Password / App Password</label>
+                  <input
+                    type="password"
+                    value={smtpSettings.password}
+                    onChange={(e) => setSmtpSettings({ ...smtpSettings, password: e.target.value })}
+                    placeholder="App password or secret token"
+                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold admin-text mb-1">Sender Email Address</label>
+                  <input
+                    type="email"
+                    value={smtpSettings.fromEmail}
+                    onChange={(e) => setSmtpSettings({ ...smtpSettings, fromEmail: e.target.value })}
+                    placeholder="no-reply@hab.org.bt"
+                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold admin-text mb-1">Sender Display Name</label>
+                  <input
+                    type="text"
+                    value={smtpSettings.fromName}
+                    onChange={(e) => setSmtpSettings({ ...smtpSettings, fromName: e.target.value })}
+                    placeholder="Handicrafts Association of Bhutan"
+                    className="admin-input w-full border rounded-lg px-3 py-2 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Send Test Email Tool */}
+              <div className="pt-3 border-t admin-border mt-3 bg-slate-50/60 dark:bg-slate-900/30 p-4 rounded-lg">
+                <h4 className="font-bold admin-title text-xs mb-1 flex items-center gap-1.5">
+                  <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                  Live Dispatch Verification Tool
+                </h4>
+                <p className="text-[11px] admin-muted mb-3">
+                  Send a live diagnostic test message to verify outbound credentials, TLS handshakes, and mailbox deliverability.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <input
+                    type="email"
+                    value={testEmailRecipient}
+                    onChange={(e) => setTestEmailRecipient(e.target.value)}
+                    placeholder="Enter recipient email (e.g. test@hab.org.bt)..."
+                    className="admin-input flex-1 border rounded-lg px-3 py-2 text-xs font-mono w-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendTestEmail}
+                    disabled={testingEmail || !testEmailRecipient}
+                    className="admin-button-secondary px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap disabled:opacity-50 inline-flex items-center gap-2"
+                  >
+                    {testingEmail ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin"></span>
+                        Testing Connection...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-3.5 h-3.5" />
+                        Send Test Email
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {testEmailFeedback && (
+                  <div
+                    className={`mt-3 p-3 rounded-lg text-xs flex items-center gap-2 font-mono ${
+                      testEmailFeedback.success
+                        ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-900 border border-rose-200'
+                    }`}
+                  >
+                    {testEmailFeedback.success ? (
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>{testEmailFeedback.message}</span>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -17,9 +17,12 @@ import {
   RotateCcw,
   ShieldCheck,
   Building2,
-  Calendar
+  Calendar,
+  FileText,
+  Printer
 } from 'lucide-react';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import OrderInvoiceModal from '@/components/public/OrderInvoiceModal';
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
@@ -31,6 +34,7 @@ function TrackOrderContent() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [orderData, setOrderData] = useState<any | null>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const performSearch = async (orderId: string, contact?: string) => {
     if (!orderId.trim()) {
@@ -221,16 +225,27 @@ function TrackOrderContent() {
               )}
             </div>
 
-            <div className="text-right">
-              <div className="text-xs text-slate-500">Total Order Value</div>
-              <div className="text-xl font-bold font-mono text-slate-900">
-                {orderData.currencyUsed === 'BTN'
-                  ? `Nu. ${(orderData.totalPaidCurrency || 0).toLocaleString()}`
-                  : `$${(orderData.totalUSD || 0).toFixed(2)}`}
+            <div className="text-right space-y-1.5">
+              <div>
+                <div className="text-xs text-slate-500">Total Order Value</div>
+                <div className="text-xl font-bold font-mono text-slate-900">
+                  {orderData.currencyUsed === 'BTN'
+                    ? `Nu. ${(orderData.totalPaidCurrency || 0).toLocaleString()}`
+                    : `$${(orderData.totalUSD || 0).toFixed(2)}`}
+                </div>
+                <div className="text-[11px] text-emerald-700 font-medium">
+                  Payment {orderData.paymentStatus} ({orderData.paymentMethod})
+                </div>
               </div>
-              <div className="text-[11px] text-emerald-700 font-medium">
-                Payment {orderData.paymentStatus} ({orderData.paymentMethod})
-              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowInvoiceModal(true)}
+                className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs transition"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Tax Invoice &amp; Slip</span>
+              </button>
             </div>
           </div>
 
@@ -348,6 +363,31 @@ function TrackOrderContent() {
           </a>
         </div>
       </div>
+
+      {/* Official Tax Invoice & POS Slip Modal */}
+      {orderData && (
+        <OrderInvoiceModal
+          isOpen={showInvoiceModal}
+          onClose={() => setShowInvoiceModal(false)}
+          order={{
+            orderNumber: orderData.orderNumber,
+            createdAt: orderData.createdAt,
+            customerName: orderData.customerName,
+            customerEmail: orderData.customerEmail,
+            customerPhone: orderData.customerPhone,
+            shippingAddress: orderData.shippingDestination,
+            shippingMethod: orderData.shippingMethod,
+            paymentMethod: orderData.paymentMethod,
+            paymentStatus: orderData.paymentStatus,
+            orderStatus: orderData.orderStatus,
+            trackingNumber: orderData.trackingNumber,
+            totalUSD: orderData.totalUSD,
+            totalPaidCurrency: orderData.totalPaidCurrency,
+            currencyUsed: orderData.currencyUsed,
+            items: orderData.items,
+          }}
+        />
+      )}
     </main>
   );
 }

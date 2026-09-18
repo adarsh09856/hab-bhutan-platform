@@ -6,6 +6,7 @@ import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
 import { getSessionUser } from '@/lib/rbac';
 import { CLIENT_DATA } from '@/lib/client-data';
+import { sendOrderConfirmationEmail } from '@/lib/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -262,6 +263,18 @@ export async function POST(req: NextRequest) {
         itemsCount: items.length,
         shippingCarrier: result.carrierName,
       },
+    });
+
+    // Asynchronous order confirmation email dispatch (zero-crash / non-blocking)
+    sendOrderConfirmationEmail({
+      order: {
+        ...result.newOrder,
+        carrier: result.carrierName,
+      },
+      customerEmail,
+      customerName: customerFullName,
+    }).catch((err) => {
+      console.warn('[orders/route] Background confirmation email dispatch notice:', err.message);
     });
 
     return NextResponse.json({

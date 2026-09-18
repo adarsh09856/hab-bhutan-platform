@@ -493,6 +493,7 @@ model SiteSetting {
 
   // Gateways & Email Templates CMS
   emailTemplates          Json?
+  emailSettings           Json?
   paymentGateways         Json?
 
   // Wholesale & B2B Trade CMS

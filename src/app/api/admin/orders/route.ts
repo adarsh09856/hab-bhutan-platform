@@ -4,6 +4,7 @@ import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { calculateShipping } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
+import { sendOrderShippedEmail } from '@/lib/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -409,6 +410,17 @@ export async function PATCH(req: NextRequest) {
         refundPolicy: refundNote || null,
       },
     });
+
+    if (updated.orderStatus === 'SHIPPED' && updated.customerEmail) {
+      sendOrderShippedEmail({
+        order: updated,
+        trackingNumber: updated.trackingNumber || 'Pending Dispatch Barcode',
+        customerEmail: updated.customerEmail,
+        customerName: updated.customerName,
+      }).catch((err) => {
+        console.warn('[admin/orders] Failed to send order shipped notification:', err.message);
+      });
+    }
 
     return NextResponse.json({
       success: true,
