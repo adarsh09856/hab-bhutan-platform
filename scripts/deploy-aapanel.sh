@@ -67,11 +67,7 @@ npm install --legacy-peer-deps
 # 3. PostgreSQL Database Schema Sync
 echo "🗄️ [4/7] Generating Prisma Client and Syncing Database..."
 npx prisma generate
-# Attempt standard migration; fall back to db push if custom migrations differ
-if ! npx prisma migrate deploy; then
-    echo "⚠️ 'prisma migrate deploy' exited with code; applying schema sync via 'prisma db push'..."
-    npx prisma db push --accept-data-loss
-fi
+npx prisma db push --accept-data-loss
 
 # 4. Master Data Seed & Admin Verification
 echo "🌱 [5/7] Verifying Seed & Master Catalog Data..."
