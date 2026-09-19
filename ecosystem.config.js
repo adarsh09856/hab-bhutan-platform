@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-let port = 3000;
+let port = 3001;
 try {
   const envPath = path.join(__dirname, '.env');
   if (fs.existsSync(envPath)) {
@@ -14,7 +14,7 @@ try {
     port = parseInt(process.env.PORT, 10);
   }
 } catch {
-  port = 3000;
+  port = 3001;
 }
 
 module.exports = {
@@ -29,8 +29,9 @@ module.exports = {
       watch: false,
       max_memory_restart: '1G',
       kill_timeout: 5000,
-      wait_ready: true,
-      listen_timeout: 10000,
+      min_uptime: '10s',
+      max_restarts: 10,
+      listen_timeout: 30000,
       env: {
         NODE_ENV: 'production',
         PORT: port,

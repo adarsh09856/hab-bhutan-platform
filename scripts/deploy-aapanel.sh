@@ -110,17 +110,23 @@ elif command -v lsof &> /dev/null; then
     kill -9 $(lsof -t -i:"${APP_PORT}" 2>/dev/null) 2>/dev/null || true
     kill -9 $(lsof -t -i:3001 2>/dev/null) 2>/dev/null || true
 fi
+pkill -f "node.*server.js" 2>/dev/null || true
 sleep 1
 
 APP_NAME="habbhutanplatform"
 
 if command -v "$PM2_BIN" &> /dev/null || [ -x "$PM2_BIN" ]; then
-    # Check if process is already managed by PM2
+    # If the app is in errored/stopped state, delete it to clear restart backoff & stale ports
+    if "$PM2_BIN" describe "$APP_NAME" 2>/dev/null | grep -iq "errored\|stopped"; then
+        echo "⚠️ PM2 process '$APP_NAME' was in errored/stopped state. Performing clean reset..."
+        "$PM2_BIN" delete "$APP_NAME" 2>/dev/null || true
+    fi
+
     if "$PM2_BIN" describe "$APP_NAME" &> /dev/null; then
-        echo "⚡ Reloading existing PM2 instance '$APP_NAME' with zero-downtime..."
-        "$PM2_BIN" reload "$APP_NAME" --update-env || "$PM2_BIN" restart "$APP_NAME" --update-env
+        echo "⚡ Restarting PM2 instance '$APP_NAME' with updated environment..."
+        "$PM2_BIN" restart "$APP_NAME" --update-env || "$PM2_BIN" reload "$APP_NAME" --update-env
     elif [ -f ecosystem.config.js ]; then
-        echo "🚀 Starting new PM2 instance from ecosystem.config.js..."
+        echo "🚀 Starting PM2 instance from ecosystem.config.js..."
         "$PM2_BIN" start ecosystem.config.js
     elif [ -f server.js ]; then
         echo "🚀 Starting Next.js via PM2 server.js execution..."
@@ -129,7 +135,6 @@ if command -v "$PM2_BIN" &> /dev/null || [ -x "$PM2_BIN" ]; then
         echo "🚀 Starting Next.js via PM2 direct execution..."
         "$PM2_BIN" start "npm" --name "$APP_NAME" -- start
     fi
-    "$PM2_BIN" reload all --update-env 2>/dev/null || true
     "$PM2_BIN" save || true
     echo "✅ PM2 process successfully started and saved."
     "$PM2_BIN" list || true
