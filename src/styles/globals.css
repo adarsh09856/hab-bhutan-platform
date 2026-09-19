@@ -185,10 +185,10 @@ body.hab-visual-edit-on [data-hab-section]:hover {
 }
 
 .hab-section-edit-badge {
-  display: flex !important;
+  display: none !important;
 }
 
-body.hab-visual-edit-on .hab-section-edit-badge {
+body.has-admin-live-bar.hab-visual-edit-on .hab-section-edit-badge {
   display: flex !important;
 }
 

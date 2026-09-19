@@ -17,6 +17,27 @@ export default function SectionEditBadge({
   onQuickEdit,
   className = 'top-3 right-3',
 }: SectionEditBadgeProps) {
+  const [visible, setVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkVisibility = () => {
+      const isVisible =
+        typeof document !== 'undefined' &&
+        document.body.classList.contains('has-admin-live-bar') &&
+        document.body.classList.contains('hab-visual-edit-on');
+      setVisible(isVisible);
+    };
+
+    checkVisibility();
+
+    const observer = new MutationObserver(checkVisibility);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (!visible) return null;
+
   return (
     <aside
       className={`hab-section-edit-badge absolute z-40 items-center gap-1.5 bg-slate-900/95 text-white text-[11px] font-medium px-3 py-1.5 rounded-xl border border-amber-400/60 shadow-xl backdrop-blur-md transition-all hover:bg-slate-900 ${className}`}

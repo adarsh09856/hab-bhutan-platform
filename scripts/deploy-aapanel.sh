@@ -49,8 +49,8 @@ if [ ! -f .env ]; then
     fi
 fi
 
-# Extract configured port from .env (default: 3000)
-APP_PORT=3000
+# Extract configured port from .env (default: 3001)
+APP_PORT=3001
 if [ -f .env ]; then
     DETECTED_PORT=$(grep -E '^PORT=' .env | cut -d '=' -f2 | tr -d ' "\r\n' || true)
     if [ -n "$DETECTED_PORT" ]; then
@@ -104,6 +104,7 @@ if ! command -v pm2 &> /dev/null; then
 fi
 
 # Clean up port if held by an orphan or defunct process
+echo "🧹 Releasing ports ${APP_PORT} and 3001 if occupied..."
 if command -v fuser &> /dev/null; then
     fuser -k "${APP_PORT}/tcp" 2>/dev/null || true
     fuser -k 3001/tcp 2>/dev/null || true
@@ -111,6 +112,7 @@ elif command -v lsof &> /dev/null; then
     kill -9 $(lsof -t -i:"${APP_PORT}" 2>/dev/null) 2>/dev/null || true
     kill -9 $(lsof -t -i:3001 2>/dev/null) 2>/dev/null || true
 fi
+sleep 1
 
 APP_NAME="habbhutanplatform"
 
@@ -122,6 +124,9 @@ if command -v "$PM2_BIN" &> /dev/null || [ -x "$PM2_BIN" ]; then
     elif [ -f ecosystem.config.js ]; then
         echo "🚀 Starting new PM2 instance from ecosystem.config.js..."
         "$PM2_BIN" start ecosystem.config.js
+    elif [ -f server.js ]; then
+        echo "🚀 Starting Next.js via PM2 server.js execution..."
+        "$PM2_BIN" start server.js --name "$APP_NAME"
     else
         echo "🚀 Starting Next.js via PM2 direct execution..."
         "$PM2_BIN" start "npm" --name "$APP_NAME" -- start
