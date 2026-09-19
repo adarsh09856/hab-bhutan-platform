@@ -12,11 +12,9 @@ import {
   ExternalLink,
   Image as ImageIcon,
   Type,
-  FileText,
   Compass,
   Search,
-  Eye,
-  Check,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import FileUploadInput from '@/components/admin/FileUploadInput';
@@ -44,7 +42,7 @@ interface CustomPageLiveEditorProps {
   onSaved?: (updatedPage: CustomPageData) => void;
 }
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   'General',
   'Heritage',
   'Initiative',
@@ -69,6 +67,8 @@ export default function CustomPageLiveEditor({
   const [title, setTitle] = useState(page.title || '');
   const [slug, setSlug] = useState(page.slug || '');
   const [category, setCategory] = useState(page.category || 'General');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [excerpt, setExcerpt] = useState(page.excerpt || '');
   const [content, setContent] = useState(page.content || '');
   const [bannerUrl, setBannerUrl] = useState(page.bannerUrl || '');
@@ -92,6 +92,8 @@ export default function CustomPageLiveEditor({
       setTitle(page.title || '');
       setSlug(page.slug || '');
       setCategory(page.category || 'General');
+      setIsCreatingCategory(false);
+      setCustomCategoryInput('');
       setExcerpt(page.excerpt || '');
       setContent(page.content || '');
       setBannerUrl(page.bannerUrl || '');
@@ -123,6 +125,10 @@ export default function CustomPageLiveEditor({
       return;
     }
 
+    const finalCategory = isCreatingCategory && customCategoryInput.trim()
+      ? customCategoryInput.trim()
+      : category.trim() || 'General';
+
     setSaving(true);
     setError(null);
     setSuccess(false);
@@ -134,7 +140,7 @@ export default function CustomPageLiveEditor({
         body: JSON.stringify({
           title: title.trim(),
           slug: slug.trim(),
-          category: category.trim(),
+          category: finalCategory,
           excerpt: excerpt.trim() || null,
           content,
           bannerUrl: bannerUrl.trim() || null,
@@ -158,11 +164,10 @@ export default function CustomPageLiveEditor({
         onSaved(updatedPage);
       }
 
-      // If navigation or header was altered, notify listeners
+      // Notify header listeners of changes
       window.dispatchEvent(new CustomEvent('hab:header-updated'));
 
       setTimeout(() => {
-        // If slug changed, redirect to new slug; otherwise reload to reflect content
         if (updatedPage.slug && updatedPage.slug !== page.slug) {
           window.location.href = `/pages/${updatedPage.slug}`;
         } else {
@@ -176,49 +181,51 @@ export default function CustomPageLiveEditor({
     }
   };
 
+  const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, category].filter(Boolean)));
+
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/75 backdrop-blur-xs overflow-y-auto">
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-stone-900"
+        className="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-4xl max-h-[94dvh] flex flex-col my-auto overflow-hidden text-stone-900"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-live-editor-title"
       >
         {/* Modal Top Header */}
-        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/80">
-          <div className="flex items-center gap-3">
-            <span className="p-2 rounded-xl bg-[#8B2E24]/10 text-[#8B2E24]">
-              <Edit3 className="w-5 h-5" />
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/90 gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="p-2 rounded-xl bg-[#8B2E24]/10 text-[#8B2E24] shrink-0">
+              <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
             </span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 id="modal-live-editor-title" className="text-base font-bold text-stone-900">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h2 id="modal-live-editor-title" className="text-sm sm:text-base font-bold text-stone-900">
                   Live Quick Edit
                 </h2>
-                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-800">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 truncate max-w-[150px] sm:max-w-none">
                   /pages/{slug}
                 </span>
                 {isPublished ? (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                  <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> Live
                   </span>
                 ) : (
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-stone-200 text-stone-700">
+                  <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-semibold bg-stone-200 text-stone-700">
                     Draft
                   </span>
                 )}
               </div>
-              <p className="text-xs text-stone-500 mt-0.5">
-                Instant in-place CMS updates · Changes propagate immediately across public navigation and layout
+              <p className="text-[11px] sm:text-xs text-stone-500 truncate hidden xs:block">
+                In-place CMS updates · Instant public propagation
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/admin/pages"
               target="_blank"
-              className="inline-flex items-center gap-1.5 text-xs text-stone-600 hover:text-[#8B2E24] px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 transition-colors font-medium"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs text-stone-600 hover:text-[#8B2E24] px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 transition-colors font-medium"
               title="Open full admin directory in new tab"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -236,11 +243,11 @@ export default function CustomPageLiveEditor({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 px-6 border-b border-stone-200 bg-stone-100/50 overflow-x-auto">
+        <div className="flex items-center gap-1 px-3 sm:px-6 border-b border-stone-200 bg-stone-100/50 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('CONTENT')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'CONTENT'
                 ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
@@ -253,7 +260,7 @@ export default function CustomPageLiveEditor({
           <button
             type="button"
             onClick={() => setActiveTab('MEDIA')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'MEDIA'
                 ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
@@ -266,32 +273,32 @@ export default function CustomPageLiveEditor({
           <button
             type="button"
             onClick={() => setActiveTab('NAVIGATION')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'NAVIGATION'
                 ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
             <Compass className="w-3.5 h-3.5" />
-            <span>Navigation &amp; Visibility</span>
+            <span>Navigation &amp; Status</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('SEO')}
-            className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'SEO'
                 ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
             <Search className="w-3.5 h-3.5" />
-            <span>SEO &amp; Metadata</span>
+            <span>SEO</span>
           </button>
         </div>
 
         {/* Tab Body */}
-        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {error && (
             <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -312,7 +319,7 @@ export default function CustomPageLiveEditor({
           {/* TAB 1: CONTENT */}
           {activeTab === 'CONTENT' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-semibold text-stone-700 mb-1">
                     Page Title <span className="text-red-500">*</span>
@@ -322,24 +329,58 @@ export default function CustomPageLiveEditor({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    placeholder="e.g. Bhutanese Traditional Weaving Heritage"
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                    placeholder="e.g. Traditional Weaving Heritage"
+                    className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-stone-700">
+                      Category
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsCreatingCategory(!isCreatingCategory)}
+                      className="text-[11px] font-semibold text-[#8B2E24] hover:underline cursor-pointer"
+                    >
+                      {isCreatingCategory ? 'Choose Existing' : '+ New Category'}
+                    </button>
+                  </div>
+
+                  {isCreatingCategory ? (
+                    <input
+                      type="text"
+                      value={customCategoryInput}
+                      onChange={(e) => {
+                        setCustomCategoryInput(e.target.value);
+                        setCategory(e.target.value);
+                      }}
+                      placeholder="Type new category..."
+                      className="w-full px-3 py-2 border border-[#8B2E24] rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24]"
+                      autoFocus
+                    />
+                  ) : (
+                    <select
+                      value={category}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setIsCreatingCategory(true);
+                          setCustomCategoryInput('');
+                        } else {
+                          setCategory(e.target.value);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
+                    >
+                      {allCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                      <option value="__NEW__">+ Create New Category...</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
@@ -352,7 +393,7 @@ export default function CustomPageLiveEditor({
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                   placeholder="e.g. traditional-weaving-heritage"
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm font-mono text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm font-mono text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
                 />
               </div>
 
@@ -365,7 +406,7 @@ export default function CustomPageLiveEditor({
                   value={excerpt}
                   onChange={(e) => setExcerpt(e.target.value)}
                   placeholder="A concise introductory paragraph summarizing the page..."
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
                 />
               </div>
 
@@ -377,7 +418,7 @@ export default function CustomPageLiveEditor({
                   value={content}
                   onChange={(val) => setContent(val)}
                   placeholder="Craft your page narrative, add headers, quotes, lists, and images..."
-                  minHeight="280px"
+                  minHeight="220px"
                 />
               </div>
             </div>
@@ -395,8 +436,8 @@ export default function CustomPageLiveEditor({
                   onChange={(url) => setBannerUrl(url)}
                   hint="Enter URL or click upload to select an image from your device"
                 />
-                <p className="text-xs text-stone-400 mt-1">
-                  Recommended size: 1920x600px. High-resolution imagery representing the Bhutanese handicrafts ethos.
+                <p className="text-[11px] text-stone-400 mt-1">
+                  Recommended size: 1920x600px. High-resolution imagery representing Bhutanese craft traditions.
                 </p>
               </div>
 
@@ -405,7 +446,7 @@ export default function CustomPageLiveEditor({
                   <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-1.5 px-1">
                     Banner Preview
                   </p>
-                  <div className="relative h-44 w-full rounded-lg overflow-hidden bg-stone-900">
+                  <div className="relative h-40 sm:h-52 w-full rounded-lg overflow-hidden bg-stone-900">
                     <img
                       src={bannerUrl}
                       alt="Banner Preview"
@@ -422,35 +463,35 @@ export default function CustomPageLiveEditor({
 
           {/* TAB 3: NAVIGATION */}
           {activeTab === 'NAVIGATION' && (
-            <div className="space-y-5">
-              <div className="bg-stone-50 p-4 rounded-xl border border-stone-200">
+            <div className="space-y-4">
+              <div className="bg-stone-50 p-3.5 sm:p-4 rounded-xl border border-stone-200">
                 <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider mb-2">
                   Publishing Status
                 </h3>
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-start gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={isPublished}
                     onChange={(e) => setIsPublished(e.target.checked)}
-                    className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24]"
+                    className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24] mt-0.5"
                   />
                   <div>
-                    <span className="text-sm font-semibold text-stone-800">
+                    <span className="text-xs sm:text-sm font-semibold text-stone-800">
                       Publish to live public website
                     </span>
-                    <p className="text-xs text-stone-500">
+                    <p className="text-[11px] text-stone-500">
                       When unchecked, only logged-in administrators can preview this page.
                     </p>
                   </div>
                 </label>
               </div>
 
-              <div className="bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-3">
+              <div className="bg-stone-50 p-3.5 sm:p-4 rounded-xl border border-stone-200 space-y-3">
                 <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
                   Menu &amp; Site Navigation
                 </h3>
 
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex items-start gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={showInHeaderNav}
@@ -458,17 +499,17 @@ export default function CustomPageLiveEditor({
                     className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24] mt-0.5"
                   />
                   <div>
-                    <span className="text-sm font-semibold text-stone-800">
+                    <span className="text-xs sm:text-sm font-semibold text-stone-800">
                       Show in Header Navigation Bar
                     </span>
-                    <p className="text-xs text-stone-500">
-                      Adds an adaptive sliding item in the primary top header menu. If more than 5 items exist, the navbar smoothly slides with chevron controls.
+                    <p className="text-[11px] text-stone-500">
+                      Adds an item in the top header menu. If more than 5 items exist, the navbar smoothly slides with chevron controls.
                     </p>
                   </div>
                 </label>
 
                 <div className="border-t border-stone-200/60 pt-3">
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className="flex items-start gap-2.5 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={showInFooterNav}
@@ -476,10 +517,10 @@ export default function CustomPageLiveEditor({
                       className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24] mt-0.5"
                     />
                     <div>
-                      <span className="text-sm font-semibold text-stone-800">
-                        Show in Footer Navigation Links
+                      <span className="text-xs sm:text-sm font-semibold text-stone-800">
+                        Show in Footer Organization Links
                       </span>
-                      <p className="text-xs text-stone-500">
+                      <p className="text-[11px] text-stone-500">
                         Adds a direct link in the footer organization columns across all pages.
                       </p>
                     </div>
@@ -501,7 +542,7 @@ export default function CustomPageLiveEditor({
                   value={seoTitle}
                   onChange={(e) => setSeoTitle(e.target.value)}
                   placeholder={`${title || 'Page Title'} · Handicrafts Association of Bhutan`}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
                 />
               </div>
 
@@ -514,7 +555,7 @@ export default function CustomPageLiveEditor({
                   value={seoDescription}
                   onChange={(e) => setSeoDescription(e.target.value)}
                   placeholder="Summary of this page for Google and social previews..."
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
                 />
               </div>
             </div>
@@ -522,11 +563,11 @@ export default function CustomPageLiveEditor({
         </form>
 
         {/* Modal Footer Controls */}
-        <div className="px-6 py-3.5 border-t border-stone-200 bg-stone-50 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-t border-stone-200 bg-stone-50 flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-200/50 text-xs font-semibold transition-colors"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-200/50 text-xs font-semibold transition-colors text-center"
           >
             Cancel
           </button>
@@ -535,7 +576,7 @@ export default function CustomPageLiveEditor({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#a0362b] text-white text-xs font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#a0362b] text-white text-xs font-bold transition-all shadow-sm hover:shadow disabled:opacity-50 cursor-pointer"
           >
             {saving ? (
               <>

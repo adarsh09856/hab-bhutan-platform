@@ -283,6 +283,9 @@ export default function AdminPagesHub() {
     sortOrder: 0,
   });
 
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 4000);
@@ -309,6 +312,8 @@ export default function AdminPagesHub() {
 
   const openCreateModal = () => {
     setEditingPageId(null);
+    setIsCreatingCategory(false);
+    setCustomCategoryInput('');
     setForm({
       title: '',
       slug: '',
@@ -326,6 +331,8 @@ export default function AdminPagesHub() {
 
   const openEditModal = (p: any) => {
     setEditingPageId(p.id);
+    setIsCreatingCategory(false);
+    setCustomCategoryInput('');
     setForm({
       title: p.title || '',
       slug: p.slug || '',
@@ -360,6 +367,15 @@ export default function AdminPagesHub() {
 
     setSubmitting(true);
     try {
+      const finalCategory = isCreatingCategory && customCategoryInput.trim()
+        ? customCategoryInput.trim()
+        : form.category.trim() || 'General';
+
+      const payload = {
+        ...form,
+        category: finalCategory,
+      };
+
       const url = editingPageId ? `/api/admin/pages/${editingPageId}` : '/api/admin/pages';
       const method = editingPageId ? 'PUT' : 'POST';
 
@@ -367,7 +383,7 @@ export default function AdminPagesHub() {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -437,10 +453,15 @@ export default function AdminPagesHub() {
   // Unified all-pages list
   const allPages = [...formattedCustomPages, ...CORE_WEBSITE_PAGES];
 
+  const dynamicCustomCategories = Array.from(
+    new Set(customPages.map((p) => p.category).filter(Boolean))
+  );
+
   const categories = [
     'ALL',
     'Custom CMS',
     'Core Pages',
+    ...dynamicCustomCategories.filter((c) => !['Core Pages', 'Custom CMS'].includes(c)),
     'Impact & Programmes',
     'Field & Retail',
     'Artisans',
@@ -448,7 +469,22 @@ export default function AdminPagesHub() {
     'Commerce',
     'Governance',
     'Heritage Taxonomy',
-  ];
+  ].filter((c, i, arr) => arr.indexOf(c) === i);
+
+  const availableFormCategories = Array.from(
+    new Set([
+      'General',
+      'Initiatives',
+      'Community',
+      'Heritage',
+      'Reports',
+      'Exhibition',
+      'Event',
+      'Programme',
+      'Announcement',
+      ...dynamicCustomCategories,
+    ].filter(Boolean))
+  );
 
   const filteredPages = allPages.filter((p) => {
     const matchesSearch =
@@ -497,7 +533,7 @@ export default function AdminPagesHub() {
         </div>
 
         {/* Right-side Action Buttons */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <Link
             href="/"
             target="_blank"
@@ -505,6 +541,14 @@ export default function AdminPagesHub() {
           >
             <span>View Live Site</span>
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          </Link>
+
+          <Link
+            href="/admin/pages/home"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs transition-colors"
+          >
+            <Edit3 className="w-3.5 h-3.5 text-slate-500" />
+            <span>Manage Homepage (A–Z)</span>
           </Link>
 
           {/* Primary "+ Create Page" Button */}
@@ -684,30 +728,30 @@ export default function AdminPagesHub() {
 
       {/* CREATE / EDIT CUSTOM PAGE MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-4xl max-h-[94dvh] flex flex-col shadow-2xl my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div>
+            <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50 gap-2">
+              <div className="min-w-0">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#8B2E24]">
                   {editingPageId ? 'Edit Custom CMS Page' : 'Publish New Website Page'}
                 </span>
-                <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 mt-0.5 truncate">
                   {editingPageId ? `Editing: ${form.title}` : 'Create Dynamic Page'}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 transition-colors shrink-0"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Form Body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Page Title *
@@ -718,7 +762,7 @@ export default function AdminPagesHub() {
                     value={form.title}
                     onChange={(e) => handleTitleChange(e.target.value)}
                     placeholder="e.g. Bhutan Craft Sustainability Charter 2026"
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   />
                 </div>
 
@@ -727,7 +771,7 @@ export default function AdminPagesHub() {
                     URL Slug * (auto-generated)
                   </label>
                   <div className="flex items-center">
-                    <span className="px-2.5 py-2 bg-slate-100 border border-r-0 border-slate-300 rounded-l-xl text-xs text-slate-500 font-mono">
+                    <span className="px-2.5 py-2 bg-slate-100 border border-r-0 border-slate-300 rounded-l-xl text-xs text-slate-500 font-mono shrink-0">
                       /pages/
                     </span>
                     <input
@@ -736,28 +780,60 @@ export default function AdminPagesHub() {
                       value={form.slug}
                       onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-') })}
                       placeholder="sustainability-charter"
-                      className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-r-xl text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+                      className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-r-xl text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Category Tag
-                  </label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
-                  >
-                    <option value="General">General</option>
-                    <option value="Initiatives">Initiatives &amp; Grants</option>
-                    <option value="Community">Community &amp; Artisans</option>
-                    <option value="Heritage">Heritage &amp; Culture</option>
-                    <option value="Reports">Reports &amp; Studies</option>
-                  </select>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Category Tag
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsCreatingCategory(!isCreatingCategory)}
+                      className="text-[11px] font-semibold text-[#8B2E24] hover:underline cursor-pointer"
+                    >
+                      {isCreatingCategory ? 'Choose Existing' : '+ Create Category'}
+                    </button>
+                  </div>
+
+                  {isCreatingCategory ? (
+                    <input
+                      type="text"
+                      value={customCategoryInput}
+                      onChange={(e) => {
+                        setCustomCategoryInput(e.target.value);
+                        setForm({ ...form, category: e.target.value });
+                      }}
+                      placeholder="Type new category..."
+                      className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#8B2E24] rounded-xl text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-[#8B2E24]"
+                      autoFocus
+                    />
+                  ) : (
+                    <select
+                      value={form.category}
+                      onChange={(e) => {
+                        if (e.target.value === '__NEW__') {
+                          setIsCreatingCategory(true);
+                          setCustomCategoryInput('');
+                        } else {
+                          setForm({ ...form, category: e.target.value });
+                        }
+                      }}
+                      className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
+                    >
+                      {availableFormCategories.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                      <option value="__NEW__">+ Create New Category...</option>
+                    </select>
+                  )}
                 </div>
 
                 <div>
@@ -781,7 +857,7 @@ export default function AdminPagesHub() {
                   value={form.excerpt}
                   onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
                   placeholder="Short introductory summary displayed at the top of the page..."
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
+                  className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                 />
               </div>
 
@@ -793,43 +869,43 @@ export default function AdminPagesHub() {
                   value={form.content}
                   onChange={(content) => setForm({ ...form, content })}
                   placeholder="Draft the comprehensive page narrative, sections, guidelines, or details..."
-                  minHeight="240px"
+                  minHeight="220px"
                 />
               </div>
 
               {/* Navigation and Publishing Checkboxes */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+              <div className="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
                 <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
                   Publishing &amp; Navigation Links
                 </span>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800">
+                <div className="space-y-2">
+                  <label className="flex items-start sm:items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-800">
                     <input
                       type="checkbox"
                       checked={form.isPublished}
                       onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24]"
+                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24] mt-0.5 sm:mt-0"
                     />
-                    <span>Publish live immediately</span>
+                    <span>Publish live immediately (visible to all public visitors)</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800">
+                  <label className="flex items-start sm:items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-800">
                     <input
                       type="checkbox"
                       checked={form.showInHeaderNav}
                       onChange={(e) => setForm({ ...form, showInHeaderNav: e.target.checked })}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24]"
+                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24] mt-0.5 sm:mt-0"
                     />
-                    <span>Add link to Header Navigation Bar</span>
+                    <span>Add link to Header Navigation Bar (adaptive flex slider)</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-800">
+                  <label className="flex items-start sm:items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-800">
                     <input
                       type="checkbox"
                       checked={form.showInFooterNav}
                       onChange={(e) => setForm({ ...form, showInFooterNav: e.target.checked })}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24]"
+                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24] mt-0.5 sm:mt-0"
                     />
                     <span>Add link to Footer Organization Menu</span>
                   </label>
@@ -837,11 +913,11 @@ export default function AdminPagesHub() {
               </div>
 
               {/* Form Actions */}
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+              <div className="pt-3 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors text-center"
                 >
                   Cancel
                 </button>
@@ -849,7 +925,7 @@ export default function AdminPagesHub() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>{submitting ? 'Saving...' : editingPageId ? 'Update Page' : 'Publish Page'}</span>

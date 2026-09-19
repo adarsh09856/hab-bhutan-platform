@@ -92,6 +92,8 @@ export default function AdminLiveBar() {
       currentStudio = { label: 'Programmes Studio', href: '/admin/programmes' };
     } else if (pathname.startsWith('/project')) {
       currentStudio = { label: 'Projects Studio', href: '/admin/projects' };
+    } else if (pathname.startsWith('/pages/')) {
+      currentStudio = { label: 'Custom Page Studio', href: '/admin/pages' };
     } else {
       currentStudio = { label: 'Pages Directory Hub', href: '/admin/pages' };
     }
