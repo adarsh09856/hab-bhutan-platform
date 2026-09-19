@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
         await prisma.navigationItem.create({
           data: {
             menuType: 'FOOTER',
-            column: 'Organization',
+            column: 'Association',
             label: newPage.title,
             href: `/pages/${newPage.slug}`,
             sortOrder: footerCount + 1,

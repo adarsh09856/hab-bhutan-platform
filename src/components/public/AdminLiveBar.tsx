@@ -22,6 +22,8 @@ const ROUTE_STUDIO_MAP: Record<string, { label: string; href: string }> = {
   '/wholesale': { label: 'Wholesale Trade', href: '/admin/trade' },
   '/privacy': { label: 'Legal & Policies', href: '/admin/policies' },
   '/terms': { label: 'Legal & Policies', href: '/admin/policies' },
+  '/shipping-policy': { label: 'Policies Studio', href: '/admin/policies' },
+  '/policies': { label: 'Policies Studio', href: '/admin/policies' },
 };
 
 export default function AdminLiveBar() {
@@ -94,6 +96,8 @@ export default function AdminLiveBar() {
       currentStudio = { label: 'Projects Studio', href: '/admin/projects' };
     } else if (pathname.startsWith('/pages/')) {
       currentStudio = { label: 'Custom Page Studio', href: '/admin/pages' };
+    } else if (pathname.startsWith('/policies/')) {
+      currentStudio = { label: 'Policies Studio', href: '/admin/policies' };
     } else {
       currentStudio = { label: 'Pages Directory Hub', href: '/admin/pages' };
     }

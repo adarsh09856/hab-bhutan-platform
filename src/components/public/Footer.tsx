@@ -208,8 +208,8 @@ export default function Footer() {
         isOpen={liveEditOpen}
         onClose={() => setLiveEditOpen(false)}
         sectionType="footer"
-        sectionTitle="Footer, Policies & Social Links"
-        studioHref="/admin/site-settings?tab=FOOTER"
+        sectionTitle="Footer, Columns & Global Settings"
+        studioHref="/admin/navigation"
         onSaved={(updated) => {
           if (updated) setSettings((prev) => ({ ...prev, ...updated }));
         }}

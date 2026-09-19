@@ -13,7 +13,9 @@ import {
   ExternalLink,
   Lock,
   Truck,
-  BookOpen
+  BookOpen,
+  X,
+  Trash2
 } from 'lucide-react';
 import { 
   GlassCard, 
@@ -22,6 +24,15 @@ import {
   GlassButton 
 } from '@/components/admin/GlassUI';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+
+const slugify = (text: string) => {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+    .trim();
+};
 
 export default function AdminPoliciesPage() {
   const [policies, setPolicies] = useState<any[]>([]);
@@ -294,10 +305,23 @@ export default function AdminPoliciesPage() {
                 </p>
               </div>
 
-              <GlassButton variant="primary" onClick={handleSavePolicy} disabled={saving}>
-                <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Saving...' : 'Save Policy Changes'}
-              </GlassButton>
+              <div className="flex items-center gap-2">
+                {!['shipping-policy', 'terms', 'privacy'].includes(selectedSlug) && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeletePolicy(selectedSlug)}
+                    disabled={deletingPolicy}
+                    className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold border border-red-200 flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                    <span>{deletingPolicy ? 'Deleting...' : 'Delete Policy'}</span>
+                  </button>
+                )}
+                <GlassButton variant="primary" onClick={handleSavePolicy} disabled={saving}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? 'Saving...' : 'Save Policy Changes'}
+                </GlassButton>
+              </div>
             </div>
 
             <div>
@@ -322,6 +346,105 @@ export default function AdminPoliciesPage() {
           </GlassCard>
         </div>
       </div>
+
+      {/* Add New Policy Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#8b2e24]" />
+                <h3 className="font-bold text-slate-900 text-base">Add New Statutory Policy</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePolicy} className="p-6 space-y-4 overflow-y-auto">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Policy Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Artisan Welfare & Equity Charter"
+                  value={newTitle}
+                  onChange={(e) => {
+                    setNewTitle(e.target.value);
+                    if (!newSlug || newSlug === slugify(newTitle)) {
+                      setNewSlug(slugify(e.target.value));
+                    }
+                  }}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  URL Slug *
+                </label>
+                <div className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-500">
+                  <span className="font-mono text-xs">/policies/</span>
+                  <input
+                    type="text"
+                    required
+                    placeholder="artisan-welfare"
+                    value={newSlug}
+                    onChange={(e) => setNewSlug(slugify(e.target.value))}
+                    className="w-full bg-transparent text-slate-900 font-mono text-sm focus:outline-none"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  This forms the public permanent URL: /policies/{newSlug || 'example-slug'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Initial Clauses & Body Content
+                </label>
+                <textarea
+                  rows={6}
+                  placeholder="Write initial policy articles, clauses, and governance details here..."
+                  value={newContent}
+                  onChange={(e) => setNewContent(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-xs"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingPolicy}
+                  className="px-5 py-2 rounded-xl bg-[#8b2e24] hover:bg-[#73241c] text-white text-xs font-bold shadow-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {creatingPolicy ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <span>Create Policy Document</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

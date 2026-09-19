@@ -21,8 +21,36 @@ import {
   ShieldCheck,
   Users,
   Sparkles,
+  Columns,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+
+const STATIC_SYSTEM_PAGES = [
+  { label: 'Homepage', href: '/', category: 'Core Pages' },
+  { label: 'About Us & Leadership', href: '/about', category: 'Core Pages' },
+  { label: 'Programmes (A–K Pillars)', href: '/programmes', category: 'Core Pages' },
+  { label: 'Donor Projects', href: '/projects', category: 'Core Pages' },
+  { label: 'News & Announcements', href: '/news', category: 'Core Pages' },
+  { label: 'Contact Us', href: '/contact', category: 'Core Pages' },
+  { label: 'Donate to Artisans', href: '/donate', category: 'Core Pages' },
+  { label: 'Punakha Riverfront Outlet', href: '/punakha', category: 'Core Pages' },
+  { label: 'E-Shop (Catalog)', href: '/shop', category: 'Shop & Support' },
+  { label: 'Wholesale & B2B Trade', href: '/wholesale', category: 'Shop & Support' },
+  { label: 'Shipping & Delivery Policy', href: '/shipping-policy', category: 'Shop & Support' },
+  { label: 'Returns & Refunds Policy', href: '/shipping-policy#returns', category: 'Shop & Support' },
+  { label: 'Track Order', href: '/track-order', category: 'Shop & Support' },
+  { label: 'Customs & Duty Information', href: '/shipping-policy#duty', category: 'Shop & Support' },
+  { label: 'Artisans Directory by Category', href: '/membership', category: 'Members & Network' },
+  { label: 'Publications & Annual Reports', href: '/publications', category: 'Members & Network' },
+  { label: 'Craft Shops & Clusters Map', href: '/outlets', category: 'Members & Network' },
+  { label: 'Apply to Join HAB', href: '/register', category: 'Members & Network' },
+  { label: 'Member Portal Login', href: '/membership#login', category: 'Members & Network' },
+  { label: 'All Statutory Policies Directory', href: '/policies', category: 'Governance & Policies' },
+  { label: 'Terms of Service & AoA 2026', href: '/terms', category: 'Governance & Policies' },
+  { label: 'Privacy & Data Protection Policy', href: '/privacy', category: 'Governance & Policies' },
+];
 
 export type SectionType =
   | 'hero'
@@ -63,14 +91,24 @@ export default function UniversalLiveSectionEditor({
   const [success, setSuccess] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  // Active tab within the section editor (e.g. Content, Actions, Media/Stats)
-  const [activeTab, setActiveTab] = useState<'CONTENT' | 'ACTIONS' | 'MEDIA' | 'STATS'>('CONTENT');
+  // Active tab within the section editor (e.g. Content, Actions, Media/Stats, Columns)
+  const [activeTab, setActiveTab] = useState<'CONTENT' | 'ACTIONS' | 'MEDIA' | 'STATS' | 'COLUMNS'>('CONTENT');
 
   // Form Fields State (covers SiteSettings fields)
   const [form, setForm] = useState<Record<string, any>>({});
 
   // Hero Slides (if hero section)
   const [slides, setSlides] = useState<any[]>([]);
+
+  // Footer Navigation State (if sectionType === 'footer')
+  const [footerNavItems, setFooterNavItems] = useState<any[]>([]);
+  const [deletedNavIds, setDeletedNavIds] = useState<string[]>([]);
+  const [selectedFooterCol, setSelectedFooterCol] = useState('Association');
+  const [systemPages, setSystemPages] = useState<Array<{ label: string; href: string; category: string }>>(STATIC_SYSTEM_PAGES);
+  const [selectedPagePreset, setSelectedPagePreset] = useState('');
+  const [newLinkCol, setNewLinkCol] = useState('Association');
+  const [newLinkLabel, setNewLinkLabel] = useState('');
+  const [newLinkHref, setNewLinkHref] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -93,7 +131,14 @@ export default function UniversalLiveSectionEditor({
     setError(null);
     setSuccess(false);
     setSessionExpired(false);
-    setActiveTab('CONTENT');
+
+    if (sectionType === 'footer') {
+      setActiveTab('COLUMNS');
+      setSelectedFooterCol('Association');
+      setNewLinkCol('Association');
+    } else {
+      setActiveTab('CONTENT');
+    }
 
     const fetches: Promise<any>[] = [
       fetch('/api/site-settings', { cache: 'no-store' })
@@ -109,7 +154,15 @@ export default function UniversalLiveSectionEditor({
       );
     }
 
-    Promise.all(fetches).then(([settingsData, heroData]) => {
+    if (sectionType === 'footer') {
+      fetches.push(
+        fetch('/api/navigation', { cache: 'no-store' }).then((r) => r.json()).catch(() => ({})),
+        fetch('/api/admin/pages', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).catch(() => ({})),
+        fetch('/api/admin/policies', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).catch(() => ({}))
+      );
+    }
+
+    Promise.all(fetches).then(([settingsData, heroData, navData, pagesData, policiesData]) => {
       if (!isMounted) return;
       const s = settingsData?.setting || settingsData?.settings || {};
 
@@ -208,6 +261,82 @@ export default function UniversalLiveSectionEditor({
         copyrightText: s.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved.',
       });
 
+      if (sectionType === 'footer') {
+        const loadedNav: any[] = [];
+        if (navData?.footer && typeof navData.footer === 'object') {
+          Object.keys(navData.footer).forEach((colName) => {
+            const colLinks = navData.footer[colName];
+            if (Array.isArray(colLinks)) {
+              colLinks.forEach((l: any, idx: number) => {
+                loadedNav.push({
+                  id: l.id,
+                  column: colName,
+                  label: l.label,
+                  href: l.href,
+                  sortOrder: l.sortOrder ?? idx + 1,
+                  isActive: l.isActive !== false,
+                });
+              });
+            }
+          });
+        }
+
+        if (loadedNav.length > 0) {
+          setFooterNavItems(loadedNav);
+        } else {
+          setFooterNavItems([
+            { column: 'Association', label: 'About HAB', href: '/about', sortOrder: 1, isActive: true },
+            { column: 'Association', label: 'Programmes', href: '/programmes', sortOrder: 2, isActive: true },
+            { column: 'Association', label: 'Projects', href: '/projects', sortOrder: 3, isActive: true },
+            { column: 'Association', label: 'Membership', href: '/membership', sortOrder: 4, isActive: true },
+            { column: 'Association', label: 'News & events', href: '/news', sortOrder: 5, isActive: true },
+            { column: 'Association', label: 'Contact us', href: '/contact', sortOrder: 6, isActive: true },
+            { column: 'Shop & support', label: 'E-shop', href: '/shop', sortOrder: 1, isActive: true },
+            { column: 'Shop & support', label: 'Wholesale & bulk orders', href: '/wholesale', sortOrder: 2, isActive: true },
+            { column: 'Shop & support', label: 'Shipping & delivery policy', href: '/shipping-policy', sortOrder: 3, isActive: true },
+            { column: 'Shop & support', label: 'Returns & refunds policy', href: '/shipping-policy#returns', sortOrder: 4, isActive: true },
+            { column: 'Shop & support', label: 'Track your order', href: '/track-order', sortOrder: 5, isActive: true },
+            { column: 'Shop & support', label: 'Duties & customs policy', href: '/shipping-policy#duty', sortOrder: 6, isActive: true },
+            { column: 'Members', label: 'Directory by category', href: '/membership', sortOrder: 1, isActive: true },
+            { column: 'Members', label: 'Publications', href: '/publications', sortOrder: 2, isActive: true },
+            { column: 'Members', label: 'Member shops & clusters', href: '/outlets', sortOrder: 3, isActive: true },
+            { column: 'Members', label: 'Member login', href: '/membership#login', sortOrder: 4, isActive: true },
+            { column: 'Members', label: 'Apply to join', href: '/register', sortOrder: 5, isActive: true },
+            { column: 'Governance', label: 'Board of Trustees', href: '/about', sortOrder: 1, isActive: true },
+            { column: 'Governance', label: 'Secretariat', href: '/about', sortOrder: 2, isActive: true },
+            { column: 'Governance', label: 'Annual reports', href: '/publications', sortOrder: 3, isActive: true },
+            { column: 'Governance', label: 'Audited accounts', href: '/publications', sortOrder: 4, isActive: true },
+            { column: 'Governance', label: 'Tenders & vacancies', href: '/news', sortOrder: 5, isActive: true },
+            { column: 'Governance', label: 'Terms of service', href: '/terms', sortOrder: 6, isActive: true },
+            { column: 'Governance', label: 'Privacy policy', href: '/privacy', sortOrder: 7, isActive: true },
+          ]);
+        }
+
+        const dynamicList = [...STATIC_SYSTEM_PAGES];
+        if (pagesData?.customPages && Array.isArray(pagesData.customPages)) {
+          pagesData.customPages.forEach((cp: any) => {
+            dynamicList.push({
+              label: cp.title,
+              href: `/pages/${cp.slug}`,
+              category: `Custom Pages (${cp.category || 'General'})`,
+            });
+          });
+        }
+        if (policiesData?.policies && Array.isArray(policiesData.policies)) {
+          policiesData.policies.forEach((pol: any) => {
+            const polHref = pol.publicUrl || `/policies/${pol.slug}`;
+            if (!dynamicList.some((d) => d.href === polHref)) {
+              dynamicList.push({
+                label: pol.title,
+                href: polHref,
+                category: 'Statutory Policies',
+              });
+            }
+          });
+        }
+        setSystemPages(dynamicList);
+      }
+
       if (heroData?.slides && Array.isArray(heroData.slides)) {
         setSlides(heroData.slides);
       }
@@ -222,6 +351,88 @@ export default function UniversalLiveSectionEditor({
 
   const updateField = (key: string, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Footer Navigation Helpers
+  const defaultFooterCols = ['Association', 'Shop & support', 'Members', 'Governance'];
+  const availableFooterCols = Array.from(
+    new Set([...defaultFooterCols, ...footerNavItems.map((item) => item.column)])
+  ).filter(Boolean);
+
+  const currentFooterColItems = footerNavItems.filter((i) => i.column === selectedFooterCol);
+
+  const moveFooterItem = (indexInCol: number, direction: 'up' | 'down') => {
+    const targetIdxInCol = direction === 'up' ? indexInCol - 1 : indexInCol + 1;
+    if (targetIdxInCol < 0 || targetIdxInCol >= currentFooterColItems.length) return;
+
+    const itemA = currentFooterColItems[indexInCol];
+    const itemB = currentFooterColItems[targetIdxInCol];
+
+    setFooterNavItems((prev) => {
+      const copy = [...prev];
+      const globalIdxA = copy.indexOf(itemA);
+      const globalIdxB = copy.indexOf(itemB);
+
+      if (globalIdxA === -1 || globalIdxB === -1) return prev;
+
+      const tempOrder = itemA.sortOrder;
+      itemA.sortOrder = itemB.sortOrder;
+      itemB.sortOrder = tempOrder;
+
+      copy[globalIdxA] = { ...itemA };
+      copy[globalIdxB] = { ...itemB };
+
+      return copy.sort((a, b) => a.sortOrder - b.sortOrder);
+    });
+  };
+
+  const updateFooterItemField = (itemToUpdate: any, field: string, value: any) => {
+    setFooterNavItems((prev) =>
+      prev.map((item) => (item === itemToUpdate ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const removeFooterItem = (itemToRemove: any) => {
+    if (itemToRemove.id && !itemToRemove.isNew) {
+      setDeletedNavIds((prev) => [...prev, itemToRemove.id]);
+    }
+    setFooterNavItems((prev) => prev.filter((i) => i !== itemToRemove));
+  };
+
+  const handleSelectPagePreset = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedPagePreset(val);
+    if (!val) return;
+
+    const matched = systemPages.find((p) => p.href === val);
+    if (matched) {
+      setNewLinkLabel(matched.label);
+      setNewLinkHref(matched.href);
+    }
+  };
+
+  const handleAddFooterLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLinkLabel.trim() || !newLinkHref.trim()) return;
+
+    const col = newLinkCol || selectedFooterCol;
+    const colItems = footerNavItems.filter((i) => i.column === col);
+
+    const newItem = {
+      id: `new-${Date.now()}`,
+      column: col,
+      label: newLinkLabel.trim(),
+      href: newLinkHref.trim(),
+      sortOrder: colItems.length + 1,
+      isActive: true,
+      isNew: true,
+    };
+
+    setFooterNavItems((prev) => [...prev, newItem]);
+    setNewLinkLabel('');
+    setNewLinkHref('');
+    setSelectedPagePreset('');
+    setSelectedFooterCol(col);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -248,6 +459,54 @@ export default function UniversalLiveSectionEditor({
         throw new Error(data.error || 'Failed to save section changes.');
       }
 
+      // If footer section, also save navigation items
+      if (sectionType === 'footer') {
+        for (const delId of deletedNavIds) {
+          if (!delId.startsWith('new-') && !delId.startsWith('f-')) {
+            await fetch(`/api/admin/navigation?id=${encodeURIComponent(delId)}`, {
+              method: 'DELETE',
+              credentials: 'include',
+            }).catch(() => {});
+          }
+        }
+
+        for (let idx = 0; idx < footerNavItems.length; idx++) {
+          const item = footerNavItems[idx];
+          const isDbItem = item.id && !item.isNew && !item.id.startsWith('f-') && !item.id.startsWith('new-');
+
+          if (isDbItem) {
+            await fetch('/api/admin/navigation', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                id: item.id,
+                menuType: 'FOOTER',
+                column: item.column,
+                label: item.label,
+                href: item.href,
+                sortOrder: item.sortOrder || idx + 1,
+                isActive: item.isActive,
+              }),
+            }).catch(() => {});
+          } else {
+            await fetch('/api/admin/navigation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                menuType: 'FOOTER',
+                column: item.column,
+                label: item.label,
+                href: item.href,
+                sortOrder: item.sortOrder || idx + 1,
+                isActive: item.isActive,
+              }),
+            }).catch(() => {});
+          }
+        }
+      }
+
       const result = await res.json();
       const updatedSetting = result.setting || form;
 
@@ -258,6 +517,7 @@ export default function UniversalLiveSectionEditor({
             detail: updatedSetting,
           })
         );
+        window.dispatchEvent(new CustomEvent('hab:header-updated'));
         window.dispatchEvent(new CustomEvent('hab:content-updated'));
       }
 
@@ -300,7 +560,7 @@ export default function UniversalLiveSectionEditor({
       : sectionType === 'contact'
       ? 'Contact & Secretariate Info'
       : sectionType === 'footer'
-      ? 'Footer, Policies & Social Links'
+      ? 'Footer, Columns & Global Settings'
       : sectionType === 'programmes'
       ? 'Programmes & Strategic Pillars'
       : 'Live Section Editor');
@@ -322,7 +582,7 @@ export default function UniversalLiveSectionEditor({
       : sectionType === 'contact'
       ? '/admin/site-settings?tab=CONTACT'
       : sectionType === 'footer'
-      ? '/admin/site-settings?tab=FOOTER'
+      ? '/admin/navigation'
       : sectionType === 'programmes'
       ? '/admin/programmes'
       : '/admin/site-settings');
@@ -369,6 +629,21 @@ export default function UniversalLiveSectionEditor({
 
         {/* Modal Sub-Tabs for Deep Section Control */}
         <div className="flex border-b border-slate-200 bg-white px-5 pt-3 gap-2 overflow-x-auto no-scrollbar">
+          {sectionType === 'footer' && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('COLUMNS')}
+              className={"pb-2.5 px-3 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap " +
+                (activeTab === 'COLUMNS'
+                  ? 'border-[#8B2E24] text-[#8B2E24]'
+                  : 'border-transparent text-slate-500 hover:text-slate-900')
+              }
+            >
+              <Columns className="w-3.5 h-3.5" />
+              <span>Footer Columns &amp; Pages ({footerNavItems.length})</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setActiveTab('CONTENT')}
@@ -379,7 +654,7 @@ export default function UniversalLiveSectionEditor({
             }
           >
             <Type className="w-3.5 h-3.5" />
-            <span>Headlines & Text</span>
+            <span>{sectionType === 'footer' ? 'Secretariat & About Text' : 'Headlines & Text'}</span>
           </button>
 
           <button
@@ -468,6 +743,264 @@ export default function UniversalLiveSectionEditor({
               </div>
             ) : (
               <>
+                {/* ================= TAB 0: FOOTER COLUMNS & PAGES ================= */}
+                {activeTab === 'COLUMNS' && sectionType === 'footer' && (
+                  <div className="space-y-4">
+                    {/* Column Switcher Pills */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                      <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <Columns className="w-4 h-4 text-[#8B2E24]" />
+                        <span>Select Footer Column:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {availableFooterCols.map((colName) => {
+                          const count = footerNavItems.filter((i) => i.column === colName).length;
+                          const isSelected = selectedFooterCol === colName;
+                          return (
+                            <button
+                              key={colName}
+                              type="button"
+                              onClick={() => {
+                                setSelectedFooterCol(colName);
+                                setNewLinkCol(colName);
+                              }}
+                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#8B2E24] text-white shadow-xs'
+                                  : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+                              }`}
+                            >
+                              <span>{colName}</span>
+                              <span
+                                className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] ${
+                                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                                }`}
+                              >
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Column Items List */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-slate-500 px-1 font-medium">
+                        <span>
+                          Links in <strong className="text-slate-800">&quot;{selectedFooterCol}&quot;</strong> column ({currentFooterColItems.length})
+                        </span>
+                        <span>Use arrows to reorder • Toggle active to hide</span>
+                      </div>
+
+                      {currentFooterColItems.length === 0 ? (
+                        <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl text-xs text-slate-500">
+                          No links in this column yet. Use the form below to add pages or custom links.
+                        </div>
+                      ) : (
+                        currentFooterColItems.map((item, idx) => (
+                          <div
+                            key={item.id || `footer-link-${idx}`}
+                            className={`flex flex-col sm:flex-row sm:items-center gap-2 p-2.5 rounded-xl border transition-all ${
+                              item.isActive
+                                ? 'bg-white border-slate-200 shadow-2xs hover:border-slate-300'
+                                : 'bg-slate-50 border-slate-200 opacity-60'
+                            }`}
+                          >
+                            {/* Reorder and Index */}
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <div className="flex flex-col gap-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => moveFooterItem(idx, 'up')}
+                                  disabled={idx === 0}
+                                  className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-20 cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <ArrowUp className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveFooterItem(idx, 'down')}
+                                  disabled={idx === currentFooterColItems.length - 1}
+                                  className="p-1 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-100 disabled:opacity-20 cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <ArrowDown className="w-3 h-3" />
+                                </button>
+                              </div>
+                              <span className="w-6 text-center text-xs font-mono font-bold text-slate-400">
+                                #{idx + 1}
+                              </span>
+                            </div>
+
+                            {/* Label Input */}
+                            <div className="flex-1 min-w-[130px]">
+                              <input
+                                type="text"
+                                value={item.label}
+                                onChange={(e) => updateFooterItemField(item, 'label', e.target.value)}
+                                placeholder="Link Label"
+                                className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-medium focus:bg-white focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+                              />
+                            </div>
+
+                            {/* URL Input */}
+                            <div className="flex-1 min-w-[150px]">
+                              <div className="relative">
+                                <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                  <Link2 className="w-3 h-3" />
+                                </span>
+                                <input
+                                  type="text"
+                                  value={item.href}
+                                  onChange={(e) => updateFooterItemField(item, 'href', e.target.value)}
+                                  placeholder="/path or https://..."
+                                  className="w-full pl-7 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-mono focus:bg-white focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Move to another column */}
+                            <div className="w-32 flex-shrink-0">
+                              <select
+                                value={item.column}
+                                onChange={(e) => updateFooterItemField(item, 'column', e.target.value)}
+                                className="w-full px-2 py-1.5 text-[11px] bg-slate-50 border border-slate-200 rounded-lg text-slate-700 cursor-pointer focus:bg-white focus:outline-hidden"
+                                title="Change Column"
+                              >
+                                {availableFooterCols.map((c) => (
+                                  <option key={c} value={c}>
+                                    Column: {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Active Toggle & Delete */}
+                            <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                              <label className="flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer select-none px-1">
+                                <input
+                                  type="checkbox"
+                                  checked={item.isActive}
+                                  onChange={(e) => updateFooterItemField(item, 'isActive', e.target.checked)}
+                                  className="rounded border-slate-300 text-[#8B2E24] focus:ring-[#8B2E24] w-3.5 h-3.5 cursor-pointer"
+                                />
+                                <span>Active</span>
+                              </label>
+
+                              <button
+                                type="button"
+                                onClick={() => removeFooterItem(item)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                title="Remove link"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Add Link Form with System Pages Dropdown */}
+                    <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 space-y-3 mt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Plus className="w-3.5 h-3.5 text-[#8B2E24]" />
+                          <span>Add Page or Custom Link to Footer</span>
+                        </div>
+                        <span className="text-[11px] text-slate-500">
+                          Auto-populate from existing platform pages
+                        </span>
+                      </div>
+
+                      {/* Dropdown: Select from System Pages */}
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-600">
+                          Quick-Pick Existing Platform Page:
+                        </label>
+                        <select
+                          value={selectedPagePreset}
+                          onChange={handleSelectPagePreset}
+                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 cursor-pointer focus:border-[#8B2E24] focus:outline-hidden"
+                        >
+                          <option value="">-- Choose a Page to Auto-Fill (Custom Pages, Policies, Core) --</option>
+                          {Array.from(new Set(systemPages.map((p) => p.category))).map((cat) => (
+                            <optgroup key={cat} label={cat}>
+                              {systemPages
+                                .filter((p) => p.category === cat)
+                                .map((page) => (
+                                  <option key={`${cat}-${page.href}`} value={page.href}>
+                                    {page.label} ({page.href})
+                                  </option>
+                                ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Manual input overrides & Target Column */}
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1">
+                        <div className="sm:col-span-3">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                            Destination Column
+                          </label>
+                          <select
+                            value={newLinkCol}
+                            onChange={(e) => setNewLinkCol(e.target.value)}
+                            className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-medium focus:border-[#8B2E24] focus:outline-hidden"
+                          >
+                            {availableFooterCols.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-4">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                            Link Label
+                          </label>
+                          <input
+                            type="text"
+                            value={newLinkLabel}
+                            onChange={(e) => setNewLinkLabel(e.target.value)}
+                            placeholder="e.g. Master Artisans"
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:border-[#8B2E24] focus:outline-hidden"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                            Target Path
+                          </label>
+                          <input
+                            type="text"
+                            value={newLinkHref}
+                            onChange={(e) => setNewLinkHref(e.target.value)}
+                            placeholder="e.g. /masters"
+                            className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-mono focus:border-[#8B2E24] focus:outline-hidden"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2 flex items-end">
+                          <button
+                            type="button"
+                            onClick={handleAddFooterLink}
+                            disabled={!newLinkLabel.trim() || !newLinkHref.trim()}
+                            className="w-full py-1.5 px-3 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 disabled:opacity-40 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Add</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* ================= TAB 1: HEADLINES & TEXT ================= */}
                 {activeTab === 'CONTENT' && (
                   <div className="space-y-4">

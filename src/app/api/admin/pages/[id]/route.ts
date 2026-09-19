@@ -150,7 +150,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             await prisma.navigationItem.create({
               data: {
                 menuType: 'FOOTER',
-                column: 'Organization',
+                column: 'Association',
                 label: updated.title,
                 href: newHref,
                 sortOrder: count + 1,

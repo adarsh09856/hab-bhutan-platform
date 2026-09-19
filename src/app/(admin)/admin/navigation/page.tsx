@@ -17,11 +17,40 @@ interface NavItem {
   isExternal: boolean;
 }
 
+const STATIC_SYSTEM_PAGES = [
+  { label: 'Homepage', href: '/', category: 'Core Pages' },
+  { label: 'About Us & Leadership', href: '/about', category: 'Core Pages' },
+  { label: 'Programmes (A–K Pillars)', href: '/programmes', category: 'Core Pages' },
+  { label: 'Donor Projects', href: '/projects', category: 'Core Pages' },
+  { label: 'News & Announcements', href: '/news', category: 'Core Pages' },
+  { label: 'Contact Us', href: '/contact', category: 'Core Pages' },
+  { label: 'Donate to Artisans', href: '/donate', category: 'Core Pages' },
+  { label: 'Punakha Riverfront Outlet', href: '/punakha', category: 'Core Pages' },
+  { label: 'E-Shop (Catalog)', href: '/shop', category: 'Shop & Support' },
+  { label: 'Wholesale & B2B Trade', href: '/wholesale', category: 'Shop & Support' },
+  { label: 'Shipping & Delivery Policy', href: '/shipping-policy', category: 'Shop & Support' },
+  { label: 'Returns & Refunds Policy', href: '/shipping-policy#returns', category: 'Shop & Support' },
+  { label: 'Track Order', href: '/track-order', category: 'Shop & Support' },
+  { label: 'Customs & Duty Information', href: '/shipping-policy#duty', category: 'Shop & Support' },
+  { label: 'Artisans Directory by Category', href: '/membership', category: 'Members & Network' },
+  { label: 'Publications & Annual Reports', href: '/publications', category: 'Members & Network' },
+  { label: 'Craft Shops & Clusters Map', href: '/outlets', category: 'Members & Network' },
+  { label: 'Apply to Join HAB', href: '/register', category: 'Members & Network' },
+  { label: 'Member Portal Login', href: '/membership#login', category: 'Members & Network' },
+  { label: 'All Statutory Policies Directory', href: '/policies', category: 'Governance & Policies' },
+  { label: 'Terms of Service & AoA 2026', href: '/terms', category: 'Governance & Policies' },
+  { label: 'Privacy & Data Protection Policy', href: '/privacy', category: 'Governance & Policies' },
+];
+
 export default function AdminNavigationPage() {
   const [activeTab, setActiveTab] = useState<'HEADER' | 'FOOTER'>('HEADER');
   const [items, setItems] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // System pages state
+  const [systemPages, setSystemPages] = useState<Array<{ label: string; href: string; category: string }>>(STATIC_SYSTEM_PAGES);
+  const [selectedPreset, setSelectedPreset] = useState('');
 
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -43,14 +72,49 @@ export default function AdminNavigationPage() {
   const loadItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/navigation', { credentials: 'include', cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
+      const [navRes, pagesRes, polRes] = await Promise.all([
+        fetch('/api/admin/navigation', { credentials: 'include', cache: 'no-store' }),
+        fetch('/api/admin/pages', { credentials: 'include', cache: 'no-store' }).catch(() => null),
+        fetch('/api/admin/policies', { credentials: 'include', cache: 'no-store' }).catch(() => null),
+      ]);
+
+      if (navRes.ok) {
+        const data = await navRes.json();
         setItems(data.items || []);
       } else {
-        const err = await res.json();
+        const err = await navRes.json();
         setFeedback({ type: 'error', message: err.error || 'Failed to load navigation items.' });
       }
+
+      const dynamicList = [...STATIC_SYSTEM_PAGES];
+      if (pagesRes && pagesRes.ok) {
+        const pagesData = await pagesRes.json();
+        if (pagesData?.customPages && Array.isArray(pagesData.customPages)) {
+          pagesData.customPages.forEach((cp: any) => {
+            dynamicList.push({
+              label: cp.title,
+              href: `/pages/${cp.slug}`,
+              category: `Custom Pages (${cp.category || 'General'})`,
+            });
+          });
+        }
+      }
+      if (polRes && polRes.ok) {
+        const polData = await polRes.json();
+        if (polData?.policies && Array.isArray(polData.policies)) {
+          polData.policies.forEach((pol: any) => {
+            const polHref = pol.publicUrl || `/policies/${pol.slug}`;
+            if (!dynamicList.some((d) => d.href === polHref)) {
+              dynamicList.push({
+                label: pol.title,
+                href: polHref,
+                category: 'Statutory Policies',
+              });
+            }
+          });
+        }
+      }
+      setSystemPages(dynamicList);
     } catch (err: any) {
       setFeedback({ type: 'error', message: err.message || 'Network error fetching navigation.' });
     } finally {
@@ -64,9 +128,10 @@ export default function AdminNavigationPage() {
 
   const openAddModal = (menuType: 'HEADER' | 'FOOTER') => {
     setEditingItem(null);
+    setSelectedPreset('');
     setForm({
       menuType,
-      column: menuType === 'FOOTER' ? 'Organization' : '',
+      column: menuType === 'FOOTER' ? 'Association' : '',
       label: '',
       href: '',
       parent: '',
@@ -79,9 +144,10 @@ export default function AdminNavigationPage() {
 
   const openEditModal = (item: NavItem) => {
     setEditingItem(item);
+    setSelectedPreset(item.href || '');
     setForm({
       menuType: item.menuType,
-      column: item.column || '',
+      column: item.column || (item.menuType === 'FOOTER' ? 'Association' : ''),
       label: item.label,
       href: item.href,
       parent: item.parent || '',
@@ -411,6 +477,40 @@ export default function AdminNavigationPage() {
               </div>
 
               <div>
+                <label className="block font-semibold admin-title mb-1">Quick-Pick from System Pages (Optional)</label>
+                <select
+                  value={selectedPreset}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedPreset(val);
+                    if (val) {
+                      const matched = systemPages.find((p) => p.href === val);
+                      if (matched) {
+                        setForm((prev) => ({ ...prev, label: matched.label, href: matched.href }));
+                      }
+                    }
+                  }}
+                  className="w-full px-3.5 py-2 rounded-[8px] border admin-input text-xs sm:text-sm"
+                >
+                  <option value="">-- Choose Existing Platform Page to Auto-Fill --</option>
+                  {Array.from(new Set(systemPages.map((p) => p.category))).map((cat) => (
+                    <optgroup key={cat} label={cat}>
+                      {systemPages
+                        .filter((p) => p.category === cat)
+                        .map((page) => (
+                          <option key={`${cat}-${page.href}`} value={page.href}>
+                            {page.label} ({page.href})
+                          </option>
+                        ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <p className="text-[11px] admin-muted mt-1">
+                  Selecting a page automatically populates the Label and Target Path below.
+                </p>
+              </div>
+
+              <div>
                 <label className="block font-semibold admin-title mb-1">Navigation Label *</label>
                 <input
                   type="text"
@@ -449,14 +549,31 @@ export default function AdminNavigationPage() {
               ) : (
                 <div>
                   <label className="block font-semibold admin-title mb-1">Footer Column Section *</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.column}
-                    onChange={(e) => setForm({ ...form, column: e.target.value })}
-                    placeholder="e.g. Organization, Shop & support, Members, Governance"
-                    className="w-full px-3.5 py-2 rounded-[8px] border admin-input text-xs sm:text-sm"
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      value={['Association', 'Shop & support', 'Members', 'Governance'].includes(form.column) ? form.column : 'custom'}
+                      onChange={(e) => {
+                        if (e.target.value !== 'custom') {
+                          setForm({ ...form, column: e.target.value });
+                        }
+                      }}
+                      className="w-full px-3.5 py-2 rounded-[8px] border admin-input text-xs sm:text-sm"
+                    >
+                      <option value="Association">Association</option>
+                      <option value="Shop & support">Shop &amp; support</option>
+                      <option value="Members">Members</option>
+                      <option value="Governance">Governance</option>
+                      <option value="custom">Custom Column Name...</option>
+                    </select>
+                    <input
+                      type="text"
+                      required
+                      value={form.column}
+                      onChange={(e) => setForm({ ...form, column: e.target.value })}
+                      placeholder="Column name (e.g. Association)"
+                      className="w-full px-3.5 py-2 rounded-[8px] border admin-input text-xs sm:text-sm"
+                    />
+                  </div>
                 </div>
               )}
 
