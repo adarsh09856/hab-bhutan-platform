@@ -57,19 +57,74 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
       },
     ];
 
-    const merged = defaultPolicies.map((dp) => {
+    const merged: any[] = [...defaultPolicies.map((dp) => {
       const found = dbPolicies.find((p) => p.slug === dp.slug);
       if (found) {
         return {
           ...dp,
+          id: found.id,
           title: found.title || dp.title,
           content: found.content || dp.content,
         };
       }
       return dp;
-    });
+    })];
+
+    // Include any custom policies added directly in database
+    for (const p of dbPolicies) {
+      if (!defaultPolicies.some((dp) => dp.slug === p.slug)) {
+        merged.push({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          lastUpdated: new Date(p.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+          publicUrl: `/policies/${p.slug}`,
+          content: p.content,
+          isCustom: true,
+        });
+      }
+    }
 
     return NextResponse.json({ success: true, policies: merged });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { slug: rawSlug, title, content } = body;
+
+    if (!title?.trim()) {
+      return NextResponse.json({ success: false, error: 'Policy title is required' }, { status: 400 });
+    }
+
+    const cleanSlug = (rawSlug || title)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!cleanSlug) {
+      return NextResponse.json({ success: false, error: 'Valid policy slug is required' }, { status: 400 });
+    }
+
+    const existing = await prisma.policyPage.findUnique({ where: { slug: cleanSlug } });
+    if (existing) {
+      return NextResponse.json({ success: false, error: `Policy with slug "${cleanSlug}" already exists.` }, { status: 409 });
+    }
+
+    const policy = await prisma.policyPage.create({
+      data: {
+        slug: cleanSlug,
+        title: title.trim(),
+        content: content?.trim() || '',
+        isActive: true,
+      },
+    });
+
+    return NextResponse.json({ success: true, policy }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -97,3 +152,29 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const slug = searchParams.get('slug');
+
+    if (!slug) {
+      return NextResponse.json({ success: false, error: 'Slug is required' }, { status: 400 });
+    }
+
+    // Protect core policies
+    const coreSlugs = ['terms', 'privacy', 'shipping-policy', 'conduct'];
+    if (coreSlugs.includes(slug)) {
+      return NextResponse.json({ success: false, error: 'Core statutory policies cannot be deleted' }, { status: 403 });
+    }
+
+    await prisma.policyPage.deleteMany({
+      where: { slug },
+    });
+
+    return NextResponse.json({ success: true, message: `Policy "${slug}" deleted successfully.` });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+

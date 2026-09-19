@@ -52,6 +52,29 @@ export default function Header() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [headerLiveEditOpen, setHeaderLiveEditOpen] = useState(false);
 
+  // Sliding flex navigation states
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const navTrackRef = useRef<HTMLDivElement>(null);
+
+  const checkNavScroll = () => {
+    const el = navTrackRef.current;
+    if (!el) return;
+    const hasOverflow = el.scrollWidth > el.clientWidth + 2;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(hasOverflow && el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
+
+  const slideNav = (direction: 'left' | 'right') => {
+    const el = navTrackRef.current;
+    if (!el) return;
+    const distance = 160;
+    el.scrollBy({
+      left: direction === 'left' ? -distance : distance,
+      behavior: 'smooth',
+    });
+  };
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLFormElement>(null);
   const membersRef = useRef<HTMLDivElement>(null);
@@ -214,6 +237,17 @@ export default function Header() {
     };
   }, []);
 
+  // Monitor navigation item overflow for sliding flex menu
+  useEffect(() => {
+    checkNavScroll();
+    const timer = setTimeout(checkNavScroll, 120);
+    window.addEventListener('resize', checkNavScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkNavScroll);
+    };
+  }, [navItems]);
+
   return (
     <header className="header" id="siteHeader" data-hab-section="header">
       <SectionEditBadge
@@ -238,27 +272,59 @@ export default function Header() {
           id="primaryNav"
           aria-label="Primary"
         >
-          {navItems.map((item) => {
-            const translationKey = 
-              item.href === '/' ? 'nav.home' :
-              item.href === '/about' ? 'nav.about' :
-              item.href === '/programmes' ? 'nav.programmes' :
-              item.href === '/projects' ? 'nav.projects' :
-              item.href === '/news' ? 'nav.news' :
-              item.href === '/donate' ? 'nav.donate' : null;
-            const label = translationKey ? t(translationKey, item.label) : item.label;
-
-            return (
-              <Link
-                key={item.href}
-                className={`nav__item ${item.href === '/' ? 'nav__item--home' : ''} ${pathname === item.href ? 'is-current' : ''}`}
-                href={item.href}
-                aria-current={pathname === item.href ? 'page' : undefined}
+          <div className="nav-slider-wrapper">
+            {canScrollLeft && (
+              <button
+                type="button"
+                className="nav-slide-btn nav-slide-btn--left"
+                onClick={() => slideNav('left')}
+                aria-label="Previous menu items"
+                title="Scroll menu left"
               >
-                {label}
-              </Link>
-            );
-          })}
+                ‹
+              </button>
+            )}
+
+            <div
+              className="nav-slider-track"
+              ref={navTrackRef}
+              onScroll={checkNavScroll}
+            >
+              {navItems.map((item) => {
+                const translationKey = 
+                  item.href === '/' ? 'nav.home' :
+                  item.href === '/about' ? 'nav.about' :
+                  item.href === '/programmes' ? 'nav.programmes' :
+                  item.href === '/projects' ? 'nav.projects' :
+                  item.href === '/news' ? 'nav.news' :
+                  item.href === '/donate' ? 'nav.donate' : null;
+                const label = translationKey ? t(translationKey, item.label) : item.label;
+
+                return (
+                  <Link
+                    key={item.href}
+                    className={`nav__item ${item.href === '/' ? 'nav__item--home' : ''} ${pathname === item.href ? 'is-current' : ''}`}
+                    href={item.href}
+                    aria-current={pathname === item.href ? 'page' : undefined}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                className="nav-slide-btn nav-slide-btn--right"
+                onClick={() => slideNav('right')}
+                aria-label="Next menu items"
+                title="Scroll menu right"
+              >
+                ›
+              </button>
+            )}
+          </div>
 
           <div
             className="menu"

@@ -101,6 +101,75 @@ export default function AdminPoliciesPage() {
     }
   };
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newSlug, setNewSlug] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [creatingPolicy, setCreatingPolicy] = useState(false);
+  const [deletingPolicy, setDeletingPolicy] = useState(false);
+
+  const handleCreatePolicy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newSlug.trim()) {
+      showToast('Title and URL slug are required');
+      return;
+    }
+
+    setCreatingPolicy(true);
+    try {
+      const res = await fetch('/api/admin/policies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug: newSlug,
+          title: newTitle,
+          content: newContent,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Policy [${newSlug}] created successfully!`);
+        setShowAddModal(false);
+        setNewSlug('');
+        setNewTitle('');
+        setNewContent('');
+        loadPolicies();
+        setSelectedSlug(newSlug);
+      } else {
+        showToast(data.error || 'Failed to create policy');
+      }
+    } catch {
+      showToast('Network error creating policy');
+    } finally {
+      setCreatingPolicy(false);
+    }
+  };
+
+  const handleDeletePolicy = async (slug: string) => {
+    if (!confirm(`Are you sure you want to permanently delete policy "${slug}"?`)) return;
+
+    setDeletingPolicy(true);
+    try {
+      const res = await fetch(`/api/admin/policies?slug=${encodeURIComponent(slug)}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`Policy [${slug}] deleted.`);
+        await loadPolicies();
+        setSelectedSlug('terms');
+      } else {
+        showToast(data.error || 'Failed to delete policy');
+      }
+    } catch {
+      showToast('Network error deleting policy');
+    } finally {
+      setDeletingPolicy(false);
+    }
+  };
+
   const currentPolicy = policies.find((p) => p.slug === selectedSlug);
 
   return (
@@ -124,11 +193,11 @@ export default function AdminPoliciesPage() {
             <GlassBadge variant="amber">Statutory Compliance</GlassBadge>
           </div>
           <p className="text-sm text-slate-600 mt-1">
-            Edit the statutory policies governed by the CSO Act 2007 and HAB Articles of Association 2026.
+            Edit and publish statutory policies governed by the CSO Act 2007 and HAB Articles of Association 2026.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {currentPolicy?.publicUrl && (
             <Link
               href={currentPolicy.publicUrl}
@@ -139,6 +208,15 @@ export default function AdminPoliciesPage() {
               View Public Page
             </Link>
           )}
+
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>+ Add New Policy</span>
+          </button>
+
           <GlassButton variant="secondary" onClick={loadPolicies} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh

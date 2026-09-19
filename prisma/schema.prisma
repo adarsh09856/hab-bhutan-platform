@@ -777,4 +777,27 @@ model DonationRecord {
   @@index([donorEmail])
 }
 
+// Dynamic Custom Pages created by administrators
+model CustomPage {
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  title            String
+  category         String   @default("General") // Initiatives | Community | Heritage | General
+  excerpt          String?  @db.Text
+  content          String   @db.Text
+  bannerUrl        String?
+  seoTitle         String?
+  seoDescription   String?  @db.Text
+  isPublished      Boolean  @default(true)
+  showInHeaderNav  Boolean  @default(false)
+  showInFooterNav  Boolean  @default(false)
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([category])
+}
+
 
