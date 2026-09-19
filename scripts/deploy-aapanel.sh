@@ -12,8 +12,10 @@ echo "===================================================="
 # 0. Git Synchronization (Pull latest code from origin/main)
 if [ -d .git ]; then
     echo "📥 [1/7] Fetching and synchronizing latest code from GitHub..."
-    git fetch origin main || true
+    git checkout main || true
+    git fetch origin main --prune || true
     git reset --hard origin/main || git pull origin main || echo "⚠️ Git update skipped or in detached HEAD state."
+    echo "   Current active commit: $(git log -1 --oneline)"
 else
     echo "ℹ️ [1/7] .git directory not found; skipping git sync."
 fi
@@ -127,8 +129,10 @@ if command -v "$PM2_BIN" &> /dev/null || [ -x "$PM2_BIN" ]; then
         echo "🚀 Starting Next.js via PM2 direct execution..."
         "$PM2_BIN" start "npm" --name "$APP_NAME" -- start
     fi
+    "$PM2_BIN" reload all --update-env 2>/dev/null || true
     "$PM2_BIN" save || true
     echo "✅ PM2 process successfully started and saved."
+    "$PM2_BIN" list || true
 else
     echo "⚠️ Notice: PM2 binary not found in standard paths."
     echo "   If using aaPanel Node.js Project Manager, restart the project in the aaPanel web UI."
