@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import CustomPageLiveEditor, { CustomPageData } from '@/components/public/CustomPageLiveEditor';
-import { Calendar, Tag, Share2, Check } from 'lucide-react';
+import { Calendar, Tag, Share2, Check, Video, Image as ImageIcon } from 'lucide-react';
+import { extractVideoEmbedUrl } from '@/components/admin/AdvancedEditorSuite';
 
 interface CustomPageClientViewProps {
   initialPage: CustomPageData;
@@ -131,6 +132,29 @@ export default function CustomPageClientView({ initialPage }: CustomPageClientVi
         </section>
       )}
 
+      {/* Embedded Video Showcase (if present) */}
+      {(() => {
+        const videoEmbed = page.videoUrl ? extractVideoEmbedUrl(page.videoUrl) : null;
+        if (!videoEmbed?.embedUrl) return null;
+        return (
+          <section className="max-w-[var(--shell,1200px)] mx-auto px-4 sm:px-6 pt-6 pb-2">
+            <div className="w-full aspect-video max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-lg border border-stone-200 bg-black">
+              {videoEmbed.type === 'mp4' ? (
+                <video controls src={videoEmbed.embedUrl} className="w-full h-full object-cover" />
+              ) : (
+                <iframe
+                  src={videoEmbed.embedUrl}
+                  title={page.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full border-0"
+                />
+              )}
+            </div>
+          </section>
+        );
+      })()}
+
       {/* Main Content Body - Centered, Responsive, Pure Public View */}
       <section className="section section--last py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -147,7 +171,91 @@ export default function CustomPageClientView({ initialPage }: CustomPageClientVi
             )}
           </article>
 
-          {/* Public Footer Callout */}
+          {/* Photo Gallery Grid (if present) */}
+          {Array.isArray(page.galleryImages) && page.galleryImages.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-stone-200/80">
+              <div className="flex items-center gap-2 mb-4">
+                <ImageIcon className="w-5 h-5 text-[#8B2E24]" />
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                  Photo Gallery &amp; Visual Archive
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {page.galleryImages.map((img: any, i: number) => (
+                  <div key={i} className="group bg-white rounded-xl overflow-hidden border border-stone-200 shadow-xs hover:shadow-md transition-shadow">
+                    <div className="aspect-4/3 overflow-hidden bg-stone-100">
+                      <img
+                        src={img.url}
+                        alt={img.caption || page.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                    {img.caption && (
+                      <p className="p-2.5 text-xs text-stone-600 border-t border-stone-100 italic">
+                        {img.caption}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Social Profiles & Share Connect (if present) */}
+          {page.socialLinks && Object.values(page.socialLinks).some(Boolean) && (
+            <div className="mt-8 pt-6 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-600">
+                Connect &amp; Follow This Initiative:
+              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {page.socialLinks.facebook && (
+                  <a
+                    href={page.socialLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    Facebook
+                  </a>
+                )}
+                {page.socialLinks.instagram && (
+                  <a
+                    href={page.socialLinks.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-full bg-linear-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:opacity-95 text-white text-xs font-semibold shadow-xs transition-opacity"
+                  >
+                    Instagram
+                  </a>
+                )}
+                {page.socialLinks.youtube && (
+                  <a
+                    href={page.socialLinks.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-full bg-[#FF0000] hover:bg-[#e60000] text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    YouTube
+                  </a>
+                )}
+                {page.socialLinks.whatsapp && (
+                  <a
+                    href={`https://wa.me/${page.socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    WhatsApp
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Public Footer Callout with Custom CTA */}
           <div className="mt-8 sm:mt-10 bg-[#33261F] text-[#FAF7F2] p-6 sm:p-8 rounded-2xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="space-y-1.5 max-w-xl">
               <span className="text-[11px] uppercase tracking-widest text-[#D97706] font-semibold">
@@ -160,13 +268,30 @@ export default function CustomPageClientView({ initialPage }: CustomPageClientVi
                 HAB represents over 7,500 traditional artisans across 20 Dzongkhags under the CSO Act of Bhutan 2007.
               </p>
             </div>
-            <Link
-              href="/shop"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#a0362b] text-white text-xs font-bold transition-colors shrink-0 shadow-sm"
-            >
-              <span>Explore Crafts</span>
-              <span>→</span>
-            </Link>
+
+            {page.ctaButton?.label && page.ctaButton?.url ? (
+              <Link
+                href={page.ctaButton.url}
+                className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white text-xs font-bold transition-all shrink-0 shadow-sm ${
+                  page.ctaButton.style === 'dark'
+                    ? 'bg-stone-900 hover:bg-black'
+                    : page.ctaButton.style === 'amber'
+                    ? 'bg-amber-600 hover:bg-amber-700'
+                    : 'bg-[#8B2E24] hover:bg-[#a0362b]'
+                }`}
+              >
+                <span>{page.ctaButton.label}</span>
+                <span>→</span>
+              </Link>
+            ) : (
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#a0362b] text-white text-xs font-bold transition-colors shrink-0 shadow-sm"
+              >
+                <span>Explore Crafts</span>
+                <span>→</span>
+              </Link>
+            )}
           </div>
         </div>
       </section>

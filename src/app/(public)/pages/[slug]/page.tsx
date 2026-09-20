@@ -28,10 +28,18 @@ export async function generateMetadata({ params }: CustomPageRouteProps): Promis
     return {
       title: page.seoTitle || `${page.title} · Handicrafts Association of Bhutan`,
       description: page.seoDescription || page.excerpt || 'Handicrafts Association of Bhutan official page.',
+      keywords: page.seoKeywords ? page.seoKeywords.split(',').map((k) => k.trim()) : undefined,
       openGraph: {
         title: page.seoTitle || page.title,
         description: page.seoDescription || page.excerpt || undefined,
         images: page.bannerUrl ? [{ url: page.bannerUrl }] : undefined,
+        type: 'article',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: page.seoTitle || page.title,
+        description: page.seoDescription || page.excerpt || undefined,
+        images: page.bannerUrl ? [page.bannerUrl] : undefined,
       },
     };
   } catch {

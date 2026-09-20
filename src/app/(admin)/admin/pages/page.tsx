@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import AdvancedEditorSuite, { AdvancedEditorFormState } from '@/components/admin/AdvancedEditorSuite';
 
 interface WebPageItem {
   id: string;
@@ -270,17 +271,23 @@ export default function AdminPagesHub() {
   const [pageToDelete, setPageToDelete] = useState<{ id: string; title: string } | null>(null);
 
   // Form fields
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<AdvancedEditorFormState>({
     title: '',
     slug: '',
     category: 'General',
     excerpt: '',
     content: '',
     bannerUrl: '',
+    videoUrl: '',
+    galleryImages: [],
+    socialLinks: { facebook: '', instagram: '', youtube: '', twitter: '', whatsapp: '' },
+    ctaButton: { label: '', url: '', style: 'primary' },
+    seoTitle: '',
+    seoDescription: '',
+    seoKeywords: '',
     isPublished: true,
     showInHeaderNav: false,
     showInFooterNav: false,
-    sortOrder: 0,
   });
 
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -321,10 +328,16 @@ export default function AdminPagesHub() {
       excerpt: '',
       content: '',
       bannerUrl: '',
+      videoUrl: '',
+      galleryImages: [],
+      socialLinks: { facebook: '', instagram: '', youtube: '', twitter: '', whatsapp: '' },
+      ctaButton: { label: '', url: '', style: 'primary' },
+      seoTitle: '',
+      seoDescription: '',
+      seoKeywords: '',
       isPublished: true,
       showInHeaderNav: false,
       showInFooterNav: false,
-      sortOrder: customPages.length + 1,
     });
     setModalOpen(true);
   };
@@ -340,10 +353,16 @@ export default function AdminPagesHub() {
       excerpt: p.excerpt || '',
       content: p.content || '',
       bannerUrl: p.bannerUrl || '',
+      videoUrl: p.videoUrl || '',
+      galleryImages: Array.isArray(p.galleryImages) ? p.galleryImages : [],
+      socialLinks: p.socialLinks || { facebook: '', instagram: '', youtube: '', twitter: '', whatsapp: '' },
+      ctaButton: p.ctaButton || { label: '', url: '', style: 'primary' },
+      seoTitle: p.seoTitle || '',
+      seoDescription: p.seoDescription || '',
+      seoKeywords: p.seoKeywords || '',
       isPublished: p.isPublished !== undefined ? p.isPublished : true,
       showInHeaderNav: Boolean(p.showInHeaderNav),
       showInFooterNav: Boolean(p.showInFooterNav),
-      sortOrder: p.sortOrder || 0,
     });
     setModalOpen(true);
   };
@@ -750,167 +769,16 @@ export default function AdminPagesHub() {
             </div>
 
             {/* Modal Form Body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Page Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={form.title}
-                    onChange={(e) => handleTitleChange(e.target.value)}
-                    placeholder="e.g. Bhutan Craft Sustainability Charter 2026"
-                    className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    URL Slug * (auto-generated)
-                  </label>
-                  <div className="flex items-center">
-                    <span className="px-2.5 py-2 bg-slate-100 border border-r-0 border-slate-300 rounded-l-xl text-xs text-slate-500 font-mono shrink-0">
-                      /pages/
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      value={form.slug}
-                      onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-') })}
-                      placeholder="sustainability-charter"
-                      className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-r-xl text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-slate-700">
-                      Category Tag
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsCreatingCategory(!isCreatingCategory)}
-                      className="text-[11px] font-semibold text-[#8B2E24] hover:underline cursor-pointer"
-                    >
-                      {isCreatingCategory ? 'Choose Existing' : '+ Create Category'}
-                    </button>
-                  </div>
-
-                  {isCreatingCategory ? (
-                    <input
-                      type="text"
-                      value={customCategoryInput}
-                      onChange={(e) => {
-                        setCustomCategoryInput(e.target.value);
-                        setForm({ ...form, category: e.target.value });
-                      }}
-                      placeholder="Type new category..."
-                      className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#8B2E24] rounded-xl text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-[#8B2E24]"
-                      autoFocus
-                    />
-                  ) : (
-                    <select
-                      value={form.category}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setIsCreatingCategory(true);
-                          setCustomCategoryInput('');
-                        } else {
-                          setForm({ ...form, category: e.target.value });
-                        }
-                      }}
-                      className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
-                    >
-                      {availableFormCategories.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                      <option value="__NEW__">+ Create New Category...</option>
-                    </select>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Featured Cover Photo
-                  </label>
-                  <FileUploadInput
-                    value={form.bannerUrl || ''}
-                    onChange={(url) => setForm({ ...form, bannerUrl: url })}
-                    label="Upload Banner / Cover Image"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Summary / Lede Excerpt
-                </label>
-                <textarea
-                  rows={2}
-                  value={form.excerpt}
-                  onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-                  placeholder="Short introductory summary displayed at the top of the page..."
-                  className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Full Page Content (WYSIWYG Rich Text) *
-                </label>
-                <RichTextEditor
-                  value={form.content}
-                  onChange={(content) => setForm({ ...form, content })}
-                  placeholder="Draft the comprehensive page narrative, sections, guidelines, or details..."
-                  minHeight="220px"
-                />
-              </div>
-
-              {/* Navigation and Publishing Checkboxes */}
-              <div className="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
-                <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
-                  Publishing &amp; Navigation Links
-                </span>
-
-                <div className="space-y-2">
-                  <label className="flex items-start sm:items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-800">
-                    <input
-                      type="checkbox"
-                      checked={form.isPublished}
-                      onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24] mt-0.5 sm:mt-0"
-                    />
-                    <span>Publish live immediately (visible to all public visitors)</span>
-                  </label>
-
-                  <label className="flex items-start sm:items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-800">
-                    <input
-                      type="checkbox"
-                      checked={form.showInHeaderNav}
-                      onChange={(e) => setForm({ ...form, showInHeaderNav: e.target.checked })}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24] mt-0.5 sm:mt-0"
-                    />
-                    <span>Add link to Header Navigation Bar (adaptive flex slider)</span>
-                  </label>
-
-                  <label className="flex items-start sm:items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-800">
-                    <input
-                      type="checkbox"
-                      checked={form.showInFooterNav}
-                      onChange={(e) => setForm({ ...form, showInFooterNav: e.target.checked })}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24] mt-0.5 sm:mt-0"
-                    />
-                    <span>Add link to Footer Organization Menu</span>
-                  </label>
-                </div>
-              </div>
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              <AdvancedEditorSuite
+                form={form}
+                onChange={(updated) => setForm((prev) => ({ ...prev, ...updated }))}
+                availableCategories={availableFormCategories}
+                isCreatingCategory={isCreatingCategory}
+                setIsCreatingCategory={setIsCreatingCategory}
+                customCategoryInput={customCategoryInput}
+                setCustomCategoryInput={setCustomCategoryInput}
+              />
 
               {/* Form Actions */}
               <div className="pt-3 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5">

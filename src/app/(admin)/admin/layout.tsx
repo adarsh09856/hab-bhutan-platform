@@ -163,9 +163,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    content: true,
+    web: true,
+    stories: true,
+    heritage: true,
     store: true,
-    artisans: true,
     settings: true,
   });
 
@@ -175,59 +176,60 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: '1. Content & Web',
-      key: 'content',
+      group: '1. Website & Pages',
+      key: 'web',
       items: [
         { label: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
-        { label: 'All Pages Directory', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
-        { label: 'Homepage Studio', href: '/admin/pages/home', icon: LayoutDashboard, badge: 'Studio' },
-        { label: 'About Us Studio', href: '/admin/pages/about', icon: BookOpen, badge: 'Studio' },
-        { label: 'News & Stories', href: '/admin/content', icon: FileText },
-        { label: 'Reports & Publications', href: '/admin/publications', icon: FileText, badge: 'PDFs' },
-        { label: 'Exhibitions & Events', href: '/admin/events', icon: Calendar },
-        { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
-        { label: 'Donor Projects', href: '/admin/projects', icon: FolderKanban },
-        { label: 'Outlets & Craft Shops', href: '/admin/clusters-outlets', icon: Store },
-        { label: 'The 13 Crafts', href: '/admin/crafts', icon: Palette },
-        { label: 'Master Artisans', href: '/admin/honours', icon: Award },
-        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
-        { label: 'Inquiries & Contact', href: '/admin/inquiries', icon: Mail },
+        { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
+        { label: 'Edit Homepage', href: '/admin/pages/home', icon: LayoutDashboard },
+        { label: 'Edit About Us', href: '/admin/pages/about', icon: BookOpen },
+        { label: 'Header & Footer Menus', href: '/admin/navigation', icon: Navigation },
       ],
     },
     {
-      group: '2. Store & POS',
+      group: '2. Stories & Events',
+      key: 'stories',
+      items: [
+        { label: 'News & Articles', href: '/admin/content', icon: FileText },
+        { label: 'Events & Exhibitions', href: '/admin/events', icon: Calendar },
+        { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
+        { label: 'Development Projects', href: '/admin/projects', icon: FolderKanban },
+        { label: 'Reports & Publications', href: '/admin/publications', icon: FileText, badge: 'PDFs' },
+      ],
+    },
+    {
+      group: '3. Artisans & Heritage',
+      key: 'heritage',
+      items: [
+        { label: 'Artisans & Members', href: '/admin/members', icon: Users },
+        { label: 'Member Applications', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
+        { label: 'Membership Tiers & Dues', href: '/admin/membership-categories', icon: Layers },
+        { label: 'Traditional Crafts (13)', href: '/admin/crafts', icon: Palette },
+        { label: 'Master Artisans', href: '/admin/honours', icon: Award },
+      ],
+    },
+    {
+      group: '4. Store & Commerce',
       key: 'store',
       items: [
-        { label: 'Products & Inventory', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
-        { label: 'Customer Orders', href: '/admin/orders', icon: Package, badge: 'Track' },
-        { label: 'Counter Billing (POS)', href: '/admin/pos', icon: Store, badge: 'Live POS' },
-        { label: 'B2B Wholesale Trade', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
+        { label: 'Orders & Tracking', href: '/admin/orders', icon: Package, badge: 'Track' },
+        { label: 'Point of Sale (POS)', href: '/admin/pos', icon: Store, badge: 'Live' },
+        { label: 'Wholesale Orders', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'Retail Shops & Outlets', href: '/admin/clusters-outlets', icon: Store },
         { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
       ],
     },
     {
-      group: '3. Artisans & Members',
-      key: 'artisans',
-      items: [
-        { label: 'Artisan Directory', href: '/admin/members', icon: Users },
-        { label: 'New Member Applications', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
-        { label: 'Membership Tiers', href: '/admin/membership-categories', icon: Layers },
-        { label: 'Annual Dues & Renewals', href: '/admin/membership-settings', icon: BadgePercent },
-      ],
-    },
-    {
-      group: '4. Settings & Security',
+      group: '5. Settings & Legal',
       key: 'settings',
       items: [
-        { label: 'Site Settings & Contacts', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
-        { label: 'Typography & Styling', href: '/admin/styling', icon: Palette },
-        { label: 'Navigation Menus', href: '/admin/navigation', icon: Navigation },
-        { label: 'Media Library', href: '/admin/media', icon: ImageIcon, badge: 'Files' },
-        { label: 'Currency & Language', href: '/admin/localization', icon: Globe, badge: 'USD/BTN' },
-        { label: 'Payment Gateways', href: '/admin/payments', icon: CreditCard },
-        { label: 'Policies & Legal', href: '/admin/policies', icon: ShieldCheck },
-        { label: 'Staff Users & Access', href: '/admin/users', icon: ShieldCheck, badge: 'Security' },
-        { label: 'System Health & Logs', href: '/admin/settings', icon: Settings },
+        { label: 'Site Details & Contact', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
+        { label: 'Legal Policies', href: '/admin/policies', icon: ShieldCheck },
+        { label: 'Customer Messages', href: '/admin/inquiries', icon: Mail },
+        { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
+        { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Access' },
+        { label: 'System Settings & Health', href: '/admin/settings', icon: Settings },
       ],
     },
   ];

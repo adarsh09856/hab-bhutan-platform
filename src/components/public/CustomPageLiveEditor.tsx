@@ -10,15 +10,9 @@ import {
   Loader2,
   Edit3,
   ExternalLink,
-  Image as ImageIcon,
-  Type,
-  Compass,
-  Search,
-  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
-import FileUploadInput from '@/components/admin/FileUploadInput';
-import RichTextEditor from '@/components/admin/RichTextEditor';
+import AdvancedEditorSuite, { AdvancedEditorFormState } from '@/components/admin/AdvancedEditorSuite';
 
 export interface CustomPageData {
   id: string;
@@ -28,8 +22,13 @@ export interface CustomPageData {
   excerpt?: string | null;
   content: string;
   bannerUrl?: string | null;
+  videoUrl?: string | null;
+  galleryImages?: any;
+  socialLinks?: any;
+  ctaButton?: any;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  seoKeywords?: string | null;
   isPublished: boolean;
   showInHeaderNav?: boolean;
   showInFooterNav?: boolean;
@@ -61,23 +60,27 @@ export default function CustomPageLiveEditor({
   onSaved,
 }: CustomPageLiveEditorProps) {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'CONTENT' | 'MEDIA' | 'NAVIGATION' | 'SEO'>('CONTENT');
+  const [form, setForm] = useState<AdvancedEditorFormState>({
+    title: page.title || '',
+    slug: page.slug || '',
+    category: page.category || 'General',
+    excerpt: page.excerpt || '',
+    content: page.content || '',
+    bannerUrl: page.bannerUrl || '',
+    videoUrl: page.videoUrl || '',
+    galleryImages: Array.isArray(page.galleryImages) ? page.galleryImages : [],
+    socialLinks: page.socialLinks || {},
+    ctaButton: page.ctaButton || { label: '', url: '', style: 'primary' },
+    seoTitle: page.seoTitle || '',
+    seoDescription: page.seoDescription || '',
+    seoKeywords: page.seoKeywords || '',
+    isPublished: Boolean(page.isPublished),
+    showInHeaderNav: Boolean(page.showInHeaderNav),
+    showInFooterNav: Boolean(page.showInFooterNav),
+  });
 
-  // Form states initialized with page prop
-  const [title, setTitle] = useState(page.title || '');
-  const [slug, setSlug] = useState(page.slug || '');
-  const [category, setCategory] = useState(page.category || 'General');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
-  const [excerpt, setExcerpt] = useState(page.excerpt || '');
-  const [content, setContent] = useState(page.content || '');
-  const [bannerUrl, setBannerUrl] = useState(page.bannerUrl || '');
-  const [seoTitle, setSeoTitle] = useState(page.seoTitle || '');
-  const [seoDescription, setSeoDescription] = useState(page.seoDescription || '');
-  const [isPublished, setIsPublished] = useState(Boolean(page.isPublished));
-  const [showInHeaderNav, setShowInHeaderNav] = useState(Boolean(page.showInHeaderNav));
-  const [showInFooterNav, setShowInFooterNav] = useState(Boolean(page.showInFooterNav));
-
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -89,19 +92,26 @@ export default function CustomPageLiveEditor({
   // Sync internal state if page prop changes or modal re-opens
   useEffect(() => {
     if (isOpen) {
-      setTitle(page.title || '');
-      setSlug(page.slug || '');
-      setCategory(page.category || 'General');
+      setForm({
+        title: page.title || '',
+        slug: page.slug || '',
+        category: page.category || 'General',
+        excerpt: page.excerpt || '',
+        content: page.content || '',
+        bannerUrl: page.bannerUrl || '',
+        videoUrl: page.videoUrl || '',
+        galleryImages: Array.isArray(page.galleryImages) ? page.galleryImages : [],
+        socialLinks: page.socialLinks || {},
+        ctaButton: page.ctaButton || { label: '', url: '', style: 'primary' },
+        seoTitle: page.seoTitle || '',
+        seoDescription: page.seoDescription || '',
+        seoKeywords: page.seoKeywords || '',
+        isPublished: Boolean(page.isPublished),
+        showInHeaderNav: Boolean(page.showInHeaderNav),
+        showInFooterNav: Boolean(page.showInFooterNav),
+      });
       setIsCreatingCategory(false);
       setCustomCategoryInput('');
-      setExcerpt(page.excerpt || '');
-      setContent(page.content || '');
-      setBannerUrl(page.bannerUrl || '');
-      setSeoTitle(page.seoTitle || '');
-      setSeoDescription(page.seoDescription || '');
-      setIsPublished(Boolean(page.isPublished));
-      setShowInHeaderNav(Boolean(page.showInHeaderNav));
-      setShowInFooterNav(Boolean(page.showInFooterNav));
       setError(null);
       setSuccess(false);
     }
@@ -120,14 +130,14 @@ export default function CustomPageLiveEditor({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
+    if (!form.title.trim()) {
       setError('Page title cannot be empty.');
       return;
     }
 
     const finalCategory = isCreatingCategory && customCategoryInput.trim()
       ? customCategoryInput.trim()
-      : category.trim() || 'General';
+      : form.category.trim() || 'General';
 
     setSaving(true);
     setError(null);
@@ -138,17 +148,8 @@ export default function CustomPageLiveEditor({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: title.trim(),
-          slug: slug.trim(),
+          ...form,
           category: finalCategory,
-          excerpt: excerpt.trim() || null,
-          content,
-          bannerUrl: bannerUrl.trim() || null,
-          seoTitle: seoTitle.trim() || null,
-          seoDescription: seoDescription.trim() || null,
-          isPublished,
-          showInHeaderNav,
-          showInFooterNav,
         }),
       });
 
@@ -181,7 +182,7 @@ export default function CustomPageLiveEditor({
     }
   };
 
-  const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, category].filter(Boolean)));
+  const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, form.category].filter(Boolean)));
 
   const modalContent = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/75 backdrop-blur-xs overflow-y-auto">
@@ -203,9 +204,9 @@ export default function CustomPageLiveEditor({
                   Live Quick Edit
                 </h2>
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 truncate max-w-[150px] sm:max-w-none">
-                  /pages/{slug}
+                  /pages/{form.slug}
                 </span>
-                {isPublished ? (
+                {form.isPublished ? (
                   <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> Live
                   </span>
@@ -229,7 +230,7 @@ export default function CustomPageLiveEditor({
               title="Open full admin directory in new tab"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Full Studio</span>
+              <span>All Pages</span>
             </Link>
             <button
               onClick={onClose}
@@ -242,324 +243,31 @@ export default function CustomPageLiveEditor({
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1 px-3 sm:px-6 border-b border-stone-200 bg-stone-100/50 overflow-x-auto no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab('CONTENT')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'CONTENT'
-                ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Type className="w-3.5 h-3.5" />
-            <span>Title &amp; Content</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('MEDIA')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'MEDIA'
-                ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-            <span>Banner &amp; Media</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('NAVIGATION')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'NAVIGATION'
-                ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Navigation &amp; Status</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('SEO')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'SEO'
-                ? 'border-[#8B2E24] text-[#8B2E24] bg-white'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            <Search className="w-3.5 h-3.5" />
-            <span>SEO</span>
-          </button>
-        </div>
-
-        {/* Tab Body */}
-        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+        {/* Form Body with Advanced Editor Suite */}
+        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold">Unable to save</p>
-                <p>{error}</p>
-              </div>
+            <div className="flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs sm:text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <p className="font-medium">Page saved! Reloading to apply live updates...</p>
+            <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs sm:text-sm">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>Page updated successfully! Refreshing...</span>
             </div>
           )}
 
-          {/* TAB 1: CONTENT */}
-          {activeTab === 'CONTENT' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Page Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    placeholder="e.g. Traditional Weaving Heritage"
-                    className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-stone-700">
-                      Category
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsCreatingCategory(!isCreatingCategory)}
-                      className="text-[11px] font-semibold text-[#8B2E24] hover:underline cursor-pointer"
-                    >
-                      {isCreatingCategory ? 'Choose Existing' : '+ New Category'}
-                    </button>
-                  </div>
-
-                  {isCreatingCategory ? (
-                    <input
-                      type="text"
-                      value={customCategoryInput}
-                      onChange={(e) => {
-                        setCustomCategoryInput(e.target.value);
-                        setCategory(e.target.value);
-                      }}
-                      placeholder="Type new category..."
-                      className="w-full px-3 py-2 border border-[#8B2E24] rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24]"
-                      autoFocus
-                    />
-                  ) : (
-                    <select
-                      value={category}
-                      onChange={(e) => {
-                        if (e.target.value === '__NEW__') {
-                          setIsCreatingCategory(true);
-                          setCustomCategoryInput('');
-                        } else {
-                          setCategory(e.target.value);
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 bg-white focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
-                    >
-                      {allCategories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                      <option value="__NEW__">+ Create New Category...</option>
-                    </select>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  URL Slug <span className="text-stone-400 font-normal">(/pages/{slug})</span>
-                </label>
-                <input
-                  type="text"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                  placeholder="e.g. traditional-weaving-heritage"
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm font-mono text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Introductory Lede / Summary Excerpt
-                </label>
-                <textarea
-                  rows={2}
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder="A concise introductory paragraph summarizing the page..."
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Page Content <span className="text-stone-400 font-normal">(Rich Text &amp; Media)</span>
-                </label>
-                <RichTextEditor
-                  value={content}
-                  onChange={(val) => setContent(val)}
-                  placeholder="Craft your page narrative, add headers, quotes, lists, and images..."
-                  minHeight="220px"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: MEDIA */}
-          {activeTab === 'MEDIA' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Header Banner Image
-                </label>
-                <FileUploadInput
-                  value={bannerUrl}
-                  onChange={(url) => setBannerUrl(url)}
-                  hint="Enter URL or click upload to select an image from your device"
-                />
-                <p className="text-[11px] text-stone-400 mt-1">
-                  Recommended size: 1920x600px. High-resolution imagery representing Bhutanese craft traditions.
-                </p>
-              </div>
-
-              {bannerUrl && (
-                <div className="mt-3 rounded-xl overflow-hidden border border-stone-200 bg-stone-50 p-2">
-                  <p className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider mb-1.5 px-1">
-                    Banner Preview
-                  </p>
-                  <div className="relative h-40 sm:h-52 w-full rounded-lg overflow-hidden bg-stone-900">
-                    <img
-                      src={bannerUrl}
-                      alt="Banner Preview"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 3: NAVIGATION */}
-          {activeTab === 'NAVIGATION' && (
-            <div className="space-y-4">
-              <div className="bg-stone-50 p-3.5 sm:p-4 rounded-xl border border-stone-200">
-                <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider mb-2">
-                  Publishing Status
-                </h3>
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isPublished}
-                    onChange={(e) => setIsPublished(e.target.checked)}
-                    className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24] mt-0.5"
-                  />
-                  <div>
-                    <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                      Publish to live public website
-                    </span>
-                    <p className="text-[11px] text-stone-500">
-                      When unchecked, only logged-in administrators can preview this page.
-                    </p>
-                  </div>
-                </label>
-              </div>
-
-              <div className="bg-stone-50 p-3.5 sm:p-4 rounded-xl border border-stone-200 space-y-3">
-                <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-                  Menu &amp; Site Navigation
-                </h3>
-
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={showInHeaderNav}
-                    onChange={(e) => setShowInHeaderNav(e.target.checked)}
-                    className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24] mt-0.5"
-                  />
-                  <div>
-                    <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                      Show in Header Navigation Bar
-                    </span>
-                    <p className="text-[11px] text-stone-500">
-                      Adds an item in the top header menu. If more than 5 items exist, the navbar smoothly slides with chevron controls.
-                    </p>
-                  </div>
-                </label>
-
-                <div className="border-t border-stone-200/60 pt-3">
-                  <label className="flex items-start gap-2.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={showInFooterNav}
-                      onChange={(e) => setShowInFooterNav(e.target.checked)}
-                      className="w-4 h-4 text-[#8B2E24] rounded border-stone-300 focus:ring-[#8B2E24] mt-0.5"
-                    />
-                    <div>
-                      <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                        Show in Footer Organization Links
-                      </span>
-                      <p className="text-[11px] text-stone-500">
-                        Adds a direct link in the footer organization columns across all pages.
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: SEO */}
-          {activeTab === 'SEO' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Meta Title <span className="text-stone-400 font-normal">(Search Results)</span>
-                </label>
-                <input
-                  type="text"
-                  value={seoTitle}
-                  onChange={(e) => setSeoTitle(e.target.value)}
-                  placeholder={`${title || 'Page Title'} · Handicrafts Association of Bhutan`}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Meta Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={seoDescription}
-                  onChange={(e) => setSeoDescription(e.target.value)}
-                  placeholder="Summary of this page for Google and social previews..."
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#8B2E24] focus:border-[#8B2E24]"
-                />
-              </div>
-            </div>
-          )}
+          <AdvancedEditorSuite
+            form={form}
+            onChange={(updated) => setForm((prev) => ({ ...prev, ...updated }))}
+            availableCategories={allCategories}
+            isCreatingCategory={isCreatingCategory}
+            setIsCreatingCategory={setIsCreatingCategory}
+            customCategoryInput={customCategoryInput}
+            setCustomCategoryInput={setCustomCategoryInput}
+          />
         </form>
 
         {/* Modal Footer Controls */}
