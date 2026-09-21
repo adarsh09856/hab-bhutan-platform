@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -51,7 +52,23 @@ export default function Header() {
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveTotal, setLiveTotal] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [headerLiveEditOpen, setHeaderLiveEditOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileNavOpen) {
+      const origOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = origOverflow;
+      };
+    }
+  }, [mobileNavOpen]);
 
   // Fluid sliding flex navigation states
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -750,14 +767,16 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Slide-Over Drawer */}
-      {mobileNavOpen && (
+      {/* Mobile Slide-Over Drawer mounted to body via portal to prevent backdrop-filter clipping */}
+      {mounted && mobileNavOpen && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          style={{ position: 'fixed', inset: 0, zIndex: 99999 }}
           onClick={() => setMobileNavOpen(false)}
         >
           <div
             className="fixed top-0 right-0 bottom-0 w-[86%] max-w-sm bg-[#FFFCF8] text-[#33261F] border-l border-[#E4DDD1] shadow-2xl p-5 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-right duration-250"
+            style={{ position: 'fixed', top: 0, right: 0, bottom: 0, height: '100dvh', zIndex: 100000 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
@@ -918,7 +937,8 @@ export default function Header() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <HeaderLiveEditor
