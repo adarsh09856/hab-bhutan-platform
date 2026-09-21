@@ -41,7 +41,8 @@ import {
   Award,
   Layers,
   CreditCard,
-  ChevronDown
+  ChevronDown,
+  ChevronsUpDown
 } from 'lucide-react';
 
 interface HealthData {
@@ -163,12 +164,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    web: true,
-    stories: true,
-    heritage: true,
-    store: true,
-    settings: true,
+    web: false,
+    stories: false,
+    heritage: false,
+    store: false,
+    settings: false,
   });
+
+  const allCollapsed = Object.values(openGroups).every((val) => !val);
+
+  const toggleCollapseAll = () => {
+    if (allCollapsed) {
+      setOpenGroups({
+        web: true,
+        stories: true,
+        heritage: true,
+        store: true,
+        settings: true,
+      });
+    } else {
+      setOpenGroups({
+        web: false,
+        stories: false,
+        heritage: false,
+        store: false,
+        settings: false,
+      });
+    }
+  };
 
   const toggleGroup = (key: string) => {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -179,7 +202,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       group: '1. Website & Pages',
       key: 'web',
       items: [
-        { label: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, badge: 'Live' },
         { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
         { label: 'Edit Homepage', href: '/admin/pages/home', icon: LayoutDashboard },
         { label: 'Edit About Us', href: '/admin/pages/about', icon: BookOpen },
@@ -235,8 +257,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   useEffect(() => {
+    if (pathname === '/admin') return;
     for (const group of navGroups) {
-      if (group.items.some((item) => pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href)))) {
+      if (group.items.some((item) => pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${item.href}/`)))) {
         setOpenGroups((prev) => ({ ...prev, [group.key]: true }));
       }
     }
@@ -445,7 +468,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Navigation Items */}
-          <nav className="p-3 flex-1 min-h-0 overflow-y-auto space-y-3 custom-scrollbar">
+          <nav className="p-3 flex-1 min-h-0 overflow-y-auto space-y-2 custom-scrollbar">
+            {/* Quick Collapse / Expand All Controller */}
+            <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-100/70 rounded-xl border border-slate-200/80 shadow-2xs">
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Navigation Menu</span>
+              <button
+                type="button"
+                onClick={toggleCollapseAll}
+                className="px-2 py-0.5 rounded bg-white hover:bg-slate-50 text-[#8B2E24] hover:text-[#6e221a] border border-slate-200 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
+                title={allCollapsed ? 'Expand all navigation categories' : 'Collapse all navigation categories'}
+              >
+                <ChevronsUpDown className="w-3 h-3" />
+                <span>{allCollapsed ? 'Expand All' : 'Collapse All'}</span>
+              </button>
+            </div>
+
+            {/* Direct Home / Dashboard Link */}
+            <Link
+              href="/admin"
+              onClick={() => setSidebarOpen(false)}
+              className={`px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-between ${
+                pathname === '/admin'
+                  ? 'bg-[#8B2E24] text-white shadow-xs font-semibold'
+                  : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <LayoutDashboard
+                  className={`w-4 h-4 flex-none transition-colors ${
+                    pathname === '/admin' ? 'text-white' : 'text-[#8B2E24]'
+                  }`}
+                />
+                <span className="truncate">Dashboard Overview</span>
+              </div>
+              <span
+                className={`text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
+                  pathname === '/admin'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                }`}
+              >
+                Live
+              </span>
+            </Link>
+
             {navGroups.map((group) => {
               const visibleItems = group.items.filter((item) =>
                 !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
@@ -453,7 +519,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               if (visibleItems.length === 0) return null;
 
-              const isOpen = quickSearch ? true : (openGroups[group.key] ?? true);
+              const isOpen = quickSearch ? true : (openGroups[group.key] ?? false);
 
               return (
                 <div key={group.group} className="pt-1">
