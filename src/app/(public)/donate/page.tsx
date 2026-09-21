@@ -51,12 +51,33 @@ function DonateContent() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.pillars && Array.isArray(d.pillars) && d.pillars.length > 0) {
-          const mapped = d.pillars.map((p: any) => ({
-            ...p,
-            letter: p.iconEmoji || p.title?.[0] || '🌱',
-            line: p.description?.slice(0, 70) || '',
-            body: p.description || '',
-          }));
+          const mapped = d.pillars.map((p: any) => {
+            const rawIcon = (p.iconEmoji || '').trim();
+            const isImage = rawIcon.startsWith('/') || rawIcon.startsWith('http');
+            let cleanIcon = '';
+            if (p.key === 'grassroots') {
+              cleanIcon = isImage ? rawIcon : '🌿';
+            } else if (rawIcon.toLowerCase() === 'leaf') {
+              if (p.key === 'impact') cleanIcon = '⚡';
+              else if (p.key === 'cultural') cleanIcon = '🏺';
+              else if (p.key === 'environment') cleanIcon = '🌲';
+              else cleanIcon = p.title?.trim()?.[0]?.toUpperCase() || '✦';
+            } else if (isImage || (rawIcon.length > 0 && rawIcon.length <= 4)) {
+              cleanIcon = rawIcon;
+            } else {
+              if (p.key === 'impact') cleanIcon = '⚡';
+              else if (p.key === 'cultural') cleanIcon = '🏺';
+              else if (p.key === 'environment') cleanIcon = '🌲';
+              else cleanIcon = p.title?.trim()?.[0]?.toUpperCase() || '✦';
+            }
+            return {
+              ...p,
+              iconEmoji: cleanIcon,
+              letter: cleanIcon,
+              line: p.description?.slice(0, 70) || '',
+              body: p.description || '',
+            };
+          });
           setPillars(mapped);
           if (!presetPillar) setSelectedPillar(mapped[0].key);
         }
@@ -231,7 +252,7 @@ function DonateContent() {
                       ) : (
                         <span className="pillar__initial">{p.letter}</span>
                       )}
-                      <span>{isImageIcon ? p.title : (p.title.startsWith(p.letter) ? p.title.slice(p.letter.length) : p.title)}</span>
+                      <span>{p.title}</span>
                     </h2>
                     <p className="pillar__line">{p.line}</p>
                   </button>

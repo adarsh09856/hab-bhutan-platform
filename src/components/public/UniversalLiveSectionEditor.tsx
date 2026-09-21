@@ -65,7 +65,8 @@ export type SectionType =
   | 'policies'
   | 'punakha'
   | 'footer'
-  | 'programmes';
+  | 'programmes'
+  | 'wholesale';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -563,6 +564,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Footer, Columns & Global Settings'
       : sectionType === 'programmes'
       ? 'Programmes & Strategic Pillars'
+      : sectionType === 'wholesale'
+      ? 'Wholesale & Trade Terms'
       : 'Live Section Editor');
 
   const defaultStudioHref =
@@ -585,6 +588,8 @@ export default function UniversalLiveSectionEditor({
       ? '/admin/navigation'
       : sectionType === 'programmes'
       ? '/admin/programmes'
+      : sectionType === 'wholesale'
+      ? '/admin/trade'
       : '/admin/site-settings');
 
   return createPortal(
@@ -1440,6 +1445,77 @@ export default function UniversalLiveSectionEditor({
                             placeholder="The objects are construed broadly: each is a standing programme area, not a fixed project."
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
                           />
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionType === 'wholesale' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">B2B Wholesale &amp; Trade Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Manage SKU tier pricing, lead times, RFQ quotes, and registered buyers.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/trade"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Trade Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Wholesale Headline
+                          </label>
+                          <input
+                            type="text"
+                            value={form.wholesaleHeroTitle || 'Wholesale & Bulk Orders'}
+                            onChange={(e) => updateField('wholesaleHeroTitle', e.target.value)}
+                            placeholder="Wholesale & Bulk Orders"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Trade Mandate &amp; Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.wholesaleHeroLede || 'HAB supplies Bhutanese handicraft at trade terms to retailers, hotels, designers, institutions and distributors.'}
+                            onChange={(e) => updateField('wholesaleHeroLede', e.target.value)}
+                            placeholder="HAB supplies Bhutanese handicraft at trade terms..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                              Default MOQ (Units)
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={form.wholesaleMoq || 10}
+                              onChange={(e) => updateField('wholesaleMoq', Number(e.target.value) || 1)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                              Standard Lead Time
+                            </label>
+                            <input
+                              type="text"
+                              value={form.wholesaleLeadTime || '2 to 4 weeks'}
+                              onChange={(e) => updateField('wholesaleLeadTime', e.target.value)}
+                              placeholder="2 to 4 weeks"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                            />
+                          </div>
                         </div>
                       </div>
                     )}

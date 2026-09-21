@@ -28,7 +28,11 @@ export async function GET(req: NextRequest) {
         _count: { select: { donations: true } },
       },
     });
-    return NextResponse.json({ success: true, pillars });
+    const mapped = pillars.map((p) => ({
+      ...p,
+      iconEmoji: p.key === 'grassroots' ? '🌿' : (p.iconEmoji === 'leaf' ? (p.key === 'impact' ? '⚡' : p.key === 'cultural' ? '🏺' : p.key === 'environment' ? '🌲' : '') : (p.iconEmoji || '')),
+    }));
+    return NextResponse.json({ success: true, pillars: mapped });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch support pillars' }, { status: 500 });
   }
@@ -55,7 +59,7 @@ export async function POST(req: NextRequest) {
           description: description.trim(),
           targetAmountUSD: Number(targetAmountUSD) || 0,
           raisedAmountUSD: Number(raisedAmountUSD) || 0,
-          iconEmoji: iconEmoji?.trim() || 'leaf',
+          iconEmoji: iconEmoji?.trim() || (key.trim().toLowerCase() === 'grassroots' ? '🌿' : ''),
           isActive: isActive !== undefined ? Boolean(isActive) : true,
           sortOrder: Number(sortOrder) || 0,
         },
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
             description: description.trim().replace(/[^\x00-\x7F]/g, ''),
             targetAmountUSD: Number(targetAmountUSD) || 0,
             raisedAmountUSD: Number(raisedAmountUSD) || 0,
-            iconEmoji: 'leaf',
+            iconEmoji: key.trim().toLowerCase() === 'grassroots' ? '🌿' : '',
             isActive: isActive !== undefined ? Boolean(isActive) : true,
             sortOrder: Number(sortOrder) || 0,
           },
@@ -131,7 +135,7 @@ export async function PUT(req: NextRequest) {
             ...(description !== undefined && { description: description.trim().replace(/[^\x00-\x7F]/g, '') }),
             ...(targetAmountUSD !== undefined && { targetAmountUSD: Number(targetAmountUSD) || 0 }),
             ...(raisedAmountUSD !== undefined && { raisedAmountUSD: Number(raisedAmountUSD) || 0 }),
-            ...(iconEmoji !== undefined && { iconEmoji: 'leaf' }),
+            ...(iconEmoji !== undefined && { iconEmoji: iconEmoji?.trim() || '' }),
             ...(isActive !== undefined && { isActive: Boolean(isActive) }),
             ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
           },

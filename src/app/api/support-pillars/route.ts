@@ -9,15 +9,28 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const key = searchParams.get('key');
 
+    const sanitizePillar = (p: any) => {
+      let icon = p.iconEmoji || '';
+      if (p.key === 'grassroots') {
+        icon = '🌿';
+      } else if (icon === 'leaf' || !icon) {
+        if (p.key === 'impact') icon = '⚡';
+        else if (p.key === 'cultural') icon = '🏺';
+        else if (p.key === 'environment') icon = '🌲';
+        else icon = p.title?.[0] || '✦';
+      }
+      return { ...p, iconEmoji: icon };
+    };
+
     if (key) {
       const pillar = await prisma.supportPillar.findUnique({
         where: { key },
       });
       if (pillar) {
-        return NextResponse.json({ success: true, pillar });
+        return NextResponse.json({ success: true, pillar: sanitizePillar(pillar) });
       }
       const fallback = (CLIENT_DATA as any).supportPillars?.find((p: any) => p.key === key);
-      return NextResponse.json({ success: true, pillar: fallback || null });
+      return NextResponse.json({ success: true, pillar: fallback ? sanitizePillar(fallback) : null });
     }
 
     const pillars = await prisma.supportPillar.findMany({
@@ -26,11 +39,16 @@ export async function GET(req: NextRequest) {
     });
 
     if (pillars.length > 0) {
-      return NextResponse.json({ success: true, pillars });
+      return NextResponse.json({ success: true, pillars: pillars.map(sanitizePillar) });
     }
 
-    return NextResponse.json({ success: true, pillars: (CLIENT_DATA as any).supportPillars || [] });
+    const fallbackList = ((CLIENT_DATA as any).supportPillars || []).map(sanitizePillar);
+    return NextResponse.json({ success: true, pillars: fallbackList });
   } catch {
-    return NextResponse.json({ success: true, pillars: (CLIENT_DATA as any).supportPillars || [] });
+    const fallbackList = ((CLIENT_DATA as any).supportPillars || []).map((p: any) => ({
+      ...p,
+      iconEmoji: p.key === 'grassroots' ? '🌿' : (p.key === 'impact' ? '⚡' : (p.key === 'cultural' ? '🏺' : (p.key === 'environment' ? '🌲' : (p.letter || '✦')))),
+    }));
+    return NextResponse.json({ success: true, pillars: fallbackList });
   }
 }

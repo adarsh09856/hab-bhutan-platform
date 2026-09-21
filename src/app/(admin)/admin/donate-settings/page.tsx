@@ -57,7 +57,7 @@ const EMPTY_PILLAR: Omit<Pillar, 'id'> = {
   description: '',
   targetAmountUSD: 20000,
   raisedAmountUSD: 0,
-  iconEmoji: 'leaf',
+  iconEmoji: '',
   isActive: true,
   sortOrder: 0,
 };
@@ -147,7 +147,7 @@ export default function AdminDonateSettingsPage() {
       description: p.description,
       targetAmountUSD: p.targetAmountUSD,
       raisedAmountUSD: p.raisedAmountUSD,
-      iconEmoji: p.iconEmoji || 'leaf',
+      iconEmoji: p.iconEmoji === 'leaf' ? (p.key === 'grassroots' ? '🌿' : '') : (p.iconEmoji || ''),
       isActive: p.isActive,
       sortOrder: p.sortOrder,
     });
