@@ -1523,28 +1523,28 @@
   "supportPillars": [
     {
       "key": "grassroots",
-      "letter": "G",
+      "letter": "leaf",
       "title": "Grassroots Benefit",
       "line": "Keeps rural creators trading through the lean season.",
       "body": "Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable."
     },
     {
       "key": "impact",
-      "letter": "I",
+      "letter": "",
       "title": "Impact Crowdfunding & Enterprise",
       "line": "Buys the raw materials an artisan cannot afford upfront.",
       "body": "Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur."
     },
     {
       "key": "cultural",
-      "letter": "V",
+      "letter": "",
       "title": "Vital Cultural Preservation",
       "line": "Funds critical master-to-apprentice placements.",
       "body": "Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts."
     },
     {
       "key": "environment",
-      "letter": "E",
+      "letter": "",
       "title": "Environmental & Landscape Conservation",
       "line": "Replants the natural materials our crafts grow from.",
       "body": "Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive."

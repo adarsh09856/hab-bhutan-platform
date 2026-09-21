@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     });
     const mapped = pillars.map((p) => ({
       ...p,
-      iconEmoji: p.key === 'grassroots' ? '🌿' : (p.iconEmoji === 'leaf' ? (p.key === 'impact' ? '⚡' : p.key === 'cultural' ? '🏺' : p.key === 'environment' ? '🌲' : '') : (p.iconEmoji || '')),
+      iconEmoji: p.key === 'grassroots' ? 'leaf' : (p.iconEmoji === 'leaf' ? '' : (p.iconEmoji || '')),
     }));
     return NextResponse.json({ success: true, pillars: mapped });
   } catch (err: any) {
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
           description: description.trim(),
           targetAmountUSD: Number(targetAmountUSD) || 0,
           raisedAmountUSD: Number(raisedAmountUSD) || 0,
-          iconEmoji: iconEmoji?.trim() || (key.trim().toLowerCase() === 'grassroots' ? '🌿' : ''),
+          iconEmoji: iconEmoji?.trim() || (key.trim().toLowerCase() === 'grassroots' ? 'leaf' : ''),
           isActive: isActive !== undefined ? Boolean(isActive) : true,
           sortOrder: Number(sortOrder) || 0,
         },
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
             description: description.trim().replace(/[^\x00-\x7F]/g, ''),
             targetAmountUSD: Number(targetAmountUSD) || 0,
             raisedAmountUSD: Number(raisedAmountUSD) || 0,
-            iconEmoji: key.trim().toLowerCase() === 'grassroots' ? '🌿' : '',
+            iconEmoji: key.trim().toLowerCase() === 'grassroots' ? 'leaf' : '',
             isActive: isActive !== undefined ? Boolean(isActive) : true,
             sortOrder: Number(sortOrder) || 0,
           },

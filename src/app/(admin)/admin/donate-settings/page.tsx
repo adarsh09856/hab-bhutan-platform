@@ -147,7 +147,7 @@ export default function AdminDonateSettingsPage() {
       description: p.description,
       targetAmountUSD: p.targetAmountUSD,
       raisedAmountUSD: p.raisedAmountUSD,
-      iconEmoji: p.iconEmoji === 'leaf' ? (p.key === 'grassroots' ? '🌿' : '') : (p.iconEmoji || ''),
+      iconEmoji: p.iconEmoji === 'leaf' ? (p.key === 'grassroots' ? 'leaf' : '') : (p.iconEmoji || ''),
       isActive: p.isActive,
       sortOrder: p.sortOrder,
     });

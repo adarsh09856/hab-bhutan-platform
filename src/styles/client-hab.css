@@ -1972,15 +1972,18 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
    ========================================================================== */
 
 .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:stretch}
+@media (max-width:1024px){.pillars{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.pillars{grid-template-columns:1fr;gap:14px}}
 .pillar{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-xl);
   padding:28px 26px;display:flex;flex-direction:column;text-align:left;
 }
-.pillar__title{font-family:var(--ui);font-weight:700;font-size:var(--t-card-m);line-height:1.25;letter-spacing:-.015em;margin:0 0 8px}
-/* the acronym reads out of the words, matching the TRUE row under the shop */
-.pillar__initial{color:var(--accent);font-size:21px;letter-spacing:0}
-.pillar__line{font-family:var(--ui);font-weight:600;font-size:14.5px;line-height:1.45;color:var(--accent);margin:0 0 12px}
-.pillar__body{font-size:14.5px;line-height:1.6;color:var(--muted);margin:0;flex:1;text-wrap:pretty}
+@media (max-width:640px){.pillar{padding:20px 18px}}
+.pillar__title{font-family:var(--ui);font-weight:700;font-size:var(--t-card-m);line-height:1.25;letter-spacing:-.015em;margin:0 0 8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;word-break:normal;overflow-wrap:break-word}
+/* the acronym / tag reads cleanly next to the title without wrapping */
+.pillar__initial{color:var(--accent);font-size:20px;letter-spacing:0;font-weight:700;white-space:nowrap !important;display:inline-block !important;flex:none}
+.pillar__line{font-family:var(--ui);font-weight:600;font-size:14.5px;line-height:1.45;color:var(--accent);margin:0 0 12px;word-break:normal;overflow-wrap:break-word}
+.pillar__body{font-size:14.5px;line-height:1.6;color:var(--muted);margin:0;flex:1;text-wrap:pretty;word-break:normal;overflow-wrap:break-word}
 /* An open amount: the field carries no default and no ceiling, so nothing
    on the card implies a minimum gift. */
 .pillar__foot{
@@ -2007,6 +2010,8 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 .pillar__give:hover{background:var(--accent-hover)}
 
 .pillars--pick{grid-template-columns:repeat(4,1fr);margin-top:30px}
+@media (max-width:1024px){.pillars--pick{grid-template-columns:repeat(2,1fr);margin-top:20px}}
+@media (max-width:640px){.pillars--pick{grid-template-columns:1fr;margin-top:16px}}
 .pillar--option{cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease}
 .pillar--option:hover{border-color:var(--accent-rule)}
 .pillar--option.is-active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--brass-tint)}

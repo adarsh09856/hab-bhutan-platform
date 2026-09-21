@@ -52,30 +52,13 @@ function DonateContent() {
       .then((d) => {
         if (d?.pillars && Array.isArray(d.pillars) && d.pillars.length > 0) {
           const mapped = d.pillars.map((p: any) => {
-            const rawIcon = (p.iconEmoji || '').trim();
-            const isImage = rawIcon.startsWith('/') || rawIcon.startsWith('http');
-            let cleanIcon = '';
-            if (p.key === 'grassroots') {
-              cleanIcon = isImage ? rawIcon : '🌿';
-            } else if (rawIcon.toLowerCase() === 'leaf') {
-              if (p.key === 'impact') cleanIcon = '⚡';
-              else if (p.key === 'cultural') cleanIcon = '🏺';
-              else if (p.key === 'environment') cleanIcon = '🌲';
-              else cleanIcon = p.title?.trim()?.[0]?.toUpperCase() || '✦';
-            } else if (isImage || (rawIcon.length > 0 && rawIcon.length <= 4)) {
-              cleanIcon = rawIcon;
-            } else {
-              if (p.key === 'impact') cleanIcon = '⚡';
-              else if (p.key === 'cultural') cleanIcon = '🏺';
-              else if (p.key === 'environment') cleanIcon = '🌲';
-              else cleanIcon = p.title?.trim()?.[0]?.toUpperCase() || '✦';
-            }
+            const isGrassroots = p.key === 'grassroots';
             return {
               ...p,
-              iconEmoji: cleanIcon,
-              letter: cleanIcon,
-              line: p.description?.slice(0, 70) || '',
-              body: p.description || '',
+              iconEmoji: isGrassroots ? 'leaf' : '',
+              letter: isGrassroots ? 'leaf' : '',
+              line: p.description?.slice(0, 70) || p.line || '',
+              body: p.description || p.body || '',
             };
           });
           setPillars(mapped);
@@ -235,7 +218,7 @@ function DonateContent() {
             <div className="pillars pillars--pick" style={{ marginTop: 24 }}>
               {pillars.map((p) => {
                 const isActive = p.key === selectedPillar;
-                const isImageIcon = p.iconEmoji && (p.iconEmoji.startsWith('/') || p.iconEmoji.startsWith('http'));
+                const isGrassroots = p.key === 'grassroots';
                 return (
                   <button
                     key={p.key}
@@ -244,13 +227,20 @@ function DonateContent() {
                     onClick={() => setSelectedPillar(p.key)}
                     style={{ textAlign: 'left', cursor: 'pointer', border: isActive ? '2px solid var(--accent)' : '1px solid var(--border)' }}
                   >
-                    <h2 className="pillar__title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {isImageIcon ? (
-                        <span className="pillar__initial" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <img src={p.iconEmoji} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                    <h2 className="pillar__title" style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                      {isGrassroots && (
+                        <span
+                          className="pillar__initial"
+                          style={{
+                            display: 'inline-block',
+                            whiteSpace: 'nowrap',
+                            color: 'var(--accent, #8b2500)',
+                            fontWeight: 700,
+                            letterSpacing: '0',
+                          }}
+                        >
+                          leaf
                         </span>
-                      ) : (
-                        <span className="pillar__initial">{p.letter}</span>
                       )}
                       <span>{p.title}</span>
                     </h2>

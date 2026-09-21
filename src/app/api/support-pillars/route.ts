@@ -10,16 +10,12 @@ export async function GET(req: NextRequest) {
     const key = searchParams.get('key');
 
     const sanitizePillar = (p: any) => {
-      let icon = p.iconEmoji || '';
-      if (p.key === 'grassroots') {
-        icon = '🌿';
-      } else if (icon === 'leaf' || !icon) {
-        if (p.key === 'impact') icon = '⚡';
-        else if (p.key === 'cultural') icon = '🏺';
-        else if (p.key === 'environment') icon = '🌲';
-        else icon = p.title?.[0] || '✦';
-      }
-      return { ...p, iconEmoji: icon };
+      const isGrassroots = p.key === 'grassroots';
+      return {
+        ...p,
+        iconEmoji: isGrassroots ? 'leaf' : '',
+        letter: isGrassroots ? 'leaf' : '',
+      };
     };
 
     if (key) {
@@ -47,7 +43,8 @@ export async function GET(req: NextRequest) {
   } catch {
     const fallbackList = ((CLIENT_DATA as any).supportPillars || []).map((p: any) => ({
       ...p,
-      iconEmoji: p.key === 'grassroots' ? '🌿' : (p.key === 'impact' ? '⚡' : (p.key === 'cultural' ? '🏺' : (p.key === 'environment' ? '🌲' : (p.letter || '✦')))),
+      iconEmoji: p.key === 'grassroots' ? 'leaf' : '',
+      letter: p.key === 'grassroots' ? 'leaf' : '',
     }));
     return NextResponse.json({ success: true, pillars: fallbackList });
   }
