@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import HeaderLiveEditor from '@/components/public/HeaderLiveEditor';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const CATEGORY_THUMBNAIL_MAP: Record<string, string> = {
   'individual-artisan': '/assets/photos/hero-1-weaving.jpg',
@@ -52,7 +53,7 @@ export default function Header() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [headerLiveEditOpen, setHeaderLiveEditOpen] = useState(false);
 
-  // Sliding flex navigation states
+  // Fluid sliding flex navigation states
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const navTrackRef = useRef<HTMLDivElement>(null);
@@ -68,11 +69,22 @@ export default function Header() {
   const slideNav = (direction: 'left' | 'right') => {
     const el = navTrackRef.current;
     if (!el) return;
-    const distance = 160;
+    const distance = Math.max(160, Math.floor(el.clientWidth * 0.75));
     el.scrollBy({
       left: direction === 'left' ? -distance : distance,
       behavior: 'smooth',
     });
+    setTimeout(checkNavScroll, 300);
+  };
+
+  const handleNavWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const el = navTrackRef.current;
+    if (!el) return;
+    if (el.scrollWidth > el.clientWidth) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        el.scrollLeft += e.deltaY;
+      }
+    }
   };
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -240,10 +252,24 @@ export default function Header() {
   // Monitor navigation item overflow for sliding flex menu
   useEffect(() => {
     checkNavScroll();
-    const timer = setTimeout(checkNavScroll, 120);
+    const timer = setTimeout(checkNavScroll, 80);
+    const timer2 = setTimeout(checkNavScroll, 400);
+
+    const el = navTrackRef.current;
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && el) {
+      ro = new ResizeObserver(() => {
+        checkNavScroll();
+      });
+      ro.observe(el);
+      if (el.parentElement) ro.observe(el.parentElement);
+    }
+
     window.addEventListener('resize', checkNavScroll);
     return () => {
       clearTimeout(timer);
+      clearTimeout(timer2);
+      if (ro) ro.disconnect();
       window.removeEventListener('resize', checkNavScroll);
     };
   }, [navItems]);
@@ -268,7 +294,7 @@ export default function Header() {
         </Link>
 
         <nav
-          className={`nav ${mobileNavOpen ? 'is-open' : ''}`}
+          className="nav"
           id="primaryNav"
           aria-label="Primary"
         >
@@ -281,7 +307,7 @@ export default function Header() {
                 aria-label="Previous menu items"
                 title="Scroll menu left"
               >
-                ‹
+                <ChevronLeft className="w-3.5 h-3.5" />
               </button>
             )}
 
@@ -289,6 +315,7 @@ export default function Header() {
               className="nav-slider-track"
               ref={navTrackRef}
               onScroll={checkNavScroll}
+              onWheel={handleNavWheel}
             >
               {navItems.map((item) => {
                 const translationKey = 
@@ -321,7 +348,7 @@ export default function Header() {
                 aria-label="Next menu items"
                 title="Scroll menu right"
               >
-                ›
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -398,99 +425,6 @@ export default function Header() {
               </div>
             </div>
           </div>
-
-          {/* Mobile-only Shop accordion in drawer */}
-          <div className="menu lg:hidden">
-            <button
-              className="nav__item nav__item--trigger"
-              type="button"
-              onClick={() => {
-                setShopOpen(!shopOpen);
-                setMembersOpen(false);
-              }}
-            >
-              {t('nav.shop', 'Shop the 13 Crafts')} <span className="caret" aria-hidden="true">{shopOpen ? '▴' : '▾'}</span>
-            </button>
-            {shopOpen && (
-              <div className="menu__card" style={{ marginTop: '6px', padding: '10px', boxShadow: 'none' }}>
-                <p className="eyebrow eyebrow--muted eyebrow--sm" style={{ marginBottom: '8px' }}>
-                  {t('menu.shop_by_craft', 'Shop by craft category')}
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-                  {crafts.map((c) => (
-                    <Link
-                      key={c.key}
-                      href={`/shop/${c.key}`}
-                      onClick={() => {
-                        setShopOpen(false);
-                        setMobileNavOpen(false);
-                      }}
-                      className="group flex items-center gap-2 p-1.5 rounded-lg bg-white border border-[#E4DDD1] text-xs hover:border-[#8B2E24] transition-colors"
-                    >
-                      <div className="w-6 h-6 rounded overflow-hidden relative shrink-0 bg-stone-100">
-                        <Image
-                          src={CRAFT_THUMBNAIL_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
-                          alt={c.name}
-                          fill
-                          sizes="24px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <span className="block font-semibold text-[11px] truncate text-[#33261F] group-hover:text-[#8B2E24]">{c.name}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--line)' }}>
-                  <Link
-                    className="btn btn--accent btn--sm"
-                    href="/shop"
-                    onClick={() => {
-                      setShopOpen(false);
-                      setMobileNavOpen(false);
-                    }}
-                    style={{ textAlign: 'center', fontSize: '11px', padding: '6px 4px' }}
-                  >
-                    {t('menu.all_products', 'All products')}
-                  </Link>
-                  <Link
-                    className="btn btn--outline btn--sm"
-                    href="/wholesale"
-                    onClick={() => {
-                      setShopOpen(false);
-                      setMobileNavOpen(false);
-                    }}
-                    style={{ textAlign: 'center', fontSize: '11px', padding: '6px 4px' }}
-                  >
-                    {t('menu.wholesale', 'Wholesale')}
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile drawer quick currency & language toggles */}
-          {mobileNavOpen && (
-            <div style={{ display: 'flex', gap: '8px', padding: '12px 16px', borderTop: '1px solid var(--line)', marginTop: '8px' }}>
-              <button
-                type="button"
-                className="chip"
-                onClick={toggleCurrency}
-                style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
-              >
-                {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
-              </button>
-              <button
-                type="button"
-                className="chip"
-                onClick={toggleLanguage}
-                style={{ flex: 1, textAlign: 'center', fontWeight: 600, cursor: 'pointer' }}
-              >
-                {language === 'en' ? 'EN (English)' : 'རྫོང་ཁ (Dzongkha)'}
-              </button>
-            </div>
-          )}
         </nav>
 
         <span className="header__spacer"></span>
@@ -815,6 +749,177 @@ export default function Header() {
           </button>
         </div>
       </div>
+
+      {/* Mobile Slide-Over Drawer */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setMobileNavOpen(false)}
+        >
+          <div
+            className="fixed top-0 right-0 bottom-0 w-[86%] max-w-sm bg-[#FFFCF8] text-[#33261F] border-l border-[#E4DDD1] shadow-2xl p-5 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-right duration-250"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E4DDD1]">
+                <img src="/assets/hab-logo.png" alt="HAB" className="h-8 w-auto" />
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                  aria-label="Close menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="space-y-1">
+                <p className="eyebrow eyebrow--muted eyebrow--sm">Menu</p>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileNavOpen(false)}
+                    className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      pathname === item.href
+                        ? 'bg-[#8B2E24] text-white font-semibold'
+                        : 'text-[#33261F] hover:bg-stone-100'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Membership Section */}
+              <div className="pt-2 border-t border-[#E4DDD1]">
+                <button
+                  type="button"
+                  onClick={() => setMembersOpen(!membersOpen)}
+                  className="w-full flex items-center justify-between py-2 text-sm font-semibold text-[#33261F] cursor-pointer"
+                >
+                  <span>{t('nav.membership', 'Membership')}</span>
+                  <span>{membersOpen ? '▴' : '▾'}</span>
+                </button>
+                {membersOpen && (
+                  <div className="space-y-1 pl-2 pt-1">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.key}
+                        href={`/membership-category?category=${cat.key}`}
+                        onClick={() => setMobileNavOpen(false)}
+                        className="block py-1.5 px-2 rounded text-xs text-stone-700 hover:bg-stone-100"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                    <div className="flex gap-2 pt-2">
+                      <Link
+                        href="/register"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="btn btn--accent btn--xs flex-1 text-center"
+                      >
+                        Register
+                      </Link>
+                      <Link
+                        href="/masters"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="btn btn--outline btn--xs flex-1 text-center"
+                      >
+                        Awards
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Shop by Craft Section */}
+              <div className="pt-2 border-t border-[#E4DDD1]">
+                <button
+                  type="button"
+                  onClick={() => setShopOpen(!shopOpen)}
+                  className="w-full flex items-center justify-between py-2 text-sm font-semibold text-[#33261F] cursor-pointer"
+                >
+                  <span>{t('nav.shop', 'Shop the 13 Crafts')}</span>
+                  <span>{shopOpen ? '▴' : '▾'}</span>
+                </button>
+                {shopOpen && (
+                  <div className="grid grid-cols-2 gap-1.5 pt-1">
+                    {crafts.map((c) => (
+                      <Link
+                        key={c.key}
+                        href={`/shop/${c.key}`}
+                        onClick={() => setMobileNavOpen(false)}
+                        className="flex items-center gap-1.5 p-1.5 rounded bg-stone-50 text-[11px] font-semibold text-stone-800 hover:bg-stone-100"
+                      >
+                        <span className="truncate">{c.name}</span>
+                      </Link>
+                    ))}
+                    <Link
+                      href="/shop"
+                      onClick={() => setMobileNavOpen(false)}
+                      className="col-span-2 text-center py-1.5 rounded bg-[#8B2E24] text-white text-xs font-semibold mt-1"
+                    >
+                      All Products
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Links */}
+              <div className="pt-2 border-t border-[#E4DDD1] space-y-1">
+                <Link
+                  href="/track-order"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="block py-1.5 px-2 text-xs font-semibold text-[#C9A46A]"
+                >
+                  Track order &rarr;
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
+                >
+                  Contact us
+                </Link>
+                <Link
+                  href="/donate"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
+                >
+                  Donate & Support Artisans
+                </Link>
+                <Link
+                  href="/wholesale"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
+                >
+                  Wholesale & Trade
+                </Link>
+              </div>
+            </div>
+
+            {/* Currency & Language */}
+            <div className="pt-4 border-t border-[#E4DDD1] flex gap-2">
+              <button
+                type="button"
+                className="chip flex-1 text-center py-2 font-mono text-xs cursor-pointer"
+                onClick={toggleCurrency}
+              >
+                {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
+              </button>
+              <button
+                type="button"
+                className="chip flex-1 text-center py-2 font-semibold text-xs cursor-pointer"
+                onClick={toggleLanguage}
+              >
+                {language === 'en' ? 'EN (English)' : 'རྫོང་ཁ (Dzongkha)'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <HeaderLiveEditor
         isOpen={headerLiveEditOpen}

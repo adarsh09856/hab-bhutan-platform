@@ -50,7 +50,9 @@ export default function UtilityBar() {
       <div
         className="utility__inner no-scrollbar"
         style={{
-          overflow: 'hidden',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          WebkitOverflowScrolling: 'touch',
           flexWrap: 'nowrap',
           height: '100%',
           maxHeight: 'var(--utility-h, 38px)',
