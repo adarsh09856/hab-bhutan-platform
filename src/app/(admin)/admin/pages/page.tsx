@@ -315,6 +315,12 @@ export default function AdminPagesHub() {
 
   useEffect(() => {
     loadCustomPages();
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get('new') === '1' || sp.get('create') === 'true') {
+        openCreateModal();
+      }
+    }
   }, []);
 
   const openCreateModal = () => {

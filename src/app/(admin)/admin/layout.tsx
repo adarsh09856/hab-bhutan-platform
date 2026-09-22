@@ -42,7 +42,8 @@ import {
   Layers,
   CreditCard,
   ChevronDown,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Plus
 } from 'lucide-react';
 
 interface HealthData {
@@ -203,6 +204,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       key: 'web',
       items: [
         { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
+        { label: '+ Create New Page', href: '/admin/pages?new=1', icon: Plus, badge: 'New' },
         { label: 'Edit Homepage', href: '/admin/pages/home', icon: LayoutDashboard },
         { label: 'Edit About Us', href: '/admin/pages/about', icon: BookOpen },
         { label: 'Header & Footer Menus', href: '/admin/navigation', icon: Navigation },

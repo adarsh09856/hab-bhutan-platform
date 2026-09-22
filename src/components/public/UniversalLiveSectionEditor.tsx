@@ -885,13 +885,24 @@ export default function UniversalLiveSectionEditor({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/pages?new=1"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:border-[#8B2E24] text-[#8B2E24] hover:bg-slate-50 text-xs font-bold shadow-2xs transition-colors"
+              title="Create a brand new standalone public page"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Create New Page</span>
+            </Link>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Sub-Tabs for Deep Section Control */}
@@ -3035,14 +3046,25 @@ export default function UniversalLiveSectionEditor({
 
           {/* Modal Footer */}
           <div className="flex-shrink-0 p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
-            <Link
-              href={defaultStudioHref}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open in Admin Studio</span>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={defaultStudioHref}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open in Admin Studio</span>
+              </Link>
+              <span className="text-slate-300">|</span>
+              <Link
+                href="/admin/pages?new=1"
+                target="_blank"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#8B2E24] hover:text-[#73241c] transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create New Page</span>
+              </Link>
+            </div>
 
             <div className="flex items-center gap-2">
               <button
