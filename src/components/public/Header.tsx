@@ -46,6 +46,8 @@ export default function Header() {
 
   const [membersOpen, setMembersOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
+  const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [liveResults, setLiveResults] = useState<any[]>([]);
@@ -121,6 +123,10 @@ export default function Header() {
     };
 
     const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest?.('.mobile-drawer-portal')) {
+        return;
+      }
       if (membersRef.current && !membersRef.current.contains(e.target as Node)) {
         setMembersOpen(false);
       }
@@ -660,23 +666,21 @@ export default function Header() {
             {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
           </button>
 
-          <Link
-            href="/shop"
-            className="btn btn--accent btn--sm lg:hidden"
-            style={{ padding: '6px 10px', fontSize: '12px' }}
-          >
-            {t('nav.shop', 'Shop')}
-          </Link>
-
           <div
-            className="menu hidden lg:block"
+            className="menu"
             data-menu
             ref={shopRef}
             onMouseEnter={() => {
-              setShopOpen(true);
-              setMembersOpen(false);
+              if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+                setShopOpen(true);
+                setMembersOpen(false);
+              }
             }}
-            onMouseLeave={() => setShopOpen(false)}
+            onMouseLeave={() => {
+              if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+                setShopOpen(false);
+              }
+            }}
           >
             <button
               className="btn btn--accent btn--sm"
@@ -688,6 +692,7 @@ export default function Header() {
                 setShopOpen(!shopOpen);
                 setMembersOpen(false);
               }}
+              style={{ padding: '6px 11px', fontSize: '12.5px', cursor: 'pointer' }}
             >
               {t('nav.shop', 'Shop')} <span className="caret" aria-hidden="true">▾</span>
             </button>
@@ -770,12 +775,12 @@ export default function Header() {
       {/* Mobile Slide-Over Drawer mounted to body via portal to prevent backdrop-filter clipping */}
       {mounted && mobileNavOpen && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="mobile-drawer-portal fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
           style={{ position: 'fixed', inset: 0, zIndex: 99999 }}
           onClick={() => setMobileNavOpen(false)}
         >
           <div
-            className="fixed top-0 right-0 bottom-0 w-[86%] max-w-sm bg-[#FFFCF8] text-[#33261F] border-l border-[#E4DDD1] shadow-2xl p-5 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-right duration-250"
+            className="fixed top-0 right-0 bottom-0 w-[88%] max-w-sm bg-[#FFFCF8] text-[#33261F] border-l border-[#E4DDD1] shadow-2xl p-5 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-right duration-250"
             style={{ position: 'fixed', top: 0, right: 0, bottom: 0, height: '100dvh', zIndex: 100000 }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -815,22 +820,34 @@ export default function Header() {
               <div className="pt-2 border-t border-[#E4DDD1]">
                 <button
                   type="button"
-                  onClick={() => setMembersOpen(!membersOpen)}
+                  onClick={() => setMobileMembersOpen(!mobileMembersOpen)}
                   className="w-full flex items-center justify-between py-2 text-sm font-semibold text-[#33261F] cursor-pointer"
                 >
                   <span>{t('nav.membership', 'Membership')}</span>
-                  <span>{membersOpen ? '▴' : '▾'}</span>
+                  <span>{mobileMembersOpen ? '▴' : '▾'}</span>
                 </button>
-                {membersOpen && (
-                  <div className="space-y-1 pl-2 pt-1">
+                {mobileMembersOpen && (
+                  <div className="space-y-1 pl-1 pt-1 animate-in fade-in duration-150">
                     {categories.map((cat) => (
                       <Link
                         key={cat.key}
                         href={`/membership-category?category=${cat.key}`}
                         onClick={() => setMobileNavOpen(false)}
-                        className="block py-1.5 px-2 rounded text-xs text-stone-700 hover:bg-stone-100"
+                        className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-stone-100 transition-colors"
                       >
-                        {cat.name}
+                        <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0 bg-stone-200 border border-[#E4DDD1]">
+                          <Image
+                            src={CATEGORY_THUMBNAIL_MAP[cat.key] || '/assets/photos/hero-1-weaving.jpg'}
+                            alt={cat.name}
+                            fill
+                            sizes="24px"
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="block text-xs font-medium text-stone-800 truncate leading-tight">{cat.name}</span>
+                          <span className="block text-[10px] text-stone-500 truncate leading-tight">{cat.meta}</span>
+                        </div>
                       </Link>
                     ))}
                     <div className="flex gap-2 pt-2">
@@ -853,35 +870,58 @@ export default function Header() {
                 )}
               </div>
 
-              {/* Shop by Craft Section */}
+              {/* Shop by Craft Section with Images & Subtitles */}
               <div className="pt-2 border-t border-[#E4DDD1]">
                 <button
                   type="button"
-                  onClick={() => setShopOpen(!shopOpen)}
+                  onClick={() => setMobileShopOpen(!mobileShopOpen)}
                   className="w-full flex items-center justify-between py-2 text-sm font-semibold text-[#33261F] cursor-pointer"
                 >
                   <span>{t('nav.shop', 'Shop the 13 Crafts')}</span>
-                  <span>{shopOpen ? '▴' : '▾'}</span>
+                  <span>{mobileShopOpen ? '▴' : '▾'}</span>
                 </button>
-                {shopOpen && (
-                  <div className="grid grid-cols-2 gap-1.5 pt-1">
-                    {crafts.map((c) => (
+                {mobileShopOpen && (
+                  <div className="space-y-1.5 pt-1 animate-in fade-in duration-150">
+                    <div className="grid grid-cols-2 gap-1.5 max-h-[300px] overflow-y-auto pr-0.5">
+                      {crafts.map((c) => (
+                        <Link
+                          key={c.key}
+                          href={`/shop/${c.key}`}
+                          onClick={() => setMobileNavOpen(false)}
+                          className="flex items-center gap-2 p-1.5 rounded-lg bg-stone-50 hover:bg-stone-100 border border-[#E4DDD1]/60 transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-md overflow-hidden relative flex-shrink-0 bg-stone-200 border border-[#E4DDD1]">
+                            <Image
+                              src={CRAFT_THUMBNAIL_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
+                              alt={c.name}
+                              fill
+                              sizes="28px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="block text-[11px] font-bold text-stone-900 truncate leading-tight">{c.name}</span>
+                            <span className="block text-[10px] text-stone-500 truncate leading-tight">{c.english || ''}</span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 pt-1">
                       <Link
-                        key={c.key}
-                        href={`/shop/${c.key}`}
+                        href="/shop"
                         onClick={() => setMobileNavOpen(false)}
-                        className="flex items-center gap-1.5 p-1.5 rounded bg-stone-50 text-[11px] font-semibold text-stone-800 hover:bg-stone-100"
+                        className="text-center py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-semibold"
                       >
-                        <span className="truncate">{c.name}</span>
+                        All Products
                       </Link>
-                    ))}
-                    <Link
-                      href="/shop"
-                      onClick={() => setMobileNavOpen(false)}
-                      className="col-span-2 text-center py-1.5 rounded bg-[#8B2E24] text-white text-xs font-semibold mt-1"
-                    >
-                      All Products
-                    </Link>
+                      <Link
+                        href="/wholesale"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="text-center py-1.5 rounded-lg bg-[#FAF5EE] border border-[#E4DDD1] text-xs font-semibold text-[#8B2E24] hover:bg-[#F3ECE1]"
+                      >
+                        Wholesale →
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>

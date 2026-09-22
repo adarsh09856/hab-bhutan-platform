@@ -75,6 +75,29 @@ html:has(.hab-admin),
   color: #0f172a !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border-radius: 1rem;
+  max-height: 92vh !important;
+  max-height: 92dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Universal Admin Modal Responsiveness: Prevents clipping and cutoffs on any device/laptop/mobile */
+.hab-admin .fixed.inset-0.z-50:not(.lg\:hidden) {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  padding: clamp(0.5rem, 2vw, 1.5rem) !important;
+}
+
+.hab-admin .fixed.inset-0.z-50:not(.lg\:hidden) > div[class*="rounded-"],
+.hab-admin .fixed.inset-0.z-50:not(.lg\:hidden) > div[class*="admin-card"] {
+  max-height: 92vh !important;
+  max-height: 92dvh !important;
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 /* Typography & Contrast */

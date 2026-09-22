@@ -32,12 +32,13 @@ export default function FileUploadInput({
   const [showManualUrl, setShowManualUrl] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isPdf = value && (value.toLowerCase().endsWith('.pdf') || value.toLowerCase().includes('.pdf'));
-  const isImage = value && !isPdf && (
-    value.match(/\.(jpeg|jpg|gif|png|webp|svg|avif)($|\?)/i) ||
-    value.startsWith('/uploads/') ||
-    value.startsWith('/assets/photos/') ||
-    value.startsWith('http')
+  const cleanValue = value === 'leaf' || value === 'tree' ? '' : (value || '');
+  const isPdf = cleanValue && (cleanValue.toLowerCase().endsWith('.pdf') || cleanValue.toLowerCase().includes('.pdf'));
+  const isImage = cleanValue && !isPdf && (
+    cleanValue.match(/\.(jpeg|jpg|gif|png|webp|svg|avif)($|\?)/i) ||
+    cleanValue.startsWith('/uploads/') ||
+    cleanValue.startsWith('/assets/photos/') ||
+    cleanValue.startsWith('http')
   );
 
   const uploadFile = async (file: File) => {
@@ -169,7 +170,7 @@ export default function FileUploadInput({
             className="hidden"
           />
 
-          {value ? (
+          {cleanValue ? (
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

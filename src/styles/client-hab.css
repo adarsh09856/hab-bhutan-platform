@@ -455,6 +455,14 @@ textarea.input{line-height:1.5;resize:vertical}
 @media (max-width:1250px) and (min-width:901px){
   .menu__panel--mid{left:auto;right:0}
 }
+@media (max-width:768px){
+  .menu__panel--wide{right:-10px;width:calc(100vw - 20px);max-width:calc(100vw - 20px)}
+  .menu__grid{grid-template-columns:repeat(2,1fr);gap:4px}
+}
+@media (max-width:480px){
+  .menu__panel--wide{right:-6px;width:calc(100vw - 12px);max-width:calc(100vw - 12px)}
+  .menu__grid{grid-template-columns:1fr;gap:2px}
+}
 .menu__cats{display:flex;flex-direction:column;gap:1px;margin-top:6px}
 .menu__cat{display:block;padding:6px 9px;border-radius:var(--radius-sm);color:var(--ink)}
 .menu__cat:hover{background:var(--hover-menu);color:var(--ink)}
@@ -728,7 +736,8 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 .programme > .frame{flex:none}
 .programme > *:not(.frame){margin-left:24px;margin-right:24px}
 .programme > .programme__head{margin-top:22px}
-.programme > .programme__toggle{margin-top:auto;margin-bottom:22px}
+.programme > .programme__toggle{margin-top:auto;margin-bottom:22px;display:inline-block}
+.programme .card__body > .programme__toggle{margin-top:auto;display:inline-block}
 .programme__head{display:flex;align-items:baseline;gap:11px;margin-bottom:10px}
 .programme .card__title{font-size:var(--t-card-m);font-weight:700;letter-spacing:-.015em}
 .programme__desc{font-size:15px;line-height:1.55;flex:1;min-height:0}

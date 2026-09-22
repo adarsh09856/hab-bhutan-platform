@@ -217,7 +217,15 @@ export default function AdminDonateSettingsPage() {
     try {
       const url = '/api/admin/support-pillars';
       const method = editPillarId ? 'PUT' : 'POST';
-      const payload = editPillarId ? { id: editPillarId, ...pillarForm } : pillarForm;
+      const finalIcon = pillarForm.key === 'grassroots'
+        ? (pillarForm.iconEmoji && pillarForm.iconEmoji !== 'leaf' ? pillarForm.iconEmoji : 'leaf')
+        : (pillarForm.iconEmoji === 'leaf' ? '' : (pillarForm.iconEmoji || ''));
+
+      const cleanPillarForm = {
+        ...pillarForm,
+        iconEmoji: finalIcon,
+      };
+      const payload = editPillarId ? { id: editPillarId, ...cleanPillarForm } : cleanPillarForm;
 
       const res = await fetch(url, {
         method,
@@ -1020,112 +1028,141 @@ SWIFT Code: BOBTBLBT`;
 
       {/* MODAL 1: Support Pillar Add / Edit */}
       {showPillarModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="admin-card w-full max-w-lg rounded-2xl border admin-border p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b admin-border pb-3">
-              <h2 className="text-lg font-bold admin-title">
-                {editPillarId ? 'Edit Support Pillar' : 'Add Support Pillar'}
-              </h2>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowPillarModal(false);
+          }}
+        >
+          <div className="admin-card w-full max-w-xl max-h-[92dvh] rounded-2xl border admin-border shadow-2xl flex flex-col overflow-hidden my-auto">
+            {/* Sticky Header */}
+            <div className="flex items-center justify-between border-b admin-border p-4 sm:p-5 bg-slate-50/80 flex-shrink-0">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold admin-title">
+                  {editPillarId ? 'Edit Support Pillar' : 'Add Support Pillar'}
+                </h2>
+                <p className="text-xs admin-muted">
+                  Configure donor funding targets, narrative descriptions, and active status.
+                </p>
+              </div>
               <button
+                type="button"
                 onClick={() => setShowPillarModal(false)}
-                className="admin-muted hover:text-slate-900 text-lg font-bold p-1"
+                className="admin-muted hover:text-slate-900 text-lg font-bold p-1 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSavePillar} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Pillar Key *</label>
-                <input
-                  type="text"
-                  value={pillarForm.key}
-                  onChange={(e) => setPillarForm({ ...pillarForm, key: e.target.value })}
-                  placeholder="e.g. emergency-relief"
-                  disabled={!!editPillarId}
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
+            {/* Scrollable Form Body */}
+            <form onSubmit={handleSavePillar} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+                {/* Grassroots Leaf Badge Alert */}
+                {pillarForm.key === 'grassroots' && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-xs text-emerald-900">
+                    <span className="text-base">🌿</span>
+                    <div>
+                      <span className="font-bold block">Grassroots Benefit Leaf Badge: Enabled</span>
+                      <span className="text-[11px] text-emerald-800">
+                        The official &ldquo;leaf&rdquo; indicator is strictly assigned to this Grassroots pillar on the public /donate page.
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Title *</label>
-                <input
-                  type="text"
-                  value={pillarForm.title}
-                  onChange={(e) => setPillarForm({ ...pillarForm, title: e.target.value })}
-                  placeholder="e.g. Artisan Emergency Relief Fund"
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <FileUploadInput
-                  value={pillarForm.iconEmoji || ''}
-                  onChange={(url) => setPillarForm({ ...pillarForm, iconEmoji: url })}
-                  label="Pillar Icon or Artwork"
-                  accept="image/*"
-                  hint="Upload an icon or banner image (PNG, SVG, JPG, WebP) or enter an emoji"
-                />
-              </div>
-
-              <div>
-                <RichTextEditor
-                  label="Description & Impact Narrative *"
-                  value={pillarForm.description}
-                  onChange={(html) => setPillarForm({ ...pillarForm, description: html })}
-                  hint="Describe where funds go and the impact on Bhutanese craftspeople..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Target USD *</label>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Pillar Key *</label>
                   <input
-                    type="number"
-                    value={pillarForm.targetAmountUSD}
-                    onChange={(e) => setPillarForm({ ...pillarForm, targetAmountUSD: Number(e.target.value) || 0 })}
+                    type="text"
+                    value={pillarForm.key}
+                    onChange={(e) => setPillarForm({ ...pillarForm, key: e.target.value })}
+                    placeholder="e.g. emergency-relief"
+                    disabled={!!editPillarId}
                     required
                     className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Raised USD</label>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Title *</label>
                   <input
-                    type="number"
-                    value={pillarForm.raisedAmountUSD}
-                    onChange={(e) => setPillarForm({ ...pillarForm, raisedAmountUSD: Number(e.target.value) || 0 })}
+                    type="text"
+                    value={pillarForm.title}
+                    onChange={(e) => setPillarForm({ ...pillarForm, title: e.target.value })}
+                    placeholder="e.g. Artisan Emergency Relief Fund"
+                    required
                     className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
                   />
                 </div>
+
+                <div>
+                  <FileUploadInput
+                    value={pillarForm.iconEmoji === 'leaf' ? '' : (pillarForm.iconEmoji || '')}
+                    onChange={(url) => setPillarForm({ ...pillarForm, iconEmoji: url })}
+                    label="Pillar Custom Artwork / Photo (Optional)"
+                    accept="image/*"
+                    hint="Upload an optional photo or icon (JPG, PNG, WebP up to 20MB)"
+                  />
+                </div>
+
+                <div>
+                  <RichTextEditor
+                    label="Description & Impact Narrative *"
+                    value={pillarForm.description}
+                    onChange={(html) => setPillarForm({ ...pillarForm, description: html })}
+                    hint="Describe where funds go and the impact on Bhutanese craftspeople..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Target USD *</label>
+                    <input
+                      type="number"
+                      value={pillarForm.targetAmountUSD}
+                      onChange={(e) => setPillarForm({ ...pillarForm, targetAmountUSD: Number(e.target.value) || 0 })}
+                      required
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Raised USD</label>
+                    <input
+                      type="number"
+                      value={pillarForm.raisedAmountUSD}
+                      onChange={(e) => setPillarForm({ ...pillarForm, raisedAmountUSD: Number(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="isActivePillar"
+                    checked={pillarForm.isActive}
+                    onChange={(e) => setPillarForm({ ...pillarForm, isActive: e.target.checked })}
+                    className="w-4 h-4 accent-amber-600 rounded cursor-pointer"
+                  />
+                  <label htmlFor="isActivePillar" className="text-sm admin-title font-medium cursor-pointer">
+                    Active (visible and selectable on public /donate page)
+                  </label>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="isActivePillar"
-                  checked={pillarForm.isActive}
-                  onChange={(e) => setPillarForm({ ...pillarForm, isActive: e.target.checked })}
-                  className="w-4 h-4 accent-amber-600 rounded"
-                />
-                <label htmlFor="isActivePillar" className="text-sm admin-title font-medium cursor-pointer">
-                  Active (visible and selectable on public /donate page)
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t admin-border">
+              {/* Sticky Footer */}
+              <div className="flex justify-end gap-3 p-4 sm:p-5 border-t admin-border bg-slate-50 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowPillarModal(false)}
-                  className="px-4 py-2 text-sm rounded-lg admin-button-secondary font-medium"
+                  className="admin-button-secondary px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingPillar}
-                  className="px-5 py-2 text-sm rounded-lg admin-button-primary font-medium disabled:opacity-50"
+                  className="admin-button-primary px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {savingPillar ? 'Saving...' : editPillarId ? 'Save Changes' : 'Create Pillar'}
                 </button>
@@ -1137,10 +1174,10 @@ SWIFT Code: BOBTBLBT`;
 
       {/* MODAL 2: Record Offline Donation */}
       {showOfflineModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="admin-card w-full max-w-lg rounded-2xl border admin-border p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b admin-border pb-3">
-              <h2 className="text-lg font-bold admin-title flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="admin-card w-full max-w-lg max-h-[92dvh] flex flex-col rounded-2xl border admin-border shadow-xl overflow-hidden my-auto bg-white">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b admin-border flex-shrink-0">
+              <h2 className="text-base sm:text-lg font-bold admin-title flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-emerald-700" />
                 Record Offline / Direct Donation
               </h2>
@@ -1152,134 +1189,136 @@ SWIFT Code: BOBTBLBT`;
               </button>
             </div>
 
-            <form onSubmit={handleSaveDonation} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">Target Pillar *</label>
-                <select
-                  value={offlineForm.pillarKey}
-                  onChange={(e) => setOfflineForm({ ...offlineForm, pillarKey: e.target.value })}
-                  required
-                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-medium"
-                >
-                  {pillars.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSaveDonation} className="flex flex-col flex-1 overflow-hidden">
+              <div className="overflow-y-auto flex-1 p-4 sm:p-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Donor Name *</label>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Target Pillar *</label>
+                  <select
+                    value={offlineForm.pillarKey}
+                    onChange={(e) => setOfflineForm({ ...offlineForm, pillarKey: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-medium"
+                  >
+                    {pillars.map((p) => (
+                      <option key={p.key} value={p.key}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Donor Name *</label>
+                    <input
+                      type="text"
+                      value={offlineForm.donorName}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, donorName: e.target.value })}
+                      placeholder="e.g. Tshering Tobgay"
+                      required
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Donor Email *</label>
+                    <input
+                      type="email"
+                      value={offlineForm.donorEmail}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, donorEmail: e.target.value })}
+                      placeholder="donor@example.bt"
+                      required
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Amount (USD) *</label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      value={offlineForm.amountUSD}
+                      onChange={(e) => {
+                        const usd = Number(e.target.value) || 0;
+                        setOfflineForm({
+                          ...offlineForm,
+                          amountUSD: usd,
+                          amountBTN: Math.round(usd * 84),
+                        });
+                      }}
+                      required
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-bold"
+                    />
+                    <span className="text-[11px] admin-muted mt-0.5 block">
+                      ≈ Nu. {offlineForm.amountBTN.toLocaleString()} BTN
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Or in BTN (Nu.)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={offlineForm.amountBTN}
+                      onChange={(e) => {
+                        const btn = Number(e.target.value) || 0;
+                        setOfflineForm({
+                          ...offlineForm,
+                          amountBTN: btn,
+                          amountUSD: Math.round((btn / 84) * 100) / 100,
+                        });
+                      }}
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Payment Method</label>
+                    <select
+                      value={offlineForm.paymentMethod}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, paymentMethod: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-medium"
+                    >
+                      <option value="BANK">Bank Wire Transfer (BoB)</option>
+                      <option value="MBOB">mBoB Mobile Banking QR</option>
+                      <option value="CASH">Cash at HAB Office</option>
+                      <option value="CHEQUE">Cheque / Demand Draft</option>
+                      <option value="CARD">Credit / Debit Card</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold admin-muted uppercase mb-1">Status</label>
+                    <select
+                      value={offlineForm.status}
+                      onChange={(e) => setOfflineForm({ ...offlineForm, status: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-medium"
+                    >
+                      <option value="COMPLETED">Completed (Funds Verified)</option>
+                      <option value="PENDING">Pending Clearance</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                    Receipt Number (Auto or Custom)
+                  </label>
                   <input
                     type="text"
-                    value={offlineForm.donorName}
-                    onChange={(e) => setOfflineForm({ ...offlineForm, donorName: e.target.value })}
-                    placeholder="e.g. Tshering Tobgay"
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Donor Email *</label>
-                  <input
-                    type="email"
-                    value={offlineForm.donorEmail}
-                    onChange={(e) => setOfflineForm({ ...offlineForm, donorEmail: e.target.value })}
-                    placeholder="donor@example.bt"
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                    value={offlineForm.receiptNumber}
+                    onChange={(e) => setOfflineForm({ ...offlineForm, receiptNumber: e.target.value })}
+                    placeholder="HAB-DON-2026-XXXXX"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-lg admin-input border admin-border focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Amount (USD) *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="any"
-                    value={offlineForm.amountUSD}
-                    onChange={(e) => {
-                      const usd = Number(e.target.value) || 0;
-                      setOfflineForm({
-                        ...offlineForm,
-                        amountUSD: usd,
-                        amountBTN: Math.round(usd * 84),
-                      });
-                    }}
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-bold"
-                  />
-                  <span className="text-[11px] admin-muted mt-0.5 block">
-                    ≈ Nu. {offlineForm.amountBTN.toLocaleString()} BTN
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Or in BTN (Nu.)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={offlineForm.amountBTN}
-                    onChange={(e) => {
-                      const btn = Number(e.target.value) || 0;
-                      setOfflineForm({
-                        ...offlineForm,
-                        amountBTN: btn,
-                        amountUSD: Math.round((btn / 84) * 100) / 100,
-                      });
-                    }}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Payment Method</label>
-                  <select
-                    value={offlineForm.paymentMethod}
-                    onChange={(e) => setOfflineForm({ ...offlineForm, paymentMethod: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-medium"
-                  >
-                    <option value="BANK">Bank Wire Transfer (BoB)</option>
-                    <option value="MBOB">mBoB Mobile Banking QR</option>
-                    <option value="CASH">Cash at HAB Office</option>
-                    <option value="CHEQUE">Cheque / Demand Draft</option>
-                    <option value="CARD">Credit / Debit Card</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold admin-muted uppercase mb-1">Status</label>
-                  <select
-                    value={offlineForm.status}
-                    onChange={(e) => setOfflineForm({ ...offlineForm, status: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-medium"
-                  >
-                    <option value="COMPLETED">Completed (Funds Verified)</option>
-                    <option value="PENDING">Pending Clearance</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
-                  Receipt Number (Auto or Custom)
-                </label>
-                <input
-                  type="text"
-                  value={offlineForm.receiptNumber}
-                  onChange={(e) => setOfflineForm({ ...offlineForm, receiptNumber: e.target.value })}
-                  placeholder="HAB-DON-2026-XXXXX"
-                  className="w-full px-3 py-2 text-sm font-mono rounded-lg admin-input border admin-border focus:outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t admin-border">
+              <div className="flex justify-end gap-3 p-4 sm:p-5 border-t admin-border bg-slate-50 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowOfflineModal(false)}
@@ -1302,9 +1341,9 @@ SWIFT Code: BOBTBLBT`;
 
       {/* MODAL 3: Official Printable Tax Receipt */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="admin-card w-full max-w-2xl rounded-2xl border admin-border p-8 space-y-6 shadow-2xl relative bg-white">
-            <div className="flex items-center justify-between border-b pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div className="admin-card w-full max-w-2xl max-h-[92dvh] flex flex-col rounded-2xl border admin-border shadow-2xl relative bg-white overflow-hidden my-auto">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0">
               <div className="flex items-center gap-3">
                 <img
                   src="/assets/hab-logo.png"
@@ -1315,10 +1354,10 @@ SWIFT Code: BOBTBLBT`;
                   }}
                 />
                 <div>
-                  <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
                     HANDICRAFTS ASSOCIATION OF BHUTAN
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-[11px] sm:text-xs text-slate-500">
                     Registered Public Benefit CSO: CSO/2011/043 · Thimphu, Kingdom of Bhutan
                   </p>
                 </div>
@@ -1333,21 +1372,21 @@ SWIFT Code: BOBTBLBT`;
             </div>
 
             {/* Receipt Body */}
-            <div className="space-y-6 text-slate-800">
+            <div className="overflow-y-auto flex-1 p-4 sm:p-6 space-y-6 text-slate-800">
               <div className="text-center py-2 bg-slate-100 rounded-lg border border-slate-200">
                 <span className="text-xs uppercase font-bold tracking-widest text-slate-900">
                   Official Tax Exemption Receipt
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm border-b pb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-b pb-4">
                 <div>
                   <span className="text-xs text-slate-500 block uppercase font-semibold">Receipt Number</span>
                   <span className="font-mono font-bold text-base text-slate-900">
                     {selectedReceipt.receiptNumber}
                   </span>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <span className="text-xs text-slate-500 block uppercase font-semibold">Date Issued</span>
                   <span className="font-semibold text-slate-900">
                     {new Date(selectedReceipt.createdAt).toLocaleDateString('en-GB', {
@@ -1359,14 +1398,14 @@ SWIFT Code: BOBTBLBT`;
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm border-b pb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-b pb-4">
                 <div>
                   <span className="text-xs text-slate-500 block uppercase font-semibold">Received From</span>
                   <p className="font-bold text-slate-900 text-base">{selectedReceipt.donorName}</p>
                   <p className="text-xs text-slate-600">{selectedReceipt.donorEmail}</p>
                 </div>
 
-                <div className="text-right">
+                <div className="sm:text-right">
                   <span className="text-xs text-slate-500 block uppercase font-semibold">Contribution Amount</span>
                   <div className="text-2xl font-bold text-emerald-700">
                     ${selectedReceipt.amountUSD.toLocaleString()} USD
@@ -1411,7 +1450,7 @@ SWIFT Code: BOBTBLBT`;
             </div>
 
             {/* Modal Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t print:hidden">
+            <div className="flex justify-end gap-3 p-4 sm:p-5 border-t bg-slate-50 flex-shrink-0 print:hidden">
               <button
                 type="button"
                 onClick={() => setSelectedReceipt(null)}

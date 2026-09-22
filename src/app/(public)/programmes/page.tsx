@@ -133,11 +133,9 @@ export default function ProgrammesPage() {
                   <h3 className="card__title clamp-2">{p.title}</h3>
                 </div>
                 <p className="card__text programme__desc clamp-4">{p.description}</p>
-                <div style={{ marginTop: 'auto', paddingTop: 14 }}>
-                  <Link className="btn btn--ink btn--sm" href={`/programmes/${p.ref}`}>
-                    View programme →
-                  </Link>
-                </div>
+                <Link className="link-accent programme__toggle" href={`/programmes/${p.ref}`}>
+                  Read more &rarr;
+                </Link>
               </div>
             </article>
           ))}
