@@ -57,7 +57,7 @@ export default function EventsPage() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="events">
-        <SectionEditBadge label="Events & Exhibitions" studioHref="/admin/events" />
+        <SectionEditBadge label="Events & Exhibitions" studioHref="/admin/events" sectionType="events" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / Events
         </p>

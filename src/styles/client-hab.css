@@ -322,7 +322,7 @@ textarea.input{line-height:1.5;resize:vertical}
   min-height:var(--header-h);display:flex;align-items:center;
   gap:clamp(6px, 1.2vw, 14px);min-width:0;width:100%;
 }
-.header__spacer{display:none}
+.header__spacer{flex:1;display:block}
 .header__actions{display:flex;align-items:center;gap:clamp(4px, 1vw, 8px);flex-shrink:0}
 
 .logo{display:flex;align-items:center;gap:11px;flex:none;color:inherit}
@@ -364,7 +364,7 @@ textarea.input{line-height:1.5;resize:vertical}
 .logo__sub{font-family:var(--ui);font-size:11px;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
 
 
-.nav{display:flex;align-items:center;gap:4px;min-width:0;flex:1 1 auto}
+.nav{display:flex;align-items:center;gap:4px;min-width:0;flex:0 1 auto}
 
 /* Adaptive Sliding Flex Navigation */
 .nav-slider-wrapper{
@@ -372,7 +372,7 @@ textarea.input{line-height:1.5;resize:vertical}
   display:flex;
   align-items:center;
   min-width:0;
-  flex:1 1 auto;
+  flex:0 1 auto;
   overflow:hidden;
 }
 .nav-slider-track{
@@ -385,7 +385,7 @@ textarea.input{line-height:1.5;resize:vertical}
   scroll-behavior:smooth;
   -webkit-overflow-scrolling:touch;
   white-space:nowrap;
-  flex:1 1 auto;
+  flex:0 1 auto;
   min-width:0;
 }
 .nav-slider-track::-webkit-scrollbar{

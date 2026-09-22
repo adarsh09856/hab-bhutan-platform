@@ -21,6 +21,7 @@ import {
   RefreshCw,
   Copy,
   Check,
+  Save,
 } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
@@ -76,7 +77,7 @@ const EMPTY_OFFLINE_DONATION = {
 };
 
 export default function AdminDonateSettingsPage() {
-  const [activeTab, setActiveTab] = useState<'pillars' | 'donations' | 'banking'>('pillars');
+  const [activeTab, setActiveTab] = useState<'pillars' | 'donations' | 'banking' | 'content'>('pillars');
   const [pillars, setPillars] = useState<Pillar[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [totalDonationsUSD, setTotalDonationsUSD] = useState<number>(0);
@@ -98,6 +99,19 @@ export default function AdminDonateSettingsPage() {
   const [offlineForm, setOfflineForm] = useState(EMPTY_OFFLINE_DONATION);
   const [savingDonation, setSavingDonation] = useState(false);
 
+  // Page Content & Hero CMS state
+  const [contentForm, setContentForm] = useState({
+    donateHeroTitle: 'Invest in Bhutanese Craft Communities',
+    donateHeroLede: 'Support artisanal heritage, fair livelihoods, and sustainable natural materials across Bhutan’s 20 Dzongkhags.',
+    donateTaxNotice: 'Contributions qualify for official tax deductions under the Civil Society Organizations Act of Bhutan (Registration No: CSO/2011/043).',
+    checkoutBankName: 'Bank of Bhutan Limited (BoB)',
+    checkoutAccountNumber: '201104300189',
+    checkoutAccountTitle: 'Handicrafts Association of Bhutan',
+    checkoutSwiftCode: 'BOBTBLBT',
+    checkoutBankAddress: 'Thimphu Main Branch, Thimphu, Bhutan',
+  });
+  const [savingContent, setSavingContent] = useState(false);
+
   // Receipt Modal state
   const [selectedReceipt, setSelectedReceipt] = useState<Donation | null>(null);
   const [copiedBank, setCopiedBank] = useState(false);
@@ -108,19 +122,56 @@ export default function AdminDonateSettingsPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [pRes, dRes] = await Promise.all([
+      const [pRes, dRes, sRes] = await Promise.all([
         fetch('/api/admin/support-pillars', { cache: 'no-store' }),
         fetch('/api/admin/donations', { cache: 'no-store' }),
+        fetch('/api/admin/site-settings', { cache: 'no-store' }),
       ]);
       const pData = await pRes.json();
       const dData = await dRes.json();
       if (pData.pillars) setPillars(pData.pillars);
       if (dData.donations) setDonations(dData.donations);
       if (dData.totalUSD !== undefined) setTotalDonationsUSD(dData.totalUSD);
+
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        const s = sData.setting || {};
+        setContentForm({
+          donateHeroTitle: s.donateHeroTitle || 'Invest in Bhutanese Craft Communities',
+          donateHeroLede: s.donateHeroLede || 'Support artisanal heritage, fair livelihoods, and sustainable natural materials across Bhutan’s 20 Dzongkhags.',
+          donateTaxNotice: s.donateTaxNotice || 'Contributions qualify for official tax deductions under the Civil Society Organizations Act of Bhutan (Registration No: CSO/2011/043).',
+          checkoutBankName: s.checkoutBankName || 'Bank of Bhutan Limited (BoB)',
+          checkoutAccountNumber: s.checkoutAccountNumber || '201104300189',
+          checkoutAccountTitle: s.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
+          checkoutSwiftCode: s.checkoutSwiftCode || 'BOBTBLBT',
+          checkoutBankAddress: s.checkoutBankAddress || 'Thimphu Main Branch, Thimphu, Bhutan',
+        });
+      }
     } catch {
       showFlash('error', 'Failed to load support pillars and donations.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveContent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingContent(true);
+    try {
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contentForm),
+      });
+      if (res.ok) {
+        showFlash('success', 'Donate page content & wire details updated successfully!');
+      } else {
+        showFlash('error', 'Failed to save donate page content.');
+      }
+    } catch {
+      showFlash('error', 'Error saving donate page content.');
+    } finally {
+      setSavingContent(false);
     }
   };
 
@@ -462,6 +513,18 @@ SWIFT Code: BOBTBLBT`;
           <Landmark className="w-4 h-4" />
           Bank Details & CSO Exemption
         </button>
+
+        <button
+          onClick={() => setActiveTab('content')}
+          className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
+            activeTab === 'content'
+              ? 'border-amber-600 text-slate-800'
+              : 'border-transparent admin-muted hover:text-slate-900'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          Page Content & Wire Settings
+        </button>
       </div>
 
       {/* Tab 1: Support Pillars */}
@@ -795,6 +858,164 @@ SWIFT Code: BOBTBLBT`;
             </p>
           </div>
         </div>
+      )}
+
+      {/* Tab 4: Page Content & Wire Settings */}
+      {activeTab === 'content' && (
+        <form onSubmit={handleSaveContent} className="space-y-6">
+          <div className="admin-card rounded-xl border admin-border p-6 shadow-sm space-y-5">
+            <div className="flex items-center justify-between border-b admin-border pb-3">
+              <div>
+                <h2 className="text-base font-bold admin-title flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-amber-700" />
+                  Donation Page Hero & Legal Notice
+                </h2>
+                <p className="text-xs admin-muted">
+                  Configure public banner headings, call-to-action lede, and legal tax-deduction notice on /donate.
+                </p>
+              </div>
+              <button
+                type="submit"
+                disabled={savingContent}
+                className="admin-button-primary px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{savingContent ? 'Saving...' : 'Save Donate Settings'}</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Hero Section Headline
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.donateHeroTitle}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, donateHeroTitle: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Invest in Bhutanese Craft Communities"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Hero Mandate Lede
+                </label>
+                <textarea
+                  rows={2}
+                  value={contentForm.donateHeroLede}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, donateHeroLede: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Support artisanal heritage, fair livelihoods..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Official CSO Tax Notice / Footnote
+                </label>
+                <textarea
+                  rows={2}
+                  value={contentForm.donateTaxNotice}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, donateTaxNotice: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Contributions qualify for official tax deductions..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-card rounded-xl border admin-border p-6 shadow-sm space-y-5">
+            <div className="border-b admin-border pb-3">
+              <h2 className="text-base font-bold admin-title flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-amber-700" />
+                Wire Transfer & Bank Account Credentials
+              </h2>
+              <p className="text-xs admin-muted">
+                These bank credentials are displayed to donors who select the offline bank transfer option.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Account Name / Beneficiary Title
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.checkoutAccountTitle}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, checkoutAccountTitle: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Handicrafts Association of Bhutan"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Bank Name
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.checkoutBankName}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, checkoutBankName: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Bank of Bhutan Limited (BoB)"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Account Number
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.checkoutAccountNumber}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, checkoutAccountNumber: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono"
+                  placeholder="201104300189"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  SWIFT / BIC Code
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.checkoutSwiftCode}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, checkoutSwiftCode: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono"
+                  placeholder="BOBTBLBT"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  Bank Address / Branch
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.checkoutBankAddress}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, checkoutBankAddress: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Thimphu Main Branch, Thimphu, Bhutan"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t admin-border">
+              <button
+                type="submit"
+                disabled={savingContent}
+                className="admin-button-primary px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                <Save className="w-4 h-4" />
+                <span>{savingContent ? 'Saving...' : 'Save Donate Settings'}</span>
+              </button>
+            </div>
+          </div>
+        </form>
       )}
 
       {/* MODAL 1: Support Pillar Add / Edit */}

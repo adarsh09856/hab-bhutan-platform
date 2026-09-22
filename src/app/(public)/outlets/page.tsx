@@ -104,7 +104,7 @@ export default async function OutletsPage() {
     <main id="main">
       {/* Featured Market Hero */}
       <section className="section relative" data-hab-section="outlets">
-        <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" />
+        <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" sectionType="outlets" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Outlets &amp; clusters
         </p>

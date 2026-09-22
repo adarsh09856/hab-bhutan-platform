@@ -305,10 +305,10 @@ export default function HomePage() {
   ]);
 
   const [supportPillars, setSupportPillars] = useState<any[]>([
-    { key: 'grassroots', letter: 'G', title: 'Grassroots Benefit', line: 'Keeps rural creators trading through the lean season.', body: 'Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.' },
-    { key: 'impact', letter: 'I', title: 'Impact Crowdfunding & Enterprise', line: 'Buys the raw materials an artisan cannot afford upfront.', body: 'Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.' },
-    { key: 'cultural', letter: 'V', title: 'Vital Cultural Preservation', line: 'Funds critical master-to-apprentice placements.', body: 'Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.' },
-    { key: 'environment', letter: 'E', title: 'Environmental & Landscape Conservation', line: 'Replants the natural materials our crafts grow from.', body: 'Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.' },
+    { key: 'grassroots', letter: 'leaf', title: 'Grassroots Benefit', line: 'Keeps rural creators trading through the lean season.', body: 'Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.' },
+    { key: 'impact', letter: '', title: 'Impact Crowdfunding & Enterprise', line: 'Buys the raw materials an artisan cannot afford upfront.', body: 'Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.' },
+    { key: 'cultural', letter: '', title: 'Vital Cultural Preservation', line: 'Funds critical master-to-apprentice placements.', body: 'Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.' },
+    { key: 'environment', letter: '', title: 'Environmental & Landscape Conservation', line: 'Replants the natural materials our crafts grow from.', body: 'Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.' },
   ]);
 
   const [craftsList, setCraftsList] = useState<any[]>(CRAFTS);
@@ -656,13 +656,16 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.pillars && d.pillars.length > 0) {
-          const mapped = d.pillars.map((p: any) => ({
-            key: p.key,
-            letter: p.letter || (p.key === 'grassroots' ? 'G' : p.key === 'impact' ? 'I' : p.key === 'cultural' || p.key === 'vital' ? 'V' : 'E'),
-            title: p.title,
-            line: p.tagline || p.line || (p.description?.split('.')[0] + '.'),
-            body: p.description || p.body,
-          }));
+          const mapped = d.pillars.map((p: any) => {
+            const isGrassroots = p.key === 'grassroots';
+            return {
+              key: p.key,
+              letter: isGrassroots ? 'leaf' : '',
+              title: p.title,
+              line: p.tagline || p.line || (p.description?.split('.')[0] + '.'),
+              body: p.description || p.body,
+            };
+          });
           setSupportPillars(mapped);
         }
       })
@@ -1300,7 +1303,7 @@ export default function HomePage() {
 
       {/* ========================= 11. SUPPORT US ========================= */}
       <section className="section support relative" id="support" data-hab-section="support">
-        <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" />
+        <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" sectionType="donate" />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Support us</p>
@@ -1315,19 +1318,35 @@ export default function HomePage() {
         </div>
 
         <div className="pillars" id="supportPillars">
-          {supportPillars.map((pillar) => (
-            <article key={pillar.key} className="pillar">
-              <h3 className="pillar__title">
-                <span className="pillar__initial">{pillar.letter}</span>
-                <span>{pillar.title ? pillar.title.slice(1) : ''}</span>
-              </h3>
-              <p className="pillar__line">{pillar.line}</p>
-              <p className="pillar__body">{pillar.body}</p>
-              <Link className="pillar__give" href={`/donate?pillar=${pillar.key}`}>
-                Give Now →
-              </Link>
-            </article>
-          ))}
+          {supportPillars.map((pillar) => {
+            const isGrassroots = pillar.key === 'grassroots';
+            return (
+              <article key={pillar.key} className="pillar">
+                <h3 className="pillar__title" style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                  {isGrassroots && (
+                    <span
+                      className="pillar__initial"
+                      style={{
+                        display: 'inline-block',
+                        whiteSpace: 'nowrap',
+                        color: 'var(--accent, #8b2500)',
+                        fontWeight: 700,
+                        letterSpacing: '0',
+                      }}
+                    >
+                      leaf
+                    </span>
+                  )}
+                  <span>{pillar.title}</span>
+                </h3>
+                <p className="pillar__line">{pillar.line}</p>
+                <p className="pillar__body">{pillar.body}</p>
+                <Link className="pillar__give" href={`/donate?pillar=${pillar.key}`}>
+                  Give Now →
+                </Link>
+              </article>
+            );
+          })}
         </div>
       </section>
 

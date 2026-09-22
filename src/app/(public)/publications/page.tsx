@@ -73,7 +73,7 @@ export default function PublicationsPage() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="publications">
-        <SectionEditBadge label="Publications & Research Studio" studioHref="/admin/publications" />
+        <SectionEditBadge label="Publications & Research Studio" studioHref="/admin/publications" sectionType="publications" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Publications
         </p>

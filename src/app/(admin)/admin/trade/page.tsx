@@ -39,7 +39,7 @@ import {
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
 export default function AdminTradePage() {
-  const [activeTab, setActiveTab] = useState<'pricing' | 'quotes' | 'buyers' | 'catalog'>('pricing');
+  const [activeTab, setActiveTab] = useState<'pricing' | 'quotes' | 'buyers' | 'catalog' | 'content'>('pricing');
   const [products, setProducts] = useState<any[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [buyers, setBuyers] = useState<any[]>([]);
@@ -49,6 +49,37 @@ export default function AdminTradePage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Wholesale Page Content & Assurances state
+  const [contentForm, setContentForm] = useState({
+    wholesaleHeroTitle: 'Wholesale & Bulk Orders',
+    wholesaleHeroLede: 'HAB supplies Bhutanese handicraft at trade terms to retailers, hotels, designers, institutions and distributors.',
+    wholesaleMoq: 10,
+    wholesaleLeadTime: '2 to 4 weeks depending on batch size',
+    assurance1Title: 'Traceable supply chain',
+    assurance1Body: 'Materials, makers and shipping are fully documented from source cluster to port of export.',
+    assurance2Title: 'Phytosanitary & export documentation',
+    assurance2Body: 'We prepare export documentation, non-commercial invoices and all customs clearances.',
+    assurance3Title: 'Pre-dispatch quality assurance',
+    assurance3Body: 'Every order is inspected against master reference pieces by our quality inspectors in Thimphu.',
+    assurance4Title: 'Flexible customization',
+    assurance4Body: 'Custom sizes, weave densities, debossed branding and bespoke packaging available.',
+    assurance5Title: 'Fair compensation guarantee',
+    assurance5Body: 'Artisans receive fair wholesale rates at dispatch, ensuring sustained community livelihoods.',
+    flow1Title: 'Browse',
+    flow1Desc: 'Category, then product. The catalogue is the same one the retail shop uses.',
+    flow2Title: 'Quantity',
+    flow2Desc: 'Set quantities against the MOQ. Tier pricing applies automatically.',
+    flow3Title: 'Quote basket',
+    flow3Desc: 'Collect several products into one basket rather than checking out.',
+    flow4Title: 'HAB review',
+    flow4Desc: 'The trade desk confirms availability with the producing members.',
+    flow5Title: 'Quotation',
+    flow5Desc: 'Formal quote with freight, lead time and payment terms.',
+    flow6Title: 'Order & tracking',
+    flow6Desc: 'Production, quality control in Thimphu, then shipment with tracking.',
+  });
+  const [savingContent, setSavingContent] = useState(false);
 
   // Edit Pricing Drawer state
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -92,10 +123,91 @@ export default function AdminTradePage() {
           if (data.lookbookCoverUrl !== undefined) setLookbookCoverUrl(data.lookbookCoverUrl || '');
         }
       }
+
+      // Also load site settings for wholesale page text & assurances
+      const resSettings = await fetch('/api/admin/site-settings', { cache: 'no-store' });
+      if (resSettings.ok) {
+        const sData = await resSettings.json();
+        const s = sData.setting || {};
+        const assurances = s.wholesaleAssurances || [];
+        const flowSteps = s.wholesaleTerms?.flowSteps || [];
+        setContentForm({
+          wholesaleHeroTitle: s.wholesaleHeroTitle || 'Wholesale & Bulk Orders',
+          wholesaleHeroLede: s.wholesaleHeroLede || 'HAB supplies Bhutanese handicraft at trade terms to retailers, hotels, designers, institutions and distributors.',
+          wholesaleMoq: s.wholesaleMoq || 10,
+          wholesaleLeadTime: s.wholesaleLeadTime || '2 to 4 weeks depending on batch size',
+          assurance1Title: assurances[0]?.title || 'Traceable supply chain',
+          assurance1Body: assurances[0]?.body || 'Materials, makers and shipping are fully documented from source cluster to port of export.',
+          assurance2Title: assurances[1]?.title || 'Phytosanitary & export documentation',
+          assurance2Body: assurances[1]?.body || 'We prepare export documentation, non-commercial invoices and all customs clearances.',
+          assurance3Title: assurances[2]?.title || 'Pre-dispatch quality assurance',
+          assurance3Body: assurances[2]?.body || 'Every order is inspected against master reference pieces by our quality inspectors in Thimphu.',
+          assurance4Title: assurances[3]?.title || 'Flexible customization',
+          assurance4Body: assurances[3]?.body || 'Custom sizes, weave densities, debossed branding and bespoke packaging available.',
+          assurance5Title: assurances[4]?.title || 'Fair compensation guarantee',
+          assurance5Body: assurances[4]?.body || 'Artisans receive fair wholesale rates at dispatch, ensuring sustained community livelihoods.',
+          flow1Title: flowSteps[0]?.title || 'Browse',
+          flow1Desc: flowSteps[0]?.desc || 'Category, then product. The catalogue is the same one the retail shop uses.',
+          flow2Title: flowSteps[1]?.title || 'Quantity',
+          flow2Desc: flowSteps[1]?.desc || 'Set quantities against the MOQ. Tier pricing applies automatically.',
+          flow3Title: flowSteps[2]?.title || 'Quote basket',
+          flow3Desc: flowSteps[2]?.desc || 'Collect several products into one basket rather than checking out.',
+          flow4Title: flowSteps[3]?.title || 'HAB review',
+          flow4Desc: flowSteps[3]?.desc || 'The trade desk confirms availability with the producing members.',
+          flow5Title: flowSteps[4]?.title || 'Quotation',
+          flow5Desc: flowSteps[4]?.desc || 'Formal quote with freight, lead time and payment terms.',
+          flow6Title: flowSteps[5]?.title || 'Order & tracking',
+          flow6Desc: flowSteps[5]?.desc || 'Production, quality control in Thimphu, then shipment with tracking.',
+        });
+      }
     } catch (err) {
       console.error('Failed to load trade data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveWholesaleContent = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingContent(true);
+    try {
+      const payload = {
+        wholesaleHeroTitle: contentForm.wholesaleHeroTitle,
+        wholesaleHeroLede: contentForm.wholesaleHeroLede,
+        wholesaleMoq: Number(contentForm.wholesaleMoq) || 5,
+        wholesaleLeadTime: contentForm.wholesaleLeadTime,
+        wholesaleAssurances: [
+          { title: contentForm.assurance1Title, body: contentForm.assurance1Body },
+          { title: contentForm.assurance2Title, body: contentForm.assurance2Body },
+          { title: contentForm.assurance3Title, body: contentForm.assurance3Body },
+          { title: contentForm.assurance4Title, body: contentForm.assurance4Body },
+          { title: contentForm.assurance5Title, body: contentForm.assurance5Body },
+        ].filter((a) => a.title),
+        wholesaleTerms: {
+          flowSteps: [
+            { title: contentForm.flow1Title, desc: contentForm.flow1Desc },
+            { title: contentForm.flow2Title, desc: contentForm.flow2Desc },
+            { title: contentForm.flow3Title, desc: contentForm.flow3Desc },
+            { title: contentForm.flow4Title, desc: contentForm.flow4Desc },
+            { title: contentForm.flow5Title, desc: contentForm.flow5Desc },
+            { title: contentForm.flow6Title, desc: contentForm.flow6Desc },
+          ].filter((s) => s.title),
+        },
+      };
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        showToast('Wholesale page content, assurances & flow steps updated successfully!');
+      } else {
+        showToast('Failed to save wholesale content.');
+      }
+    } catch {
+      showToast('Error saving wholesale content.');
+    } finally {
+      setSavingContent(false);
     }
   };
 
@@ -395,6 +507,20 @@ export default function AdminTradePage() {
               <span className="flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5" />
                 B2B Catalog &amp; Media
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('content')}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'content'
+                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                <Edit3 className="w-3.5 h-3.5" />
+                Page Content &amp; Assurances
               </span>
             </button>
           </div>
@@ -702,6 +828,180 @@ export default function AdminTradePage() {
             </button>
           </div>
         </GlassCard>
+      )}
+
+      {/* TAB 5: WHOLESALE PAGE CONTENT & ASSURANCES */}
+      {activeTab === 'content' && (
+        <form onSubmit={handleSaveWholesaleContent} className="space-y-6">
+          <GlassCard className="p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#8b2e24]" />
+                  Wholesale Hero & Base Terms
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Manage the public headline, mandate lede, default minimum order quantity (MOQ) and lead time displayed on /wholesale.
+                </p>
+              </div>
+              <button
+                type="submit"
+                disabled={savingContent}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#8b2e24] hover:bg-[#72241c] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{savingContent ? 'Saving...' : 'Save Wholesale Content'}</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold text-slate-700">Hero Section Headline</label>
+                <input
+                  type="text"
+                  value={contentForm.wholesaleHeroTitle}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, wholesaleHeroTitle: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                  placeholder="Wholesale & Bulk Orders"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold text-slate-700">Hero Mandate Lede</label>
+                <textarea
+                  rows={2}
+                  value={contentForm.wholesaleHeroLede}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, wholesaleHeroLede: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                  placeholder="HAB supplies Bhutanese handicraft at trade terms..."
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Default MOQ (Pieces)</label>
+                <input
+                  type="number"
+                  value={contentForm.wholesaleMoq}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, wholesaleMoq: Number(e.target.value) || 0 }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Standard Lead Time Notice</label>
+                <input
+                  type="text"
+                  value={contentForm.wholesaleLeadTime}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, wholesaleLeadTime: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                  placeholder="2 to 4 weeks depending on batch size"
+                />
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* 5 TRADE ASSURANCES */}
+          <GlassCard className="p-6 space-y-5">
+            <div className="border-b border-slate-200 pb-3">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                The 5 Trade Assurances
+              </h2>
+              <p className="text-xs text-slate-500">
+                Institutional guarantees displayed in the Trade Assurances grid on the wholesale portal.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { num: 1, titleKey: 'assurance1Title', bodyKey: 'assurance1Body', defaultTitle: 'Traceable supply chain' },
+                { num: 2, titleKey: 'assurance2Title', bodyKey: 'assurance2Body', defaultTitle: 'Phytosanitary & export documentation' },
+                { num: 3, titleKey: 'assurance3Title', bodyKey: 'assurance3Body', defaultTitle: 'Pre-dispatch quality assurance' },
+                { num: 4, titleKey: 'assurance4Title', bodyKey: 'assurance4Body', defaultTitle: 'Flexible customization' },
+                { num: 5, titleKey: 'assurance5Title', bodyKey: 'assurance5Body', defaultTitle: 'Fair compensation guarantee' },
+              ].map(({ num, titleKey, bodyKey, defaultTitle }) => (
+                <div key={num} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#8b2e24] text-white text-[10px] font-bold flex items-center justify-center">
+                      {num}
+                    </span>
+                    <label className="text-xs font-bold text-slate-700">Assurance #{num}</label>
+                  </div>
+                  <input
+                    type="text"
+                    value={(contentForm as any)[titleKey]}
+                    onChange={(e) => setContentForm((prev) => ({ ...prev, [titleKey]: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                    placeholder={defaultTitle}
+                  />
+                  <textarea
+                    rows={2}
+                    value={(contentForm as any)[bodyKey]}
+                    onChange={(e) => setContentForm((prev) => ({ ...prev, [bodyKey]: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                  />
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          {/* 6 ORDER FLOW STEPS */}
+          <GlassCard className="p-6 space-y-5">
+            <div className="border-b border-slate-200 pb-3">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-indigo-600" />
+                6-Step Wholesale Order Flow
+              </h2>
+              <p className="text-xs text-slate-500">
+                Step-by-step buyer procurement guide shown on the wholesale page.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { num: 1, titleKey: 'flow1Title', descKey: 'flow1Desc', defaultTitle: 'Browse' },
+                { num: 2, titleKey: 'flow2Title', descKey: 'flow2Desc', defaultTitle: 'Quantity' },
+                { num: 3, titleKey: 'flow3Title', descKey: 'flow3Desc', defaultTitle: 'Quote basket' },
+                { num: 4, titleKey: 'flow4Title', descKey: 'flow4Desc', defaultTitle: 'HAB review' },
+                { num: 5, titleKey: 'flow5Title', descKey: 'flow5Desc', defaultTitle: 'Quotation' },
+                { num: 6, titleKey: 'flow6Title', descKey: 'flow6Desc', defaultTitle: 'Order & tracking' },
+              ].map(({ num, titleKey, descKey, defaultTitle }) => (
+                <div key={num} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-indigo-700 text-white text-[10px] font-bold flex items-center justify-center">
+                      {num}
+                    </span>
+                    <label className="text-xs font-bold text-slate-700">Step {num}: Title</label>
+                  </div>
+                  <input
+                    type="text"
+                    value={(contentForm as any)[titleKey]}
+                    onChange={(e) => setContentForm((prev) => ({ ...prev, [titleKey]: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                    placeholder={defaultTitle}
+                  />
+                  <textarea
+                    rows={2}
+                    value={(contentForm as any)[descKey]}
+                    onChange={(e) => setContentForm((prev) => ({ ...prev, [descKey]: e.target.value }))}
+                    className="w-full px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg focus:outline-none focus:border-[#8b2e24]"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-slate-200">
+              <button
+                type="submit"
+                disabled={savingContent}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#8b2e24] hover:bg-[#72241c] text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{savingContent ? 'Saving...' : 'Save Wholesale Content'}</span>
+              </button>
+            </div>
+          </GlassCard>
+        </form>
       )}
 
       {/* DRAWER: EDIT PRODUCT WHOLESALE TERMS */}

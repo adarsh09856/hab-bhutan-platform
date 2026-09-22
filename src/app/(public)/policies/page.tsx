@@ -94,6 +94,7 @@ export default async function PoliciesIndexPage() {
         <SectionEditBadge
           label="Policies Studio"
           studioHref="/admin/policies"
+          sectionType="policies"
           className="top-3 right-3 sm:right-6"
         />
 

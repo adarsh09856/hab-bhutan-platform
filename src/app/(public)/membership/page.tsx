@@ -46,7 +46,7 @@ export default function MembershipPage() {
   return (
     <main id="main">
       <section className="section section--narrow relative" data-hab-section="membership">
-        <SectionEditBadge label="Membership Categories Studio" studioHref="/admin/membership-categories" />
+        <SectionEditBadge label="Membership Categories Studio" studioHref="/admin/membership-categories" sectionType="membership" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Membership / Apply
         </p>

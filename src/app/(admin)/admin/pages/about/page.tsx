@@ -31,7 +31,7 @@ interface GovRecord {
 }
 
 export default function AboutPageStudio() {
-  const [activeTab, setActiveTab] = useState<'mandate' | 'board' | 'team' | 'milestones'>('mandate');
+  const [activeTab, setActiveTab] = useState<'mandate' | 'objectives' | 'values' | 'facts' | 'board' | 'team' | 'milestones'>('mandate');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -46,6 +46,30 @@ export default function AboutPageStudio() {
     missionBody: 'HAB supports local artisans by providing resources, training and policy interventions to improve their skills and increase their chances of success in local communities and the tourism industry.',
     csoRegistration: '2011 · CSO/2011/043',
     aboutBandImageUrl: '/assets/photos/about-hab.jpg',
+    aboutObjective1: 'Improve market access for Bhutanese artisans at home, in tourism and internationally.',
+    aboutObjective2: 'Raise product quality and consistency through training, standards and inspection.',
+    aboutObjective3: 'Guarantee fair compensation and prompt payment for handcrafted work.',
+    aboutObjective4: 'Keep the thirteen crafts of Zorig Chusum in living practice, especially endangered ones.',
+    aboutObjective5: 'Advocate for artisan rights, raw material access and sector-friendly policy interventions.',
+    aboutObjective6: 'Build sustainable livelihoods for women, youth, and rural artisan communities.',
+    aboutCraft1Name: 'Care',
+    aboutCraft1Desc: 'Care for the maker, the material and the object.',
+    aboutCraft2Name: 'Respect',
+    aboutCraft2Desc: 'Respect for a tradition older than the association, and for the person who carries it.',
+    aboutCraft3Name: 'Attentive',
+    aboutCraft3Desc: 'Attentive to quality, to the market and to what members actually ask for.',
+    aboutCraft4Name: 'Fair',
+    aboutCraft4Desc: 'Fair dealing, in writing. Prices are agreed with the maker and paid upfront.',
+    aboutCraft5Name: 'Transparent',
+    aboutCraft5Desc: 'Transparent about money and results. Audited accounts published yearly.',
+    fact1Key: 'Established',
+    fact1Val: '2005',
+    fact2Key: 'Registered CSO',
+    fact2Val: '2011 · CSO/2011/043',
+    fact3Key: 'Member enterprises',
+    fact3Val: '7,500',
+    fact4Key: 'Affiliated stores',
+    fact4Val: '195',
   });
 
   // Governance records state
@@ -73,9 +97,34 @@ export default function AboutPageStudio() {
       if (resSettings.ok) {
         const d = await resSettings.json();
         if (d.setting) {
+          const s = d.setting;
           setSettings((prev) => ({
             ...prev,
-            ...d.setting,
+            ...s,
+            aboutObjective1: s.aboutObjectives?.[0] || prev.aboutObjective1,
+            aboutObjective2: s.aboutObjectives?.[1] || prev.aboutObjective2,
+            aboutObjective3: s.aboutObjectives?.[2] || prev.aboutObjective3,
+            aboutObjective4: s.aboutObjectives?.[3] || prev.aboutObjective4,
+            aboutObjective5: s.aboutObjectives?.[4] || prev.aboutObjective5,
+            aboutObjective6: s.aboutObjectives?.[5] || prev.aboutObjective6,
+            aboutCraft1Name: s.aboutValues?.[0]?.title || prev.aboutCraft1Name,
+            aboutCraft1Desc: s.aboutValues?.[0]?.body || prev.aboutCraft1Desc,
+            aboutCraft2Name: s.aboutValues?.[1]?.title || prev.aboutCraft2Name,
+            aboutCraft2Desc: s.aboutValues?.[1]?.body || prev.aboutCraft2Desc,
+            aboutCraft3Name: s.aboutValues?.[2]?.title || prev.aboutCraft3Name,
+            aboutCraft3Desc: s.aboutValues?.[2]?.body || prev.aboutCraft3Desc,
+            aboutCraft4Name: s.aboutValues?.[3]?.title || prev.aboutCraft4Name,
+            aboutCraft4Desc: s.aboutValues?.[3]?.body || prev.aboutCraft4Desc,
+            aboutCraft5Name: s.aboutValues?.[4]?.title || prev.aboutCraft5Name,
+            aboutCraft5Desc: s.aboutValues?.[4]?.body || prev.aboutCraft5Desc,
+            fact1Key: s.aboutStats?.[0]?.label || prev.fact1Key,
+            fact1Val: s.aboutStats?.[0]?.number || prev.fact1Val,
+            fact2Key: s.aboutStats?.[1]?.label || prev.fact2Key,
+            fact2Val: s.aboutStats?.[1]?.number || prev.fact2Val,
+            fact3Key: s.aboutStats?.[2]?.label || prev.fact3Key,
+            fact3Val: s.aboutStats?.[2]?.number || prev.fact3Val,
+            fact4Key: s.aboutStats?.[3]?.label || prev.fact4Key,
+            fact4Val: s.aboutStats?.[3]?.number || prev.fact4Val,
           }));
         }
       }
@@ -101,10 +150,35 @@ export default function AboutPageStudio() {
     if (e) e.preventDefault();
     setSaving(true);
     try {
+      const payload: any = {
+        ...settings,
+        aboutObjectives: [
+          settings.aboutObjective1,
+          settings.aboutObjective2,
+          settings.aboutObjective3,
+          settings.aboutObjective4,
+          settings.aboutObjective5,
+          settings.aboutObjective6,
+        ].filter(Boolean),
+        aboutValues: [
+          { letter: 'C', title: settings.aboutCraft1Name || 'Care', body: settings.aboutCraft1Desc || '' },
+          { letter: 'R', title: settings.aboutCraft2Name || 'Respect', body: settings.aboutCraft2Desc || '' },
+          { letter: 'A', title: settings.aboutCraft3Name || 'Attentive', body: settings.aboutCraft3Desc || '' },
+          { letter: 'F', title: settings.aboutCraft4Name || 'Fair', body: settings.aboutCraft4Desc || '' },
+          { letter: 'T', title: settings.aboutCraft5Name || 'Transparent', body: settings.aboutCraft5Desc || '' },
+        ].filter((v) => v.title),
+        aboutStats: [
+          { label: settings.fact1Key || 'Established', number: settings.fact1Val || '2005' },
+          { label: settings.fact2Key || 'Registered CSO', number: settings.fact2Val || '2011 · CSO/2011/043' },
+          { label: settings.fact3Key || 'Member enterprises', number: settings.fact3Val || '7,500' },
+          { label: settings.fact4Key || 'Affiliated stores', number: settings.fact4Val || '195' },
+        ].filter((s) => s.label),
+      };
+
       const res = await fetch('/api/admin/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       });
       const d = await res.json();
       if (res.ok) {
@@ -280,7 +354,46 @@ export default function AboutPageStudio() {
           }`}
         >
           <Target className="w-4 h-4" />
-          <span>1. Mandate, Vision & Mission</span>
+          <span>1. Mandate, Vision &amp; Mission</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('objectives')}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+            activeTab === 'objectives'
+              ? 'border-[#8B2E24] text-[#8B2E24]'
+              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+          }`}
+        >
+          <Target className="w-4 h-4" />
+          <span>2. Strategic Objectives (6)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('values')}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+            activeTab === 'values'
+              ? 'border-[#8B2E24] text-[#8B2E24]'
+              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          <span>3. CRAFT Core Values (5)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('facts')}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+            activeTab === 'facts'
+              ? 'border-[#8B2E24] text-[#8B2E24]'
+              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+          }`}
+        >
+          <Info className="w-4 h-4" />
+          <span>4. Sector Quick Facts (4)</span>
         </button>
 
         <button
@@ -293,7 +406,7 @@ export default function AboutPageStudio() {
           }`}
         >
           <Award className="w-4 h-4" />
-          <span>2. Board of Trustees (Full CRUD)</span>
+          <span>5. Board of Trustees</span>
           <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 font-mono">
             {boardMembers.length}
           </span>
@@ -309,7 +422,7 @@ export default function AboutPageStudio() {
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>3. Secretariat Team (Full CRUD)</span>
+          <span>6. Secretariat Team</span>
           <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 font-mono">
             {teamMembers.length}
           </span>
@@ -325,7 +438,7 @@ export default function AboutPageStudio() {
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>4. Historical Milestones (Full CRUD)</span>
+          <span>7. Milestones</span>
           <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 font-mono">
             {milestones.length}
           </span>
@@ -424,6 +537,193 @@ export default function AboutPageStudio() {
                 <span>Save Mandate & Vision</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: 6 STRATEGIC OBJECTIVES */}
+      {activeTab === 'objectives' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">6 Strategic Objectives</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                The six core pillars guiding HAB&apos;s institutional strategy under the Civil Society Organizations Act.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleSaveSettings()}
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{saving ? 'Saving...' : 'Save Objectives'}</span>
+            </button>
+          </div>
+
+          <div className="space-y-4 max-w-4xl">
+            {[1, 2, 3, 4, 5, 6].map((num) => (
+              <div key={num} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center text-xs font-bold font-mono">
+                    {num}
+                  </span>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Strategic Objective #{num}
+                  </label>
+                </div>
+                <textarea
+                  rows={2}
+                  value={(settings as any)['aboutObjective' + num] || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, ['aboutObjective' + num]: e.target.value }))}
+                  placeholder={`Description of objective #${num}...`}
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+              </div>
+            ))}
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => handleSaveSettings()}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save All Objectives</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: 5 CRAFT CORE VALUES */}
+      {activeTab === 'values' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">5 CRAFT Core Values (C-R-A-F-T)</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                The institutional acronym defining HAB&apos;s standards of care, integrity, and transparency.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleSaveSettings()}
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{saving ? 'Saving...' : 'Save Values'}</span>
+            </button>
+          </div>
+
+          <div className="space-y-4 max-w-4xl">
+            {[
+              { num: 1, letter: 'C', defName: 'Care' },
+              { num: 2, letter: 'R', defName: 'Respect' },
+              { num: 3, letter: 'A', defName: 'Attentive' },
+              { num: 4, letter: 'F', defName: 'Fair' },
+              { num: 5, letter: 'T', defName: 'Transparent' },
+            ].map(({ num, letter, defName }) => (
+              <div key={num} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center text-xs font-bold">
+                    {letter}
+                  </span>
+                  <input
+                    type="text"
+                    value={(settings as any)['aboutCraft' + num + 'Name'] || ''}
+                    onChange={(e) => setSettings((s) => ({ ...s, ['aboutCraft' + num + 'Name']: e.target.value }))}
+                    placeholder={`Value (${letter}) - ${defName}`}
+                    className="flex-1 px-3 py-1.5 bg-white rounded-lg border border-slate-300 text-xs font-bold text-slate-900"
+                  />
+                </div>
+                <textarea
+                  rows={2}
+                  value={(settings as any)['aboutCraft' + num + 'Desc'] || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, ['aboutCraft' + num + 'Desc']: e.target.value }))}
+                  placeholder={`Description of ${letter} commitment...`}
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+              </div>
+            ))}
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => handleSaveSettings()}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save All Values</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 4: 4 SECTOR QUICK FACTS */}
+      {activeTab === 'facts' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">4 Sector Quick Facts</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                The four highlight key metric cards shown on the public About Us page header.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleSaveSettings()}
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{saving ? 'Saving...' : 'Save Quick Facts'}</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl">
+            {[1, 2, 3, 4].map((num) => (
+              <div key={num} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <span className="text-xs font-bold text-[#8B2E24]">Quick Fact #{num}</span>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Label / Title</label>
+                  <input
+                    type="text"
+                    value={(settings as any)['fact' + num + 'Key'] || ''}
+                    onChange={(e) => setSettings((s) => ({ ...s, ['fact' + num + 'Key']: e.target.value }))}
+                    placeholder="e.g. Established"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Value</label>
+                  <input
+                    type="text"
+                    value={(settings as any)['fact' + num + 'Val'] || ''}
+                    onChange={(e) => setSettings((s) => ({ ...s, ['fact' + num + 'Val']: e.target.value }))}
+                    placeholder="e.g. 2005"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-900 font-bold"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => handleSaveSettings()}
+              disabled={saving}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save Quick Facts</span>
+            </button>
           </div>
         </div>
       )}

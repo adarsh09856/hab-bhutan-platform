@@ -1074,6 +1074,68 @@ export default function HomePageStudio() {
               </div>
             </div>
 
+            {/* Dual Membership Callout Banners */}
+            <div className="pt-4 border-t border-slate-200">
+              <h3 className="text-sm font-bold text-slate-900 mb-3">Dual Membership Callout Banners</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#8B2E24]">
+                    Left Banner: For Artisans &amp; Guilds
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.membershipLeftTitle}
+                    onChange={(e) => setSettings((s) => ({ ...s, membershipLeftTitle: e.target.value }))}
+                    placeholder="For Master Artisans &amp; Guilds"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-bold"
+                  />
+                  <textarea
+                    rows={2}
+                    value={settings.membershipLeftText}
+                    onChange={(e) => setSettings((s) => ({ ...s, membershipLeftText: e.target.value }))}
+                    placeholder="Join the national handicraft association..."
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-700"
+                  />
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <input
+                      type="text"
+                      value={settings.membershipLeftCtaText}
+                      onChange={(e) => setSettings((s) => ({ ...s, membershipLeftCtaText: e.target.value }))}
+                      placeholder="Button Label"
+                      className="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg text-slate-800"
+                    />
+                    <input
+                      type="text"
+                      value={settings.membershipLeftCtaLink}
+                      onChange={(e) => setSettings((s) => ({ ...s, membershipLeftCtaLink: e.target.value }))}
+                      placeholder="Button Link (e.g. /members)"
+                      className="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#8B2E24]">
+                    Right Banner: For Institutional &amp; Trade Buyers
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.membershipRightTitle}
+                    onChange={(e) => setSettings((s) => ({ ...s, membershipRightTitle: e.target.value }))}
+                    placeholder="For Institutional &amp; Trade Buyers"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-bold"
+                  />
+                  <textarea
+                    rows={3}
+                    value={settings.membershipRightText}
+                    onChange={(e) => setSettings((s) => ({ ...s, membershipRightText: e.target.value }))}
+                    placeholder="Wholesale sourcing, institutional gifts..."
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-700"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="pt-4">
               <button
                 type="button"
@@ -1082,7 +1144,7 @@ export default function HomePageStudio() {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
               >
                 <Save className="w-4 h-4" />
-                <span>Save Assurances</span>
+                <span>Save Assurances &amp; Banners</span>
               </button>
             </div>
           </div>

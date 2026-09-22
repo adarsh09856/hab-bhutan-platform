@@ -69,7 +69,7 @@ export default function NewsPage() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="news">
-        <SectionEditBadge label="News & Stories" studioHref="/admin/content" />
+        <SectionEditBadge label="News & Stories" studioHref="/admin/content" sectionType="news" />
         <p className="crumbs">
           <Link href="/">Home</Link> / News &amp; events
         </p>

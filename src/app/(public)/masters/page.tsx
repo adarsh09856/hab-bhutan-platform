@@ -62,7 +62,7 @@ export default function MastersPage() {
     <main id="main">
       {/* 1. Hero & Carousel */}
       <section className="section relative" data-hab-section="masters">
-        <SectionEditBadge label="Honours & Masters Studio" studioHref="/admin/honours" />
+        <SectionEditBadge label="Honours & Masters Studio" studioHref="/admin/honours" sectionType="masters" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Accreditations &amp; awards
         </p>

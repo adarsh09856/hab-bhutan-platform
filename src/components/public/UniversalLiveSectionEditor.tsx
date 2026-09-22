@@ -66,7 +66,13 @@ export type SectionType =
   | 'punakha'
   | 'footer'
   | 'programmes'
-  | 'wholesale';
+  | 'wholesale'
+  | 'clusters'
+  | 'masters'
+  | 'news'
+  | 'events'
+  | 'publications'
+  | 'outlets';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -155,6 +161,14 @@ export default function UniversalLiveSectionEditor({
       );
     }
 
+    if (sectionType === 'donate') {
+      fetches.push(
+        fetch('/api/support-pillars', { cache: 'no-store' })
+          .then((r) => r.json())
+          .catch(() => ({}))
+      );
+    }
+
     if (sectionType === 'footer') {
       fetches.push(
         fetch('/api/navigation', { cache: 'no-store' }).then((r) => r.json()).catch(() => ({})),
@@ -163,9 +177,34 @@ export default function UniversalLiveSectionEditor({
       );
     }
 
-    Promise.all(fetches).then(([settingsData, heroData, navData, pagesData, policiesData]) => {
+    Promise.all(fetches).then((results) => {
       if (!isMounted) return;
+      const settingsData = results[0];
+      let heroData: any = null;
+      let pillarsData: any = null;
+      let navData: any = null;
+      let pagesData: any = null;
+      let policiesData: any = null;
+
+      let idxCounter = 1;
+      if (sectionType === 'hero') {
+        heroData = results[idxCounter++];
+      }
+      if (sectionType === 'donate') {
+        pillarsData = results[idxCounter++];
+      }
+      if (sectionType === 'footer') {
+        navData = results[idxCounter++];
+        pagesData = results[idxCounter++];
+        policiesData = results[idxCounter++];
+      }
+
       const s = settingsData?.setting || settingsData?.settings || {};
+      const pillars = pillarsData?.pillars || [];
+      const grassroots = pillars.find((p: any) => p.key === 'grassroots') || {};
+      const impact = pillars.find((p: any) => p.key === 'impact') || {};
+      const cultural = pillars.find((p: any) => p.key === 'cultural') || {};
+      const environment = pillars.find((p: any) => p.key === 'environment') || {};
 
       setForm({
         // Hero fields
@@ -238,6 +277,85 @@ export default function UniversalLiveSectionEditor({
         donateHeroTitle: s.donateHeroTitle || 'Support Bhutanese Artisans & Cultural Heritage',
         donateHeroLede: s.donateHeroLede || 'Your philanthropic donation empowers rural weavers, blacksmiths, and sculptors across Bhutan.',
         donateTaxNotice: s.donateTaxNotice || 'HAB is a registered Civil Society Organization. Donations within Bhutan qualify for CSO tax deductions under Section 31.',
+        donateAmount1: s.donateAmount1 || 1000,
+        donateAmount2: s.donateAmount2 || 5000,
+        donateAmount3: s.donateAmount3 || 10000,
+        donateAmount4: s.donateAmount4 || 25000,
+        donateBankBoB: s.donateBankBoB || 'Bank of Bhutan: 1002345892 (Metog Lam Branch)',
+        donateBankBNB: s.donateBankBNB || 'Bhutan National Bank: 2001984710',
+        donateSwiftCode: s.donateSwiftCode || 'BHUBBTBT',
+
+        // 4 Support Pillars (Card 1 Grassroots has leaf, Cards 2-4 clean)
+        pillar_grassroots_title: grassroots.title || 'Grassroots Benefit',
+        pillar_grassroots_line: grassroots.line || grassroots.tagline || 'Keeps rural creators trading through the lean season.',
+        pillar_grassroots_body: grassroots.body || grassroots.description || 'Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.',
+        pillar_impact_title: impact.title || 'Impact Crowdfunding & Enterprise',
+        pillar_impact_line: impact.line || impact.tagline || 'Buys the raw materials an artisan cannot afford upfront.',
+        pillar_impact_body: impact.body || impact.description || 'Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.',
+        pillar_cultural_title: cultural.title || 'Vital Cultural Preservation',
+        pillar_cultural_line: cultural.line || cultural.tagline || 'Funds critical master-to-apprentice placements.',
+        pillar_cultural_body: cultural.body || cultural.description || 'Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.',
+        pillar_environment_title: environment.title || 'Environmental & Landscape Conservation',
+        pillar_environment_line: environment.line || environment.tagline || 'Replants the natural materials our crafts grow from.',
+        pillar_environment_body: environment.body || environment.description || 'Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.',
+
+        // Wholesale extended
+        wholesaleHeroTitle: s.wholesaleHeroTitle || 'Wholesale & Bulk Orders',
+        wholesaleHeroLede: s.wholesaleHeroLede || 'HAB supplies Bhutanese handicraft at trade terms to retailers, hotels, designers, institutions and distributors.',
+        wholesaleMoq: s.wholesaleMoq || 10,
+        wholesaleLeadTime: s.wholesaleLeadTime || '2 to 4 weeks',
+        wholesaleAssurance1Title: s.wholesaleAssurances?.[0]?.title || s.wholesaleAssurance1Title || 'Traceable supply chain',
+        wholesaleAssurance1Body: s.wholesaleAssurances?.[0]?.body || s.wholesaleAssurance1Body || 'Materials, makers and shipping are fully documented from source cluster to port of export.',
+        wholesaleAssurance2Title: s.wholesaleAssurances?.[1]?.title || s.wholesaleAssurance2Title || 'Phytosanitary & export documentation',
+        wholesaleAssurance2Body: s.wholesaleAssurances?.[1]?.body || s.wholesaleAssurance2Body || 'We prepare export documentation, non-commercial invoices and all customs clearances.',
+        wholesaleAssurance3Title: s.wholesaleAssurances?.[2]?.title || s.wholesaleAssurance3Title || 'Pre-dispatch quality assurance',
+        wholesaleAssurance3Body: s.wholesaleAssurances?.[2]?.body || s.wholesaleAssurance3Body || 'Every order is inspected against master reference pieces by our quality inspectors in Thimphu.',
+        wholesaleAssurance4Title: s.wholesaleAssurances?.[3]?.title || s.wholesaleAssurance4Title || 'Flexible customization',
+        wholesaleAssurance4Body: s.wholesaleAssurances?.[3]?.body || s.wholesaleAssurance4Body || 'Custom sizes, weave densities, debossed branding and bespoke packaging available.',
+        wholesaleAssurance5Title: s.wholesaleAssurances?.[4]?.title || s.wholesaleAssurance5Title || 'Fair compensation guarantee',
+        wholesaleAssurance5Body: s.wholesaleAssurances?.[4]?.body || s.wholesaleAssurance5Body || 'Artisans receive fair wholesale rates at dispatch, ensuring sustained community livelihoods.',
+
+        // Wholesale Flow Steps (1–6)
+        wholesaleFlowStep1Title: s.wholesaleTerms?.flowSteps?.[0]?.title || 'Browse',
+        wholesaleFlowStep1Desc: s.wholesaleTerms?.flowSteps?.[0]?.desc || 'Category, then product. The catalogue is the same one the retail shop uses.',
+        wholesaleFlowStep2Title: s.wholesaleTerms?.flowSteps?.[1]?.title || 'Quantity',
+        wholesaleFlowStep2Desc: s.wholesaleTerms?.flowSteps?.[1]?.desc || 'Set quantities against the MOQ. Tier pricing applies automatically.',
+        wholesaleFlowStep3Title: s.wholesaleTerms?.flowSteps?.[2]?.title || 'Quote basket',
+        wholesaleFlowStep3Desc: s.wholesaleTerms?.flowSteps?.[2]?.desc || 'Collect several products into one basket rather than checking out.',
+        wholesaleFlowStep4Title: s.wholesaleTerms?.flowSteps?.[3]?.title || 'HAB review',
+        wholesaleFlowStep4Desc: s.wholesaleTerms?.flowSteps?.[3]?.desc || 'The trade desk confirms availability with the producing members.',
+        wholesaleFlowStep5Title: s.wholesaleTerms?.flowSteps?.[4]?.title || 'Quotation',
+        wholesaleFlowStep5Desc: s.wholesaleTerms?.flowSteps?.[4]?.desc || 'Formal quote with freight, lead time and payment terms.',
+        wholesaleFlowStep6Title: s.wholesaleTerms?.flowSteps?.[5]?.title || 'Order & tracking',
+        wholesaleFlowStep6Desc: s.wholesaleTerms?.flowSteps?.[5]?.desc || 'Production, quality control in Thimphu, then shipment with tracking.',
+
+        // About extended
+        aboutObjective1: s.aboutObjectives?.[0] || s.aboutObjective1 || 'Improve market access for Bhutanese artisans at home, in tourism and internationally.',
+        aboutObjective2: s.aboutObjectives?.[1] || s.aboutObjective2 || 'Raise product quality and consistency through training, standards and inspection.',
+        aboutObjective3: s.aboutObjectives?.[2] || s.aboutObjective3 || 'Guarantee fair compensation and prompt payment for handcrafted work.',
+        aboutObjective4: s.aboutObjectives?.[3] || s.aboutObjective4 || 'Keep the thirteen crafts of Zorig Chusum in living practice, especially endangered ones.',
+        aboutObjective5: s.aboutObjectives?.[4] || s.aboutObjective5 || 'Advocate for artisan rights, raw material access and sector-friendly policy interventions.',
+        aboutObjective6: s.aboutObjectives?.[5] || s.aboutObjective6 || 'Build sustainable livelihoods for women, youth, and rural artisan communities.',
+        aboutCraft1Name: s.aboutValues?.[0]?.title || s.aboutCraft1Name || 'Care',
+        aboutCraft1Desc: s.aboutValues?.[0]?.body || s.aboutCraft1Desc || 'Care for the maker, the material and the object.',
+        aboutCraft2Name: s.aboutValues?.[1]?.title || s.aboutCraft2Name || 'Respect',
+        aboutCraft2Desc: s.aboutValues?.[1]?.body || s.aboutCraft2Desc || 'Respect for a tradition older than the association, and for the person who carries it.',
+        aboutCraft3Name: s.aboutValues?.[2]?.title || s.aboutCraft3Name || 'Attentive',
+        aboutCraft3Desc: s.aboutValues?.[2]?.body || s.aboutCraft3Desc || 'Attentive to quality, to the market and to what members actually ask for.',
+        aboutCraft4Name: s.aboutValues?.[3]?.title || s.aboutCraft4Name || 'Fair',
+        aboutCraft4Desc: s.aboutValues?.[3]?.body || s.aboutCraft4Desc || 'Fair dealing, in writing. Prices are agreed with the maker and paid upfront.',
+        aboutCraft5Name: s.aboutValues?.[4]?.title || s.aboutCraft5Name || 'Transparent',
+        aboutCraft5Desc: s.aboutValues?.[4]?.body || s.aboutCraft5Desc || 'Transparent about money and results. Audited accounts published yearly.',
+
+        // 4 Quick Facts (craftfacts on /about)
+        fact1Key: s.aboutStats?.[0]?.label || 'Established',
+        fact1Val: s.aboutStats?.[0]?.number || '2005',
+        fact2Key: s.aboutStats?.[1]?.label || 'Registered CSO',
+        fact2Val: s.aboutStats?.[1]?.number || s.csoRegistration || '2011 · CSO/2011/043',
+        fact3Key: s.aboutStats?.[2]?.label || 'Member enterprises',
+        fact3Val: s.aboutStats?.[2]?.number || s.stat1Number || '7,500',
+        fact4Key: s.aboutStats?.[3]?.label || 'Affiliated stores',
+        fact4Val: s.aboutStats?.[3]?.number || s.stat3Number || '195',
 
         // Contact
         officeAddress: s.officeAddress || 'Metog Lam, Thimphu, Bhutan',
@@ -247,6 +365,64 @@ export default function UniversalLiveSectionEditor({
         officialEmail: s.officialEmail || 'officehab@gmail.com',
         contactHours: s.contactHours || 'Monday - Friday: 9:00 AM - 5:00 PM (BST)',
         contactPoBox: s.contactPoBox || 'P.O. Box 1109, Thimphu',
+        contactDirections: s.contactDirections || 'Near Institute of Zorig Chusum, Kawajangsa, Thimphu',
+        contactLede: s.contactLede || 'Get in touch with the HAB secretariat for membership, wholesale, provenance verification or donor partnerships.',
+
+        // Specific Secondary Section values
+        clustersHeroTitle: s.clustersHeroTitle || 'Artisan clusters',
+        clustersHeroLede: s.clustersHeroLede || 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.',
+        clustersCountText: s.clustersCountText || '20 Dzongkhags · Verified Artisan Clusters',
+
+        mastersHeroEyebrow: s.mastersHeroEyebrow || 'Recognition',
+        mastersHeroTitle: s.mastersHeroTitle || 'Accreditations & awards',
+        mastersHeroLede: s.mastersHeroLede || 'A small number of members are recognised individually — for mastery held over a lifetime, for standards that lifted a whole craft, and for the enterprises and young artisans changing how Bhutanese work reaches a market.',
+        mastersCtaPrimaryText: s.mastersCtaPrimaryText || 'See who holds them →',
+        mastersCtaPrimaryLink: s.mastersCtaPrimaryLink || '#holders',
+        mastersCtaSecondaryText: s.mastersCtaSecondaryText || 'How to nominate',
+        mastersCtaSecondaryLink: s.mastersCtaSecondaryLink || '#nominate',
+        mastersAward1Title: s.mastersAward1Title || 'National Craft Award (Zorig Chusum)',
+        mastersAward1Desc: s.mastersAward1Desc || 'Lifetime achievement and sector leadership in traditional arts.',
+        mastersAward2Title: s.mastersAward2Title || 'Royal Seal of Excellence',
+        mastersAward2Desc: s.mastersAward2Desc || 'Design, execution and material benchmark across authentic crafts.',
+        mastersAward3Title: s.mastersAward3Title || 'Master Craftsperson accreditation',
+        mastersAward3Desc: s.mastersAward3Desc || 'Peer-reviewed practitioner qualification for authentic master craftspeople.',
+
+        newsHeroTitle: s.newsHeroTitle || 'News & events',
+        newsHeroLede: s.newsHeroLede || 'Stay informed, stay empowered.',
+
+        eventsHeroEyebrow: s.eventsHeroEyebrow || "What's coming up",
+        eventsHeroTitle: s.eventsHeroTitle || 'Events',
+        eventsHeroLede: s.eventsHeroLede || 'Craft bazaars, training courses, export clinics, buyer missions and the Annual Sector Forum. Most are open to members; the bazaars are open to everyone.',
+        eventsAttendingTitle: s.eventsAttendingTitle || 'Attending',
+        eventsAttendingBody: s.eventsAttendingBody || 'Places and stalls are arranged through the secretariat. Write to officehab@gmail.com or call +975-2-338089.',
+        eventsAttendingEmail: s.eventsAttendingEmail || 'officehab@gmail.com',
+        eventsAttendingPhone: s.eventsAttendingPhone || '+975-2-338089',
+
+        publicationsHeroTitle: s.publicationsHeroTitle || 'Publications',
+        publicationsHeroLede: s.publicationsHeroLede || 'Annual reports, audited accounts, sector research, guidelines and training material — published by HAB and free to download.',
+        publicationsLeadTitle: s.publicationsLeadTitle || 'Annual Report 2025',
+        publicationsLeadAbstract: s.publicationsLeadAbstract || 'Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.',
+        publicationsLeadDownloadUrl: s.publicationsLeadDownloadUrl || '/assets/docs/hab-annual-report-2025.pdf',
+
+        policiesHeroTitle: s.policiesHeroTitle || 'Statutory Policies & Governance',
+        policiesHeroLede: s.policiesHeroLede || 'Official policies, artisan rights charter, terms of service, and CSO governance standards of HAB.',
+        policiesCharterNotice: s.policiesCharterNotice || 'Constituted under the Civil Society Organizations Act of Bhutan 2007. Non-political, transparent, and dedicated to artisan welfare.',
+
+        outletsHeroEyebrow: s.outletsHeroEyebrow || 'Verified Markets · HAB Validated',
+        outletsHeroTitle: s.outletsHeroTitle || 'Punakha Riverfront Craft Market',
+        outletsHeroLede: s.outletsHeroLede || 'Physical outlets, verified markets and artisan clusters across Bhutan validated by HAB.',
+        outletsFeaturedPlace: s.outletsFeaturedPlace || 'Punakha Dzong riverside, Punakha',
+        outletsFeaturedHours: s.outletsFeaturedHours || 'Wednesday – Sunday: 9:00 AM – 6:00 PM',
+        outletsFeaturedStalls: s.outletsFeaturedStalls || '34 permanent stalls · 12 rotating weekend makers',
+
+        projectsHeroEyebrow: s.projectsHeroEyebrow || 'Funded interventions',
+        projectsHeroTitle: s.projectsHeroTitle || 'Donor projects',
+        projectsHeroLede: s.projectsHeroLede || 'Structured donor-supported initiatives that build capability, upgrade technology, open markets and transmit skills across Bhutan.',
+
+        // Generic Section fallbacks for /clusters, /masters, /news, /events, /publications, /policies
+        genericEyebrow: s.tagline ? s.tagline.slice(0, 30) : 'Handicrafts Association of Bhutan',
+        genericTitle: s.aboutBandTitle || 'Bhutan Traditional Crafts Network',
+        genericDescription: s.heroParagraph || 'Supporting over 7,500 artisans across Bhutan.',
 
         // Punakha
         punakhaMarketNotice: s.punakhaMarketNotice || 'Validated and managed by HAB for authentic Bhutanese craft provenance.',
@@ -443,11 +619,59 @@ export default function UniversalLiveSectionEditor({
     setSuccess(false);
 
     try {
-      // 1. Save site-settings
+      // 1. Synchronize structured arrays for JSON storage in SiteSetting
+      const payload: Record<string, any> = { ...form };
+
+      // About arrays
+      payload.aboutObjectives = [
+        form.aboutObjective1,
+        form.aboutObjective2,
+        form.aboutObjective3,
+        form.aboutObjective4,
+        form.aboutObjective5,
+        form.aboutObjective6,
+      ].filter(Boolean);
+
+      payload.aboutValues = [
+        { letter: 'C', title: form.aboutCraft1Name || 'Care', body: form.aboutCraft1Desc || '' },
+        { letter: 'R', title: form.aboutCraft2Name || 'Respect', body: form.aboutCraft2Desc || '' },
+        { letter: 'A', title: form.aboutCraft3Name || 'Attentive', body: form.aboutCraft3Desc || '' },
+        { letter: 'F', title: form.aboutCraft4Name || 'Fair', body: form.aboutCraft4Desc || '' },
+        { letter: 'T', title: form.aboutCraft5Name || 'Transparent', body: form.aboutCraft5Desc || '' },
+      ].filter((v) => v.title);
+
+      payload.aboutStats = [
+        { label: form.fact1Key || 'Established', number: form.fact1Val || '2005' },
+        { label: form.fact2Key || 'Registered CSO', number: form.fact2Val || '2011 · CSO/2011/043' },
+        { label: form.fact3Key || 'Member enterprises', number: form.fact3Val || '7,500' },
+        { label: form.fact4Key || 'Affiliated stores', number: form.fact4Val || '195' },
+      ].filter((st) => st.label);
+
+      // Wholesale arrays
+      payload.wholesaleAssurances = [
+        { title: form.wholesaleAssurance1Title, body: form.wholesaleAssurance1Body },
+        { title: form.wholesaleAssurance2Title, body: form.wholesaleAssurance2Body },
+        { title: form.wholesaleAssurance3Title, body: form.wholesaleAssurance3Body },
+        { title: form.wholesaleAssurance4Title, body: form.wholesaleAssurance4Body },
+        { title: form.wholesaleAssurance5Title, body: form.wholesaleAssurance5Body },
+      ].filter((a) => a.title);
+
+      payload.wholesaleTerms = {
+        ...(typeof form.wholesaleTerms === 'object' && form.wholesaleTerms !== null ? form.wholesaleTerms : {}),
+        flowSteps: [
+          { title: form.wholesaleFlowStep1Title, desc: form.wholesaleFlowStep1Desc },
+          { title: form.wholesaleFlowStep2Title, desc: form.wholesaleFlowStep2Desc },
+          { title: form.wholesaleFlowStep3Title, desc: form.wholesaleFlowStep3Desc },
+          { title: form.wholesaleFlowStep4Title, desc: form.wholesaleFlowStep4Desc },
+          { title: form.wholesaleFlowStep5Title, desc: form.wholesaleFlowStep5Desc },
+          { title: form.wholesaleFlowStep6Title, desc: form.wholesaleFlowStep6Desc },
+        ].filter((s) => s.title),
+      };
+
       const res = await fetch('/api/admin/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 401) {
@@ -458,6 +682,44 @@ export default function UniversalLiveSectionEditor({
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Failed to save section changes.');
+      }
+
+      // If donate section, also save all 4 support pillars to SupportPillar DB
+      if (sectionType === 'donate') {
+        const pillarUpdates = [
+          {
+            key: 'grassroots',
+            title: form.pillar_grassroots_title || 'Grassroots Benefit',
+            description: form.pillar_grassroots_body || form.pillar_grassroots_line || '',
+            iconEmoji: 'leaf',
+          },
+          {
+            key: 'impact',
+            title: form.pillar_impact_title || 'Impact Crowdfunding & Enterprise',
+            description: form.pillar_impact_body || form.pillar_impact_line || '',
+            iconEmoji: '',
+          },
+          {
+            key: 'cultural',
+            title: form.pillar_cultural_title || 'Vital Cultural Preservation',
+            description: form.pillar_cultural_body || form.pillar_cultural_line || '',
+            iconEmoji: '',
+          },
+          {
+            key: 'environment',
+            title: form.pillar_environment_title || 'Environmental & Landscape Conservation',
+            description: form.pillar_environment_body || form.pillar_environment_line || '',
+            iconEmoji: '',
+          },
+        ];
+        for (const p of pillarUpdates) {
+          await fetch('/api/admin/support-pillars', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(p),
+          }).catch(() => {});
+        }
       }
 
       // If footer section, also save navigation items
@@ -1120,6 +1382,35 @@ export default function UniversalLiveSectionEditor({
                       </div>
                     )}
 
+                    {sectionType === 'stats' && (
+                      <div className="space-y-3">
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                          4 Impact Key Statistics
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {[1, 2, 3, 4].map((num) => (
+                            <div key={num} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                              <span className="text-[11px] font-bold text-[#8B2E24]">Stat Metric #{num}</span>
+                              <input
+                                type="text"
+                                value={form['stat' + num + 'Number'] || ''}
+                                onChange={(e) => updateField('stat' + num + 'Number', e.target.value)}
+                                placeholder={'Value (e.g. 7,500)'}
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-bold focus:outline-hidden focus:border-[#8B2E24]"
+                              />
+                              <input
+                                type="text"
+                                value={form['stat' + num + 'Label'] || ''}
+                                onChange={(e) => updateField('stat' + num + 'Label', e.target.value)}
+                                placeholder={'Label / Metric Name'}
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-hidden focus:border-[#8B2E24]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {sectionType === 'membership' && (
                       <div className="space-y-4">
                         <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
@@ -1225,11 +1516,97 @@ export default function UniversalLiveSectionEditor({
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
                           />
                         </div>
+
+                        {/* 6 Strategic Objectives */}
+                        <div className="pt-2 border-t border-slate-200">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            6 Sector Strategic Objectives
+                          </label>
+                          <div className="space-y-2">
+                            {[1, 2, 3, 4, 5, 6].map((num) => (
+                              <div key={num} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                                <span className="text-[11px] font-bold text-[#8B2E24]">Objective #{num}</span>
+                                <input
+                                  type="text"
+                                  value={form['aboutObjective' + num] || ''}
+                                  onChange={(e) => updateField('aboutObjective' + num, e.target.value)}
+                                  className="w-full mt-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:outline-hidden focus:border-[#8B2E24]"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 4 Quick Facts (craftfacts on /about) */}
+                        <div className="pt-2 border-t border-slate-200">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            4 Key Sector Facts
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {[1, 2, 3, 4].map((num) => (
+                              <div key={num} className="p-2 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                                <span className="text-[10px] font-bold text-[#8B2E24]">Fact #{num}</span>
+                                <input
+                                  type="text"
+                                  value={form['fact' + num + 'Key'] || ''}
+                                  onChange={(e) => updateField('fact' + num + 'Key', e.target.value)}
+                                  placeholder="Fact Label (e.g. Established)"
+                                  className="w-full px-2.5 py-1 rounded border border-slate-300 text-xs font-medium"
+                                />
+                                <input
+                                  type="text"
+                                  value={form['fact' + num + 'Val'] || ''}
+                                  onChange={(e) => updateField('fact' + num + 'Val', e.target.value)}
+                                  placeholder="Fact Value (e.g. 2005)"
+                                  className="w-full px-2.5 py-1 rounded border border-slate-300 text-xs font-bold text-slate-900"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 5 CRAFT Core Values */}
+                        <div className="pt-2 border-t border-slate-200">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            5 CRAFT Core Values (C-R-A-F-T)
+                          </label>
+                          <div className="space-y-2">
+                            {[
+                              { num: 1, letter: 'C', defName: 'Care' },
+                              { num: 2, letter: 'R', defName: 'Respect' },
+                              { num: 3, letter: 'A', defName: 'Attentive' },
+                              { num: 4, letter: 'F', defName: 'Fair' },
+                              { num: 5, letter: 'T', defName: 'Transparent' },
+                            ].map(({ num, letter, defName }) => (
+                              <div key={num} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-full bg-[#8B2E24] text-white flex items-center justify-center text-xs font-bold">
+                                    {letter}
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={form['aboutCraft' + num + 'Name'] || ''}
+                                    onChange={(e) => updateField('aboutCraft' + num + 'Name', e.target.value)}
+                                    placeholder={`Value (${letter}) - ${defName}`}
+                                    className="flex-1 px-3 py-1 rounded-lg border border-slate-300 text-xs font-bold"
+                                  />
+                                </div>
+                                <input
+                                  type="text"
+                                  value={form['aboutCraft' + num + 'Desc'] || ''}
+                                  onChange={(e) => updateField('aboutCraft' + num + 'Desc', e.target.value)}
+                                  placeholder={`Description for ${letter} commitment`}
+                                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
                     {sectionType === 'donate' && (
-                      <>
+                      <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                             Donation Hero Headline
@@ -1263,7 +1640,199 @@ export default function UniversalLiveSectionEditor({
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
                           />
                         </div>
-                      </>
+
+                        {/* 4 Support Pillars (Card 1 Grassroots has leaf, Cards 2-4 clean) */}
+                        <div className="pt-3 border-t border-slate-200 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                              4 Living Heritage Support Pillars
+                            </label>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              Card 1 designated leaf badge · Cards 2-4 clean
+                            </span>
+                          </div>
+
+                          {/* Pillar 1: Grassroots Benefit (LEAF) */}
+                          <div className="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                                <span>Pillar 1: Grassroots Benefit</span>
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                🌿 leaf indicator (Strictly Grassroots only)
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={form.pillar_grassroots_title || ''}
+                              onChange={(e) => updateField('pillar_grassroots_title', e.target.value)}
+                              placeholder="Grassroots Benefit"
+                              className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-xs font-bold text-slate-900"
+                            />
+                            <input
+                              type="text"
+                              value={form.pillar_grassroots_line || ''}
+                              onChange={(e) => updateField('pillar_grassroots_line', e.target.value)}
+                              placeholder="Tagline: Keeps rural creators trading through the lean season."
+                              className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-xs text-slate-700"
+                            />
+                            <textarea
+                              rows={2}
+                              value={form.pillar_grassroots_body || ''}
+                              onChange={(e) => updateField('pillar_grassroots_body', e.target.value)}
+                              placeholder="Description: Every ngultrum stays in the sector..."
+                              className="w-full px-3 py-1.5 rounded-lg border border-emerald-300 bg-white text-xs text-slate-700"
+                            />
+                          </div>
+
+                          {/* Pillar 2: Impact Crowdfunding & Enterprise (CLEAN) */}
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800">
+                                Pillar 2: Impact Crowdfunding &amp; Enterprise
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                Strictly Clean · No leaf
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={form.pillar_impact_title || ''}
+                              onChange={(e) => updateField('pillar_impact_title', e.target.value)}
+                              placeholder="Impact Crowdfunding & Enterprise"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-900"
+                            />
+                            <input
+                              type="text"
+                              value={form.pillar_impact_line || ''}
+                              onChange={(e) => updateField('pillar_impact_line', e.target.value)}
+                              placeholder="Tagline: Buys the raw materials an artisan cannot afford upfront."
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-700"
+                            />
+                            <textarea
+                              rows={2}
+                              value={form.pillar_impact_body || ''}
+                              onChange={(e) => updateField('pillar_impact_body', e.target.value)}
+                              placeholder="Description: Artisans lose orders due to upfront material costs..."
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-700"
+                            />
+                          </div>
+
+                          {/* Pillar 3: Vital Cultural Preservation (CLEAN) */}
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800">
+                                Pillar 3: Vital Cultural Preservation
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                Strictly Clean · No leaf
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={form.pillar_cultural_title || ''}
+                              onChange={(e) => updateField('pillar_cultural_title', e.target.value)}
+                              placeholder="Vital Cultural Preservation"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-900"
+                            />
+                            <input
+                              type="text"
+                              value={form.pillar_cultural_line || ''}
+                              onChange={(e) => updateField('pillar_cultural_line', e.target.value)}
+                              placeholder="Tagline: Funds critical master-to-apprentice placements."
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-700"
+                            />
+                            <textarea
+                              rows={2}
+                              value={form.pillar_cultural_body || ''}
+                              onChange={(e) => updateField('pillar_cultural_body', e.target.value)}
+                              placeholder="Description: Several of Bhutan’s traditional crafts face critical decline..."
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-700"
+                            />
+                          </div>
+
+                          {/* Pillar 4: Environmental & Landscape Conservation (CLEAN) */}
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800">
+                                Pillar 4: Environmental &amp; Landscape Conservation
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                                Strictly Clean · No leaf
+                              </span>
+                            </div>
+                            <input
+                              type="text"
+                              value={form.pillar_environment_title || ''}
+                              onChange={(e) => updateField('pillar_environment_title', e.target.value)}
+                              placeholder="Environmental & Landscape Conservation"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-900"
+                            />
+                            <input
+                              type="text"
+                              value={form.pillar_environment_line || ''}
+                              onChange={(e) => updateField('pillar_environment_line', e.target.value)}
+                              placeholder="Tagline: Replants the natural materials our crafts grow from."
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-700"
+                            />
+                            <textarea
+                              rows={2}
+                              value={form.pillar_environment_body || ''}
+                              onChange={(e) => updateField('pillar_environment_body', e.target.value)}
+                              placeholder="Description: Craft demand can outrun forest regrowth..."
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-700"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Preset Donation Amounts */}
+                        <div className="pt-2 border-t border-slate-200">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            4 Preset Amount Chips (Nu.)
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {[1, 2, 3, 4].map((num) => (
+                              <div key={num}>
+                                <span className="text-[11px] text-slate-500 font-semibold">Tier #{num}</span>
+                                <input
+                                  type="number"
+                                  value={form['donateAmount' + num] || ''}
+                                  onChange={(e) => updateField('donateAmount' + num, Number(e.target.value))}
+                                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Bank Wire Details */}
+                        <div className="pt-2 border-t border-slate-200 space-y-2">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            Bank Account & Wire Transfer Details
+                          </label>
+                          <input
+                            type="text"
+                            value={form.donateBankBoB || ''}
+                            onChange={(e) => updateField('donateBankBoB', e.target.value)}
+                            placeholder="Bank of Bhutan Account"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                          />
+                          <input
+                            type="text"
+                            value={form.donateBankBNB || ''}
+                            onChange={(e) => updateField('donateBankBNB', e.target.value)}
+                            placeholder="Bhutan National Bank Account"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                          />
+                          <input
+                            type="text"
+                            value={form.donateSwiftCode || ''}
+                            onChange={(e) => updateField('donateSwiftCode', e.target.value)}
+                            placeholder="SWIFT / BIC Code"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
+                          />
+                        </div>
+                      </div>
                     )}
 
                     {sectionType === 'contact' && (
@@ -1319,6 +1888,35 @@ export default function UniversalLiveSectionEditor({
                             type="text"
                             value={form.contactHours || ''}
                             onChange={(e) => updateField('contactHours', e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Postal Address / P.O. Box</label>
+                          <input
+                            type="text"
+                            value={form.contactPoBox || ''}
+                            onChange={(e) => updateField('contactPoBox', e.target.value)}
+                            placeholder="P.O. Box 1109, Thimphu"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Physical Directions / Landmark</label>
+                          <input
+                            type="text"
+                            value={form.contactDirections || ''}
+                            onChange={(e) => updateField('contactDirections', e.target.value)}
+                            placeholder="Near Institute of Zorig Chusum, Kawajangsa, Thimphu"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-bold text-slate-700 mb-1">Contact Page Intro / Lede</label>
+                          <textarea
+                            rows={2}
+                            value={form.contactLede || ''}
+                            onChange={(e) => updateField('contactLede', e.target.value)}
                             className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                           />
                         </div>
@@ -1388,6 +1986,39 @@ export default function UniversalLiveSectionEditor({
                               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                             />
                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionType === 'punakha' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Punakha Riverfront Craft Market</span>
+                            <span className="text-[11px] text-amber-800">
+                              Directly manage stalls, hours, and craftspeople in the Outlets Studio.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/clusters-outlets"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Market Authenticity Notice
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.punakhaMarketNotice || ''}
+                            onChange={(e) => updateField('punakhaMarketNotice', e.target.value)}
+                            placeholder="Validated and managed by HAB for authentic Bhutanese craft provenance."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
                         </div>
                       </div>
                     )}
@@ -1514,6 +2145,593 @@ export default function UniversalLiveSectionEditor({
                               onChange={(e) => updateField('wholesaleLeadTime', e.target.value)}
                               placeholder="2 to 4 weeks"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                            />
+                          </div>
+                        </div>
+
+                        {/* 5 Wholesale Trade Assurances */}
+                        <div className="pt-2 border-t border-slate-200">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            5 Wholesale Trade Assurances
+                          </label>
+                          <div className="space-y-2">
+                            {[1, 2, 3, 4, 5].map((num) => (
+                              <div key={num} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                                <span className="text-[10px] font-bold text-[#8B2E24]">Assurance #{num}</span>
+                                <input
+                                  type="text"
+                                  value={form['wholesaleAssurance' + num + 'Title'] || ''}
+                                  onChange={(e) => updateField('wholesaleAssurance' + num + 'Title', e.target.value)}
+                                  placeholder={'Assurance #' + num + ' Title'}
+                                  className="w-full px-3 py-1 rounded-lg border border-slate-300 text-xs font-bold"
+                                />
+                                <textarea
+                                  rows={2}
+                                  value={form['wholesaleAssurance' + num + 'Body'] || ''}
+                                  onChange={(e) => updateField('wholesaleAssurance' + num + 'Body', e.target.value)}
+                                  placeholder={'Assurance #' + num + ' Description'}
+                                  className="w-full px-3 py-1 rounded-lg border border-slate-300 text-xs"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 6 Step-by-Step Flow Steps */}
+                        <div className="pt-2 border-t border-slate-200">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            6 How It Works Flow Steps
+                          </label>
+                          <div className="space-y-2">
+                            {[1, 2, 3, 4, 5, 6].map((num) => (
+                              <div key={num} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                                <span className="text-[10px] font-bold text-[#8B2E24]">Step {num}</span>
+                                <input
+                                  type="text"
+                                  value={form['wholesaleFlowStep' + num + 'Title'] || ''}
+                                  onChange={(e) => updateField('wholesaleFlowStep' + num + 'Title', e.target.value)}
+                                  placeholder={'Step ' + num + ' Title'}
+                                  className="w-full px-3 py-1 rounded-lg border border-slate-300 text-xs font-bold"
+                                />
+                                <input
+                                  type="text"
+                                  value={form['wholesaleFlowStep' + num + 'Desc'] || ''}
+                                  onChange={(e) => updateField('wholesaleFlowStep' + num + 'Desc', e.target.value)}
+                                  placeholder={'Step ' + num + ' Description'}
+                                  className="w-full px-3 py-1 rounded-lg border border-slate-300 text-xs"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Clusters Section Editor */}
+                    {sectionType === 'clusters' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Artisan Clusters Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Manage all 20 Dzongkhag community clusters, stories, and visitor notes.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/clusters-outlets"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Clusters Page Headline (H1)
+                          </label>
+                          <input
+                            type="text"
+                            value={form.clustersHeroTitle || ''}
+                            onChange={(e) => updateField('clustersHeroTitle', e.target.value)}
+                            placeholder="Artisan clusters"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Clusters Mandate &amp; Introductory Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.clustersHeroLede || ''}
+                            onChange={(e) => updateField('clustersHeroLede', e.target.value)}
+                            placeholder="A cluster is a village or valley where one craft is concentrated..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Clusters Badge / Counter Label
+                          </label>
+                          <input
+                            type="text"
+                            value={form.clustersCountText || ''}
+                            onChange={(e) => updateField('clustersCountText', e.target.value)}
+                            placeholder="20 Dzongkhags · Verified Artisan Clusters"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Masters & Honours Section Editor */}
+                    {sectionType === 'masters' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Honours &amp; Master Artisans Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Manage recognized masters, Royal Seal awards, and citations.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/honours"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Section Eyebrow
+                          </label>
+                          <input
+                            type="text"
+                            value={form.mastersHeroEyebrow || ''}
+                            onChange={(e) => updateField('mastersHeroEyebrow', e.target.value)}
+                            placeholder="Recognition"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Main Headline H1
+                          </label>
+                          <input
+                            type="text"
+                            value={form.mastersHeroTitle || ''}
+                            onChange={(e) => updateField('mastersHeroTitle', e.target.value)}
+                            placeholder="Accreditations & awards"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Introductory Lede Paragraph
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.mastersHeroLede || ''}
+                            onChange={(e) => updateField('mastersHeroLede', e.target.value)}
+                            placeholder="A small number of members are recognised individually..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div className="pt-2 border-t border-slate-200 space-y-2">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            3 National Honours Frameworks
+                          </label>
+                          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                            <span className="text-[10px] font-bold text-[#8B2E24]">Honour 1</span>
+                            <input
+                              type="text"
+                              value={form.mastersAward1Title || ''}
+                              onChange={(e) => updateField('mastersAward1Title', e.target.value)}
+                              placeholder="National Craft Award (Zorig Chusum)"
+                              className="w-full px-3 py-1 rounded border border-slate-300 text-xs font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={form.mastersAward1Desc || ''}
+                              onChange={(e) => updateField('mastersAward1Desc', e.target.value)}
+                              placeholder="Description of criteria..."
+                              className="w-full px-3 py-1 rounded border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                            <span className="text-[10px] font-bold text-[#8B2E24]">Honour 2</span>
+                            <input
+                              type="text"
+                              value={form.mastersAward2Title || ''}
+                              onChange={(e) => updateField('mastersAward2Title', e.target.value)}
+                              placeholder="Royal Seal of Excellence"
+                              className="w-full px-3 py-1 rounded border border-slate-300 text-xs font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={form.mastersAward2Desc || ''}
+                              onChange={(e) => updateField('mastersAward2Desc', e.target.value)}
+                              placeholder="Description of criteria..."
+                              className="w-full px-3 py-1 rounded border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                            <span className="text-[10px] font-bold text-[#8B2E24]">Honour 3</span>
+                            <input
+                              type="text"
+                              value={form.mastersAward3Title || ''}
+                              onChange={(e) => updateField('mastersAward3Title', e.target.value)}
+                              placeholder="Master Craftsperson accreditation"
+                              className="w-full px-3 py-1 rounded border border-slate-300 text-xs font-bold"
+                            />
+                            <input
+                              type="text"
+                              value={form.mastersAward3Desc || ''}
+                              onChange={(e) => updateField('mastersAward3Desc', e.target.value)}
+                              placeholder="Description of criteria..."
+                              className="w-full px-3 py-1 rounded border border-slate-300 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* News Section Editor */}
+                    {sectionType === 'news' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">News &amp; Articles Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Write new posts, upload press releases, and manage published articles.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/content"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            News Page Headline H1
+                          </label>
+                          <input
+                            type="text"
+                            value={form.newsHeroTitle || ''}
+                            onChange={(e) => updateField('newsHeroTitle', e.target.value)}
+                            placeholder="News & events"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Introductory Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.newsHeroLede || ''}
+                            onChange={(e) => updateField('newsHeroLede', e.target.value)}
+                            placeholder="Stay informed, stay empowered."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Events Section Editor */}
+                    {sectionType === 'events' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Events &amp; Exhibitions Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Create events, set dates, manage bazaars, and registration links.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/events"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Eyebrow
+                          </label>
+                          <input
+                            type="text"
+                            value={form.eventsHeroEyebrow || ''}
+                            onChange={(e) => updateField('eventsHeroEyebrow', e.target.value)}
+                            placeholder="What's coming up"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Headline H1
+                          </label>
+                          <input
+                            type="text"
+                            value={form.eventsHeroTitle || ''}
+                            onChange={(e) => updateField('eventsHeroTitle', e.target.value)}
+                            placeholder="Events"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Introductory Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.eventsHeroLede || ''}
+                            onChange={(e) => updateField('eventsHeroLede', e.target.value)}
+                            placeholder="Craft bazaars, training courses, export clinics..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div className="pt-2 border-t border-slate-200 space-y-2">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            Attending &amp; Secretariat Panel
+                          </label>
+                          <input
+                            type="text"
+                            value={form.eventsAttendingTitle || ''}
+                            onChange={(e) => updateField('eventsAttendingTitle', e.target.value)}
+                            placeholder="Attending"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                          />
+                          <textarea
+                            rows={2}
+                            value={form.eventsAttendingBody || ''}
+                            onChange={(e) => updateField('eventsAttendingBody', e.target.value)}
+                            placeholder="Places and stalls are arranged through the secretariat..."
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                          />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="email"
+                              value={form.eventsAttendingEmail || ''}
+                              onChange={(e) => updateField('eventsAttendingEmail', e.target.value)}
+                              placeholder="officehab@gmail.com"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                            />
+                            <input
+                              type="text"
+                              value={form.eventsAttendingPhone || ''}
+                              onChange={(e) => updateField('eventsAttendingPhone', e.target.value)}
+                              placeholder="+975-2-338089"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Publications Section Editor */}
+                    {sectionType === 'publications' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Publications &amp; Reports Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Upload annual reports, research PDFs, and audited accounts.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/publications"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Publications Headline H1
+                          </label>
+                          <input
+                            type="text"
+                            value={form.publicationsHeroTitle || ''}
+                            onChange={(e) => updateField('publicationsHeroTitle', e.target.value)}
+                            placeholder="Publications"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Introductory Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.publicationsHeroLede || ''}
+                            onChange={(e) => updateField('publicationsHeroLede', e.target.value)}
+                            placeholder="Annual reports, audited accounts, sector research..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div className="pt-2 border-t border-slate-200 space-y-2">
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            Featured Report Highlight
+                          </label>
+                          <input
+                            type="text"
+                            value={form.publicationsLeadTitle || ''}
+                            onChange={(e) => updateField('publicationsLeadTitle', e.target.value)}
+                            placeholder="Annual Report 2025"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold"
+                          />
+                          <textarea
+                            rows={2}
+                            value={form.publicationsLeadAbstract || ''}
+                            onChange={(e) => updateField('publicationsLeadAbstract', e.target.value)}
+                            placeholder="Programme outcomes, sector figures and audited accounts..."
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                          />
+                          <input
+                            type="text"
+                            value={form.publicationsLeadDownloadUrl || ''}
+                            onChange={(e) => updateField('publicationsLeadDownloadUrl', e.target.value)}
+                            placeholder="/assets/docs/hab-annual-report-2025.pdf"
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Policies Section Editor */}
+                    {sectionType === 'policies' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Policies &amp; Governance Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Edit statutory policies, terms of service, and privacy standards.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/policies"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Policies Headline H1
+                          </label>
+                          <input
+                            type="text"
+                            value={form.policiesHeroTitle || ''}
+                            onChange={(e) => updateField('policiesHeroTitle', e.target.value)}
+                            placeholder="Statutory Policies & Governance"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Introductory Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.policiesHeroLede || ''}
+                            onChange={(e) => updateField('policiesHeroLede', e.target.value)}
+                            placeholder="Official policies, artisan rights charter..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Charter Governance Notice
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={form.policiesCharterNotice || ''}
+                            onChange={(e) => updateField('policiesCharterNotice', e.target.value)}
+                            placeholder="Constituted under the Civil Society Organizations Act of Bhutan 2007..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outlets Section Editor */}
+                    {sectionType === 'outlets' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Outlets &amp; Markets Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Manage physical emporiums, stalls, opening hours, and locations.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/clusters-outlets"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Featured Outlet Eyebrow
+                          </label>
+                          <input
+                            type="text"
+                            value={form.outletsHeroEyebrow || ''}
+                            onChange={(e) => updateField('outletsHeroEyebrow', e.target.value)}
+                            placeholder="Verified Markets · HAB Validated"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Featured Outlet Name H1
+                          </label>
+                          <input
+                            type="text"
+                            value={form.outletsHeroTitle || ''}
+                            onChange={(e) => updateField('outletsHeroTitle', e.target.value)}
+                            placeholder="Punakha Riverfront Craft Market"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Description Lede
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.outletsHeroLede || ''}
+                            onChange={(e) => updateField('outletsHeroLede', e.target.value)}
+                            placeholder="Physical outlets, verified markets and artisan clusters..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Location / Where</label>
+                            <input
+                              type="text"
+                              value={form.outletsFeaturedPlace || ''}
+                              onChange={(e) => updateField('outletsFeaturedPlace', e.target.value)}
+                              placeholder="Punakha Dzong riverside, Punakha"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Open Hours</label>
+                            <input
+                              type="text"
+                              value={form.outletsFeaturedHours || ''}
+                              onChange={(e) => updateField('outletsFeaturedHours', e.target.value)}
+                              placeholder="Wednesday – Sunday: 9:00 AM – 6:00 PM"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Scale / Stalls Count</label>
+                            <input
+                              type="text"
+                              value={form.outletsFeaturedStalls || ''}
+                              onChange={(e) => updateField('outletsFeaturedStalls', e.target.value)}
+                              placeholder="34 permanent stalls · 12 rotating weekend makers"
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
                             />
                           </div>
                         </div>

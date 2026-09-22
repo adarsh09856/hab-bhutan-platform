@@ -62,7 +62,7 @@ export default async function ClustersPage() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="clusters">
-        <SectionEditBadge label="Artisan Clusters" studioHref="/admin/clusters-outlets" />
+        <SectionEditBadge label="Artisan Clusters" studioHref="/admin/clusters-outlets" sectionType="clusters" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/#clusters">Clusters</Link> / All
         </p>
