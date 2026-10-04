@@ -67,28 +67,7 @@ export async function GET() {
     }
 
     const customHeader = items.filter((i) => i.menuType === 'HEADER');
-    const header: any[] = [...customHeader];
-    if (header.length < 5) {
-      const existingHrefs = new Set(header.map((h) => h.href));
-      DEFAULT_HEADER_LINKS.forEach((def) => {
-        if (!existingHrefs.has(def.href)) {
-          header.push({
-            id: def.id,
-            menuType: 'HEADER',
-            column: null,
-            label: def.label,
-            href: def.href,
-            parent: def.parent,
-            sortOrder: def.sortOrder,
-            isActive: def.isActive,
-            isExternal: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-      });
-      header.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-    }
+    const header: any[] = customHeader.length > 0 ? customHeader : DEFAULT_HEADER_LINKS;
 
     const footerItems = items.filter((i) => i.menuType === 'FOOTER');
     const footer: Record<string, any[]> = {};

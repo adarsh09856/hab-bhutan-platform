@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Eye,
   Link2,
+  RotateCcw,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -194,6 +195,23 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
     setNavItems((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Reset navigation to canonical 5 default items
+  const handleResetToDefaults = () => {
+    if (!confirm('Reset menu items to standard 5 default links (Home, About Us, Programmes, Projects, News & Events)?')) {
+      return;
+    }
+    const defaultNav: NavItemState[] = [
+      { label: 'Home', href: '/', sortOrder: 1, isActive: true, isNew: true },
+      { label: 'About Us', href: '/about', sortOrder: 2, isActive: true, isNew: true },
+      { label: 'Programmes', href: '/programmes', sortOrder: 3, isActive: true, isNew: true },
+      { label: 'Projects', href: '/projects', sortOrder: 4, isActive: true, isNew: true },
+      { label: 'News & Events', href: '/news', sortOrder: 5, isActive: true, isNew: true },
+    ];
+    const oldIds = navItems.map((n) => n.id).filter(Boolean) as string[];
+    setDeletedNavIds((prev) => Array.from(new Set([...prev, ...oldIds])));
+    setNavItems(defaultNav);
+  };
+
   // Save All
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,8 +289,11 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
 
       setSuccess(true);
 
-      // Notify other live components immediately via custom event
+      // Notify other live components immediately via custom event & localStorage
       const cleanNav = navItems.filter((i) => i.isActive).map((i) => ({ label: i.label, href: i.href }));
+      try {
+        localStorage.setItem('hab_live_nav', JSON.stringify(cleanNav));
+      } catch {}
       window.dispatchEvent(
         new CustomEvent('hab:header-updated', {
           detail: {
@@ -426,6 +447,22 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
                       <span>
                         Use the arrow buttons to reorder links. Changes to labels and target URLs take effect immediately across all desktop and mobile navigation menus.
                       </span>
+                    </div>
+
+                    {/* Nav Items List Header */}
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Active Header Links ({navItems.length})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleResetToDefaults}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-[#8B2E24] hover:text-[#73241c] hover:bg-[#8B2E24]/10 rounded-lg transition-colors cursor-pointer border border-[#8B2E24]/20"
+                        title="Restore 5 standard default links"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset to Defaults</span>
+                      </button>
                     </div>
 
                     {/* Nav Items List */}

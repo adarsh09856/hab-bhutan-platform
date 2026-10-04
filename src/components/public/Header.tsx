@@ -212,8 +212,37 @@ export default function Header() {
     { label: 'News & Events', href: '/news' },
   ]);
 
+  // Unified helper for resolving display labels across Desktop, Tablet, and Mobile views
+  const getDisplayLabel = (item: { label: string; href: string }) => {
+    if (language === 'dz') {
+      const translationKey =
+        item.href === '/' ? 'nav.home' :
+        item.href === '/about' ? 'nav.about' :
+        item.href === '/programmes' ? 'nav.programmes' :
+        item.href === '/projects' ? 'nav.projects' :
+        item.href === '/news' ? 'nav.news' :
+        item.href === '/donate' ? 'nav.donate' : null;
+      if (translationKey) {
+        const translated = t(translationKey);
+        if (translated && translated !== translationKey) return translated;
+      }
+    }
+    return item.label;
+  };
+
   // Load dynamic CMS data from Admin endpoints
   useEffect(() => {
+    // 0. Optimistic Hydration from localStorage for immediate mobile/desktop parity
+    try {
+      const cached = localStorage.getItem('hab_live_nav');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setNavItems(parsed);
+        }
+      }
+    } catch {}
+
     // 1. Live Crafts for Shop Dropdown
     fetch('/api/crafts', { cache: 'no-store' })
       .then((r) => r.json())
@@ -255,20 +284,38 @@ export default function Header() {
                   ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
                 ];
             setNavItems(items);
+            try {
+              localStorage.setItem('hab_live_nav', JSON.stringify(items));
+            } catch {}
           }
         }
       })
       .catch(() => {});
 
-    // 4. Listen for real-time header changes
+    // 4. Listen for real-time header changes (current tab and cross-tab/viewport sync)
     const handleLiveHeaderUpdate = (e: any) => {
       if (e.detail?.navItems && Array.isArray(e.detail.navItems) && e.detail.navItems.length > 0) {
         setNavItems(e.detail.navItems);
+        try {
+          localStorage.setItem('hab_live_nav', JSON.stringify(e.detail.navItems));
+        } catch {}
+      }
+    };
+    const handleStorageUpdate = (e: StorageEvent) => {
+      if (e.key === 'hab_live_nav' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setNavItems(parsed);
+          }
+        } catch {}
       }
     };
     window.addEventListener('hab:header-updated', handleLiveHeaderUpdate);
+    window.addEventListener('storage', handleStorageUpdate);
     return () => {
       window.removeEventListener('hab:header-updated', handleLiveHeaderUpdate);
+      window.removeEventListener('storage', handleStorageUpdate);
     };
   }, []);
 
@@ -341,14 +388,7 @@ export default function Header() {
               onWheel={handleNavWheel}
             >
               {navItems.map((item) => {
-                const translationKey = 
-                  item.href === '/' ? 'nav.home' :
-                  item.href === '/about' ? 'nav.about' :
-                  item.href === '/programmes' ? 'nav.programmes' :
-                  item.href === '/projects' ? 'nav.projects' :
-                  item.href === '/news' ? 'nav.news' :
-                  item.href === '/donate' ? 'nav.donate' : null;
-                const label = translationKey ? t(translationKey, item.label) : item.label;
+                const label = getDisplayLabel(item);
 
                 return (
                   <Link
@@ -811,7 +851,7 @@ export default function Header() {
                         : 'text-[#33261F] hover:bg-stone-100'
                     }`}
                   >
-                    {item.label}
+                    {getDisplayLabel(item)}
                   </Link>
                 ))}
               </div>

@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Compass, Menu, LayoutTemplate } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Compass, Menu, LayoutTemplate, RotateCcw } from 'lucide-react';
 
 interface NavItem {
   id: string;
@@ -25,7 +25,12 @@ const STATIC_SYSTEM_PAGES = [
   { label: 'News & Announcements', href: '/news', category: 'Core Pages' },
   { label: 'Contact Us', href: '/contact', category: 'Core Pages' },
   { label: 'Donate to Artisans', href: '/donate', category: 'Core Pages' },
-  { label: 'Punakha Riverfront Outlet', href: '/punakha', category: 'Core Pages' },
+  { label: 'Punakha Crafts Market', href: '/outlets/punakha-market', category: 'Core Pages' },
+  { label: 'All Craft Outlets', href: '/outlets', category: 'Core Pages' },
+  { label: 'The 13 Traditional Crafts', href: '/crafts', category: 'Core Pages' },
+  { label: 'Artisan Clusters Map', href: '/clusters', category: 'Core Pages' },
+  { label: 'Events Calendar', href: '/events', category: 'Core Pages' },
+  { label: 'Living Master Artisans', href: '/masters', category: 'Core Pages' },
   { label: 'E-Shop (Catalog)', href: '/shop', category: 'Shop & Support' },
   { label: 'Wholesale & B2B Trade', href: '/wholesale', category: 'Shop & Support' },
   { label: 'Shipping & Delivery Policy', href: '/shipping-policy', category: 'Shop & Support' },
@@ -34,7 +39,6 @@ const STATIC_SYSTEM_PAGES = [
   { label: 'Customs & Duty Information', href: '/shipping-policy#duty', category: 'Shop & Support' },
   { label: 'Artisans Directory by Category', href: '/membership', category: 'Members & Network' },
   { label: 'Publications & Annual Reports', href: '/publications', category: 'Members & Network' },
-  { label: 'Craft Shops & Clusters Map', href: '/outlets', category: 'Members & Network' },
   { label: 'Apply to Join HAB', href: '/register', category: 'Members & Network' },
   { label: 'Member Portal Login', href: '/membership#login', category: 'Members & Network' },
   { label: 'All Statutory Policies Directory', href: '/policies', category: 'Governance & Policies' },
@@ -213,6 +217,49 @@ export default function AdminNavigationPage() {
     }
   };
 
+  const handleResetDefaults = async () => {
+    if (!confirm('Are you sure you want to reset header navigation to the standard default links? This will replace any custom header links with the standard canonical set.')) {
+      return;
+    }
+    setSubmitting(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/navigation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'reset', menuType: 'HEADER' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFeedback({ type: 'success', message: 'Header navigation links reset to standard defaults successfully!' });
+        try {
+          localStorage.removeItem('hab_live_nav');
+        } catch {}
+        window.dispatchEvent(
+          new CustomEvent('hab:header-updated', {
+            detail: {
+              navItems: [
+                { label: 'Home', href: '/' },
+                { label: 'About Us', href: '/about' },
+                { label: 'Programmes', href: '/programmes' },
+                { label: 'Projects', href: '/projects' },
+                { label: 'News & Events', href: '/news' },
+              ],
+            },
+          })
+        );
+        loadItems();
+      } else {
+        setFeedback({ type: 'error', message: data.error || 'Failed to reset navigation.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Network error resetting navigation.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const headerItems = items.filter((i) => i.menuType === 'HEADER');
   const footerItems = items.filter((i) => i.menuType === 'FOOTER');
 
@@ -235,13 +282,26 @@ export default function AdminNavigationPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => openAddModal(activeTab)}
-          className="inline-flex items-center gap-2 admin-button-primary px-4 py-2.5 rounded-[8px] text-xs sm:text-sm font-semibold shadow-sm transition-colors self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Add {activeTab === 'HEADER' ? 'Header Link' : 'Footer Link'}
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {activeTab === 'HEADER' && (
+            <button
+              onClick={handleResetDefaults}
+              disabled={submitting}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-xs font-semibold border admin-border admin-muted hover:text-slate-100 hover:bg-white/5 transition-colors disabled:opacity-50"
+              title="Reset to default 5 core header navigation links"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Defaults
+            </button>
+          )}
+          <button
+            onClick={() => openAddModal(activeTab)}
+            className="inline-flex items-center gap-2 admin-button-primary px-4 py-2.5 rounded-[8px] text-xs sm:text-sm font-semibold shadow-sm transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add {activeTab === 'HEADER' ? 'Header Link' : 'Footer Link'}
+          </button>
+        </div>
       </div>
 
       {feedback && (

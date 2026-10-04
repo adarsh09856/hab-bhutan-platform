@@ -23,6 +23,38 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requirePermission(req, 'content:create');
     const body = await req.json();
+
+    // Support Reset to Defaults
+    if (body.action === 'reset') {
+      const targetType = body.menuType ? body.menuType.toUpperCase() : 'HEADER';
+      if (targetType === 'HEADER' || targetType === 'ALL') {
+        await prisma.navigationItem.deleteMany({
+          where: { menuType: 'HEADER' },
+        });
+        const defaultHeaders = [
+          { label: 'Home', href: '/', sortOrder: 1, isActive: true, menuType: 'HEADER' },
+          { label: 'About Us', href: '/about', sortOrder: 2, isActive: true, menuType: 'HEADER' },
+          { label: 'Programmes', href: '/programmes', sortOrder: 3, isActive: true, menuType: 'HEADER' },
+          { label: 'Projects', href: '/projects', sortOrder: 4, isActive: true, menuType: 'HEADER' },
+          { label: 'News & Events', href: '/news', sortOrder: 5, isActive: true, menuType: 'HEADER' },
+        ];
+        for (const dh of defaultHeaders) {
+          await prisma.navigationItem.create({ data: dh });
+        }
+      }
+      await logAudit({
+        actorType: 'STAFF',
+        actorId: session.id,
+        actorIdentifier: session.email,
+        actorIp: getClientIp(req),
+        action: 'NAVIGATION_RESET_TO_DEFAULTS',
+        entityType: 'NavigationItem',
+        entityId: 'reset',
+        details: { menuType: targetType },
+      });
+      return NextResponse.json({ success: true, message: 'Navigation reset to defaults successfully' });
+    }
+
     const { menuType, column, label, href, parent, sortOrder, isActive, isExternal } = body;
 
     if (!label?.trim() || !href?.trim() || !menuType) {
