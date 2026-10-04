@@ -72,7 +72,9 @@ export type SectionType =
   | 'news'
   | 'events'
   | 'publications'
-  | 'outlets';
+  | 'outlets'
+  | 'products'
+  | 'crafts';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -243,6 +245,8 @@ export default function UniversalLiveSectionEditor({
           'Our work covers quality standards, design development, business skills, domestic and export marketing, and the documentation of traditional techniques.',
         aboutBandImageUrl: s.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
         aboutBandImageCaption: s.aboutBandImageCaption || 'Master weaver instructing apprentices in Thimphu',
+        aboutBannerImage: s.aboutBannerImage || s.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
+        aboutBannerPosition: s.aboutBannerPosition || 'center 12%',
         aboutBandCtaText: s.aboutBandCtaText || 'Read about our programmes',
         aboutBandCtaLink: s.aboutBandCtaLink || '/programmes',
 
@@ -828,6 +832,10 @@ export default function UniversalLiveSectionEditor({
       ? 'Programmes & Strategic Pillars'
       : sectionType === 'wholesale'
       ? 'Wholesale & Trade Terms'
+      : sectionType === 'products'
+      ? 'Products & Shop Catalog'
+      : sectionType === 'crafts'
+      ? '13 Traditional Crafts (Zorig Chusum)'
       : 'Live Section Editor');
 
   const defaultStudioHref =
@@ -852,6 +860,10 @@ export default function UniversalLiveSectionEditor({
       ? '/admin/programmes'
       : sectionType === 'wholesale'
       ? '/admin/trade'
+      : sectionType === 'products'
+      ? '/admin/products'
+      : sectionType === 'crafts'
+      ? '/admin/crafts'
       : '/admin/site-settings');
 
   return createPortal(
@@ -948,7 +960,7 @@ export default function UniversalLiveSectionEditor({
             <span>{sectionType === 'footer' ? 'Social Links' : 'Call-to-Action Buttons'}</span>
           </button>
 
-          {(sectionType === 'hero' || sectionType === 'about') && (
+          {(sectionType === 'hero' || sectionType === 'about' || sectionType === 'about-page') && (
             <button
               type="button"
               onClick={() => setActiveTab('MEDIA')}
@@ -959,7 +971,7 @@ export default function UniversalLiveSectionEditor({
               }
             >
               <ImageIcon className="w-3.5 h-3.5" />
-              <span>{sectionType === 'hero' ? 'Slideshow & Photos' : 'Section Image'}</span>
+              <span>{sectionType === 'hero' ? 'Slideshow & Photos' : sectionType === 'about-page' ? 'Banner Photograph' : 'Section Image'}</span>
             </button>
           )}
 
@@ -2034,6 +2046,96 @@ export default function UniversalLiveSectionEditor({
                       </div>
                     )}
 
+                    {sectionType === 'products' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">All 60+ Authentic Craft Products</span>
+                            <span className="text-[11px] text-amber-800">
+                              Manage SKUs, product photography, live stock inventory, pricing (USD/BTN) in the Products Studio.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/products"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Products Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Shop Catalog Section Headline
+                          </label>
+                          <input
+                            type="text"
+                            value={form.homeCraftIntro || 'Explore traditional textiles, wood carvings, metalwork, and clay artifacts.'}
+                            onChange={(e) => updateField('homeCraftIntro', e.target.value)}
+                            placeholder="Explore traditional textiles, wood carvings, metalwork, and clay artifacts."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Secondary Promotion Text
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.homeWholesalePromo || 'Trade pricing, custom commissions, and bulk ordering for institutions.'}
+                            onChange={(e) => updateField('homeWholesalePromo', e.target.value)}
+                            placeholder="Trade pricing, custom commissions, and bulk ordering for institutions."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionType === 'crafts' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">All 13 Traditional Arts &amp; Crafts of Bhutan</span>
+                            <span className="text-[11px] text-amber-800">
+                              Directly manage Zorig Chusum craft descriptions, historical origins, master practitioners and clusters.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/crafts"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Crafts Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Zorig Chusum Section Headline
+                          </label>
+                          <input
+                            type="text"
+                            value={form.genericTitle || 'Thirteen Traditional Arts & Crafts'}
+                            onChange={(e) => updateField('genericTitle', e.target.value)}
+                            placeholder="Thirteen Traditional Arts & Crafts"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Crafts Mandate &amp; Description
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={form.genericDescription || 'The living traditions of Bhutanese craftsmanship codified during the reign of the 4th Druk Desi Gyalse Tenzin Rabgye.'}
+                            onChange={(e) => updateField('genericDescription', e.target.value)}
+                            placeholder="The living traditions of Bhutanese craftsmanship..."
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {sectionType === 'programmes' && (
                       <div className="space-y-4">
                         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
@@ -2931,14 +3033,48 @@ export default function UniversalLiveSectionEditor({
                 {/* ================= TAB 3: MEDIA & PHOTOGRAPHS ================= */}
                 {activeTab === 'MEDIA' && (
                   <div className="space-y-4">
-                    {sectionType === 'about' && (
-                      <div className="space-y-3">
+                    {(sectionType === 'about' || sectionType === 'about-page') && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">About Page Banner Photograph</span>
+                            <span className="text-[11px] text-amber-800">
+                              Framed across desktop and mobile to showcase Bhutanese artisans and traditional craftsmanship.
+                            </span>
+                          </div>
+                        </div>
+
                         <FileUploadInput
-                          value={form.aboutBandImageUrl || ''}
-                          onChange={(url) => updateField('aboutBandImageUrl', url)}
-                          label="About Band Photograph"
-                          hint="Recommended: Landscape or square artisan workshop photo (JPG/WebP/PNG)"
+                          value={form.aboutBannerImage || form.aboutBandImageUrl || ''}
+                          onChange={(url) => {
+                            updateField('aboutBannerImage', url);
+                            updateField('aboutBandImageUrl', url);
+                          }}
+                          label="About Page Banner Photograph"
+                          hint="Recommended: 16:9 or 21:9 landscape photo (JPG/WebP/PNG)"
                         />
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                            Vertical Lens Focus &amp; Alignment
+                          </label>
+                          <select
+                            value={form.aboutBannerPosition || 'center 12%'}
+                            onChange={(e) => updateField('aboutBannerPosition', e.target.value)}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                          >
+                            <option value="center 12%">Artisan Faces &amp; Headwear (Top 12% - Recommended)</option>
+                            <option value="center 0%">Topmost (0%)</option>
+                            <option value="center 20%">Upper Third (20%)</option>
+                            <option value="center center">Center (50%)</option>
+                            <option value="center 80%">Lower Third (80%)</option>
+                            <option value="center bottom">Bottommost (100%)</option>
+                          </select>
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            Adjusts the vertical focal point of the image so that faces, loom work, and ornaments are framed gracefully without being cropped out.
+                          </p>
+                        </div>
+
                         <div>
                           <label className="block text-xs font-bold text-slate-700 mb-1">
                             Image Caption / Screen-reader Alt Text
@@ -2947,7 +3083,7 @@ export default function UniversalLiveSectionEditor({
                             type="text"
                             value={form.aboutBandImageCaption || ''}
                             onChange={(e) => updateField('aboutBandImageCaption', e.target.value)}
-                            placeholder="Master weaver instructing apprentices in Thimphu"
+                            placeholder="Handicrafts Association of Bhutan artisans and training"
                             className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs"
                           />
                         </div>

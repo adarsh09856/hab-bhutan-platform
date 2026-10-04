@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
   
   const pg = (setting?.paymentGateways as Record<string, any>) || {};
   const loc = pg.localization || {};
+  const tb = (setting?.trustBadges as Record<string, any>) || {};
   const enriched = setting ? {
     ...setting,
     defaultCurrency: loc.defaultCurrency || 'USD',
@@ -30,6 +31,8 @@ export async function GET(req: NextRequest) {
     supportedCurrencies: loc.supportedCurrencies || ['USD', 'BTN'],
     supportedLanguages: loc.supportedLanguages || ['en', 'dz'],
     fxRate: loc.fxRate || 84.0,
+    aboutBannerImage: tb.aboutBannerImage || setting.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
+    aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
   } : null;
 
   return NextResponse.json({ success: true, setting: enriched });
@@ -273,10 +276,20 @@ export async function PUT(req: NextRequest) {
       wholesaleLeadTime: body.wholesaleLeadTime || '2-4 weeks',
     };
 
-    // Merge localization into paymentGateways safely
-    const existing = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { paymentGateways: true } });
+    // Merge localization into paymentGateways safely and aboutBannerImage into trustBadges safely
+    const existing = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { paymentGateways: true, trustBadges: true } });
     const currentGateways = (existing?.paymentGateways as Record<string, any>) || {};
     const currentLoc = currentGateways.localization || {};
+    const currentTrust = (existing?.trustBadges as Record<string, any>) || (typeof body.trustBadges === 'object' && body.trustBadges !== null ? { ...body.trustBadges } : {});
+
+    if (body.aboutBannerImage !== undefined) {
+      currentTrust.aboutBannerImage = body.aboutBannerImage;
+    }
+    if (body.aboutBannerPosition !== undefined) {
+      currentTrust.aboutBannerPosition = body.aboutBannerPosition;
+    }
+    updatePayload.trustBadges = currentTrust;
+    createPayload.trustBadges = currentTrust;
 
     const newLoc = {
       ...currentLoc,
@@ -318,6 +331,7 @@ export async function PUT(req: NextRequest) {
 
     const updatedPg = (updated?.paymentGateways as Record<string, any>) || {};
     const updatedLoc = updatedPg.localization || {};
+    const updatedTb = (updated?.trustBadges as Record<string, any>) || {};
     const enrichedUpdated = updated ? {
       ...updated,
       defaultCurrency: updatedLoc.defaultCurrency || 'USD',
@@ -325,6 +339,8 @@ export async function PUT(req: NextRequest) {
       supportedCurrencies: updatedLoc.supportedCurrencies || ['USD', 'BTN'],
       supportedLanguages: updatedLoc.supportedLanguages || ['en', 'dz'],
       fxRate: updatedLoc.fxRate || 84.0,
+      aboutBannerImage: updatedTb.aboutBannerImage || updated.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
+      aboutBannerPosition: updatedTb.aboutBannerPosition || 'center 12%',
     } : updated;
 
     return NextResponse.json({ success: true, setting: enrichedUpdated });

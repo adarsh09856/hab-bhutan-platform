@@ -187,11 +187,16 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-        <figure className="frame frame--banner">
+        <figure className="frame frame--banner overflow-hidden" style={{ aspectRatio: '16/9', maxHeight: '520px' }}>
           <img
-            src="/assets/photos/about-hab.jpg"
+            src={s?.aboutBannerImage || "/assets/photos/about-hab.jpg"}
             alt="Handicrafts Association of Bhutan artisans and training"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: s?.aboutBannerPosition || 'center 12%',
+            }}
             onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
           />
         </figure>
@@ -260,7 +265,19 @@ export default function AboutPage() {
       </section>
 
       {/* 4. Values */}
-      <section className="section">
+      <section className="section relative" data-hab-section="about-values">
+        <SectionEditBadge
+          label="Core Values (C-R-A-F-T)"
+          studioHref="/admin/pages/about#mandate"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Core Values & Commitments CMS',
+              studioHref: '/admin/pages/about#mandate',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <p className="eyebrow eyebrow--accent">Values</p>
         <h2 className="display display--sub">How we work</h2>
         <p className="section__lede" style={{ marginBottom: '28px' }}>
@@ -323,7 +340,18 @@ export default function AboutPage() {
 
       {/* 6. Board of Trustees */}
       <section className="section relative" data-hab-section="about-board">
-        <SectionEditBadge label="Board of Trustees" studioHref="/admin/pages/about#board" />
+        <SectionEditBadge
+          label="Board of Trustees"
+          studioHref="/admin/pages/about#board"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Board of Trustees & Oversight CMS',
+              studioHref: '/admin/pages/about#board',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <p className="eyebrow eyebrow--accent">Board of Trustees</p>
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Oversight body</h2>
         <div className="grid grid--people">
@@ -349,7 +377,18 @@ export default function AboutPage() {
 
       {/* 7. Secretariat */}
       <section className="section relative" data-hab-section="about-team">
-        <SectionEditBadge label="Secretariat Team" studioHref="/admin/pages/about#team" />
+        <SectionEditBadge
+          label="Secretariat Team"
+          studioHref="/admin/pages/about#team"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Secretariat Staff & Portfolios CMS',
+              studioHref: '/admin/pages/about#team',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <p className="eyebrow eyebrow--accent">Secretariat</p>
 
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Our team</h2>
@@ -376,7 +415,19 @@ export default function AboutPage() {
       </section>
 
       {/* 8. CTA Band */}
-      <section className="section section--last">
+      <section className="section section--last relative" data-hab-section="about-cta">
+        <SectionEditBadge
+          label="Work with HAB CTA"
+          studioHref="/admin/pages/about"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'about-page',
+              title: 'Work With HAB & Partnerships CMS',
+              studioHref: '/admin/pages/about',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
         <div className="ctaband">
           <div>
             <h2 className="display display--panel">Work with the association</h2>

@@ -13,6 +13,38 @@ interface SectionEditBadgeProps {
   className?: string;
 }
 
+function inferSectionType(studioHref: string = '', label: string = ''): SectionType {
+  const path = (studioHref || '').toLowerCase();
+  const l = (label || '').toLowerCase();
+
+  if (path.includes('/admin/hero')) return 'hero';
+  if (path.includes('/admin/products') || path.includes('/shop') || l.includes('shop') || l.includes('product') || l.includes('catalogue')) return 'products';
+  if (path.includes('/admin/crafts') || l.includes('craft') || l.includes('zorig')) return 'crafts';
+  if (path.includes('/admin/programmes') || l.includes('programme') || l.includes('pillar') || l.includes('training')) return 'programmes';
+  if (path.includes('/admin/wholesale') || path.includes('/admin/trade') || l.includes('wholesale') || l.includes('trade')) return 'wholesale';
+  if (path.includes('/admin/clusters') || l.includes('cluster')) return 'clusters';
+  if (path.includes('/admin/honours') || path.includes('/admin/masters') || l.includes('master') || l.includes('honour') || l.includes('living treasure')) return 'masters';
+  if (path.includes('/admin/content') || path.includes('/admin/news') || l.includes('news') || l.includes('story')) return 'news';
+  if (path.includes('/admin/events') || l.includes('event') || l.includes('exhibition')) return 'events';
+  if (path.includes('/admin/publications') || l.includes('publication') || l.includes('report') || l.includes('research')) return 'publications';
+  if (path.includes('/admin/clusters-outlets') || path.includes('/admin/outlets') || l.includes('outlet') || l.includes('punakha') || l.includes('market')) return 'outlets';
+  if (path.includes('/admin/policies') || path.includes('/terms') || path.includes('/privacy') || l.includes('policy') || l.includes('terms') || l.includes('privacy') || l.includes('shipping')) return 'policies';
+  if (path.includes('/admin/donations') || path.includes('/donate') || l.includes('donate') || l.includes('support pillar')) return 'donate';
+  if (path.includes('/admin/enquiries') || path.includes('/contact') || l.includes('contact') || l.includes('secretariat')) return 'contact';
+  if (path.includes('/admin/members') || path.includes('/membership') || l.includes('member') || l.includes('register')) return 'membership';
+  if (path.includes('/admin/pages/about') || path.includes('/about') || l.includes('about') || l.includes('mandate') || l.includes('vision') || l.includes('mission') || l.includes('value') || l.includes('board') || l.includes('team')) return 'about-page';
+  if (l.includes('stat') || l.includes('impact') || l.includes('counter')) return 'stats';
+  if (l.includes('assurance')) return 'assurances';
+  if (l.includes('buy') || l.includes('retail')) return 'buy';
+  if (l.includes('footer')) return 'footer';
+
+  if (path.includes('/admin/projects') || l.includes('project')) return 'programmes';
+  if (path.includes('/admin/site-settings') || path.includes('/admin/settings')) return 'hero';
+  if (path.includes('/admin/users') || path.includes('/admin/orders')) return 'about-page';
+
+  return 'hero';
+}
+
 export default function SectionEditBadge({
   label,
   studioHref,
@@ -42,14 +74,15 @@ export default function SectionEditBadge({
 
   if (!visible) return null;
 
-  const showQuickEdit = Boolean(onQuickEdit || sectionType);
+  const effectiveSectionType = sectionType || inferSectionType(studioHref, label);
+  const showQuickEdit = Boolean(onQuickEdit || effectiveSectionType);
 
   const handleQuickEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (onQuickEdit) {
       onQuickEdit();
-    } else if (sectionType) {
+    } else if (effectiveSectionType) {
       setInternalEditorOpen(true);
     }
   };
@@ -90,11 +123,11 @@ export default function SectionEditBadge({
         </div>
       </aside>
 
-      {sectionType && internalEditorOpen && (
+      {effectiveSectionType && internalEditorOpen && (
         <UniversalLiveSectionEditor
           isOpen={internalEditorOpen}
           onClose={() => setInternalEditorOpen(false)}
-          sectionType={sectionType}
+          sectionType={effectiveSectionType}
           sectionTitle={label}
           studioHref={studioHref}
         />

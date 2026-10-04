@@ -1178,7 +1178,11 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 .section--narrow{max-width:1080px}
 
 .pagehero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:end;padding-bottom:44px}
-.frame--banner{aspect-ratio:24/7;border-radius:16px;margin-bottom:0}
+.frame--banner{aspect-ratio:16/9;max-height:500px;border-radius:16px;margin-bottom:0;overflow:hidden}
+.frame--banner img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
+@media(min-width:768px){
+  .frame--banner{aspect-ratio:21/9;max-height:540px}
+}
 .craftfacts--2{grid-template-columns:1fr 1fr}
 .vm{display:grid;grid-template-columns:1fr 1fr;gap:56px}
 .vm__second{border-left:1px solid var(--accent-rule);padding-left:56px}

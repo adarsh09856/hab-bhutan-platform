@@ -82,6 +82,7 @@ export async function GET() {
     const supportedLanguages = loc.supportedLanguages || ['en', 'dz'];
     const fxRate = loc.fxRate || 84.0;
 
+    const tb = (setting?.trustBadges as Record<string, any>) || {};
     const enriched = {
       ...setting,
       defaultCurrency,
@@ -89,6 +90,8 @@ export async function GET() {
       supportedCurrencies,
       supportedLanguages,
       fxRate,
+      aboutBannerImage: tb.aboutBannerImage || setting?.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
+      aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
@@ -150,6 +153,8 @@ export async function GET() {
         membershipRightText: 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.',
         membershipRightCtaText: 'Apply for membership',
         membershipRightCtaLink: '/membership/apply',
+        aboutBannerImage: '/assets/photos/about-hab.jpg',
+        aboutBannerPosition: 'center 12%',
         defaultCurrency: 'USD',
         defaultLanguage: 'en',
         supportedCurrencies: ['USD', 'BTN'],
