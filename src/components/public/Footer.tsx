@@ -3,11 +3,43 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useLanguage } from '@/context/LanguageContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
+const FOOTER_TRANSLATIONS: Record<string, string> = {
+  "Association": "ཚོགས་པ",
+  "Shop & support": "ཚོང་ཁང་དང་རྒྱབ་སྐྱོར",
+  "Members": "འཐུས་མི",
+  "Governance": "འཛིན་སྐྱོང",
+  "About HAB": "ང་བཅས་ཀྱི་སྐོར",
+  "Programmes": "ལས་རིམ",
+  "Projects": "ལས་འགུལ",
+  "Membership": "འཐུས་མི",
+  "News & events": "གནས་ཚུལ",
+  "Contact us": "འབྲེལ་གཏུག",
+  "E-shop": "གློག་རྡུལ་ཚོང་ཁང",
+  "Wholesale & bulk orders": "སྡེབ་ཚོང་དང་བཀའ་རྒྱ་ཆེན་པོ",
+  "Shipping & delivery policy": "སྐྱེལ་འདྲེན་སྲིད་བྱུས",
+  "Returns & refunds policy": "ལོག་སྤྲོད་དང་དངུལ་ལོག་སྲིད་བྱུས",
+  "Track your order": "བཀའ་རྒྱའི་རྗེས་འདེད",
+  "Duties & customs policy": "འགག་སྒོའི་སྲིད་བྱུས",
+  "Directory by category": "འཐུས་མིའི་དཀར་ཆག",
+  "Publications": "དཔེ་སྐྲུན",
+  "Member shops & clusters": "འཐུས་མིའི་ཚོང་ཁང་དང་གླིང",
+  "Member login": "འཐུས་མི་ནང་འཛུལ",
+  "Apply to join": "འཐུས་མིའི་ཞུ་བ་ཕུལ",
+  "Board of Trustees": "འཛིན་སྐྱོང་ལྷན་ཚོགས",
+  "Secretariat": "དྲུང་ཆེའི་ཡིག་ཚང",
+  "Secretariat Desk": "དྲུང་ཆེའི་ཡིག་ཚང",
+  "Secretary Desk": "དྲུང་ཆེའི་ཡིག་ཚང",
+  "Website Policies & Standards": "དྲ་ཚིགས་ཀྱི་སྲིད་བྱུས་དང་ཚད་གཞི",
+};
+
 export default function Footer() {
   const { currency } = useCurrency();
+  const { language } = useLanguage();
+  const isDz = language === 'dz';
   const [liveEditOpen, setLiveEditOpen] = useState(false);
   const [settings, setSettings] = useState({
     officeAddress: 'Metog Lam, Thimphu, Bhutan',
@@ -181,13 +213,15 @@ export default function Footer() {
 
       <div className="footer__inner">
         <div className="footer__brand">
-          <h2 className="footer__title">Secretariat</h2>
+          <h2 className="footer__title">{isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང' : 'Secretariat'}</h2>
           <address className="footer__contact" style={{ fontStyle: 'normal' }}>
-            <span>{settings.officeAddress}</span><br />
-            <span>Office {settings.officePhone}</span><br />
+            <span>{isDz ? 'མེ་ཏོག་ལམ ཐིམ་ཕུག འབྲུག' : settings.officeAddress}</span><br />
+            <span>{isDz ? 'ཡིག་ཚང' : 'Office'} {settings.officePhone}</span><br />
             <a href={`mailto:${settings.officialEmail}`}>{settings.officialEmail}</a>
             <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
-              <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, fontSize: '11.5px', display: 'block' }}>Secretary Desk</span>
+              <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, fontSize: '11.5px', display: 'block' }}>
+                {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང' : 'Secretary Desk'}
+              </span>
               <a href={`tel:${((settings as any).secretaryPhone || settings.officePhone || '+975-2-338089').replace(/\s+/g, '')}`} style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', display: 'block', fontSize: '12px' }}>
                 {((settings as any).secretaryPhone || settings.officePhone || '+975-2-338089')}
               </a>
@@ -198,20 +232,30 @@ export default function Footer() {
           </address>
         </div>
 
-        {footerCols.map((col) => (
-          <nav key={col.title} className="footer__col" aria-label={col.title}>
-            <h2 className="footer__title">{col.title}</h2>
-            {col.links.map((link) => (
-              <Link key={link.label} href={link.href}>{link.label}</Link>
-            ))}
-          </nav>
-        ))}
+        {footerCols.map((col) => {
+          const colTitle = isDz ? (FOOTER_TRANSLATIONS[col.title] || col.title) : col.title;
+          return (
+            <nav key={col.title} className="footer__col" aria-label={colTitle}>
+              <h2 className="footer__title">{colTitle}</h2>
+              {col.links.map((link) => {
+                const linkText = isDz ? (FOOTER_TRANSLATIONS[link.label] || link.label) : link.label;
+                return (
+                  <Link key={link.label} href={link.href}>{linkText}</Link>
+                );
+              })}
+            </nav>
+          );
+        })}
       </div>
 
       <div className="footer__bar">
         <span>{settings.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043'}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
+          <span>
+            {isDz
+              ? `རིན་གོང་ ${currency === 'USD' ? 'ཨ་རིའི་ཌོ་ལར $' : 'དངུལ་ཀྲམ Nu.'} ནང་སྟོན་ཡོད · དངུལ་སྤྲོད་ ཀརཌི་ mBoB དང་ BNB ཐོག་ལས་བཏུབ`
+              : `Prices shown in ${currency === 'USD' ? 'USD $' : 'BTN Nu.'} · Payments by card, mBoB and bank transfer`}
+          </span>
           <button
             type="button"
             onClick={() => {
@@ -229,7 +273,7 @@ export default function Footer() {
               padding: 0,
             }}
           >
-            Website Policies &amp; Standards
+            {isDz ? 'དྲ་ཚིགས་ཀྱི་སྲིད་བྱུས་དང་ཚད་གཞི' : 'Website Policies & Standards'}
           </button>
         </div>
       </div>

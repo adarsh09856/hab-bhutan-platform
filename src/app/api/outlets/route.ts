@@ -40,18 +40,31 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
 
-    let res: NextResponse;
-    if (outlets.length > 0) {
-      res = NextResponse.json({ success: true, outlets: outlets.map(unpackOutlet) });
-    } else {
-      res = NextResponse.json({ success: true, outlets: CLIENT_DATA.outlets.map(unpackOutlet) });
+    const shouldShuffle = searchParams.get('shuffle') !== 'false';
+    let rawList = outlets.length > 0 ? outlets.map(unpackOutlet) : CLIENT_DATA.outlets.map(unpackOutlet);
+
+    if (shouldShuffle && rawList.length > 1) {
+      const featured = rawList.filter((o: any) => o.isFeatured);
+      const nonFeatured = rawList.filter((o: any) => !o.isFeatured);
+      for (let i = nonFeatured.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [nonFeatured[i], nonFeatured[j]] = [nonFeatured[j], nonFeatured[i]];
+      }
+      rawList = [...featured, ...nonFeatured];
     }
+
+    const res = NextResponse.json({ success: true, outlets: rawList });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');
     res.headers.set('Expires', '0');
     return res;
   } catch {
-    const res = NextResponse.json({ success: true, outlets: CLIENT_DATA.outlets.map(unpackOutlet) });
+    const rawList = [...CLIENT_DATA.outlets.map(unpackOutlet)];
+    for (let i = rawList.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rawList[i], rawList[j]] = [rawList[j], rawList[i]];
+    }
+    const res = NextResponse.json({ success: true, outlets: rawList });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     return res;
   }

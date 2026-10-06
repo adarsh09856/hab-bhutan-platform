@@ -240,7 +240,15 @@ export default function Header() {
         item.href === '/programmes' ? 'nav.programmes' :
         item.href === '/projects' ? 'nav.projects' :
         item.href === '/news' ? 'nav.news' :
-        item.href === '/donate' ? 'nav.donate' : null;
+        item.href === '/tenders' ? 'nav.tenders' :
+        item.href === '/outlets' ? 'nav.outlets' :
+        item.href === '/donate' ? 'nav.donate' :
+        item.href === '/membership' ? 'nav.membership' :
+        item.href === '/shop' ? 'nav.shop' :
+        item.href === '/clusters' ? 'nav.clusters' :
+        item.href === '/publications' ? 'nav.publications' :
+        item.href === '/contact' ? 'nav.contact' :
+        item.href === '/track-order' ? 'nav.track_order' : null;
       if (translationKey) {
         const translated = t(translationKey);
         if (translated && translated !== translationKey) return translated;
