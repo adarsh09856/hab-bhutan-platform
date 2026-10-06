@@ -1010,6 +1010,20 @@ export default function Header() {
                   Contact us
                 </Link>
                 <Link
+                  href="/tenders"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
+                >
+                  Tenders &amp; Procurement
+                </Link>
+                <Link
+                  href="/publications"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
+                >
+                  Reports &amp; Publications
+                </Link>
+                <Link
                   href="/donate"
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"

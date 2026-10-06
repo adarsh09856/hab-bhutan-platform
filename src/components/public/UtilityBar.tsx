@@ -7,10 +7,10 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function UtilityBar() {
   const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; link?: string }>>([
-    { text: 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex Civil Society Organization', link: '/about' },
-    { text: 'Official Secretary Desk: +975-2-338089 · officehab@gmail.com', link: '/contact' },
-    { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
-    { text: 'Track orders worldwide with authentic craft certificates', link: '/track-order' },
+    { text: 'CSO/2011/043 · Handicrafts Association of Bhutan', link: '/about' },
+    { text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags', link: '/about' },
+    { text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu', link: '/contact' },
+    { text: 'Track Orders Worldwide with Authentic Craft Certification', link: '/track-order' },
   ]);
   const [currentTickerIdx, setCurrentTickerIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -121,9 +121,9 @@ export default function UtilityBar() {
         style={{
           width: '100%',
           maxWidth: '100%',
-          paddingLeft: 'clamp(14px, 2.5vw, 36px)',
-          paddingRight: 'clamp(14px, 2.5vw, 36px)',
-          overflowX: 'hidden',
+          paddingLeft: 'clamp(12px, 2vw, 32px)',
+          paddingRight: 'clamp(12px, 2vw, 32px)',
+          overflowX: 'auto',
           overflowY: 'hidden',
           flexWrap: 'nowrap',
           height: '100%',
@@ -132,7 +132,8 @@ export default function UtilityBar() {
           msOverflowStyle: 'none',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: 'clamp(8px, 1.2vw, 14px)',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {/* Rolling / Scrolling Announcement Ticker with Maximum Available Space */}
@@ -221,30 +222,30 @@ export default function UtilityBar() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '14px',
+            gap: '10px',
             flexShrink: 0,
             whiteSpace: 'nowrap',
           }}
         >
-          <Link href="/track-order" style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, flexShrink: 0 }}>
-            {isDz ? 'བཀའ་རྒྱའི་རྗེས་འདེད' : 'Track order'}
+          <Link href="/track-order" style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, flexShrink: 0 }} title="Track order">
+            {isDz ? 'རྗེས་འདེད' : 'Track'}
           </Link>
-          <Link href="/contact" style={{ flexShrink: 0 }}>
-            {isDz ? 'འབྲེལ་གཏུག' : 'Contact us'}
+          <Link href="/contact" style={{ flexShrink: 0 }} title="Contact us">
+            {isDz ? 'འབྲེལ་གཏུག' : 'Contact'}
           </Link>
-          <Link href="/tenders" style={{ flexShrink: 0 }}>
+          <Link href="/tenders" style={{ flexShrink: 0 }} title="Tenders & Procurement">
             {isDz ? 'རིན་བསྡུར' : 'Tenders'}
           </Link>
-          <Link href="/publications" style={{ flexShrink: 0 }}>
-            {isDz ? 'དཔེ་སྐྲུན' : 'Publications'}
+          <Link href="/publications" style={{ flexShrink: 0 }} title="Reports & Publications">
+            {isDz ? 'དཔེ་སྐྲུན' : 'Reports'}
           </Link>
-          <Link href="/donate" style={{ flexShrink: 0 }}>
+          <Link href="/donate" style={{ flexShrink: 0 }} title="Donate & Support Artisans">
             {isDz ? 'ཞལ་འདེབས' : 'Donate'}
           </Link>
         </nav>
 
         {/* Right side items: Secretary Desk hotline, Wholesale, Language switcher */}
-        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
           {topBarContactMode !== 'OFF' && (
             <div
@@ -252,18 +253,18 @@ export default function UtilityBar() {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 fontSize: '11px',
                 color: 'rgba(255, 255, 255, 0.85)',
                 flexShrink: 0,
                 whiteSpace: 'nowrap',
-                padding: '2px 8px',
+                padding: '2px 7px',
                 borderRadius: '4px',
                 background: 'rgba(255, 255, 255, 0.08)',
               }}
             >
               <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>
-                {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང:' : 'Secretary Desk:'}
+                {isDz ? 'དྲུང་ཆེ:' : 'Desk:'}
               </span>
               {(topBarContactMode === 'PHONE_ONLY' || topBarContactMode === 'BOTH') && (
                 <a
@@ -290,15 +291,15 @@ export default function UtilityBar() {
           )}
 
           <Link
-            className="utility__trade hidden sm:inline-flex"
+            className="utility__trade inline-flex"
             href="/wholesale"
-            style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '11px' }}
+            style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '11px', padding: '2px 8px' }}
+            title="Trade & Wholesale Buyers"
           >
-            <span className="utility__trade-long">Trade &amp; wholesale buyers</span>
-            <span className="utility__trade-short">Trade buyers</span>
+            <span>{isDz ? 'ཚོང་འབྲེལ' : 'Wholesale'}</span>
           </Link>
 
-          <span className="utility__rule hidden sm:inline-block" aria-hidden="true" style={{ flexShrink: 0 }}></span>
+          <span className="utility__rule inline-block" aria-hidden="true" style={{ flexShrink: 0, opacity: 0.5 }}></span>
 
           <button
             type="button"

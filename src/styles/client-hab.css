@@ -262,11 +262,18 @@ textarea.input{line-height:1.5;resize:vertical}
 
 /* .utility position/z-index now defined at end of file (fixed) */
 .utility__inner{
-  max-width:100% !important;width:100% !important;margin:0 auto;padding:0 clamp(14px, 2vw, 36px) !important;
+  max-width:100% !important;width:100% !important;margin:0 auto;padding:0 clamp(12px, 2vw, 32px) !important;
   height:var(--utility-h);max-height:var(--utility-h);min-height:var(--utility-h);
-  display:flex;align-items:center;gap:14px;flex-wrap:nowrap !important;
-  overflow:hidden !important;
+  display:flex;align-items:center;gap:10px;flex-wrap:nowrap !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  scrollbar-width:none !important;
+  -ms-overflow-style:none !important;
+  -webkit-overflow-scrolling:touch;
   font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+}
+.utility__inner::-webkit-scrollbar{
+  display:none;
 }
 .utility__status{
   color:var(--on-dark);white-space:nowrap;overflow:hidden;
@@ -284,8 +291,8 @@ textarea.input{line-height:1.5;resize:vertical}
   animation-play-state: paused !important;
 }
 .utility__spacer{display:none}
-.utility__links{display:flex;align-items:center;gap:14px;flex-shrink:0 !important;white-space:nowrap;overflow:visible}
-.utility__links a{color:var(--on-dark-body);white-space:nowrap;flex-shrink:0}
+.utility__links{display:flex;align-items:center;gap:10px;flex-shrink:0 !important;white-space:nowrap;overflow:visible}
+.utility__links a{color:var(--on-dark-body);white-space:nowrap;flex-shrink:0;transition:color .2s ease}
 .utility__links a:hover{color:#fff}
 .utility__rule{width:1px;height:15px;background:var(--dark-line);flex-shrink:0}
 .utility__lang{
@@ -2581,7 +2588,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .nav{display:none !important}
   .utility__trade-long{display:none}
   .utility__trade-short{display:inline}
-  .utility__links{display:none}
+  .utility__links{display:flex !important;gap:8px !important;font-size:10.5px}
   .buyband{gap:22px}
   .buybtn{min-width:0;width:100%}
   .buyband__actions{width:100%}
