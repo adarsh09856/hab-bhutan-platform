@@ -30,6 +30,40 @@ const SCENE_POOL = [
   '/assets/photos/about-hab.jpg',
 ];
 
+const CRAFT_IMAGE_MAP: Record<string, string> = {
+  thagzo: '/images/crafts/thagzo.jpg',
+  weaving: '/images/crafts/thagzo.jpg',
+  tshazo: '/images/crafts/tshazo.jpg',
+  'cane-bamboo': '/images/crafts/tshazo.jpg',
+  shagzo: '/images/crafts/shagzo.jpg',
+  'wood-turning': '/images/crafts/shagzo.jpg',
+  lhadri: '/images/crafts/lhazo.jpg',
+  lhazo: '/images/crafts/lhazo.jpg',
+  painting: '/images/crafts/lhazo.jpg',
+  jimzo: '/images/crafts/jinzo.jpg',
+  jinzo: '/images/crafts/jinzo.jpg',
+  sculpture: '/images/crafts/jinzo.jpg',
+  dezo: '/images/crafts/dezo.jpg',
+  papermaking: '/images/crafts/dezo.jpg',
+  troezo: '/images/crafts/troezo.jpg',
+  trokzo: '/images/crafts/troezo.jpg',
+  'gold-silver': '/images/crafts/troezo.jpg',
+  garzo: '/images/crafts/garzo.jpg',
+  blacksmithing: '/images/crafts/garzo.jpg',
+  chezo: '/images/crafts/tshemzo.jpg',
+  tshemzo: '/images/crafts/tshemzo.jpg',
+  tailoring: '/images/crafts/tshemzo.jpg',
+  parzo: '/images/crafts/parzo.jpg',
+  carving: '/images/crafts/parzo.jpg',
+  lugzo: '/images/crafts/lugzo.jpg',
+  'bronze-casting': '/images/crafts/lugzo.jpg',
+  shingzo: '/images/crafts/shingzo.jpg',
+  carpentry: '/images/crafts/shingzo.jpg',
+  dzozo: '/images/crafts/dozo.jpg',
+  dozo: '/images/crafts/dozo.jpg',
+  masonry: '/images/crafts/dozo.jpg',
+};
+
 const PRODUCT_POOL = [
   '/assets/photos/product-sad03.jpg',
   '/assets/photos/product-hhb01.jpg',
@@ -342,7 +376,7 @@ export default function HomePage() {
       title: 'Trade facilitation desk opens for the autumn export season',
       blurb: 'Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.',
       slug: 'trade-facilitation-desk-autumn',
-      image_path: '/assets/photos/hero-2-punakha.jpg',
+      image_path: '/images/programs/trade.jpg',
       slot: 'photo — HAB trade facilitation desk',
     },
     {
@@ -351,7 +385,7 @@ export default function HomePage() {
       title: 'Natural dye training concludes in Lhuentse',
       blurb: 'Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.',
       slug: 'natural-dye-training-lhuentse',
-      image_path: '/assets/photos/hero-1-weaving.jpg',
+      image_path: '/images/programs/dye_training.jpg',
       slot: 'photo — natural dye preparation in Lhuentse',
     },
     {
@@ -360,7 +394,7 @@ export default function HomePage() {
       title: 'Zorig Chusum craft bazaar returns to Clock Tower Square',
       blurb: 'Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.',
       slug: 'craft-bazaar-clock-tower',
-      image_path: '/assets/photos/hero-4-textiles.jpg',
+      image_path: '/assets/photos/hero-2-punakha.jpg',
       slot: 'photo — Clock Tower Square craft bazaar',
     },
   ]);
@@ -1155,10 +1189,10 @@ export default function HomePage() {
             <Link key={c.key} className="card cluster" href={`/clusters/${c.key}`}>
               <figure className="frame frame--wide16">
                 <img
-                  src={c.image_path || '/assets/photos/hero-1-weaving.jpg'}
+                  src={c.image_path || CRAFT_IMAGE_MAP[c.craftKey] || CRAFT_IMAGE_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
                   alt={c.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = CRAFT_IMAGE_MAP[c.craftKey] || '/assets/photos/hero-1-weaving.jpg'; }}
                 />
               </figure>
               <div className="card__body">
@@ -1201,10 +1235,10 @@ export default function HomePage() {
                 <figure className="frame frame--wide16" style={{ position: 'relative' }}>
                   <span className="craft__num">{num} / 13</span>
                   <img
-                    src={SCENE_POOL[idx % SCENE_POOL.length]}
+                    src={craft.image_path || CRAFT_IMAGE_MAP[craft.key] || `/images/crafts/${craft.key}.jpg`}
                     alt={craft.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = CRAFT_IMAGE_MAP[craft.key] || '/assets/photos/hero-1-weaving.jpg'; }}
                   />
                 </figure>
                 <div className="card__body">

@@ -114,15 +114,39 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   };
 
   const EVENT_PHOTO_MAP: Record<string, string> = {
-    'craft-bazaar-2026': '/assets/photos/hero-4-textiles.jpg',
-    'export-clinic-sep': '/assets/photos/hero-2-punakha.jpg',
+    'craft-bazaar-2026': '/assets/photos/hero-2-punakha.jpg',
+    'export-clinic-sep': '/images/programs/trade.jpg',
     'sector-forum-2026': '/assets/photos/about-hab.jpg',
-    'dye-training-nov': '/assets/photos/hero-1-weaving.jpg',
-    'buyer-mission-nov': '/assets/photos/hero-5-desho.jpg',
-    'apprentice-intake-dec': '/assets/photos/hero-3-clay.jpg',
+    'dye-training-nov': '/images/programs/dye_training.jpg',
+    'buyer-mission-nov': '/images/programs/design_lab.jpg',
+    'apprentice-intake-dec': '/images/training_workshop.jpg',
   };
 
-  const bannerImg = event.bannerUrl || event.imageUrl || event.image_url || event.image_path || EVENT_PHOTO_MAP[event.key] || '/assets/photos/hero-4-textiles.jpg';
+  const customBanner = event.bannerUrl || event.imageUrl || event.image_url || event.image_path;
+  const hasValidBanner = customBanner && typeof customBanner === 'string' && customBanner.trim() && !customBanner.includes('hero-4-textiles.jpg') && !customBanner.includes('hero-1-weaving.jpg');
+  const evTitle = String(event.title || '').toLowerCase();
+  const evKey = String(event.key || event.id || '').toLowerCase();
+  let bannerImg = '';
+
+  if (hasValidBanner) {
+    bannerImg = customBanner;
+  } else if (evTitle.includes('bazaar') || evKey.includes('bazaar')) {
+    bannerImg = '/assets/photos/hero-2-punakha.jpg';
+  } else if (evTitle.includes('clinic') || evTitle.includes('export') || evKey.includes('export')) {
+    bannerImg = '/images/programs/trade.jpg';
+  } else if (evTitle.includes('forum') || evTitle.includes('assembly') || evKey.includes('forum')) {
+    bannerImg = '/assets/photos/about-hab.jpg';
+  } else if (evTitle.includes('dye') || evKey.includes('dye')) {
+    bannerImg = '/images/programs/dye_training.jpg';
+  } else if (evTitle.includes('buyer') || evTitle.includes('mission') || evKey.includes('buyer')) {
+    bannerImg = '/images/programs/design_lab.jpg';
+  } else if (evTitle.includes('apprentice') || evTitle.includes('training') || evKey.includes('intake')) {
+    bannerImg = '/images/training_workshop.jpg';
+  } else if (EVENT_PHOTO_MAP[event.key]) {
+    bannerImg = EVENT_PHOTO_MAP[event.key];
+  } else {
+    bannerImg = '/assets/photos/hero-2-punakha.jpg';
+  }
 
   const otherEvents = (dbOtherEvents.length > 0 ? dbOtherEvents : CLIENT_DATA.events.filter((e) => e.key !== event.key)).slice(0, 3);
 

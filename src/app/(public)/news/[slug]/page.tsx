@@ -72,23 +72,50 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     .slice(0, 3);
 
   const NEWS_PHOTO_MAP: Record<string, string> = {
-    'trade-facilitation-desk-autumn': '/assets/photos/hero-2-punakha.jpg',
-    'natural-dye-training-lhuentse': '/assets/photos/hero-1-weaving.jpg',
-    'craft-bazaar-clock-tower': '/assets/photos/hero-4-textiles.jpg',
+    'trade-facilitation-desk-autumn': '/images/programs/trade.jpg',
+    'natural-dye-training-lhuentse': '/images/programs/dye_training.jpg',
+    'craft-bazaar-clock-tower': '/assets/photos/hero-2-punakha.jpg',
     'annual-report-2025': '/assets/photos/hero-5-desho.jpg',
-    'product-innovation-lab': '/assets/photos/hero-3-clay.jpg',
+    'product-innovation-lab': '/images/programs/design_lab.jpg',
   };
 
   const photoPool = [
-    '/assets/photos/about-hab.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-1-weaving.jpg',
+    '/images/programs/design_lab.jpg',
     '/assets/photos/hero-5-desho.jpg',
     '/assets/photos/hero-2-punakha.jpg',
+    '/images/programs/dye_training.jpg',
+    '/images/programs/trade.jpg',
+    '/assets/photos/about-hab.jpg',
     '/assets/photos/hero-3-clay.jpg',
+    '/images/programs/heritage.jpg',
+    '/images/training_workshop.jpg',
+    '/assets/photos/hero-4-textiles.jpg',
   ];
   const postIndex = CLIENT_DATA.news.findIndex((n) => (n.slug || n.id) === (post.slug || post.id));
-  const bannerImg = post.image_path || NEWS_PHOTO_MAP[post.slug || post.id] || photoPool[postIndex >= 0 ? postIndex % photoPool.length : 0];
+
+  const customImg = post.image_path;
+  const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg') && !customImg.includes('hero-1-weaving.jpg');
+  const t = String(post.title || '').toLowerCase();
+  const s = String(post.slug || post.id || '').toLowerCase();
+  let bannerImg = '';
+
+  if (hasValidCustom) {
+    bannerImg = customImg;
+  } else if (t.includes('innovation') || s.includes('innovation') || t.includes('designer')) {
+    bannerImg = '/images/programs/design_lab.jpg';
+  } else if (t.includes('annual report') || s.includes('annual-report') || t.includes('accounts')) {
+    bannerImg = '/assets/photos/hero-5-desho.jpg';
+  } else if (t.includes('bazaar') || s.includes('bazaar') || t.includes('clock tower')) {
+    bannerImg = '/assets/photos/hero-2-punakha.jpg';
+  } else if (t.includes('dye') || s.includes('dye') || t.includes('lhuentse')) {
+    bannerImg = '/images/programs/dye_training.jpg';
+  } else if (t.includes('trade') || s.includes('trade') || t.includes('export')) {
+    bannerImg = '/images/programs/trade.jpg';
+  } else if (NEWS_PHOTO_MAP[s]) {
+    bannerImg = NEWS_PHOTO_MAP[s];
+  } else {
+    bannerImg = photoPool[postIndex >= 0 ? postIndex % photoPool.length : 0];
+  }
 
   const displayDate = post.published_at || post.date || post.created_at || 'Recent';
 

@@ -3,48 +3,117 @@ import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+const DIVERSE_NEWS_PHOTOS = [
+  '/images/programs/design_lab.jpg',
+  '/assets/photos/hero-5-desho.jpg',
+  '/assets/photos/hero-2-punakha.jpg',
+  '/images/programs/dye_training.jpg',
+  '/images/programs/trade.jpg',
+  '/assets/photos/about-hab.jpg',
+  '/assets/photos/hero-3-clay.jpg',
+  '/images/programs/heritage.jpg',
+  '/images/training_workshop.jpg',
+  '/assets/photos/hero-4-textiles.jpg',
+  '/assets/photos/hero-1-weaving.jpg',
+];
+
+function resolveArticleImage(article: any, index: number): string {
+  if (article.content && typeof article.content === 'string' && article.content.includes('<!-- HAB_COVER_IMAGE:')) {
+    const match = article.content.match(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->/);
+    if (match && match[1].trim()) return match[1].trim();
+  }
+
+  const customImg = article.imageUrl || article.image_url || article.image_path;
+  if (customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg')) {
+    return customImg.trim();
+  }
+
+  const title = String(article.title || '').toLowerCase();
+  const slug = String(article.slug || article.id || '').toLowerCase();
+  const kind = String(article.kind || article.category || '').toLowerCase();
+
+  if (title.includes('innovation') || title.includes('designer') || title.includes('lab') || slug.includes('innovation')) {
+    return '/images/programs/design_lab.jpg';
+  }
+  if (title.includes('annual report') || title.includes('accounts') || title.includes('report') || slug.includes('annual-report')) {
+    return '/assets/photos/hero-5-desho.jpg';
+  }
+  if (title.includes('bazaar') || title.includes('clock tower') || title.includes('exhibit') || slug.includes('bazaar')) {
+    return '/assets/photos/hero-2-punakha.jpg';
+  }
+  if (title.includes('dye') || title.includes('khoma') || title.includes('lhuentse') || title.includes('weavers') || slug.includes('dye')) {
+    return '/images/programs/dye_training.jpg';
+  }
+  if (title.includes('trade') || title.includes('export') || title.includes('invoicing') || slug.includes('trade')) {
+    return '/images/programs/trade.jpg';
+  }
+  if (title.includes('heritage') || title.includes('zorig') || title.includes('lineage')) {
+    return '/images/programs/heritage.jpg';
+  }
+  if (title.includes('workshop') || title.includes('training') || title.includes('course')) {
+    return '/images/training_workshop.jpg';
+  }
+
+  if (kind.includes('publication')) return '/assets/photos/hero-5-desho.jpg';
+  if (kind.includes('event')) return '/assets/photos/hero-2-punakha.jpg';
+  if (kind.includes('project')) return '/images/programs/design_lab.jpg';
+  if (kind.includes('artisan') || kind.includes('support')) return '/images/programs/dye_training.jpg';
+
+  return DIVERSE_NEWS_PHOTOS[index % DIVERSE_NEWS_PHOTOS.length];
+}
+
 const DEFAULT_NEWS = [
   {
     id: 'default-1',
+    slug: 'trade-facilitation-desk-autumn',
     kind: 'Programs',
     dateString: '28 Aug 2026',
     title: 'Trade facilitation desk opens for the autumn export season',
     blurb: 'Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.',
+    image_path: '/images/programs/trade.jpg',
   },
   {
     id: 'default-2',
+    slug: 'natural-dye-training-lhuentse',
     kind: 'Artisan support',
     dateString: '14 Aug 2026',
     title: 'Natural dye training concludes in Lhuentse',
     blurb: 'Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.',
+    image_path: '/images/programs/dye_training.jpg',
   },
   {
     id: 'default-3',
+    slug: 'craft-bazaar-clock-tower',
     kind: 'Events',
     dateString: '02 Aug 2026',
     title: 'Zorig Chusum craft bazaar returns to Clock Tower Square',
     blurb: 'Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.',
+    image_path: '/assets/photos/hero-2-punakha.jpg',
   },
   {
     id: 'default-4',
+    slug: 'annual-report-2025',
     kind: 'Publications',
     dateString: '19 Jul 2026',
     title: 'Annual report 2025 available to download',
     blurb: 'Sector figures, programme outcomes and audited accounts for the year, published in English and Dzongkha.',
+    image_path: '/assets/photos/hero-5-desho.jpg',
   },
   {
     id: 'default-5',
+    slug: 'product-innovation-lab',
     kind: 'Projects',
     dateString: '30 Jun 2026',
     title: 'Product innovation lab pairs six artisans with designers',
     blurb: 'A six-month cycle developing new homeware lines from bamboo, yathra and desho paper for international retail.',
+    image_path: '/images/programs/design_lab.jpg',
   },
 ];
 
 const DEFAULT_EVENTS = [
-  { id: 'ev-1', day: '12', mon: 'SEP', title: 'Craft bazaar, day one', place: 'Clock Tower Square, Thimphu' },
-  { id: 'ev-2', day: '27', mon: 'SEP', title: 'Export documentation clinic', place: 'HAB office, Metog Lam' },
-  { id: 'ev-3', day: '08', mon: 'OCT', title: "Members' annual sector forum", place: 'Thimphu' },
+  { id: 'ev-1', day: '12', mon: 'SEP', title: 'Craft bazaar, day one', place: 'Clock Tower Square, Thimphu', bannerUrl: '/assets/photos/hero-2-punakha.jpg' },
+  { id: 'ev-2', day: '27', mon: 'SEP', title: 'Export documentation clinic', place: 'HAB office, Metog Lam', bannerUrl: '/images/programs/trade.jpg' },
+  { id: 'ev-3', day: '08', mon: 'OCT', title: "Members' annual sector forum", place: 'Thimphu', bannerUrl: '/assets/photos/about-hab.jpg' },
 ];
 
 export async function GET() {
@@ -63,8 +132,8 @@ export async function GET() {
       }),
     ]);
 
-    const articles = (dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS).map((a: any) => {
-      let image_path = a.image_path || '';
+    const articles = (dbArticles.length > 0 ? dbArticles : DEFAULT_NEWS).map((a: any, idx: number) => {
+      let image_path = '';
       let cleanContent = a.content || '';
       if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
         const match = cleanContent.match(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->/);
@@ -73,12 +142,16 @@ export async function GET() {
           cleanContent = cleanContent.replace(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->\s*/, '');
         }
       }
+
+      const finalImage = image_path || resolveArticleImage(a, idx);
+
       return {
         ...a,
         date: a.dateString || a.date || a.published_at || 'Recent',
         published_at: a.dateString || a.published_at || 'Recent',
         slug: a.slug || a.id,
-        image_path: image_path || a.image_path || '/assets/photos/hero-4-textiles.jpg',
+        image_path: finalImage,
+        imageUrl: finalImage,
         content: cleanContent,
       };
     });

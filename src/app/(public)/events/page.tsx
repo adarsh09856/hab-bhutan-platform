@@ -38,20 +38,24 @@ export default function EventsPage() {
   }, [selectedKind, eventsList]);
 
   const EVENT_PHOTO_MAP: Record<string, string> = {
-    'craft-bazaar-2026': '/assets/photos/hero-4-textiles.jpg',
-    'export-clinic-sep': '/assets/photos/hero-2-punakha.jpg',
+    'craft-bazaar-2026': '/assets/photos/hero-2-punakha.jpg',
+    'export-clinic-sep': '/images/programs/trade.jpg',
     'sector-forum-2026': '/assets/photos/about-hab.jpg',
-    'dye-training-nov': '/assets/photos/hero-1-weaving.jpg',
-    'buyer-mission-nov': '/assets/photos/hero-5-desho.jpg',
-    'apprentice-intake-dec': '/assets/photos/hero-3-clay.jpg',
+    'dye-training-nov': '/images/programs/dye_training.jpg',
+    'buyer-mission-nov': '/images/programs/design_lab.jpg',
+    'apprentice-intake-dec': '/images/training_workshop.jpg',
   };
 
   const photoPool = [
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-1-weaving.jpg',
     '/assets/photos/hero-2-punakha.jpg',
+    '/images/programs/trade.jpg',
+    '/assets/photos/about-hab.jpg',
+    '/images/programs/dye_training.jpg',
+    '/images/programs/design_lab.jpg',
+    '/images/training_workshop.jpg',
     '/assets/photos/hero-5-desho.jpg',
     '/assets/photos/hero-3-clay.jpg',
+    '/images/programs/heritage.jpg',
   ];
 
   return (
@@ -108,7 +112,31 @@ export default function EventsPage() {
         {/* Events List */}
         <div className="eventlist" id="eventList" data-cms-repeat>
           {filteredEvents.map((e, idx) => {
-            const imgSrc = e.bannerUrl || e.imageUrl || e.image_path || e.image_url || EVENT_PHOTO_MAP[e.key] || photoPool[idx % photoPool.length];
+            const customImg = e.bannerUrl || e.imageUrl || e.image_path || e.image_url;
+            const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg') && !customImg.includes('hero-1-weaving.jpg');
+            const t = String(e.title || '').toLowerCase();
+            const k = String(e.key || e.id || '').toLowerCase();
+            let imgSrc = '';
+
+            if (hasValidCustom) {
+              imgSrc = customImg;
+            } else if (t.includes('bazaar') || k.includes('bazaar')) {
+              imgSrc = '/assets/photos/hero-2-punakha.jpg';
+            } else if (t.includes('clinic') || t.includes('export') || k.includes('export')) {
+              imgSrc = '/images/programs/trade.jpg';
+            } else if (t.includes('forum') || t.includes('assembly') || k.includes('forum')) {
+              imgSrc = '/assets/photos/about-hab.jpg';
+            } else if (t.includes('dye') || k.includes('dye')) {
+              imgSrc = '/images/programs/dye_training.jpg';
+            } else if (t.includes('buyer') || t.includes('mission') || k.includes('buyer')) {
+              imgSrc = '/images/programs/design_lab.jpg';
+            } else if (t.includes('apprentice') || t.includes('training') || t.includes('intake')) {
+              imgSrc = '/images/training_workshop.jpg';
+            } else if (EVENT_PHOTO_MAP[k]) {
+              imgSrc = EVENT_PHOTO_MAP[k];
+            } else {
+              imgSrc = photoPool[idx % photoPool.length];
+            }
 
             return (
               <article key={e.key} id={e.key} className="eventcard" data-cms-item>

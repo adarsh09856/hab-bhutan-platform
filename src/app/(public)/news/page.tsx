@@ -50,20 +50,24 @@ export default function NewsPage() {
     : newsList.filter((n) => n.kind === selectedKind);
 
   const NEWS_PHOTO_MAP: Record<string, string> = {
-    'trade-facilitation-desk-autumn': '/assets/photos/hero-2-punakha.jpg',
-    'natural-dye-training-lhuentse': '/assets/photos/hero-1-weaving.jpg',
-    'craft-bazaar-clock-tower': '/assets/photos/hero-4-textiles.jpg',
+    'trade-facilitation-desk-autumn': '/images/programs/trade.jpg',
+    'natural-dye-training-lhuentse': '/images/programs/dye_training.jpg',
+    'craft-bazaar-clock-tower': '/assets/photos/hero-2-punakha.jpg',
     'annual-report-2025': '/assets/photos/hero-5-desho.jpg',
-    'product-innovation-lab': '/assets/photos/hero-3-clay.jpg',
+    'product-innovation-lab': '/images/programs/design_lab.jpg',
   };
 
   const photoPool = [
-    '/assets/photos/about-hab.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-1-weaving.jpg',
+    '/images/programs/design_lab.jpg',
     '/assets/photos/hero-5-desho.jpg',
     '/assets/photos/hero-2-punakha.jpg',
+    '/images/programs/dye_training.jpg',
+    '/images/programs/trade.jpg',
+    '/assets/photos/about-hab.jpg',
     '/assets/photos/hero-3-clay.jpg',
+    '/images/programs/heritage.jpg',
+    '/images/training_workshop.jpg',
+    '/assets/photos/hero-4-textiles.jpg',
   ];
 
   return (
@@ -104,7 +108,29 @@ export default function NewsPage() {
             <div className="newslist" id="newsList" data-cms-repeat>
               {filtered.map((n, idx) => {
                 const slug = n.slug || n.id || `post-${idx}`;
-                const imgSrc = n.image_path || n.imageUrl || n.image_url || NEWS_PHOTO_MAP[slug] || photoPool[idx % photoPool.length];
+                const customImg = n.image_path || n.imageUrl || n.image_url;
+                const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg');
+                const t = String(n.title || '').toLowerCase();
+                const s = String(slug).toLowerCase();
+                let imgSrc = '';
+
+                if (hasValidCustom) {
+                  imgSrc = customImg;
+                } else if (t.includes('innovation') || s.includes('innovation') || t.includes('designer')) {
+                  imgSrc = '/images/programs/design_lab.jpg';
+                } else if (t.includes('annual report') || s.includes('annual-report') || t.includes('accounts')) {
+                  imgSrc = '/assets/photos/hero-5-desho.jpg';
+                } else if (t.includes('bazaar') || s.includes('bazaar') || t.includes('clock tower')) {
+                  imgSrc = '/assets/photos/hero-2-punakha.jpg';
+                } else if (t.includes('dye') || s.includes('dye') || t.includes('lhuentse')) {
+                  imgSrc = '/images/programs/dye_training.jpg';
+                } else if (t.includes('trade') || s.includes('trade') || t.includes('export')) {
+                  imgSrc = '/images/programs/trade.jpg';
+                } else if (NEWS_PHOTO_MAP[s]) {
+                  imgSrc = NEWS_PHOTO_MAP[s];
+                } else {
+                  imgSrc = photoPool[idx % photoPool.length];
+                }
 
                 return (
                   <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item>
