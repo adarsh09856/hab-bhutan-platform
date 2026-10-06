@@ -37,22 +37,27 @@ function TrackOrderContent() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const performSearch = async (orderId: string, contact?: string) => {
-    if (!orderId.trim()) {
-      setErrorMsg('Please enter a valid HAB order number (e.g. HAB-S-12345).');
-      return;
-    }
+    const trimmedOrder = orderId.trim();
+    const trimmedContact = (contact || '').trim();
 
-    if (!contact?.trim()) {
-      setErrorMsg('To protect customer privacy, please enter the email address or phone number used at checkout.');
+    if (!trimmedOrder && !trimmedContact) {
+      setErrorMsg('Please enter an Order ID (e.g. HAB-ORD-12345), DHL Tracking #, Email, or Phone number.');
       return;
     }
 
     setLoading(true);
     setErrorMsg('');
     try {
-      const isEmail = contact.includes('@');
-      const paramKey = isEmail ? 'email' : 'phone';
-      const url = `/api/orders/track?order=${encodeURIComponent(orderId.trim())}&${paramKey}=${encodeURIComponent(contact.trim())}`;
+      let url = '/api/orders/track?';
+      if (trimmedOrder) {
+        url += `order=${encodeURIComponent(trimmedOrder)}`;
+      }
+      if (trimmedContact) {
+        const isEmail = trimmedContact.includes('@');
+        const paramKey = isEmail ? 'email' : 'phone';
+        url += `${trimmedOrder ? '&' : ''}${paramKey}=${encodeURIComponent(trimmedContact)}`;
+      }
+
       const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
 
@@ -127,7 +132,7 @@ function TrackOrderContent() {
               type="text"
               value={orderQuery}
               onChange={(e) => setOrderQuery(e.target.value)}
-              placeholder="Enter HAB Order # (e.g. HAB-S-10492 or HAB-POS-59321)"
+              placeholder="Order ID / DHL Tracking # (e.g. HAB-ORD-10492 or DHL-1892)"
               className="w-full pl-10 pr-4 py-3 bg-white border border-[#CDBEA8] rounded-xl text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24] focus:border-transparent transition-all"
             />
             <Package className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -138,7 +143,7 @@ function TrackOrderContent() {
               type="text"
               value={emailQuery}
               onChange={(e) => setEmailQuery(e.target.value)}
-              placeholder="Email address or phone number (Required)"
+              placeholder="Or Email address / Phone number"
               className="w-full px-4 py-3 bg-white border border-[#CDBEA8] rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#8B2E24] focus:border-transparent transition-all"
             />
           </div>
@@ -209,20 +214,31 @@ function TrackOrderContent() {
                   Destination: {orderData.shippingDestination?.city}, {orderData.shippingDestination?.country}
                 </span>
               </div>
-              {orderData.trackingNumber && (
-                <div className="mt-2.5 inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-mono">
-                  <Truck className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
-                  <span>Courier Reference: <strong>{orderData.trackingNumber}</strong> ({orderData.shippingMethod || 'Bhutan Post / EMS'})</span>
-                  <a
-                    href="https://www.bhutanpost.bt/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#8B2E24] hover:underline font-sans font-bold flex items-center gap-1 ml-1"
-                  >
-                    Bhutan Post Tracking &rarr;
-                  </a>
+              <div className="mt-2.5 flex flex-wrap gap-2 items-center">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 font-mono">
+                  <Package className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
+                  <span>System Tracking ID: <strong>{orderData.systemTrackingNumber || orderData.orderNumber}</strong></span>
                 </div>
-              )}
+                {orderData.dhlTrackingNumber ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-mono">
+                    <Truck className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                    <span>Courier Reference: <strong>{orderData.dhlTrackingNumber}</strong> ({orderData.courierName || 'DHL Express / Bhutan Post'})</span>
+                    <a
+                      href="https://www.dhl.com/en/express/tracking.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#8B2E24] hover:underline font-sans font-bold flex items-center gap-1 ml-1"
+                    >
+                      DHL Tracking &rarr;
+                    </a>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 font-sans">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    <span>DHL / Courier airway bill will be generated upon dispatch from Thimphu Secretariat.</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="text-right space-y-1.5">

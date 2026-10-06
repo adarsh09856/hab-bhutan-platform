@@ -771,7 +771,12 @@ model DonationRecord {
   donorName     String
   donorEmail    String
   amountUSD     Float
+  amountBTN     Float?
+  currency      String         @default("USD")
   frequency     String         @default("ONE_TIME") // ONE_TIME | MONTHLY
+  paymentMethod String?        @default("MBOB")
+  proofUrl      String?
+  journalRef    String?
   status        String         @default("COMPLETED") // PENDING | COMPLETED | FAILED
   receiptNumber String         @unique
   createdAt     DateTime       @default(now())

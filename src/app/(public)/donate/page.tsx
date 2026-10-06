@@ -40,10 +40,44 @@ function DonateContent() {
   const [cardName, setCardName] = useState<string>('');
   const [mobilePhone, setMobilePhone] = useState<string>('');
   const [bankRef, setBankRef] = useState<string>('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofUrl, setProofUrl] = useState<string>('');
+  const [uploadingFile, setUploadingFile] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [refNumber, setRefNumber] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [liveEditOpen, setLiveEditOpen] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProofFile(file);
+    setUploadError(null);
+    setUploadingFile(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/donations/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload proof document');
+      }
+
+      setProofUrl(data.url);
+    } catch (err: any) {
+      setUploadError(err.message || 'File upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   useEffect(() => {
     // Load dynamic pillars
@@ -142,7 +176,12 @@ function DonateContent() {
           donorName: isAnonymous ? 'Anonymous Donor' : donorName.trim(),
           donorEmail: donorEmail.trim(),
           amountUSD,
+          amountBTN: amount,
+          currency: (payMethod === 'mbob' || payMethod === 'bnb' || payMethod === 'bank') ? 'BTN' : 'USD',
           frequency: isMonthly ? 'MONTHLY' : 'ONE_TIME',
+          paymentMethod: payMethod.toUpperCase(),
+          journalRef: bankRef.trim() || mobilePhone.trim() || null,
+          proofUrl: proofUrl || null,
         }),
       });
 
@@ -444,7 +483,7 @@ function DonateContent() {
                       </div>
                     </div>
 
-                    {/* Method 2: mBoB / Mobile Banking */}
+                    {/* Method 2: mBoB (Bank of Bhutan) */}
                     <div className={`paymethod ${payMethod === 'mbob' ? 'is-active' : ''}`}>
                       <button
                         type="button"
@@ -454,40 +493,77 @@ function DonateContent() {
                       >
                         <span className="paymethod__radio"></span>
                         <span className="paymethod__label">
-                          <span className="paymethod__name">Bhutan mobile pay (mBoB)</span>
-                          <span className="paymethod__note">mBoB, BNB Pay and RMA-approved wallets in Nu.</span>
+                          <span className="paymethod__name">Bank of Bhutan (mBoB)</span>
+                          <span className="paymethod__note">Transfer in Nu. via mBoB mobile banking app</span>
                         </span>
                         <span className="paymethod__brands">
                           <span className="cardchip">mBoB</span>
-                          <span className="cardchip">BNB Pay</span>
-                          <span className="cardchip">T-Bank</span>
+                          <span className="cardchip">BoB</span>
                         </span>
                       </button>
                       <div className="paymethod__body">
-                        <p className="payinstruct">
-                          Pay in Nu. from mBoB or another RMA-approved Bhutanese wallet. A payment request is generated for your gift of Nu. {amount.toLocaleString()}.
-                        </p>
+                        <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, fontSize: 13, lineHeight: 1.6 }}>
+                          <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bank of Bhutan Limited (mBoB Details)</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Thimphu Main Branch</p>
+                        </div>
                         <div className="payform">
                           <label className="payfield payfield--full">
-                            <span className="payfield__label">Mobile number registered to wallet</span>
+                            <span className="payfield__label">mBoB Journal / Transaction Reference</span>
                             <input
                               className="payinput font-mono"
-                              type="tel"
-                              placeholder="+975 17 123456"
+                              type="text"
+                              placeholder="e.g. BOB-DON-849201"
                               value={mobilePhone}
                               onChange={(e) => setMobilePhone(e.target.value)}
                             />
                           </label>
                         </div>
-                        <ol className="paysteps" style={{ marginTop: 12 }}>
-                          <li>Submit your gift — a payment prompt is sent to your wallet application.</li>
-                          <li>Approve the payment request in your mBoB or BNB mobile app within 15 minutes.</li>
-                          <li>Your official CSO donation receipt (CSO/2011/043) arrives by email automatically.</li>
-                        </ol>
                       </div>
                     </div>
 
-                    {/* Method 3: Bank Transfer Remittance */}
+                    {/* Method 3: BNB (Bhutan National Bank) */}
+                    <div className={`paymethod ${payMethod === 'bnb' ? 'is-active' : ''}`}>
+                      <button
+                        type="button"
+                        className="paymethod__head"
+                        aria-expanded={payMethod === 'bnb'}
+                        onClick={() => setPayMethod('bnb')}
+                      >
+                        <span className="paymethod__radio"></span>
+                        <span className="paymethod__label">
+                          <span className="paymethod__name">Bhutan National Bank (BNB / mPay)</span>
+                          <span className="paymethod__note">Direct transfer via BNB mPay or internet banking</span>
+                        </span>
+                        <span className="paymethod__brands">
+                          <span className="cardchip">BNB</span>
+                          <span className="cardchip">mPay</span>
+                        </span>
+                      </button>
+                      <div className="paymethod__body">
+                        <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, fontSize: 13, lineHeight: 1.6 }}>
+                          <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bhutan National Bank Limited (BNB)</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 0000028471019</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Corporate Branch, Thimphu</p>
+                        </div>
+                        <div className="payform">
+                          <label className="payfield payfield--full">
+                            <span className="payfield__label">BNB Transaction / Journal Reference</span>
+                            <input
+                              className="payinput font-mono"
+                              type="text"
+                              placeholder="e.g. BNB-TXN-109283"
+                              value={bankRef}
+                              onChange={(e) => setBankRef(e.target.value)}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Method 4: International Wire / SWIFT */}
                     <div className={`paymethod ${payMethod === 'bank' ? 'is-active' : ''}`}>
                       <button
                         type="button"
@@ -497,42 +573,57 @@ function DonateContent() {
                       >
                         <span className="paymethod__radio"></span>
                         <span className="paymethod__label">
-                          <span className="paymethod__name">Bank transfer remittance</span>
-                          <span className="paymethod__note">Bank of Bhutan / Bhutan National Bank wire</span>
+                          <span className="paymethod__name">International Wire / SWIFT</span>
+                          <span className="paymethod__note">Bank wire remittance in USD or major currencies</span>
                         </span>
                         <span className="paymethod__brands">
-                          <span className="cardchip">BOB</span>
-                          <span className="cardchip">BNB</span>
+                          <span className="cardchip">SWIFT</span>
+                          <span className="cardchip">WIRE</span>
                         </span>
                       </button>
                       <div className="paymethod__body">
-                        <p className="payinstruct">
-                          We issue a tax-deductible CSO receipt with the HAB accounts at Bank of Bhutan (BoB) and Bhutan National Bank (BNB).
-                        </p>
                         <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, fontSize: 13, lineHeight: 1.6 }}>
-                          <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bank of Bhutan Limited (Thimphu Main Branch)</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
+                          <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bank of Bhutan SWIFT Details</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Beneficiary:</strong> Handicrafts Association of Bhutan</p>
                           <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Thimphu Main Branch</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>SWIFT / BIC:</strong> BOBTBLBT</p>
-                          <p style={{ margin: '4px 0 0 0', fontSize: 12, color: 'var(--muted)' }}>
-                            Transfer remarks should quote your name. Official receipt (CSO/2011/043) is issued upon clearance.
-                          </p>
-                        </div>
-                        <div className="payform">
-                          <label className="payfield payfield--full">
-                            <span className="payfield__label">Company or Remittance Reference (Optional)</span>
-                            <input
-                              className="payinput"
-                              type="text"
-                              placeholder="e.g. Donor Name or Corporate CSR Ref"
-                              value={bankRef}
-                              onChange={(e) => setBankRef(e.target.value)}
-                            />
-                          </label>
+                          <p style={{ margin: '2px 0' }}>• <strong>SWIFT Code:</strong> BOBTBLBT</p>
                         </div>
                       </div>
                     </div>
+
+                    {/* File Upload Option for Payment Proof (Item 6) */}
+                    {(payMethod === 'mbob' || payMethod === 'bnb' || payMethod === 'bank') && (
+                      <div style={{ marginTop: 18, padding: '16px', background: '#FBF9F5', border: '1px dashed #CDBEA8', borderRadius: 8 }}>
+                        <p style={{ fontWeight: 600, fontSize: 13, color: '#33261F', marginBottom: 6 }}>
+                          📎 Upload Payment Proof / Slip (Optional / Recommended)
+                        </p>
+                        <p style={{ fontSize: 11.5, color: '#6B5A4C', marginBottom: 12 }}>
+                          Upload screenshot or PDF of your mBoB, BNB, or bank remittance slip for immediate CSO verification.
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg, image/webp, application/pdf"
+                          onChange={handleFileUpload}
+                          disabled={uploadingFile}
+                          style={{ fontSize: 12 }}
+                        />
+                        {uploadingFile && (
+                          <p style={{ fontSize: 11.5, color: '#8B2E24', marginTop: 6 }}>
+                            Uploading payment slip...
+                          </p>
+                        )}
+                        {proofUrl && (
+                          <p style={{ fontSize: 11.5, color: '#166534', marginTop: 6, fontWeight: 600 }}>
+                            ✓ Payment slip attached successfully: <a href={proofUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'underline' }}>View uploaded file</a>
+                          </p>
+                        )}
+                        {uploadError && (
+                          <p style={{ fontSize: 11.5, color: '#991B1B', marginTop: 6 }}>
+                            {uploadError}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

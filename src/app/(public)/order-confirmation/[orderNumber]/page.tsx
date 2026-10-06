@@ -81,10 +81,20 @@ export default function OrderConfirmationPage() {
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F8F5EF] border border-[#E4DDD1] font-mono text-sm font-bold text-[#33261F]">
-            <span>Order Number:</span>
-            <span className="text-[#8B2E24]">{orderNumber}</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F8F5EF] border border-[#E4DDD1] font-mono text-sm font-bold text-[#33261F]">
+              <span>Order Number:</span>
+              <span className="text-[#8B2E24]">{orderNumber}</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 font-mono text-xs font-semibold text-amber-900">
+              <Package className="w-3.5 h-3.5 text-amber-700" />
+              <span>System Tracking ID:</span>
+              <span className="font-bold">{orderNumber}</span>
+            </div>
           </div>
+          <p className="text-[11px] text-[#6B5A4C] font-mono">
+            You can use this System Tracking ID, your email address, or your phone number to track your shipment at any time.
+          </p>
 
           {/* Quick Actions (Print, Track, Shop) */}
           <div className="pt-2 flex flex-wrap items-center justify-center gap-3 print:hidden">

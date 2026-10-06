@@ -17,17 +17,30 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { pillarKey, donorName, donorEmail, amountUSD, frequency } = body;
+    const { 
+      pillarKey, 
+      donorName, 
+      donorEmail, 
+      amountUSD, 
+      amountBTN, 
+      currency = 'USD', 
+      frequency, 
+      paymentMethod = 'CARD', 
+      journalRef, 
+      proofUrl 
+    } = body;
 
-    if (!pillarKey || !donorName || !donorEmail || !amountUSD) {
+    if (!pillarKey || !donorName || !donorEmail || (!amountUSD && !amountBTN)) {
       return NextResponse.json(
-        { error: 'pillarKey, donorName, donorEmail, and amountUSD are required' },
+        { error: 'pillarKey, donorName, donorEmail, and donation amount are required' },
         { status: 400 }
       );
     }
 
-    const numAmount = Number(amountUSD);
-    if (isNaN(numAmount) || numAmount <= 0) {
+    const calculatedUSD = amountUSD ? Number(amountUSD) : Math.round((Number(amountBTN) / 84) * 100) / 100;
+    const calculatedBTN = amountBTN ? Number(amountBTN) : Math.round(calculatedUSD * 84);
+
+    if (isNaN(calculatedUSD) || calculatedUSD <= 0) {
       return NextResponse.json({ error: 'Valid positive amount is required' }, { status: 400 });
     }
 
@@ -40,9 +53,14 @@ export async function POST(req: NextRequest) {
         pillarKey: pillarKey.trim().toLowerCase(),
         donorName: donorName.trim(),
         donorEmail: donorEmail.trim().toLowerCase(),
-        amountUSD: numAmount,
+        amountUSD: calculatedUSD,
+        amountBTN: calculatedBTN,
+        currency: currency.toUpperCase(),
         frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
-        status: 'COMPLETED',
+        paymentMethod: paymentMethod.toUpperCase(),
+        journalRef: journalRef ? String(journalRef).trim() : null,
+        proofUrl: proofUrl ? String(proofUrl).trim() : null,
+        status: (paymentMethod === 'MBOB' || paymentMethod === 'BNB' || paymentMethod === 'BANK') && !proofUrl ? 'PENDING' : 'COMPLETED',
         receiptNumber,
       },
     });
@@ -52,7 +70,7 @@ export async function POST(req: NextRequest) {
       await prisma.supportPillar.update({
         where: { key: pillarKey.trim().toLowerCase() },
         data: {
-          raisedAmountUSD: { increment: numAmount },
+          raisedAmountUSD: { increment: calculatedUSD },
         },
       });
     } catch {
@@ -67,7 +85,8 @@ export async function POST(req: NextRequest) {
       entityId: donation.id,
       details: {
         receiptNumber,
-        amountUSD: numAmount,
+        amountUSD: calculatedUSD,
+        amountBTN: calculatedBTN,
         pillarKey,
       },
     });

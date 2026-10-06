@@ -38,9 +38,10 @@ export default function CheckoutPage() {
   } = useCart();
   const { currency, fmt } = useCurrency();
 
-  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BANK' | 'COD'>('CARD');
+  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD'>('CARD');
   const [gatewayMethods, setGatewayMethods] = useState<any>(null);
   const [mbobRef, setMbobRef] = useState('');
+  const [bnbRef, setBnbRef] = useState('');
   const [cardDetails, setCardDetails] = useState({
     number: '',
     expiry: '',
@@ -155,6 +156,10 @@ export default function CheckoutPage() {
       setError('Please enter your mBOB Transaction Journal / Reference number.');
       return;
     }
+    if (paymentMethod === 'BNB' && !bnbRef.trim()) {
+      setError('Please enter your Bhutan National Bank (BNB) Journal / Transfer Reference number.');
+      return;
+    }
     if (!agreeTerms) {
       setError('Please accept the Terms & Conditions and Export Standards to proceed.');
       return;
@@ -163,7 +168,7 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const selectedCurrency = paymentMethod === 'MBOB' ? 'BTN' : (currency || 'USD');
+      const selectedCurrency = (paymentMethod === 'MBOB' || paymentMethod === 'BNB') ? 'BTN' : (currency || 'USD');
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -181,7 +186,7 @@ export default function CheckoutPage() {
           customerName: customer.fullName.trim(),
           email: customer.email.trim(),
           phone: customer.phone.trim() || null,
-          mBOBTransactionRef: paymentMethod === 'MBOB' ? mbobRef.trim() : null,
+          mBOBTransactionRef: paymentMethod === 'MBOB' ? mbobRef.trim() : paymentMethod === 'BNB' ? bnbRef.trim() : null,
           shippingAddress: {
             fullName: customer.fullName.trim(),
             email: customer.email.trim(),
@@ -402,7 +407,7 @@ export default function CheckoutPage() {
                 Payment Method
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('CARD')}
@@ -418,19 +423,6 @@ export default function CheckoutPage() {
 
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod('COD')}
-                  className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
-                    paymentMethod === 'COD'
-                      ? 'border-[#8B2E24] bg-[#8B2E24]/5 text-[#8B2E24] ring-1 ring-[#8B2E24]'
-                      : 'border-[#E4DDD1] text-[#6B5A4C] hover:border-slate-300'
-                  }`}
-                >
-                  <Banknote className="w-5 h-5" />
-                  <span>Cash on Delivery</span>
-                </button>
-
-                <button
-                  type="button"
                   onClick={() => setPaymentMethod('MBOB')}
                   className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
                     paymentMethod === 'MBOB'
@@ -439,7 +431,20 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <QrCode className="w-5 h-5" />
-                  <span>Bhutan mBOB QR</span>
+                  <span>mBoB (BoB)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('BNB')}
+                  className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
+                    paymentMethod === 'BNB'
+                      ? 'border-[#8B2E24] bg-[#8B2E24]/5 text-[#8B2E24] ring-1 ring-[#8B2E24]'
+                      : 'border-[#E4DDD1] text-[#6B5A4C] hover:border-slate-300'
+                  }`}
+                >
+                  <Building2 className="w-5 h-5" />
+                  <span>BNB Pay</span>
                 </button>
 
                 <button
@@ -452,7 +457,20 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <Building2 className="w-5 h-5" />
-                  <span>Bank Wire</span>
+                  <span>SWIFT Wire</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('COD')}
+                  className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
+                    paymentMethod === 'COD'
+                      ? 'border-[#8B2E24] bg-[#8B2E24]/5 text-[#8B2E24] ring-1 ring-[#8B2E24]'
+                      : 'border-[#E4DDD1] text-[#6B5A4C] hover:border-slate-300'
+                  }`}
+                >
+                  <Banknote className="w-5 h-5" />
+                  <span>Cash on Delivery</span>
                 </button>
               </div>
 
@@ -518,7 +536,7 @@ export default function CheckoutPage() {
                 <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-3">
                   <div className="text-xs text-amber-900 font-semibold flex items-center gap-1.5">
                     <QrCode className="w-4 h-4 text-amber-700" />
-                    <span>{siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'} Official Account</span>
+                    <span>Bank of Bhutan (mBoB) Official Account</span>
                   </div>
                   <div className="bg-white p-3 rounded-lg border border-amber-200 text-xs space-y-1 font-mono text-slate-800">
                     <div><strong>Account Title:</strong> {siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
@@ -539,6 +557,36 @@ export default function CheckoutPage() {
                     />
                     <p className="text-[11px] text-amber-800 mt-1">
                       Transfer in Nu. via mBOB and enter the transaction reference number from your receipt.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === 'BNB' && (
+                <div className="p-4 rounded-xl bg-orange-50/60 border border-orange-200/80 space-y-3">
+                  <div className="text-xs text-orange-950 font-semibold flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-orange-700" />
+                    <span>Bhutan National Bank (BNB) Official Account</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border border-orange-200 text-xs space-y-1 font-mono text-slate-800">
+                    <div><strong>Account Title:</strong> Handicrafts Association of Bhutan</div>
+                    <div><strong>Account Number:</strong> 0000028471019</div>
+                    <div><strong>Bank:</strong> Bhutan National Bank Limited (BNB), Thimphu Corporate Branch</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
+                      BNB Journal / Reference Number *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. BNB-TXN-938210"
+                      value={bnbRef}
+                      onChange={(e) => setBnbRef(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-lg border border-orange-300 bg-white text-sm focus:outline-hidden"
+                    />
+                    <p className="text-[11px] text-orange-900 mt-1">
+                      Transfer in Nu. via BNB / mPay and enter the transaction reference number from your receipt.
                     </p>
                   </div>
                 </div>
