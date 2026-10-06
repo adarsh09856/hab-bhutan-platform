@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,6 +161,11 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
         <div className="longread">
           <div>
             <p className="eyebrow eyebrow--accent">The story</p>
+            {post.subCategory && (
+              <span className="inline-block mt-2 px-2.5 py-1 rounded bg-[#EDE5D6] text-[#6B5A4C] font-mono text-xs font-semibold">
+                {post.subCategory}
+              </span>
+            )}
           </div>
           <div>
             {(post.body || post.blurb || '').split('\n\n').map((para: string, i: number) => (
@@ -167,6 +173,13 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
                 {para.trim()}
               </p>
             ))}
+
+            {/* Designated space for Supporting Document (PDF / Flipbook) - Feedback Item 4 */}
+            <DocumentEmbedViewer
+              documentUrl={post.documentUrl}
+              documentType={post.documentType}
+              documentTitle={post.documentTitle || `${post.title} – Official Document`}
+            />
           </div>
         </div>
       </section>

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getEventByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 
 export const dynamic = 'force-dynamic';
 
@@ -214,6 +215,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <div className="longread">
           <div>
             <p className="eyebrow eyebrow--accent">About this event</p>
+            {event.subCategory && (
+              <span className="inline-block mt-2 px-2.5 py-1 rounded bg-[#EDE5D6] text-[#6B5A4C] font-mono text-xs font-semibold">
+                {event.subCategory}
+              </span>
+            )}
           </div>
           <div>
             {(event.detail || event.summary || '').split('\n\n').map((para: string, i: number) => (
@@ -221,6 +227,13 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                 {para.trim()}
               </p>
             ))}
+
+            {/* Designated space for Event Supporting Document (PDF / Flipbook) - Feedback Item 4 */}
+            <DocumentEmbedViewer
+              documentUrl={event.documentUrl || event.pdfUrl}
+              documentType={event.documentType || 'PDF'}
+              documentTitle={event.documentTitle || `${event.title} – Schedule & Guide`}
+            />
           </div>
         </div>
       </section>

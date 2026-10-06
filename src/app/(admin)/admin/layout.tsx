@@ -43,7 +43,8 @@ import {
   CreditCard,
   ChevronDown,
   ChevronsUpDown,
-  Plus
+  Plus,
+  Building2
 } from 'lucide-react';
 
 interface HealthData {
@@ -216,6 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: 'News & Articles', href: '/admin/content', icon: FileText },
         { label: 'Events & Exhibitions', href: '/admin/events', icon: Calendar },
+        { label: 'Tenders & Procurements', href: '/admin/tenders', icon: Building2, badge: 'New' },
         { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
         { label: 'Development Projects', href: '/admin/projects', icon: FolderKanban },
         { label: 'Reports & Publications', href: '/admin/publications', icon: FileText, badge: 'PDFs' },

@@ -169,8 +169,8 @@ export default function EventsPage() {
                     {e.place} · {e.who || 'Open to all'}
                   </p>
                   <p className="card__text">{e.summary}</p>
-                  <Link className="news__more" href={`/events/${e.key}`}>
-                    Event detail →
+                  <Link className="news__more font-semibold" href={`/events/${e.key}`}>
+                    Read More &amp; Event Details →
                   </Link>
                 </div>
               </article>

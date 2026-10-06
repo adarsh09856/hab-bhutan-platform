@@ -52,21 +52,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, title, category, dateDisplay, day, mon, time, imageUrl, pdfUrl, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
+    const { key, title, category, subCategory, dateDisplay, day, mon, time, imageUrl, pdfUrl, documentUrl, documentType, documentTitle, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
 
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
 
+    const docUrlToSave = documentUrl || pdfUrl || null;
+
     const mergedSchedule = schedule && typeof schedule === 'object' 
-      ? { ...schedule, ...(day && { day }), ...(mon && { mon }), ...(time && { time }), ...(imageUrl && { imageUrl }), ...(pdfUrl && { pdfUrl }) }
-      : (day || mon || time || imageUrl || pdfUrl ? { day, mon, time, imageUrl, pdfUrl } : null);
+      ? { ...schedule, ...(day && { day }), ...(mon && { mon }), ...(time && { time }), ...(imageUrl && { imageUrl }), ...(docUrlToSave && { pdfUrl: docUrlToSave }) }
+      : (day || mon || time || imageUrl || docUrlToSave ? { day, mon, time, imageUrl, pdfUrl: docUrlToSave } : null);
 
     const event = await prisma.eventRecord.create({
       data: {
         key: key.trim().toLowerCase(),
         title: title.trim(),
         category: category?.trim() || 'Exhibition',
+        subCategory: subCategory?.trim() || null,
         dateDisplay: dateDisplay?.trim() || '',
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
@@ -74,6 +77,10 @@ export async function POST(req: NextRequest) {
         venue: venue?.trim() || null,
         craft: craft?.trim() || null,
         organiser: organiser?.trim() || null,
+        documentUrl: docUrlToSave,
+        documentType: documentType || 'PDF',
+        documentTitle: documentTitle || null,
+        imageUrl: imageUrl || null,
         description: description.trim(),
         schedule: mergedSchedule,
         speakers: speakers || null,
@@ -132,6 +139,7 @@ export async function PUT(req: NextRequest) {
       data: {
         ...(title !== undefined && { title: title.trim() }),
         ...(category !== undefined && { category: category.trim() }),
+        ...(body.subCategory !== undefined && { subCategory: body.subCategory?.trim() || null }),
         ...(dateDisplay !== undefined && { dateDisplay: dateDisplay.trim() }),
         ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
         ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
@@ -139,6 +147,10 @@ export async function PUT(req: NextRequest) {
         ...(venue !== undefined && { venue: venue?.trim() || null }),
         ...(craft !== undefined && { craft: craft?.trim() || null }),
         ...(organiser !== undefined && { organiser: organiser?.trim() || null }),
+        ...(body.documentUrl !== undefined && { documentUrl: body.documentUrl }),
+        ...(body.documentType !== undefined && { documentType: body.documentType }),
+        ...(body.documentTitle !== undefined && { documentTitle: body.documentTitle }),
+        ...(imageUrl !== undefined && { imageUrl }),
         ...(description !== undefined && { description: description.trim() }),
         ...(mergedSchedule !== undefined && { schedule: mergedSchedule }),
         ...(speakers !== undefined && { speakers }),

@@ -274,16 +274,21 @@ model ProjectRecord {
 
 // Newsroom articles
 model NewsArticle {
-  id          String   @id @default(uuid())
-  slug        String?  @unique
-  kind        String   // Programs, Artisan support, Events, Publications, Projects
-  title       String
-  dateString  String   // e.g. "28 Aug 2026"
-  blurb       String   @db.Text
-  content     String?  @db.Text
-  isPublished Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(uuid())
+  slug          String?  @unique
+  kind          String   // Programs, Artisan support, Events, Publications, Projects
+  subCategory   String?  // e.g. "Press Release", "Field Report", "Artisan Feature", "Announcement"
+  title         String
+  dateString    String   // e.g. "28 Aug 2026"
+  blurb         String   @db.Text
+  content       String?  @db.Text
+  documentUrl   String?  // PDF / Flipbook URL
+  documentType  String?  @default("PDF") // PDF | FLIPBOOK | DOC
+  documentTitle String?  // Optional label e.g. "Official Project Guidelines"
+  imageUrl      String?
+  isPublished   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // Calendar events
@@ -692,6 +697,11 @@ model EventRecord {
   venue        String?
   craft        String?
   organiser    String?
+  subCategory  String?   // e.g. "Workshops", "International Expo", "Community Gathering"
+  documentUrl  String?   // PDF / Flipbook URL
+  documentType String?   @default("PDF") // PDF | FLIPBOOK | DOC
+  documentTitle String?  // e.g. "Exhibition Brochure & Catalogue"
+  imageUrl     String?
   description  String    @db.Text
   schedule     Json?
   speakers     Json?
@@ -703,6 +713,32 @@ model EventRecord {
 
   @@index([category])
   @@index([isActive])
+}
+
+// Dedicated Tenders System (Separate from News & Events - Feedback Item 5)
+model TenderRecord {
+  id              String    @id @default(uuid())
+  tenderNumber    String    @unique // e.g. "HAB/TEND/2026/001"
+  title           String
+  category        String    @default("Procurement") // Procurement | Supply | Consultancy | Construction | Artisan Grants
+  description     String    @db.Text
+  openingDate     DateTime  @default(now())
+  closingDate     DateTime
+  documentUrl     String?   // PDF Tender Document or RFP
+  documentType    String?   @default("PDF")
+  documentTitle   String?   @default("Tender Terms & Conditions Document")
+  submissionEmail String    @default("officehab@gmail.com")
+  contactPerson   String?   @default("Secretary Desk, HAB")
+  contactPhone    String?   @default("+975-2-338089")
+  estimatedBudget String?   // e.g. "Nu. 450,000" or "Open Tender"
+  eligibility     String?   @db.Text
+  status          String    @default("OPEN") // OPEN | CLOSED | AWARDED | ARCHIVED
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+  @@index([category])
 }
 
 // Donation & Support Pillars for public donations

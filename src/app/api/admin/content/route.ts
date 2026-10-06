@@ -73,10 +73,15 @@ export async function POST(req: NextRequest) {
       const article = await prisma.newsArticle.create({
         data: {
           kind: data.kind || data.category || 'Programs',
+          subCategory: data.subCategory || null,
           title: data.title.trim(),
           dateString: data.dateString || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           blurb: data.blurb || data.excerpt || '',
           content: finalContent || null,
+          documentUrl: data.documentUrl || null,
+          documentType: data.documentType || 'PDF',
+          documentTitle: data.documentTitle || null,
+          imageUrl: data.image_path || data.imageUrl || null,
           isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
         },
       });
@@ -184,9 +189,14 @@ export async function PATCH(req: NextRequest) {
       const updateData: any = {};
       if (data.title) updateData.title = data.title.trim();
       if (data.kind || data.category) updateData.kind = data.kind || data.category;
+      if (data.subCategory !== undefined) updateData.subCategory = data.subCategory;
       if (data.dateString) updateData.dateString = data.dateString;
       if (data.blurb !== undefined || data.excerpt !== undefined) updateData.blurb = data.blurb ?? data.excerpt;
       if (data.isPublished !== undefined) updateData.isPublished = Boolean(data.isPublished);
+      if (data.documentUrl !== undefined) updateData.documentUrl = data.documentUrl;
+      if (data.documentType !== undefined) updateData.documentType = data.documentType;
+      if (data.documentTitle !== undefined) updateData.documentTitle = data.documentTitle;
+      if (data.imageUrl !== undefined || data.image_path !== undefined) updateData.imageUrl = data.imageUrl || data.image_path;
 
       if (data.content !== undefined || data.image_path !== undefined) {
         let contentToSave = data.content !== undefined ? data.content : '';

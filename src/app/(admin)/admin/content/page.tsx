@@ -74,10 +74,14 @@ export default function AdminContentPage() {
   const [newsForm, setNewsForm] = useState({
     title: '',
     kind: 'Programs',
+    subCategory: 'Field Report',
     dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     blurb: '',
     content: '',
     image_path: '',
+    documentUrl: '',
+    documentType: 'PDF',
+    documentTitle: '',
   });
 
   const [pubForm, setPubForm] = useState({
@@ -804,9 +808,9 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block font-medium admin-text mb-1">Category</label>
+                      <label className="block font-medium admin-text mb-1">Primary Category</label>
                       <select
                         value={newsForm.kind}
                         onChange={(e) => setNewsForm({ ...newsForm, kind: e.target.value })}
@@ -817,6 +821,21 @@ export default function AdminContentPage() {
                         <option value="Events">Events</option>
                         <option value="Publications">Publications</option>
                         <option value="Projects">Projects</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Sub-Category</label>
+                      <select
+                        value={newsForm.subCategory}
+                        onChange={(e) => setNewsForm({ ...newsForm, subCategory: e.target.value })}
+                        className="w-full admin-input border rounded px-2.5 py-1.5"
+                      >
+                        <option value="Field Report">Field Report</option>
+                        <option value="Press Release">Press Release</option>
+                        <option value="Artisan Feature">Artisan Feature</option>
+                        <option value="Secretariat Notice">Secretariat Notice</option>
+                        <option value="Training Milestone">Training Milestone</option>
+                        <option value="Exhibition Report">Exhibition Report</option>
                       </select>
                     </div>
                     <div>
@@ -845,6 +864,47 @@ export default function AdminContentPage() {
                       onChange={(url) => setNewsForm({ ...newsForm, image_path: url })}
                       accept="image/*"
                       hint="Upload cover photo for the article (JPG, PNG, WebP)."
+                    />
+                  </div>
+
+                  {/* Supporting Document / PDF / Flipbook Embed (Feedback Item 4) */}
+                  <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-3">
+                    <div className="font-semibold text-amber-900 flex items-center justify-between">
+                      <span>Supporting Document / PDF / Flipbook (Item 4)</span>
+                      <span className="text-[10px] font-normal text-amber-700">Embedded in designated space on detail page</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-medium text-amber-950 mb-1">Document Format</label>
+                        <select
+                          value={newsForm.documentType}
+                          onChange={(e) => setNewsForm({ ...newsForm, documentType: e.target.value })}
+                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
+                        >
+                          <option value="PDF">PDF Document (Embedded Viewer)</option>
+                          <option value="FLIPBOOK">Interactive Flipbook (Iframe / URL)</option>
+                          <option value="DOC">Word / Supporting Paper</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-medium text-amber-950 mb-1">Document Display Title</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Official Training Guidelines (PDF)"
+                          value={newsForm.documentTitle}
+                          onChange={(e) => setNewsForm({ ...newsForm, documentTitle: e.target.value })}
+                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
+                        />
+                      </div>
+                    </div>
+
+                    <FileUploadInput
+                      label="Upload Document (PDF, Word, or Flipbook asset)"
+                      value={newsForm.documentUrl}
+                      onChange={(url) => setNewsForm({ ...newsForm, documentUrl: url })}
+                      accept=".pdf,.doc,.docx,application/pdf"
+                      hint="Upload PDF to embed directly on news article page, or paste external flipbook URL."
                     />
                   </div>
 
@@ -1036,6 +1096,38 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Primary Category</label>
+                      <select
+                        value={editingItem.data.kind || editingItem.data.category || 'Programs'}
+                        onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind: e.target.value } })}
+                        className="w-full admin-input border rounded px-2.5 py-1.5"
+                      >
+                        <option value="Programs">Programs</option>
+                        <option value="Artisan Support">Artisan Support</option>
+                        <option value="Events">Events</option>
+                        <option value="Publications">Publications</option>
+                        <option value="Projects">Projects</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Sub-Category</label>
+                      <select
+                        value={editingItem.data.subCategory || 'Field Report'}
+                        onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory: e.target.value } })}
+                        className="w-full admin-input border rounded px-2.5 py-1.5"
+                      >
+                        <option value="Field Report">Field Report</option>
+                        <option value="Press Release">Press Release</option>
+                        <option value="Artisan Feature">Artisan Feature</option>
+                        <option value="Secretariat Notice">Secretariat Notice</option>
+                        <option value="Training Milestone">Training Milestone</option>
+                        <option value="Exhibition Report">Exhibition Report</option>
+                      </select>
+                    </div>
+                  </div>
+
                   <div>
                     <FileUploadInput
                       label="Article Cover Photograph"
@@ -1043,6 +1135,47 @@ export default function AdminContentPage() {
                       onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, image_path: url } })}
                       accept="image/*"
                       hint="Upload cover photo for the article (JPG, PNG, WebP)."
+                    />
+                  </div>
+
+                  {/* Supporting Document / PDF / Flipbook Embed (Feedback Item 4) */}
+                  <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-3">
+                    <div className="font-semibold text-amber-900 flex items-center justify-between">
+                      <span>Supporting Document / PDF / Flipbook (Item 4)</span>
+                      <span className="text-[10px] font-normal text-amber-700">Embedded in designated space on detail page</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-medium text-amber-950 mb-1">Document Format</label>
+                        <select
+                          value={editingItem.data.documentType || 'PDF'}
+                          onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentType: e.target.value } })}
+                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
+                        >
+                          <option value="PDF">PDF Document (Embedded Viewer)</option>
+                          <option value="FLIPBOOK">Interactive Flipbook (Iframe / URL)</option>
+                          <option value="DOC">Word / Supporting Paper</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-medium text-amber-950 mb-1">Document Display Title</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Official Training Guidelines (PDF)"
+                          value={editingItem.data.documentTitle || ''}
+                          onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentTitle: e.target.value } })}
+                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
+                        />
+                      </div>
+                    </div>
+
+                    <FileUploadInput
+                      label="Upload Document (PDF, Word, or Flipbook asset)"
+                      value={editingItem.data.documentUrl || ''}
+                      onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentUrl: url } })}
+                      accept=".pdf,.doc,.docx,application/pdf"
+                      hint="Upload PDF to embed directly on news article page, or paste external flipbook URL."
                     />
                   </div>
 

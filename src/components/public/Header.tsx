@@ -228,6 +228,7 @@ export default function Header() {
     { label: 'Programmes', href: '/programmes' },
     { label: 'Projects', href: '/projects' },
     { label: 'News & Events', href: '/news' },
+    { label: 'Tenders', href: '/tenders' },
   ]);
 
   // Unified helper for resolving display labels across Desktop, Tablet, and Mobile views
