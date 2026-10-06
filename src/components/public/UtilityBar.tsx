@@ -21,6 +21,10 @@ export default function UtilityBar() {
   const { language, toggleLanguage, t } = useLanguage();
   const isDz = language === 'dz';
 
+  const textContainerRef = React.useRef<HTMLDivElement>(null);
+  const textSpanRef = React.useRef<HTMLSpanElement>(null);
+  const [overflowDist, setOverflowDist] = useState(0);
+
   useEffect(() => {
     fetch('/api/site-settings')
       .then((r) => r.json())
@@ -59,14 +63,36 @@ export default function UtilityBar() {
     };
   }, []);
 
-  // Automatic ticker roll every 4.5 seconds
+  // Automatic ticker roll every 6 seconds with comfortable reading time
   useEffect(() => {
     if (isPaused || tickerMessages.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentTickerIdx((prev) => (prev + 1) % tickerMessages.length);
-    }, 4500);
+    }, 6000);
     return () => clearInterval(timer);
   }, [isPaused, tickerMessages.length]);
+
+  // Dynamically detect if the current notice text exceeds available container width
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textContainerRef.current && textSpanRef.current) {
+        const cW = textContainerRef.current.clientWidth;
+        const sW = textSpanRef.current.scrollWidth;
+        if (sW > cW + 4) {
+          setOverflowDist(sW - cW + 28);
+        } else {
+          setOverflowDist(0);
+        }
+      }
+    };
+
+    const timer = setTimeout(checkOverflow, 80);
+    window.addEventListener('resize', checkOverflow);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [currentTickerIdx, tickerMessages]);
 
   if (!visible) return null;
 
@@ -92,6 +118,10 @@ export default function UtilityBar() {
       <div
         className="utility__inner no-scrollbar"
         style={{
+          width: '100%',
+          maxWidth: '100%',
+          paddingLeft: 'clamp(14px, 2.5vw, 36px)',
+          paddingRight: 'clamp(14px, 2.5vw, 36px)',
           overflowX: 'hidden',
           overflowY: 'hidden',
           flexWrap: 'nowrap',
@@ -104,16 +134,14 @@ export default function UtilityBar() {
           gap: '14px',
         }}
       >
-        {/* Rolling / Scrolling Announcement Ticker */}
+        {/* Rolling / Scrolling Announcement Ticker with Maximum Available Space */}
         <div
           className="utility__status no-scrollbar flex items-center gap-2"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           style={{
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            minWidth: '220px',
+            minWidth: 0,
             flex: '1 1 auto',
             display: 'flex',
             alignItems: 'center',
@@ -150,126 +178,117 @@ export default function UtilityBar() {
             </div>
           )}
 
-          {currentItem?.link ? (
-            <Link
-              href={currentItem.link}
-              className="hover:underline transition-opacity duration-300"
+          {/* Notice Text: Fully displayed with unconstrained width & smooth overflow scroll if needed */}
+          <div
+            ref={textContainerRef}
+            className="flex-1 overflow-hidden relative"
+            style={{ minWidth: 0 }}
+          >
+            <div
+              className={`inline-block whitespace-nowrap ${overflowDist > 0 ? 'hab-ticker-marquee' : ''}`}
               style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                display: 'inline-block',
                 whiteSpace: 'nowrap',
                 color: '#fff',
                 fontWeight: 500,
+                transform: 'translateX(0)',
+                animation: overflowDist > 0 ? 'habMarqueeShift 8.5s ease-in-out infinite alternate' : 'none',
+                ['--overflow-dist' as any]: `-${overflowDist}px`,
               }}
             >
-              {currentItem.text}
-            </Link>
-          ) : (
-            <span
-              style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                color: '#fff',
-                fontWeight: 500,
-              }}
-            >
-              {currentItem?.text}
-            </span>
-          )}
+              {currentItem?.link ? (
+                <Link
+                  href={currentItem.link}
+                  className="hover:underline transition-opacity duration-300"
+                  title={currentItem.text}
+                >
+                  <span ref={textSpanRef}>{currentItem.text}</span>
+                </Link>
+              ) : (
+                <span ref={textSpanRef} title={currentItem?.text}>
+                  {currentItem?.text}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Secondary Links (Hidden on <= 1099px via CSS .utility__links{display:none}) */}
-        <nav
-          className="utility__links no-scrollbar"
-          aria-label="Secondary"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            flexShrink: 0,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Link href="/track-order" style={{ color: 'var(--brass)', fontWeight: 600, flexShrink: 0 }}>
+        {/* Right side items: Track Order, Secretary Desk hotline, Wholesale, Language switcher */}
+        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+          <Link
+            href="/track-order"
+            className="hover:text-white transition-colors flex-shrink-0 hidden sm:inline-flex"
+            style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, fontSize: '11px', whiteSpace: 'nowrap' }}
+          >
             {isDz ? 'བཀའ་རྒྱའི་རྗེས་འདེད' : 'Track order'}
           </Link>
-          <Link href="/contact" style={{ flexShrink: 0 }}>
-            {isDz ? 'འབྲེལ་གཏུག' : 'Contact us'}
-          </Link>
-          <Link href="/tenders" style={{ flexShrink: 0 }}>
-            {isDz ? 'རིན་བསྡུར' : 'Tenders'}
-          </Link>
-          <Link href="/publications" style={{ flexShrink: 0 }}>
-            {isDz ? 'དཔེ་སྐྲུན' : 'Publications'}
-          </Link>
-          <Link href="/donate" style={{ flexShrink: 0 }}>
-            {isDz ? 'ཞལ་འདེབས' : 'Donate'}
-          </Link>
-        </nav>
 
-        {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
-        {topBarContactMode !== 'OFF' && (
-          <div
-            className="utility__secretary-desk"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '11px',
-              color: 'rgba(255, 255, 255, 0.85)',
-              flexShrink: 0,
-              whiteSpace: 'nowrap',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              background: 'rgba(255, 255, 255, 0.08)',
-            }}
+          {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
+          {topBarContactMode !== 'OFF' && (
+            <div
+              className="utility__secretary-desk"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '11px',
+                color: 'rgba(255, 255, 255, 0.85)',
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                background: 'rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>
+                {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང:' : 'Secretary Desk:'}
+              </span>
+              {(topBarContactMode === 'PHONE_ONLY' || topBarContactMode === 'BOTH') && (
+                <a
+                  href={`tel:${secretaryPhone.replace(/\s+/g, '')}`}
+                  style={{ color: '#fff', textDecoration: 'none' }}
+                  title="Call Secretary Desk"
+                >
+                  {secretaryPhone}
+                </a>
+              )}
+              {topBarContactMode === 'BOTH' && (
+                <span style={{ opacity: 0.5 }}>·</span>
+              )}
+              {(topBarContactMode === 'EMAIL_ONLY' || topBarContactMode === 'BOTH') && (
+                <a
+                  href={`mailto:${secretaryEmail}`}
+                  style={{ color: '#fff', textDecoration: 'none' }}
+                  title="Email Secretary Desk"
+                >
+                  {secretaryEmail}
+                </a>
+              )}
+            </div>
+          )}
+
+          <Link
+            className="utility__trade hidden md:inline-flex"
+            href="/wholesale"
+            style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '11px' }}
           >
-            <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>
-              {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང:' : 'Secretary Desk:'}
-            </span>
-            {(topBarContactMode === 'PHONE_ONLY' || topBarContactMode === 'BOTH') && (
-              <a
-                href={`tel:${secretaryPhone.replace(/\s+/g, '')}`}
-                style={{ color: '#fff', textDecoration: 'none' }}
-                title="Call Secretary Desk"
-              >
-                {secretaryPhone}
-              </a>
-            )}
-            {topBarContactMode === 'BOTH' && (
-              <span style={{ opacity: 0.5 }}>·</span>
-            )}
-            {(topBarContactMode === 'EMAIL_ONLY' || topBarContactMode === 'BOTH') && (
-              <a
-                href={`mailto:${secretaryEmail}`}
-                style={{ color: '#fff', textDecoration: 'none' }}
-                title="Email Secretary Desk"
-              >
-                {secretaryEmail}
-              </a>
-            )}
-          </div>
-        )}
+            <span>{isDz ? 'ཚོང་འབྲེལ' : 'Wholesale'}</span>
+          </Link>
 
-        <Link className="utility__trade" href="/wholesale" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-          <span className="utility__trade-long">Trade &amp; wholesale buyers</span>
-          <span className="utility__trade-short">Trade buyers</span>
-        </Link>
+          <span className="utility__rule hidden sm:inline-block" aria-hidden="true" style={{ flexShrink: 0 }}></span>
 
-        <span className="utility__rule" aria-hidden="true" style={{ flexShrink: 0 }}></span>
-
-        <button
-          type="button"
-          onClick={toggleLanguage}
-          className="utility__lang"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, font: 'inherit', color: 'inherit', whiteSpace: 'nowrap' }}
-          title="Switch language / སྐད་ཡིག"
-        >
-          <span className={language === 'en' ? 'is-active' : ''}>EN</span>
-          <span aria-hidden="true">/</span>
-          <span className={language === 'dz' ? 'is-active' : ''} lang="dz">རྫོང་ཁ</span>
-        </button>
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="utility__lang"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, font: 'inherit', color: 'inherit', whiteSpace: 'nowrap' }}
+            title="Switch language / སྐད་ཡིག"
+          >
+            <span className={language === 'en' ? 'is-active' : ''}>EN</span>
+            <span aria-hidden="true">/</span>
+            <span className={language === 'dz' ? 'is-active' : ''} lang="dz">རྫོང་ཁ</span>
+          </button>
+        </div>
       </div>
     </div>
   );

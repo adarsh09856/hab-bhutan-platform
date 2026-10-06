@@ -262,18 +262,29 @@ textarea.input{line-height:1.5;resize:vertical}
 
 /* .utility position/z-index now defined at end of file (fixed) */
 .utility__inner{
-  max-width:var(--shell);margin:0 auto;padding:0 var(--gutter);
+  max-width:100% !important;width:100% !important;margin:0 auto;padding:0 clamp(14px, 2vw, 36px) !important;
   height:var(--utility-h);max-height:var(--utility-h);min-height:var(--utility-h);
-  display:flex;align-items:center;gap:18px;flex-wrap:nowrap !important;
+  display:flex;align-items:center;gap:14px;flex-wrap:nowrap !important;
   overflow:hidden !important;
   font-family:var(--mono);font-size:11px;letter-spacing:.05em;
 }
 .utility__status{
-  color:var(--on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--on-dark);white-space:nowrap;overflow:hidden;
   min-width:0;flex:1 1 auto;
 }
+@keyframes habMarqueeShift {
+  0%, 22% {
+    transform: translateX(0px);
+  }
+  78%, 100% {
+    transform: translateX(var(--overflow-dist, -60px));
+  }
+}
+.hab-ticker-marquee:hover {
+  animation-play-state: paused !important;
+}
 .utility__spacer{display:none}
-.utility__links{display:flex;align-items:center;gap:18px;flex-shrink:0 !important;white-space:nowrap;overflow:visible}
+.utility__links{display:flex;align-items:center;gap:14px;flex-shrink:0 !important;white-space:nowrap;overflow:visible}
 .utility__links a{color:var(--on-dark-body);white-space:nowrap;flex-shrink:0}
 .utility__links a:hover{color:#fff}
 .utility__rule{width:1px;height:15px;background:var(--dark-line);flex-shrink:0}
