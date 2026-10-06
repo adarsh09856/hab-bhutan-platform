@@ -95,8 +95,32 @@ export async function GET(req: NextRequest) {
       jinzo: '/assets/photos/hero-3-clay.jpg',
     };
 
+    const shouldShuffle = searchParams.get('shuffle') !== 'false' && !sort;
+
     if (dbProducts.length > 0) {
-      const mapped = dbProducts.map((p) => {
+      let sortedList = [...dbProducts];
+
+      // Feedback Item 9: 15-day priority & Catalog Shuffle
+      // Products added within the last 15 days stay pinned at the top (newest first).
+      // Older products (15+ days old) are automatically shuffled so the same products do not always appear in the same order.
+      if (shouldShuffle) {
+        const now = Date.now();
+        const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
+        const recent = sortedList.filter(
+          (p) => now - new Date(p.createdAt).getTime() <= FIFTEEN_DAYS_MS
+        );
+        const older = sortedList.filter(
+          (p) => now - new Date(p.createdAt).getTime() > FIFTEEN_DAYS_MS
+        );
+        // Fisher-Yates shuffle on older products
+        for (let i = older.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [older[i], older[j]] = [older[j], older[i]];
+        }
+        sortedList = [...recent, ...older];
+      }
+
+      const mapped = sortedList.map((p) => {
         const codeLower = p.code.toLowerCase();
         let img = (p.images as any)?.[0]?.url;
         if (!img || img.includes('placeholder') || img.includes('parotaktshang')) {
@@ -106,6 +130,7 @@ export async function GET(req: NextRequest) {
           ...p,
           image_path: img,
           imageUrl: img,
+          images: Array.isArray(p.images) && (p.images as any).length > 0 ? p.images : [{ url: img, role: 'primary' }],
           price: p.priceUSD,
         };
       });
@@ -118,7 +143,6 @@ export async function GET(req: NextRequest) {
       response.headers.set('Expires', '0');
       return response;
     }
-
 
     // Fallback to SAMPLE_PRODUCTS mapped to match schema if DB has not been seeded yet
     let fallback = SAMPLE_PRODUCTS.map((sp) => ({
@@ -149,6 +173,11 @@ export async function GET(req: NextRequest) {
       fallback.sort((a, b) => a.priceUSD - b.priceUSD);
     } else if (sort === 'high') {
       fallback.sort((a, b) => b.priceUSD - a.priceUSD);
+    } else if (shouldShuffle && fallback.length > 1) {
+      for (let i = fallback.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [fallback[i], fallback[j]] = [fallback[j], fallback[i]];
+      }
     }
     if (limit) {
       fallback = fallback.slice(0, limit);

@@ -194,6 +194,9 @@ function ShopGridContent() {
                   craftKey={p.craftKey}
                   region={p.region}
                   maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
+                  imageUrl={p.imageUrl || p.image_path || (p.images && p.images[0]?.url)}
+                  images={p.images}
+                  stock={p.stock}
                 />
               ))}
             </div>

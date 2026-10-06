@@ -232,9 +232,9 @@ const PRODUCT_POOL = [
                     <Link className="product__shot" href={`/product/${p.code}`}>
                       <figure className="frame frame--square has-image">
                         <img
-                          src={(p as any).image_path || ((p as any).images && (p as any).images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`}
+                          src={(p as any).imageUrl || (p as any).image_path || ((p as any).images && (p as any).images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`}
                           alt={p.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             if (!target.src.includes('/assets/photos/product-')) {

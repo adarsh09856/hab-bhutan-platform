@@ -13,6 +13,8 @@ export interface ProductCardProps {
   region: string;
   maker: string;
   stock?: number;
+  imageUrl?: string;
+  images?: any;
 }
 
 export default function ProductCard({
@@ -23,24 +25,40 @@ export default function ProductCard({
   region,
   maker,
   stock = 12,
+  imageUrl,
+  images,
 }: ProductCardProps) {
   const { fmt } = useCurrency();
   const { addToCart } = useCart();
   const isOutOfStock = stock <= 0;
 
+  const resolvedInitialImage = 
+    imageUrl || 
+    (Array.isArray(images) && images[0]?.url) || 
+    (images && typeof images === 'object' && images.url) || 
+    `/images/products/${code.toLowerCase()}.jpg`;
+
+  const [imgSrc, setImgSrc] = React.useState(resolvedInitialImage);
+
+  React.useEffect(() => {
+    if (imageUrl) {
+      setImgSrc(imageUrl);
+    }
+  }, [imageUrl]);
+
   return (
-    <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-colors duration-150 group">
+    <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
       <Link href={`/product/${code}`} data-cms-img className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
         <img
-          src={`/images/products/${code.toLowerCase()}.jpg`}
+          src={imgSrc}
           alt={name}
-          className="transition-transform duration-500 ease-out group-hover:scale-105 w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            if (!target.src.includes('/assets/photos/product-')) {
-              target.src = `/assets/photos/product-${code.toLowerCase()}.jpg`;
-            } else {
-              target.src = '/assets/photos/product-hhb01.jpg';
+          loading="lazy"
+          className="transition-transform duration-500 ease-out group-hover:scale-105 w-full h-full object-cover object-center"
+          onError={() => {
+            if (!imgSrc.includes('/assets/photos/product-')) {
+              setImgSrc(`/assets/photos/product-${code.toLowerCase()}.jpg`);
+            } else if (!imgSrc.includes('hhb01')) {
+              setImgSrc('/assets/photos/product-hhb01.jpg');
             }
           }}
         />

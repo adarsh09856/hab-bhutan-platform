@@ -78,11 +78,15 @@ export async function GET(
       }
 
       const craftViews = CRAFT_FALLBACKS[product.craftKey] || ['/assets/photos/product-hhb01.jpg', '/assets/photos/product-sad03.jpg', '/assets/photos/product-dap02.jpg'];
-      const resolvedGallery = [
-        img,
-        (product.images as any)?.[1]?.url || craftViews[1] || craftViews[0],
-        (product.images as any)?.[2]?.url || craftViews[2] || craftViews[0],
-      ];
+      const uploadedImages = Array.isArray(product.images)
+        ? (product.images as any[])
+            .map((im: any) => (typeof im === 'string' ? im : im?.url))
+            .filter((u: string) => Boolean(u) && !u.includes('placeholder'))
+        : [];
+
+      const resolvedGallery = uploadedImages.length > 0
+        ? uploadedImages
+        : [img, craftViews[1] || craftViews[0], craftViews[2] || craftViews[0]];
 
       return NextResponse.json({
         success: true,

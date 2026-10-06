@@ -18,12 +18,35 @@ import {
   Image as ImageIcon,
   X,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+
+const generateProductSKU = (craftKey: string = 'thagzo') => {
+  const CRAFT_PREFIX: Record<string, string> = {
+    thagzo: 'THA',
+    shagzo: 'SHA',
+    troezo: 'TRO',
+    tshazo: 'TSA',
+    lhazo: 'LHA',
+    parzo: 'PAR',
+    jinzo: 'JIN',
+    dezo: 'DEZ',
+    tshemzo: 'TSH',
+    garzo: 'GAR',
+    dozo: 'DOZ',
+    chuzo: 'CHU',
+    lugzo: 'LUG',
+  };
+  const prefix = CRAFT_PREFIX[craftKey] || craftKey.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase();
+  const year = new Date().getFullYear().toString().slice(-2);
+  const randNum = Math.floor(1000 + Math.random() * 9000);
+  return `HAB-${prefix}-${year}-${randNum}`;
+};
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -42,7 +65,7 @@ export default function AdminProductsPage() {
   // Forms
   const [editForm, setEditForm] = useState<any>({});
   const [addForm, setAddForm] = useState<any>({
-    code: '',
+    code: generateProductSKU('thagzo'),
     name: '',
     priceUSD: '',
     craftKey: CRAFTS[0].key,
@@ -52,6 +75,7 @@ export default function AdminProductsPage() {
     status: 'PUBLISHED',
     description: '',
     imageUrl: '',
+    additionalImages: [] as string[],
     images: [] as { url: string; role: string }[],
   });
 
@@ -104,11 +128,22 @@ export default function AdminProductsPage() {
     setActionSuccess('');
 
     try {
+      const finalImages = [
+        ...(addForm.imageUrl ? [{ url: addForm.imageUrl, role: 'primary' }] : []),
+        ...(addForm.additionalImages || [])
+          .filter(Boolean)
+          .map((url: string, idx: number) => ({ url, role: `angle${idx + 2}` })),
+      ];
+      const payload = {
+        ...addForm,
+        images: finalImages,
+      };
+
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addForm),
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 401) {
@@ -122,7 +157,7 @@ export default function AdminProductsPage() {
         setProducts((prev) => [data.product, ...prev]);
         setShowAddModal(false);
         setAddForm({
-          code: '',
+          code: generateProductSKU(CRAFTS[0].key),
           name: '',
           priceUSD: '',
           craftKey: CRAFTS[0].key,
@@ -132,6 +167,7 @@ export default function AdminProductsPage() {
           status: 'PUBLISHED',
           description: '',
           imageUrl: '',
+          additionalImages: [],
           images: [],
         });
         await loadData();
@@ -166,7 +202,8 @@ export default function AdminProductsPage() {
   const handleOpenEdit = (p: any) => {
     setEditingProduct(p);
     const existingImages = Array.isArray(p.images) ? p.images : [];
-    const primaryImg = existingImages[0]?.url || p.images?.url || p.image_path || (p.code ? `/assets/photos/product-${p.code.toLowerCase()}.jpg` : '');
+    const primaryImg = existingImages[0]?.url || p.images?.url || p.imageUrl || p.image_path || (p.code ? `/assets/photos/product-${p.code.toLowerCase()}.jpg` : '');
+    const extraImages = existingImages.slice(1).map((im: any) => typeof im === 'string' ? im : im?.url).filter(Boolean);
     setEditForm({
       id: p.id,
       code: p.code,
@@ -179,6 +216,7 @@ export default function AdminProductsPage() {
       status: p.status,
       description: p.description || '',
       imageUrl: primaryImg,
+      additionalImages: extraImages,
       images: existingImages,
     });
   };
@@ -190,11 +228,22 @@ export default function AdminProductsPage() {
     setActionSuccess('');
 
     try {
+      const finalImages = [
+        ...(editForm.imageUrl ? [{ url: editForm.imageUrl, role: 'primary' }] : []),
+        ...(editForm.additionalImages || [])
+          .filter(Boolean)
+          .map((url: string, idx: number) => ({ url, role: `angle${idx + 2}` })),
+      ];
+      const payload = {
+        ...editForm,
+        images: finalImages,
+      };
+
       const res = await fetch('/api/admin/products', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 401) {
@@ -365,7 +414,14 @@ export default function AdminProductsPage() {
 
           {/* Add Product */}
           <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setAddForm((prev: any) => ({
+                ...prev,
+                code: prev.code || generateProductSKU(prev.craftKey || CRAFTS[0].key),
+                additionalImages: prev.additionalImages || [],
+              }));
+              setShowAddModal(true);
+            }}
             className="px-3 py-2 admin-button-primary text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -599,16 +655,26 @@ export default function AdminProductsPage() {
           )}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium admin-text mb-1">Product Code (SKU) *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-medium admin-text">Product Code (SKU) *</label>
+                <button
+                  type="button"
+                  onClick={() => setAddForm((prev: any) => ({ ...prev, code: generateProductSKU(prev.craftKey || CRAFTS[0].key) }))}
+                  className="text-[11px] text-amber-600 hover:text-amber-700 dark:text-amber-400 font-semibold inline-flex items-center gap-1 hover:underline"
+                  title="Generate a new unique SKU"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-500" /> Auto-Generate
+                </button>
+              </div>
               <input
                 type="text"
                 required
-                placeholder="e.g. MAS02, THA03"
+                placeholder="e.g. HAB-THA-26-8492"
                 value={addForm.code}
                 onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono uppercase outline-none"
               />
-              <span className="text-[10.5px] text-slate-500 block mt-1">Unique tracking code for inventory.</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">Unique tracking code for inventory (auto-generated, editable).</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">USD Price ($) *</label>
@@ -643,7 +709,17 @@ export default function AdminProductsPage() {
               <label className="block font-medium admin-text mb-1">Craft Tradition *</label>
               <select
                 value={addForm.craftKey}
-                onChange={(e) => setAddForm({ ...addForm, craftKey: e.target.value })}
+                onChange={(e) => {
+                  const newCraft = e.target.value;
+                  const currentCode = addForm.code;
+                  // If code is empty or looks auto-generated, refresh SKU prefix
+                  const shouldRegen = !currentCode || currentCode.startsWith('HAB-');
+                  setAddForm({
+                    ...addForm,
+                    craftKey: newCraft,
+                    code: shouldRegen ? generateProductSKU(newCraft) : currentCode,
+                  });
+                }}
                 className="w-full admin-input border rounded-lg px-3 py-2 cursor-pointer"
               >
                 {CRAFTS.map((c) => (
@@ -695,14 +771,76 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          {/* Photo Uploader Component */}
-          <FileUploadInput
-            value={addForm.imageUrl}
-            onChange={(url) => setAddForm({ ...addForm, imageUrl: url, images: url ? [{ url, role: 'primary' }] : [] })}
-            label="Product Photograph (Upload from computer/phone, or drag & drop)"
-            accept="image/*"
-            hint="Supports JPG, PNG, WEBP, SVG up to 30MB"
-          />
+          {/* Photo Uploader Component & Multi-Photo Gallery */}
+          <div className="p-3 bg-slate-50/70 dark:bg-slate-900/40 rounded-xl border admin-border space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="font-semibold admin-text text-xs flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                Product Photography &amp; Auto-Crop Gallery
+              </label>
+              <span className="text-[10.5px] text-slate-500">Auto-crops smoothly to maintain uniform square catalog layout</span>
+            </div>
+
+            <FileUploadInput
+              value={addForm.imageUrl}
+              onChange={(url) => setAddForm({ ...addForm, imageUrl: url })}
+              label="Primary Product Photograph (Hero Display)"
+              accept="image/*"
+              hint="Primary photograph displayed on catalog listings. Supports JPG, PNG, WEBP."
+            />
+
+            {/* Additional angles and gallery photos */}
+            {addForm.additionalImages && addForm.additionalImages.length > 0 && (
+              <div className="space-y-2 pt-2 border-t admin-border">
+                <span className="block font-medium admin-text text-[11px]">
+                  Additional Angle / Detail Photographs ({addForm.additionalImages.length})
+                </span>
+                <div className="space-y-2">
+                  {addForm.additionalImages.map((imgUrl: string, idx: number) => (
+                    <div key={idx} className="flex items-start gap-2 bg-white dark:bg-slate-800 p-2.5 rounded-lg border admin-border">
+                      <div className="flex-1">
+                        <FileUploadInput
+                          value={imgUrl}
+                          onChange={(url) => {
+                            const updated = [...(addForm.additionalImages || [])];
+                            updated[idx] = url;
+                            setAddForm({ ...addForm, additionalImages: updated });
+                          }}
+                          label={`Angle / Detail Photograph ${idx + 2}`}
+                          accept="image/*"
+                          hint="Close-up detail, backside, or artisanal texture."
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (addForm.additionalImages || []).filter((_: any, i: number) => i !== idx);
+                          setAddForm({ ...addForm, additionalImages: updated });
+                        }}
+                        className="mt-6 p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800 transition"
+                        title="Remove photograph"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setAddForm({
+                  ...addForm,
+                  additionalImages: [...(addForm.additionalImages || []), ''],
+                });
+              }}
+              className="text-xs font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-400 inline-flex items-center gap-1.5 pt-1 hover:underline"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Another Photograph (Angle, Dimension, Texture)
+            </button>
+          </div>
 
           <div>
             <RichTextEditor
@@ -818,14 +956,76 @@ export default function AdminProductsPage() {
               </div>
             </div>
 
-            {/* Photo Uploader Component */}
-            <FileUploadInput
-              value={editForm.imageUrl}
-              onChange={(url) => setEditForm({ ...editForm, imageUrl: url, images: url ? [{ url, role: 'primary' }] : [] })}
-              label="Product Photograph (Upload from computer/phone, or drag & drop)"
-              accept="image/*"
-              hint="Supports JPG, PNG, WEBP, SVG up to 30MB"
-            />
+            {/* Photo Uploader Component & Multi-Photo Gallery */}
+            <div className="p-3 bg-slate-50/70 dark:bg-slate-900/40 rounded-xl border admin-border space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold admin-text text-xs flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  Product Photography &amp; Auto-Crop Gallery
+                </label>
+                <span className="text-[10.5px] text-slate-500">Auto-crops smoothly for catalog and detail presentation</span>
+              </div>
+
+              <FileUploadInput
+                value={editForm.imageUrl}
+                onChange={(url) => setEditForm({ ...editForm, imageUrl: url })}
+                label="Primary Product Photograph (Hero Display)"
+                accept="image/*"
+                hint="Main photograph displayed on catalog listings. Supports JPG, PNG, WEBP."
+              />
+
+              {/* Additional angles and gallery photos */}
+              {editForm.additionalImages && editForm.additionalImages.length > 0 && (
+                <div className="space-y-2 pt-2 border-t admin-border">
+                  <span className="block font-medium admin-text text-[11px]">
+                    Additional Angle / Detail Photographs ({editForm.additionalImages.length})
+                  </span>
+                  <div className="space-y-2">
+                    {editForm.additionalImages.map((imgUrl: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2 bg-white dark:bg-slate-800 p-2.5 rounded-lg border admin-border">
+                        <div className="flex-1">
+                          <FileUploadInput
+                            value={imgUrl}
+                            onChange={(url) => {
+                              const updated = [...(editForm.additionalImages || [])];
+                              updated[idx] = url;
+                              setEditForm({ ...editForm, additionalImages: updated });
+                            }}
+                            label={`Angle / Detail Photograph ${idx + 2}`}
+                            accept="image/*"
+                            hint="Secondary angle, dimension, or craftsmanship detail."
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = (editForm.additionalImages || []).filter((_: any, i: number) => i !== idx);
+                            setEditForm({ ...editForm, additionalImages: updated });
+                          }}
+                          className="mt-6 p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg border border-rose-200 dark:border-rose-800 transition"
+                          title="Remove photograph"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEditForm({
+                    ...editForm,
+                    additionalImages: [...(editForm.additionalImages || []), ''],
+                  });
+                }}
+                className="text-xs font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-400 inline-flex items-center gap-1.5 pt-1 hover:underline"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Another Photograph (Angle, Dimension, Texture)
+              </button>
+            </div>
 
             <div>
               <RichTextEditor
