@@ -56,6 +56,13 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     }
   }
 
+  const defaultDocUrl = 
+    rawPost.slug === 'product-innovation-lab' || slug === 'product-innovation-lab'
+      ? '/docs/news/product-innovation-lab.pdf'
+      : rawPost.slug === 'annual-report-2025' || slug === 'annual-report-2025'
+      ? '/docs/news/annual-report-2025.pdf'
+      : null;
+
   const post = {
     ...rawPost,
     id: rawPost.id || rawPost.slug || 'news-item',
@@ -66,6 +73,10 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     body: cleanContent,
     image_path,
     published_at: rawPost.dateString || rawPost.published_at || rawPost.date || 'Recent',
+    documentUrl: rawPost.documentUrl || defaultDocUrl,
+    documentType: rawPost.documentType || 'PDF',
+    documentTitle: rawPost.documentTitle || `${rawPost.title} – Supporting Document`,
+    subCategory: rawPost.subCategory || (slug === 'product-innovation-lab' ? 'Design & Prototyping' : slug === 'annual-report-2025' ? 'Publications & Governance' : null),
   };
 
   const otherNews = CLIENT_DATA.news

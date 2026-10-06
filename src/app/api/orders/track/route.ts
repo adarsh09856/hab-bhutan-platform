@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getFallbackOrders } from '@/lib/order-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Build flexible query conditions
+    // Build flexible query conditions for Prisma
     const whereConditions: any[] = [];
 
     if (orderQuery) {
@@ -51,32 +52,56 @@ export async function GET(req: NextRequest) {
       whereConditions.push({ customerPhone: { contains: phoneQuery } });
     }
 
-    // Execute query
-    const orders = await prisma.order.findMany({
-      where: {
-        OR: whereConditions,
-      },
-      include: {
-        orderItems: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            priceUSD: true,
-            quantity: true,
+    let orders: any[] = [];
+    try {
+      orders = await prisma.order.findMany({
+        where: {
+          OR: whereConditions,
+        },
+        include: {
+          orderItems: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              priceUSD: true,
+              quantity: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+    } catch (dbErr) {
+      // Database offline fallback
+    }
+
+    // If no orders found via Prisma, search fallback store
+    if (!orders || orders.length === 0) {
+      const allFallback = getFallbackOrders();
+      const qLower = orderQuery.toLowerCase();
+      const emLower = emailQuery.toLowerCase();
+
+      orders = allFallback.filter((fo) => {
+        if (orderQuery) {
+          if (fo.orderNumber.toLowerCase() === qLower) return true;
+          if (fo.trackingNumber.toLowerCase() === qLower) return true;
+          if (fo.id.toLowerCase() === qLower) return true;
+          if (fo.customerEmail.toLowerCase() === qLower) return true;
+          if (phoneQuery && fo.customerPhone && fo.customerPhone.replace(/\D/g, '').includes(phoneQuery)) return true;
+        }
+        if (emailQuery && fo.customerEmail.toLowerCase() === emLower) return true;
+        if (phoneQuery && fo.customerPhone && fo.customerPhone.replace(/\D/g, '').includes(phoneQuery)) return true;
+        return false;
+      });
+    }
 
     if (!orders || orders.length === 0) {
       const searchedVal = orderQuery || emailQuery || phoneQuery;
       return NextResponse.json(
         {
           success: false,
-          error: `No order found for '${searchedVal}'. Please verify your System Order ID (e.g. HAB-ORD-XXXX), DHL tracking number, email, or phone number.`,
+          error: `No order found for '${searchedVal}'. Please verify your System Order ID (e.g. HAB-S-XXXXX), DHL tracking number, email, or phone number.`,
         },
         { status: 404 }
       );
@@ -88,7 +113,7 @@ export async function GET(req: NextRequest) {
       const maskedAddress = {
         city: shippingAddr.city || shippingAddr.dzongkhag || 'Thimphu',
         country: shippingAddr.country || 'Bhutan',
-        postalCode: shippingAddr.postalCode ? `${shippingAddr.postalCode.slice(0, 2)}***` : undefined,
+        postalCode: shippingAddr.postalCode ? `${String(shippingAddr.postalCode).slice(0, 2)}***` : undefined,
       };
 
       const statusMap: Record<string, number> = {
@@ -103,7 +128,7 @@ export async function GET(req: NextRequest) {
       };
 
       const currentStep = statusMap[order.orderStatus] ?? 2;
-      const isPosSale = order.orderNumber.startsWith('HAB-POS-') || shippingAddr.type === 'WALK_IN_POS_STORE_SALE';
+      const isPosSale = (order.orderNumber || '').startsWith('HAB-POS-') || shippingAddr.type === 'WALK_IN_POS_STORE_SALE';
 
       const milestones = [
         {
@@ -127,7 +152,7 @@ export async function GET(req: NextRequest) {
           desc: isPosSale
             ? 'Completed at HAB Showroom register.'
             : order.trackingNumber
-            ? `Dispatched via DHL Express (Tracking: ${order.trackingNumber})`
+            ? `Dispatched via ${order.carrier || 'DHL Express'} (Tracking: ${order.trackingNumber})`
             : 'Dispatched from Thimphu GPO via Bhutan Post EMS (System Tracking ID Active).',
           completed: currentStep >= 3,
           active: currentStep === 3,
@@ -151,11 +176,11 @@ export async function GET(req: NextRequest) {
       return {
         id: order.id,
         orderNumber: order.orderNumber,
-        systemTrackingNumber: order.orderNumber,
+        systemTrackingNumber: order.trackingNumber || order.orderNumber,
         trackingNumber: order.trackingNumber || order.orderNumber,
-        dhlTrackingNumber: order.trackingNumber || null,
+        dhlTrackingNumber: (order.trackingNumber || '').startsWith('DHL') ? order.trackingNumber : null,
         hasCourierTracking: Boolean(order.trackingNumber),
-        courierName: order.trackingNumber ? 'DHL Express' : 'Bhutan Post EMS / Secretariat Dispatch',
+        courierName: order.carrier || ((order.trackingNumber || '').startsWith('DHL') ? 'DHL Express' : 'Bhutan Post EMS / Secretariat Dispatch'),
         customerName: order.customerName,
         customerEmail: order.customerEmail,
         customerPhone: order.customerPhone,
