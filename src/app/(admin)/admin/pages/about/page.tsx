@@ -81,6 +81,7 @@ export default function AboutPageStudio() {
     roleTitle: '',
     individualName: '',
     chapterOrNote: '',
+    photoUrl: '',
     sortOrder: 0,
   });
 
@@ -201,6 +202,7 @@ export default function AboutPageStudio() {
       roleTitle: '',
       individualName: '',
       chapterOrNote: '',
+      photoUrl: '',
       sortOrder: records.filter((r) => r.category === cat).length + 1,
     });
     setFormOpen(true);
@@ -208,11 +210,15 @@ export default function AboutPageStudio() {
 
   const openEditRecord = (rec: GovRecord) => {
     setEditingId(rec.id);
+    const [note, photo] = (rec.chapterOrNote || '').includes('||photo:')
+      ? (rec.chapterOrNote || '').split('||photo:')
+      : [rec.chapterOrNote || '', ''];
     setRecordForm({
       category: rec.category,
       roleTitle: rec.roleTitle,
       individualName: rec.individualName,
-      chapterOrNote: rec.chapterOrNote,
+      chapterOrNote: note.trim(),
+      photoUrl: photo.trim(),
       sortOrder: rec.sortOrder,
     });
     setFormOpen(true);
@@ -228,7 +234,14 @@ export default function AboutPageStudio() {
     try {
       const url = '/api/admin/governance';
       const method = editingId ? 'PUT' : 'POST';
-      const payload = editingId ? { ...recordForm, id: editingId } : recordForm;
+      const cleanNote = recordForm.chapterOrNote.trim();
+      const finalNote = recordForm.photoUrl.trim()
+        ? `${cleanNote}||photo:${recordForm.photoUrl.trim()}`
+        : cleanNote;
+
+      const payload = editingId
+        ? { ...recordForm, chapterOrNote: finalNote, id: editingId }
+        : { ...recordForm, chapterOrNote: finalNote };
 
       const res = await fetch(url, {
         method,
@@ -772,18 +785,30 @@ export default function AboutPageStudio() {
             </div>
 
             {recordForm.category !== 'MILESTONE' && (
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                  Dzongkhag Chapter / Affiliation Note / Email
-                </label>
-                <input
-                  type="text"
-                  value={recordForm.chapterOrNote}
-                  onChange={(e) => setRecordForm((f) => ({ ...f, chapterOrNote: e.target.value }))}
-                  placeholder="e.g. Master weaver, Lhuentse"
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
-                />
-              </div>
+              <>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Dzongkhag Chapter / Affiliation Note / Email
+                  </label>
+                  <input
+                    type="text"
+                    value={recordForm.chapterOrNote}
+                    onChange={(e) => setRecordForm((f) => ({ ...f, chapterOrNote: e.target.value }))}
+                    placeholder="e.g. Master weaver, Lhuentse"
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                  />
+                </div>
+
+                <div>
+                  <FileUploadInput
+                    value={recordForm.photoUrl}
+                    onChange={(url) => setRecordForm((f) => ({ ...f, photoUrl: url }))}
+                    label="Member Photograph / Headshot"
+                    accept="image/*"
+                    hint="Drag and drop or choose file directly from computer (JPG, PNG, WebP)"
+                  />
+                </div>
+              </>
             )}
 
             <div>
@@ -859,34 +884,52 @@ export default function AboutPageStudio() {
                     </td>
                   </tr>
                 ) : (
-                  boardMembers.map((bm) => (
-                    <tr key={bm.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3.5 pl-5 font-semibold text-slate-900">{bm.roleTitle}</td>
-                      <td className="p-3.5 text-slate-800 font-medium">{bm.individualName}</td>
-                      <td className="p-3.5 text-slate-500">{bm.chapterOrNote || '—'}</td>
-                      <td className="p-3.5 text-center font-mono text-slate-400">#{bm.sortOrder}</td>
-                      <td className="p-3.5 pr-5 text-right">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => openEditRecord(bm)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#8B2E24] hover:bg-slate-100"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRecord(bm.id, bm.individualName)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  boardMembers.map((bm) => {
+                    const [cleanNote, photo] = (bm.chapterOrNote || '').includes('||photo:')
+                      ? (bm.chapterOrNote || '').split('||photo:')
+                      : [bm.chapterOrNote || '', ''];
+                    return (
+                      <tr key={bm.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3.5 pl-5 font-semibold text-slate-900">{bm.roleTitle}</td>
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-2.5">
+                            {photo ? (
+                              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                                <img src={photo} alt={bm.individualName} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-stone-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-[10px] shrink-0">
+                                {bm.individualName.charAt(0)}
+                              </div>
+                            )}
+                            <span className="text-slate-800 font-medium">{bm.individualName}</span>
+                          </div>
+                        </td>
+                        <td className="p-3.5 text-slate-500">{cleanNote || '—'}</td>
+                        <td className="p-3.5 text-center font-mono text-slate-400">#{bm.sortOrder}</td>
+                        <td className="p-3.5 pr-5 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openEditRecord(bm)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-[#8B2E24] hover:bg-slate-100 cursor-pointer"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRecord(bm.id, bm.individualName)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -907,7 +950,7 @@ export default function AboutPageStudio() {
             <button
               type="button"
               onClick={() => openNewRecord('SECRETARIAT')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Add Staff Member</span>
@@ -933,34 +976,52 @@ export default function AboutPageStudio() {
                     </td>
                   </tr>
                 ) : (
-                  teamMembers.map((tm) => (
-                    <tr key={tm.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3.5 pl-5 font-semibold text-slate-900">{tm.roleTitle}</td>
-                      <td className="p-3.5 text-slate-800 font-medium">{tm.individualName}</td>
-                      <td className="p-3.5 text-slate-500">{tm.chapterOrNote || '—'}</td>
-                      <td className="p-3.5 text-center font-mono text-slate-400">#{tm.sortOrder}</td>
-                      <td className="p-3.5 pr-5 text-right">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => openEditRecord(tm)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-[#8B2E24] hover:bg-slate-100"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRecord(tm.id, tm.individualName)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  teamMembers.map((tm) => {
+                    const [cleanNote, photo] = (tm.chapterOrNote || '').includes('||photo:')
+                      ? (tm.chapterOrNote || '').split('||photo:')
+                      : [tm.chapterOrNote || '', ''];
+                    return (
+                      <tr key={tm.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3.5 pl-5 font-semibold text-slate-900">{tm.roleTitle}</td>
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-2.5">
+                            {photo ? (
+                              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                                <img src={photo} alt={tm.individualName} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-stone-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-[10px] shrink-0">
+                                {tm.individualName.charAt(0)}
+                              </div>
+                            )}
+                            <span className="text-slate-800 font-medium">{tm.individualName}</span>
+                          </div>
+                        </td>
+                        <td className="p-3.5 text-slate-500">{cleanNote || '—'}</td>
+                        <td className="p-3.5 text-center font-mono text-slate-400">#{tm.sortOrder}</td>
+                        <td className="p-3.5 pr-5 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openEditRecord(tm)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-[#8B2E24] hover:bg-slate-100 cursor-pointer"
+                              title="Edit"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteRecord(tm.id, tm.individualName)}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

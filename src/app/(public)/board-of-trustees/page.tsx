@@ -52,12 +52,18 @@ async function getBoardData() {
       orderBy: { sortOrder: 'asc' },
     });
     if (records.length > 0) {
-      return records.map((r) => ({
-        name: r.individualName,
-        role: r.roleTitle,
-        note: r.chapterOrNote || '',
-        bio: 'Accredited trustee exercising fiduciary and strategic governance under the CSO Act of Bhutan 2007.',
-      }));
+      return records.map((r, idx) => {
+        const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
+          ? (r.chapterOrNote || '').split('||photo:')
+          : [r.chapterOrNote || '', ''];
+        return {
+          name: r.individualName,
+          role: r.roleTitle,
+          note: cleanNote.trim(),
+          photo: photo.trim() || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`,
+          bio: 'Accredited trustee exercising fiduciary and strategic governance under the CSO Act of Bhutan 2007.',
+        };
+      });
     }
   } catch {
     // fallback to DEFAULT_BOARD
@@ -126,7 +132,7 @@ export default async function BoardOfTrusteesPage() {
             >
               <figure className="relative aspect-4/3 bg-stone-100 overflow-hidden">
                 <img
-                  src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  src={(member as any).photo || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
                   alt={member.name}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />

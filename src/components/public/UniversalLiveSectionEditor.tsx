@@ -24,6 +24,8 @@ import {
   Columns,
   ArrowUp,
   ArrowDown,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
@@ -117,6 +119,18 @@ export default function UniversalLiveSectionEditor({
 
   // Hero Slides (if hero section)
   const [slides, setSlides] = useState<any[]>([]);
+  const [slideFormOpen, setSlideFormOpen] = useState(false);
+  const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
+  const [slideForm, setSlideForm] = useState({
+    imageUrl: '',
+    caption: '',
+    altText: '',
+    linkUrl: '',
+    sortOrder: 0,
+    isActive: true,
+  });
+  const [slideSaving, setSlideSaving] = useState(false);
+  const [slideNotice, setSlideNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Footer Navigation State (if sectionType === 'footer')
   const [footerNavItems, setFooterNavItems] = useState<any[]>([]);
@@ -655,6 +669,114 @@ export default function UniversalLiveSectionEditor({
     setNewLinkHref('');
     setSelectedPagePreset('');
     setSelectedFooterCol(col);
+  };
+
+  // Hero Slides Interactive Operations
+  const flashSlideNotice = (type: 'success' | 'error', text: string) => {
+    setSlideNotice({ type, text });
+    setTimeout(() => setSlideNotice(null), 4000);
+  };
+
+  const reloadHeroSlides = async () => {
+    try {
+      const res = await fetch('/api/admin/hero-slides', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.slides) {
+          setSlides(data.slides);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+          }
+        }
+      }
+    } catch {}
+  };
+
+  const handleOpenAddSlide = () => {
+    setEditingSlideId(null);
+    setSlideForm({
+      imageUrl: '',
+      caption: '',
+      altText: '',
+      linkUrl: '',
+      sortOrder: slides.length + 1,
+      isActive: true,
+    });
+    setSlideFormOpen(true);
+  };
+
+  const handleOpenEditSlide = (slide: any) => {
+    setEditingSlideId(slide.id);
+    setSlideForm({
+      imageUrl: slide.imageUrl || '',
+      caption: slide.caption || '',
+      altText: slide.altText || slide.caption || '',
+      linkUrl: slide.linkUrl || '',
+      sortOrder: typeof slide.sortOrder === 'number' ? slide.sortOrder : 0,
+      isActive: slide.isActive !== false,
+    });
+    setSlideFormOpen(true);
+  };
+
+  const handleSaveSlide = async () => {
+    if (!slideForm.imageUrl.trim() || !slideForm.caption.trim()) {
+      flashSlideNotice('error', 'Please upload or choose an image and provide a slide caption.');
+      return;
+    }
+    setSlideSaving(true);
+    try {
+      const url = editingSlideId ? `/api/admin/hero-slides/${editingSlideId}` : '/api/admin/hero-slides';
+      const method = editingSlideId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: slideForm.imageUrl.trim(),
+          caption: slideForm.caption.trim(),
+          altText: slideForm.altText.trim() || slideForm.caption.trim(),
+          linkUrl: slideForm.linkUrl?.trim() || null,
+          sortOrder: Number(slideForm.sortOrder) || 0,
+          isActive: slideForm.isActive,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to save hero slide.');
+      }
+      flashSlideNotice('success', editingSlideId ? 'Hero slide updated successfully!' : 'New hero slide added successfully!');
+      setSlideFormOpen(false);
+      setEditingSlideId(null);
+      await reloadHeroSlides();
+    } catch (err: any) {
+      flashSlideNotice('error', err.message || 'Error saving slide.');
+    } finally {
+      setSlideSaving(false);
+    }
+  };
+
+  const handleToggleSlideActive = async (slide: any) => {
+    try {
+      const res = await fetch(`/api/admin/hero-slides/${slide.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !slide.isActive }),
+      });
+      if (res.ok) {
+        flashSlideNotice('success', `Slide "${slide.caption}" is now ${!slide.isActive ? 'Active' : 'Inactive'}.`);
+        await reloadHeroSlides();
+      }
+    } catch {}
+  };
+
+  const handleDeleteSlide = async (slide: any) => {
+    if (!window.confirm(`Are you sure you want to delete slide "${slide.caption}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/hero-slides/${slide.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        flashSlideNotice('success', `Slide "${slide.caption}" deleted.`);
+        await reloadHeroSlides();
+      }
+    } catch {}
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -3404,49 +3526,267 @@ export default function UniversalLiveSectionEditor({
                     )}
 
                     {sectionType === 'hero' && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                      <div className="space-y-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-100/70 p-3.5 rounded-xl border border-slate-200">
                           <div>
-                            <span className="text-xs font-bold text-slate-800">
-                              Active Hero Background Slides ({slides.length})
+                            <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                              <span>Hero Carousel Slides</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#8B2E24]/10 text-[#8B2E24] font-mono font-bold">
+                                {slides.length} {slides.length === 1 ? 'slide' : 'slides'}
+                              </span>
                             </span>
-                            <p className="text-[11px] text-slate-500">
-                              Artisan slides cycle automatically in the hero frame.
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Upload images directly from your device. Active slides auto-rotate on the homepage.
                             </p>
                           </div>
-                          <Link
-                            href="/admin/hero"
-                            target="_blank"
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-semibold transition-colors"
-                          >
-                            <span>Manage Full Slider</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleOpenAddSlide}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Upload New Slide</span>
+                            </button>
+                            <Link
+                              href="/admin/hero"
+                              target="_blank"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-colors"
+                            >
+                              <span>Admin Studio</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {slides.map((slide, idx) => (
-                            <div
-                              key={slide.id || idx}
-                              className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-3"
-                            >
-                              <div className="w-16 h-12 rounded-lg overflow-hidden relative shrink-0 bg-slate-200 border border-slate-300">
-                                <img
-                                  src={slide.imageUrl}
-                                  alt={slide.altText || slide.caption}
-                                  className="w-full h-full object-cover"
-                                />
+                        {slideNotice && (
+                          <div
+                            className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
+                              slideNotice.type === 'success'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                                : 'bg-rose-50 border-rose-200 text-rose-800'
+                            }`}
+                          >
+                            {slideNotice.type === 'success' ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                            )}
+                            <span className="font-medium">{slideNotice.text}</span>
+                          </div>
+                        )}
+
+                        {/* Slide Create / Edit Inline Modal / Drawer */}
+                        {slideFormOpen && (
+                          <div className="p-4 bg-white border-2 border-[#8B2E24]/30 rounded-2xl shadow-sm space-y-4">
+                            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                                <ImageIcon className="w-4 h-4 text-[#8B2E24]" />
+                                <span>{editingSlideId ? 'Edit Hero Slide' : 'Upload & Add New Hero Slide'}</span>
+                              </h4>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSlideFormOpen(false);
+                                  setEditingSlideId(null);
+                                }}
+                                className="text-slate-400 hover:text-slate-700 text-xs cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+
+                            <div className="space-y-3.5">
+                              <FileUploadInput
+                                value={slideForm.imageUrl}
+                                onChange={(url) => setSlideForm((f) => ({ ...f, imageUrl: url }))}
+                                label="Slide Photograph *"
+                                accept="image/*"
+                                hint="Drop image or click Choose File. Recommended 16:9 or 21:9 landscape (JPG, PNG, WebP)"
+                              />
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                    Slide Caption / Title *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={slideForm.caption}
+                                    onChange={(e) => setSlideForm((f) => ({ ...f, caption: e.target.value }))}
+                                    placeholder="e.g. Master Weaver at Khoma Loom"
+                                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                    Screen-Reader Alt Text
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={slideForm.altText}
+                                    onChange={(e) => setSlideForm((f) => ({ ...f, altText: e.target.value }))}
+                                    placeholder="e.g. Traditional backstrap weaving demonstration"
+                                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                                  />
+                                </div>
                               </div>
-                              <div className="min-w-0 flex-1">
-                                <span className="block text-xs font-bold text-slate-800 truncate">
-                                  {slide.caption || ('Slide #' + (idx + 1))}
-                                </span>
-                                <span className="block text-[10px] text-slate-500 truncate font-mono">
-                                  {slide.imageUrl}
-                                </span>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="sm:col-span-2">
+                                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                    Optional Link Destination
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={slideForm.linkUrl}
+                                    onChange={(e) => setSlideForm((f) => ({ ...f, linkUrl: e.target.value }))}
+                                    placeholder="e.g. /shop or /masters or /programmes"
+                                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                    Display Sort Order
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={slideForm.sortOrder}
+                                    onChange={(e) => setSlideForm((f) => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))}
+                                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 pt-1">
+                                <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none">
+                                  <input
+                                    type="checkbox"
+                                    checked={slideForm.isActive}
+                                    onChange={(e) => setSlideForm((f) => ({ ...f, isActive: e.target.checked }))}
+                                    className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24]"
+                                  />
+                                  <span className="font-semibold">Display slide actively in homepage hero rotation</span>
+                                </label>
                               </div>
                             </div>
-                          ))}
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSlideFormOpen(false);
+                                  setEditingSlideId(null);
+                                }}
+                                className="px-3.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-100 rounded-lg cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleSaveSlide}
+                                disabled={slideSaving}
+                                className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                              >
+                                {slideSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                                <span>{editingSlideId ? 'Save Slide Updates' : 'Add Slide to Hero'}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Slides List Grid */}
+                        <div className="space-y-2.5">
+                          {slides.length === 0 ? (
+                            <div className="text-center py-8 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
+                              <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                              <p className="text-xs font-bold text-slate-700">No Hero Slides Configured</p>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Click &ldquo;Upload New Slide&rdquo; above to add your first homepage background slide.
+                              </p>
+                            </div>
+                          ) : (
+                            slides.map((slide, idx) => (
+                              <div
+                                key={slide.id || idx}
+                                className={`p-3 bg-white border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs transition-all ${
+                                  slide.isActive === false ? 'opacity-60 border-dashed border-slate-300 bg-slate-50/50' : 'border-slate-200 hover:border-slate-300'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                  <div className="w-16 h-12 rounded-lg overflow-hidden relative shrink-0 bg-slate-100 border border-slate-200">
+                                    <img
+                                      src={slide.imageUrl}
+                                      alt={slide.altText || slide.caption}
+                                      className="w-full h-full object-cover"
+                                    />
+                                    {slide.isActive === false && (
+                                      <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center text-[9px] text-white font-bold uppercase">
+                                        Off
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-bold text-slate-800 truncate">
+                                        {slide.caption || (`Slide #${idx + 1}`)}
+                                      </span>
+                                      <span
+                                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                          slide.isActive !== false
+                                            ? 'bg-emerald-100 text-emerald-800'
+                                            : 'bg-slate-200 text-slate-600'
+                                        }`}
+                                      >
+                                        {slide.isActive !== false ? 'Live' : 'Hidden'}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-500 truncate mt-0.5 font-mono">
+                                      {slide.imageUrl}
+                                    </p>
+                                    {slide.linkUrl && (
+                                      <p className="text-[10px] text-[#8B2E24] truncate mt-0.5">
+                                        Link: {slide.linkUrl}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleSlideActive(slide)}
+                                    className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
+                                      slide.isActive !== false
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+                                        : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                                    title={slide.isActive !== false ? 'Hide from carousel' : 'Show in carousel'}
+                                  >
+                                    {slide.isActive !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenEditSlide(slide)}
+                                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs transition-colors cursor-pointer"
+                                    title="Edit slide photo or details"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteSlide(slide)}
+                                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 text-xs transition-colors cursor-pointer"
+                                    title="Delete slide"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
