@@ -979,14 +979,14 @@ export default function Header() {
                         onClick={() => setMobileNavOpen(false)}
                         className="text-center py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-semibold"
                       >
-                        All Products
+                        {t('menu.all_products', 'All Products')}
                       </Link>
                       <Link
                         href="/wholesale"
                         onClick={() => setMobileNavOpen(false)}
                         className="text-center py-1.5 rounded-lg bg-[#FAF5EE] border border-[#E4DDD1] text-xs font-semibold text-[#8B2E24] hover:bg-[#F3ECE1]"
                       >
-                        Wholesale →
+                        {t('nav.wholesale', 'Wholesale →')}
                       </Link>
                     </div>
                   </div>
@@ -1000,42 +1000,42 @@ export default function Header() {
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs font-semibold text-[#C9A46A]"
                 >
-                  Track order &rarr;
+                  {t('nav.track_order', 'Track order')} &rarr;
                 </Link>
                 <Link
                   href="/contact"
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
                 >
-                  Contact us
+                  {t('nav.contact', 'Contact us')}
                 </Link>
                 <Link
                   href="/tenders"
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
                 >
-                  Tenders &amp; Procurement
+                  {t('tenders.title', 'Tenders & Procurement')}
                 </Link>
                 <Link
                   href="/publications"
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
                 >
-                  Reports &amp; Publications
+                  {t('nav.publications', 'Reports & Publications')}
                 </Link>
                 <Link
                   href="/donate"
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
                 >
-                  Donate & Support Artisans
+                  {t('btn.donate', 'Donate & Support Artisans')}
                 </Link>
                 <Link
                   href="/wholesale"
                   onClick={() => setMobileNavOpen(false)}
                   className="block py-1.5 px-2 text-xs text-stone-600 hover:text-stone-900"
                 >
-                  Wholesale & Trade
+                  {t('nav.wholesale', 'Wholesale & Trade')}
                 </Link>
               </div>
             </div>

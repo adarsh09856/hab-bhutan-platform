@@ -114,7 +114,8 @@ const PUNAKHA_SLIDES = [
 export default function HomePage() {
   const router = useRouter();
   const { currency, fmt } = useCurrency();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const isDz = language === 'dz';
   const { addToCart } = useCart();
 
   // Dynamic States initialized with exact client reference fallbacks
@@ -772,13 +773,13 @@ export default function HomePage() {
           </p>
           <div className="actions flex flex-wrap items-center gap-3">
             <Link className="btn btn--ink" href="/about">
-              Our mission
+              {isDz ? 'ང་བཅས་ཀྱི་དམིགས་ཡུལ' : (siteSettings.heroCtaPrimaryText || 'Our mission')}
             </Link>
             <Link className="btn btn--outline" href="/shop">
-              Shop the crafts →
+              {isDz ? 'ལག་བཟོ་ཚོང་ཉོ →' : ((siteSettings as any).heroCtaSecondaryText || 'Shop the crafts →')}
             </Link>
             <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/members">
-              Find a member
+              {isDz ? 'འཐུས་མི་འཚོལ' : 'Find a member'}
             </Link>
           </div>
         </div>
@@ -886,19 +887,19 @@ export default function HomePage() {
         />
         <div className="buyband">
           <div className="buyband__copy">
-            <p className="eyebrow eyebrow--accent">Two ways to buy</p>
-            <h2 className="display display--sub">Retail or trade</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'ཉོ་ཐངས་ལམ་ལུགས་གཉིས' : 'Two ways to buy'}</p>
+            <h2 className="display display--sub">{isDz ? 'སྡེབ་ཚོང་དང་ཆོས་ཉོ' : 'Retail or trade'}</h2>
           </div>
           <div className="buyband__actions">
             <Link className="buybtn" href="/shop">
-              <span className="buybtn__label">Retail</span>
-              <span className="buybtn__name">Visit the e-shop</span>
-              <span className="buybtn__note">Single pieces, shipped worldwide</span>
+              <span className="buybtn__label">{isDz ? 'ཆོས་ཉོ' : 'Retail'}</span>
+              <span className="buybtn__name">{isDz ? 'གློག་རྡུལ་ཚོང་ཁང་ནང་གཟིགས' : 'Visit the e-shop'}</span>
+              <span className="buybtn__note">{isDz ? 'འཛམ་གླིང་ཡོངས་ལུ་སྐྱེལ་འདྲེན་ཡོད' : 'Single pieces, shipped worldwide'}</span>
             </Link>
             <Link className="buybtn buybtn--trade" href="/wholesale">
-              <span className="buybtn__label">Trade</span>
-              <span className="buybtn__name">Wholesale &amp; bulk</span>
-              <span className="buybtn__note">Trade pricing on approval</span>
+              <span className="buybtn__label">{isDz ? 'སྡེབ་ཚོང' : 'Trade'}</span>
+              <span className="buybtn__name">{isDz ? 'སྡེབ་ཚོང་དང་བཀའ་རྒྱ་ཆེན་པོ' : 'Wholesale & bulk'}</span>
+              <span className="buybtn__note">{isDz ? 'ཚོང་འབྲེལ་རིན་གོང་གནང་ཡོད' : 'Trade pricing on approval'}</span>
             </Link>
           </div>
         </div>
@@ -1007,31 +1008,31 @@ export default function HomePage() {
         <div className="assurance">
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">{siteSettings.assurance1Title?.charAt(0) || 'T'}</span>
-              <span>{siteSettings.assurance1Title ? siteSettings.assurance1Title.slice(1) : 'racked Origin'}</span>
+              <span className="assurance__initial">{isDz ? 'འ' : (siteSettings.assurance1Title?.charAt(0) || 'T')}</span>
+              <span>{isDz ? 'བྱུང་ཁུངས་རྗེས་འདེད' : (siteSettings.assurance1Title ? siteSettings.assurance1Title.slice(1) : 'racked Origin')}</span>
             </h3>
-            <p className="assurance__body">{siteSettings.assurance1Text || 'Materials, makers, and worldwide shipping are 100% traceable.'}</p>
+            <p className="assurance__body">{isDz ? 'རྒྱུ་ཆ་དང་བཟོ་མི་ཚུ་ ༡༠༠% རྗེས་འདེད་འབད་བཏུབ།' : (siteSettings.assurance1Text || 'Materials, makers, and worldwide shipping are 100% traceable.')}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">{siteSettings.assurance2Title?.charAt(0) || 'R'}</span>
-              <span>{siteSettings.assurance2Title ? siteSettings.assurance2Title.slice(1) : 'egistered Chain'}</span>
+              <span className="assurance__initial">{isDz ? 'ཐ' : (siteSettings.assurance2Title?.charAt(0) || 'R')}</span>
+              <span>{isDz ? 'ོ་བཀོད་འབྲེལ་མཐུད' : (siteSettings.assurance2Title ? siteSettings.assurance2Title.slice(1) : 'egistered Chain')}</span>
             </h3>
-            <p className="assurance__body">{siteSettings.assurance2Text || 'Every artisan, supplier, and input is strictly verified.'}</p>
+            <p className="assurance__body">{isDz ? 'ལག་བཟོ་པ་དང་མཁོ་སྤྲོད་པ་ཆ་མཉམ་ ཞིབ་བཤེར་འབད་ཡོད།' : (siteSettings.assurance2Text || 'Every artisan, supplier, and input is strictly verified.')}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">{siteSettings.assurance3Title?.charAt(0) || 'U'}</span>
-              <span>{siteSettings.assurance3Title ? siteSettings.assurance3Title.slice(1) : 'pfront & Fair'}</span>
+              <span className="assurance__initial">{isDz ? 'ད' : (siteSettings.assurance3Title?.charAt(0) || 'U')}</span>
+              <span>{isDz ? 'ྲང་བདེན་རིན་གོང' : (siteSettings.assurance3Title ? siteSettings.assurance3Title.slice(1) : 'pfront & Fair')}</span>
             </h3>
-            <p className="assurance__body">{siteSettings.assurance3Text || 'Pre-paid artisan pricing cuts out unethical markups.'}</p>
+            <p className="assurance__body">{isDz ? 'ལག་བཟོ་པ་ཚུ་ལུ་ སྔོན་འགྲོའི་དྲང་བདེན་རིན་གོང་སྤྲོདཔ་ཨིན།' : (siteSettings.assurance3Text || 'Pre-paid artisan pricing cuts out unethical markups.')}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">{siteSettings.assurance4Title?.charAt(0) || 'E'}</span>
-              <span>{siteSettings.assurance4Title ? siteSettings.assurance4Title.slice(1) : 'ncrypted Escrow'}</span>
+              <span className="assurance__initial">{isDz ? 'ཉ' : (siteSettings.assurance4Title?.charAt(0) || 'E')}</span>
+              <span>{isDz ? 'ེན་སྲུང་དངུལ་སྤྲོད' : (siteSettings.assurance4Title ? siteSettings.assurance4Title.slice(1) : 'ncrypted Escrow')}</span>
             </h3>
-            <p className="assurance__body">{siteSettings.assurance4Text || 'Bulletproof 3-D Secure, mBoB, and bank transfers.'}</p>
+            <p className="assurance__body">{isDz ? 'ཉེན་སྲུང་ལྡན་པའི་ 3-D Secure དང་ mBoB དངུལ་སྤྲོད།' : (siteSettings.assurance4Text || 'Bulletproof 3-D Secure, mBoB, and bank transfers.')}</p>
           </div>
         </div>
       </section>
@@ -1216,14 +1217,16 @@ export default function HomePage() {
         <SectionEditBadge label="13 Crafts of Bhutan" studioHref="/admin/crafts" />
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Zorig Chusum</p>
-            <h2 className="display display--band">The 13 arts &amp; crafts of Bhutan</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'བཟོ་རིག་བཅུ་གསུམ' : 'Zorig Chusum'}</p>
+            <h2 className="display display--band">{isDz ? 'འབྲུག་གི་བཟོ་རིག་བཅུ་གསུམ' : 'The 13 arts & crafts of Bhutan'}</h2>
             <p className="section__lede">
-              First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.
+              {isDz
+                ? 'དུས་རབས་ ༡༧ པ་ལུ་ གཞུང་འབྲེལ་དབྱེ་ཁག་ཕྱེས་ཡོད་པའི་ ལག་བཟོ་བཅུ་གསུམ་གྱི་ ཐོན་སྐྱེད་ཚུ་ ཚོང་ཁང་ནང་ལས་ ཐད་ཀར་དུ་ཉོ་བཏུབ།'
+                : 'First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.'}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/shop">
-            Shop all crafts →
+            {isDz ? 'ལག་བཟོ་ཆ་མཉམ་གཟིགས →' : 'Shop all crafts →'}
           </Link>
         </div>
 
@@ -1391,10 +1394,12 @@ export default function HomePage() {
         />
         <div className="duo">
           <div className="panel">
-            <p className="eyebrow eyebrow--muted">Search the crafts</p>
-            <h3 className="display display--panel">{siteSettings.membershipLeftTitle || 'Find a craft, a maker or a piece'}</h3>
+            <p className="eyebrow eyebrow--muted">{isDz ? 'ལག་བཟོ་འཚོལ' : 'Search the crafts'}</p>
+            <h3 className="display display--panel">{isDz ? 'ལག་བཟོ་དང་ བཟོ་མི་འཚོལ' : (siteSettings.membershipLeftTitle || 'Find a craft, a maker or a piece')}</h3>
             <p className="panel__body">
-              {siteSettings.membershipLeftText || 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.'}
+              {isDz
+                ? 'བཟོ་རིག་བཅུ་གསུམ་དང་ གཟེངས་བསྟོད་ཐོབ་མི་ལག་བཟོ་པ ལག་བཟོའི་གླིང་ཚུ་ འཚོལ་ཞིབ་འབད།'
+                : (siteSettings.membershipLeftText || 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.')}
             </p>
             <form className="inline-form" onSubmit={handleMemberSearch}>
               <label className="visually-hidden" htmlFor="memberSearch">Search crafts, makers, clusters and products</label>
@@ -1402,26 +1407,28 @@ export default function HomePage() {
                 className="input"
                 id="memberSearch"
                 type="search"
-                placeholder="Try weaving, Lhuentse, bowl, Khoma…"
+                placeholder={isDz ? 'ཐག་བཟོ ལྷུན་རྩེ་ ཕོར་པ ཁོ་མ…' : 'Try weaving, Lhuentse, bowl, Khoma…'}
                 autoComplete="off"
                 value={memberSearchTerm}
                 onChange={(e) => setMemberSearchTerm(e.target.value)}
               />
-              <button className="btn btn--ink" type="submit">Search</button>
+              <button className="btn btn--ink" type="submit">{isDz ? 'འཚོལ་ཞིབ' : 'Search'}</button>
             </form>
           </div>
           <div className="panel panel--accent">
-            <p className="eyebrow eyebrow--onaccent">Join HAB</p>
-            <h3 className="display display--panel display--onaccent">{siteSettings.membershipRightTitle || 'Become a member'}</h3>
+            <p className="eyebrow eyebrow--onaccent">{isDz ? 'འཐུས་མི་འགྱུར' : 'Join HAB'}</p>
+            <h3 className="display display--panel display--onaccent">{isDz ? 'འཐུས་མིའི་ཐོ་བཀོད' : (siteSettings.membershipRightTitle || 'Become a member')}</h3>
             <p className="panel__body panel__body--onaccent">
-              {siteSettings.membershipRightText || 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.'}
+              {isDz
+                ? 'དྲ་ཐོག་ལས་ཞུ་བ་ཕུལ ལོ་བསྟར་འཐུས་མིའི་འཐུས་ ཀརཌི་ mBoB ཡང་ན་ དངུལ་ཁང་ཐོག་ལས་སྤྲོད་དེ་ ཐོ་བཀོད་འབད།'
+                : (siteSettings.membershipRightText || 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.')}
             </p>
             <div className="actions">
               <Link className="btn btn--light" href="/register">
-                {siteSettings.membershipRightCtaText || 'Apply for membership'}
+                {isDz ? 'འཐུས་མིའི་ཞུ་བ་ཕུལ' : (siteSettings.membershipRightCtaText || 'Apply for membership')}
               </Link>
-              <Link className="btn btn--ghost" href="/membership#login">
-                Member login
+              <Link className="btn btn--ghost" href="/login">
+                {isDz ? 'འཐུས་མི་ནང་འཛུལ' : 'Member login'}
               </Link>
             </div>
           </div>

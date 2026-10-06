@@ -339,7 +339,7 @@ export default function AboutPage() {
       </section>
 
       {/* 6. Board of Trustees */}
-      <section className="section relative" data-hab-section="about-board">
+      <section className="section relative" id="board" data-hab-section="about-board">
         <SectionEditBadge
           label="Board of Trustees"
           studioHref="/admin/pages/about#board"
@@ -376,7 +376,7 @@ export default function AboutPage() {
       </section>
 
       {/* 7. Secretariat */}
-      <section className="section relative" data-hab-section="about-team">
+      <section className="section relative" id="secretariat" data-hab-section="about-team">
         <SectionEditBadge
           label="Secretariat Team"
           studioHref="/admin/pages/about#team"

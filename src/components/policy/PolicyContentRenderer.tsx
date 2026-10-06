@@ -12,10 +12,22 @@ export function PolicyContentRenderer({ content }: { content: string }) {
         if (trimmed.startsWith('## ')) {
           const heading = trimmed.replace(/^##\s+/, '');
           const id = heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          const lower = heading.toLowerCase();
+          const alias = lower.includes('return') || lower.includes('refund') ? 'returns' :
+            lower.includes('duty') || lower.includes('custom') ? 'duty' :
+            lower.includes('dispatch') || lower.includes('handling') ? 'dispatch' :
+            lower.includes('method') || lower.includes('delivery') ? 'methods' :
+            lower.includes('charge') ? 'charges' :
+            lower.includes('track') ? 'tracking' :
+            lower.includes('damage') || lower.includes('loss') ? 'damage' :
+            lower.includes('trade') || lower.includes('wholesale') ? 'trade' : null;
           return (
-            <h2 key={idx} id={id} className="text-xl font-bold mt-6 mb-2">
-              {heading}
-            </h2>
+            <div key={idx} className="relative">
+              {alias && alias !== id && <span id={alias} className="absolute -top-24 block invisible" />}
+              <h2 id={id} className="text-xl font-bold mt-6 mb-2">
+                {heading}
+              </h2>
+            </div>
           );
         }
 

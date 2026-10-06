@@ -8,31 +8,66 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 const FOOTER_TRANSLATIONS: Record<string, string> = {
+  // Columns
   "Association": "ཚོགས་པ",
   "Shop & support": "ཚོང་ཁང་དང་རྒྱབ་སྐྱོར",
+  "Shop & Support": "ཚོང་ཁང་དང་རྒྱབ་སྐྱོར",
   "Members": "འཐུས་མི",
   "Governance": "འཛིན་སྐྱོང",
+  "General": "སྤྱིར་བཏང",
+
+  // Association links
   "About HAB": "ང་བཅས་ཀྱི་སྐོར",
+  "About Us": "ང་བཅས་ཀྱི་སྐོར",
   "Programmes": "ལས་རིམ",
   "Projects": "ལས་འགུལ",
-  "Membership": "འཐུས་མི",
-  "News & events": "གནས་ཚུལ",
+  "Membership": "འཐུས་མིའི་སྐོར",
+  "News & events": "གནས་ཚུལ་དང་མཛད་སྒོ",
+  "News & Events": "གནས་ཚུལ་དང་མཛད་སྒོ",
   "Contact us": "འབྲེལ་གཏུག",
+  "Contact Us": "འབྲེལ་གཏུག",
+
+  // Shop & Support links
   "E-shop": "གློག་རྡུལ་ཚོང་ཁང",
+  "Shop": "ཚོང་ཁང",
   "Wholesale & bulk orders": "སྡེབ་ཚོང་དང་བཀའ་རྒྱ་ཆེན་པོ",
+  "Wholesale": "སྡེབ་ཚོང",
   "Shipping & delivery policy": "སྐྱེལ་འདྲེན་སྲིད་བྱུས",
+  "Shipping & delivery": "སྐྱེལ་འདྲེན་སྲིད་བྱུས",
+  "Shipping policy": "སྐྱེལ་འདྲེན་སྲིད་བྱུས",
   "Returns & refunds policy": "ལོག་སྤྲོད་དང་དངུལ་ལོག་སྲིད་བྱུས",
+  "Returns & refunds": "ལོག་སྤྲོད་དང་དངུལ་ལོག་སྲིད་བྱུས",
+  "Returns": "ལོག་སྤྲོད་དང་དངུལ་ལོག",
   "Track your order": "བཀའ་རྒྱའི་རྗེས་འདེད",
+  "Track order": "བཀའ་རྒྱའི་རྗེས་འདེད",
   "Duties & customs policy": "འགག་སྒོའི་སྲིད་བྱུས",
+  "Duty & customs": "འགག་སྒོའི་སྲིད་བྱུས",
+
+  // Members links
   "Directory by category": "འཐུས་མིའི་དཀར་ཆག",
   "Publications": "དཔེ་སྐྲུན",
-  "Member shops & clusters": "འཐུས་མིའི་ཚོང་ཁང་དང་གླིང",
+  "Publications & downloads": "དཔེ་སྐྲུན་དང་ཕབ་ལེན",
+  "Member shops & clusters": "འཐུས་མིའི་ཚོང་ཁང་དང་ལག་བཟོའི་གླིང",
+  "Member shops & outlets": "འཐུས་མིའི་ཚོང་ཁང་ཚུ",
+  "Craft clusters": "ལག་བཟོའི་གླིང",
   "Member login": "འཐུས་མི་ནང་འཛུལ",
   "Apply to join": "འཐུས་མིའི་ཞུ་བ་ཕུལ",
+  "Register as member": "འཐུས་མི་ཐོ་བཀོད",
+
+  // Governance links
   "Board of Trustees": "འཛིན་སྐྱོང་ལྷན་ཚོགས",
   "Secretariat": "དྲུང་ཆེའི་ཡིག་ཚང",
   "Secretariat Desk": "དྲུང་ཆེའི་ཡིག་ཚང",
   "Secretary Desk": "དྲུང་ཆེའི་ཡིག་ཚང",
+  "Annual reports": "ལོ་བསྟར་སྙན་ཞུ",
+  "Audited accounts": "རྩིས་ཞིབ་སྙན་ཞུ",
+  "Tenders & vacancies": "རིན་བསྡུར་དང་ལས་གནས",
+  "Tenders & procurement": "རིན་བསྡུར་དང་མཁོ་སྒྲུབ",
+  "Tenders": "རིན་བསྡུར",
+  "Terms of service": "ཞབས་ཏོག་གནས་སྟངས",
+  "Terms & conditions": "གནས་སྟངས་དང་ཆ་རྐྱེན",
+  "Terms & Conditions": "གནས་སྟངས་དང་ཆ་རྐྱེན",
+  "Privacy policy": "གསང་རྒྱའི་སྲིད་བྱུས",
   "Website Policies & Standards": "དྲ་ཚིགས་ཀྱི་སྲིད་བྱུས་དང་ཚད་གཞི",
 };
 
@@ -51,6 +86,18 @@ export default function Footer() {
     copyrightText: '© 2026 Handicrafts Association of Bhutan. All rights reserved.',
     footerAbout: 'A registered Civil Society Organization under the CSO Act of Bhutan 2007. Established 2005.',
   });
+
+  const translateText = (text: string) => {
+    if (!isDz || !text) return text;
+    if (FOOTER_TRANSLATIONS[text]) return FOOTER_TRANSLATIONS[text];
+    const clean = text.trim();
+    if (FOOTER_TRANSLATIONS[clean]) return FOOTER_TRANSLATIONS[clean];
+    const key = Object.keys(FOOTER_TRANSLATIONS).find(
+      (k) => k.toLowerCase() === clean.toLowerCase()
+    );
+    if (key) return FOOTER_TRANSLATIONS[key];
+    return text;
+  };
 
   const [footerCols, setFooterCols] = useState([
     {
@@ -78,21 +125,21 @@ export default function Footer() {
     {
       title: "Members",
       links: [
-        { label: "Directory by category", href: "/membership" },
+        { label: "Directory by category", href: "/members" },
         { label: "Publications", href: "/publications" },
         { label: "Member shops & clusters", href: "/outlets" },
-        { label: "Member login", href: "/membership#login" },
+        { label: "Member login", href: "/login" },
         { label: "Apply to join", href: "/register" },
       ]
     },
     {
       title: "Governance",
       links: [
-        { label: "Board of Trustees", href: "/about" },
-        { label: "Secretariat", href: "/about" },
-        { label: "Annual reports", href: "/publications" },
-        { label: "Audited accounts", href: "/publications" },
-        { label: "Tenders & vacancies", href: "/news" },
+        { label: "Board of Trustees", href: "/about#board" },
+        { label: "Secretariat", href: "/about#secretariat" },
+        { label: "Annual reports", href: "/publications?kind=Annual+report" },
+        { label: "Audited accounts", href: "/publications?kind=Audited+accounts" },
+        { label: "Tenders & vacancies", href: "/tenders" },
         { label: "Terms of service", href: "/terms" },
         { label: "Privacy policy", href: "/privacy" },
       ]
@@ -116,6 +163,18 @@ export default function Footer() {
 
     loadSettings();
 
+    const normalizeHref = (label: string, href: string) => {
+      const l = (label || '').toLowerCase();
+      if (l.includes('directory')) return '/members';
+      if (l === 'member login') return '/login';
+      if (l.includes('tender')) return '/tenders';
+      if (l.includes('board of trustees')) return '/about#board';
+      if (l === 'secretariat') return '/about#secretariat';
+      if (l.includes('annual report')) return '/publications?kind=Annual+report';
+      if (l.includes('audited account')) return '/publications?kind=Audited+accounts';
+      return href;
+    };
+
     const loadNav = () => {
       fetch('/api/navigation', { cache: 'no-store' })
         .then((r) => r.json())
@@ -125,7 +184,7 @@ export default function Footer() {
               title: colTitle,
               links: data.footer[colTitle].map((l: any) => ({
                 label: l.label,
-                href: l.href,
+                href: normalizeHref(l.label, l.href),
               })),
             }));
             if (cols.length > 0) {
@@ -176,8 +235,12 @@ export default function Footer() {
             <img className="logo__img" src="/assets/hab-logo-footer.png" alt="Handicrafts Association of Bhutan" width="3412" height="1296" />
           </Link>
           <div className="signoff__text">
-            <p className="signoff__name">Handicrafts Association of Bhutan</p>
-            <p className="signoff__line">{settings.footerAbout}</p>
+            <p className="signoff__name">{isDz ? 'འབྲུག་གི་ལག་བཟོ་ཚོགས་པ' : 'Handicrafts Association of Bhutan'}</p>
+            <p className="signoff__line">
+              {isDz
+                ? 'འབྲུག་གི་ལག་བཟོ་ཚོགས་པ་ (HAB) འདི་ སྤྱི་ལོ་ ༢༠༠༥ ལུ་གཞི་བཙུགས་འབད་ཡོདཔ་དང་ སྤྱི་ཚོགས་ལས་ཚོགས་ཁྲིམས་ཡིག་ ༢༠༠༧ གྱི་འོག་ལུ་ དེབ་སྐྱེལ་འབད་ཡོད་པའི་ མི་མང་ཕན་བདེ་ལས་ཚོགས་ཨིན།'
+                : settings.footerAbout}
+            </p>
           </div>
           {hasSocial && (
             <div className="signoff__social">
@@ -233,12 +296,12 @@ export default function Footer() {
         </div>
 
         {footerCols.map((col) => {
-          const colTitle = isDz ? (FOOTER_TRANSLATIONS[col.title] || col.title) : col.title;
+          const colTitle = translateText(col.title);
           return (
             <nav key={col.title} className="footer__col" aria-label={colTitle}>
               <h2 className="footer__title">{colTitle}</h2>
               {col.links.map((link) => {
-                const linkText = isDz ? (FOOTER_TRANSLATIONS[link.label] || link.label) : link.label;
+                const linkText = translateText(link.label);
                 return (
                   <Link key={link.label} href={link.href}>{linkText}</Link>
                 );
@@ -249,7 +312,11 @@ export default function Footer() {
       </div>
 
       <div className="footer__bar">
-        <span>{settings.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043'}</span>
+        <span>
+          {isDz
+            ? '© ༢༠༢༦ འབྲུག་གི་ལག་བཟོ་ཚོགས་པ། ཐོབ་དབང་ཆ་མཉམ་ཡོད། · དེབ་སྐྱེལ་ CSO/2011/043'
+            : (settings.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043')}
+        </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span>
             {isDz

@@ -35,6 +35,16 @@ export default function PublicationsPage() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const k = params.get('kind');
+      if (k) {
+        setSelectedKind(k);
+      }
+    }
+  }, []);
+
   const kinds = useMemo(() => {
     return Array.from(new Set(publications.map((p) => p.kind))).filter(Boolean).sort();
   }, [publications]);
@@ -45,8 +55,14 @@ export default function PublicationsPage() {
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
+    const selK = selectedKind.trim().toLowerCase();
     return publications.filter((p) => {
-      const matchKind = !selectedKind || p.kind === selectedKind;
+      const pKind = (p.kind || '').toLowerCase();
+      const matchKind =
+        !selK ||
+        pKind === selK ||
+        (selK.includes('account') && pKind.includes('account')) ||
+        (selK.includes('annual') && pKind.includes('annual'));
       const matchYear = !selectedYear || String(p.year) === selectedYear;
       const matchQ = !q || p.title.toLowerCase().includes(q) || (p.abstract && p.abstract.toLowerCase().includes(q));
       return matchKind && matchYear && matchQ;

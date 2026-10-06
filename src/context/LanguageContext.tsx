@@ -113,7 +113,13 @@ export const TRANSLATIONS: Translations = {
   'footer.privacy': { en: 'Privacy Policy', dz: 'གསང་རྒྱའི་སྲིད་བྱུས' },
   'footer.refund': { en: 'Return & Refund Policy', dz: 'ལོག་སྤྲོད་དང་དངུལ་ལོག་སྲིད་བྱུས' },
   'footer.shipping': { en: 'Shipping Policy', dz: 'སྐྱེལ་འདྲེན་སྲིད་བྱུས' },
+  'footer.annual_reports': { en: 'Annual reports', dz: 'ལོ་བསྟར་སྙན་ཞུ' },
+  'footer.audited_accounts': { en: 'Audited accounts', dz: 'རྩིས་ཞིབ་སྙན་ཞུ' },
+  'footer.tenders_vacancies': { en: 'Tenders & vacancies', dz: 'རིན་བསྡུར་དང་ལས་གནས' },
+  'footer.board': { en: 'Board of Trustees', dz: 'འཛིན་སྐྱོང་ལྷན་ཚོགས' },
+  'footer.secretariat': { en: 'Secretariat', dz: 'དྲུང་ཆེའི་ཡིག་ཚང' },
   'footer.rights': { en: 'All rights reserved.', dz: 'ཐོབ་དབང་ཆ་མཉམ་ཡོད' },
+  'footer.policies_standards': { en: 'Website Policies & Standards', dz: 'དྲ་ཚིགས་ཀྱི་སྲིད་བྱུས་དང་ཚད་གཞི' },
 
   // Common Buttons & Labels
   'btn.read_more': { en: 'Read more →', dz: 'ལྷག་པར་གཟིགས →' },
@@ -121,6 +127,9 @@ export const TRANSLATIONS: Translations = {
   'btn.contact': { en: 'Contact us', dz: 'འབྲེལ་གཏུག' },
   'btn.donate': { en: 'Donate to HAB', dz: 'ཞལ་འདེབས་ཕུལ' },
   'btn.view_all': { en: 'View all →', dz: 'ཆ་མཉམ་གཟིགས →' },
+  'btn.our_mission': { en: 'Our mission', dz: 'ང་བཅས་ཀྱི་དམིགས་ཡུལ' },
+  'btn.shop_crafts': { en: 'Shop the crafts →', dz: 'ལག་བཟོ་ཚོང་ཉོ →' },
+  'btn.find_member': { en: 'Find a member', dz: 'འཐུས་མི་འཚོལ' },
   'currency.usd': { en: 'USD $', dz: 'ཨ་རིའི་ཌོ་ལར $' },
   'currency.btn': { en: 'Nu. BTN', dz: 'དངུལ་ཀྲམ Nu.' },
   'lang.en': { en: 'English', dz: 'དབྱིན་སྐད' },
@@ -140,8 +149,17 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en');
 
-  // Hydrate from localStorage or Admin Default, and listen for Admin updates
+  // Hydrate immediately from localStorage and listen for updates
   useEffect(() => {
+    // 1. Immediately apply user preference if saved
+    try {
+      const saved = typeof window !== 'undefined' ? (localStorage.getItem('hab_language') as Language) : null;
+      if (saved === 'en' || saved === 'dz') {
+        setLanguageState(saved);
+        document.documentElement.lang = saved;
+      }
+    } catch {}
+
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'hab_language' && (e.newValue === 'en' || e.newValue === 'dz')) {
         setLanguageState(e.newValue);
@@ -150,38 +168,33 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener('storage', handleStorage);
 
-    // Fetch default language from Admin Site Settings
+    const handleCustomChange = (e: any) => {
+      if (e.detail?.language && (e.detail.language === 'en' || e.detail.language === 'dz')) {
+        setLanguageState(e.detail.language);
+        document.documentElement.lang = e.detail.language;
+      }
+    };
+    window.addEventListener('hab:language-changed', handleCustomChange);
+
+    // Fetch site settings; only set language if user hasn't chosen one explicitly
     fetch('/api/site-settings', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
-        const adminLang = d?.setting?.defaultLanguage || d?.settings?.defaultLanguage;
-        const lastAdminLang = typeof window !== 'undefined' ? localStorage.getItem('hab_last_admin_lang') : null;
-        
-        if (adminLang === 'dz' || adminLang === 'en') {
-          // If admin has changed default language in admin panel, adopt immediately
-          if (adminLang !== lastAdminLang) {
+        const userSaved = typeof window !== 'undefined' ? localStorage.getItem('hab_language') : null;
+        if (!userSaved) {
+          const adminLang = d?.setting?.defaultLanguage || d?.settings?.defaultLanguage;
+          if (adminLang === 'dz' || adminLang === 'en') {
             setLanguageState(adminLang);
             document.documentElement.lang = adminLang;
             localStorage.setItem('hab_language', adminLang);
-            localStorage.setItem('hab_last_admin_lang', adminLang);
-            return;
           }
-        }
-
-        // Otherwise respect user preference
-        const saved = typeof window !== 'undefined' ? (localStorage.getItem('hab_language') as Language) : null;
-        if (saved === 'en' || saved === 'dz') {
-          setLanguageState(saved);
-          document.documentElement.lang = saved;
-        } else if (adminLang === 'dz' || adminLang === 'en') {
-          setLanguageState(adminLang);
-          document.documentElement.lang = adminLang;
         }
       })
       .catch(() => {});
 
     return () => {
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('hab:language-changed', handleCustomChange);
     };
   }, []);
 
@@ -189,7 +202,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(lang);
     try {
       localStorage.setItem('hab_language', lang);
+      localStorage.setItem('hab_user_selected_lang', 'true');
       document.documentElement.lang = lang;
+      window.dispatchEvent(new CustomEvent('hab:language-changed', { detail: { language: lang } }));
     } catch {
       // Ignore
     }
