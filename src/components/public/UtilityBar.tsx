@@ -5,20 +5,30 @@ import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function UtilityBar() {
-  const [announcement, setAnnouncement] = useState('Registered CSO · CSO Act of Bhutan 2007');
-  const [announcementLink, setAnnouncementLink] = useState<string | null>(null);
+  const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; link?: string }>>([
+    { text: 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex Civil Society Organization', link: '/about' },
+    { text: 'Official Secretary Desk: +975-2-338089 · officehab@gmail.com', link: '/contact' },
+    { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
+    { text: 'Track orders worldwide with authentic craft certificates', link: '/track-order' },
+  ]);
+  const [currentTickerIdx, setCurrentTickerIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [secretaryPhone, setSecretaryPhone] = useState('+975-2-338089');
   const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
   const [visible, setVisible] = useState(true);
-  const { language, toggleLanguage } = useLanguage();
+  const { language, toggleLanguage, t } = useLanguage();
+  const isDz = language === 'dz';
 
   useEffect(() => {
     fetch('/api/site-settings')
       .then((r) => r.json())
       .then((data) => {
         if (data?.setting) {
-          if (data.setting.announcementText) setAnnouncement(data.setting.announcementText);
-          if (data.setting.announcementLink) setAnnouncementLink(data.setting.announcementLink);
+          if (data.setting.tickerMessages && Array.isArray(data.setting.tickerMessages) && data.setting.tickerMessages.length > 0) {
+            setTickerMessages(data.setting.tickerMessages);
+          } else if (data.setting.announcementText) {
+            setTickerMessages([{ text: data.setting.announcementText, link: data.setting.announcementLink || undefined }]);
+          }
           if (data.setting.secretaryPhone) setSecretaryPhone(data.setting.secretaryPhone);
           if (data.setting.secretaryEmail) setSecretaryEmail(data.setting.secretaryEmail);
           if (data.setting.isAnnouncementOn !== undefined) setVisible(Boolean(data.setting.isAnnouncementOn));
@@ -27,8 +37,11 @@ export default function UtilityBar() {
       .catch(() => {});
 
     const handleUpdate = (e: any) => {
-      if (e.detail?.announcementText !== undefined) setAnnouncement(e.detail.announcementText);
-      if (e.detail?.announcementLink !== undefined) setAnnouncementLink(e.detail.announcementLink || null);
+      if (e.detail?.tickerMessages && Array.isArray(e.detail.tickerMessages)) {
+        setTickerMessages(e.detail.tickerMessages);
+      } else if (e.detail?.announcementText !== undefined) {
+        setTickerMessages([{ text: e.detail.announcementText, link: e.detail.announcementLink || undefined }]);
+      }
       if (e.detail?.secretaryPhone !== undefined) setSecretaryPhone(e.detail.secretaryPhone);
       if (e.detail?.secretaryEmail !== undefined) setSecretaryEmail(e.detail.secretaryEmail);
       if (e.detail?.isAnnouncementOn !== undefined) setVisible(Boolean(e.detail.isAnnouncementOn));
@@ -40,7 +53,18 @@ export default function UtilityBar() {
     };
   }, []);
 
+  // Automatic ticker roll every 4.5 seconds
+  useEffect(() => {
+    if (isPaused || tickerMessages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentTickerIdx((prev) => (prev + 1) % tickerMessages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isPaused, tickerMessages.length]);
+
   if (!visible) return null;
+
+  const currentItem = tickerMessages[currentTickerIdx] || tickerMessages[0];
 
   return (
     <div
@@ -69,34 +93,71 @@ export default function UtilityBar() {
           gap: '16px',
         }}
       >
-        {announcementLink ? (
-          <Link
-            href={announcementLink}
-            className="utility__status no-scrollbar"
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              minWidth: 0,
-              flex: '1 1 auto',
-            }}
-          >
-            {announcement}
-          </Link>
-        ) : (
-          <span
-            className="utility__status no-scrollbar"
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              minWidth: 0,
-              flex: '1 1 auto',
-            }}
-          >
-            {announcement}
-          </span>
-        )}
+        {/* Rolling / Scrolling Announcement Ticker */}
+        <div
+          className="utility__status no-scrollbar flex items-center gap-2"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            minWidth: 0,
+            flex: '1 1 auto',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {tickerMessages.length > 1 && (
+            <div className="flex items-center gap-1 mr-1 text-[10px] text-white/50 select-none flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setCurrentTickerIdx((prev) => (prev === 0 ? tickerMessages.length - 1 : prev - 1))}
+                aria-label="Previous announcement"
+                className="hover:text-white transition-colors cursor-pointer px-0.5"
+              >
+                ‹
+              </button>
+              <span className="font-mono text-[9px] text-[#e6ca65]">
+                {currentTickerIdx + 1}/{tickerMessages.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentTickerIdx((prev) => (prev + 1) % tickerMessages.length)}
+                aria-label="Next announcement"
+                className="hover:text-white transition-colors cursor-pointer px-0.5"
+              >
+                ›
+              </button>
+            </div>
+          )}
+
+          {currentItem?.link ? (
+            <Link
+              href={currentItem.link}
+              className="hover:underline transition-opacity duration-300"
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                color: '#fff',
+              }}
+            >
+              {currentItem.text}
+            </Link>
+          ) : (
+            <span
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                color: '#fff',
+              }}
+            >
+              {currentItem?.text}
+            </span>
+          )}
+        </div>
 
         <nav
           className="utility__links no-scrollbar"
@@ -110,12 +171,20 @@ export default function UtilityBar() {
           }}
         >
           <Link href="/track-order" style={{ color: 'var(--brass)', fontWeight: 600, flexShrink: 0 }}>
-            Track order
+            {isDz ? 'བཀའ་རྒྱའི་རྗེས་འདེད' : 'Track order'}
           </Link>
-          <Link href="/contact" style={{ flexShrink: 0 }}>Contact us</Link>
-          <Link href="/news" style={{ flexShrink: 0 }}>Tenders</Link>
-          <Link href="/publications" style={{ flexShrink: 0 }}>Publications</Link>
-          <Link href="/donate" style={{ flexShrink: 0 }}>Donate</Link>
+          <Link href="/contact" style={{ flexShrink: 0 }}>
+            {isDz ? 'འབྲེལ་གཏུག' : 'Contact us'}
+          </Link>
+          <Link href="/tenders" style={{ flexShrink: 0 }}>
+            {isDz ? 'རིན་བསྡུར' : 'Tenders'}
+          </Link>
+          <Link href="/publications" style={{ flexShrink: 0 }}>
+            {isDz ? 'དཔེ་སྐྲུན' : 'Publications'}
+          </Link>
+          <Link href="/donate" style={{ flexShrink: 0 }}>
+            {isDz ? 'ཞལ་འདེབས' : 'Donate'}
+          </Link>
         </nav>
 
         {/* Secretary Desk Official Line */}
@@ -134,7 +203,9 @@ export default function UtilityBar() {
             background: 'rgba(255, 255, 255, 0.08)',
           }}
         >
-          <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>Secretary Desk:</span>
+          <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>
+            {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང:' : 'Secretary Desk:'}
+          </span>
           <a
             href={`tel:${secretaryPhone.replace(/\s+/g, '')}`}
             style={{ color: '#fff', textDecoration: 'none' }}

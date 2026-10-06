@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign, ExternalLink, ArrowRight, Plus, Trash2, Edit3, Image as ImageIcon } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, HeartHandshake, Shield, Sparkles, Users, Globe, DollarSign, ExternalLink, ArrowRight, Plus, Trash2, Edit3, Image as ImageIcon, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { AdminModal } from '@/components/admin/AdminUI';
@@ -50,6 +50,12 @@ export default function AdminSiteSettingsPage() {
     announcementText: '',
     announcementLink: '',
     isAnnouncementOn: true,
+    tickerMessages: [
+      { text: 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex CSO', link: '/about' },
+      { text: 'Official Secretary Desk: +975-2-338089 · officehab@gmail.com', link: '/contact' },
+      { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
+      { text: 'Worldwide EMS & DHL Courier Tracking with Official Certificate of Authenticity', link: '/track-order' },
+    ] as Array<{ text: string; link?: string }>,
     tagline: '',
     heroParagraph: '',
     heroCtaPrimaryText: '',
@@ -185,6 +191,63 @@ export default function AdminSiteSettingsPage() {
     setForm((prev) => ({ ...prev, partnersList: current.filter((_, i) => i !== idx) }));
   };
 
+  // Rolling Ticker items state
+  const [newTickerText, setNewTickerText] = useState('');
+  const [newTickerLink, setNewTickerLink] = useState('');
+  const [editingTickerIdx, setEditingTickerIdx] = useState<number | null>(null);
+  const [editingTickerText, setEditingTickerText] = useState('');
+  const [editingTickerLink, setEditingTickerLink] = useState('');
+
+  const addTickerMessage = () => {
+    if (!newTickerText.trim()) return;
+    const item = { text: newTickerText.trim(), link: newTickerLink.trim() || undefined };
+    const nextList = [...(form.tickerMessages || []), item];
+    setForm((prev) => ({
+      ...prev,
+      tickerMessages: nextList,
+      announcementText: prev.announcementText || item.text,
+      announcementLink: prev.announcementLink || item.link || '',
+    }));
+    setNewTickerText('');
+    setNewTickerLink('');
+  };
+
+  const saveTickerEdit = (idx: number) => {
+    if (!editingTickerText.trim()) return;
+    const nextList = [...(form.tickerMessages || [])];
+    nextList[idx] = { text: editingTickerText.trim(), link: editingTickerLink.trim() || undefined };
+    setForm((prev) => ({
+      ...prev,
+      tickerMessages: nextList,
+      ...(idx === 0 ? { announcementText: nextList[0].text, announcementLink: nextList[0].link || '' } : {}),
+    }));
+    setEditingTickerIdx(null);
+  };
+
+  const removeTickerMessage = (idx: number) => {
+    const nextList = (form.tickerMessages || []).filter((_, i) => i !== idx);
+    setForm((prev) => ({
+      ...prev,
+      tickerMessages: nextList,
+      ...(nextList.length > 0 && idx === 0 ? { announcementText: nextList[0].text, announcementLink: nextList[0].link || '' } : {}),
+    }));
+  };
+
+  const moveTickerMessage = (idx: number, dir: 'up' | 'down') => {
+    const list = [...(form.tickerMessages || [])];
+    const targetIdx = dir === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+    const temp = list[idx];
+    list[idx] = list[targetIdx];
+    list[targetIdx] = temp;
+    setForm((prev) => ({
+      ...prev,
+      tickerMessages: list,
+      announcementText: list[0]?.text || prev.announcementText,
+      announcementLink: list[0]?.link || prev.announcementLink,
+    }));
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -203,6 +266,7 @@ export default function AdminSiteSettingsPage() {
             ...prev,
             ...d.setting,
             partnersList: Array.isArray(d.setting.partnersList) ? d.setting.partnersList.map(normalizePartner) : prev.partnersList,
+            tickerMessages: Array.isArray(d.setting.tickerMessages) && d.setting.tickerMessages.length > 0 ? d.setting.tickerMessages : prev.tickerMessages,
           }));
           setLoading(false);
         } else {
@@ -217,6 +281,7 @@ export default function AdminSiteSettingsPage() {
                   ...prev,
                   ...s,
                   partnersList: Array.isArray(s.partnersList) ? s.partnersList.map(normalizePartner) : prev.partnersList,
+                  tickerMessages: Array.isArray(s.tickerMessages) && s.tickerMessages.length > 0 ? s.tickerMessages : prev.tickerMessages,
                 }));
               }
             })
@@ -238,6 +303,7 @@ export default function AdminSiteSettingsPage() {
                 ...prev,
                 ...s,
                 partnersList: Array.isArray(s.partnersList) ? s.partnersList.map(normalizePartner) : prev.partnersList,
+                tickerMessages: Array.isArray(s.tickerMessages) && s.tickerMessages.length > 0 ? s.tickerMessages : prev.tickerMessages,
               }));
             }
           })
@@ -1217,44 +1283,261 @@ export default function AdminSiteSettingsPage() {
         {/* ANNOUNCEMENT TAB */}
         {tab === 'ANNOUNCEMENT' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Header Announcement Bar</h2>
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="announcementOn"
-                checked={form.isAnnouncementOn}
-                onChange={(e) => setForm({ ...form, isAnnouncementOn: e.target.checked })}
-                className="w-4 h-4 text-[#8B2E24] rounded"
-              />
-              <label htmlFor="announcementOn" className="text-sm font-medium admin-text">
-                Display top utility bar notice across the public site
-              </label>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-base font-bold admin-title">Header Announcement &amp; Rolling Ticker</h2>
+                <p className="text-xs admin-muted mt-0.5">
+                  Manage the scrolling top banner messages across the public site. Messages rotate automatically every 5 seconds.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+                <input
+                  type="checkbox"
+                  id="announcementOn"
+                  checked={form.isAnnouncementOn}
+                  onChange={(e) => setForm({ ...form, isAnnouncementOn: e.target.checked })}
+                  className="w-4 h-4 text-[#8B2E24] rounded cursor-pointer"
+                />
+                <label htmlFor="announcementOn" className="text-xs font-semibold text-amber-900 cursor-pointer">
+                  Utility Bar Active
+                </label>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
-                Notice Text
-              </label>
-              <input
-                type="text"
-                value={form.announcementText}
-                onChange={(e) => setForm({ ...form, announcementText: e.target.value })}
-                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
-                placeholder="CSO/2011/043 · Handicrafts Association of Bhutan..."
-              />
+            {/* Live Ticker Preview */}
+            <div className="bg-[#1C1917] text-[#FAF8F5] p-3.5 rounded-xl shadow-inner border border-stone-800">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-amber-400 font-bold mb-2 pb-1.5 border-b border-stone-800">
+                <span className="flex items-center gap-1.5">
+                  <Megaphone className="w-3.5 h-3.5 text-amber-400" />
+                  Live Preview (Public Utility Bar)
+                </span>
+                <span className="text-[10px] text-stone-400 lowercase font-normal">
+                  {form.tickerMessages?.length || 0} active message(s)
+                </span>
+              </div>
+              {form.tickerMessages && form.tickerMessages.length > 0 ? (
+                <div className="space-y-1.5">
+                  {form.tickerMessages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 text-xs font-mono text-stone-300 bg-stone-900/80 px-2.5 py-1.5 rounded border border-stone-800/80"
+                    >
+                      <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
+                        #{idx + 1}
+                      </span>
+                      <span className="truncate flex-1">{msg.text}</span>
+                      {msg.link && (
+                        <span className="text-[10px] text-amber-300 font-sans bg-stone-800 px-2 py-0.5 rounded flex items-center gap-1">
+                          <ArrowRight className="w-2.5 h-2.5" />
+                          {msg.link}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-stone-500 italic py-2 text-center">No messages added to ticker yet.</p>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
-                Notice Target Link (Optional)
-              </label>
-              <input
-                type="text"
-                value={form.announcementLink || ''}
-                onChange={(e) => setForm({ ...form, announcementLink: e.target.value })}
-                className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
-                placeholder="/about or external link"
-              />
+            {/* List of Current Rolling Messages */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Configured Rolling Messages ({form.tickerMessages?.length || 0})
+                </h3>
+                <span className="text-[11px] text-slate-500">
+                  Visitors can pause, jump using mini controls, and click attached links
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {(form.tickerMessages || []).map((item, idx) => {
+                  const isEditing = editingTickerIdx === idx;
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-xs transition-all hover:border-slate-300"
+                    >
+                      {isEditing ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-[#8B2E24]">Editing Message #{idx + 1}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => saveTickerEdit(idx)}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <Check className="w-3.5 h-3.5" /> Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingTickerIdx(null)}
+                                className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <X className="w-3.5 h-3.5" /> Cancel
+                              </button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Notice Text</label>
+                            <input
+                              type="text"
+                              value={editingTickerText}
+                              onChange={(e) => setEditingTickerText(e.target.value)}
+                              className="w-full px-3 py-2 text-xs border rounded-lg admin-input"
+                              placeholder="Notice text..."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Target Link (Optional)</label>
+                            <input
+                              type="text"
+                              value={editingTickerLink}
+                              onChange={(e) => setEditingTickerLink(e.target.value)}
+                              className="w-full px-3 py-2 text-xs border rounded-lg admin-input"
+                              placeholder="/tenders, /about, or external link"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                            <span className="w-6 h-6 rounded-lg bg-amber-100 text-[#8B2E24] text-xs font-bold flex items-center justify-center flex-none">
+                              {idx + 1}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-slate-900 leading-snug">{item.text}</p>
+                              {item.link ? (
+                                <p className="text-[11px] text-[#8B2E24] mt-0.5 flex items-center gap-1">
+                                  <ArrowRight className="w-3 h-3" />
+                                  Link: <span className="font-mono">{item.link}</span>
+                                </p>
+                              ) : (
+                                <span className="text-[10px] text-slate-400">No destination link</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-none">
+                            <button
+                              type="button"
+                              onClick={() => moveTickerMessage(idx, 'up')}
+                              disabled={idx === 0}
+                              title="Move Up"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveTickerMessage(idx, 'down')}
+                              disabled={idx === (form.tickerMessages?.length || 0) - 1}
+                              title="Move Down"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingTickerIdx(idx);
+                                setEditingTickerText(item.text);
+                                setEditingTickerLink(item.link || '');
+                              }}
+                              title="Edit message"
+                              className="p-1.5 rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 cursor-pointer transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeTickerMessage(idx)}
+                              title="Delete message"
+                              className="p-1.5 rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Add New Message Card */}
+            <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-[#8B2E24]" /> Add New Announcement to Rolling Ticker
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="md:col-span-2">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Notice Text <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newTickerText}
+                    onChange={(e) => setNewTickerText(e.target.value)}
+                    placeholder="e.g. Official Tenders & Quotations portal now active for 2026..."
+                    className="w-full px-3 py-2 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#8B2E24]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Destination Link (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newTickerLink}
+                    onChange={(e) => setNewTickerLink(e.target.value)}
+                    placeholder="e.g. /tenders or /shop"
+                    className="w-full px-3 py-2 text-xs border border-amber-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-[#8B2E24]"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={addTickerMessage}
+                  disabled={!newTickerText.trim()}
+                  className="px-4 py-2 bg-[#8B2E24] hover:bg-[#72251D] disabled:opacity-40 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add to Ticker
+                </button>
+              </div>
+            </div>
+
+            {/* Fallback Single Notice inputs (kept in sync automatically) */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-700">Primary Headline Fallback</h4>
+                <span className="text-[10px] text-slate-400">Used for single-line RSS &amp; SEO crawlers</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Primary Notice Text</label>
+                  <input
+                    type="text"
+                    value={form.announcementText}
+                    onChange={(e) => setForm({ ...form, announcementText: e.target.value })}
+                    className="w-full px-3 py-2 admin-input border rounded-lg text-xs"
+                    placeholder="CSO/2011/043 · Handicrafts Association of Bhutan..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Primary Target Link</label>
+                  <input
+                    type="text"
+                    value={form.announcementLink || ''}
+                    onChange={(e) => setForm({ ...form, announcementLink: e.target.value })}
+                    className="w-full px-3 py-2 admin-input border rounded-lg text-xs"
+                    placeholder="/about or external link"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

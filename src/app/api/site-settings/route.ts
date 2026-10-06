@@ -87,6 +87,16 @@ export async function GET() {
     const fxRate = loc.fxRate || 84.0;
 
     const tb = (setting?.trustBadges as Record<string, any>) || {};
+    const defaultTicker = [
+      { text: setting?.announcementText || 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex CSO', link: setting?.announcementLink || '/about' },
+      { text: 'Official Secretary Desk: +975-2-338089 · officehab@gmail.com', link: '/contact' },
+      { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
+      { text: 'Worldwide EMS & DHL Courier Tracking with Official Certificate of Authenticity', link: '/track-order' },
+    ];
+    const tickerMessages = tb.tickerMessages && Array.isArray(tb.tickerMessages) && tb.tickerMessages.length > 0
+      ? tb.tickerMessages
+      : defaultTicker;
+
     const enriched = {
       ...setting,
       defaultCurrency,
@@ -96,6 +106,7 @@ export async function GET() {
       fxRate,
       aboutBannerImage: tb.aboutBannerImage || setting?.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
       aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
+      tickerMessages,
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
