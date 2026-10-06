@@ -56,6 +56,7 @@ export default function AdminSiteSettingsPage() {
       { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
       { text: 'Worldwide EMS & DHL Courier Tracking with Official Certificate of Authenticity', link: '/track-order' },
     ] as Array<{ text: string; link?: string }>,
+    topBarContactMode: 'PHONE_ONLY' as 'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF',
     tagline: '',
     heroParagraph: '',
     heroCtaPrimaryText: '',
@@ -338,6 +339,10 @@ export default function AdminSiteSettingsPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({ type: 'success', message: 'Site settings successfully updated and live across all public pages!' });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:settings-updated', { detail: form }));
+          window.dispatchEvent(new CustomEvent('hab:header-updated', { detail: form }));
+        }
       } else {
         const rawErr = data.error || 'Failed to save settings';
         const cleanErr = rawErr.includes('Unknown argument')
@@ -1507,6 +1512,78 @@ export default function AdminSiteSettingsPage() {
                 >
                   <Plus className="w-3.5 h-3.5" /> Add to Ticker
                 </button>
+              </div>
+            </div>
+
+            {/* Top Utility Bar Contact Display Settings */}
+            <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-[#8B2E24]" /> Top Utility Bar Contact Display
+                  </h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Choose whether the top bar displays phone number only, email only, both, or none to keep the announcement title clean and visible on all screens.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+                {[
+                  { id: 'PHONE_ONLY', label: 'Phone Number Only', sub: 'e.g. Secretary Desk: +975-2-338089' },
+                  { id: 'EMAIL_ONLY', label: 'Email Address Only', sub: 'e.g. Secretary: officehab@gmail.com' },
+                  { id: 'BOTH', label: 'Both Phone & Email', sub: 'Displays both contact methods' },
+                  { id: 'OFF', label: 'Hide from Top Bar', sub: 'Do not show contact pill in header' },
+                ].map((mode) => (
+                  <label
+                    key={mode.id}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                      form.topBarContactMode === mode.id
+                        ? 'bg-amber-50/80 border-[#8B2E24] ring-1 ring-[#8B2E24]'
+                        : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="topBarContactMode"
+                        value={mode.id}
+                        checked={form.topBarContactMode === mode.id}
+                        onChange={() => setForm({ ...form, topBarContactMode: mode.id as any })}
+                        className="text-[#8B2E24] focus:ring-[#8B2E24]"
+                      />
+                      <span className="text-xs font-bold text-slate-900">{mode.label}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 mt-1 pl-5">{mode.sub}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Secretary Desk Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    value={form.secretaryPhone}
+                    onChange={(e) => setForm({ ...form, secretaryPhone: e.target.value })}
+                    className="w-full px-3 py-2 admin-input border rounded-lg text-xs font-mono"
+                    placeholder="+975-2-338089"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Secretary Desk Email Address
+                  </label>
+                  <input
+                    type="text"
+                    value={form.secretaryEmail}
+                    onChange={(e) => setForm({ ...form, secretaryEmail: e.target.value })}
+                    className="w-full px-3 py-2 admin-input border rounded-lg text-xs font-mono"
+                    placeholder="officehab@gmail.com"
+                  />
+                </div>
               </div>
             </div>
 

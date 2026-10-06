@@ -17,6 +17,7 @@ function inferSectionType(studioHref: string = '', label: string = ''): SectionT
   const path = (studioHref || '').toLowerCase();
   const l = (label || '').toLowerCase();
 
+  if (path.includes('tab=announcement') || path.includes('/admin/site-settings?tab=announcement') || l.includes('utility') || l.includes('ticker') || l.includes('top bar') || l.includes('notice')) return 'utility-bar';
   if (path.includes('/admin/hero')) return 'hero';
   if (path.includes('/admin/products') || path.includes('/shop') || l.includes('shop') || l.includes('product') || l.includes('catalogue')) return 'products';
   if (path.includes('/admin/crafts') || l.includes('craft') || l.includes('zorig')) return 'crafts';

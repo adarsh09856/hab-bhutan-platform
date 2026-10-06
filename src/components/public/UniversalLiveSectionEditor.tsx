@@ -53,6 +53,7 @@ const STATIC_SYSTEM_PAGES = [
 ];
 
 export type SectionType =
+  | 'utility-bar'
   | 'hero'
   | 'stats'
   | 'buy'
@@ -209,6 +210,22 @@ export default function UniversalLiveSectionEditor({
       const environment = pillars.find((p: any) => p.key === 'environment') || {};
 
       setForm({
+        // Utility Bar & Ticker fields
+        isAnnouncementOn: s.isAnnouncementOn !== undefined ? Boolean(s.isAnnouncementOn) : true,
+        announcementText: s.announcementText || 'CSO/2011/043 · Handicrafts Association of Bhutan',
+        announcementLink: s.announcementLink || '/about',
+        topBarContactMode: s.topBarContactMode || 'PHONE_ONLY',
+        secretaryPhone: s.secretaryPhone || '+975-2-338089',
+        secretaryEmail: s.secretaryEmail || 'officehab@gmail.com',
+        tickerMessages: Array.isArray(s.tickerMessages) && s.tickerMessages.length > 0
+          ? s.tickerMessages
+          : [
+              { text: s.announcementText || 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex CSO', link: s.announcementLink || '/about' },
+              { text: 'Official Secretary Desk: +975-2-338089 · officehab@gmail.com', link: '/contact' },
+              { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
+              { text: 'Worldwide EMS & DHL Courier Tracking with Official Certificate of Authenticity', link: '/track-order' },
+            ],
+
         // Hero fields
         heroEyebrow: s.heroEyebrow || 'Crafted in the Himalayas',
         tagline: s.tagline || 'Towards a vibrant & sustainable handicrafts sector',
@@ -808,7 +825,9 @@ export default function UniversalLiveSectionEditor({
   // Compute title & studio destination
   const displayTitle =
     sectionTitle ||
-    (sectionType === 'hero'
+    (sectionType === 'utility-bar'
+      ? 'Top Utility Bar & Notice Ticker'
+      : sectionType === 'hero'
       ? 'Hero Section & Mission'
       : sectionType === 'stats'
       ? 'Stats & Impact Counters'
@@ -840,7 +859,9 @@ export default function UniversalLiveSectionEditor({
 
   const defaultStudioHref =
     studioHref ||
-    (sectionType === 'hero'
+    (sectionType === 'utility-bar'
+      ? '/admin/site-settings?tab=ANNOUNCEMENT'
+      : sectionType === 'hero'
       ? '/admin/hero'
       : sectionType === 'stats'
       ? '/admin/site-settings'
@@ -944,7 +965,7 @@ export default function UniversalLiveSectionEditor({
             }
           >
             <Type className="w-3.5 h-3.5" />
-            <span>{sectionType === 'footer' ? 'Secretariat & About Text' : 'Headlines & Text'}</span>
+            <span>{sectionType === 'footer' ? 'Secretariat & About Text' : sectionType === 'utility-bar' ? 'Notice Ticker & Contact' : 'Headlines & Text'}</span>
           </button>
 
           <button
@@ -957,7 +978,7 @@ export default function UniversalLiveSectionEditor({
             }
           >
             <Link2 className="w-3.5 h-3.5" />
-            <span>{sectionType === 'footer' ? 'Social Links' : 'Call-to-Action Buttons'}</span>
+            <span>{sectionType === 'footer' ? 'Social Links' : sectionType === 'utility-bar' ? 'Top Bar Links' : 'Call-to-Action Buttons'}</span>
           </button>
 
           {(sectionType === 'hero' || sectionType === 'about' || sectionType === 'about-page') && (
@@ -1294,6 +1315,232 @@ export default function UniversalLiveSectionEditor({
                 {/* ================= TAB 1: HEADLINES & TEXT ================= */}
                 {activeTab === 'CONTENT' && (
                   <div className="space-y-4">
+                    {sectionType === 'utility-bar' && (
+                      <div className="space-y-5">
+                        {/* Studio Link Shortcut */}
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">Announcement &amp; Header Studio</span>
+                            <span className="text-[11px] text-amber-800">
+                              Manage ticker items, rolling duration, and secretariat hotline in the full site settings studio.
+                            </span>
+                          </div>
+                          <Link
+                            href="/admin/site-settings?tab=ANNOUNCEMENT"
+                            target="_blank"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#8B2E24] text-white text-xs font-bold hover:bg-[#70241b] transition-colors whitespace-nowrap"
+                          >
+                            <span>Open Studio</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+
+                        {/* Master Visibility Toggle */}
+                        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-900 block">Top Utility Bar Visibility</span>
+                            <span className="text-[11px] text-slate-500">
+                              Enable or disable the rolling announcement banner and top bar globally across all pages.
+                            </span>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(form.isAnnouncementOn)}
+                              onChange={(e) => updateField('isAnnouncementOn', e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8B2E24]"></div>
+                          </label>
+                        </div>
+
+                        {/* Top Bar Contact Display Selector - phone number only, email only, both, off */}
+                        <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                              Top Utility Bar Contact Display Mode
+                            </label>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Choose whether the top bar shows phone number only, email only, both, or none. Keeps the announcement title prominent and clear on all screen sizes.
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                            {[
+                              { id: 'PHONE_ONLY', label: 'Phone Number Only', sub: 'e.g. Secretary Desk: +975-2-338089' },
+                              { id: 'EMAIL_ONLY', label: 'Email Address Only', sub: 'e.g. Secretary: officehab@gmail.com' },
+                              { id: 'BOTH', label: 'Both Phone & Email', sub: 'Displays both contact channels' },
+                              { id: 'OFF', label: 'Hide from Top Bar', sub: 'Do not render contact pill' },
+                            ].map((mode) => (
+                              <label
+                                key={mode.id}
+                                className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                                  form.topBarContactMode === mode.id
+                                    ? 'bg-amber-50/80 border-[#8B2E24] ring-1 ring-[#8B2E24]'
+                                    : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100/60'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="topBarContactModeQuick"
+                                    value={mode.id}
+                                    checked={form.topBarContactMode === mode.id}
+                                    onChange={() => updateField('topBarContactMode', mode.id)}
+                                    className="text-[#8B2E24] focus:ring-[#8B2E24]"
+                                  />
+                                  <span className="text-xs font-bold text-slate-900">{mode.label}</span>
+                                </div>
+                                <span className="text-[10px] text-slate-500 mt-1 pl-5">{mode.sub}</span>
+                              </label>
+                            ))}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                Secretary Desk Phone Number
+                              </label>
+                              <input
+                                type="text"
+                                value={form.secretaryPhone || ''}
+                                onChange={(e) => updateField('secretaryPhone', e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                                placeholder="+975-2-338089"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                Secretary Desk Email Address
+                              </label>
+                              <input
+                                type="text"
+                                value={form.secretaryEmail || ''}
+                                onChange={(e) => updateField('secretaryEmail', e.target.value)}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono"
+                                placeholder="officehab@gmail.com"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Rolling Ticker Announcements Manager */}
+                        <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                Rolling Notice Ticker Announcements ({form.tickerMessages?.length || 0})
+                              </label>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Artisans and visitors see these announcements cycling continuously in the top bar.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const list = Array.isArray(form.tickerMessages) ? [...form.tickerMessages] : [];
+                                list.push({ text: 'New HAB Notice · Official Update', link: '/about' });
+                                updateField('tickerMessages', list);
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Add Announcement</span>
+                            </button>
+                          </div>
+
+                          <div className="space-y-2">
+                            {Array.isArray(form.tickerMessages) &&
+                              form.tickerMessages.map((msg: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center gap-2"
+                                >
+                                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    <span className="w-5 text-center text-xs font-mono font-bold text-slate-400">
+                                      #{idx + 1}
+                                    </span>
+                                    <div className="flex flex-col gap-0.5">
+                                      <button
+                                        type="button"
+                                        disabled={idx === 0}
+                                        onClick={() => {
+                                          const list = [...form.tickerMessages];
+                                          const tmp = list[idx];
+                                          list[idx] = list[idx - 1];
+                                          list[idx - 1] = tmp;
+                                          updateField('tickerMessages', list);
+                                        }}
+                                        className="p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-20 cursor-pointer"
+                                        title="Move Up"
+                                      >
+                                        <ArrowUp className="w-3 h-3" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        disabled={idx === form.tickerMessages.length - 1}
+                                        onClick={() => {
+                                          const list = [...form.tickerMessages];
+                                          const tmp = list[idx];
+                                          list[idx] = list[idx + 1];
+                                          list[idx + 1] = tmp;
+                                          updateField('tickerMessages', list);
+                                        }}
+                                        className="p-0.5 text-slate-400 hover:text-slate-800 disabled:opacity-20 cursor-pointer"
+                                        title="Move Down"
+                                      >
+                                        <ArrowDown className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <input
+                                      type="text"
+                                      value={msg.text || ''}
+                                      onChange={(e) => {
+                                        const list = [...form.tickerMessages];
+                                        list[idx] = { ...list[idx], text: e.target.value };
+                                        updateField('tickerMessages', list);
+                                      }}
+                                      placeholder="Announcement headline text..."
+                                      className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 font-medium focus:outline-hidden focus:border-[#8B2E24]"
+                                    />
+                                  </div>
+
+                                  <div className="w-full sm:w-44">
+                                    <input
+                                      type="text"
+                                      value={msg.link || ''}
+                                      onChange={(e) => {
+                                        const list = [...form.tickerMessages];
+                                        list[idx] = { ...list[idx], link: e.target.value };
+                                        updateField('tickerMessages', list);
+                                      }}
+                                      placeholder="/about, /shop, etc."
+                                      className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-hidden focus:border-[#8B2E24]"
+                                    />
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    disabled={form.tickerMessages.length <= 1}
+                                    onClick={() => {
+                                      const list = form.tickerMessages.filter((_: any, i: number) => i !== idx);
+                                      updateField('tickerMessages', list);
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 disabled:opacity-20 cursor-pointer self-end sm:self-center"
+                                    title="Delete Announcement"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {sectionType === 'hero' && (
                       <>
                         <div>
@@ -2856,6 +3103,48 @@ export default function UniversalLiveSectionEditor({
                 {/* ================= TAB 2: CALL-TO-ACTION BUTTONS ================= */}
                 {activeTab === 'ACTIONS' && (
                   <div className="space-y-4">
+                    {sectionType === 'utility-bar' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                          <span className="text-xs font-bold text-slate-800 block mb-1">Top Bar Utility Actions &amp; Navigation</span>
+                          <p className="text-[11px] text-slate-500">
+                            The top utility bar features direct access links for customer order tracking, official secretariat contact, government and craft tenders, publications, and donation portals.
+                          </p>
+                        </div>
+                        <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3">
+                          <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+                            Top Bar Quick Links Overview
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                              <span className="font-semibold text-slate-800">📦 Order Tracking</span>
+                              <span className="font-mono text-[11px] text-[#8B2E24]">/track-order</span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                              <span className="font-semibold text-slate-800">✉️ Contact Secretariat</span>
+                              <span className="font-mono text-[11px] text-[#8B2E24]">/contact</span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                              <span className="font-semibold text-slate-800">📜 Official Tenders</span>
+                              <span className="font-mono text-[11px] text-[#8B2E24]">/tenders</span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                              <span className="font-semibold text-slate-800">📚 Research &amp; Reports</span>
+                              <span className="font-mono text-[11px] text-[#8B2E24]">/publications</span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                              <span className="font-semibold text-slate-800">🌿 Support &amp; Donate</span>
+                              <span className="font-mono text-[11px] text-[#8B2E24]">/donate</span>
+                            </div>
+                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                              <span className="font-semibold text-slate-800">💼 Wholesale &amp; Trade</span>
+                              <span className="font-mono text-[11px] text-[#8B2E24]">/wholesale</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {sectionType === 'hero' && (
                       <div className="space-y-4">
                         <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">

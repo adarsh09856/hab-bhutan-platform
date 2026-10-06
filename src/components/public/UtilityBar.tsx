@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function UtilityBar() {
   const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; link?: string }>>([
@@ -15,6 +16,7 @@ export default function UtilityBar() {
   const [isPaused, setIsPaused] = useState(false);
   const [secretaryPhone, setSecretaryPhone] = useState('+975-2-338089');
   const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
+  const [topBarContactMode, setTopBarContactMode] = useState<'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF'>('PHONE_ONLY');
   const [visible, setVisible] = useState(true);
   const { language, toggleLanguage, t } = useLanguage();
   const isDz = language === 'dz';
@@ -31,6 +33,7 @@ export default function UtilityBar() {
           }
           if (data.setting.secretaryPhone) setSecretaryPhone(data.setting.secretaryPhone);
           if (data.setting.secretaryEmail) setSecretaryEmail(data.setting.secretaryEmail);
+          if (data.setting.topBarContactMode) setTopBarContactMode(data.setting.topBarContactMode);
           if (data.setting.isAnnouncementOn !== undefined) setVisible(Boolean(data.setting.isAnnouncementOn));
         }
       })
@@ -44,12 +47,15 @@ export default function UtilityBar() {
       }
       if (e.detail?.secretaryPhone !== undefined) setSecretaryPhone(e.detail.secretaryPhone);
       if (e.detail?.secretaryEmail !== undefined) setSecretaryEmail(e.detail.secretaryEmail);
+      if (e.detail?.topBarContactMode !== undefined) setTopBarContactMode(e.detail.topBarContactMode);
       if (e.detail?.isAnnouncementOn !== undefined) setVisible(Boolean(e.detail.isAnnouncementOn));
     };
 
     window.addEventListener('hab:header-updated', handleUpdate);
+    window.addEventListener('hab:settings-updated', handleUpdate);
     return () => {
       window.removeEventListener('hab:header-updated', handleUpdate);
+      window.removeEventListener('hab:settings-updated', handleUpdate);
     };
   }, []);
 
@@ -68,7 +74,7 @@ export default function UtilityBar() {
 
   return (
     <div
-      className="utility no-scrollbar"
+      className="utility no-scrollbar relative"
       style={{
         overflow: 'hidden',
         height: 'var(--utility-h, 38px)',
@@ -77,12 +83,17 @@ export default function UtilityBar() {
         msOverflowStyle: 'none',
       }}
     >
+      <SectionEditBadge
+        label="Utility Bar & Notice Ticker"
+        studioHref="/admin/site-settings?tab=ANNOUNCEMENT"
+        sectionType="utility-bar"
+        className="top-0.5 right-2"
+      />
       <div
         className="utility__inner no-scrollbar"
         style={{
-          overflowX: 'auto',
+          overflowX: 'hidden',
           overflowY: 'hidden',
-          WebkitOverflowScrolling: 'touch',
           flexWrap: 'nowrap',
           height: '100%',
           maxHeight: 'var(--utility-h, 38px)',
@@ -90,7 +101,7 @@ export default function UtilityBar() {
           msOverflowStyle: 'none',
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
+          gap: '14px',
         }}
       >
         {/* Rolling / Scrolling Announcement Ticker */}
@@ -102,14 +113,21 @@ export default function UtilityBar() {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            minWidth: 0,
+            minWidth: '220px',
             flex: '1 1 auto',
             display: 'flex',
             alignItems: 'center',
           }}
         >
+          <span
+            className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-white/15 text-[#e6ca65] flex-shrink-0 uppercase select-none"
+            style={{ letterSpacing: '0.06em' }}
+          >
+            {isDz ? 'གསལ་བསྒྲགས' : 'Notice'}
+          </span>
+
           {tickerMessages.length > 1 && (
-            <div className="flex items-center gap-1 mr-1 text-[10px] text-white/50 select-none flex-shrink-0">
+            <div className="flex items-center gap-1 mr-1 text-[10px] text-white/60 select-none flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setCurrentTickerIdx((prev) => (prev === 0 ? tickerMessages.length - 1 : prev - 1))}
@@ -141,6 +159,7 @@ export default function UtilityBar() {
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 color: '#fff',
+                fontWeight: 500,
               }}
             >
               {currentItem.text}
@@ -152,6 +171,7 @@ export default function UtilityBar() {
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 color: '#fff',
+                fontWeight: 500,
               }}
             >
               {currentItem?.text}
@@ -159,13 +179,14 @@ export default function UtilityBar() {
           )}
         </div>
 
+        {/* Secondary Links (Hidden on <= 1099px via CSS .utility__links{display:none}) */}
         <nav
           className="utility__links no-scrollbar"
           aria-label="Secondary"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '18px',
+            gap: '16px',
             flexShrink: 0,
             whiteSpace: 'nowrap',
           }}
@@ -187,41 +208,49 @@ export default function UtilityBar() {
           </Link>
         </nav>
 
-        {/* Secretary Desk Official Line */}
-        <div
-          className="utility__secretary-desk"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '11px',
-            color: 'rgba(255, 255, 255, 0.85)',
-            flexShrink: 0,
-            whiteSpace: 'nowrap',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            background: 'rgba(255, 255, 255, 0.08)',
-          }}
-        >
-          <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>
-            {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང:' : 'Secretary Desk:'}
-          </span>
-          <a
-            href={`tel:${secretaryPhone.replace(/\s+/g, '')}`}
-            style={{ color: '#fff', textDecoration: 'none' }}
-            title="Call Secretary Desk"
+        {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
+        {topBarContactMode !== 'OFF' && (
+          <div
+            className="utility__secretary-desk"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              color: 'rgba(255, 255, 255, 0.85)',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              background: 'rgba(255, 255, 255, 0.08)',
+            }}
           >
-            {secretaryPhone}
-          </a>
-          <span style={{ opacity: 0.5 }}>·</span>
-          <a
-            href={`mailto:${secretaryEmail}`}
-            style={{ color: '#fff', textDecoration: 'none' }}
-            title="Email Secretary Desk"
-          >
-            {secretaryEmail}
-          </a>
-        </div>
+            <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>
+              {isDz ? 'དྲུང་ཆེའི་ཡིག་ཚང:' : 'Secretary Desk:'}
+            </span>
+            {(topBarContactMode === 'PHONE_ONLY' || topBarContactMode === 'BOTH') && (
+              <a
+                href={`tel:${secretaryPhone.replace(/\s+/g, '')}`}
+                style={{ color: '#fff', textDecoration: 'none' }}
+                title="Call Secretary Desk"
+              >
+                {secretaryPhone}
+              </a>
+            )}
+            {topBarContactMode === 'BOTH' && (
+              <span style={{ opacity: 0.5 }}>·</span>
+            )}
+            {(topBarContactMode === 'EMAIL_ONLY' || topBarContactMode === 'BOTH') && (
+              <a
+                href={`mailto:${secretaryEmail}`}
+                style={{ color: '#fff', textDecoration: 'none' }}
+                title="Email Secretary Desk"
+              >
+                {secretaryEmail}
+              </a>
+            )}
+          </div>
+        )}
 
         <Link className="utility__trade" href="/wholesale" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           <span className="utility__trade-long">Trade &amp; wholesale buyers</span>

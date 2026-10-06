@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
     aboutBannerImage: tb.aboutBannerImage || setting.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
     aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
     tickerMessages,
+    topBarContactMode: tb.topBarContactMode || 'PHONE_ONLY',
   } : null;
 
   return NextResponse.json({ success: true, setting: enriched });
@@ -244,6 +245,16 @@ export async function PUT(req: NextRequest) {
           updatePayload.announcementLink = body.tickerMessages[0].link;
         }
       }
+    }
+
+    if (body.topBarContactMode !== undefined) {
+      const currentSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+      const currentTb = (currentSetting?.trustBadges as Record<string, any>) || {};
+      updatePayload.trustBadges = {
+        ...currentTb,
+        ...(updatePayload.trustBadges || {}),
+        topBarContactMode: body.topBarContactMode,
+      };
     }
 
     const createPayload: Record<string, any> = {

@@ -107,6 +107,7 @@ export async function GET() {
       aboutBannerImage: tb.aboutBannerImage || setting?.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
       aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
       tickerMessages,
+      topBarContactMode: tb.topBarContactMode || 'PHONE_ONLY',
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
@@ -136,6 +137,15 @@ export async function GET() {
         stat4Label: 'Arts & crafts of Zorig Chusum',
         officeAddress: CLIENT_VERBATIM.contactBlock.address,
         officePhone: CLIENT_VERBATIM.contactBlock.office,
+        secretaryPhone: CLIENT_VERBATIM.contactBlock.office,
+        secretaryEmail: CLIENT_VERBATIM.contactBlock.email,
+        topBarContactMode: 'PHONE_ONLY',
+        tickerMessages: [
+          { text: 'CSO/2011/043 · Handicrafts Association of Bhutan · Apex Civil Society Organization', link: '/about' },
+          { text: 'Official Secretary Desk: +975-2-338089 · officehab@gmail.com', link: '/contact' },
+          { text: 'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan', link: '/about' },
+          { text: 'Track orders worldwide with authentic craft certificates', link: '/track-order' },
+        ],
         edPhone: CLIENT_VERBATIM.contactBlock.ed,
         marketingPhone: CLIENT_VERBATIM.contactBlock.marketing,
         officialEmail: CLIENT_VERBATIM.contactBlock.email,
