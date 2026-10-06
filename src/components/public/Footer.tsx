@@ -117,9 +117,9 @@ export default function Footer() {
         { label: "E-shop", href: "/shop" },
         { label: "Wholesale & bulk orders", href: "/wholesale" },
         { label: "Shipping & delivery policy", href: "/shipping-policy" },
-        { label: "Returns & refunds policy", href: "/shipping-policy#returns" },
+        { label: "Returns & refunds policy", href: "/returns-policy" },
         { label: "Track your order", href: "/track-order" },
-        { label: "Duties & customs policy", href: "/shipping-policy#duty" },
+        { label: "Duties & customs policy", href: "/customs-policy" },
       ]
     },
     {
@@ -135,10 +135,10 @@ export default function Footer() {
     {
       title: "Governance",
       links: [
-        { label: "Board of Trustees", href: "/about#board" },
-        { label: "Secretariat", href: "/about#secretariat" },
-        { label: "Annual reports", href: "/publications?kind=Annual+report" },
-        { label: "Audited accounts", href: "/publications?kind=Audited+accounts" },
+        { label: "Board of Trustees", href: "/board-of-trustees" },
+        { label: "Secretariat", href: "/secretariat" },
+        { label: "Annual reports", href: "/annual-reports" },
+        { label: "Audited accounts", href: "/audited-accounts" },
         { label: "Tenders & vacancies", href: "/tenders" },
         { label: "Terms of service", href: "/terms" },
         { label: "Privacy policy", href: "/privacy" },
@@ -168,10 +168,18 @@ export default function Footer() {
       if (l.includes('directory')) return '/members';
       if (l === 'member login') return '/login';
       if (l.includes('tender')) return '/tenders';
-      if (l.includes('board of trustees')) return '/about#board';
-      if (l === 'secretariat') return '/about#secretariat';
-      if (l.includes('annual report')) return '/publications?kind=Annual+report';
-      if (l.includes('audited account')) return '/publications?kind=Audited+accounts';
+      if (l.includes('board of trustees') || l === 'board') return '/board-of-trustees';
+      if (l === 'secretariat') return '/secretariat';
+      if (l.includes('annual report')) return '/annual-reports';
+      if (l.includes('audited account')) return '/audited-accounts';
+      if (l.includes('return') || l.includes('refund')) return '/returns-policy';
+      if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
+      if (href && href.startsWith('/shipping-policy#returns')) return '/returns-policy';
+      if (href && href.startsWith('/shipping-policy#duty')) return '/customs-policy';
+      if (href && href.startsWith('/about#board')) return '/board-of-trustees';
+      if (href && href.startsWith('/about#secretariat')) return '/secretariat';
+      if (href && href.includes('kind=Annual')) return '/annual-reports';
+      if (href && href.includes('kind=Audited')) return '/audited-accounts';
       return href;
     };
 

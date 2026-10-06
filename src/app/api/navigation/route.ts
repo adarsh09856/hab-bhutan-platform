@@ -24,9 +24,9 @@ const DEFAULT_FOOTER_COLUMNS = [
   { id: 'f-7', column: 'Shop & support', label: 'E-shop', href: '/shop', sortOrder: 1, isActive: true },
   { id: 'f-8', column: 'Shop & support', label: 'Wholesale & bulk orders', href: '/wholesale', sortOrder: 2, isActive: true },
   { id: 'f-9', column: 'Shop & support', label: 'Shipping & delivery', href: '/shipping-policy', sortOrder: 3, isActive: true },
-  { id: 'f-10', column: 'Shop & support', label: 'Returns', href: '/shipping-policy#returns', sortOrder: 4, isActive: true },
+  { id: 'f-10', column: 'Shop & support', label: 'Returns', href: '/returns-policy', sortOrder: 4, isActive: true },
   { id: 'f-11', column: 'Shop & support', label: 'Track your order', href: '/track-order', sortOrder: 5, isActive: true },
-  { id: 'f-12', column: 'Shop & support', label: 'Duty & customs', href: '/shipping-policy#duty', sortOrder: 6, isActive: true },
+  { id: 'f-12', column: 'Shop & support', label: 'Duty & customs', href: '/customs-policy', sortOrder: 6, isActive: true },
 
   { id: 'f-13', column: 'Members', label: 'Directory by category', href: '/members', sortOrder: 1, isActive: true },
   { id: 'f-14', column: 'Members', label: 'Publications', href: '/publications', sortOrder: 2, isActive: true },
@@ -34,14 +34,26 @@ const DEFAULT_FOOTER_COLUMNS = [
   { id: 'f-16', column: 'Members', label: 'Member login', href: '/login', sortOrder: 4, isActive: true },
   { id: 'f-17', column: 'Members', label: 'Apply to join', href: '/register', sortOrder: 5, isActive: true },
 
-  { id: 'f-18', column: 'Governance', label: 'Board of Trustees', href: '/about#board', sortOrder: 1, isActive: true },
-  { id: 'f-19', column: 'Governance', label: 'Secretariat', href: '/about#secretariat', sortOrder: 2, isActive: true },
-  { id: 'f-20', column: 'Governance', label: 'Annual reports', href: '/publications?kind=Annual+report', sortOrder: 3, isActive: true },
-  { id: 'f-21', column: 'Governance', label: 'Audited accounts', href: '/publications?kind=Audited+accounts', sortOrder: 4, isActive: true },
+  { id: 'f-18', column: 'Governance', label: 'Board of Trustees', href: '/board-of-trustees', sortOrder: 1, isActive: true },
+  { id: 'f-19', column: 'Governance', label: 'Secretariat', href: '/secretariat', sortOrder: 2, isActive: true },
+  { id: 'f-20', column: 'Governance', label: 'Annual reports', href: '/annual-reports', sortOrder: 3, isActive: true },
+  { id: 'f-21', column: 'Governance', label: 'Audited accounts', href: '/audited-accounts', sortOrder: 4, isActive: true },
   { id: 'f-22', column: 'Governance', label: 'Tenders & vacancies', href: '/tenders', sortOrder: 5, isActive: true },
   { id: 'f-23', column: 'Governance', label: 'Terms of service', href: '/terms', sortOrder: 6, isActive: true },
   { id: 'f-24', column: 'Governance', label: 'Privacy policy', href: '/privacy', sortOrder: 7, isActive: true },
 ];
+
+function sanitizeHref(label: string, href: string): string {
+  const l = (label || '').toLowerCase();
+  const h = (href || '').toLowerCase();
+  if (h.includes('#board') || l.includes('board of trustees')) return '/board-of-trustees';
+  if (h.includes('#secretariat') || l === 'secretariat') return '/secretariat';
+  if (h.includes('#returns') || l.includes('return') || l.includes('refund')) return '/returns-policy';
+  if (h.includes('#duty') || l.includes('duty') || l.includes('custom')) return '/customs-policy';
+  if (h.includes('kind=annual') || l.includes('annual report')) return '/annual-reports';
+  if (h.includes('kind=audited') || l.includes('audited account')) return '/audited-accounts';
+  return href;
+}
 
 export async function GET() {
   try {
@@ -81,7 +93,10 @@ export async function GET() {
       footerItems.forEach((item) => {
         const col = item.column || 'General';
         if (!footer[col]) footer[col] = [];
-        footer[col].push(item);
+        footer[col].push({
+          ...item,
+          href: sanitizeHref(item.label, item.href),
+        });
       });
     }
 
