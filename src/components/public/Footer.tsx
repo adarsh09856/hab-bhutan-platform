@@ -10,15 +10,23 @@ import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSection
 const FOOTER_TRANSLATIONS: Record<string, string> = {
   // Columns
   "Association": "ཚོགས་པ",
+  "Organization": "སྒྲིག་འཛུགས",
   "Shop & support": "ཚོང་ཁང་དང་རྒྱབ་སྐྱོར",
   "Shop & Support": "ཚོང་ཁང་དང་རྒྱབ་སྐྱོར",
   "Members": "འཐུས་མི",
   "Governance": "འཛིན་སྐྱོང",
   "General": "སྤྱིར་བཏང",
 
-  // Association links
+  // Organization & Association links
   "About HAB": "ང་བཅས་ཀྱི་སྐོར",
   "About Us": "ང་བཅས་ཀྱི་སྐོར",
+  "Our Mandate & AoA": "ང་བཅས་ཀྱི་ལས་འགན་དང་རྩ་ཁྲིམས",
+  "Our Mandate": "ང་བཅས་ཀྱི་ལས་འགན",
+  "Mandate & AoA": "ལས་འགན་དང་རྩ་ཁྲིམས",
+  "Code of Ethics": "ཚུལ་ཁྲིམས་དང་སྒྲིག་ལམ",
+  "Strategic Plan": "ཐབས་བྱུས་འཆར་གཞི",
+  "Contact secretariat": "དྲུང་ཆེའི་ཡིག་ཚང་འབྲེལ་གཏུག",
+  "Contact Secretariat": "དྲུང་ཆེའི་ཡིག་ཚང་འབྲེལ་གཏུག",
   "Programmes": "ལས་རིམ",
   "Projects": "ལས་འགུལ",
   "Membership": "འཐུས་མིའི་སྐོར",
@@ -165,21 +173,57 @@ export default function Footer() {
 
     const normalizeHref = (label: string, href: string) => {
       const l = (label || '').toLowerCase();
+      const h = (href || '').toLowerCase();
+
+      // Mandate & AoA
+      if (l.includes('mandate') || l.includes('aoa') || h.includes('#mandate')) return '/mandate';
+
+      // Ethics
+      if (l.includes('ethic') || h.includes('#ethics')) return '/code-of-ethics';
+
+      // Strategic plan
+      if (l.includes('strategic') || h.includes('strategic')) return '/strategic-plan';
+
+      // Secretariat / Contact secretariat
+      if (l.includes('contact secretariat') || l === 'secretariat' || h.includes('#secretariat') || h.includes('#contact')) return '/secretariat';
+
+      // Board
+      if (l.includes('board of trustees') || l === 'board' || h.includes('#board') || h.includes('#governance')) return '/board-of-trustees';
+
+      // Shipping & delivery
+      if ((l.includes('shipping') || l.includes('delivery')) && !l.includes('return')) return '/shipping-policy';
+
+      // Returns & refunds
+      if (l.includes('return') || l.includes('refund') || h.includes('#returns') || (h.includes('#support') && l.includes('return'))) return '/returns-policy';
+
+      // Duties & customs
+      if (l.includes('custom') || l.includes('dut') || h.includes('#duty') || (h.includes('#support') && (l.includes('duty') || l.includes('custom')))) return '/customs-policy';
+
+      // Annual reports
+      if (l.includes('annual report') || h.includes('kind=annual')) return '/annual-reports';
+
+      // Audited accounts
+      if (l.includes('audited account') || h.includes('kind=audited')) return '/audited-accounts';
+
+      // Directory / members / login / tenders
       if (l.includes('directory')) return '/members';
       if (l === 'member login') return '/login';
       if (l.includes('tender')) return '/tenders';
-      if (l.includes('board of trustees') || l === 'board') return '/board-of-trustees';
-      if (l === 'secretariat') return '/secretariat';
-      if (l.includes('annual report')) return '/annual-reports';
-      if (l.includes('audited account')) return '/audited-accounts';
-      if (l.includes('return') || l.includes('refund')) return '/returns-policy';
-      if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
+
+      // Direct checks on specific href strings
       if (href && href.startsWith('/shipping-policy#returns')) return '/returns-policy';
       if (href && href.startsWith('/shipping-policy#duty')) return '/customs-policy';
       if (href && href.startsWith('/about#board')) return '/board-of-trustees';
       if (href && href.startsWith('/about#secretariat')) return '/secretariat';
-      if (href && href.includes('kind=Annual')) return '/annual-reports';
-      if (href && href.includes('kind=Audited')) return '/audited-accounts';
+      if (href && href.startsWith('/about#mandate')) return '/mandate';
+      if (href && href.startsWith('/about#ethics')) return '/code-of-ethics';
+      if (href && href.startsWith('/about#contact')) return '/secretariat';
+      if (href && href.startsWith('/about#support')) {
+        if (l.includes('return')) return '/returns-policy';
+        if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
+        return '/shipping-policy';
+      }
+
       return href;
     };
 

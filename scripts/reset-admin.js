@@ -15,27 +15,27 @@ const DEFAULT_HEADER_LINKS = [
 
 const DEFAULT_FOOTER_COLUMNS = [
   { column: 'Organization', label: 'About HAB', href: '/about', sortOrder: 1, menuType: 'FOOTER', isActive: true },
-  { column: 'Organization', label: 'Our Mandate & AoA', href: '/about#mandate', sortOrder: 2, menuType: 'FOOTER', isActive: true },
-  { column: 'Organization', label: 'Code of Ethics', href: '/about#ethics', sortOrder: 3, menuType: 'FOOTER', isActive: true },
-  { column: 'Organization', label: 'Strategic Plan', href: '/publications', sortOrder: 4, menuType: 'FOOTER', isActive: true },
-  { column: 'Organization', label: 'Contact secretariat', href: '/about#contact', sortOrder: 5, menuType: 'FOOTER', isActive: true },
+  { column: 'Organization', label: 'Our Mandate & AoA', href: '/mandate', sortOrder: 2, menuType: 'FOOTER', isActive: true },
+  { column: 'Organization', label: 'Code of Ethics', href: '/code-of-ethics', sortOrder: 3, menuType: 'FOOTER', isActive: true },
+  { column: 'Organization', label: 'Strategic Plan', href: '/strategic-plan', sortOrder: 4, menuType: 'FOOTER', isActive: true },
+  { column: 'Organization', label: 'Contact secretariat', href: '/secretariat', sortOrder: 5, menuType: 'FOOTER', isActive: true },
 
   { column: 'Shop & support', label: 'E-shop', href: '/shop', sortOrder: 1, menuType: 'FOOTER', isActive: true },
-  { column: 'Shop & support', label: 'Shipping & delivery', href: '/about#support', sortOrder: 2, menuType: 'FOOTER', isActive: true },
-  { column: 'Shop & support', label: 'Returns', href: '/about#support', sortOrder: 3, menuType: 'FOOTER', isActive: true },
+  { column: 'Shop & support', label: 'Shipping & delivery', href: '/shipping-policy', sortOrder: 2, menuType: 'FOOTER', isActive: true },
+  { column: 'Shop & support', label: 'Returns', href: '/returns-policy', sortOrder: 3, menuType: 'FOOTER', isActive: true },
   { column: 'Shop & support', label: 'Track your order', href: '/track-order', sortOrder: 4, menuType: 'FOOTER', isActive: true },
-  { column: 'Shop & support', label: 'Duty & customs', href: '/about#support', sortOrder: 5, menuType: 'FOOTER', isActive: true },
+  { column: 'Shop & support', label: 'Duty & customs', href: '/customs-policy', sortOrder: 5, menuType: 'FOOTER', isActive: true },
 
   { column: 'Members', label: 'Directory by category', href: '/members', sortOrder: 1, menuType: 'FOOTER', isActive: true },
   { column: 'Members', label: 'Publications', href: '/publications', sortOrder: 2, menuType: 'FOOTER', isActive: true },
-  { column: 'Members', label: 'Member shops', href: '/shop', sortOrder: 3, menuType: 'FOOTER', isActive: true },
+  { column: 'Members', label: 'Member shops', href: '/outlets', sortOrder: 3, menuType: 'FOOTER', isActive: true },
   { column: 'Members', label: 'Apply to join', href: '/membership/apply', sortOrder: 4, menuType: 'FOOTER', isActive: true },
 
-  { column: 'Governance', label: 'Board of Trustees', href: '/about#governance', sortOrder: 1, menuType: 'FOOTER', isActive: true },
-  { column: 'Governance', label: 'Secretariat', href: '/about#governance', sortOrder: 2, menuType: 'FOOTER', isActive: true },
-  { column: 'Governance', label: 'Annual reports', href: '/publications', sortOrder: 3, menuType: 'FOOTER', isActive: true },
-  { column: 'Governance', label: 'Audited accounts', href: '/publications', sortOrder: 4, menuType: 'FOOTER', isActive: true },
-  { column: 'Governance', label: 'Tenders & vacancies', href: '/news', sortOrder: 5, menuType: 'FOOTER', isActive: true },
+  { column: 'Governance', label: 'Board of Trustees', href: '/board-of-trustees', sortOrder: 1, menuType: 'FOOTER', isActive: true },
+  { column: 'Governance', label: 'Secretariat', href: '/secretariat', sortOrder: 2, menuType: 'FOOTER', isActive: true },
+  { column: 'Governance', label: 'Annual reports', href: '/annual-reports', sortOrder: 3, menuType: 'FOOTER', isActive: true },
+  { column: 'Governance', label: 'Audited accounts', href: '/audited-accounts', sortOrder: 4, menuType: 'FOOTER', isActive: true },
+  { column: 'Governance', label: 'Tenders & vacancies', href: '/tenders', sortOrder: 5, menuType: 'FOOTER', isActive: true },
 ];
 
 async function resetAdmin() {
