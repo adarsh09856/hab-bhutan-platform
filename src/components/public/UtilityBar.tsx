@@ -63,14 +63,15 @@ export default function UtilityBar() {
     };
   }, []);
 
-  // Automatic ticker roll every 6 seconds with comfortable reading time
+  // Automatic ticker roll (giving extra reading time when notice is long and marqueeing)
   useEffect(() => {
     if (isPaused || tickerMessages.length <= 1) return;
+    const intervalTime = overflowDist > 0 ? 8500 : 5500;
     const timer = setInterval(() => {
       setCurrentTickerIdx((prev) => (prev + 1) % tickerMessages.length);
-    }, 6000);
+    }, intervalTime);
     return () => clearInterval(timer);
-  }, [isPaused, tickerMessages.length]);
+  }, [isPaused, tickerMessages.length, overflowDist]);
 
   // Dynamically detect if the current notice text exceeds available container width
   useEffect(() => {
@@ -213,16 +214,37 @@ export default function UtilityBar() {
           </div>
         </div>
 
-        {/* Right side items: Track Order, Secretary Desk hotline, Wholesale, Language switcher */}
-        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-          <Link
-            href="/track-order"
-            className="hover:text-white transition-colors flex-shrink-0 hidden sm:inline-flex"
-            style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, fontSize: '11px', whiteSpace: 'nowrap' }}
-          >
+        {/* Top Bar Secondary Navigation Menus */}
+        <nav
+          className="utility__links no-scrollbar"
+          aria-label="Secondary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Link href="/track-order" style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, flexShrink: 0 }}>
             {isDz ? 'བཀའ་རྒྱའི་རྗེས་འདེད' : 'Track order'}
           </Link>
+          <Link href="/contact" style={{ flexShrink: 0 }}>
+            {isDz ? 'འབྲེལ་གཏུག' : 'Contact us'}
+          </Link>
+          <Link href="/tenders" style={{ flexShrink: 0 }}>
+            {isDz ? 'རིན་བསྡུར' : 'Tenders'}
+          </Link>
+          <Link href="/publications" style={{ flexShrink: 0 }}>
+            {isDz ? 'དཔེ་སྐྲུན' : 'Publications'}
+          </Link>
+          <Link href="/donate" style={{ flexShrink: 0 }}>
+            {isDz ? 'ཞལ་འདེབས' : 'Donate'}
+          </Link>
+        </nav>
 
+        {/* Right side items: Secretary Desk hotline, Wholesale, Language switcher */}
+        <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
           {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
           {topBarContactMode !== 'OFF' && (
             <div
@@ -268,11 +290,12 @@ export default function UtilityBar() {
           )}
 
           <Link
-            className="utility__trade hidden md:inline-flex"
+            className="utility__trade hidden sm:inline-flex"
             href="/wholesale"
             style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '11px' }}
           >
-            <span>{isDz ? 'ཚོང་འབྲེལ' : 'Wholesale'}</span>
+            <span className="utility__trade-long">Trade &amp; wholesale buyers</span>
+            <span className="utility__trade-short">Trade buyers</span>
           </Link>
 
           <span className="utility__rule hidden sm:inline-block" aria-hidden="true" style={{ flexShrink: 0 }}></span>
