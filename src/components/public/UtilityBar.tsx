@@ -5,12 +5,41 @@ import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
+const ANNOUNCEMENT_TRANSLATIONS: Record<string, string> = {
+  'CSO/2011/043 · Handicrafts Association of Bhutan': 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ',
+  'CSO/2011/043 · Handicrafts Association of Bhutan · Apex CSO': 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ · དབུ་འཁྲིད་ལས་ཚོགས',
+  'CSO/2011/043 · Handicrafts Association of Bhutan · Apex Civil Society Organization': 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ · དབུ་འཁྲིད་ལས་ཚོགས',
+  'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags': 'རྫོང་ཁག་ ༢༠ གི་ གྲོང་གསེབ་ལག་བཟོ་པ་ ༧,༥༠༠+ ལུ་རྒྱབ་སྐྱོར་འབད་མི་ དབུ་འཁྲིད་ཚོགས་པ',
+  'Official Secretariat Hotline: +975-2-338089 · Thimphu': 'གཞུང་འབྲེལ་དྲུང་ཆེའི་ཡིག་ཚང་བརྒྱུད་འཕྲིན: +975-2-338089 · ཐིམ་ཕུག',
+  'Track Orders Worldwide with Authentic Craft Certification': 'ངོ་མ་ཨིན་པའི་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ལུ་ བཀའ་རྒྱ་རྗེས་འདེད',
+  'Official Secretary Desk: +975-2-338089 · officehab@gmail.com': 'གཞུང་འབྲེལ་དྲུང་ཆེའི་ཡིག་ཚང: +975-2-338089 · officehab@gmail.com',
+  'Empowering 7,500+ rural artisans across all twenty Dzongkhags of Bhutan': 'འབྲུག་གི་རྫོང་ཁག་ཉི་ཤུའི་ནང་ གྲོང་གསེབ་ལག་བཟོ་པ་ ༧,༥༠༠ ལྷགཔ་ཅིག་ལུ་ དབང་ཚད་སྤྲོད་ནི',
+  'Worldwide EMS & DHL Courier Tracking with Official Certificate of Authenticity': 'གཞུང་འབྲེལ་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ཀྱི་ EMS & DHL བཀའ་རྒྱའི་རྗེས་འདེད',
+  'Track orders worldwide with authentic craft certificates': 'ངོ་མ་ཨིན་པའི་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ལུ་ བཀའ་རྒྱ་རྗེས་འདེད',
+};
+
 export default function UtilityBar() {
-  const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; link?: string }>>([
-    { text: 'CSO/2011/043 · Handicrafts Association of Bhutan', link: '/about' },
-    { text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags', link: '/about' },
-    { text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu', link: '/contact' },
-    { text: 'Track Orders Worldwide with Authentic Craft Certification', link: '/track-order' },
+  const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; dzText?: string; text_dz?: string; link?: string }>>([
+    {
+      text: 'CSO/2011/043 · Handicrafts Association of Bhutan',
+      dzText: 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ',
+      link: '/about',
+    },
+    {
+      text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags',
+      dzText: 'རྫོང་ཁག་ ༢༠ གི་ གྲོང་གསེབ་ལག་བཟོ་པ་ ༧,༥༠༠+ ལུ་རྒྱབ་སྐྱོར་འབད་མི་ དབུ་འཁྲིད་ཚོགས་པ',
+      link: '/about',
+    },
+    {
+      text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu',
+      dzText: 'གཞུང་འབྲེལ་དྲུང་ཆེའི་ཡིག་ཚང་བརྒྱུད་འཕྲིན: +975-2-338089 · ཐིམ་ཕུག',
+      link: '/contact',
+    },
+    {
+      text: 'Track Orders Worldwide with Authentic Craft Certification',
+      dzText: 'ངོ་མ་ཨིན་པའི་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ལུ་ བཀའ་རྒྱ་རྗེས་འདེད',
+      link: '/track-order',
+    },
   ]);
   const [currentTickerIdx, setCurrentTickerIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -93,11 +122,28 @@ export default function UtilityBar() {
       clearTimeout(timer);
       window.removeEventListener('resize', checkOverflow);
     };
-  }, [currentTickerIdx, tickerMessages]);
+  }, [currentTickerIdx, tickerMessages, language]);
+
+  const getAnnouncementText = (item?: { text: string; dzText?: string; text_dz?: string; link?: string }) => {
+    if (!item) return '';
+    if (isDz) {
+      if (item.dzText) return item.dzText;
+      if (item.text_dz) return item.text_dz;
+      if (ANNOUNCEMENT_TRANSLATIONS[item.text]) return ANNOUNCEMENT_TRANSLATIONS[item.text];
+      const clean = item.text.trim();
+      if (ANNOUNCEMENT_TRANSLATIONS[clean]) return ANNOUNCEMENT_TRANSLATIONS[clean];
+      const match = Object.keys(ANNOUNCEMENT_TRANSLATIONS).find(
+        (k) => k.toLowerCase() === clean.toLowerCase()
+      );
+      if (match) return ANNOUNCEMENT_TRANSLATIONS[match];
+    }
+    return item.text;
+  };
 
   if (!visible) return null;
 
   const currentItem = tickerMessages[currentTickerIdx] || tickerMessages[0];
+  const displayText = getAnnouncementText(currentItem);
 
   return (
     <div
@@ -202,13 +248,13 @@ export default function UtilityBar() {
                 <Link
                   href={currentItem.link}
                   className="hover:underline transition-opacity duration-300"
-                  title={currentItem.text}
+                  title={displayText}
                 >
-                  <span ref={textSpanRef}>{currentItem.text}</span>
+                  <span ref={textSpanRef}>{displayText}</span>
                 </Link>
               ) : (
-                <span ref={textSpanRef} title={currentItem?.text}>
-                  {currentItem?.text}
+                <span ref={textSpanRef} title={displayText}>
+                  {displayText}
                 </span>
               )}
             </div>

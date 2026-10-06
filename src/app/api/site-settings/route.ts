@@ -88,10 +88,26 @@ export async function GET() {
 
     const tb = (setting?.trustBadges as Record<string, any>) || {};
     const defaultTicker = [
-      { text: setting?.announcementText || 'CSO/2011/043 · Handicrafts Association of Bhutan', link: setting?.announcementLink || '/about' },
-      { text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags', link: '/about' },
-      { text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu', link: '/contact' },
-      { text: 'Track Orders Worldwide with Authentic Craft Certification', link: '/track-order' },
+      {
+        text: setting?.announcementText || 'CSO/2011/043 · Handicrafts Association of Bhutan',
+        dzText: 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ',
+        link: setting?.announcementLink || '/about',
+      },
+      {
+        text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags',
+        dzText: 'རྫོང་ཁག་ ༢༠ གི་ གྲོང་གསེབ་ལག་བཟོ་པ་ ༧,༥༠༠+ ལུ་རྒྱབ་སྐྱོར་འབད་མི་ དབུ་འཁྲིད་ཚོགས་པ',
+        link: '/about',
+      },
+      {
+        text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu',
+        dzText: 'གཞུང་འབྲེལ་དྲུང་ཆེའི་ཡིག་ཚང་བརྒྱུད་འཕྲིན: +975-2-338089 · ཐིམ་ཕུག',
+        link: '/contact',
+      },
+      {
+        text: 'Track Orders Worldwide with Authentic Craft Certification',
+        dzText: 'ངོ་མ་ཨིན་པའི་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ལུ་ བཀའ་རྒྱ་རྗེས་འདེད',
+        link: '/track-order',
+      },
     ];
     const tickerMessages = tb.tickerMessages && Array.isArray(tb.tickerMessages) && tb.tickerMessages.length > 0
       ? tb.tickerMessages
@@ -141,10 +157,26 @@ export async function GET() {
         secretaryEmail: CLIENT_VERBATIM.contactBlock.email,
         topBarContactMode: 'PHONE_ONLY',
         tickerMessages: [
-          { text: 'CSO/2011/043 · Handicrafts Association of Bhutan', link: '/about' },
-          { text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags', link: '/about' },
-          { text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu', link: '/contact' },
-          { text: 'Track Orders Worldwide with Authentic Craft Certification', link: '/track-order' },
+          {
+            text: 'CSO/2011/043 · Handicrafts Association of Bhutan',
+            dzText: 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ',
+            link: '/about',
+          },
+          {
+            text: 'Apex CSO Supporting 7,500+ Rural Artisans Across 20 Dzongkhags',
+            dzText: 'རྫོང་ཁག་ ༢༠ གི་ གྲོང་གསེབ་ལག་བཟོ་པ་ ༧,༥༠༠+ ལུ་རྒྱབ་སྐྱོར་འབད་མི་ དབུ་འཁྲིད་ཚོགས་པ',
+            link: '/about',
+          },
+          {
+            text: 'Official Secretariat Hotline: +975-2-338089 · Thimphu',
+            dzText: 'གཞུང་འབྲེལ་དྲུང་ཆེའི་ཡིག་ཚང་བརྒྱུད་འཕྲིན: +975-2-338089 · ཐིམ་ཕུག',
+            link: '/contact',
+          },
+          {
+            text: 'Track Orders Worldwide with Authentic Craft Certification',
+            dzText: 'ངོ་མ་ཨིན་པའི་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ལུ་ བཀའ་རྒྱ་རྗེས་འདེད',
+            link: '/track-order',
+          },
         ],
         edPhone: CLIENT_VERBATIM.contactBlock.ed,
         marketingPhone: CLIENT_VERBATIM.contactBlock.marketing,
