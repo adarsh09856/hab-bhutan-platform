@@ -850,4 +850,28 @@ model CustomPage {
   @@index([category])
 }
 
+// Dedicated Wholesale Buyers Accounts & Access Control (Feedback Item 7)
+model WholesaleBuyer {
+  id              String    @id @default(uuid())
+  username        String    @unique
+  passwordHash    String
+  companyName     String
+  contactName     String
+  email           String    @unique
+  phone           String?
+  country         String    @default("Bhutan")
+  city            String?
+  taxId           String?   // Business License or VAT/GST/EIN number
+  discountTier    Int       @default(20) // e.g. 20% discount on retail
+  status          String    @default("ACTIVE") // ACTIVE | INACTIVE | PENDING | SUSPENDED
+  notes           String?   @db.Text
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([username])
+  @@index([email])
+  @@index([status])
+}
+
 

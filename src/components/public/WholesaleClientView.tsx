@@ -78,7 +78,7 @@ export default function WholesaleClientView({
               <Link className="btn btn--light" href="/wholesale/register">
                 Register as a wholesale buyer
               </Link>
-              <Link className="btn btn--ghost" href="/wholesale/shop">
+              <Link className="btn btn--ghost" href="/wholesale/login">
                 Wholesale buyer login
               </Link>
             </div>
