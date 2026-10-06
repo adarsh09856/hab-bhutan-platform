@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { moveToRecycleBin } from '@/lib/recycle-bin';
 
 export const dynamic = 'force-dynamic';
 
@@ -259,21 +260,38 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // Referential integrity check using normalized OrderItem model
+    // Check if referenced by orders - if so, soft-delete via ARCHIVED, otherwise remove from products table
     const orderItemCount = product.orderItems.length;
-    if (orderItemCount > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Cannot permanently delete product '${product.name}' (${product.code}). It is referenced by ${orderItemCount} historical order line-item(s). To preserve order integrity and financial audit history, set the product status to ARCHIVED instead.`,
-          code: 'REFERENTIAL_INTEGRITY_VIOLATION',
-          details: { orderItemCount },
-        },
-        { status: 400 }
-      );
-    }
 
-    await prisma.product.delete({ where: { id: product.id } });
+    // 1. Snapshot product to Recycle Bin for recovery
+    await moveToRecycleBin({
+      entityType: 'PRODUCT',
+      originalId: product.id,
+      itemTitle: `${product.name} (${product.code})`,
+      itemData: {
+        id: product.id,
+        code: product.code,
+        name: product.name,
+        priceUSD: product.priceUSD,
+        craftKey: product.craftKey,
+        region: product.region,
+        description: product.description,
+        images: product.images,
+        stock: product.stock,
+        status: product.status,
+      },
+      deletedBy: session.email,
+      reason: 'Moved to Recycle Bin by administrator',
+    });
+
+    if (orderItemCount > 0) {
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { status: 'ARCHIVED' },
+      });
+    } else {
+      await prisma.product.delete({ where: { id: product.id } });
+    }
 
     const ip = getClientIp(req);
     await logAudit({
@@ -281,18 +299,19 @@ export async function DELETE(req: NextRequest) {
       actorId: session.id,
       actorIdentifier: session.email,
       actorIp: ip,
-      action: 'PRODUCT_DELETED',
+      action: 'PRODUCT_MOVED_TO_RECYCLE_BIN',
       entityType: 'Product',
       entityId: product.id,
       details: {
         code: product.code,
         name: product.name,
+        orderItemCount,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Product '${product.name}' (${product.code}) permanently deleted from catalog.`,
+      message: `Product '${product.name}' (${product.code}) moved to Recycle Bin. You can restore or permanently purge it from the Recycle Bin studio.`,
     });
   } catch (err: any) {
     console.error('Error deleting product:', err);

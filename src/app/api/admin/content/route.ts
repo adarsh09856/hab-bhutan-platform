@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { moveToRecycleBin } from '@/lib/recycle-bin';
 
 export const dynamic = 'force-dynamic';
 
@@ -324,6 +325,15 @@ export async function DELETE(req: NextRequest) {
       const article = await prisma.newsArticle.findUnique({ where: { id } });
       if (!article) return NextResponse.json({ success: false, error: 'Article not found.' }, { status: 404 });
 
+      await moveToRecycleBin({
+        entityType: 'NEWS',
+        originalId: article.id,
+        itemTitle: article.title,
+        itemData: article,
+        deletedBy: session.email,
+        reason: 'Deleted by administrator from News Studio',
+      });
+
       await prisma.newsArticle.delete({ where: { id } });
 
       await logAudit({
@@ -337,13 +347,22 @@ export async function DELETE(req: NextRequest) {
         details: { title: article.title },
       });
 
-      return NextResponse.json({ success: true, message: `Article '${article.title}' deleted.` });
+      return NextResponse.json({ success: true, message: `Article '${article.title}' moved to Recycle Bin.` });
     }
 
     if (type === 'PUBLICATION') {
       const session = await requirePermission(req, 'content:delete');
       const pub = await prisma.publication.findUnique({ where: { id } });
       if (!pub) return NextResponse.json({ success: false, error: 'Publication not found.' }, { status: 404 });
+
+      await moveToRecycleBin({
+        entityType: 'DOCUMENT',
+        originalId: pub.id,
+        itemTitle: pub.title,
+        itemData: pub,
+        deletedBy: session.email,
+        reason: 'Deleted by administrator from Publications Studio',
+      });
 
       await prisma.publication.delete({ where: { id } });
 
@@ -358,7 +377,7 @@ export async function DELETE(req: NextRequest) {
         details: { title: pub.title },
       });
 
-      return NextResponse.json({ success: true, message: `Publication '${pub.title}' deleted.` });
+      return NextResponse.json({ success: true, message: `Publication '${pub.title}' moved to Recycle Bin.` });
     }
 
     if (type === 'GOVERNANCE') {

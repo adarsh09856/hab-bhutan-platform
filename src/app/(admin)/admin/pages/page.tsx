@@ -441,7 +441,7 @@ export default function AdminPagesHub() {
       });
       const data = await res.json();
       if (res.ok) {
-        showToast('success', `Deleted "${pageToDelete.title}" and unlinked any navigation items.`);
+        showToast('success', `"${pageToDelete.title}" moved to Recycle Bin (can be restored anytime).`);
         setDeleteConfirmOpen(false);
         setPageToDelete(null);
         loadCustomPages();

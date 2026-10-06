@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { moveToRecycleBin } from '@/lib/recycle-bin';
 
 export const dynamic = 'force-dynamic';
 
@@ -190,6 +191,19 @@ export async function DELETE(req: NextRequest) {
     }
 
     const where = id ? { id } : { key: key! };
+    const existing = await prisma.eventRecord.findUnique({ where });
+
+    if (existing) {
+      await moveToRecycleBin({
+        entityType: 'EVENT',
+        originalId: existing.id,
+        itemTitle: existing.title,
+        itemData: existing,
+        deletedBy: user.email,
+        reason: 'Deleted by administrator from Events Studio',
+      });
+    }
+
     const deleted = await prisma.eventRecord.delete({ where });
 
     await logAudit({
@@ -202,7 +216,7 @@ export async function DELETE(req: NextRequest) {
       details: { key: deleted.key, title: deleted.title },
     });
 
-    return NextResponse.json({ success: true, deleted: true });
+    return NextResponse.json({ success: true, deleted: true, message: `Event '${deleted.title}' moved to Recycle Bin.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete event' }, { status: 500 });
   }

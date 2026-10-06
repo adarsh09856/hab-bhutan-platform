@@ -71,6 +71,7 @@ export default async function MembersPage() {
 
   try {
     const dbMembers = await prisma.member.findMany({
+      where: { status: 'VERIFIED' },
       select: { craftKey: true, dzongkhag: true },
     });
     dbMembers.forEach((m) => {

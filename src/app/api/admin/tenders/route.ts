@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { moveToRecycleBin } from '@/lib/recycle-bin';
 
 export const dynamic = 'force-dynamic';
 
@@ -165,6 +166,18 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'id parameter is required' }, { status: 400 });
     }
 
+    const existing = await prisma.tenderRecord.findUnique({ where: { id } });
+    if (existing) {
+      await moveToRecycleBin({
+        entityType: 'TENDER',
+        originalId: existing.id,
+        itemTitle: `${existing.title} (${existing.tenderNumber})`,
+        itemData: existing,
+        deletedBy: user.email,
+        reason: 'Deleted by administrator from Tenders Studio',
+      });
+    }
+
     const deleted = await prisma.tenderRecord.delete({
       where: { id },
     });
@@ -179,7 +192,7 @@ export async function DELETE(req: NextRequest) {
       details: { tenderNumber: deleted.tenderNumber, title: deleted.title },
     });
 
-    return NextResponse.json({ success: true, deleted: true });
+    return NextResponse.json({ success: true, deleted: true, message: `Tender '${deleted.title}' moved to Recycle Bin.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete tender' }, { status: 500 });
   }

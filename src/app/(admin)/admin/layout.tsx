@@ -44,7 +44,8 @@ import {
   ChevronDown,
   ChevronsUpDown,
   Plus,
-  Building2
+  Building2,
+  Trash2
 } from 'lucide-react';
 
 interface HealthData {
@@ -256,6 +257,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Customer Messages', href: '/admin/inquiries', icon: Mail },
         { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
         { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Access' },
+        { label: 'Recycle Bin', href: '/admin/recycle-bin', icon: Trash2, badge: 'Trash' },
         { label: 'System Settings & Health', href: '/admin/settings', icon: Settings },
       ],
     },

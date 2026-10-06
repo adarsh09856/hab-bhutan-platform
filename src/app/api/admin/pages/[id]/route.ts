@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { moveToRecycleBin } from '@/lib/recycle-bin';
 
 export const dynamic = 'force-dynamic';
 
@@ -209,6 +210,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
+    // 1. Snapshot to Recycle Bin
+    await moveToRecycleBin({
+      entityType: 'PAGE',
+      originalId: page.id,
+      itemTitle: page.title,
+      itemData: page,
+      deletedBy: session.email,
+      reason: 'Deleted by administrator from Pages Studio',
+    });
+
     // Unlink any NavigationItem pointing to this page
     try {
       await prisma.navigationItem.deleteMany({
@@ -233,7 +244,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       details: { title: page.title, slug: page.slug },
     });
 
-    return NextResponse.json({ success: true, message: `Page "${page.title}" deleted successfully.` });
+    return NextResponse.json({ success: true, message: `Page "${page.title}" moved to Recycle Bin.` });
   } catch (err: any) {
     console.error('Error deleting custom page:', err);
     return NextResponse.json({ error: err.message || 'Failed to delete page' }, { status: err.statusCode || 500 });
