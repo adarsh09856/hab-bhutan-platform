@@ -186,6 +186,15 @@ export default function Footer() {
             <span>{settings.officeAddress}</span><br />
             <span>Office {settings.officePhone}</span><br />
             <a href={`mailto:${settings.officialEmail}`}>{settings.officialEmail}</a>
+            <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+              <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600, fontSize: '11.5px', display: 'block' }}>Secretary Desk</span>
+              <a href={`tel:${((settings as any).secretaryPhone || settings.officePhone || '+975-2-338089').replace(/\s+/g, '')}`} style={{ color: 'rgba(255,255,255,0.9)', textDecoration: 'none', display: 'block', fontSize: '12px' }}>
+                {((settings as any).secretaryPhone || settings.officePhone || '+975-2-338089')}
+              </a>
+              <a href={`mailto:${(settings as any).secretaryEmail || settings.officialEmail || 'officehab@gmail.com'}`} style={{ color: 'var(--brass, #e6ca65)', textDecoration: 'none', display: 'block', fontSize: '12px' }}>
+                {(settings as any).secretaryEmail || settings.officialEmail || 'officehab@gmail.com'}
+              </a>
+            </div>
           </address>
         </div>
 
@@ -201,7 +210,28 @@ export default function Footer() {
 
       <div className="footer__bar">
         <span>{settings.copyrightText || '© 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043'}</span>
-        <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <span>Prices shown in <span>{currency === 'USD' ? 'USD $' : 'BTN Nu.'}</span> · Payments by card, mBoB and bank transfer</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('hab:open-policy-modal'));
+              }
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--brass, #e6ca65)',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              fontSize: 'inherit',
+              padding: 0,
+            }}
+          >
+            Website Policies &amp; Standards
+          </button>
+        </div>
       </div>
 
       <UniversalLiveSectionEditor

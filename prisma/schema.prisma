@@ -432,9 +432,13 @@ model SiteSetting {
   stat4Label           String   @default("Arts & crafts of Zorig Chusum")
   officeAddress        String   @default("Metog Lam, Thimphu, Bhutan")
   officePhone          String   @default("+975-2-338089")
+  secretaryPhone       String   @default("+975-2-338089")
+  secretaryEmail       String   @default("officehab@gmail.com")
   edPhone              String   @default("+975-77654508")
   marketingPhone       String   @default("+975-17462636 / 17881111")
   officialEmail        String   @default("officehab@gmail.com")
+  policyPopupEnabled   Boolean  @default(true)
+  policyPopupText      String?  @db.Text @default("Welcome to the Handicrafts Association of Bhutan. Please review our official policies on verified artisan standards, shipping, terms, and returns.")
   footerAbout          String   @db.Text
   csoRegistration      String   @default("CSO Registration: CSO/2011/043 · Thimphu, Kingdom of Bhutan")
   copyrightText        String   @default("© 2026 Handicrafts Association of Bhutan. All rights reserved.")

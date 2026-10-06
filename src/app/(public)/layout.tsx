@@ -7,6 +7,7 @@ import Footer from '@/components/public/Footer';
 import AdminDrawer from '@/components/public/AdminDrawer';
 import AskHabAssistant from '@/components/public/AskHabAssistant';
 import DesignTweaks from '@/components/public/DesignTweaks';
+import PolicyModal from '@/components/public/PolicyModal';
 
 export default function PublicLayout({
   children,
@@ -23,6 +24,7 @@ export default function PublicLayout({
       <AdminDrawer />
       <AskHabAssistant />
       <DesignTweaks />
+      <PolicyModal />
     </div>
   );
 }

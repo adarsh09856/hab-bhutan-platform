@@ -69,6 +69,10 @@ export default function AdminSiteSettingsPage() {
     edPhone: '',
     marketingPhone: '',
     officialEmail: '',
+    secretaryPhone: '+975-2-338089',
+    secretaryEmail: 'officehab@gmail.com',
+    policyPopupEnabled: true,
+    policyPopupText: 'Welcome to the Handicrafts Association of Bhutan. Please review our official policies on verified artisan standards, shipping, terms, and returns.',
     footerAbout: '',
     csoRegistration: '',
     copyrightText: '',
@@ -1322,6 +1326,39 @@ export default function AdminSiteSettingsPage() {
                 />
               </div>
             </div>
+
+            <div className="pt-4 border-t border-slate-200">
+              <h3 className="text-sm font-bold admin-title mb-1 text-[#8B2E24]">Official Secretary Desk (Item 2)</h3>
+              <p className="text-xs text-slate-500 mb-3">
+                This dedicated contact information is displayed across the top utility bar, footer, and contact page.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                    Secretary Desk Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={form.secretaryPhone}
+                    onChange={(e) => setForm({ ...form, secretaryPhone: e.target.value })}
+                    placeholder="+975-2-338089"
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
+                    Secretary Desk Email
+                  </label>
+                  <input
+                    type="email"
+                    value={form.secretaryEmail}
+                    onChange={(e) => setForm({ ...form, secretaryEmail: e.target.value })}
+                    placeholder="officehab@gmail.com"
+                    className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1448,6 +1485,49 @@ export default function AdminSiteSettingsPage() {
                     className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm font-mono text-xs"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Website Policy Pop-Up Controls (Item 3) */}
+            <div className="pt-6 border-t border-slate-200">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="text-sm font-bold admin-title text-[#8B2E24]">Website Policies Pop-Up &amp; Notice (Item 3)</h3>
+                  <p className="text-xs text-slate-500">
+                    Controls the pop-up modal linking visitors to Terms, Privacy, Return &amp; Refund Policy, and Member Charter.
+                  </p>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(form.policyPopupEnabled)}
+                    onChange={(e) => setForm({ ...form, policyPopupEnabled: e.target.checked })}
+                    className="w-4 h-4 text-[#8B2E24] rounded border-slate-300 focus:ring-[#8B2E24]"
+                  />
+                  <span className="text-xs font-semibold text-slate-700">Enable Pop-Up</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1">
+                  Policy Pop-Up Introduction Text
+                </label>
+                <textarea
+                  rows={3}
+                  value={form.policyPopupText}
+                  onChange={(e) => setForm({ ...form, policyPopupText: e.target.value })}
+                  placeholder="Welcome to the Handicrafts Association of Bhutan. Please review our official policies on verified artisan standards, shipping, terms, and returns."
+                  className="w-full px-3.5 py-2.5 admin-input border rounded-lg text-sm"
+                />
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <Link
+                  href="/admin/policies"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#8B2E24] font-semibold hover:underline"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Edit Full Policy Text &amp; Legal Clauses in Policy Studio →
+                </Link>
               </div>
             </div>
           </div>

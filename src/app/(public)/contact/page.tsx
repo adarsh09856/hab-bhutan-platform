@@ -137,7 +137,14 @@ function ContactContent() {
               Office {settings?.officePhone || '+975-2-338089'}<br />
               {settings?.officialEmail || 'officehab@gmail.com'}
             </p>
-            <p className="panel__body panel__body--onaccent" style={{ margin: 0, fontSize: 14.5 }}>
+            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+              <p className="eyebrow eyebrow--onaccent" style={{ marginBottom: 4, fontSize: 12 }}>Official Secretary Desk</p>
+              <p className="panel__body panel__body--onaccent" style={{ margin: 0, fontSize: 15 }}>
+                Direct Phone: <a href={`tel:${(settings?.secretaryPhone || '+975-2-338089').replace(/\s+/g, '')}`} style={{ color: '#fff', textDecoration: 'underline' }}>{settings?.secretaryPhone || '+975-2-338089'}</a><br />
+                Direct Email: <a href={`mailto:${settings?.secretaryEmail || 'officehab@gmail.com'}`} style={{ color: '#fff', textDecoration: 'underline' }}>{settings?.secretaryEmail || 'officehab@gmail.com'}</a>
+              </p>
+            </div>
+            <p className="panel__body panel__body--onaccent" style={{ marginTop: 12, marginBottom: 0, fontSize: 14 }}>
               Monday to Friday, 09:00–17:00 BTT. Closed on national holidays.
             </p>
           </div>

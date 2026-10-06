@@ -7,6 +7,8 @@ import { useLanguage } from '@/context/LanguageContext';
 export default function UtilityBar() {
   const [announcement, setAnnouncement] = useState('Registered CSO · CSO Act of Bhutan 2007');
   const [announcementLink, setAnnouncementLink] = useState<string | null>(null);
+  const [secretaryPhone, setSecretaryPhone] = useState('+975-2-338089');
+  const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
   const [visible, setVisible] = useState(true);
   const { language, toggleLanguage } = useLanguage();
 
@@ -17,6 +19,8 @@ export default function UtilityBar() {
         if (data?.setting) {
           if (data.setting.announcementText) setAnnouncement(data.setting.announcementText);
           if (data.setting.announcementLink) setAnnouncementLink(data.setting.announcementLink);
+          if (data.setting.secretaryPhone) setSecretaryPhone(data.setting.secretaryPhone);
+          if (data.setting.secretaryEmail) setSecretaryEmail(data.setting.secretaryEmail);
           if (data.setting.isAnnouncementOn !== undefined) setVisible(Boolean(data.setting.isAnnouncementOn));
         }
       })
@@ -25,6 +29,8 @@ export default function UtilityBar() {
     const handleUpdate = (e: any) => {
       if (e.detail?.announcementText !== undefined) setAnnouncement(e.detail.announcementText);
       if (e.detail?.announcementLink !== undefined) setAnnouncementLink(e.detail.announcementLink || null);
+      if (e.detail?.secretaryPhone !== undefined) setSecretaryPhone(e.detail.secretaryPhone);
+      if (e.detail?.secretaryEmail !== undefined) setSecretaryEmail(e.detail.secretaryEmail);
       if (e.detail?.isAnnouncementOn !== undefined) setVisible(Boolean(e.detail.isAnnouncementOn));
     };
 
@@ -111,6 +117,40 @@ export default function UtilityBar() {
           <Link href="/publications" style={{ flexShrink: 0 }}>Publications</Link>
           <Link href="/donate" style={{ flexShrink: 0 }}>Donate</Link>
         </nav>
+
+        {/* Secretary Desk Official Line */}
+        <div
+          className="utility__secretary-desk"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            color: 'rgba(255, 255, 255, 0.85)',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            background: 'rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <span style={{ color: 'var(--brass, #e6ca65)', fontWeight: 600 }}>Secretary Desk:</span>
+          <a
+            href={`tel:${secretaryPhone.replace(/\s+/g, '')}`}
+            style={{ color: '#fff', textDecoration: 'none' }}
+            title="Call Secretary Desk"
+          >
+            {secretaryPhone}
+          </a>
+          <span style={{ opacity: 0.5 }}>·</span>
+          <a
+            href={`mailto:${secretaryEmail}`}
+            style={{ color: '#fff', textDecoration: 'none' }}
+            title="Email Secretary Desk"
+          >
+            {secretaryEmail}
+          </a>
+        </div>
 
         <Link className="utility__trade" href="/wholesale" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
           <span className="utility__trade-long">Trade &amp; wholesale buyers</span>
