@@ -1,0 +1,627 @@
+[
+  {
+    "index": 1,
+    "type": "STATIC_HTML",
+    "htmlFile": "index.html",
+    "route": "/",
+    "name": "Homepage",
+    "adminStudio": "/admin/pages/home",
+    "title": "Handicrafts Association of Bhutan (HAB)",
+    "h1": [
+      "Towards a vibrant &amp; sustainable handicrafts sector"
+    ],
+    "h2Count": 17,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 2,
+    "type": "STATIC_HTML",
+    "htmlFile": "about.html",
+    "route": "/about",
+    "name": "About Us",
+    "adminStudio": "/admin/pages",
+    "title": "About us · Handicrafts Association of Bhutan",
+    "h1": [
+      "A pioneer centre for Bhutanese handicrafts"
+    ],
+    "h2Count": 12,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 3,
+    "type": "STATIC_HTML",
+    "htmlFile": "craft.html",
+    "route": "/craft/[craft]",
+    "name": "Craft Detail",
+    "adminStudio": "/admin/crafts",
+    "title": "Craft · Handicrafts Association of Bhutan",
+    "h1": [
+      "Craft"
+    ],
+    "h2Count": 11,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 4,
+    "type": "STATIC_HTML",
+    "htmlFile": "shop.html",
+    "route": "/shop",
+    "name": "E-Shop Catalog",
+    "adminStudio": "/admin/products",
+    "title": "Shop · Handicrafts Association of Bhutan",
+    "h1": [
+      "The HAB e-shop"
+    ],
+    "h2Count": 7,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 5,
+    "type": "STATIC_HTML",
+    "htmlFile": "product.html",
+    "route": "/product/[code]",
+    "name": "Product Detail",
+    "adminStudio": "/admin/products",
+    "title": "Product · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 7,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 6,
+    "type": "STATIC_HTML",
+    "htmlFile": "basket.html",
+    "route": "/basket",
+    "name": "Shopping Basket",
+    "adminStudio": "/admin/settings",
+    "title": "Basket & checkout · Handicrafts Association of Bhutan",
+    "h1": [
+      "Your basket"
+    ],
+    "h2Count": 10,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 7,
+    "type": "STATIC_HTML",
+    "htmlFile": "clusters.html",
+    "route": "/clusters",
+    "name": "Artisan Clusters",
+    "adminStudio": "/admin/clusters-outlets",
+    "title": "Artisan clusters · Handicrafts Association of Bhutan",
+    "h1": [
+      "Artisan clusters"
+    ],
+    "h2Count": 9,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 8,
+    "type": "STATIC_HTML",
+    "htmlFile": "cluster.html",
+    "route": "/clusters/[key]",
+    "name": "Cluster Detail",
+    "adminStudio": "/admin/clusters-outlets",
+    "title": "Artisan cluster · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 9,
+    "type": "STATIC_HTML",
+    "htmlFile": "outlets.html",
+    "route": "/outlets",
+    "name": "Outlets & Markets",
+    "adminStudio": "/admin/clusters-outlets",
+    "title": "Outlets & clusters · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 8,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 10,
+    "type": "STATIC_HTML",
+    "htmlFile": "outlet.html",
+    "route": "/outlets/[key]",
+    "name": "Outlet Detail",
+    "adminStudio": "/admin/clusters-outlets",
+    "title": "Outlet · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 11,
+    "type": "STATIC_HTML",
+    "htmlFile": "masters.html",
+    "route": "/masters",
+    "name": "Master Craftspeople",
+    "adminStudio": "/admin/artisans",
+    "title": "Accreditations &amp; awards · Handicrafts Association of Bhutan",
+    "h1": [
+      "Accreditations &amp; awards"
+    ],
+    "h2Count": 9,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 12,
+    "type": "STATIC_HTML",
+    "htmlFile": "members.html",
+    "route": "/members",
+    "name": "Member Directory",
+    "adminStudio": "/admin/members",
+    "title": "Membership database · Handicrafts Association of Bhutan",
+    "h1": [
+      "The sector, by the numbers"
+    ],
+    "h2Count": 11,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 13,
+    "type": "STATIC_HTML",
+    "htmlFile": "member.html",
+    "route": "/members/[slug]",
+    "name": "Member Profile",
+    "adminStudio": "/admin/members",
+    "title": "Member profile · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 7,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 14,
+    "type": "STATIC_HTML",
+    "htmlFile": "membership.html",
+    "route": "/membership",
+    "name": "Membership Categories",
+    "adminStudio": "/admin/applications",
+    "title": "Apply for membership · Handicrafts Association of Bhutan",
+    "h1": [
+      "Apply for HAB membership"
+    ],
+    "h2Count": 9,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 15,
+    "type": "STATIC_HTML",
+    "htmlFile": "membership-category.html",
+    "route": "/membership/[category]",
+    "name": "Membership Category Detail",
+    "adminStudio": "/admin/applications",
+    "title": "Membership category · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 16,
+    "type": "STATIC_HTML",
+    "htmlFile": "register.html",
+    "route": "/register",
+    "name": "Member Registration",
+    "adminStudio": "/admin/applications",
+    "title": "Register as a member · Handicrafts Association of Bhutan",
+    "h1": [
+      "Register as a member"
+    ],
+    "h2Count": 12,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 17,
+    "type": "STATIC_HTML",
+    "htmlFile": "wholesale.html",
+    "route": "/wholesale",
+    "name": "Wholesale Overview",
+    "adminStudio": "/admin/trade",
+    "title": "Wholesale & Bulk Orders · Handicrafts Association of Bhutan",
+    "h1": [
+      "Wholesale &amp; Bulk Orders"
+    ],
+    "h2Count": 11,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 18,
+    "type": "STATIC_HTML",
+    "htmlFile": "wholesale-shop.html",
+    "route": "/wholesale/shop",
+    "name": "Wholesale Catalog",
+    "adminStudio": "/admin/products",
+    "title": "HAB Wholesale · Handicrafts Association of Bhutan",
+    "h1": [
+      "Sign in to see trade pricing",
+      "HAB Wholesale"
+    ],
+    "h2Count": 7,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 19,
+    "type": "STATIC_HTML",
+    "htmlFile": "wholesale-cart.html",
+    "route": "/wholesale/cart",
+    "name": "Wholesale Quote Basket",
+    "adminStudio": "/admin/wholesale",
+    "title": "Quote basket · Handicrafts Association of Bhutan",
+    "h1": [
+      "Quote basket"
+    ],
+    "h2Count": 9,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 20,
+    "type": "STATIC_HTML",
+    "htmlFile": "wholesale-register.html",
+    "route": "/wholesale/register",
+    "name": "Wholesale Registration",
+    "adminStudio": "/admin/wholesale",
+    "title": "Register as a wholesale buyer · Handicrafts Association of Bhutan",
+    "h1": [
+      "Register as a wholesale buyer"
+    ],
+    "h2Count": 12,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 21,
+    "type": "STATIC_HTML",
+    "htmlFile": "programmes.html",
+    "route": "/programmes",
+    "name": "Programmes Overview",
+    "adminStudio": "/admin/programmes",
+    "title": "Programmes · Handicrafts Association of Bhutan",
+    "h1": [
+      "Eleven objects, one mandate"
+    ],
+    "h2Count": 8,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 22,
+    "type": "STATIC_HTML",
+    "htmlFile": "programme.html",
+    "route": "/programmes/[ref]",
+    "name": "Programme Detail",
+    "adminStudio": "/admin/programmes",
+    "title": "Programme area · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 23,
+    "type": "STATIC_HTML",
+    "htmlFile": "projects.html",
+    "route": "/projects",
+    "name": "Projects Overview",
+    "adminStudio": "/admin/projects",
+    "title": "Projects · Handicrafts Association of Bhutan",
+    "h1": [
+      "Projects"
+    ],
+    "h2Count": 7,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 24,
+    "type": "STATIC_HTML",
+    "htmlFile": "project.html",
+    "route": "/projects/[key]",
+    "name": "Project Detail",
+    "adminStudio": "/admin/projects",
+    "title": "Project · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 25,
+    "type": "STATIC_HTML",
+    "htmlFile": "news.html",
+    "route": "/news",
+    "name": "Newsroom",
+    "adminStudio": "/admin/news",
+    "title": "News & events · Handicrafts Association of Bhutan",
+    "h1": [
+      "News &amp; events"
+    ],
+    "h2Count": 8,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 26,
+    "type": "STATIC_HTML",
+    "htmlFile": "news-post.html",
+    "route": "/news/[slug]",
+    "name": "News Article",
+    "adminStudio": "/admin/news",
+    "title": "News · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 27,
+    "type": "STATIC_HTML",
+    "htmlFile": "events.html",
+    "route": "/events",
+    "name": "Events Overview",
+    "adminStudio": "/admin/events",
+    "title": "Events · Handicrafts Association of Bhutan",
+    "h1": [
+      "Events"
+    ],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 28,
+    "type": "STATIC_HTML",
+    "htmlFile": "event.html",
+    "route": "/events/[key]",
+    "name": "Event Detail",
+    "adminStudio": "/admin/events",
+    "title": "Event · Handicrafts Association of Bhutan",
+    "h1": [],
+    "h2Count": 6,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 29,
+    "type": "STATIC_HTML",
+    "htmlFile": "publications.html",
+    "route": "/publications",
+    "name": "Publications",
+    "adminStudio": "/admin/publications",
+    "title": "Publications · Handicrafts Association of Bhutan",
+    "h1": [
+      "Publications"
+    ],
+    "h2Count": 8,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 30,
+    "type": "STATIC_HTML",
+    "htmlFile": "donate.html",
+    "route": "/donate",
+    "name": "Support & Donate",
+    "adminStudio": "/admin/settings",
+    "title": "Donate · Handicrafts Association of Bhutan",
+    "h1": [
+      "Support Bhutanese craft"
+    ],
+    "h2Count": 10,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 31,
+    "type": "STATIC_HTML",
+    "htmlFile": "contact.html",
+    "route": "/contact",
+    "name": "Contact Secretariat",
+    "adminStudio": "/admin/settings",
+    "title": "Contact us · Handicrafts Association of Bhutan",
+    "h1": [
+      "Write to the secretariat"
+    ],
+    "h2Count": 7,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 32,
+    "type": "STATIC_HTML",
+    "htmlFile": "privacy.html",
+    "route": "/privacy",
+    "name": "Privacy Policy",
+    "adminStudio": "/admin/policies",
+    "title": "Privacy policy · Handicrafts Association of Bhutan",
+    "h1": [
+      "Privacy policy"
+    ],
+    "h2Count": 16,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 33,
+    "type": "STATIC_HTML",
+    "htmlFile": "terms.html",
+    "route": "/terms",
+    "name": "Terms of Service",
+    "adminStudio": "/admin/policies",
+    "title": "Terms of service · Handicrafts Association of Bhutan",
+    "h1": [
+      "Terms of service"
+    ],
+    "h2Count": 16,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 34,
+    "type": "STATIC_HTML",
+    "htmlFile": "shipping-policy.html",
+    "route": "/shipping-policy",
+    "name": "Shipping & Delivery Policy",
+    "adminStudio": "/admin/policies",
+    "title": "Shipping &amp; delivery policy · Handicrafts Association of Bhutan",
+    "h1": [
+      "Shipping &amp; delivery policy"
+    ],
+    "h2Count": 16,
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 35,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/returns-policy",
+    "name": "Returns & Refund Policy",
+    "adminStudio": "/admin/policies",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 36,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/customs-policy",
+    "name": "Bhutan Customs & Tariffs",
+    "adminStudio": "/admin/policies",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 37,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/board-of-trustees",
+    "name": "Board of Trustees",
+    "adminStudio": "/admin/pages",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 38,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/secretariat",
+    "name": "Secretariat Directory",
+    "adminStudio": "/admin/pages",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 39,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/annual-reports",
+    "name": "Annual Reports Repository",
+    "adminStudio": "/admin/publications",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 40,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/audited-accounts",
+    "name": "Statutory Audited Accounts",
+    "adminStudio": "/admin/publications",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 41,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/tenders",
+    "name": "Tenders & Procurement",
+    "adminStudio": "/admin/publications",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 42,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/code-of-ethics",
+    "name": "Code of Ethics & Craft Integrity",
+    "adminStudio": "/admin/policies",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 43,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/mandate",
+    "name": "CSO Mandate & AoA",
+    "adminStudio": "/admin/pages",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  },
+  {
+    "index": 44,
+    "type": "SPECIALIZED_SUBPAGE",
+    "route": "/strategic-plan",
+    "name": "Strategic Plan (2025–2030)",
+    "adminStudio": "/admin/pages",
+    "quickEditMounted": true,
+    "sectionTagMounted": true,
+    "status": "VERIFIED_PASS"
+  }
+]
