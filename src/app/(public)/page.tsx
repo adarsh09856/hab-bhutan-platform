@@ -64,6 +64,30 @@ const CRAFT_IMAGE_MAP: Record<string, string> = {
   masonry: '/images/crafts/dozo.jpg',
 };
 
+const CLUSTER_IMAGE_MAP: Record<string, string> = {
+  khoma: '/assets/photos/hero-1-weaving.jpg',
+  kheng: '/assets/photos/hero-4-textiles.jpg',
+  trashiyangtse: '/assets/photos/hero-5-desho.jpg',
+  chumey: '/assets/photos/hero-3-clay.jpg',
+  jungshi: '/assets/photos/hero-2-punakha.jpg',
+  'zorig-thimphu': '/assets/photos/about-hab.jpg',
+};
+
+const OUTLET_IMAGE_MAP: Record<string, string> = {
+  'punakha-market': '/assets/photos/hero-2-punakha.jpg',
+  'thimphu-outlet': '/assets/photos/hero-4-textiles.jpg',
+  'paro-airport': '/assets/photos/hero-5-desho.jpg',
+  'bumthang-outlet': '/assets/photos/hero-3-clay.jpg',
+};
+
+const NEWS_IMAGE_MAP: Record<string, string> = {
+  'trade-facilitation-desk-autumn': '/assets/photos/hero-1-weaving.jpg',
+  'natural-dye-training-lhuentse': '/assets/photos/hero-4-textiles.jpg',
+  'craft-bazaar-clock-tower': '/assets/photos/hero-5-desho.jpg',
+  'annual-report-2025': '/assets/photos/about-hab.jpg',
+  'product-innovation-lab': '/assets/photos/hero-2-punakha.jpg',
+};
+
 const PRODUCT_POOL = [
   '/assets/photos/product-sad03.jpg',
   '/assets/photos/product-hhb01.jpg',
@@ -186,7 +210,7 @@ export default function HomePage() {
       maker: 'Sonam Thangka Studio',
       price: 340,
       priceUSD: 340,
-      image_path: '/assets/photos/product-sad03.jpg',
+      image_path: '/assets/photos/product-lha01.jpg',
       slot: 'photo 1 — thangka, full view',
     },
     {
@@ -282,7 +306,7 @@ export default function HomePage() {
       place: 'Metog Lam, Thimphu',
       note: 'The association’s own shop at the secretariat, carrying work from all thirteen crafts.',
       hours: 'Mon–Sat, 09:00 – 17:00',
-      image_path: '/assets/photos/hero-5-desho.jpg',
+      image_path: '/assets/photos/hero-4-textiles.jpg',
     },
     {
       key: 'paro-airport',
@@ -291,7 +315,7 @@ export default function HomePage() {
       place: 'Paro International Airport',
       note: 'Last-minute purchases with export paperwork issued at the counter.',
       hours: 'Aligned to departures',
-      image_path: '/assets/photos/hero-4-textiles.jpg',
+      image_path: '/assets/photos/hero-5-desho.jpg',
     },
     {
       key: 'bumthang-outlet',
@@ -300,7 +324,7 @@ export default function HomePage() {
       place: 'Chumey, Bumthang',
       note: 'Yathra wool sold at the loom, alongside the weaving shed.',
       hours: 'Daily, 08:00 – 17:00',
-      image_path: '/assets/photos/hero-1-weaving.jpg',
+      image_path: '/assets/photos/hero-3-clay.jpg',
     },
   ]);
 
@@ -683,7 +707,7 @@ export default function HomePage() {
             blurb: a.blurb || a.summary || '',
             date: a.dateString || a.date || a.published_at || 'Recent',
             published_at: a.dateString || a.published_at || 'Recent',
-            image_path: a.image_path || a.imageUrl || '/assets/photos/hero-2-punakha.jpg',
+            image_path: a.image_path || a.imageUrl || NEWS_IMAGE_MAP[a.slug] || '/assets/photos/hero-1-weaving.jpg',
           }));
           setNews(mappedNews);
         }
@@ -830,13 +854,62 @@ export default function HomePage() {
     }
   };
 
-    const sectionComponents: Record<string, React.ReactNode> = {
+  const handleMoveSection = async (sectionId: string, direction: 'up' | 'down') => {
+    const currentOrder = [
+      ...(Array.isArray(siteSettings.homepageSectionOrder) && siteSettings.homepageSectionOrder.length > 0
+        ? siteSettings.homepageSectionOrder
+        : DEFAULT_HOMEPAGE_SECTION_ORDER),
+    ];
+    const idx = currentOrder.indexOf(sectionId);
+    if (idx === -1) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= currentOrder.length) return;
+
+    const temp = currentOrder[idx];
+    currentOrder[idx] = currentOrder[targetIdx];
+    currentOrder[targetIdx] = temp;
+
+    setSiteSettings((prev) => ({
+      ...prev,
+      homepageSectionOrder: currentOrder,
+    }));
+
+    try {
+      await fetch('/api/admin/site-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          homepageSectionOrder: currentOrder,
+        }),
+      });
+      window.dispatchEvent(new CustomEvent('hab:settings-updated'));
+    } catch (err) {
+      console.warn('Failed to save section order:', err);
+    }
+  };
+
+  const getMoveProps = (sectionId: string) => {
+    const order =
+      Array.isArray(siteSettings.homepageSectionOrder) && siteSettings.homepageSectionOrder.length > 0
+        ? siteSettings.homepageSectionOrder
+        : DEFAULT_HOMEPAGE_SECTION_ORDER;
+    const idx = order.indexOf(sectionId);
+    return {
+      onMoveUp: () => handleMoveSection(sectionId, 'up'),
+      onMoveDown: () => handleMoveSection(sectionId, 'down'),
+      canMoveUp: idx > 0,
+      canMoveDown: idx !== -1 && idx < order.length - 1,
+    };
+  };
+
+  const sectionComponents: Record<string, React.ReactNode> = {
     'hero': (
 <section className="section hero relative" data-hab-section="hero">
         <SectionEditBadge
           label="Hero & Mission"
           studioHref="/admin/hero"
           onQuickEdit={() => openQuickEdit('hero', 'Hero Section & Mission', '/admin/hero')}
+          {...getMoveProps('hero')}
         />
         <div className="hero__copy">
           <p className="eyebrow eyebrow--accent">{siteSettings.heroEyebrow}</p>
@@ -940,6 +1013,7 @@ export default function HomePage() {
           label="Stats & Impact Counters"
           studioHref="/admin/site-settings"
           onQuickEdit={() => openQuickEdit('stats', 'Stats & Impact Counters', '/admin/site-settings')}
+          {...getMoveProps('stats')}
         />
         <div className="stats">
           {siteSettings.stats.map((st, idx) => (
@@ -957,6 +1031,7 @@ export default function HomePage() {
           label="Retail & Trade Gateway"
           studioHref="/admin/trade"
           onQuickEdit={() => openQuickEdit('buy', 'Retail & Trade Gateways', '/admin/trade')}
+          {...getMoveProps('buy')}
         />
         <div className="buyband">
           <div className="buyband__copy">
@@ -984,6 +1059,7 @@ export default function HomePage() {
           label="About HAB Band"
           studioHref="/admin/pages/about"
           onQuickEdit={() => openQuickEdit('about', 'About HAB Band', '/admin/pages/about')}
+          {...getMoveProps('about')}
         />
 
         <div className="band__inner about">
@@ -1009,7 +1085,7 @@ export default function HomePage() {
     ),
     'shop': (
 <section className="section relative" id="shop" data-hab-section="shop">
-        <SectionEditBadge label="Featured Crafts Shop" studioHref="/admin/products" />
+        <SectionEditBadge label="Featured Crafts Shop" studioHref="/admin/products" {...getMoveProps('shop')} />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">{t('home.latest_arrivals', 'Latest arrivals')}</p>
@@ -1077,6 +1153,7 @@ export default function HomePage() {
           label="Trust & Assurances"
           studioHref="/admin/site-settings"
           onQuickEdit={() => openQuickEdit('assurances', 'Quality Assurances Band', '/admin/site-settings')}
+          {...getMoveProps('assurance')}
         />
         <div className="assurance">
           <div className="assurance__cell">
@@ -1112,7 +1189,7 @@ export default function HomePage() {
     ),
     'outlets': (
 <section className="section relative" id="outlets" data-hab-section="outlets">
-        <SectionEditBadge label="Outlets & Punakha Market" studioHref="/admin/clusters-outlets" />
+        <SectionEditBadge label="Outlets & Punakha Market" studioHref="/admin/clusters-outlets" {...getMoveProps('outlets')} />
 
         <div className="section__head">
           <div>
@@ -1227,10 +1304,10 @@ export default function HomePage() {
             <Link key={`${o.key}-${oIdx}`} className="card outlet" href={`/outlet?outlet=${o.key}`} style={{ color: 'inherit' }}>
               <figure className="frame frame--wide16">
                 <img
-                  src={o.image_path || '/assets/photos/hero-2-punakha.jpg'}
+                  src={o.image_path || OUTLET_IMAGE_MAP[o.key] || '/assets/photos/hero-2-punakha.jpg'}
                   alt={o.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = OUTLET_IMAGE_MAP[o.key] || '/assets/photos/hero-2-punakha.jpg'; }}
                 />
                 <figcaption className="frame__caption frame__caption--sm">{o.name}</figcaption>
               </figure>
@@ -1263,10 +1340,10 @@ export default function HomePage() {
             <Link key={c.key} className="card cluster" href={`/clusters/${c.key}`}>
               <figure className="frame frame--wide16">
                 <img
-                  src={c.image_path || CRAFT_IMAGE_MAP[c.craftKey] || CRAFT_IMAGE_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
+                  src={c.image_path || CLUSTER_IMAGE_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
                   alt={c.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = CRAFT_IMAGE_MAP[c.craftKey] || '/assets/photos/hero-1-weaving.jpg'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = CLUSTER_IMAGE_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'; }}
                 />
               </figure>
               <div className="card__body">
@@ -1286,8 +1363,8 @@ export default function HomePage() {
       </section>
     ),
     'crafts': (
-<section className="section relative" id="crafts" data-hab-section="crafts">
-        <SectionEditBadge label="13 Crafts of Bhutan" studioHref="/admin/crafts" />
+      <section className="section relative" id="crafts" data-hab-section="crafts">
+        <SectionEditBadge label="13 Crafts of Bhutan" studioHref="/admin/crafts" {...getMoveProps('crafts')} />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">{isDz ? 'བཟོ་རིག་བཅུ་གསུམ' : 'Zorig Chusum'}</p>
@@ -1339,8 +1416,8 @@ export default function HomePage() {
       </section>
     ),
     'masters': (
-<section className="section relative" id="masters" data-hab-section="masters">
-        <SectionEditBadge label="Living Treasures & Honours" studioHref="/admin/honours" />
+      <section className="section relative" id="masters" data-hab-section="masters">
+        <SectionEditBadge label="Living Treasures & Honours" studioHref="/admin/honours" {...getMoveProps('masters')} />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Recognised by the association</p>
@@ -1377,8 +1454,8 @@ export default function HomePage() {
       </section>
     ),
     'programmes': (
-<section className="section relative" id="programmes" data-hab-section="programmes">
-        <SectionEditBadge label="Training Programmes (A–K)" studioHref="/admin/programmes" />
+      <section className="section relative" id="programmes" data-hab-section="programmes">
+        <SectionEditBadge label="Training Programmes (A–K)" studioHref="/admin/programmes" {...getMoveProps('programmes')} />
 
         <div className="section__head">
           <div>
@@ -1410,8 +1487,8 @@ export default function HomePage() {
       </section>
     ),
     'support': (
-<section className="section support relative" id="support" data-hab-section="support">
-        <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" sectionType="donate" />
+      <section className="section support relative" id="support" data-hab-section="support">
+        <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" sectionType="donate" {...getMoveProps('support')} />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Support us</p>
@@ -1459,11 +1536,12 @@ export default function HomePage() {
       </section>
     ),
     'membership': (
-<section className="section relative" id="membership" data-hab-section="membership">
+      <section className="section relative" id="membership" data-hab-section="membership">
         <SectionEditBadge
           label="Artisan Directory & Apply"
           studioHref="/admin/members"
           onQuickEdit={() => openQuickEdit('membership', 'Membership Callouts', '/admin/membership-categories')}
+          {...getMoveProps('membership')}
         />
         <div className="duo">
           <div className="panel">
@@ -1509,8 +1587,8 @@ export default function HomePage() {
       </section>
     ),
     'news': (
-<section className="section relative" id="news" data-hab-section="news">
-        <SectionEditBadge label="News & Events" studioHref="/admin/content" />
+      <section className="section relative" id="news" data-hab-section="news">
+        <SectionEditBadge label="News & Events" studioHref="/admin/content" {...getMoveProps('news')} />
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Newsroom</p>
@@ -1530,10 +1608,10 @@ export default function HomePage() {
               <article key={item.slug || idx} className="card news">
                 <figure className="frame frame--wide16">
                   <img
-                    src={item.image_path || '/assets/photos/hero-2-punakha.jpg'}
+                    src={item.image_path || NEWS_IMAGE_MAP[item.slug] || '/assets/photos/hero-2-punakha.jpg'}
                     alt={item.title}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = NEWS_IMAGE_MAP[item.slug] || '/assets/photos/hero-2-punakha.jpg'; }}
                   />
                 </figure>
                 <div className="card__body">
@@ -1590,8 +1668,8 @@ export default function HomePage() {
       </section>
     ),
     'publications': (
-<section className="section relative" id="publications" data-hab-section="publications">
-        <SectionEditBadge label="Reports & Publications" studioHref="/admin/publications" />
+      <section className="section relative" id="publications" data-hab-section="publications">
+        <SectionEditBadge label="Reports & Publications" studioHref="/admin/publications" {...getMoveProps('publications')} />
         <div className="rule-top">
           <div className="pubs">
             <div>
@@ -1625,8 +1703,8 @@ export default function HomePage() {
       </section>
     ),
     'partners': (
-<section className="section section--last relative" data-hab-section="partners">
-        <SectionEditBadge label="Development Partners" studioHref="/admin/site-settings" />
+      <section className="section section--last relative" data-hab-section="partners">
+        <SectionEditBadge label="Development Partners" studioHref="/admin/site-settings" {...getMoveProps('partners')} />
 
         <p className="eyebrow eyebrow--muted">Development Partners</p>
         <div className="partners">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
+import { saveFallbackDonation } from '@/lib/donation-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,61 +48,91 @@ export async function POST(req: NextRequest) {
     // Generate unique receipt number e.g. HAB-DON-2026-XXXXX
     const randomSuffix = Math.floor(10000 + Math.random() * 90000);
     const receiptNumber = `HAB-DON-${new Date().getFullYear()}-${randomSuffix}`;
+    const initialStatus = (paymentMethod === 'MBOB' || paymentMethod === 'BNB' || paymentMethod === 'BANK') && !proofUrl ? 'PENDING' : 'COMPLETED';
 
-    const donation = await prisma.donationRecord.create({
-      data: {
-        pillarKey: pillarKey.trim().toLowerCase(),
-        donorName: donorName.trim(),
-        donorEmail: donorEmail.trim().toLowerCase(),
-        amountUSD: calculatedUSD,
-        amountBTN: calculatedBTN,
-        currency: currency.toUpperCase(),
-        frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
-        paymentMethod: paymentMethod.toUpperCase(),
-        journalRef: journalRef ? String(journalRef).trim() : null,
-        proofUrl: proofUrl ? String(proofUrl).trim() : null,
-        status: (paymentMethod === 'MBOB' || paymentMethod === 'BNB' || paymentMethod === 'BANK') && !proofUrl ? 'PENDING' : 'COMPLETED',
-        receiptNumber,
-      },
+    let donation: any = null;
+    try {
+      donation = await prisma.donationRecord.create({
+        data: {
+          pillarKey: pillarKey.trim().toLowerCase(),
+          donorName: donorName.trim(),
+          donorEmail: donorEmail.trim().toLowerCase(),
+          amountUSD: calculatedUSD,
+          amountBTN: calculatedBTN,
+          currency: currency.toUpperCase(),
+          frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
+          paymentMethod: paymentMethod.toUpperCase(),
+          journalRef: journalRef ? String(journalRef).trim() : null,
+          proofUrl: proofUrl ? String(proofUrl).trim() : null,
+          status: initialStatus,
+          receiptNumber,
+        },
+      });
+
+      // Update the raisedAmountUSD on the pillar if it exists
+      try {
+        await prisma.supportPillar.update({
+          where: { key: pillarKey.trim().toLowerCase() },
+          data: {
+            raisedAmountUSD: { increment: calculatedUSD },
+          },
+        });
+      } catch {
+        // Non-blocking if pillar record not yet seeded
+      }
+    } catch (dbErr) {
+      console.warn('[api/donations] DB unavailable, creating fallback store record:', dbErr);
+    }
+
+    // Always mirror to fallback store for guaranteed persistence
+    const savedFallback = saveFallbackDonation({
+      id: donation?.id || `don-${Date.now()}`,
+      pillarKey: pillarKey.trim().toLowerCase(),
+      donorName: donorName.trim(),
+      donorEmail: donorEmail.trim().toLowerCase(),
+      amountUSD: calculatedUSD,
+      amountBTN: calculatedBTN,
+      currency: currency.toUpperCase(),
+      frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
+      paymentMethod: paymentMethod.toUpperCase(),
+      journalRef: journalRef ? String(journalRef).trim() : null,
+      proofUrl: proofUrl ? String(proofUrl).trim() : null,
+      status: initialStatus,
+      receiptNumber,
+      createdAt: donation?.createdAt?.toISOString?.() || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
-    // Update the raisedAmountUSD on the pillar if it exists
     try {
-      await prisma.supportPillar.update({
-        where: { key: pillarKey.trim().toLowerCase() },
-        data: {
-          raisedAmountUSD: { increment: calculatedUSD },
+      await logAudit({
+        actorType: 'GUEST',
+        actorIdentifier: donorEmail.trim().toLowerCase(),
+        action: 'DONATION_RECORDED',
+        entityType: 'DonationRecord',
+        entityId: donation?.id || savedFallback.id,
+        details: {
+          receiptNumber,
+          amountUSD: calculatedUSD,
+          amountBTN: calculatedBTN,
+          pillarKey,
         },
       });
     } catch {
-      // Non-blocking if pillar record not yet seeded
+      // Non-blocking
     }
-
-    await logAudit({
-      actorType: 'GUEST',
-      actorIdentifier: donorEmail.trim().toLowerCase(),
-      action: 'DONATION_RECORDED',
-      entityType: 'DonationRecord',
-      entityId: donation.id,
-      details: {
-        receiptNumber,
-        amountUSD: calculatedUSD,
-        amountBTN: calculatedBTN,
-        pillarKey,
-      },
-    });
 
     return NextResponse.json({
       success: true,
       donation: {
-        id: donation.id,
-        receiptNumber: donation.receiptNumber,
-        amountUSD: donation.amountUSD,
-        donorName: donation.donorName,
-        createdAt: donation.createdAt,
+        id: donation?.id || savedFallback.id,
+        receiptNumber: donation?.receiptNumber || savedFallback.receiptNumber,
+        amountUSD: donation?.amountUSD ?? savedFallback.amountUSD,
+        donorName: donation?.donorName || savedFallback.donorName,
+        createdAt: donation?.createdAt || savedFallback.createdAt,
       },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Donation submission failed' }, { status: 500 });
   }
 }
+

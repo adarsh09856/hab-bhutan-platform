@@ -3,6 +3,7 @@ import '@/styles/globals.css';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import { CartProvider } from '@/context/CartContext';
 import { LanguageProvider } from '@/context/LanguageContext';
+import GoogleTranslateWidget from '@/components/public/GoogleTranslateWidget';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -34,6 +35,7 @@ export default function RootLayout({
       </head>
       <body>
         <LanguageProvider>
+          <GoogleTranslateWidget />
           <CurrencyProvider>
             <CartProvider>
               {children}

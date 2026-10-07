@@ -24,14 +24,14 @@ interface ProductItem {
 }
 
 const DEFAULT_PRODUCTS: ProductItem[] = [
-  { code: 'LHA01', name: 'Guru Rinpoche Mineral-Pigment Thangka', craftKey: 'lhazo', craft_name: 'Lhazo · Painting', maker: 'Sonam Thangka Studio', region: 'Paro', price: 260, priceUSD: 260, image_path: '/assets/photos/product-hhb01.jpg', slot: 'photo 1 — thangka, full view' },
+  { code: 'LHA01', name: 'Guru Rinpoche Mineral-Pigment Thangka', craftKey: 'lhazo', craft_name: 'Lhazo · Painting', maker: 'Sonam Thangka Studio', region: 'Paro', price: 260, priceUSD: 260, image_path: '/assets/photos/product-lha01.jpg', slot: 'photo 1 — thangka, full view' },
   { code: 'SAD03', name: 'Yathra Wool Saddle Bag', craftKey: 'thagzo', craft_name: 'Thagzo · Weaving', maker: 'Chumey Yathra House', region: 'Bumthang', price: 120, priceUSD: 120, image_path: '/assets/photos/product-sad03.jpg', slot: 'photo 1 — saddle bag, full view' },
-  { code: 'TRO04', name: 'Hand-Chased Silver Koma Clasp Pair', craftKey: 'troezo', craft_name: 'Troezo · Silver & Gold', maker: 'Zorig Silversmiths', region: 'Thimphu', price: 92, priceUSD: 92, image_path: '/assets/photos/product-cam01.jpg', slot: 'photo 1 — koma pair, full view' },
-  { code: 'FTB04', name: 'Two-Tier Bangchung Basket', craftKey: 'tshazo', craft_name: 'Tshazo · Cane & Bamboo', maker: 'Kheng Bamboo Collective', region: 'Zhemgang', price: 34, priceUSD: 34, image_path: '/assets/photos/product-lud01.jpg', slot: 'photo 1 — bangchung basket, full view' },
-  { code: 'DAP02', name: 'Turned Maple Burl Dapa Bowl with Lid', craftKey: 'shagzo', craft_name: 'Shagzo · Woodturning', maker: 'Yangtse Turning Works', region: 'Trashiyangtse', price: 48, priceUSD: 48, image_path: '/assets/photos/hero-5-desho.jpg', slot: 'photo 1 — dapa bowl, full view' },
-  { code: 'DEZ01', name: 'Daphne Desho Handmade Paper (10 Sheets)', craftKey: 'dezo', craft_name: 'Dezo · Papermaking', maker: 'Jungshi Paper Works', region: 'Punakha', price: 18, priceUSD: 18, image_path: '/assets/photos/hero-4-textiles.jpg', slot: 'photo 1 — desho paper, full view' },
-  { code: 'MAS01', name: 'Carved Wooden Garuda Dance Mask', craftKey: 'parzo', craft_name: 'Parzo · Woodcarving', maker: 'Kelzang Dorji Woodworks', region: 'Trashiyangtse', price: 68, priceUSD: 68, image_path: '/assets/photos/hero-3-clay.jpg', slot: 'photo 1 — dance mask, full view' },
-  { code: 'CUS02', name: 'Raw Silk Supplementary Weft Cushion Cover', craftKey: 'thagzo', craft_name: 'Thagzo · Weaving', maker: 'Khoma Weavers Group', region: 'Lhuentse', price: 54, priceUSD: 54, image_path: '/assets/photos/hero-1-weaving.jpg', slot: 'photo 1 — silk cushion, full view' },
+  { code: 'TRO04', name: 'Hand-Chased Silver Koma Clasp Pair', craftKey: 'troezo', craft_name: 'Troezo · Silver & Gold', maker: 'Zorig Silversmiths', region: 'Thimphu', price: 92, priceUSD: 92, image_path: '/assets/photos/product-tro04.jpg', slot: 'photo 1 — koma pair, full view' },
+  { code: 'FTB04', name: 'Two-Tier Bangchung Basket', craftKey: 'tshazo', craft_name: 'Tshazo · Cane & Bamboo', maker: 'Kheng Bamboo Collective', region: 'Zhemgang', price: 34, priceUSD: 34, image_path: '/assets/photos/product-ftb04.jpg', slot: 'photo 1 — bangchung basket, full view' },
+  { code: 'DAP02', name: 'Turned Maple Burl Dapa Bowl with Lid', craftKey: 'shagzo', craft_name: 'Shagzo · Woodturning', maker: 'Yangtse Turning Works', region: 'Trashiyangtse', price: 48, priceUSD: 48, image_path: '/assets/photos/product-dap02.jpg', slot: 'photo 1 — dapa bowl, full view' },
+  { code: 'DEZ01', name: 'Daphne Desho Handmade Paper (10 Sheets)', craftKey: 'dezo', craft_name: 'Dezo · Papermaking', maker: 'Jungshi Paper Works', region: 'Punakha', price: 18, priceUSD: 18, image_path: '/assets/photos/product-dez01.jpg', slot: 'photo 1 — desho paper, full view' },
+  { code: 'MAS01', name: 'Carved Wooden Garuda Dance Mask', craftKey: 'parzo', craft_name: 'Parzo · Woodcarving', maker: 'Kelzang Dorji Woodworks', region: 'Trashiyangtse', price: 68, priceUSD: 68, image_path: '/assets/photos/product-mas01.jpg', slot: 'photo 1 — dance mask, full view' },
+  { code: 'CUS02', name: 'Raw Silk Supplementary Weft Cushion Cover', craftKey: 'thagzo', craft_name: 'Thagzo · Weaving', maker: 'Khoma Weavers Group', region: 'Lhuentse', price: 54, priceUSD: 54, image_path: '/assets/photos/product-cus02.jpg', slot: 'photo 1 — silk cushion, full view' },
 ];
 
 function ShopContent() {
@@ -104,6 +104,19 @@ const PRODUCT_POOL = [
       return arr;
     });
   };
+
+  // Continuous 6-second auto-rotation of catalog products (Item: auto 5 7s)
+  useEffect(() => {
+    if (products.length <= 1) return;
+    const interval = setInterval(() => {
+      setProducts((prev) => {
+        if (prev.length <= 1) return prev;
+        const [first, ...rest] = prev;
+        return [...rest, first];
+      });
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [products.length]);
 
   const craftCounts = useMemo(() => {
     const counts: Record<string, number> = {};

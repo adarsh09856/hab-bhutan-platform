@@ -18,56 +18,84 @@ export default function GoogleTranslateWidget() {
           new window.google.translate.TranslateElement(
             {
               pageLanguage: 'en',
-              includedLanguages: 'dz,hi,ja,zh-CN,zh-TW,fr,de,es,th,ko,ne',
-              layout: window.google.translate.TranslateElement.InlineLayout?.SIMPLE || 0,
+              includedLanguages: 'dz,en',
               autoDisplay: false,
             },
-            'google_translate_element'
+            'google_translate_hidden_element'
           );
         } catch (e) {
-          console.warn('Google translate init warning:', e);
+          console.warn('Google translate init error:', e);
         }
       }
+    };
+
+    const applyTranslation = (lang: string) => {
+      const googleLang = lang === 'dz' ? 'dz' : 'en';
+      const host = window.location.hostname;
+      
+      // Set Google Translate cookies for instant seamless translation
+      document.cookie = `googtrans=/en/${googleLang}; path=/;`;
+      document.cookie = `googtrans=/auto/${googleLang}; path=/;`;
+      if (host) {
+        document.cookie = `googtrans=/en/${googleLang}; path=/; domain=.${host};`;
+        document.cookie = `googtrans=/auto/${googleLang}; path=/; domain=.${host};`;
+      }
+
+      // Also programmatically trigger the combo box if loaded
+      const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
+      if (combo) {
+        combo.value = googleLang;
+        combo.dispatchEvent(new Event('change'));
+      }
+    };
+
+    const handleLanguageChanged = (e: any) => {
+      const lang = e?.detail?.language;
+      if (lang) {
+        applyTranslation(lang);
+      }
+    };
+
+    window.addEventListener('hab:language-changed', handleLanguageChanged);
+
+    // Check stored language on mount
+    try {
+      const saved = localStorage.getItem('hab_language');
+      if (saved === 'dz') {
+        setTimeout(() => applyTranslation('dz'), 800);
+      }
+    } catch {
+      // Ignore
+    }
+
+    return () => {
+      window.removeEventListener('hab:language-changed', handleLanguageChanged);
     };
   }, []);
 
   return (
-    <div className="google-translate-wrapper inline-flex items-center" style={{ position: 'relative', flexShrink: 0 }}>
-      <div id="google_translate_element" style={{ display: 'inline-block' }}></div>
+    <>
+      <div id="google_translate_hidden_element" style={{ display: 'none' }} aria-hidden="true" />
       <Script
         src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
       <style jsx global>{`
-        #google_translate_element .goog-te-gadget-simple {
-          background-color: rgba(255, 255, 255, 0.08) !important;
-          border: 1px solid rgba(255, 255, 255, 0.2) !important;
-          padding: 1px 6px !important;
-          border-radius: 4px !important;
-          font-size: 11px !important;
-          line-height: 1.4 !important;
-          display: inline-flex !important;
-          align-items: center !important;
-          color: #fff !important;
-          cursor: pointer !important;
-        }
-        #google_translate_element .goog-te-gadget-simple span {
-          color: #fff !important;
-          font-size: 11px !important;
-        }
-        #google_translate_element .goog-te-gadget-simple .goog-te-menu-value span {
-          color: rgba(255, 255, 255, 0.9) !important;
-        }
-        #google_translate_element .goog-te-gadget-simple img {
+        .goog-te-banner-frame.skiptranslate,
+        .goog-te-banner-frame,
+        #goog-gt-tt,
+        .goog-te-balloon-frame {
           display: none !important;
-        }
-        .goog-te-banner-frame.skiptranslate {
-          display: none !important;
+          visibility: hidden !important;
         }
         body {
           top: 0px !important;
         }
+        .goog-text-highlight {
+          background: none !important;
+          box-shadow: none !important;
+        }
       `}</style>
-    </div>
+    </>
   );
 }

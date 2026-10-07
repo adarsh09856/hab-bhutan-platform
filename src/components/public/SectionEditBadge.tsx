@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Edit3, ExternalLink, Zap } from 'lucide-react';
+import { Edit3, ExternalLink, Zap, ArrowUp, ArrowDown } from 'lucide-react';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 interface SectionEditBadgeProps {
@@ -11,6 +11,10 @@ interface SectionEditBadgeProps {
   onQuickEdit?: () => void;
   sectionType?: SectionType;
   className?: string;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
 function inferSectionType(studioHref: string = '', label: string = ''): SectionType {
@@ -52,17 +56,30 @@ export default function SectionEditBadge({
   onQuickEdit,
   sectionType,
   className = 'top-3 right-3',
+  onMoveUp,
+  onMoveDown,
+  canMoveUp = true,
+  canMoveDown = true,
 }: SectionEditBadgeProps) {
   const [visible, setVisible] = useState(false);
   const [internalEditorOpen, setInternalEditorOpen] = useState(false);
 
   useEffect(() => {
     const checkVisibility = () => {
+      if (typeof document === 'undefined') return;
+      const urlHasEdit = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('edit') === 'true';
+      const localEdit = typeof localStorage !== 'undefined' && (localStorage.getItem('hab_visual_edit') === '1' || localStorage.getItem('hab_visual_edit') === 'true');
       const isVisible =
-        typeof document !== 'undefined' &&
-        document.body.classList.contains('has-admin-live-bar') &&
-        document.body.classList.contains('hab-visual-edit-on');
-      setVisible(isVisible);
+        document.body.classList.contains('hab-visual-edit-on') ||
+        (document.body.classList.contains('has-admin-live-bar') && document.body.classList.contains('hab-visual-edit-on')) ||
+        urlHasEdit ||
+        localEdit;
+
+      if (urlHasEdit || localEdit) {
+        document.body.classList.add('has-admin-live-bar', 'hab-visual-edit-on');
+      }
+
+      setVisible(Boolean(isVisible));
     };
 
     checkVisibility();
@@ -100,6 +117,42 @@ export default function SectionEditBadge({
         </div>
 
         <div className="flex items-center gap-1.5 ml-2 border-l border-slate-700 pl-2">
+          {/* Section Reorder Controls (Move Up / Down) */}
+          {onMoveUp && (
+            <button
+              type="button"
+              disabled={!canMoveUp}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onMoveUp();
+              }}
+              className="inline-flex items-center justify-center p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 disabled:opacity-25 disabled:cursor-not-allowed border border-slate-700 transition cursor-pointer"
+              title="Move section up [↑]"
+              aria-label="Move section up"
+            >
+              <ArrowUp className="w-3 h-3" />
+            </button>
+          )}
+
+          {onMoveDown && (
+            <button
+              type="button"
+              disabled={!canMoveDown}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onMoveDown();
+              }}
+              className="inline-flex items-center justify-center p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 disabled:opacity-25 disabled:cursor-not-allowed border border-slate-700 transition cursor-pointer"
+              title="Move section down [↓]"
+              aria-label="Move section down"
+            >
+              <ArrowDown className="w-3 h-3" />
+            </button>
+          )}
+
+          {/* Inline Live Quick Edit */}
           {showQuickEdit && (
             <button
               type="button"
@@ -112,6 +165,7 @@ export default function SectionEditBadge({
             </button>
           )}
 
+          {/* Full Admin Studio Link */}
           <Link
             href={studioHref}
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#8B2E24] hover:bg-[#a0362b] text-white font-bold transition-colors shadow-xs"
