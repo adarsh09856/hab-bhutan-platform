@@ -454,6 +454,7 @@ model SiteSetting {
   tiktokUrl            String?
   punakhaMarketNotice  String   @default("The only authentic crafts market validated and managed by HAB")
   partnersList         Json
+  homepageSectionOrder Json?
 
   // Homepage Assurances Band CMS
   assurance1Title      String   @default("Verified members only")
@@ -828,6 +829,7 @@ model CustomPage {
   slug             String   @unique
   title            String
   category         String   @default("General") // Initiatives | Community | Heritage | General
+  subCategory      String?
   excerpt          String?  @db.Text
   content          String   @db.Text
   bannerUrl        String?

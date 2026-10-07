@@ -19,6 +19,7 @@ export interface CustomPageData {
   slug: string;
   title: string;
   category: string;
+  subCategory?: string | null;
   excerpt?: string | null;
   content: string;
   bannerUrl?: string | null;

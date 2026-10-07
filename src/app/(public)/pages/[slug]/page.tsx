@@ -82,6 +82,7 @@ export default async function CustomPageRoute({ params }: CustomPageRouteProps) 
     slug: page.slug,
     title: page.title,
     category: page.category,
+    subCategory: page.subCategory || null,
     excerpt: page.excerpt,
     content: page.content,
     bannerUrl: page.bannerUrl,

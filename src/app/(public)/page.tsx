@@ -111,6 +111,24 @@ const PUNAKHA_SLIDES = [
   { img: '/assets/photos/hero-3-clay.jpg', cap: 'photo 4 — the market from the Khuruthang road' },
 ];
 
+const DEFAULT_HOMEPAGE_SECTION_ORDER: string[] = [
+  'hero',
+  'stats',
+  'buy',
+  'about',
+  'shop',
+  'assurance',
+  'outlets',
+  'crafts',
+  'masters',
+  'programmes',
+  'support',
+  'membership',
+  'news',
+  'publications',
+  'partners',
+];
+
 export default function HomePage() {
   const router = useRouter();
   const { currency, fmt } = useCurrency();
@@ -156,6 +174,7 @@ export default function HomePage() {
     membershipRightText: 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.',
     membershipRightCtaText: 'Apply for membership',
     partnersList: CLIENT_VERBATIM.partners,
+    homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER,
   });
 
   const [products, setProducts] = useState<any[]>([
@@ -529,6 +548,7 @@ export default function HomePage() {
               membershipRightText: d.setting.membershipRightText || prev.membershipRightText,
               membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
               partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
+              homepageSectionOrder: Array.isArray(d.setting.homepageSectionOrder) && d.setting.homepageSectionOrder.length > 0 ? d.setting.homepageSectionOrder : prev.homepageSectionOrder,
             }));
           }
         })
@@ -755,11 +775,9 @@ export default function HomePage() {
     }
   };
 
-  return (
-    <main id="main">
-
-      {/* ========================= 1. HERO ========================= */}
-      <section className="section hero relative" data-hab-section="hero">
+    const sectionComponents: Record<string, React.ReactNode> = {
+    'hero': (
+<section className="section hero relative" data-hab-section="hero">
         <SectionEditBadge
           label="Hero & Mission"
           studioHref="/admin/hero"
@@ -860,9 +878,9 @@ export default function HomePage() {
           </figure>
         </div>
       </section>
-
-      {/* ========================= 2. STATS ========================= */}
-      <section className="section section--tight relative" data-hab-section="stats">
+    ),
+    'stats': (
+<section className="section section--tight relative" data-hab-section="stats">
         <SectionEditBadge
           label="Stats & Impact Counters"
           studioHref="/admin/site-settings"
@@ -877,9 +895,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* ========================= 3. B2C / B2B GATEWAY ========================= */}
-      <section className="section section--tight relative" id="buy" data-hab-section="buy">
+    ),
+    'buy': (
+<section className="section section--tight relative" id="buy" data-hab-section="buy">
         <SectionEditBadge
           label="Retail & Trade Gateway"
           studioHref="/admin/trade"
@@ -904,9 +922,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ========================= 4. ABOUT BAND ========================= */}
-      <section className="band relative" id="about" data-hab-section="about">
+    ),
+    'about': (
+<section className="band relative" id="about" data-hab-section="about">
         <SectionEditBadge
           label="About HAB Band"
           studioHref="/admin/pages/about"
@@ -933,9 +951,9 @@ export default function HomePage() {
           </figure>
         </div>
       </section>
-
-      {/* ========================= 5. NEW IN THE SHOP ========================= */}
-      <section className="section relative" id="shop" data-hab-section="shop">
+    ),
+    'shop': (
+<section className="section relative" id="shop" data-hab-section="shop">
         <SectionEditBadge label="Featured Crafts Shop" studioHref="/admin/products" />
         <div className="section__head">
           <div>
@@ -997,9 +1015,9 @@ export default function HomePage() {
           })}
         </div>
       </section>
-
-      {/* ========================= 6. ASSURANCE ========================= */}
-      <section className="section section--tight relative" data-hab-section="assurance">
+    ),
+    'assurance': (
+<section className="section section--tight relative" data-hab-section="assurance">
         <SectionEditBadge
           label="Trust & Assurances"
           studioHref="/admin/site-settings"
@@ -1036,9 +1054,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ========================= 7. OUTLETS & PUNAKHA MARKET ========================= */}
-      <section className="section relative" id="outlets" data-hab-section="outlets">
+    ),
+    'outlets': (
+<section className="section relative" id="outlets" data-hab-section="outlets">
         <SectionEditBadge label="Outlets & Punakha Market" studioHref="/admin/clusters-outlets" />
 
         <div className="section__head">
@@ -1211,9 +1229,9 @@ export default function HomePage() {
           195 affiliated stores across Bhutan also carry member work. Outlets and clusters are added here as they are validated.
         </p>
       </section>
-
-      {/* ========================= 8. 13 CRAFTS ========================= */}
-      <section className="section relative" id="crafts" data-hab-section="crafts">
+    ),
+    'crafts': (
+<section className="section relative" id="crafts" data-hab-section="crafts">
         <SectionEditBadge label="13 Crafts of Bhutan" studioHref="/admin/crafts" />
         <div className="section__head">
           <div>
@@ -1264,9 +1282,9 @@ export default function HomePage() {
           })}
         </div>
       </section>
-
-      {/* ========================= 9. MASTER CRAFTSPEOPLE ========================= */}
-      <section className="section relative" id="masters" data-hab-section="masters">
+    ),
+    'masters': (
+<section className="section relative" id="masters" data-hab-section="masters">
         <SectionEditBadge label="Living Treasures & Honours" studioHref="/admin/honours" />
         <div className="section__head">
           <div>
@@ -1302,9 +1320,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* ========================= 10. PROGRAMMES ========================= */}
-      <section className="section relative" id="programmes" data-hab-section="programmes">
+    ),
+    'programmes': (
+<section className="section relative" id="programmes" data-hab-section="programmes">
         <SectionEditBadge label="Training Programmes (A–K)" studioHref="/admin/programmes" />
 
         <div className="section__head">
@@ -1335,9 +1353,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* ========================= 11. SUPPORT US ========================= */}
-      <section className="section support relative" id="support" data-hab-section="support">
+    ),
+    'support': (
+<section className="section support relative" id="support" data-hab-section="support">
         <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" sectionType="donate" />
         <div className="section__head">
           <div>
@@ -1384,9 +1402,9 @@ export default function HomePage() {
           })}
         </div>
       </section>
-
-      {/* ========================= 12. MEMBERSHIP DUO ========================= */}
-      <section className="section relative" id="membership" data-hab-section="membership">
+    ),
+    'membership': (
+<section className="section relative" id="membership" data-hab-section="membership">
         <SectionEditBadge
           label="Artisan Directory & Apply"
           studioHref="/admin/members"
@@ -1434,9 +1452,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ========================= 13. NEWSROOM & EVENTS ========================= */}
-      <section className="section relative" id="news" data-hab-section="news">
+    ),
+    'news': (
+<section className="section relative" id="news" data-hab-section="news">
         <SectionEditBadge label="News & Events" studioHref="/admin/content" />
         <div className="section__head">
           <div>
@@ -1515,9 +1533,9 @@ export default function HomePage() {
           </aside>
         </div>
       </section>
-
-      {/* ========================= 14. PUBLICATIONS ========================= */}
-      <section className="section relative" id="publications" data-hab-section="publications">
+    ),
+    'publications': (
+<section className="section relative" id="publications" data-hab-section="publications">
         <SectionEditBadge label="Reports & Publications" studioHref="/admin/publications" />
         <div className="rule-top">
           <div className="pubs">
@@ -1550,9 +1568,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ========================= 15. PARTNERS ========================= */}
-      <section className="section section--last relative" data-hab-section="partners">
+    ),
+    'partners': (
+<section className="section section--last relative" data-hab-section="partners">
         <SectionEditBadge label="Development Partners" studioHref="/admin/site-settings" />
 
         <p className="eyebrow eyebrow--muted">Development Partners</p>
@@ -1595,6 +1613,20 @@ export default function HomePage() {
           })}
         </div>
       </section>
+    ),
+  };
+
+  const activeOrder = Array.isArray(siteSettings.homepageSectionOrder) && siteSettings.homepageSectionOrder.length > 0
+    ? siteSettings.homepageSectionOrder
+    : DEFAULT_HOMEPAGE_SECTION_ORDER;
+
+  return (
+    <main id="main">
+      {activeOrder.map((sectionId) => (
+        <React.Fragment key={sectionId}>
+          {sectionComponents[sectionId] || null}
+        </React.Fragment>
+      ))}
 
       <UniversalLiveSectionEditor
         isOpen={liveEditorOpen}

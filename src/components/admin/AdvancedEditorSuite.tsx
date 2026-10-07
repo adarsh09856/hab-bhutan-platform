@@ -48,6 +48,7 @@ export interface AdvancedEditorFormState {
   title: string;
   slug: string;
   category: string;
+  subCategory?: string;
   excerpt: string;
   content: string;
   bannerUrl: string;
@@ -344,14 +345,40 @@ export default function AdvancedEditorSuite({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Featured Cover Banner
+                Sub-Category (Structured Taxonomy)
               </label>
-              <FileUploadInput
-                value={form.bannerUrl || ''}
-                onChange={(url) => onChange({ bannerUrl: url })}
-                label="Upload Cover Photo"
+              <input
+                type="text"
+                list="subCategoryDatalist"
+                value={form.subCategory || ''}
+                onChange={(e) => onChange({ subCategory: e.target.value })}
+                placeholder="e.g. Code of Ethics, Mandate, Living Treasures..."
+                className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
               />
+              <datalist id="subCategoryDatalist">
+                <option value="Mandate & Governance" />
+                <option value="Code of Ethics" />
+                <option value="Strategic Plan" />
+                <option value="Board & Leadership" />
+                <option value="Master Craftspeople" />
+                <option value="Living Treasures" />
+                <option value="Apprenticeships" />
+                <option value="Quality & Standards" />
+                <option value="Outlets & Markets" />
+                <option value="Policies & Regulations" />
+              </datalist>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Featured Cover Banner
+            </label>
+            <FileUploadInput
+              value={form.bannerUrl || ''}
+              onChange={(url) => onChange({ bannerUrl: url })}
+              label="Upload Cover Photo"
+            />
           </div>
 
           <div>

@@ -24,6 +24,10 @@ import {
   ExternalLink,
   ChevronRight,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
+  RotateCcw,
+  ListOrdered,
   Image as ImageIcon
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
@@ -57,8 +61,35 @@ interface HeroSlide {
   isActive: boolean;
 }
 
+interface HomepageSectionDef {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+}
+
+const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionDef[] = [
+  { id: 'hero', name: '1. Hero Visual Carousel & Mission Actions', category: 'Banner', description: 'Top visual slider with photography, tagline, and introductory CTAs.' },
+  { id: 'stats', name: '2. Impact Statistics (4 Counters)', category: 'Impact', description: '2,500+ Artisans, 13 Crafts, 20 Dzongkhags, 100% Authenticated.' },
+  { id: 'buy', name: '3. Retail & Trade Gateway', category: 'Commerce', description: 'Two ways to buy: Retail e-shop & wholesale bulk portal.' },
+  { id: 'about', name: '4. About HAB Story Band', category: 'Story', description: 'Organizational background with mission narrative and image.' },
+  { id: 'shop', name: '5. New in the Shop (Featured Crafts)', category: 'Commerce', description: 'Grid of 8 latest authenticated handicrafts.' },
+  { id: 'assurance', name: '6. Trust & Assurances (4 Badges)', category: 'Quality', description: 'Tracked origin, registered chain, upfront fair pricing, secure escrow.' },
+  { id: 'outlets', name: '7. Outlets, Punakha Market & Clusters', category: 'Retail', description: 'Punakha crafts market feature, physical retail locations, and artisan villages.' },
+  { id: 'crafts', name: '8. The 13 Arts & Crafts of Bhutan', category: 'Heritage', description: 'Comprehensive Zorig Chusum grid with descriptions and direct craft links.' },
+  { id: 'masters', name: '9. Master Craftspeople (Living Treasures)', category: 'People', description: 'Recognized master artisans and national craft award recipients.' },
+  { id: 'programmes', name: '10. Training Programmes (A–K)', category: 'Programmes', description: 'Advocacy, policy, and trade capacity building programmes.' },
+  { id: 'support', name: '11. Support Us & Donation Pillars', category: 'Donation', description: 'Grassroots revolving fund, apprentice placements, and conservation.' },
+  { id: 'membership', name: '12. Artisan Directory Search & Join HAB', category: 'Membership', description: 'Public craft directory search input and membership application callout.' },
+  { id: 'news', name: '13. Newsroom & Upcoming Events', category: 'News', description: 'Dispatches, training announcements, and event schedule.' },
+  { id: 'publications', name: '14. Reports & Publications', category: 'Governance', description: 'Annual reports, strategy documents, and sector studies.' },
+  { id: 'partners', name: '15. Development Partners Showcase', category: 'Partners', description: 'EU SWITCH-Asia, UNDP, RGoB, and institutional partner logos.' },
+];
+
+const DEFAULT_HOMEPAGE_SECTION_ORDER = DEFAULT_HOMEPAGE_SECTIONS.map((s) => s.id);
+
 export default function HomePageStudio() {
-  const [activeTab, setActiveTab] = useState<'hero' | 'announcement' | 'mission' | 'punakha' | 'assurances' | 'partners'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'announcement' | 'mission' | 'punakha' | 'assurances' | 'partners' | 'order'>('hero');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -124,6 +155,9 @@ export default function HomePageStudio() {
 
     // Partners
     partnersList: [] as PartnerItem[],
+
+    // Section Order
+    homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER,
   });
 
   const [partnerModalOpen, setPartnerModalOpen] = useState(false);
@@ -157,10 +191,19 @@ export default function HomePageStudio() {
           } else if (typeof rawPartners === 'string' && rawPartners.trim()) {
             parsedPartners = rawPartners.split(',').map((s) => normalizePartner(s.trim()));
           }
+
+          let order = DEFAULT_HOMEPAGE_SECTION_ORDER;
+          if (Array.isArray(d.setting.homepageSectionOrder) && d.setting.homepageSectionOrder.length > 0) {
+            const existing = d.setting.homepageSectionOrder.filter((id: string) => DEFAULT_HOMEPAGE_SECTION_ORDER.includes(id));
+            const missing = DEFAULT_HOMEPAGE_SECTION_ORDER.filter((id: string) => !existing.includes(id));
+            order = [...existing, ...missing];
+          }
+
           setSettings((prev) => ({
             ...prev,
             ...d.setting,
             partnersList: parsedPartners,
+            homepageSectionOrder: order,
           }));
         }
       }
@@ -209,6 +252,30 @@ export default function HomePageStudio() {
     showToast('success', 'Partner removed.');
   };
 
+  const moveSectionUp = (idx: number) => {
+    if (idx <= 0) return;
+    const current = [...settings.homepageSectionOrder];
+    const temp = current[idx];
+    current[idx] = current[idx - 1];
+    current[idx - 1] = temp;
+    setSettings((s) => ({ ...s, homepageSectionOrder: current }));
+  };
+
+  const moveSectionDown = (idx: number) => {
+    if (idx >= settings.homepageSectionOrder.length - 1) return;
+    const current = [...settings.homepageSectionOrder];
+    const temp = current[idx];
+    current[idx] = current[idx + 1];
+    current[idx + 1] = temp;
+    setSettings((s) => ({ ...s, homepageSectionOrder: current }));
+  };
+
+  const resetSectionOrder = () => {
+    if (!confirm('Reset homepage sections to their authentic default sequence?')) return;
+    setSettings((s) => ({ ...s, homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER }));
+    showToast('success', 'Reset to default sequence. Click "Save All Settings" to apply.');
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -226,6 +293,9 @@ export default function HomePageStudio() {
       const d = await res.json();
       if (res.ok) {
         showToast('success', 'Homepage content updated successfully!');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('hab:settings-updated'));
+        }
       } else {
         showToast('error', d.error || 'Failed to save homepage settings.');
       }
@@ -491,6 +561,22 @@ export default function HomePageStudio() {
         >
           <Sparkles className="w-4 h-4" />
           <span>6. Partners (Image 1)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('order')}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+            activeTab === 'order'
+              ? 'border-[#8B2E24] text-[#8B2E24]'
+              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+          }`}
+        >
+          <ListOrdered className="w-4 h-4" />
+          <span>7. Section Order (Move Up/Down)</span>
+          <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 font-mono">
+            {settings.homepageSectionOrder.length}
+          </span>
         </button>
       </div>
 
@@ -1264,6 +1350,115 @@ export default function HomePageStudio() {
                 })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 7: SECTION ORDER MANAGER (MOVE UP / DOWN) */}
+      {activeTab === 'order' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-700 uppercase tracking-wider mb-1">
+                <ListOrdered className="w-4 h-4" />
+                <span>Layout Hierarchy &amp; Sequence</span>
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Homepage Section Order (Move Up / Down)</h2>
+              <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+                Rearrange how the 15 sections appear on the public homepage. Use the Move Up [↑] and Move Down [↓] buttons to reorder. The public layout preserves authentic Bhutanese typography, full-width block formatting, and the 3-column desktop craft grid.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={resetSectionOrder}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                title="Reset order to authentic default sequence"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                <span>Reset to Default</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveSettings()}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{saving ? 'Saving...' : 'Save Order'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3">
+            <Info className="w-4 h-4 text-amber-700 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p className="font-semibold text-amber-950">Administrative Section Re-Ordering Guidelines:</p>
+              <p className="text-amber-800 leading-relaxed">
+                Sections are rendered as direct block elements without flex disruption. Moving a section up or down immediately adjusts its position in the live DOM. The 13 Crafts section will maintain its standard 3-column responsive layout.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2.5">
+            {settings.homepageSectionOrder.map((sectionId, idx) => {
+              const def = DEFAULT_HOMEPAGE_SECTIONS.find((s) => s.id === sectionId) || {
+                id: sectionId,
+                name: `Section: ${sectionId}`,
+                category: 'Custom',
+                description: 'Homepage section block.',
+              };
+              const isFirst = idx === 0;
+              const isLast = idx === settings.homepageSectionOrder.length - 1;
+
+              return (
+                <div
+                  key={sectionId}
+                  className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <span className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-mono text-xs font-bold flex items-center justify-center flex-shrink-0 border border-slate-200">
+                      #{idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-bold text-slate-900">{def.name}</h3>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200/60">
+                          {def.category}
+                        </span>
+                        <span className="font-mono text-[10px] text-slate-400">
+                          id: {sectionId}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{def.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 self-end sm:self-center flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => moveSectionUp(idx)}
+                      disabled={isFirst}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                      title={isFirst ? 'Already at top' : 'Move up'}
+                    >
+                      <ArrowUp className="w-3.5 h-3.5 text-slate-600" />
+                      <span className="hidden xs:inline">Move Up</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveSectionDown(idx)}
+                      disabled={isLast}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                      title={isLast ? 'Already at bottom' : 'Move down'}
+                    >
+                      <ArrowDown className="w-3.5 h-3.5 text-slate-600" />
+                      <span className="hidden xs:inline">Move Down</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

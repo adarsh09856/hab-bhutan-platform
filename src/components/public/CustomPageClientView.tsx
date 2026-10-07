@@ -67,6 +67,11 @@ export default function CustomPageClientView({ initialPage }: CustomPageClientVi
               <Tag className="w-3 h-3" />
               <span>{page.category || 'General'}</span>
             </span>
+            {page.subCategory && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-900 border border-amber-300/40">
+                {page.subCategory}
+              </span>
+            )}
             {!page.isPublished && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
                 Draft Preview (Admin Only)

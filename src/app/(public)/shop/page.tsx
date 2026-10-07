@@ -94,6 +94,17 @@ const PRODUCT_POOL = [
       .catch(() => {});
   }, []);
 
+  const handleShuffle = () => {
+    setProducts((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    });
+  };
+
   const craftCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     products.forEach((p) => {
@@ -223,6 +234,15 @@ const PRODUCT_POOL = [
               <span className="craft__count" id="shopCount" style={{ margin: 0, alignSelf: 'center' }}>
                 {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'product' : 'products'}
               </span>
+              <button
+                type="button"
+                className="btn btn--outline btn--sm"
+                onClick={handleShuffle}
+                title="Shuffle products catalog"
+                style={{ cursor: 'pointer', marginLeft: 'auto' }}
+              >
+                🔀 Shuffle Catalog
+              </button>
             </div>
 
             {filteredAndSortedProducts.length > 0 ? (

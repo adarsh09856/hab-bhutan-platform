@@ -74,6 +74,7 @@ export async function GET(req: NextRequest) {
     bnbBankName: bnbBanking.bankName || 'Bhutan National Bank Limited (BNB)',
     bnbPhone: bnbBanking.phone || '+975-2-338089',
     bnbQrUrl: bnbBanking.qrUrl || '/images/bnb_qr_placeholder.png',
+    homepageSectionOrder: (setting as any)?.homepageSectionOrder || (tb as any)?.homepageSectionOrder || null,
   } : null;
 
   return NextResponse.json({ success: true, setting: enriched });
@@ -258,6 +259,7 @@ export async function PUT(req: NextRequest) {
       ...(body.orderSupportPhone !== undefined && { orderSupportPhone: body.orderSupportPhone }),
       // Global Trust & Authenticity Badges & Rolling Ticker Messages
       ...(body.trustBadges !== undefined && { trustBadges: body.trustBadges }),
+      ...(body.homepageSectionOrder !== undefined && { homepageSectionOrder: body.homepageSectionOrder }),
     };
 
     if (body.tickerMessages !== undefined && Array.isArray(body.tickerMessages)) {

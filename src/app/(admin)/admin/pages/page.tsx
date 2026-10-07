@@ -43,6 +43,7 @@ interface WebPageItem {
   publicPath: string;
   adminHref?: string;
   category: string;
+  subCategory?: string | null;
   icon?: any;
   sectionsCount: string;
   summary: string;
@@ -275,6 +276,7 @@ export default function AdminPagesHub() {
     title: '',
     slug: '',
     category: 'General',
+    subCategory: '',
     excerpt: '',
     content: '',
     bannerUrl: '',
@@ -331,6 +333,7 @@ export default function AdminPagesHub() {
       title: '',
       slug: '',
       category: 'General',
+      subCategory: '',
       excerpt: '',
       content: '',
       bannerUrl: '',
@@ -356,6 +359,7 @@ export default function AdminPagesHub() {
       title: p.title || '',
       slug: p.slug || '',
       category: p.category || 'General',
+      subCategory: p.subCategory || '',
       excerpt: p.excerpt || '',
       content: p.content || '',
       bannerUrl: p.bannerUrl || '',
@@ -462,6 +466,7 @@ export default function AdminPagesHub() {
     slug: cp.slug,
     publicPath: `/pages/${cp.slug}`,
     category: cp.category || 'Custom CMS',
+    subCategory: cp.subCategory || null,
     icon: FileText,
     sectionsCount: 'Custom Dynamic Page',
     summary: cp.excerpt || 'Custom created page managed directly via CMS editor.',
@@ -670,7 +675,14 @@ export default function AdminPagesHub() {
 
                 <div className="mt-3.5">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center justify-between">
-                    <span>{page.category}</span>
+                    <span className="flex items-center gap-1.5 flex-wrap">
+                      <span>{page.category}</span>
+                      {page.subCategory && (
+                        <span className="text-amber-700 font-semibold normal-case bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">
+                          › {page.subCategory}
+                        </span>
+                      )}
+                    </span>
                     {page.isCustom && <span className="text-[10px] text-amber-700 lowercase font-mono">{page.publicPath}</span>}
                   </div>
                   <h3 className="text-base font-bold text-slate-900 group-hover:text-[#8B2E24] transition-colors mt-0.5">
