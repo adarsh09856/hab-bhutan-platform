@@ -9,6 +9,7 @@ import { CRAFTS } from '@/lib/data';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 const PRODUCT_SPECS: Record<string, { size: string; weight: string; materials: string; care: string; lead: string }> = {
   LHA01: { size: "61 × 43 cm image, 96 × 66 cm mounted", weight: "0.9 kg", materials: "Cotton canvas, mineral pigment, gold leaf, silk brocade", care: "Keep out of direct sun; roll, never fold", lead: "Ships in 2 working days" },
@@ -46,6 +47,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeThumb, setActiveThumb] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [editorOpen, setEditorOpen] = useState(false);
 
   useEffect(() => {
     if (!code) return;
@@ -171,7 +173,11 @@ export default function ProductDetailPage() {
 
       {/* 1. Breadcrumbs & Product Detail */}
       <section className="section relative" data-hab-section="product-detail">
-        <SectionEditBadge label="Products Studio" studioHref="/admin/products" />
+        <SectionEditBadge
+          label={`Quick Edit: ${product.name}`}
+          studioHref="/admin/products"
+          onEdit={() => setEditorOpen(true)}
+        />
         
         {/* Blueprint Backbar */}
         <div className="backbar">
@@ -459,7 +465,14 @@ export default function ProductDetailPage() {
           ))}
         </div>
       </section>
-
+      
+      <UniversalLiveSectionEditor
+        isOpen={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        sectionType="products"
+        sectionTitle={product ? `${product.name} (${product.code})` : 'Product Detail'}
+        studioHref="/admin/products"
+      />
     </main>
   );
 }

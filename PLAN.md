@@ -1,1182 +1,749 @@
-# Handicrafts Association of Bhutan (HAB) — Master Architecture, Deep File-by-File Audit, 2-Way Verification Matrix & Implementation Plan (PLAN.md)
+# Handicrafts Association of Bhutan (HAB) — Master Architecture, Deep File-by-File Audit, Universal Quick Edit & 2-Way Sync Plan (PLAN.md)
 
 **Project**: Handicrafts Association of Bhutan (HAB) National E-Commerce & Artisans Platform  
-**Local Static HTML Reference Workspace**: `E:\Downloads\Final_webdesign\hab-site` (34 HTML templates, `data.js`, `pages.js`, `backend.js`, `style.css`)  
-**Active Production Next.js Platform**: `E:\ai\bhutanprojects\newbend` (Next.js 15 App Router, Prisma ORM, PostgreSQL, Sharp image pipeline, TypeScript)  
+**Target Next.js Platform (Execution Target)**: `E:\ai\bhutanprojects\newbend` (Next.js 15 App Router, Prisma ORM, PostgreSQL, Sharp image pipeline, TypeScript)  
+**Reference Static HTML Source**: `E:\Downloads\Final_webdesign\hab-site` (34 HTML templates, `data.js`, `pages.js`, `backend.js`, `style.css`)  
 **Live Target Reference**: `https://hab.touratbhutan.info`  
-**Verified Safe Backup**: `E:\Downloads\Final_webdesign\hab-site-BACKUP`  
-**Current Test Status**: `50 PASSED / 0 FAILED` (`node scripts/verify-2way-sync.mjs`)  
-**TypeScript Status**: `0 Errors` (`tsc --noEmit`)  
-**Last Verified & Updated**: October 2026  
+**Safe Backup**: `E:\Downloads\Final_webdesign\hab-site-BACKUP`  
+**Commit Reference**: `40ee78f` / `7c2e6b0`  
+**Last Updated**: October 2026  
 
 ---
 
-## 1. Executive Summary & Architecture Justification
+## 1. Executive Alignment & Core Mandate
 
-### Why Next.js 15 App Router + Prisma (PostgreSQL) + Sharp Image Pipeline + TypeScript?
-1. **100% Visual & Design Parity**: The Next.js App Router mounts identical CSS classes (`section`, `card`, `grid`, `frame`, `crumbs`, `backbar`, `footer`, `signoff`), design tokens, and Dzongkha typography (`རྫོང་ཁ`) from the reference `style.css`.
-2. **Eliminates Critical Browser Security Flaws**: In the static reference (`backend.js`), Supabase anonymous keys and administrative tokens were directly embedded in browser scripts, allowing anyone to inspect and tamper with database tables. Next.js isolates all database interactions inside secure server components, session-guarded `/api/*` endpoints, and RBAC authentication guards.
-3. **True 2-Way Synchronization (Public <-> Admin CRUD)**:
-   - **Public -> Admin**: Public registrations (Wholesalers, Members) submit payments (Card, mBoB, Bank transfer) and upload deposit slips (`/api/upload`). Submissions immediately appear in Admin review studios with inspector modals and clickable slip viewers. Admin Quick Approve (`[✓]`) and Quick Decline (`[✗]`) triggers atomically update statuses, log tamper-evident audits, and dispatch automated notification emails to applicants.
-   - **Admin -> Public**: Any change made in Admin Studios (Site Settings, Hero Slider, New in the Shop, Outlets, Clusters, Products) propagates instantly to public pages without stale caches or `Nu. NaN` calculation bugs.
-4. **Universal Quick Edit Mode**: Public pages mount `SectionEditBadge` and `UniversalLiveSectionEditor` with `data-hab-section` identifiers. Logged-in administrators can toggle visual editing, modify headings, ledes, buttons, and photos in place, and publish changes within seconds.
-5. **High-Resolution Sharp Image Pipeline**: Original 4K photography is preserved in master storage and served via Sharp as optimized, responsive WebP/AVIF images.
+### The Strict Development Rules
+1. **NO FAKE SCRIPT COMPLETION CLAIMS**:
+   - Never run a background test script (e.g. `verify-2way-sync.mjs`) and claim the job is "done". 
+   - Every file must be physically updated, verified, and checked in the actual browser.
+   - Do not mark items as "done" until the actual physical components and endpoints exist and operate.
+2. **TRUE UNIVERSAL QUICK EDIT (EVERY TEXT, IMAGE, BUTTON, PARAGRAPH)**:
+   - Quick Edit mode cannot be limited to 2 or 3 generic homepage fields.
+   - Every text element (eyebrows, headings, ledes, body paragraphs, badges), every button (labels, target links), and every image asset (hero slides, banners, product photos, process triptychs, partner logos) across **all 34 pages** must be editable in-place via Quick Edit mode.
+3. **COMPLETE SUB-PAGE & NAVIGATION PARITY**:
+   - Sub-pages are not abstract link targets—they are full, physical pages (`/craft/[craft]`, `/product/[code]`, `/programme/[ref]`, `/project/[key]`, `/outlets/[key]`, `/clusters/[key]`, `/members/[slug]`, `/wholesale/register`, etc.) with real data, real images, and real Quick Edit controls.
+   - Zero `#contact` placeholder links where specialized pages exist.
+4. **MASTER 5-COLUMN FOOTER PARITY**:
+   - The footer across all pages must 100% match `index.html` lines 600–677 and the live reference screenshot (`media_1791376678497.png`):
+     - Logo lockup (`assets/hab-logo-footer.png`)
+     - CSO Act 2007 signoff statement
+     - 5 Social channels: Facebook, Instagram, X, YouTube, TikTok
+     - Column 1: Secretariat (Metog Lam, Phone, Email, Executive Secretary Desk)
+     - Column 2: Organization / Association (About HAB, Mandate & Act, Code of Ethics, Strategic Plan, CSO Registration)
+     - Column 3: Shop & Support (E-Shop, Wholesale & Bulk, Shipping & Delivery, Returns, Track Order, Duty & Customs)
+     - Column 4: Members (Directory by Category, Publications, Member Shops & Clusters, Member Login, Apply to Join)
+     - Column 5: Governance (Board of Trustees, Secretariat, Annual Reports, Audited Accounts, Tenders & Vacancies, Terms, Privacy)
+     - Bottom Bar: Copyright line + Currency label (`Nu. BTN` / `USD $`) + Payment notice (`Payments by card, mBoB and bank transfer`).
+5. **ANNOUNCEMENT BAR TICKER**:
+   - Notice counter fractions (`< 1/4 >`, `1/3`) removed across all views.
+   - Previous/Next navigation controls (`‹`, `›`), rotating ticker items, and contact links preserved.
+6. **2-WAY SYNCHRONIZATION (ADMIN <-> PUBLIC CRUD)**:
+   - **Public -> Admin**: Public submissions (Wholesale accounts, Member registrations, Donors, Contact inquiries) with payment options (Card, mBoB, Bank transfer) and deposit slip uploads appear immediately inside the Admin Review Studios with clickable slip previews and Quick Approve/Decline actions.
+   - **Admin -> Public**: Any change saved in Admin Studios or via Universal Quick Edit reflects immediately on public pages without stale caches or calculation bugs (`Nu. NaN`).
 
 ---
 
-## 2. Complete 34 Static HTML Pages + Specialized Sub-Pages: Deep File-by-File & Text-by-Text Audit
+## 2. Universal Quick Edit System Architecture
 
-Every single HTML template in `E:\Downloads\Final_webdesign\hab-site` and every corresponding Next.js route in `E:\ai\bhutanprojects\newbend` has been audited file-by-file and text-by-text against the live site `https://hab.touratbhutan.info`.
+To fulfill the requirement that **every text, image, asset, button, and paragraph** can be quick-edited:
+
+### Component: `UniversalLiveSectionEditor.tsx`
+The editor is expanded from a narrow settings dialog to a comprehensive, multi-tab modal that dynamically renders fields for the targeted section:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│  LIVE SECTION QUICK EDIT: [Section Name]                    [✕ Close] │
+├────────────────────────────────────────────────────────────────────────┤
+│  [CONTENT & TEXT]   [ACTION BUTTONS]   [IMAGES & ASSETS]   [CARDS/LIST] │
+├────────────────────────────────────────────────────────────────────────┤
+│  TAB 1: CONTENT & TEXT                                                 │
+│  ├── Eyebrow Tag / Kicker       (text input)                           │
+│  ├── Main Heading (H1 / H2)     (text input)                           │
+│  ├── Subtitle / Lede            (textarea)                             │
+│  └── Body Paragraphs            (multi-paragraph rich textarea)        │
+│                                                                        │
+│  TAB 2: ACTION BUTTONS                                                 │
+│  ├── Primary Button Label       (text input)                           │
+│  ├── Primary Button Target URL  (text input + preset dropdown)         │
+│  ├── Secondary Button Label     (text input)                           │
+│  └── Secondary Button URL       (text input + preset dropdown)         │
+│                                                                        │
+│  TAB 3: IMAGES & ASSETS                                                │
+│  ├── Primary Section Image/Banner (FileUploadInput + URL + focal)     │
+│  ├── Image Caption & Alt Text   (text inputs)                          │
+│  └── Gallery / Triptych Images  (multi-image uploader & slots)         │
+│                                                                        │
+│  TAB 4: CARDS & METADATA (Section-specific)                            │
+│  ├── Stat numbers & labels (for stats sections)                        │
+│  ├── Fact cells (Technique, Materials, Practised In for crafts)       │
+│  └── Feature cards / bullets                                           │
+├────────────────────────────────────────────────────────────────────────┤
+│  [Cancel]                                      [✓ Save Changes Live]  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### Universal Integration on Every Page:
+Every public page mounts:
+1. Floating **Quick Edit Mode** launcher (`AdminLiveBar.tsx` / `VisualSectionEditor.tsx`).
+2. `SectionEditBadge` on every logical section (`data-hab-section="..."`).
+3. Direct `onClick` trigger opening `UniversalLiveSectionEditor` with that section's content preloaded.
+4. Immediate re-render / mutate upon saving to reflect updates in real-time.
+
+---
+
+## 3. Deep 34-Page Audit: Element-by-Element, Text-by-Text & Quick Edit Inventory
+
+Below is the complete, exhaustive file-by-file audit of all 34 static HTML pages from `E:\Downloads\Final_webdesign\hab-site` matched directly to their production Next.js routes in `E:\ai\bhutanprojects\newbend`.
 
 ---
 
 ### [PAGE 1/34] `index.html` -> `/` (Homepage)
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\index.html` (63,894 bytes)
-- **Next.js Route**: `src/app/(public)/page.tsx`
-- **Live URL**: `https://hab.touratbhutan.info/`
-- **Page Title**: `Handicrafts Association of Bhutan · HAB`
-- **Header & Navigation**:
-  - Utility Bar: Notice ticker with previous/next controls (`‹`, `›`), links to Track (`/track-order`), Contact (`/contact`), Tenders (`/tenders`), Reports (`/publications`), Donate (`/donate`), Executive Secretary Desk (`+975-2-338089`), Wholesale (`/wholesale`), Language toggle (`EN / རྫོང་ཁ`). Notice counter numbers (`1/4`) removed as requested.
-  - Primary Nav: Logo lockup (`/assets/hab-logo.png`), Home, About Us, Programmes, Projects, News & Events, Tenders, Membership dropdown (5 categories, Register as member, Awards & honours, Member login), Search input (`⌕ Search`), Currency toggle (`USD $`), Language toggle (`EN / རྫོ`), Shop dropdown (13 crafts), Basket button (`🧺`).
-- **Main Sections & Text Elements**:
-  1. **Hero Slider (`hero`)**:
-     - Eyebrow: `Civil Society Organization · Bhutan`
-     - Main H1: `Towards a vibrant & sustainable handicrafts sector`
-     - Lede: `Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports skills development and capacity building of the craftspeople.`
-     - CTA Buttons: `Meet the Makers →` (`/about`), `Shop the crafts →` (`/shop`), `Find a member` (`/members`).
-     - Visual Frame: Multi-slide carousel with authentic high-res process photos (`hero-1-weaving.jpg`, `hero-2-punakha.jpg`, `hero-3-clay.jpg`, `hero-4-textiles.jpg`, `hero-5-desho.jpg`), slide counter, navigation arrows, indicator dots.
-  2. **Impact Statistics (`stats`)**:
-     - Cell 1: `7,500` — `Micro & small enterprises in the network` -> `/members`
-     - Cell 2: `5,250` — `Women-led enterprises` -> `/members`
-     - Cell 3: `195` — `Affiliated stores across Bhutan` -> `/outlets`
-     - Cell 4: `13` — `Arts & crafts of Zorig Chusum` -> `/shop`
-  3. **Two Ways to Buy (`buy`)**:
-     - Eyebrow: `Two ways to buy`
-     - H2: `Retail or trade`
-     - Retail Button: `Retail` / `Visit the e-shop` / `Single pieces, shipped worldwide` -> `/shop`
-     - Trade Button: `Trade` / `Wholesale & bulk` / `Trade pricing on approval` -> `/wholesale`
-  4. **About Us Band (`about`)**:
-     - Eyebrow: `About us`
-     - H2: `A network built for artisans and everyone who brings a craft to market`
-     - Body: Two narrative paragraphs explaining HAB's role, 7,500 enterprises, 195 stores.
-     - CTA Link: `Read about our programmes` -> `/programmes`
-     - Photo: `about-hab.jpg` (`frame frame--square frame--dark`)
-  5. **New in the Shop / Latest Arrivals (`shop`)**:
-     - Eyebrow: `Latest arrivals` (Dynamic from `SiteSetting.shopEyebrow`)
-     - H2: `New in the shop` (Dynamic from `SiteSetting.shopHeading`)
-     - Lede: `A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.` (Dynamic from `SiteSetting.shopLede`)
-     - CTA Button: `Visit the shop →` (Dynamic from `SiteSetting.shopCtaText` and `shopCtaLink`)
-     - Products Grid: 8 live items (`LHA01`, `SAD03`, `TRO04`, `FTB04`, `DAP02`, `MAS01`, `DEZ01`, `CUS02`) with codes, craft badges, titles, makers, dual currency prices, and `Add` buttons.
-  6. **Assurances Band (`assurance`)**:
-     - 4 TRUE Assurances: `Tracked Origin`, `Registered Chain`, `Upfront & Fair`, `Encrypted Escrow`.
-  7. **Physical Outlets & Markets (`outlets`)**:
-     - Eyebrow: `Visit us in person`
-     - H2: `Our physical outlets & clusters`
-     - Punakha Crafts Market Lead Card: Multi-photo carousel, badge `★ HAB validated & managed`, hours (`Daily, 09:00 – 18:00`), stalls (`32 member artisans`), crafts on site, payment methods, action buttons.
-     - 3 Outlet Cards: `HAB Craft Outlet, Thimphu`, `Paro Departures Counter`, `Chumey Yathra Outlet`.
-  8. **Artisan Clusters (`clusters`)**:
-     - Eyebrow: `Artisan clusters`
-     - 3 Featured Clusters: `Khoma Weaving Cluster` (Thagzo, Lhuentse, 42 members), `Kheng Bamboo Cluster` (Tshazo, Zhemgang, 36 members), `Trashiyangtse Turning Cluster` (Shagzo, 24 members).
-  9. **13 Arts & Crafts of Zorig Chusum (`crafts`)**:
-     - Eyebrow: `Zorig Chusum`
-     - H2: `The 13 arts & crafts of Bhutan`
-     - Complete 13 crafts interactive cards (01 Shingzo through 13 Dezo).
-  10. **Master Craftspeople / Living Treasures (`masters`)**:
-      - Master artisan recognition and national craft awards showcase.
-  11. **Training Programmes (`programmes`)**:
-      - Pillars A through K capacity building and skills transmission.
-  12. **Support Us & Donations (`support`)**:
-      - Grassroots revolving fund, apprentice placements, conservation pillars.
-  13. **Artisan Directory Search & Membership Callout (`membership`)**:
-      - Directory search input and membership application callout.
-  14. **Newsroom & Events (`news`)**:
-      - Recent press releases and upcoming craft fair schedule.
-  15. **Reports & Publications (`publications`)**:
-      - Annual reports, sector studies, and audited accounts download cards.
-  16. **Development Partners Showcase (`partners`)**:
-      - Logos and links for RGoB, EU SWITCH-Asia, UNDP Bhutan, and SHINE.
-  17. **Dual Membership Banners (`membershipBanners`)**:
-      - Left: `For Master Artisans & Guilds` -> `/members`
-      - Right: `For Institutional & Trade Buyers` -> `/wholesale`
-- **Mismatches Resolved**:
-  - Live site notice counter `1/4` removed; ticker navigation controls `‹` and `›` preserved.
-  - Shop section eyebrow, heading, lede, and CTA button wired dynamically to `SiteSetting` and editable via Homepage Studio Tab 4.
-  - Product price formatting secured against `Nu. NaN`.
-- **Quick Edit Configuration**:
-  - `data-hab-section="hero"`, `data-hab-section="stats"`, `data-hab-section="about"`, `data-hab-section="shop"`, `data-hab-section="assurance"`, `data-hab-section="outlets"`.
-  - Floating Quick Edit button toggles `SectionEditBadge` allowing in-place text, link, and photo updates.
-- **Database Mapping**:
-  - Hero: `HeroSlide` table (`imageUrl`, `caption`, `altText`, `sortOrder`, `isActive`).
-  - Settings: `SiteSetting` table (`tagline`, `heroParagraph`, `trustBadges.shopEyebrow`, `trustBadges.shopHeading`, `trustBadges.shopLede`, `trustBadges.shopCtaText`, `trustBadges.shopCtaLink`).
-  - Products: `Product` table (`code`, `name`, `price`, `priceUSD`, `craftKey`, `status`, `images`).
-- **2-Way Sync Status**: Verified (50/50 test suite).
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\index.html` (63,894 bytes)
+* **Next.js Route**: `src/app/(public)/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  1. **Utility Bar (`utility-bar`)**:
+     - *Texts*: Notice ticker headlines, CSO status, Secretary Desk phone (`+975-2-338089`), Secretary email.
+     - *Actions*: Links to Contact, Tenders, Publications, Donate, Wholesale, Language (`EN / རྫོ`), Currency (`USD $` / `Nu. BTN`).
+     - *Quick Edit*: Section type `utility-bar` in `UniversalLiveSectionEditor`.
+  2. **Hero Slider (`hero`)**:
+     - *Texts*: Eyebrow (`Civil Society Organization · Bhutan`), Heading (`Towards a vibrant & sustainable handicrafts sector`), Lede (HAB mission narrative).
+     - *Actions*: Primary CTA (`Our mission` -> `/about`), Secondary CTA (`Shop the crafts ->` -> `/shop`), Tertiary CTA (`Find a member` -> `/members`).
+     - *Images*: 5 Carousel slides (`hero-1-weaving.jpg`, `hero-2-punakha.jpg`, `hero-3-clay.jpg`, `hero-4-textiles.jpg`, `hero-5-desho.jpg`).
+     - *Quick Edit*: Live slide uploader, caption editor, and text controls.
+  3. **Impact Statistics (`stats`)**:
+     - *Texts*: 4 Stat numbers & labels (`7,500 Enterprises`, `5,250 Women-led`, `195 Affiliated stores`, `13 Zorig Chusum crafts`).
+     - *Actions*: Links to `/members`, `/outlets`, `/shop`.
+     - *Quick Edit*: Dedicated STATS tab in editor.
+  4. **Two Ways to Buy (`buy`)**:
+     - *Texts*: Eyebrow (`Two ways to buy`), Heading (`Retail or trade`), Retail description, Trade description.
+     - *Actions*: Retail button (`/shop`), Wholesale button (`/wholesale`).
+     - *Quick Edit*: Section type `buy` in editor.
+  5. **About Band (`about`)**:
+     - *Texts*: Eyebrow (`About us`), Heading (`A network built for artisans...`), 2 Narrative paragraphs.
+     - *Actions*: Button (`Read about our programmes` -> `/programmes`).
+     - *Images*: Master photo (`about-hab.jpg`) with focal alignment.
+     - *Quick Edit*: Section type `about` in editor.
+  6. **New in the Shop (`shop` / `products`)**:
+     - *Texts*: Eyebrow (`Latest arrivals`), Heading (`New in the shop`), Lede (Consignment policy narrative).
+     - *Actions*: Button (`Visit the shop →` -> `/shop`), `Add to cart` buttons on 8 live product cards.
+     - *Images*: High-resolution product photos (`LHA01`, `SAD03`, `TRO04`, `FTB04`, `DAP02`, `MAS01`, `DEZ01`, `CUS02`).
+     - *Quick Edit*: Section type `products` with Homepage Studio Tab 4.
+  7. **Assurances Band (`assurances`)**:
+     - *Texts*: 4 Trust cards: `Tracked Origin`, `Registered Chain`, `Upfront & Fair`, `Encrypted Escrow`.
+     - *Quick Edit*: Section type `assurances` in editor.
+  8. **Outlets & Markets (`outlets`)**:
+     - *Texts*: Eyebrow (`Visit us in person`), Heading (`Our physical outlets & clusters`), Punakha market full description.
+     - *Actions*: `Directions & Hours`, `Visit Punakha Market`.
+     - *Images*: Punakha photography carousel (`hero-2-punakha.jpg`, etc.).
+     - *Quick Edit*: Section type `outlets` in editor.
+  9. **13 Crafts of Zorig Chusum (`crafts`)**:
+     - *Texts*: Eyebrow (`Zorig Chusum`), Heading (`The 13 arts & crafts of Bhutan`), 13 craft cards with Dzongkha subtitles and summaries.
+     - *Actions*: Links to `/craft/[craft]` for each craft.
+     - *Images*: 13 authentic craft images (`dezo.jpg`, `dozo.jpg`, etc.).
+     - *Quick Edit*: Section type `crafts` in editor.
+  10. **Living Treasures (`masters`)**:
+      - *Texts*: Accreditation criteria, Master profiles, Royal awards.
+      - *Actions*: Links to `/masters`.
+  11. **Statutory Programmes (`programmes`)**:
+      - *Texts*: Pillars A–K summaries.
+      - *Actions*: Links to `/programmes`.
+  12. **Donor Support & Pillars (`donate`)**:
+      - *Texts*: Grassroots fund, apprentice placements, cultural conservation.
+      - *Actions*: Donate buttons and amounts selector.
+  13. **News & Events (`news`)**:
+      - *Texts*: Latest press dispatches and upcoming craft fair schedule.
+      - *Actions*: Links to `/news` and `/events`.
+  14. **Publications & Reports (`publications`)**:
+      - *Texts*: Annual reports, audited financial accounts, research briefs.
+      - *Actions*: PDF download buttons.
+  15. **Development Partners (`partners`)**:
+      - *Texts*: RGoB, EU SWITCH-Asia, UNDP, SHINE descriptions.
+      - *Images*: Partner official logos.
+  16. **Dual Membership Banners (`membership`)**:
+      - *Texts*: Left: For Master Artisans; Right: For Institutional Buyers.
+      - *Actions*: `/members` and `/wholesale`.
+* **Current Status**: Verified & fully editable.
 
 ---
 
 ### [PAGE 2/34] `about.html` -> `/about`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\about.html` (33,419 bytes)
-- **Next.js Route**: `src/app/(public)/about/page.tsx`
-- **Page Title**: `About us · Handicrafts Association of Bhutan`
-- **Header H1**: `Empowering Bhutanese Artisans Since 2005`
-- **H2 Sections**:
-  1. `Our mandate` (CSO Act 2007 civil society role)
-  2. `How we are governed` (Board of Trustees, annual general meeting)
-  3. `The secretariat` (Executive team, offices on Metog Lam, Thimphu)
-  4. `Strategic focus 2025–2030` (Market access, youth apprenticeship, fair price protection)
-  5. `Our network across 20 Dzongkhags` (7,500 artisans, 70% women-led)
-- **Buttons & Links**: `Download AoA (PDF)`, `View Board of Trustees →`, `Contact Secretariat →`, `Register as member →`.
-- **Images**: `/assets/photos/about-hab.jpg` (Executive director and artisans), `/assets/hab-logo.png`.
-- **Mismatches Resolved**: Static HTML lacked links to the specialized sub-pages. Added direct links to `/board-of-trustees`, `/secretariat`, `/mandate`, `/strategic-plan`.
-- **Quick Edit**: `data-hab-section="about-page"`, `SectionEditBadge label="About Studio" studioHref="/admin/pages"`.
-- **Database Mapping**: `CustomPage` (`slug: "about"`), `SiteSetting.heroParagraph`.
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\about.html` (33,419 bytes)
+* **Next.js Route**: `src/app/(public)/about/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Eyebrow (`Civil Society Organization · Bhutan`), Title (`Empowering Bhutanese Artisans Since 2005`), Lede.
+  - *Banner Image*: `about-hab.jpg` with focal alignment.
+  - *Sections*:
+    1. `Our mandate` (CSO Act 2007 civil society role).
+    2. `How we are governed` (Board of Trustees & AGM).
+    3. `The secretariat` (Executive team, Metog Lam office).
+    4. `Strategic focus 2025–2030` (Market access, youth apprenticeship).
+    5. `Our network across 20 Dzongkhags` (7,500 artisans, 70% women-led).
+  - *Actions*: `Download AoA (PDF)`, `View Board of Trustees →` (`/board-of-trustees`), `Contact Secretariat →` (`/secretariat`), `Register as member →` (`/register`).
+  - *Quick Edit*: Section type `about-page` with Content, Actions, and Media tabs.
+* **Current Status**: Verified & mounted.
 
 ---
 
-### [PAGE 3/34] `craft.html` -> `/craft/[craft]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\craft.html` (33,638 bytes)
-- **Next.js Route**: `src/app/(public)/craft/[craft]/page.tsx`
-- **Page Title**: `[Craft Name] · Zorig Chusum · Handicrafts Association of Bhutan`
-- **Header H1**: `[Craft Name] · [English Translation]` (e.g. `Parzo · Carving`)
-- **Key Sections**:
-  1. Facts strip: `Technique`, `Materials`, `Practised in`, `Typical products`.
-  2. History & Cultural Significance: In-depth narrative from canonical `data.js`.
-  3. Process Photography Triptych: 3 authentic high-resolution process images demonstrating master technique.
-  4. Products from this Craft in the E-Shop: Filtered dynamic product grid with live stock and pricing.
-- **Mismatches Resolved**:
-  - Fixed broken image triptych where `parzo` showed an unrelated handbag (`product-sad03.jpg`) instead of authentic slate/wood carving. Mapped authentic process photography for all 13 crafts.
-  - Fixed `Nu. NaN` pricing bug on product cards (`PAR06`) by implementing safe fallback `p.price_usd ?? p.price ?? p.priceUSD ?? 0`.
-- **Quick Edit**: `data-hab-section="craft-page"`, `SectionEditBadge label="Crafts Studio" studioHref="/admin/crafts"`.
-- **Database Mapping**: `Craft` table (`key`, `name`, `english`, `description`, `history`, `technique`, `materials`, `practisedIn`, `typicalProducts`, `images`).
-- **2-Way Sync Status**: Verified.
+### [PAGE 3/34] `craft.html` -> `/craft/[craft]` & `/craft`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\craft.html` (33,638 bytes)
+* **Next.js Routes**: `src/app/(public)/craft/[craft]/page.tsx` and `src/app/(public)/craft/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Badge (`01/13 · ZORIG CHUSUM`), Dzongkha name (e.g. `སྤར་བཟོ།`), English name (`Parzo · Wood & Slate Carving`), Description lede.
+  - *Actions*: `Shop [Craft] →` (`/shop/[craft]`), `Visit [Craft] Outlets` (`/outlets`).
+  - *Flipper Carousel*: 3 alternating process photographs.
+  - *Facts Strip*: 4 cells: `Craft`, `Technique`, `Materials`, `Practised In`.
+  - *How It Is Made*: Longread multi-paragraph making process narrative.
+  - *Process Triptych*: 3 authentic process images with captions (`Parzo workshop`, `The master at work`, `Detail of technique`).
+  - *In the Shop*: Dynamic grid of products belonging to this craft with code, name, dual-currency price, and `Add` button.
+  - *Artisans Section*: "Who practises it" artisan cards with link to `/members`.
+  - *Clusters Section*: "Where it is concentrated" cluster cards with link to `/clusters`.
+  - *Bottom Nav*: Previous Craft and Next Craft links.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` on Hero, Facts, How It Is Made, Triptych, and Shop sections.
+    - Wire `UniversalLiveSectionEditor` to update craft description, facts, and triptych images in-place.
+* **Current Status**: `SectionEditBadge` missing on sub-sections; wiring in progress.
 
 ---
 
-### [PAGE 4/34] `shop.html` -> `/shop`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\shop.html` (32,291 bytes)
-- **Next.js Route**: `src/app/(public)/shop/page.tsx` & `src/app/(public)/shop/[craft]/page.tsx`
-- **Page Title**: `The HAB e-shop · Handicrafts Association of Bhutan`
-- **Header H1**: `The HAB e-shop`
-- **Key Sections**:
-  1. Craft Filter Rail: Tabs for All crafts (with live count) and each of the 13 Zorig Chusum crafts.
-  2. Collection filters: All, Under $50, Home & living.
-  3. Sort By dropdown: `Newest additions`, `Price: low to high`, `Price: high to low`.
-  4. Product Grid: Dynamic responsive grid of artisan pieces with code, photo, craft badge, title, maker, region, price, and `Add` button.
-- **Buttons & Links**: `Add` (adds to basket), `Filter`, `Sort`, product title links.
-- **Quick Edit**: `data-hab-section="shop-catalog"`, `SectionEditBadge label="Products Studio" studioHref="/admin/products"`.
-- **Database Mapping**: `Product` table (`code`, `name`, `price`, `priceUSD`, `craftKey`, `status`, `images`).
-- **2-Way Sync Status**: Verified.
+### [PAGE 4/34] `shop.html` -> `/shop` & `/shop/[craft]`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\shop.html` (32,291 bytes)
+* **Next.js Routes**: `src/app/(public)/shop/page.tsx` and `src/app/(public)/shop/[craft]/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`The HAB e-shop`), Eyebrow (`Authentic Bhutanese Handicrafts`), Lede narrative.
+  - *Filter Rails*: Craft selector (All + 13 Zorig Chusum crafts with counts), Price filter (`Under $50`, `Home & Living`, `Collector Pieces`).
+  - *Sort Dropdown*: `Newest additions`, `Price: Low to High`, `Price: High to Low`.
+  - *Product Grid*: Responsive product cards with code badge, image, title, maker, region, price, and `Add to Cart` button.
+  - *Quick Edit*: Section type `products` with direct shortcut to Products Studio and banner editor.
+* **Current Status**: Verified on `/shop`; wiring sub-route `/shop/[craft]`.
 
 ---
 
-### [PAGE 5/34] `product.html` -> `/product/[code]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\product.html` (32,594 bytes)
-- **Next.js Route**: `src/app/(public)/product/[code]/page.tsx`
-- **Page Title**: `[Product Name] · Handicrafts Association of Bhutan`
-- **Header H1**: `[Product Name]`
-- **Key Sections**:
-  1. Product Code & Craft Eyebrow: e.g. `LUD01 · TSHAZO (BAMBOO & CANE)`
-  2. Pricing & Currency: Nu. and USD $ toggle, shipping certificate note.
-  3. Action Buttons: `Add to basket` and `Buy now`.
-  4. Artisan Dossier: Maker name, cooperative affiliation, village, dzongkhag.
-  5. Technical Specification Table: Dimensions (cm/inches), Net weight (grams), Raw materials, Technique, Care instructions.
-  6. Multi-Photo Gallery: High-resolution zoomable master image and thumbnail strip.
-  7. "More from this craft" related products grid.
-- **Mismatches Resolved**: Circular image fallback errors eliminated; images fallback safely to craft representative photos.
-- **Quick Edit**: `data-hab-section="product-detail"`, `SectionEditBadge label="Edit Product" studioHref="/admin/products"`.
-- **Database Mapping**: `Product` table (`id`, `code`, `name`, `description`, `price`, `priceUSD`, `images`, `dimensions`, `weight`, `materials`, `makerId`).
-- **2-Way Sync Status**: Verified.
+### [PAGE 5/34] `product.html` -> `/product/[code]` & `/product`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\product.html` (32,594 bytes)
+* **Next.js Routes**: `src/app/(public)/product/[code]/page.tsx` and `src/app/(public)/product/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Breadcrumbs*: Home / Shop / [Craft] / [Product Name].
+  - *Header*: Product Code (`LUD01`), Title, Craft category.
+  - *Pricing*: Dual currency display (`Nu. BTN` / `USD $`), EMS shipping notice, Certificate of Origin notice.
+  - *Action Buttons*: `Add to basket`, `Buy now`.
+  - *Artisan Dossier*: Maker name, cooperative affiliation, village, dzongkhag, member since year.
+  - *Specification Table*: Dimensions (H x W x D cm), Net weight (grams), Raw materials, Technique, Care instructions.
+  - *Gallery*: High-resolution master photograph, zoom view, thumbnail strip.
+  - *Related Products*: "More from this craft" 4-card grid.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` allowing administrators to edit product name, price, description, specs, and photos directly in-place.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 6/34] `basket.html` -> `/basket`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\basket.html` (32,562 bytes)
-- **Next.js Route**: `src/app/(public)/basket/page.tsx`
-- **Page Title**: `Your Basket · Handicrafts Association of Bhutan`
-- **Header H1**: `Your Basket`
-- **Key Sections**:
-  1. Itemized Order Table: Product thumbnail, code, title, craft, unit price, quantity increment/decrement buttons, line total, remove item (`✕`).
-  2. Order Summary Card: Subtotal (Nu. / USD), Estimated Bhutan Post EMS shipping, Certificate of Origin fee (Nu. 0 / Free), Total.
-  3. Checkout CTA: `Proceed to Secure Checkout →` (`/checkout`).
-  4. Trust Badges: EMS tracked delivery, 3-D Secure / mBoB accepted, Authentic artisan guarantee.
-- **Quick Edit**: `data-hab-section="basket-summary"`, `SectionEditBadge label="Checkout Settings" studioHref="/admin/settings"`.
-- **Database Mapping**: In-memory / local storage synchronized with `Order` table upon checkout initiation.
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\basket.html` (32,562 bytes)
+* **Next.js Route**: `src/app/(public)/basket/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Your Basket`), Item count.
+  - *Table*: Item thumbnail, code, title, unit price, quantity increment/decrement, line total, remove (`✕`).
+  - *Summary Card*: Subtotal, Bhutan Post EMS shipping estimate, Certificate of Origin (Free), Grand Total.
+  - *Action*: `Proceed to Secure Checkout →` (`/checkout`).
+  - *Trust Badges*: EMS Tracked delivery, 3-D Secure / mBoB accepted, Authentic artisan guarantee.
+  - *Quick Edit*: Trust badges and shipping threshold editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 7/34] `clusters.html` -> `/clusters`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\clusters.html` (32,008 bytes)
-- **Next.js Route**: `src/app/(public)/clusters/page.tsx`
-- **Page Title**: `Artisan Clusters · Handicrafts Association of Bhutan`
-- **Header H1**: `Artisan Clusters of Bhutan`
-- **Key Sections**:
-  1. Explanatory Lede: Definition of a cluster (village/valley concentration of craftspeople).
-  2. Geographic Directory: Filter by Dzongkhag (all 20 Dzongkhags).
-  3. Cluster Cards: Photo, craft tag, cluster name, Dzongkhag, active member count, summary narrative, `Read the story →` link.
-- **Quick Edit**: `data-hab-section="clusters-index"`, `SectionEditBadge label="Clusters Studio" studioHref="/admin/clusters-outlets"`.
-- **Database Mapping**: `ClusterRecord` table (`key`, `name`, `craftKey`, `dzongkhag`, `members`, `established`, `summary`, `story`, `imageUrl`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\clusters.html` (32,008 bytes)
+* **Next.js Route**: `src/app/(public)/clusters/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Artisan Clusters of Bhutan`), Eyebrow (`Community Guilds`), Explanatory Lede.
+  - *Filters*: Dzongkhag selector (All 20 Dzongkhags) and Craft category tabs.
+  - *Cluster Cards*: Photo, craft tag, cluster name, Dzongkhag, active members count, summary, `Read the story →` link.
+  - *Quick Edit*: Section type `clusters` with direct shortcut to Clusters Studio.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 8/34] `cluster.html` -> `/clusters/[key]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\cluster.html` (30,489 bytes)
-- **Next.js Route**: `src/app/(public)/clusters/[key]/page.tsx`
-- **Page Title**: `[Cluster Name] · Handicrafts Association of Bhutan`
-- **Header H1**: `[Cluster Name]`
-- **Key Sections**:
-  1. Metadata bar: Craft category, Dzongkhag, Founding year, Active members count.
-  2. The Cluster Story: Comprehensive narrative of the community and traditions.
-  3. Visitor Note & Etiquette: How to visit respectfully, photography rules, direct purchase guidelines.
-  4. Products produced by this cluster in the shop.
-- **Quick Edit**: `data-hab-section="cluster-detail"`, `SectionEditBadge label="Edit Cluster" studioHref="/admin/clusters-outlets"`.
-- **Database Mapping**: `ClusterRecord` table.
-- **2-Way Sync Status**: Verified.
+### [PAGE 8/34] `cluster.html` -> `/clusters/[key]` & `/cluster`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\cluster.html` (30,489 bytes)
+* **Next.js Routes**: `src/app/(public)/clusters/[key]/page.tsx` and `src/app/(public)/cluster/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Cluster Name, Craft category, Dzongkhag, Founding year, Active members count.
+  - *Story Section*: Multi-paragraph community history, weaving/crafting traditions.
+  - *Visitor Etiquette*: Visiting rules, photography guidelines, direct purchase advice.
+  - *Products Grid*: Pieces produced by this specific cluster in the HAB shop.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit cluster name, story, visitor notes, and banner image.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 9/34] `outlets.html` -> `/outlets`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\outlets.html` (32,076 bytes)
-- **Next.js Route**: `src/app/(public)/outlets/page.tsx`
-- **Page Title**: `Outlets, Markets & Clusters · Handicrafts Association of Bhutan`
-- **Header H1**: `Physical Outlets & Verified Markets`
-- **Key Sections**:
-  1. Flagship Feature: Punakha Crafts Market full dossier, photos, hours, stalls, crafts.
-  2. Regional Outlets: Thimphu Secretariat Shop, Paro Airport Departure Lounge Counter, Chumey Yathra Weaving Shed.
-  3. Regional Consignment Counters: Zhemgang, Trongsa, Trashigang.
-- **Quick Edit**: `data-hab-section="outlets"`, `SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets"`.
-- **Database Mapping**: `OutletRecord` table (`key`, `name`, `type`, `place`, `hours`, `stalls`, `craftsOnSite`, `payment`, `imageUrl`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\outlets.html` (32,076 bytes)
+* **Next.js Route**: `src/app/(public)/outlets/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Physical Outlets & Verified Markets`), Eyebrow (`Visit Us in Person`), Lede.
+  - *Flagship Feature*: Punakha Crafts Market full card with photos, hours (`Daily, 09:00 – 18:00`), 32 stalls, verified badge.
+  - *Regional Outlets*: Thimphu Secretariat Shop, Paro Airport Counter, Chumey Yathra Shed.
+  - *Consignment Counters*: Zhemgang, Trongsa, Trashigang.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` allowing edits to outlet hours, locations, descriptions, and photography.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
-### [PAGE 10/34] `outlet.html` -> `/outlets/[key]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\outlet.html` (30,464 bytes)
-- **Next.js Route**: `src/app/(public)/outlets/[key]/page.tsx`
-- **Page Title**: `[Outlet Name] · Handicrafts Association of Bhutan`
-- **Header H1**: `[Outlet Name]`
-- **Key Sections**:
-  1. Location & Getting There: Directions, landmarks, parking.
-  2. Operating Details: Hours, days open, payment methods (mBoB, BNB, cash, card).
-  3. Crafts Available: Detailed inventory summary of crafts sold at this counter.
-  4. Contact & Inquiries: Phone numbers and secretariat desk link.
-- **Quick Edit**: `data-hab-section="outlet-detail"`, `SectionEditBadge label="Edit Outlet" studioHref="/admin/clusters-outlets"`.
-- **Database Mapping**: `OutletRecord` table.
-- **2-Way Sync Status**: Verified.
+### [PAGE 10/34] `outlet.html` -> `/outlets/[key]` & `/outlet`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\outlet.html` (30,464 bytes)
+* **Next.js Routes**: `src/app/(public)/outlets/[key]/page.tsx` and `src/app/(public)/outlet/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Outlet Title, Location, Operating hours, Payment methods.
+  - *Getting There*: Directions, road access, parking details.
+  - *Crafts Available*: Inventory summary of crafts on site.
+  - *Contact*: On-site manager phone and secretariat desk.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` for in-place text and photo updates.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 11/34] `masters.html` -> `/masters`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\masters.html` (37,095 bytes)
-- **Next.js Route**: `src/app/(public)/masters/page.tsx`
-- **Page Title**: `Living National Treasures & Master Artisans · HAB`
-- **Header H1**: `Living National Treasures (Accreditations & Awards)`
-- **Key Sections**:
-  1. Master Accreditation Framework: National accreditation criteria under Zorig Chusum.
-  2. Master Profiles: Detailed cards with master title, portrait, craft specialty, royal recognition, and workshop location.
-  3. Best Craft Enterprise of the Year awards showcase.
-  4. Nomination CTA: How community members can nominate a master artisan.
-- **Quick Edit**: `data-hab-section="masters-index"`, `SectionEditBadge label="Artisans Studio" studioHref="/admin/artisans"`.
-- **Database Mapping**: `Artisan` table (`isMaster: true`, `awards`, `bio`, `craftKey`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\masters.html` (37,095 bytes)
+* **Next.js Route**: `src/app/(public)/masters/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Living National Treasures & Master Artisans`), Eyebrow (`Royal Accreditations`), Lede.
+  - *Criteria*: National master accreditation standards under Zorig Chusum.
+  - *Master Cards*: Master artisan portrait, title, craft discipline, royal recognition, workshop location.
+  - *Awards Section*: Best Craft Enterprise of the Year showcase.
+  - *Nomination CTA*: Community nomination guidelines.
+  - *Quick Edit*: Section type `masters` in editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 12/34] `members.html` -> `/members`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\members.html` (33,478 bytes)
-- **Next.js Route**: `src/app/(public)/members/page.tsx`
-- **Page Title**: `Artisan Directory · Handicrafts Association of Bhutan`
-- **Header H1**: `The Sector, by the Numbers (Member Directory)`
-- **Key Sections**:
-  1. Live Search & Filters: Search by artisan name, CID, Dzongkhag, or craft specialty.
-  2. Enterprise & Artisan Cards: Name, craft badge, Dzongkhag, membership tier, verified seal.
-  3. "Not a member yet?" join callout with link to `/register`.
-- **Quick Edit**: `data-hab-section="members-index"`, `SectionEditBadge label="Members Studio" studioHref="/admin/members"`.
-- **Database Mapping**: `Member` table (`fullName`, `cid`, `dzongkhag`, `craftKey`, `tier`, `status`, `bio`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\members.html` (33,478 bytes)
+* **Next.js Route**: `src/app/(public)/members/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`The Sector, by the Numbers`), Eyebrow (`Certified Artisans`), Lede.
+  - *Search & Filter Rail*: Search by artisan name, CID, Dzongkhag, or craft specialty.
+  - *Artisan Cards*: Name, craft badge, Dzongkhag, membership tier, verified seal.
+  - *Join Callout*: "Not a member yet?" banner linking to `/register`.
+  - *Quick Edit*: Section type `membership` in editor.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 13/34] `member.html` -> `/members/[slug]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\member.html` (31,776 bytes)
-- **Next.js Route**: `src/app/(public)/members/[slug]/page.tsx`
-- **Page Title**: `[Artisan Name] · Member Directory · HAB`
-- **Header H1**: `[Artisan Name]`
-- **Key Sections**:
-  1. Profile Hero: Portrait frame, Dzongkhag, Gewog, Village, Member ID, Verified badge.
-  2. Biography & Craft Lineage: Family heritage, training, techniques used.
-  3. Products in the HAB Shop: Grid of pieces crafted by this specific artisan.
-  4. Contact or Commission Inquiry button.
-- **Quick Edit**: `data-hab-section="member-detail"`, `SectionEditBadge label="Edit Member" studioHref="/admin/members"`.
-- **Database Mapping**: `Member` table & `Product` table (`makerId`).
-- **2-Way Sync Status**: Verified.
+### [PAGE 13/34] `member.html` -> `/members/[slug]` & `/member`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\member.html` (31,776 bytes)
+* **Next.js Routes**: `src/app/(public)/members/[slug]/page.tsx` and `src/app/(public)/member/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Profile Hero*: Portrait photo, artisan name, Dzongkhag, Gewog, Village, Member ID, Verified badge.
+  - *Bio & Lineage*: Multi-paragraph heritage story, master mentors, techniques used.
+  - *Artisan's Products*: Dynamic grid of shop pieces crafted by this artisan.
+  - *Inquiry CTA*: Direct commission inquiry button.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit artisan biography, village, and photo.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 14/34] `membership.html` -> `/membership`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\membership.html` (32,789 bytes)
-- **Next.js Route**: `src/app/(public)/membership/page.tsx`
-- **Page Title**: `Membership Categories · Handicrafts Association of Bhutan`
-- **Header H1**: `Five Ways to Belong (Membership Overview)`
-- **Key Sections**:
-  1. Five Membership Tiers:
-     - Individual Artisan (Active · Nu. 500/year)
-     - Craft Enterprise (Active · Nu. 2,000/year)
-     - Artisan Cluster (Active · Nu. 3,000/year)
-     - Affiliated Member (Nu. 5,000/year)
-     - Honorary Member (By Board resolution · no fee)
-  2. Rights & Privileges Matrix: Voting rights, market access, raw material grants, training eligibility.
-  3. Online Application Wizard link -> `/register`.
-  4. Member Account Login section -> `#login`.
-- **Quick Edit**: `data-hab-section="membership-index"`, `SectionEditBadge label="Membership Studio" studioHref="/admin/applications"`.
-- **Database Mapping**: `SiteSetting.membershipCallouts`, `CustomPage`.
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\membership.html` (32,789 bytes)
+* **Next.js Route**: `src/app/(public)/membership/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Five Ways to Belong`), Eyebrow (`Membership Tiers`), Lede.
+  - *Five Tiers*: Individual Artisan (Nu. 500), Craft Enterprise (Nu. 2,000), Artisan Cluster (Nu. 3,000), Affiliated Member (Nu. 5,000), Honorary Member.
+  - *Rights & Benefits Matrix*: Voting rights, shop consignment, training grants.
+  - *Actions*: Apply link (`/register`), Login link (`/login`).
+  - *Quick Edit*: Section type `membership` in editor.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 15/34] `membership-category.html` -> `/membership/[category]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\membership-category.html` (30,515 bytes)
-- **Next.js Route**: `src/app/(public)/membership/[category]/page.tsx`
-- **Page Title**: `[Category Title] · Membership · HAB`
-- **Header H1**: `[Category Title]`
-- **Key Sections**:
-  1. Eligibility Criteria: Who qualifies under CSO Act rules.
-  2. Rights & Protections: Quotas, representation at AGM, disputes tribunal.
-  3. Annual Dues Schedule & Renewal Rules.
-  4. Direct Apply button -> `/register?tier=[category]`.
-- **Quick Edit**: `data-hab-section="membership-cat"`, `SectionEditBadge label="Membership Tiers" studioHref="/admin/applications"`.
-- **Database Mapping**: `SiteSetting`, `CustomPage`.
-- **2-Way Sync Status**: Verified.
+### [PAGE 15/34] `membership-category.html` -> `/membership/[category]` & `/membership-category`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\membership-category.html` (30,515 bytes)
+* **Next.js Routes**: `src/app/(public)/membership/[category]/page.tsx` and `src/app/(public)/membership-category/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Tier Title, Annual Dues, Criteria.
+  - *Eligibility*: CSO Act qualification requirements.
+  - *Rights & Protections*: Representation, dispute arbitration.
+  - *Action*: `Apply Under This Category →` (`/register?tier=...`).
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit tier criteria and dues.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 16/34] `register.html` -> `/register`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\register.html` (36,149 bytes)
-- **Next.js Route**: `src/app/(public)/register/page.tsx`
-- **Page Title**: `Register as a member · Handicrafts Association of Bhutan`
-- **Header H1**: `Register as a Member (4-Step Application)`
-- **Key Sections**:
-  1. Step 1: Who is applying? (Tier selection, craft selection).
-  2. Step 2: Your details (Full Name, CID, Phone, Dzongkhag, Gewog, Village, Bio).
-  3. Step 3: Check your answers (Review dossier).
-  4. Step 4: Pay your first year's dues & Upload proof:
-     - Payment modes: `Card`, `mBoB` (Phone: `17112233`, Acc: `102938475`), `Bank transfer` (BNBL / BoB accounts).
-     - File uploader for Deposit Slip / Screenshot via `/api/upload`.
-     - Transaction reference input.
-  5. Step 5: Application Received confirmation screen with tracking ID.
-- **Mismatches Resolved**: Uploading deposit slips now binds `proofUrl` and `paymentMethod` to the record and displays them inside the Admin Dossier Inspector with a clickable slip link.
-- **Quick Edit**: `data-hab-section="member-register"`, `SectionEditBadge label="Applications Studio" studioHref="/admin/applications"`.
-- **Database Mapping**: `MembershipApplication` table (`fullName`, `cid`, `craftKey`, `tier`, `paymentMethod`, `paymentRef`, `uploadedDocUrl`, `status`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\register.html` (36,149 bytes)
+* **Next.js Route**: `src/app/(public)/register/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Register as a Member`), Eyebrow (`Artisan Network`), 4-Step wizard.
+  - *Step 1*: Membership tier and craft selection.
+  - *Step 2*: Personal details (Full Name, CID, Phone, Dzongkhag, Gewog, Village, Bio).
+  - *Step 3*: Review dossier.
+  - *Step 4*: Payment of first year's dues:
+    - Selector: `Card`, `mBoB` (Account details provided), `Bank transfer`.
+    - Deposit slip screenshot uploader via `/api/upload`.
+    - Journal / transaction reference input.
+  - *Step 5*: Confirmation screen with application tracking number.
+  - *Quick Edit*: Section type `membership` in editor.
+* **Current Status**: Verified & payment slip workflow fully active.
 
 ---
 
 ### [PAGE 17/34] `wholesale.html` -> `/wholesale`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale.html` (33,663 bytes)
-- **Next.js Route**: `src/app/(public)/wholesale/page.tsx`
-- **Page Title**: `Wholesale & Bulk Orders · Handicrafts Association of Bhutan`
-- **Header H1**: `Wholesale & Bulk Orders`
-- **Key Sections**:
-  1. Trade Buyer Value Proposition: B2B tiered discounts (20–40% off retail), export packaging, official Certificate of Origin.
-  2. Sourcing by Craft: 13 Zorig Chusum categories with MOQ guidelines.
-  3. From Enquiry to Delivery: 6-step ordering flow (Browse, Quantity, Quote basket, HAB review, Quotation, Dispatch).
-  4. Actions: `Apply for Trade Account` (`/wholesale/register`), `Browse Wholesale Catalogue` (`/wholesale/shop`).
-- **Quick Edit**: `data-hab-section="wholesale"`, `SectionEditBadge label="Wholesale & Trade Studio" studioHref="/admin/trade"`.
-- **Database Mapping**: `SiteSetting.wholesaleAssurances`, `CustomPage`.
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale.html` (33,663 bytes)
+* **Next.js Route**: `src/app/(public)/wholesale/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Wholesale & Bulk Orders`), Eyebrow (`Institutional & Trade Buyers`), Lede.
+  - *Value Proposition*: B2B tiered discounts (20–40%), export packaging, Certificate of Origin.
+  - *Sourcing by Craft*: 13 crafts with MOQ guidelines.
+  - *6-Step Ordering Flow*: Browse, Quantity, Quote basket, HAB review, Quotation, Dispatch.
+  - *Actions*: `Apply for Trade Account` (`/wholesale/register`), `Browse Wholesale Catalogue` (`/wholesale/shop`).
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` for wholesale terms, MOQs, and lead time.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
-### [PAGE 18/34] `wholesale-shop.html` -> `/wholesale/shop`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale-shop.html` (33,306 bytes)
-- **Next.js Route**: `src/app/(public)/wholesale/shop/page.tsx`
-- **Page Title**: `HAB Wholesale Catalogue · Handicrafts Association of Bhutan`
-- **Header H1**: `HAB Wholesale Catalogue (Trade Pricing on Approval)`
-- **Key Sections**:
-  1. Trade Pricing Gate: Authenticated wholesale accounts view tier pricing; public visitors see retail reference with "Apply for Trade Account" banner.
-  2. Craft Category filter rail.
-  3. Product Cards with Case Pack Quantity, Minimum Order Quantity (MOQ), and `Add to Quote Basket` button.
-- **Quick Edit**: `data-hab-section="wholesale-shop"`, `SectionEditBadge label="Wholesale Products" studioHref="/admin/products"`.
-- **Database Mapping**: `Product` table (`wholesalePrice`, `moq`, `casePack`).
-- **2-Way Sync Status**: Verified.
+### [PAGE 18/34] `wholesale-shop.html` -> `/wholesale/shop` & `/wholesale-shop`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale-shop.html` (33,306 bytes)
+* **Next.js Routes**: `src/app/(public)/wholesale/shop/page.tsx` and `src/app/(public)/wholesale-shop/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`HAB Wholesale Catalogue`), Eyebrow (`Trade Pricing on Approval`), Gate notice.
+  - *Catalogue*: Craft filters, MOQ badges, Case pack sizes, `Add to Quote Basket` buttons.
+  - *Quick Edit*: Products Studio integration.
+* **Current Status**: Verified on `/wholesale/shop`; wiring `/wholesale-shop`.
 
 ---
 
-### [PAGE 19/34] `wholesale-cart.html` -> `/wholesale/cart`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale-cart.html` (32,927 bytes)
-- **Next.js Route**: `src/app/(public)/wholesale/cart/page.tsx`
-- **Page Title**: `Quote Basket · Wholesale · HAB`
-- **Header H1**: `Your Quote Basket`
-- **Key Sections**:
-  1. Items Table: Item name, SKU, Unit wholesale price, Order quantity (checked against MOQ), Line subtotal.
-  2. Custom Specifications Box: "Anything else the trade desk should know? (Custom dimensions, bespoke colorways, labeling)".
-  3. Submission CTA: `Request Formal Quotation →`.
-- **Quick Edit**: `data-hab-section="wholesale-cart"`, `SectionEditBadge label="Trade Orders Studio" studioHref="/admin/wholesale"`.
-- **Database Mapping**: Local basket synchronized to wholesale inquiry / quote order in database.
-- **2-Way Sync Status**: Verified.
+### [PAGE 19/34] `wholesale-cart.html` -> `/wholesale/cart` & `/wholesale-cart`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale-cart.html` (32,971 bytes)
+* **Next.js Routes**: `src/app/(public)/wholesale/cart/page.tsx` and `src/app/(public)/wholesale-cart/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Wholesale Quote Basket`), MOQ compliance indicator.
+  - *Table*: Case packs, wholesale unit price, quantity increment/decrement, quote subtotal.
+  - *Actions*: `Submit Request for Quotation (RFQ)`.
+  - *Quick Edit*: B2B terms and checkout policy editor.
+* **Current Status**: Verified on `/wholesale/cart`; wiring `/wholesale-cart`.
 
 ---
 
-### [PAGE 20/34] `wholesale-register.html` -> `/wholesale/register`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale-register.html` (37,972 bytes)
-- **Next.js Route**: `src/app/(public)/wholesale/register/page.tsx`
-- **Page Title**: `Register as a Wholesale Buyer · HAB`
-- **Header H1**: `Register as a Wholesale Buyer`
-- **Key Sections**:
-  1. Business Details: Company name, business registration / tax number, business type (Retailer, Distributor, Interior Designer, Hotelier).
-  2. Contact Information: Contact person, official email, phone with country code, full shipping address.
-  3. Purchasing Requirements: Expected annual volume, primary crafts of interest.
-  4. Payment Dues & Deposit Slip: Interactive toggle (`Card`, `mBoB`, `Bank transfer`) and file uploader via `/api/upload`.
-  5. Submission confirmation and tracking.
-- **Mismatches Resolved**:
-  - Payment mode selector, transaction reference, and deposit slip uploader integrated cleanly.
-  - Submissions display inside `/admin/wholesale` with clickable deposit slip preview and Quick Approve (`[✓]`) / Quick Decline (`[✗]`) buttons that dispatch automated emails.
-- **Quick Edit**: `data-hab-section="wholesale-register"`, `SectionEditBadge label="Wholesale Admin Studio" studioHref="/admin/wholesale"`.
-- **Database Mapping**: `WholesaleBuyer` table (`companyName`, `contactName`, `email`, `phone`, `taxId`, `businessType`, `status`, `notesSummary`).
-- **2-Way Sync Status**: Verified.
+### [PAGE 20/34] `wholesale-register.html` -> `/wholesale/register` & `/wholesale-register`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\wholesale-register.html` (37,972 bytes)
+* **Next.js Routes**: `src/app/(public)/wholesale/register/page.tsx` and `src/app/(public)/wholesale-register/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Register as a Wholesale Buyer`), Eyebrow (`Trade Account Application`).
+  - *Business Details*: Company name, business registration / tax number, business type.
+  - *Contact*: Contact person, email, phone with country code, shipping address.
+  - *Volume*: Expected annual volume and crafts of interest.
+  - *Payment / Slip*: Payment mode selector and deposit slip uploader.
+  - *2-Way Review*: Submissions appear in `/admin/wholesale` with clickable deposit slip viewer and Quick Approve/Decline actions.
+  - *Quick Edit*: Section type `wholesale` in editor.
+* **Current Status**: Verified on `/wholesale/register`; wiring `/wholesale-register`.
 
 ---
 
 ### [PAGE 21/34] `programmes.html` -> `/programmes`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\programmes.html` (32,253 bytes)
-- **Next.js Route**: `src/app/(public)/programmes/page.tsx`
-- **Page Title**: `Programmes & Interventions · HAB`
-- **Header H1**: `Eleven Objects, One Mandate (Core Programmes A–K)`
-- **Key Sections**:
-  1. Programme Pillars A to K:
-     - Pillar A: Raw Material Access & Sustainable Sourcing
-     - Pillar B: Master-Apprentice Skills Transmission
-     - Pillar C: Quality Standards & Seal of Authenticity
-     - Pillar D: Design Innovation & Product Diversification
-     - Pillar E: Domestic Market Infrastructure (Punakha & Outlets)
-     - Pillar F: International Trade Fair Participation & E-Shop
-     - Pillar G: Women & Youth Artisan Empowerment
-     - Pillar H: Grassroots Revolving Credit Fund
-     - Pillar I: Intellectual Property & GI Protection
-     - Pillar J: Environmental Sustainability & Natural Dyes
-     - Pillar K: Sector Policy Advocacy & RGoB Dialogue
-  2. Access Programme Guidelines & Download Brief links.
-- **Quick Edit**: `data-hab-section="programmes-index"`, `SectionEditBadge label="Programmes Studio" studioHref="/admin/programmes"`.
-- **Database Mapping**: `ProgramRecord` table (`ref`, `title`, `category`, `description`, `outcomes`, `beneficiaries`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\programmes.html` (32,253 bytes)
+* **Next.js Route**: `src/app/(public)/programmes/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Eleven Objects, One Mandate`), Eyebrow (`Statutory Programmes A–K`), Lede.
+  - *11 Pillars*:
+    - Pillar A: Raw Material Access & Sustainable Sourcing
+    - Pillar B: Master-Apprentice Skills Transmission
+    - Pillar C: Quality Standards & Seal of Authenticity
+    - Pillar D: Design Innovation & Product Diversification
+    - Pillar E: Domestic Market Infrastructure (Punakha & Outlets)
+    - Pillar F: International Trade Fair Participation & E-Shop
+    - Pillar G: Women & Youth Artisan Empowerment
+    - Pillar H: Grassroots Revolving Credit Fund
+    - Pillar I: Intellectual Property & GI Protection
+    - Pillar J: Environmental Sustainability & Natural Dyes
+    - Pillar K: Sector Policy Advocacy & RGoB Dialogue
+  - *Actions*: Links to `/programmes/[ref]`.
+  - *Quick Edit*: Section type `programmes` in editor.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 22/34] `programme.html` -> `/programmes/[ref]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\programme.html` (30,482 bytes)
-- **Next.js Route**: `src/app/(public)/programmes/[ref]/page.tsx`
-- **Page Title**: `[Programme Title] · HAB Programmes`
-- **Header H1**: `[Programme Title]`
-- **Key Sections**:
-  1. Objective & Target Beneficiaries (Number of rural women, master artisans).
-  2. Implementation Methodology across Dzongkhags.
-  3. Partner Organizations involved (e.g. EU SWITCH-Asia, UNDP).
-  4. Application or Participation details.
-- **Quick Edit**: `data-hab-section="programme-detail"`, `SectionEditBadge label="Edit Programme" studioHref="/admin/programmes"`.
-- **Database Mapping**: `ProgramRecord` table.
-- **2-Way Sync Status**: Verified.
+### [PAGE 22/34] `programme.html` -> `/programmes/[ref]` & `/programme`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\programme.html` (30,482 bytes)
+* **Next.js Routes**: `src/app/(public)/programmes/[ref]/page.tsx` and `src/app/(public)/programme/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Programme Pillar Title, Code (e.g. `Pillar B`), Category, Lede.
+  - *Objectives*: Target beneficiaries count (women, youths, master craftspeople).
+  - *Methodology*: Implementation across 20 Dzongkhags.
+  - *Partners*: Supporting organizations (UNDP, EU, RGoB).
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit pillar objectives, beneficiaries, and narrative.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 23/34] `projects.html` -> `/projects`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\projects.html` (31,457 bytes)
-- **Next.js Route**: `src/app/(public)/projects/page.tsx`
-- **Page Title**: `Donor Projects · Handicrafts Association of Bhutan`
-- **Header H1**: `Projects (Donor & Institutional Interventions)`
-- **Key Sections**:
-  1. Filter by Status: `Projects in hand` (Active) and `Completed projects`.
-  2. Project Cards: Title, donor partner logo/name, budget, timeline, Dzongkhags impacted, summary.
-  3. "Partner on a project" contact secretariat callout.
-- **Quick Edit**: `data-hab-section="projects-index"`, `SectionEditBadge label="Projects Studio" studioHref="/admin/projects"`.
-- **Database Mapping**: `ProjectRecord` table (`key`, `title`, `partner`, `status`, `timeline`, `budget`, `summary`, `impact`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\projects.html` (31,457 bytes)
+* **Next.js Route**: `src/app/(public)/projects/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Projects`), Eyebrow (`Donor & Institutional Interventions`), Lede.
+  - *Tabs*: `Projects in hand` (Active) and `Completed projects`.
+  - *Cards*: Project title, funding partner logo/name, budget, timeline, Dzongkhags impacted, summary.
+  - *CTA*: "Partner on a project" contact secretariat callout.
+  - *Quick Edit*: Section type `projects` in editor.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 24/34] `project.html` -> `/projects/[key]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\project.html` (30,272 bytes)
-- **Next.js Route**: `src/app/(public)/projects/[key]/page.tsx`
-- **Page Title**: `[Project Title] · Projects · HAB`
-- **Header H1**: `[Project Title]`
-- **Key Sections**:
-  1. Funding partner, duration, total financial allocation.
-  2. Deliverables achieved & baseline vs endline statistics.
-  3. Photo gallery of field workshops and beneficiary artisans.
-  4. Project report PDF download link.
-- **Quick Edit**: `data-hab-section="project-detail"`, `SectionEditBadge label="Edit Project" studioHref="/admin/projects"`.
-- **Database Mapping**: `ProjectRecord` table.
-- **2-Way Sync Status**: Verified.
+### [PAGE 24/34] `project.html` -> `/projects/[key]` & `/project`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\project.html` (30,272 bytes)
+* **Next.js Routes**: `src/app/(public)/projects/[key]/page.tsx` and `src/app/(public)/project/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Project Title, Funding Partner, Duration, Total budget.
+  - *Deliverables*: Key outcomes, baseline vs endline indicators.
+  - *Gallery*: Field workshop photos and beneficiary artisans.
+  - *Download*: Project completion report PDF link.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit project summary, outcomes, and budget text.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 25/34] `news.html` -> `/news`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\news.html` (31,242 bytes)
-- **Next.js Route**: `src/app/(public)/news/page.tsx`
-- **Page Title**: `News & Events · Handicrafts Association of Bhutan`
-- **Header H1**: `Newsroom & Dispatches`
-- **Key Sections**:
-  1. Featured Article: Headline, publish date, author, hero image, excerpt, `Read article →`.
-  2. Grid of Articles: Press releases, training workshop recaps, market announcements.
-  3. Upcoming Events Calendar snippet.
-  4. Reports & Publications cross-link.
-- **Quick Edit**: `data-hab-section="news-index"`, `SectionEditBadge label="Newsroom Studio" studioHref="/admin/news"`.
-- **Database Mapping**: `NewsPost` table (`slug`, `title`, `date`, `author`, `category`, `excerpt`, `content`, `imageUrl`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\news.html` (31,242 bytes)
+* **Next.js Route**: `src/app/(public)/news/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Newsroom & Dispatches`), Eyebrow (`Official Communications`), Lede.
+  - *Featured Post*: Large headline, date, author, hero photo, excerpt, `Read article →`.
+  - *Articles Grid*: Recent press releases, training workshop recaps, procurement notices.
+  - *Events Snippet*: Upcoming craft fair calendar.
+  - *Quick Edit*: Section type `news` in editor.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 26/34] `news-post.html` -> `/news/[slug]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\news-post.html` (30,444 bytes)
-- **Next.js Route**: `src/app/(public)/news/[slug]/page.tsx`
-- **Page Title**: `[Article Title] · News · HAB`
-- **Header H1**: `[Article Title]`
-- **Key Sections**:
-  1. Publication date, category badge, reading time, author.
-  2. Main Article Body with typography formatting.
-  3. Embedded photography gallery with caption notes.
-  4. Official press release PDF attachment download button.
-  5. Back to newsroom link.
-- **Quick Edit**: `data-hab-section="news-post"`, `SectionEditBadge label="Edit Article" studioHref="/admin/news"`.
-- **Database Mapping**: `NewsPost` table.
-- **2-Way Sync Status**: Verified.
+### [PAGE 26/34] `news-post.html` -> `/news/[slug]` & `/news-post`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\news-post.html` (30,444 bytes)
+* **Next.js Routes**: `src/app/(public)/news/[slug]/page.tsx` and `src/app/(public)/news-post/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Publication date, Category badge, Author, Reading time, Headline.
+  - *Body*: Rich text formatted article paragraphs.
+  - *Media*: Embedded photograph with caption note.
+  - *Attachments*: Official press release PDF download button.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit article headline, body paragraphs, and photo.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 27/34] `events.html` -> `/events`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\events.html` (13,597 bytes)
-- **Next.js Route**: `src/app/(public)/events/page.tsx`
-- **Page Title**: `Events & Exhibitions · Handicrafts Association of Bhutan`
-- **Header H1**: `Upcoming Events & Craft Exhibitions`
-- **Key Sections**:
-  1. Chronological Event Feed: Date, location (e.g. Clock Tower Square, Thimphu / Punakha Mo Chhu).
-  2. Event Type: Exhibition, Craft Fair, Masterclass, Buyer-Seller Meet.
-  3. RSVP / Attendance instructions.
-- **Quick Edit**: `data-hab-section="events-index"`, `SectionEditBadge label="Events Studio" studioHref="/admin/events"`.
-- **Database Mapping**: `EventRecord` table (`key`, `title`, `date`, `location`, `description`, `isFeatured`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\events.html` (13,597 bytes)
+* **Next.js Route**: `src/app/(public)/events/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Upcoming Events & Craft Exhibitions`), Eyebrow (`Community Gatherings`), Lede.
+  - *Feed*: Date badge, event title, venue (Clock Tower Square / Punakha Mo Chhu), event type.
+  - *Action*: RSVP / Visitor information button.
+  - *Quick Edit*: Section type `events` in editor.
+* **Current Status**: Verified.
 
 ---
 
-### [PAGE 28/34] `event.html` -> `/events/[key]`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\event.html` (30,448 bytes)
-- **Next.js Route**: `src/app/(public)/events/[key]/page.tsx`
-- **Page Title**: `[Event Title] · Events · HAB`
-- **Header H1**: `[Event Title]`
-- **Key Sections**:
-  1. Date, time, venue map, entry conditions.
-  2. Schedule of activities and participating master artisans.
-  3. Add to Calendar button.
-- **Quick Edit**: `data-hab-section="event-detail"`, `SectionEditBadge label="Edit Event" studioHref="/admin/events"`.
-- **Database Mapping**: `EventRecord` table.
-- **2-Way Sync Status**: Verified.
+### [PAGE 28/34] `event.html` -> `/events/[key]` & `/event`
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\event.html` (30,227 bytes)
+* **Next.js Routes**: `src/app/(public)/events/[key]/page.tsx` and `src/app/(public)/event/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Event Title, Date, Timing, Venue, Organizer.
+  - *Schedule*: Timetable of demonstrations, exhibitions, and artisan booths.
+  - *Participation*: How member artisans can book a stall.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit event description, venue, and timing.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
 ### [PAGE 29/34] `publications.html` -> `/publications`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\publications.html` (32,950 bytes)
-- **Next.js Route**: `src/app/(public)/publications/page.tsx`
-- **Page Title**: `Publications & Reports · Handicrafts Association of Bhutan`
-- **Header H1**: `Publications & Statutory Reports`
-- **Key Sections**:
-  1. Filters by Category: All, Annual Reports, Research Studies, Audited Financials, Zorig Chusum Documentation.
-  2. Publication Cards: Cover artwork, document title, publication year, file size, page count, `Download PDF` button.
-  3. "Looking for something not listed here?" contact inquiry button.
-- **Quick Edit**: `data-hab-section="publications-index"`, `SectionEditBadge label="Publications Studio" studioHref="/admin/publications"`.
-- **Database Mapping**: `PublicationRecord` table (`title`, `category`, `year`, `fileSize`, `fileUrl`, `coverUrl`, `summary`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\publications.html` (32,233 bytes)
+* **Next.js Route**: `src/app/(public)/publications/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Reports, Studies & Downloads`), Eyebrow (`Statutory Transparency`), Lede.
+  - *Sections*:
+    1. Annual Reports (2020–2025).
+    2. Statutory Audited Financial Accounts.
+    3. Sector Research Studies & Zorig Chusum Documentation.
+    4. Procurement Tenders & Terms of Reference.
+  - *Actions*: Direct PDF download buttons and in-browser DocumentEmbedViewer.
+  - *Quick Edit*: Section type `publications` in editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 30/34] `donate.html` -> `/donate`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\donate.html` (33,568 bytes)
-- **Next.js Route**: `src/app/(public)/donate/page.tsx`
-- **Page Title**: `Support Bhutanese Craft · Handicrafts Association of Bhutan`
-- **Header H1**: `Support Bhutanese Artisans & Cultural Conservation`
-- **Key Sections**:
-  1. CSO & Public Benefit Organization (PBO) Certification credentials.
-  2. Three Giving Pillars:
-     - Pillar 1: Grassroots Artisan Revolving Fund
-     - Pillar 2: Living Treasures Apprentice Scholarships
-     - Pillar 3: Endangered Craft Technique Preservation
-  3. Payment Methods: Card, mBoB (Direct mobile payment), Wire transfer (BNBL / BoB accounts with SWIFT codes).
-  4. Tax exemption receipt request form.
-- **Quick Edit**: `data-hab-section="donate-section"`, `SectionEditBadge label="Donations Studio" studioHref="/admin/settings"`.
-- **Database Mapping**: `SiteSetting`, `CustomPage`.
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\donate.html` (32,960 bytes)
+* **Next.js Route**: `src/app/(public)/donate/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Support Bhutanese Artisans`), Eyebrow (`Philanthropic Giving`), Lede.
+  - *Four Support Pillars*:
+    1. Grassroots Revolving Fund
+    2. Impact Crowdfunding & Enterprise
+    3. Vital Cultural Preservation
+    4. Environmental & Landscape Conservation
+  - *Donation Form*: Amount presets ($25, $50, $100, $250, Custom), Currency toggle, Card / mBoB selector.
+  - *Tax Exemption*: CSO Act 2007 tax-deductible receipt notice.
+  - *Quick Edit*: Section type `donate` in editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 31/34] `contact.html` -> `/contact`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\contact.html` (36,676 bytes)
-- **Next.js Route**: `src/app/(public)/contact/page.tsx`
-- **Page Title**: `Contact Secretariat · Handicrafts Association of Bhutan`
-- **Header H1**: `Contact the Secretariat`
-- **Key Sections**:
-  1. Physical Location: Metog Lam, Post Box 1435, Thimphu, Kingdom of Bhutan.
-  2. Telephone Directory:
-     - Office Main Line: `+975-2-338089`
-     - Executive Secretary Desk: `+975-2-338089`
-     - Official Email: `officehab@gmail.com`
-  3. Interactive Inquiry Form: Full Name, Email, Phone, Subject, Inquiry Type (General, Wholesale, Membership, Media), Message, `Send Message` button.
-  4. Secretariat Staff Office Hours: Monday to Friday, 09:00 to 17:00 BST.
-- **Quick Edit**: `data-hab-section="contact-section"`, `SectionEditBadge label="Contact Settings" studioHref="/admin/settings"`.
-- **Database Mapping**: `SiteSetting`, incoming messages stored in administrative notification queue.
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\contact.html` (32,492 bytes)
+* **Next.js Route**: `src/app/(public)/contact/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Contact the Secretariat`), Eyebrow (`Inquiries & Support`), Lede.
+  - *Secretariat Dossier*: Address (`Metog Lam, Thimphu`), Phone (`+975-2-338089`), Email (`officehab@gmail.com`), Hours (`Monday–Friday 09:00–17:00`).
+  - *Department Contacts*: Executive Director Desk, Marketing Desk, Membership Desk.
+  - *Inquiry Form*: Name, Email, Topic (General, Membership, Wholesale, Commission, Press), Message.
+  - *Quick Edit*: Section type `contact` in editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 32/34] `privacy.html` -> `/privacy`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\privacy.html` (35,223 bytes)
-- **Next.js Route**: `src/app/(public)/privacy/page.tsx`
-- **Page Title**: `Privacy Policy · Handicrafts Association of Bhutan`
-- **Header H1**: `Privacy Policy`
-- **Key Sections**:
-  1. CSO Act of Bhutan 2007 data protection standards.
-  2. What we collect (Visitor analytics, member registration CID, buyer addresses).
-  3. Why we hold it & retention schedules.
-  4. Member directory public disclosure consent terms.
-  5. Payment card and mBoB data handling (no unencrypted card data stored).
-  6. Cookies, local storage, and opt-out rights.
-- **Quick Edit**: `data-hab-section="privacy-policy"`, `SectionEditBadge label="Policies Studio" studioHref="/admin/policies"`.
-- **Database Mapping**: `PolicyPage` table (`slug: "privacy"`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\privacy.html` (31,438 bytes)
+* **Next.js Route**: `src/app/(public)/privacy/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Privacy Policy & Data Protection`), Statutory reference (CSO Act 2007).
+  - *Clauses*: Data collection, artisan personal records, payment transaction security, third-party sharing, cookies.
+  - *Actions*: Interactive statutory drawer and policy modal.
+  - *Quick Edit*: Section type `policies` in editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 33/34] `terms.html` -> `/terms`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\terms.html` (36,331 bytes)
-- **Next.js Route**: `src/app/(public)/terms/page.tsx`
-- **Page Title**: `Terms of Service · Handicrafts Association of Bhutan`
-- **Header H1**: `Terms of Service`
-- **Key Sections**:
-  1. Institutional Status: Registered CSO under CSO Act of Bhutan 2007, established 2005.
-  2. Website Usage Rules & Acceptable Use.
-  3. Member Accounts & Directory Code of Conduct.
-  4. Order Formation, Pricing, and Payments (USD $ and Nu. BTN).
-  5. Authenticity Guarantee & Artisan Intellectual Property Rights.
-  6. Governing Law: Kingdom of Bhutan jurisdiction and dispute resolution.
-- **Quick Edit**: `data-hab-section="terms-policy"`, `SectionEditBadge label="Policies Studio" studioHref="/admin/policies"`.
-- **Database Mapping**: `PolicyPage` table (`slug: "terms"`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\terms.html` (31,529 bytes)
+* **Next.js Route**: `src/app/(public)/terms/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Terms of Service & Articles of Association`), CSO Act registration.
+  - *Clauses*: E-shop terms, wholesale conditions, artisan consignment rules, dispute resolution under Royal Court of Justice, Bhutan.
+  - *Quick Edit*: Section type `policies` in editor.
+* **Current Status**: Verified.
 
 ---
 
 ### [PAGE 34/34] `shipping-policy.html` -> `/shipping-policy`
-- **Local Static File**: `E:\Downloads\Final_webdesign\hab-site\shipping-policy.html` (37,224 bytes)
-- **Next.js Route**: `src/app/(public)/shipping-policy/page.tsx` & `/shipping`
-- **Page Title**: `Shipping & Delivery Policy · HAB`
-- **Header H1**: `Shipping & Delivery Policy`
-- **Key Sections**:
-  1. Packaging & Dispatch: Quality inspection at Thimphu secretariat before sealing.
-  2. Methods & Delivery Times: Bhutan Post EMS worldwide express with tracking (7–14 business days).
-  3. Shipping Rates & Weight Tiers.
-  4. Free EMS Conditions on qualifying orders.
-  5. Commercial Invoices, HS Codes & Customs Declarations.
-  6. Damage, Loss & Claims Procedure.
-- **Quick Edit**: `data-hab-section="shipping-policy"`, `SectionEditBadge label="Policies Studio" studioHref="/admin/policies"`.
-- **Database Mapping**: `PolicyPage` table (`slug: "shipping"`).
-- **2-Way Sync Status**: Verified.
+* **Static File**: `E:\Downloads\Final_webdesign\hab-site\shipping-policy.html` (31,702 bytes)
+* **Next.js Route**: `src/app/(public)/shipping-policy/page.tsx`
+* **Real Elements & Quick Edit Inventory**:
+  - *Header*: Title (`Shipping & Delivery Policy`), Eyebrow (`International Dispatch`), Lede.
+  - *Clauses*: Bhutan Post EMS transit times (7–14 days), DHL Express option, packaging standards, tracking numbers, customs declarations.
+  - *Quick Edit Requirements*:
+    - Mount `SectionEditBadge` to edit shipping thresholds and transit timelines.
+* **Current Status**: Missing Quick Edit badge; wiring in progress.
 
 ---
 
-### [SPECIALIZED SUB-PAGES] 10 Additional Governance & Statutory Pages (Preserved)
-All 10 specialized sub-pages added to the platform are fully active with zero 404s, dynamic database integration, and Quick Edit badges:
-1. [**`/returns-policy`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/returns-policy/page.tsx): 14-day return window, handcrafted natural variations clause, return shipping, and refund process.
-2. [**`/customs-policy`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/customs-policy/page.tsx): Bhutan customs clearance, Certificate of Origin, import duties, and HS tariff classifications.
-3. [**`/board-of-trustees`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/board-of-trustees/page.tsx): Profiles of governing trustees, oversight committees, election cycle, and meeting minutes.
-4. [**`/secretariat`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/secretariat/page.tsx): Operational organ directory, department contacts, and executive secretary desk.
-5. [**`/annual-reports`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/annual-reports/page.tsx): Complete repository of annual activity reviews (2018–2026) with direct PDF downloads.
-6. [**`/audited-accounts`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/audited-accounts/page.tsx): External statutory audit statements, financial balances, and independent auditor opinions.
-7. [**`/tenders`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/tenders/page.tsx): Active RFP procurement notices, submission deadlines, bid criteria, and tender forms.
-8. [**`/code-of-ethics`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/code-of-ethics/page.tsx): Fair wage guarantees, anti-exploitation safeguards, cultural integrity, and artisan protection rules.
-9. [**`/mandate`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/mandate/page.tsx): Institutional charter under the CSO Act 2007, constitutional mandate, and Articles of Association.
-10. [**`/strategic-plan`**](file:///E:/ai/bhutanprojects/newbend/src/app/%28public%29/strategic-plan/page.tsx): Strategic development plan (2025–2030), market targets, and skills transmission objectives.
+### [SPECIALIZED GOVERNANCE SUB-PAGES (PRESERVED)]
+In addition to the 34 HTML files, the 10 statutory governance pages linked in the master footer are fully preserved with zero 404s:
+1. `/board-of-trustees`: Governing board profiles, oversight mandate, election rules.
+2. `/secretariat`: Staff directory, department desks, office location map.
+3. `/annual-reports`: Statutory annual reports catalog (2020–2025) with verified PDFs.
+4. `/audited-accounts`: External statutory financial audits and balance sheets.
+5. `/tenders`: Procurement RFPs, machinery tenders, and terms of reference.
+6. `/customs-policy`: International customs, import tariffs, and Certificate of Origin guidelines.
+7. `/returns-policy`: 14-day collector guarantee, transit damage replacements, and refunds.
+8. `/code-of-ethics`: Fair dealing, child labour prohibition, fair artisan wages code.
+9. `/mandate`: CSO Act 2007 apex mandate, legal objects, and powers.
+10. `/strategic-plan`: 2025–2030 strategic plan pillars, targets, and milestones.
 
 ---
 
-## 3. Complete Broken Image Resolution & High-Resolution Asset Catalog
-
-Every single image across the platform has been audited. All broken images, placeholder boxes, and missing paths have been eliminated and replaced with verified authentic photography.
-
-| Image Identifier / Asset Path | Resolution / Sharp Spec | Location / Section Used | Description / Verification Status |
-|---|---|---|---|
-| `/assets/hab-logo.png` | 3412 x 1296 (Sharp WebP) | Header & Navigation | Official national logo lockup of the Handicrafts Association of Bhutan |
-| `/assets/hab-logo-footer.png` | 3412 x 1296 (Sharp WebP) | Footer Signoff Brand Row | High-res transparent footer logo with Dzongkha script |
-| `/assets/photos/hero-1-weaving.jpg` | 1920 x 1080 (Sharp 4K/WebP) | Hero Slide 1 & Thagzo | Master backstrap weaver in Khoma, Lhuentse weaving Kishuthara |
-| `/assets/photos/hero-2-punakha.jpg` | 1920 x 1080 (Sharp 4K/WebP) | Hero Slide 2 & Outlets | Punakha Crafts Market stalls beside the Mo Chhu river |
-| `/assets/photos/hero-3-clay.jpg` | 1920 x 1080 (Sharp 4K/WebP) | Hero Slide 3 & Jinzo | Master sculptor modeling traditional clay statue over timber armature |
-| `/assets/photos/hero-4-textiles.jpg` | 1920 x 1080 (Sharp 4K/WebP) | Hero Slide 4 & Textiles | Traditional handspun textile demonstration and natural dye workshop |
-| `/assets/photos/hero-5-desho.jpg` | 1920 x 1080 (Sharp 4K/WebP) | Hero Slide 5 & Dezo | Handmade Desho paper drying in wooden frames at Jungshi workshop |
-| `/assets/photos/about-hab.jpg` | 1200 x 800 (Sharp WebP) | About Us Band | Capacity building and training workshop with artisan cluster leaders |
-| `/public/images/products/lha01.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `LHA01` Mineral-painted Thangka Scroll by Sonam Thangka Studio |
-| `/public/images/products/sad03.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `SAD03` Yathra Saddle Bag by Chumey Yathra House |
-| `/public/images/products/tro04.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `TRO04` Hand-chased Silver Brooch (Koma) by Zorig Silversmiths |
-| `/public/images/products/ftb04.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `FTB04` Bangchung Fruit Basket by Kheng Bamboo Collective |
-| `/public/images/products/dap02.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `DAP02` Lacquered Burl Bowl (Dapa) by Yangtse Turning Works |
-| `/public/images/products/mas01.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `MAS01` Carved Ritual Mask by Kelzang Dorji Woodworks |
-| `/public/images/products/dez01.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `DEZ01` Desho Handcrafted Paper Set by Jungshi Paper Works |
-| `/public/images/products/cus02.jpg` | 800 x 800 (Sharp WebP) | Shop / Latest Arrivals | `CUS02` Appliqué Cushion Cover by Norzin Tailoring |
-| `/public/images/products/par06.jpg` | 800 x 800 (Sharp WebP) | Parzo / Latest Arrivals | `PAR06` Carved Slate Relief Plaque (Replaced broken image) |
-| `/public/images/products/tsh11.jpg` | 800 x 800 (Sharp WebP) | Tshazo / Latest Arrivals | `TSH11` Handwoven Bamboo & Cane Floor Mat |
-| `/public/images/products/gaki.jpg` | 800 x 800 (Sharp WebP) | Shingzo / Latest Arrivals | `GAKI` Traditional Ritual Drum (Chod) Hand-carved |
-| `/public/images/products/tro09.jpg` | 800 x 800 (Sharp WebP) | Troezo / Latest Arrivals | `TRO09` Chased Silver Butter Lamp (Karmi) |
-| `/public/images/products/dez07.jpg` | 800 x 800 (Sharp WebP) | Dezo / Latest Arrivals | `DEZ07` Calligraphy Journal bound in Desho paper |
-| `/public/images/products/kis02.jpg` | 800 x 800 (Sharp WebP) | Thagzo / Latest Arrivals | `KIS02` Kishuthara Silk Table Runner |
-| `/public/images/crafts/[craft].jpg` | 600 x 400 (Sharp WebP) | 13 Crafts Grid & Menus | Canonical photography for each of the 13 Zorig Chusum crafts |
-| `/public/images/programs/trade.jpg` | 800 x 500 (Sharp WebP) | Programmes Showcase | Trade and market access training programme |
-| `/public/images/programs/dye.jpg` | 800 x 500 (Sharp WebP) | Programmes Showcase | Natural plant-based dyeing training in Mongar |
-
----
-
-## 4. Complete Database Schema Architecture
-
-The platform's data layer is implemented in Prisma ORM with PostgreSQL. All public text, images, products, members, and site settings are dynamically managed and persisted.
-
-```prisma
-// High-Level Data Model Architecture
-
-model SiteSetting {
-  id                      String    @id @default("singleton")
-  tagline                 String    @default("Authentic Bhutanese Crafts Direct from Artisans")
-  heroParagraph           String    // Mission & Intro narrative
-  heroCtaPrimaryText      String    @default("Explore Catalog")
-  heroCtaPrimaryLink      String    @default("/shop")
-  heroCtaSecondaryText    String    @default("Our Mission & Mandate")
-  heroCtaSecondaryLink    String    @default("/about")
-  isAnnouncementOn        Boolean   @default(true)
-  announcementText        String
-  announcementLink        String?
-  // Dynamic Homepage Shop Section & Assurances stored in JSON
-  trustBadges             Json      // Stores shopEyebrow, shopHeading, shopLede, shopCtaText, shopCtaLink
-  stats                   Json      // Stores 4 impact numbers and labels
-  partnersList            Json      // Stores development partner names, logos, URLs
-  homepageSectionOrder    Json      // Dynamic sequence of all 15 homepage blocks
-  updatedAt               DateTime  @updatedAt
-}
-
-model HeroSlide {
-  id          String   @id @default(cuid())
-  imageUrl    String   // High-res photo URL
-  caption     String   // Slide title
-  altText     String
-  linkUrl     String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Product {
-  id          String       @id @default(cuid())
-  code        String       @unique // e.g. LUD01, PAR06
-  name        String
-  description String
-  price       Float        // Price in Nu.
-  priceUSD    Float        // Price in USD $
-  stock       Int          @default(1)
-  status      String       @default("PUBLISHED") // DRAFT, PUBLISHED, ARCHIVED
-  craftKey    String
-  craft       Craft        @relation(fields: [craftKey], references: [key])
-  makerId     String?
-  maker       Artisan?     @relation(fields: [makerId], references: [id])
-  images      Json         // Array of { url, alt, isPrimary }
-  dimensions  String?
-  weight      String?
-  materials   String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
-model Craft {
-  key              String    @id // e.g. shingzo, parzo
-  name             String    // Dzongkha/Canonical name
-  english          String    // English translation
-  sortOrder        Int       @default(0)
-  description      String
-  history          String
-  longDescription  String
-  technique        String
-  materials        String
-  practisedIn      String
-  typicalProducts  String
-  shopNote         String?
-  products         Product[]
-}
-
-model Artisan {
-  id          String    @id @default(cuid())
-  name        String
-  bio         String
-  craftKey    String
-  dzongkhag   String
-  isMaster    Boolean   @default(false)
-  awards      String?
-  imageUrl    String?
-  products    Product[]
-}
-
-model Member {
-  id          String    @id @default(cuid())
-  artisanId   String    @unique // e.g. HAB-THI-042
-  fullName    String
-  cid         String    @unique
-  phone       String?
-  email       String?
-  dzongkhag   String
-  gewog       String?
-  craftKey    String
-  tier        String    @default("INDIVIDUAL")
-  status      String    @default("ACTIVE")
-  bio         String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model MembershipApplication {
-  id              String    @id @default(cuid())
-  fullName        String
-  cid             String
-  phone           String
-  email           String?
-  dzongkhag       String
-  gewog           String?
-  village         String?
-  craftKey        String
-  tier            String    // INDIVIDUAL, ENTERPRISE, CLUSTER, AFFILIATE
-  paymentMethod   String    // CARD, MBOB, BANK
-  paymentRef      String?   // Transaction number
-  uploadedDocUrl  String?   // Uploaded deposit slip / license
-  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  reviewerNotes   String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model WholesaleBuyer {
-  id              String    @id @default(cuid())
-  companyName     String
-  contactName     String
-  email           String    @unique
-  phone           String
-  country         String
-  city            String?
-  taxId           String?
-  businessType    String
-  annualVolume    String?
-  paymentMethod   String?
-  paymentRef      String?
-  proofUrl        String?   // Uploaded deposit slip
-  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  notesSummary    String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model OutletRecord {
-  key             String    @id // e.g. punakha-market, thimphu-outlet
-  type            String    // MARKET, OUTLET, COUNTER
-  name            String
-  place           String
-  hours           String
-  stalls          String?
-  craftsOnSite    String?
-  payment         String?
-  gettingThere    String?
-  facilities      String?
-  note            String?
-  description     String?
-  longDescription String?
-  sortOrder       Int       @default(0)
-  isFeatured      Boolean   @default(false)
-}
-
-model ClusterRecord {
-  key             String    @id // e.g. khoma, kheng, trashiyangtse
-  name            String
-  craftKey        String
-  dzongkhag       String
-  members         Int
-  established     String
-  summary         String
-  story           String
-  visitorNote     String?
-  sortOrder       Int       @default(0)
-  isFeatured      Boolean   @default(false)
-}
-
-model ProgramRecord {
-  ref             String    @id // e.g. A, B, C... K
-  title           String
-  category        String
-  description     String
-  outcomes        String?
-  beneficiaries   String?
-}
-
-model ProjectRecord {
-  key             String    @id
-  title           String
-  partner         String
-  status          String    @default("ACTIVE") // ACTIVE, COMPLETED
-  timeline        String
-  budget          String?
-  summary         String
-  impact          String?
-}
-
-model NewsPost {
-  id              String    @id @default(cuid())
-  slug            String    @unique
-  title           String
-  date            String
-  author          String?
-  category        String?
-  excerpt         String
-  content         String
-  imageUrl        String?
-  published       Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-}
-
-model EventRecord {
-  key             String    @id
-  title           String
-  date            String
-  location        String
-  description     String
-  isFeatured      Boolean   @default(false)
-}
-
-model PublicationRecord {
-  id              String    @id @default(cuid())
-  title           String
-  category        String
-  year            String
-  fileSize        String
-  fileUrl         String
-  coverUrl        String?
-  summary         String
-}
-
-model CustomPage {
-  id              String    @id @default(cuid())
-  slug            String    @unique
-  title           String
-  category        String
-  content         String
-  excerpt         String?
-  bannerUrl       String?
-  isPublished     Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model PolicyPage {
-  id              String    @id @default(cuid())
-  slug            String    @unique // shipping, privacy, terms, returns, customs
-  title           String
-  content         String
-  updatedAt       DateTime  @updatedAt
-}
-
-model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  action      String   // APPROVE, DECLINE, BULK_IMPORT, UPDATE, DELETE
-  entityType  String   // WHOLESALER, MEMBER, PRODUCT, SETTING
-  entityId    String
-  details     Json?
-  timestamp   DateTime @default(now())
-}
-```
-
----
-
-## 5. Complete 2-Way Synchronization Verification Matrix
-
-Every public-to-admin and admin-to-public flow has been implemented and tested via `scripts/verify-2way-sync.mjs`.
+## 4. Master 5-Column Footer Specification
 
 ```
 ========================================================================================
-2-WAY SYNCHRONIZATION FLOW SPECIFICATION
-========================================================================================
-
-FLOW 1: Public Wholesale Registration -> Admin Review & Instant Notification
-1. Public User accesses /wholesale/register.
-2. User enters company profile, tax number, and selects payment mode (Card, mBoB, Bank transfer).
-3. User uploads payment receipt or business registration document via /api/upload.
-4. Form submits payload containing uploaded file URL to /api/wholesale/register.
-5. API creates WholesaleBuyer record (in PostgreSQL and fallback store) with status="PENDING".
-6. Admin navigates to /admin/wholesale. The pending applicant appears in the table.
-7. Admin clicks Applicant Inspector [Eye icon]: modal displays company profile and clickable deposit slip.
-8. Admin clicks Quick Approve [✓]:
-   - Triggers /api/admin/wholesale/action with action="APPROVE".
-   - Atomically updates status to "APPROVED".
-   - Dispatches automated welcome and trade approval email via sendEmail.
-   - Logs tamper-evident AuditLog entry.
-9. Alternatively, Admin clicks Quick Decline [✗]:
-   - Atomically updates status to "REJECTED".
-   - Dispatches decline notification email with reason.
-   - Logs AuditLog entry.
-
-FLOW 2: Public Member Registration -> Admin Application Dossier & Enrolment
-1. Public Artisan accesses /register (4-step onboarding wizard).
-2. Step 1: Selects membership tier (Individual, Enterprise, Cluster, Affiliate).
-3. Step 2: Enters Full Name, CID number, Dzongkhag, Gewog, Village, Craft specialty.
-4. Step 3: Reviews all answers.
-5. Step 4: Selects payment method (Card, mBoB, Bank transfer), enters transaction ref, and uploads slip.
-6. API route /api/applications stores record with status="PENDING" and binds uploadedDocUrl.
-7. Admin opens /admin/applications: application dossier displays payment badge (CARD, MBOB, BANK).
-8. Admin inspects uploaded deposit slip via direct clickable link.
-9. Admin clicks Approve: application status updates to APPROVED and record is enrolled into Master Member Directory.
-
-FLOW 3: Admin Homepage Studio -> Public Homepage ("New in the Shop")
-1. Admin navigates to /admin/pages/home and selects Tab 4: "New in the Shop (Arrivals)".
-2. Admin edits shopEyebrow, shopHeading, shopLede, shopCtaText, or shopCtaLink.
-3. Admin clicks "Save Shop Section Settings".
-4. Settings are stored via PUT /api/admin/site-settings inside the trustBadges JSON column.
-5. In-memory revalidation fires and notifies public listeners.
-6. Public homepage / immediately renders the new eyebrow, heading, lede narrative, and CTA button.
-
-FLOW 4: Admin Products Studio -> Public Catalog & Safe Price Formatting
-1. Admin navigates to /admin/products.
-2. Admin creates a new product with auto-generated SKU (e.g. THA-2026-0891), uploads high-res photo, sets Nu. price.
-3. Product is persisted via POST /api/admin/products.
-4. Public e-shop (/shop) and craft detail page (/craft/[craft]) immediately list the new product.
-5. Safe price parsing (p.price_usd ?? p.price ?? p.priceUSD ?? 0) guarantees zero Nu. NaN display errors.
-========================================================================================
-```
-
----
-
-## 6. Excel / CSV Bulk Data Exchange System Specification
-
-### Engine: `src/lib/spreadsheet.ts`
-1. **RFC-4180 CSV Compliant Parser**:
-   - Handles multi-line quoted fields, embedded quotation marks (`""`), commas within text, and Windows (`\r\n`) vs Unix (`\n`) newlines.
-2. **UTF-8 BOM Header (`\uFEFF`)**:
-   - Microsoft Excel on Windows defaults to legacy ANSI code pages unless a UTF-8 Byte Order Mark is present.
-   - Every CSV exported from HAB Admin prepends `\uFEFF`, guaranteeing that Dzongkha script (`འབྲུག་གི་ལག་བཟོ`) renders crisply without corrupted symbols.
-3. **Wholesaler Bulk Exchange (`/admin/wholesale`)**:
-   - **Download Template**: Generates verified header row with sample Bhutanese trade buyer data.
-   - **Validation Engine**: Requires `Company Name`, `Contact Person`, and valid `Email`. Validates tax registration formats.
-   - **Live Pre-Import Preview**: Analyzes file before writing to DB. Shows count of valid rows, count of duplicate rows, and reports bad rows with line numbers and exact failure reasons.
-   - **Duplicate Protection**: Detects existing companies by tax ID and email. Re-importing identical files does not create duplicate entries.
-4. **Member Bulk Exchange (`/admin/members`)**:
-   - **Download Template**: Generates header row for artisan name, CID, Dzongkhag, Gewog, Village, craft specialty, tier, and status.
-   - **Validation Engine**: Requires 11-digit Bhutanese CID number, valid Dzongkhag, and craft category.
-   - **Live Pre-Import Preview**: Confirms valid artisans and flags invalid rows.
-
----
-
-## 7. Announcement Bar Notice Numbers Removal
-
-- **User Mandate**: "REMOVE THE ANNOUNCEMENT BAR notice numbers only the 1 2 3 4 showing all othere fuc working ok".
-- **Implementation in `src/components/public/UtilityBar.tsx`**:
-  - The counter numbers (`1/4`, `2/4`, etc.) have been completely removed from the header notice bar.
-  - The ticker arrows (`‹`, `›`) and automatic message rotation (cycling through official announcements) are fully preserved.
-  - The announcement text and destination link remain 100% controllable from Homepage Studio Tab 2 ("Top Announcement Bar").
-
----
-
-## 8. Footer Architecture: 100% Matched to `index.html` (Lines 600–677)
-
-The footer architecture has been inspected line-by-line and matches `index.html` across all 5 columns, addresses, contacts, and 5 social media channels:
-
-```
-========================================================================================
-HAB FOOTER ARCHITECTURE (Matched to index.html lines 600–677 & Enhanced)
-========================================================================================
-
-[SIGNOFF BRAND ROW]
-├── Logo: /assets/hab-logo-footer.png (Width: 3412, Height: 1296) -> Links to /
-├── Title: Handicrafts Association of Bhutan (འབྲུག་གི་ལག་བཟོ་ཚོགས་པ)
-├── Mandate: A registered Civil Society Organization under the CSO Act of Bhutan 2007. Established 2005.
-└── 5 Social Media Channels (Admin Configurable in Site Settings):
+[SIGNOFF HEADER]
+├── Logo:           assets/hab-logo-footer.png (3412 x 1296)
+├── Title:          Handicrafts Association of Bhutan (འབྲུག་གི་ལག་བཟོ་ཚོགས་པ)
+├── Mission:        A registered Civil Society Organization under the CSO Act of Bhutan 2007. Established 2005.
+└── Social Icons:
     ├── Facebook:  https://www.facebook.com/
     ├── Instagram: https://www.instagram.com/
     ├── X:         https://x.com/
     ├── YouTube:   https://www.youtube.com/
     └── TikTok:    https://www.tiktok.com/
 
-[FOOTER INNER 5-COLUMN GRID]
-
-Column 0: Secretariat (Brand & Direct Contact)
-├── Title: Secretariat (དྲུང་ཆེའི་ཡིག་ཚང)
+[FOOTER 5-COLUMN INNER GRID]
+Column 0: Secretariat (དྲུང་ཆེའི་ཡིག་ཚང)
 ├── Address: Metog Lam, Thimphu, Bhutan
 ├── Main Phone: Office +975-2-338089
 ├── Official Email: officehab@gmail.com
 └── Executive Secretary Desk: +975-2-338089 (tel:+9752338089)
 
 Column 1: Association (ཚོགས་པ)
-├── 1. About HAB           -> /about        (CSO mandate, history, leadership, governance)
-├── 2. Programmes          -> /programmes   (Eleven core programme pillars A–K)
-├── 3. Projects            -> /projects     (Donor & partner funded initiatives across 20 Dzongkhags)
-├── 4. Membership          -> /membership   (Membership overview, criteria, tiers)
-├── 5. News & events       -> /news         (Press releases, announcements, events)
-└── 6. Contact us          -> /contact      (Office location, contact directory, inquiry form)
+├── 1. About HAB           -> /about
+├── 2. Programmes          -> /programmes
+├── 3. Projects            -> /projects
+├── 4. Membership          -> /membership
+├── 5. News & events       -> /news
+└── 6. Contact us          -> /contact
 
 Column 2: Shop & support (ཚོང་ཁང་དང་རྒྱབ་སྐྱོར)
-├── 1. E-shop              -> /shop              (Full artisan piece retail catalogue)
-├── 2. Wholesale & bulk    -> /wholesale         (B2B trade terms, bulk tiers, export orders)
-├── 3. Shipping & delivery -> /shipping-policy   (Bhutan Post EMS, packaging, delivery times)
-├── 4. Returns             -> /returns-policy    (Return, exchange, and refund conditions)
-├── 5. Track your order    -> /track-order       (Real-time EMS order status lookup)
-└── 6. Duty & customs      -> /customs-policy    (Commercial invoices, customs, import tariffs)
+├── 1. E-shop              -> /shop
+├── 2. Wholesale & bulk    -> /wholesale
+├── 3. Shipping & delivery -> /shipping-policy
+├── 4. Returns             -> /returns-policy
+├── 5. Track your order    -> /track-order
+└── 6. Duty & customs      -> /customs-policy
 
 Column 3: Members (འཐུས་མི)
-├── 1. Directory by cat.   -> /members           (Searchable directory of 7,500+ certified artisans)
-├── 2. Publications        -> /publications      (Reports, research papers, Zorig Chusum guides)
-├── 3. Member shops/clust. -> /outlets           (Physical markets, Punakha, clusters)
-├── 4. Member login        -> /login             (Member & user authentication portal)
-└── 5. Apply to join       -> /register          (4-step member registration with payment slip upload)
+├── 1. Directory by cat.   -> /members
+├── 2. Publications        -> /publications
+├── 3. Member shops/clust. -> /outlets
+├── 4. Member login        -> /login
+└── 5. Apply to join       -> /register
 
 Column 4: Governance (འཛིན་སྐྱོང)
-├── 1. Board of Trustees   -> /board-of-trustees (Governing board members, trustees, oversight)
-├── 2. Secretariat         -> /secretariat       (Operational staff, department contacts)
-├── 3. Annual reports      -> /annual-reports    (Published annual activity & financial reviews)
-├── 4. Audited accounts    -> /audited-accounts  (External statutory audit reports)
-├── 5. Tenders & vacancies -> /tenders           (Procurement notices, RFPs, jobs)
-├── 6. Terms of service    -> /terms             (Terms of service, AoA 2026)
-└── 7. Privacy policy      -> /privacy           (CSO Act compliant privacy & data policy)
+├── 1. Board of Trustees   -> /board-of-trustees
+├── 2. Secretariat         -> /secretariat
+├── 3. Annual reports      -> /annual-reports
+├── 4. Audited accounts    -> /audited-accounts
+├── 5. Tenders & vacancies -> /tenders
+├── 6. Terms of service    -> /terms
+└── 7. Privacy policy      -> /privacy
 
 [FOOTER BOTTOM BAR]
 ├── Left:  © 2026 Handicrafts Association of Bhutan. All rights reserved. · Registration CSO/2011/043
 └── Right: Prices shown in USD $ / Nu. BTN · Payments by card, mBoB and bank transfer
-    └── Button: Website Policies & Standards (opens interactive statutory modal)
 ========================================================================================
 ```
 
 ---
 
-## 9. Phase-by-Phase Roadmap & Verification Matrix
+## 5. 2-Way Synchronization Verification Matrix (Admin <-> Public CRUD)
 
-| Phase | Milestone / Scope | Verification Method | Status |
-|---|---|---|---|
-| **Phase 0** | Deep Study & File-by-File Audit (34 HTML + Specialized Pages, Image Catalog, DB Mapping) | `scripts/audit-all-pages.mjs` & `PLAN.md` deep documentation | **DONE** |
-| **Phase 1** | Backend Foundation, Database Schema, RBAC Auth, Sharp Image Processing Pipeline | PostgreSQL migration tables, JWT session guards, Sharp WebP | **DONE** |
-| **Phase 2** | Centralize All Page Content in Database, Eliminate Hardcoded Copy | Dynamic SiteSettings & Page models with zero hardcoded text | **DONE** |
-| **Phase 3** | Universal Quick Edit Mode on Every Public Page with Visual Floating Toggle | `SectionEditBadge` mounted with `UniversalLiveSectionEditor` | **DONE** |
-| **Phase 4** | Full Admin Panel CRUD Modules (15 Management Studios with Search & Filters) | Full CRUD on products, orders, members, wholesale, outlets, etc. | **DONE** |
-| **Phase 5** | 5-Column Footer Parity, 5 Social Channels, Announcement Bar Counter Removal | Matched to `index.html` lines 600-677, counter removed | **DONE** |
-| **Phase 6** | Broken Images Resolution, High-Resolution Sharp Pipeline, Safe Prices | 0 broken images, craft triptychs mapped, no `Nu. NaN` errors | **DONE** |
-| **Phase 7** | Wholesale & Member Registration with Payment Slip Upload & Admin Review | Card/mBoB/Bank selector, slip upload, Quick Approve/Decline | **DONE** |
-| **Phase 8** | Excel / CSV Bulk Data Exchange with UTF-8 BOM Dzongkha Support | RFC-4180 engine, duplicate protection, bad row reporting | **DONE** |
-| **Phase 9** | End-to-End 2-Way Sync Automated Test Suite & TypeScript Verification | 50/50 tests passed (`verify-2way-sync.mjs`), 0 type errors | **DONE** |
+| Flow # | Origin | Action | Destination / Effect | Status |
+|---|---|---|---|---|
+| **01** | Public (`/register`) | Submit member application with payment slip upload | Appears in `/admin/applications` with clickable slip viewer and Quick Approve/Decline actions | Verified |
+| **02** | Public (`/wholesale/register`) | Submit wholesale buyer registration with deposit slip | Appears in `/admin/wholesale` with clickable slip viewer and Quick Approve/Decline actions | Verified |
+| **03** | Admin (`/admin/applications`) | Click Quick Approve `[✓]` on member application | Status changes to `APPROVED`, audit logged, notification email dispatched | Verified |
+| **04** | Admin (`/admin/wholesale`) | Click Quick Approve `[✓]` on wholesale application | Status changes to `APPROVED`, audit logged, wholesale credentials email dispatched | Verified |
+| **05** | Public (`/`) via Quick Edit | Modify Hero headline or upload new slide | Saves to `HeroSlide` / `SiteSetting`, immediately renders on homepage | Verified |
+| **06** | Public (`/`) via Quick Edit | Modify Shop section eyebrow, heading, lede | Saves to `SiteSetting`, immediately renders on homepage | Verified |
+| **07** | Admin (`/admin/products`) | Add new artisan piece with price and photo | Immediately appears in `/shop` and corresponding `/craft/[craft]` grid | Verified |
+| **08** | Admin (`/admin/members`) | Import artisans from Excel/CSV file | Directory at `/members` immediately shows imported artisans with Dzongkhag filters | Verified |
+| **09** | Admin (`/admin/wholesale`) | Import trade buyers from Excel/CSV file | Wholesale accounts table updates with buyer profiles and tier levels | Verified |
+| **10** | Public (`/contact`) | Submit inquiry with topic | Appears in Admin Inquiries inbox with reply trigger | Verified |
 
 ---
 
-## 10. File-by-File Verification Checklist & Git Audit
+## 6. Implementation Checklist & Real Execution Status
 
-- [x] All 34 static HTML templates in `E:\Downloads\Final_webdesign\hab-site` analyzed and verified against Next.js routes.
-- [x] All 10 specialized sub-pages (`/board-of-trustees`, `/secretariat`, `/annual-reports`, `/audited-accounts`, `/tenders`, `/customs-policy`, `/returns-policy`, `/code-of-ethics`, `/mandate`, `/strategic-plan`) verified with zero 404s.
-- [x] Every public page mounts `SectionEditBadge` and `data-hab-section` for in-place Quick Edit mode.
-- [x] Announcement bar counter numbers (`1/4`, `2/4`) removed; cycling and navigation arrows preserved.
-- [x] Wholesale registration and applicant decision engine (`[✓]` Approve / `[✗]` Decline) verified with automated email dispatch.
-- [x] Member registration with interactive mBoB/Bank transfer and slip upload verified.
-- [x] Excel/CSV bulk import/export for Wholesalers and Members with UTF-8 BOM verified.
-- [x] Homepage Studio Tab 4 ("New in the Shop") fully functional and linked to Products Studio.
-- [x] Automated 2-way verification test suite (`node scripts/verify-2way-sync.mjs`) passes 50/50 tests.
-- [x] TypeScript type checking (`tsc --noEmit`) passes with 0 errors.
-- [x] PLAN.md updated and synchronized in both `E:\ai\bhutanprojects\newbend\PLAN.md` and `E:\Downloads\Final_webdesign\hab-site\PLAN.md`.
+| Task / File | Scope | Real Status | Next Step |
+|---|---|---|---|
+| `UniversalLiveSectionEditor.tsx` | Upgrade editor to support all content tabs (Text, Actions, Media, Cards) for crafts, products, outlets, clusters, programmes, projects | IN PROGRESS | Add universal multi-field tab support |
+| `src/app/(public)/craft/[craft]/page.tsx` | Mount SectionEditBadge and UniversalLiveSectionEditor on all sub-sections | PENDING | Mount badges & live editor triggers |
+| `src/app/(public)/product/[code]/page.tsx` | Mount SectionEditBadge for product details & specs | PENDING | Mount badge & editor trigger |
+| `src/app/(public)/outlets/page.tsx` | Mount SectionEditBadge for outlets and markets | PENDING | Mount badge & editor trigger |
+| `src/app/(public)/clusters/page.tsx` | Mount SectionEditBadge for clusters directory | PENDING | Mount badge & editor trigger |
+| `src/app/(public)/wholesale/page.tsx` | Mount SectionEditBadge for wholesale B2B terms | PENDING | Mount badge & editor trigger |
+| `src/app/(public)/shipping-policy/page.tsx` | Mount SectionEditBadge for shipping policy | PENDING | Mount badge & editor trigger |
+| `src/components/public/Footer.tsx` | Ensure 100% parity with index.html lines 600-677 | VERIFIED | Maintain parity |
+| `src/components/public/UtilityBar.tsx` | Ensure notice numbers (`1/4`) remain removed, arrows preserved | VERIFIED | Maintain parity |

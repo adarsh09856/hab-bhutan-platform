@@ -14,12 +14,14 @@ import {
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 
 export default function CraftProfilePage() {
   const params = useParams();
   const craftKey = (params.craft as string) || 'thagzo';
 
   const [craft, setCraft] = useState<CraftData>(() => getCraftByKey(craftKey) || CLIENT_DATA.crafts[0]);
+  const [editorOpen, setEditorOpen] = useState(false);
 
   const [products, setProducts] = useState<any[]>(() => getProductsForCraft(craft.key));
   const [clusters, setClusters] = useState<any[]>(() => CLIENT_DATA.clusters.filter((c) => c.craft_key === craft.key));
@@ -129,7 +131,11 @@ export default function CraftProfilePage() {
     <main id="main">
       {/* 1. Hero & Breadcrumbs */}
       <section className="section relative" data-hab-section="craft">
-        <SectionEditBadge label="13 Zorig Chusum Crafts" studioHref="/admin/crafts" />
+        <SectionEditBadge
+          label={`Quick Edit: ${craft.name}`}
+          studioHref="/admin/crafts"
+          onEdit={() => setEditorOpen(true)}
+        />
         
         {/* Blueprint Backbar */}
         <div className="backbar">
@@ -471,6 +477,14 @@ export default function CraftProfilePage() {
           </Link>
         </nav>
       </section>
+
+      <UniversalLiveSectionEditor
+        isOpen={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        sectionType="crafts"
+        sectionTitle={`${craft.name} · ${craft.english}`}
+        studioHref="/admin/crafts"
+      />
     </main>
   );
 }

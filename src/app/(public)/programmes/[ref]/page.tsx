@@ -77,7 +77,7 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
   return (
     <main id="main">
       <section className="section relative" data-hab-section="programme-detail">
-        <SectionEditBadge label="Programmes Studio" studioHref="/admin/programmes" />
+        <SectionEditBadge label="Programmes Studio" studioHref="/admin/programmes" sectionType="programmes" />
         
         {/* Blueprint Backbar */}
         <div className="backbar">

@@ -9,6 +9,7 @@ interface SectionEditBadgeProps {
   label: string;
   studioHref: string;
   onQuickEdit?: () => void;
+  onEdit?: () => void;
   sectionType?: SectionType;
   className?: string;
   onMoveUp?: () => void;
@@ -54,6 +55,7 @@ export default function SectionEditBadge({
   label,
   studioHref,
   onQuickEdit,
+  onEdit,
   sectionType,
   className = 'top-3 right-3',
   onMoveUp,
@@ -93,13 +95,14 @@ export default function SectionEditBadge({
   if (!visible) return null;
 
   const effectiveSectionType = sectionType || inferSectionType(studioHref, label);
-  const showQuickEdit = Boolean(onQuickEdit || effectiveSectionType);
+  const effectiveEditHandler = onQuickEdit || onEdit;
+  const showQuickEdit = Boolean(effectiveEditHandler || effectiveSectionType);
 
   const handleQuickEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onQuickEdit) {
-      onQuickEdit();
+    if (effectiveEditHandler) {
+      effectiveEditHandler();
     } else if (effectiveSectionType) {
       setInternalEditorOpen(true);
     }

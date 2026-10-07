@@ -107,7 +107,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="outlet-detail">
-        <SectionEditBadge label="Outlets Studio" studioHref="/admin/clusters-outlets" />
+        <SectionEditBadge label="Outlets Studio" studioHref="/admin/clusters-outlets" sectionType="outlets" />
         
         {/* Blueprint Backbar */}
         <div className="backbar">

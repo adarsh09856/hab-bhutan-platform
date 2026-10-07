@@ -1127,7 +1127,7 @@ export default function UniversalLiveSectionEditor({
             <span>{sectionType === 'footer' ? 'Social Links' : sectionType === 'utility-bar' ? 'Top Bar Links' : 'Call-to-Action Buttons'}</span>
           </button>
 
-          {(sectionType === 'hero' || sectionType === 'about' || sectionType === 'about-page') && (
+          {sectionType !== 'utility-bar' && sectionType !== 'stats' && sectionType !== 'footer' && (
             <button
               type="button"
               onClick={() => setActiveTab('MEDIA')}
@@ -1138,7 +1138,7 @@ export default function UniversalLiveSectionEditor({
               }
             >
               <ImageIcon className="w-3.5 h-3.5" />
-              <span>{sectionType === 'hero' ? 'Slideshow & Photos' : sectionType === 'about-page' ? 'Banner Photograph' : 'Section Image'}</span>
+              <span>{sectionType === 'hero' ? 'Slideshow & Photos' : sectionType === 'about-page' ? 'Banner Photograph' : 'Section Image / Media'}</span>
             </button>
           )}
 
@@ -3462,6 +3462,74 @@ export default function UniversalLiveSectionEditor({
                         </div>
                       </div>
                     )}
+
+                    {sectionType !== 'utility-bar' && sectionType !== 'hero' && sectionType !== 'footer' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                          <span className="text-xs font-bold text-slate-800">Primary Call-to-Action Button</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Button Text</label>
+                              <input
+                                type="text"
+                                value={form[`${sectionType}_ctaText`] || form.primaryCtaText || ''}
+                                onChange={(e) => {
+                                  updateField(`${sectionType}_ctaText`, e.target.value);
+                                  updateField('primaryCtaText', e.target.value);
+                                }}
+                                placeholder="e.g. Explore Details →"
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Button Target Link</label>
+                              <input
+                                type="text"
+                                value={form[`${sectionType}_ctaLink`] || form.primaryCtaLink || ''}
+                                onChange={(e) => {
+                                  updateField(`${sectionType}_ctaLink`, e.target.value);
+                                  updateField('primaryCtaLink', e.target.value);
+                                }}
+                                placeholder="e.g. /shop"
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                          <span className="text-xs font-bold text-slate-800">Secondary Call-to-Action Button (Optional)</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Button Text</label>
+                              <input
+                                type="text"
+                                value={form[`${sectionType}_secondaryCtaText`] || form.secondaryCtaText || ''}
+                                onChange={(e) => {
+                                  updateField(`${sectionType}_secondaryCtaText`, e.target.value);
+                                  updateField('secondaryCtaText', e.target.value);
+                                }}
+                                placeholder="e.g. Contact Secretariat"
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Button Target Link</label>
+                              <input
+                                type="text"
+                                value={form[`${sectionType}_secondaryCtaLink`] || form.secondaryCtaLink || ''}
+                                onChange={(e) => {
+                                  updateField(`${sectionType}_secondaryCtaLink`, e.target.value);
+                                  updateField('secondaryCtaLink', e.target.value);
+                                }}
+                                placeholder="e.g. /contact"
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -3787,6 +3855,42 @@ export default function UniversalLiveSectionEditor({
                               </div>
                             ))
                           )}
+                        </div>
+                      </div>
+                    )}
+
+                    {sectionType !== 'about' && sectionType !== 'about-page' && sectionType !== 'hero' && (
+                      <div className="space-y-4">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-3">
+                          <div>
+                            <span className="text-xs font-bold text-amber-950 block">{sectionTitle || sectionType} Photography &amp; Assets</span>
+                            <span className="text-[11px] text-amber-800">
+                              Upload high-resolution photography or replace featured media for this section.
+                            </span>
+                          </div>
+                        </div>
+
+                        <FileUploadInput
+                          value={form[`${sectionType}_imageUrl`] || form.sectionImageUrl || ''}
+                          onChange={(url) => {
+                            updateField(`${sectionType}_imageUrl`, url);
+                            updateField('sectionImageUrl', url);
+                          }}
+                          label={`${sectionTitle || sectionType} Featured Photograph`}
+                          hint="Recommended: High-resolution JPG/WebP/PNG photo"
+                        />
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1">
+                            Image Caption &amp; Screen-reader Alt Text
+                          </label>
+                          <input
+                            type="text"
+                            value={form[`${sectionType}_imageCaption`] || ''}
+                            onChange={(e) => updateField(`${sectionType}_imageCaption`, e.target.value)}
+                            placeholder="Descriptive caption for this photograph"
+                            className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs"
+                          />
                         </div>
                       </div>
                     )}

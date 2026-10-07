@@ -94,7 +94,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
     <main id="main">
       {/* 1. Breadcrumbs & Detail Hero */}
       <section className="section relative" data-hab-section="cluster-detail">
-        <SectionEditBadge label="Clusters Studio" studioHref="/admin/clusters-outlets" />
+        <SectionEditBadge label="Clusters Studio" studioHref="/admin/clusters-outlets" sectionType="clusters" />
         
         {/* Blueprint Backbar */}
         <div className="backbar">
