@@ -56,13 +56,6 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     }
   }
 
-  const defaultDocUrl = 
-    rawPost.slug === 'product-innovation-lab' || slug === 'product-innovation-lab'
-      ? '/docs/news/product-innovation-lab.pdf'
-      : rawPost.slug === 'annual-report-2025' || slug === 'annual-report-2025'
-      ? '/docs/news/annual-report-2025.pdf'
-      : null;
-
   const post = {
     ...rawPost,
     id: rawPost.id || rawPost.slug || 'news-item',
@@ -73,10 +66,10 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     body: cleanContent,
     image_path,
     published_at: rawPost.dateString || rawPost.published_at || rawPost.date || 'Recent',
-    documentUrl: rawPost.documentUrl || defaultDocUrl,
+    documentUrl: rawPost.documentUrl || rawPost.pdfUrl || null,
     documentType: rawPost.documentType || 'PDF',
-    documentTitle: rawPost.documentTitle || `${rawPost.title} – Supporting Document`,
-    subCategory: rawPost.subCategory || (slug === 'product-innovation-lab' ? 'Design & Prototyping' : slug === 'annual-report-2025' ? 'Publications & Governance' : null),
+    documentTitle: rawPost.documentTitle || `${rawPost.title} – Official Document`,
+    subCategory: rawPost.subCategory || (slug === 'product-innovation-lab' ? 'Design & Prototyping' : null),
   };
 
   const otherNews = CLIENT_DATA.news
@@ -169,13 +162,28 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
       {/* Full Story */}
       <section className="section">
-        <div className="longread">
+        <div 
+          className="longread"
+          style={post.documentUrl ? { gridTemplateColumns: 'minmax(330px, 0.44fr) 0.56fr', gap: '40px', alignItems: 'start' } : undefined}
+        >
           <div>
             <p className="eyebrow eyebrow--accent">The story</p>
             {post.subCategory && (
               <span className="inline-block mt-2 px-2.5 py-1 rounded bg-[#EDE5D6] text-[#6B5A4C] font-mono text-xs font-semibold">
                 {post.subCategory}
               </span>
+            )}
+
+            {/* Official Document (PDF / Flipbook) positioned on the left side under The Story */}
+            {post.documentUrl && (
+              <div className="mt-6">
+                <DocumentEmbedViewer
+                  documentUrl={post.documentUrl}
+                  documentType={post.documentType}
+                  documentTitle={post.documentTitle || `${post.title} – Official Document`}
+                  className="my-0 shadow-xs"
+                />
+              </div>
             )}
           </div>
           <div>
@@ -184,13 +192,6 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
                 {para.trim()}
               </p>
             ))}
-
-            {/* Designated space for Supporting Document (PDF / Flipbook) - Feedback Item 4 */}
-            <DocumentEmbedViewer
-              documentUrl={post.documentUrl}
-              documentType={post.documentType}
-              documentTitle={post.documentTitle || `${post.title} – Official Document`}
-            />
           </div>
         </div>
       </section>

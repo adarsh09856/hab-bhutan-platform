@@ -268,6 +268,12 @@ export default function HomePage() {
     },
   ]);
 
+  const [allProductsPool, setAllProductsPool] = useState<any[]>([]);
+  const [productOffset, setProductOffset] = useState(0);
+
+  const [allOutletsPool, setAllOutletsPool] = useState<any[]>([]);
+  const [outletOffset, setOutletOffset] = useState(0);
+
   const [outlets, setOutlets] = useState<any[]>([
     {
       key: 'thimphu-outlet',
@@ -330,6 +336,26 @@ export default function HomePage() {
       slot: 'photo — Trashiyangtse lathe turning',
     },
   ]);
+
+  const displayedProducts = React.useMemo(() => {
+    if (allProductsPool.length === 0) return products.slice(0, 8);
+    if (allProductsPool.length <= 8) return allProductsPool;
+    const res = [];
+    for (let i = 0; i < 8; i++) {
+      res.push(allProductsPool[(productOffset + i) % allProductsPool.length]);
+    }
+    return res;
+  }, [allProductsPool, productOffset, products]);
+
+  const displayedOutlets = React.useMemo(() => {
+    if (allOutletsPool.length === 0) return outlets.slice(0, 3);
+    if (allOutletsPool.length <= 3) return allOutletsPool;
+    const res = [];
+    for (let i = 0; i < 3; i++) {
+      res.push(allOutletsPool[(outletOffset + i) % allOutletsPool.length]);
+    }
+    return res;
+  }, [allOutletsPool, outletOffset, outlets]);
 
   const [masters, setMasters] = useState<any[]>([
     {
@@ -558,19 +584,30 @@ export default function HomePage() {
     loadHeroSlides();
     loadSiteSettings();
 
-    // C. Products from Admin (2 rows = 8 products)
-    fetch('/api/products?limit=8', { cache: 'no-store' })
+    // C. Products from Admin (up to 24 products for continuous 5-second dynamic rotation)
+    fetch('/api/products?limit=24', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d?.products && d.products.length > 0) {
-          const mappedProducts = d.products.slice(0, 8).map((p: any) => ({
+          const mappedProducts = d.products.map((p: any) => ({
             ...p,
             price: p.priceUSD || p.price || 0,
             priceUSD: p.priceUSD || p.price || 0,
             craft_name: (p.craft?.name || p.craftKey || '').toUpperCase(),
             image_path: p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`,
           }));
-          setProducts(mappedProducts);
+          setAllProductsPool(mappedProducts);
+          setProducts(mappedProducts.slice(0, 8));
+        }
+      })
+      .catch(() => {});
+
+    // Outlets from Admin for continuous 5-second dynamic rotation
+    fetch('/api/outlets', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.outlets && d.outlets.length > 0) {
+          setAllOutletsPool(d.outlets);
         }
       })
       .catch(() => {});
@@ -762,9 +799,27 @@ export default function HomePage() {
   useEffect(() => {
     const t = setInterval(() => {
       setCurrentPunakha((c) => (c + 1) % PUNAKHA_SLIDES.length);
-    }, 5500);
+    }, 5000);
     return () => clearInterval(t);
   }, []);
+
+  // 5-second continuous auto-rotation for Shop Products
+  useEffect(() => {
+    if (allProductsPool.length <= 8) return;
+    const t = setInterval(() => {
+      setProductOffset((prev) => (prev + 1) % allProductsPool.length);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [allProductsPool.length]);
+
+  // 5-second continuous auto-rotation for Outlets
+  useEffect(() => {
+    if (allOutletsPool.length <= 3) return;
+    const t = setInterval(() => {
+      setOutletOffset((prev) => (prev + 1) % allOutletsPool.length);
+    }, 5000);
+    return () => clearInterval(t);
+  }, [allOutletsPool.length]);
 
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -968,12 +1023,12 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid--4">
-          {products.slice(0, 8).map((p, pIdx) => {
+          {displayedProducts.map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
             const productImg = p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
             const makerName = typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Registered Member');
             return (
-              <article key={p.code} className="card product">
+              <article key={`${p.code}-${pIdx}`} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image">
                     <img
@@ -1168,8 +1223,8 @@ export default function HomePage() {
 
         {/* Physical outlets grid (3 columns matching index.html lines 346-360 & Image 2) */}
         <div className="grid grid--3" style={{ marginBottom: '48px', marginTop: '32px' }}>
-          {outlets.map((o) => (
-            <Link key={o.key} className="card outlet" href={`/outlet?outlet=${o.key}`} style={{ color: 'inherit' }}>
+          {displayedOutlets.map((o, oIdx) => (
+            <Link key={`${o.key}-${oIdx}`} className="card outlet" href={`/outlet?outlet=${o.key}`} style={{ color: 'inherit' }}>
               <figure className="frame frame--wide16">
                 <img
                   src={o.image_path || '/assets/photos/hero-2-punakha.jpg'}

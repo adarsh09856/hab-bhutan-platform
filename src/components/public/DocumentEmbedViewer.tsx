@@ -65,51 +65,13 @@ export default function DocumentEmbedViewer({
     }
 
     return (
-      <div className={`w-full ${heightClass} bg-slate-900 relative`}>
-        {/* Modern object tag with multi-tier iframe and card fallback */}
-        <object
-          data={cleanUrl}
-          type="application/pdf"
+      <div className={`w-full ${heightClass} bg-white relative rounded-lg overflow-hidden border border-[#D5C9B8]`}>
+        <iframe
+          src={`${cleanUrl}#toolbar=1&navpanes=0&view=FitH`}
+          title={title}
           className="w-full h-full border-0 bg-white"
-        >
-          <iframe
-            src={`${cleanUrl}#toolbar=1&navpanes=0`}
-            title={title}
-            className="w-full h-full border-0 bg-white"
-          >
-            {/* Elegant in-frame fallback card if browser blocks inline iframe rendering */}
-            <div className="w-full h-full flex flex-col items-center justify-center p-8 bg-[#FBF9F5] text-center">
-              <div className="w-16 h-16 rounded-2xl bg-[#8B2E24]/10 text-[#8B2E24] flex items-center justify-center mb-4 shadow-xs">
-                <FileCheck className="w-8 h-8" />
-              </div>
-              <h4 className="font-marcellus text-xl text-[#33261F] max-w-md mb-2">
-                {title}
-              </h4>
-              <p className="font-lora text-xs sm:text-sm text-[#6B5A4C] max-w-md mb-6">
-                Official document certified by the Handicrafts Association of Bhutan (CSO/2011/043).
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <a
-                  href={cleanUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#72241C] text-white text-xs font-semibold shadow-xs transition whitespace-nowrap shrink-0"
-                >
-                  <ExternalLink className="w-4 h-4 shrink-0" />
-                  <span>Open in Document Viewer</span>
-                </a>
-                <a
-                  href={cleanUrl}
-                  download
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#CDBEA8] bg-white hover:bg-[#F4F0E7] text-xs font-semibold text-[#33261F] transition whitespace-nowrap shrink-0"
-                >
-                  <Download className="w-4 h-4 shrink-0" />
-                  <span>Download PDF Document</span>
-                </a>
-              </div>
-            </div>
-          </iframe>
-        </object>
+          loading="lazy"
+        />
       </div>
     );
   };

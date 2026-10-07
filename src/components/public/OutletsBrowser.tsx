@@ -96,15 +96,24 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Fisher-Yates shuffle on non-featured items
-    const featured = initialOutlets.filter((o) => o.is_featured || o.isFeatured);
-    const nonFeatured = initialOutlets.filter((o) => !o.is_featured && !o.isFeatured);
-    const shuffledNonFeatured = [...nonFeatured];
-    for (let i = shuffledNonFeatured.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledNonFeatured[i], shuffledNonFeatured[j]] = [shuffledNonFeatured[j], shuffledNonFeatured[i]];
-    }
-    setShuffledOutlets([...featured, ...shuffledNonFeatured]);
+    const rotateOutlets = () => {
+      const featured = initialOutlets.filter((o) => o.is_featured || o.isFeatured);
+      const nonFeatured = initialOutlets.filter((o) => !o.is_featured && !o.isFeatured);
+      if (nonFeatured.length <= 1) return;
+      const shuffledNonFeatured = [...nonFeatured];
+      for (let i = shuffledNonFeatured.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledNonFeatured[i], shuffledNonFeatured[j]] = [shuffledNonFeatured[j], shuffledNonFeatured[i]];
+      }
+      setShuffledOutlets([...featured, ...shuffledNonFeatured]);
+    };
+
+    // Initial shuffle on mount
+    rotateOutlets();
+
+    // 5-second continuous rotation
+    const timer = setInterval(rotateOutlets, 5000);
+    return () => clearInterval(timer);
   }, [initialOutlets]);
 
   // Featured outlet

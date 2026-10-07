@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import GoogleTranslateWidget from '@/components/public/GoogleTranslateWidget';
 
 const ANNOUNCEMENT_TRANSLATIONS: Record<string, string> = {
   'CSO/2011/043 · Handicrafts Association of Bhutan': 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ',
@@ -359,8 +358,6 @@ export default function UtilityBar() {
             <span aria-hidden="true">/</span>
             <span className={language === 'dz' ? 'is-active' : ''} lang="dz">རྫོང་ཁ</span>
           </button>
-
-          <GoogleTranslateWidget />
         </div>
       </div>
     </div>
