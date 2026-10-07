@@ -3,6 +3,12 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import {
+  getAllFallbackWholesaleBuyers,
+  saveFallbackWholesaleBuyer,
+  updateFallbackWholesaleBuyerStatus,
+  deleteFallbackWholesaleBuyer,
+} from '@/lib/wholesale-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,28 +29,50 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const buyers = await prisma.wholesaleBuyer.findMany({
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        username: true,
-        companyName: true,
-        contactName: true,
-        email: true,
-        phone: true,
-        country: true,
-        city: true,
-        taxId: true,
-        discountTier: true,
-        status: true,
-        notes: true,
-        lastLoginAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    let dbBuyers: any[] = [];
+    try {
+      dbBuyers = await prisma.wholesaleBuyer.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          username: true,
+          companyName: true,
+          contactName: true,
+          email: true,
+          phone: true,
+          country: true,
+          city: true,
+          taxId: true,
+          discountTier: true,
+          status: true,
+          notes: true,
+          lastLoginAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (dbErr: any) {
+      console.warn('[admin/wholesale] DB read error, using fallback:', dbErr.message);
+    }
 
-    return NextResponse.json({ success: true, buyers });
+    const fallbackBuyers = getAllFallbackWholesaleBuyers();
+    const existingIds = new Set(dbBuyers.map((b) => b.id));
+    const existingEmails = new Set(dbBuyers.map((b) => b.email?.toLowerCase()));
+    const merged = [...dbBuyers];
+
+    for (const fb of fallbackBuyers) {
+      if (!existingIds.has(fb.id) && !existingEmails.has(fb.email?.toLowerCase())) {
+        merged.push({
+          ...fb,
+          createdAt: new Date(fb.createdAt),
+          updatedAt: new Date(fb.updatedAt),
+        });
+      }
+    }
+
+    merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return NextResponse.json({ success: true, buyers: merged });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch wholesale buyers' }, { status: 500 });
   }
@@ -171,10 +199,27 @@ export async function PUT(req: NextRequest) {
       updateData.passwordHash = await bcrypt.hash(password.trim(), 10);
     }
 
-    const updated = await prisma.wholesaleBuyer.update({
-      where: { id },
-      data: updateData,
-    });
+    let updated: any = null;
+    try {
+      updated = await prisma.wholesaleBuyer.update({
+        where: { id },
+        data: updateData,
+      });
+    } catch (dbErr: any) {
+      console.warn('[admin/wholesale] DB update error, checking fallback store:', dbErr.message);
+    }
+
+    if (rest.status) {
+      updateFallbackWholesaleBuyerStatus(id, rest.status);
+    }
+
+    if (!updated) {
+      const fb = getAllFallbackWholesaleBuyers().find((b) => b.id === id);
+      if (fb) {
+        return NextResponse.json({ success: true, buyer: fb });
+      }
+      return NextResponse.json({ error: 'Buyer not found' }, { status: 404 });
+    }
 
     await logAudit({
       actorType: 'STAFF',
@@ -208,9 +253,15 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Buyer id is required' }, { status: 400 });
     }
 
-    const deleted = await prisma.wholesaleBuyer.delete({
-      where: { id },
-    });
+    try {
+      await prisma.wholesaleBuyer.delete({
+        where: { id },
+      });
+    } catch (dbErr: any) {
+      console.warn('[admin/wholesale] DB delete error:', dbErr.message);
+    }
+
+    deleteFallbackWholesaleBuyer(id);
 
     await logAudit({
       actorType: 'STAFF',
@@ -218,8 +269,8 @@ export async function DELETE(req: NextRequest) {
       actorIdentifier: user.email,
       action: 'WHOLESALE_BUYER_DELETED',
       entityType: 'WholesaleBuyer',
-      entityId: deleted.id,
-      details: { username: deleted.username, companyName: deleted.companyName },
+      entityId: id,
+      details: { id },
     });
 
     return NextResponse.json({ success: true, deleted: true });

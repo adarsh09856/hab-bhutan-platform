@@ -80,41 +80,18 @@ export default function WholesaleRegisterPage() {
 
     setSubmitting(true);
     try {
-      const subject = `Wholesale Buyer Registration: ${formData.businessName} (${formData.country})`;
-      const message = [
-        `BUSINESS REGISTRATION DETAILS:`,
-        `Business Name: ${formData.businessName}`,
-        `Buyer Type: ${formData.buyerType}`,
-        `Registration Number / Tax ID: ${formData.regNumber || 'N/A'}`,
-        `Country: ${formData.country}`,
-        `City: ${formData.city || 'N/A'}`,
-        `Website: ${formData.website || 'N/A'}`,
-        `Contact Person: ${formData.contactPerson} (${formData.position || 'Representative'})`,
-        `Phone: ${formData.phone}`,
-        `Email: ${formData.email}`,
-        `Business Purpose: ${formData.purpose}`,
-        `Estimated Order Value: ${formData.orderValue || 'Not specified'}`,
-        `Order Frequency: ${formData.frequency || 'Not specified'}`,
-        `Selected Crafts: ${selectedCrafts.join(', ') || 'All Crafts'}`,
-        formData.customNotes ? `Custom Production Notes: ${formData.customNotes}` : '',
-      ].filter(Boolean).join('\n');
-
-      const res = await fetch('/api/contact', {
+      const res = await fetch('/api/wholesale/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.contactPerson,
-          email: formData.email,
-          phone: formData.phone,
-          subject,
-          message,
+          ...formData,
+          selectedCrafts,
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        const ref = data.inquiryId ? `HAB-W-${data.inquiryId.slice(0, 6).toUpperCase()}` : `HAB-W-${Math.floor(1000 + Math.random() * 9000)}`;
-        setSubmittedRef(ref);
+        setSubmittedRef(data.reference || `HAB-W-${Math.floor(1000 + Math.random() * 9000)}`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setErrorMessage(data.error || 'Failed to submit application. Please try again.');

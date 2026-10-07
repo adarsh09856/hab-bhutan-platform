@@ -24,6 +24,7 @@ function DonateContent() {
   const [taxNotice, setTaxNotice] = useState(
     'Donations qualify under the Civil Society Organizations Act of Bhutan as contributions to a registered Public Benefit Organisation (CSO/2011/043). Receipts are issued for tax deduction under Department of Revenue and Customs rules.'
   );
+  const [siteSettings, setSiteSettings] = useState<any>(null);
 
   const [amount, setAmount] = useState<number>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -61,7 +62,7 @@ function DonateContent() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/donations/upload', {
+      const res = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -107,6 +108,7 @@ function DonateContent() {
         .then((r) => r.json())
         .then((d) => {
           if (d?.setting) {
+            setSiteSettings(d.setting);
             if (d.setting.donateHeroTitle) setHeroTitle(d.setting.donateHeroTitle);
             if (d.setting.donateHeroLede) setHeroLede(d.setting.donateHeroLede);
             if (d.setting.donateTaxNotice) setTaxNotice(d.setting.donateTaxNotice);
@@ -119,6 +121,7 @@ function DonateContent() {
     const handleSettingsUpdate = (e: any) => {
       const s = e.detail;
       if (s) {
+        setSiteSettings((prev: any) => ({ ...prev, ...s }));
         if (s.donateHeroTitle) setHeroTitle(s.donateHeroTitle);
         if (s.donateHeroLede) setHeroLede(s.donateHeroLede);
         if (s.donateTaxNotice) setTaxNotice(s.donateTaxNotice);
@@ -504,10 +507,21 @@ function DonateContent() {
                       <div className="paymethod__body">
                         <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, fontSize: 13, lineHeight: 1.6 }}>
                           <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bank of Bhutan Limited (mBoB Details)</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Thimphu Main Branch</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> {siteSettings?.bobAccountTitle || 'Handicrafts Association of Bhutan'}</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> {siteSettings?.bobAccountNumber || '201104300189'}</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Branch / Details:</strong> {siteSettings?.bobBankName || 'Thimphu Main Branch'}</p>
+                          {siteSettings?.bobPhone && <p style={{ margin: '2px 0' }}>• <strong>Contact:</strong> {siteSettings.bobPhone}</p>}
                         </div>
+                        {siteSettings?.bobQrUrl && (
+                          <div style={{ padding: '12px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)' }}>Scan mBoB QR Code to Donate</span>
+                            <img
+                              src={siteSettings.bobQrUrl}
+                              alt="mBoB QR Code"
+                              style={{ width: 150, height: 150, objectFit: 'contain', borderRadius: 6, border: '1px solid #e5e7eb' }}
+                            />
+                          </div>
+                        )}
                         <div className="payform">
                           <label className="payfield payfield--full">
                             <span className="payfield__label">mBoB Journal / Transaction Reference</span>
@@ -544,10 +558,21 @@ function DonateContent() {
                       <div className="paymethod__body">
                         <div style={{ padding: '14px 16px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, fontSize: 13, lineHeight: 1.6 }}>
                           <p style={{ fontWeight: 700, color: 'var(--ink)' }}>Bhutan National Bank Limited (BNB)</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 0000028471019</p>
-                          <p style={{ margin: '2px 0' }}>• <strong>Branch:</strong> Corporate Branch, Thimphu</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Name:</strong> {siteSettings?.bnbAccountTitle || 'Handicrafts Association of Bhutan'}</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> {siteSettings?.bnbAccountNumber || '0000028471019'}</p>
+                          <p style={{ margin: '2px 0' }}>• <strong>Branch / Details:</strong> {siteSettings?.bnbBankName || 'Corporate Branch, Thimphu'}</p>
+                          {siteSettings?.bnbPhone && <p style={{ margin: '2px 0' }}>• <strong>Contact:</strong> {siteSettings.bnbPhone}</p>}
                         </div>
+                        {siteSettings?.bnbQrUrl && (
+                          <div style={{ padding: '12px', background: '#fff', border: '1px solid var(--field-border)', borderRadius: 8, marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)' }}>Scan BNB mPay QR Code to Donate</span>
+                            <img
+                              src={siteSettings.bnbQrUrl}
+                              alt="BNB mPay QR Code"
+                              style={{ width: 150, height: 150, objectFit: 'contain', borderRadius: 6, border: '1px solid #e5e7eb' }}
+                            />
+                          </div>
+                        )}
                         <div className="payform">
                           <label className="payfield payfield--full">
                             <span className="payfield__label">BNB Transaction / Journal Reference</span>

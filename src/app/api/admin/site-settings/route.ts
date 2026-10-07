@@ -50,6 +50,9 @@ export async function GET(req: NextRequest) {
     ? tb.tickerMessages
     : defaultTicker;
 
+  const bobBanking = pg.bob || {};
+  const bnbBanking = pg.bnb || {};
+
   const enriched = setting ? {
     ...setting,
     defaultCurrency: loc.defaultCurrency || 'USD',
@@ -61,6 +64,16 @@ export async function GET(req: NextRequest) {
     aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
     tickerMessages,
     topBarContactMode: tb.topBarContactMode || 'PHONE_ONLY',
+    bobAccountNumber: bobBanking.accountNumber || setting.checkoutAccountNumber || '200847291038',
+    bobAccountTitle: bobBanking.accountTitle || setting.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
+    bobBankName: bobBanking.bankName || setting.checkoutBankName || 'Bank of Bhutan (BoB)',
+    bobPhone: bobBanking.phone || '+975-2-338089',
+    bobQrUrl: bobBanking.qrUrl || '/images/mbob_qr_placeholder.png',
+    bnbAccountNumber: bnbBanking.accountNumber || '0000028471019',
+    bnbAccountTitle: bnbBanking.accountTitle || 'Handicrafts Association of Bhutan',
+    bnbBankName: bnbBanking.bankName || 'Bhutan National Bank Limited (BNB)',
+    bnbPhone: bnbBanking.phone || '+975-2-338089',
+    bnbQrUrl: bnbBanking.qrUrl || '/images/bnb_qr_placeholder.png',
   } : null;
 
   return NextResponse.json({ success: true, setting: enriched });
@@ -270,6 +283,43 @@ export async function PUT(req: NextRequest) {
         ...currentTb,
         ...(updatePayload.trustBadges || {}),
         topBarContactMode: body.topBarContactMode,
+      };
+    }
+
+    if (
+      body.bobAccountNumber !== undefined ||
+      body.bobAccountTitle !== undefined ||
+      body.bobBankName !== undefined ||
+      body.bobPhone !== undefined ||
+      body.bobQrUrl !== undefined ||
+      body.bnbAccountNumber !== undefined ||
+      body.bnbAccountTitle !== undefined ||
+      body.bnbBankName !== undefined ||
+      body.bnbPhone !== undefined ||
+      body.bnbQrUrl !== undefined
+    ) {
+      const currentSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+      const currentPg = (currentSetting?.paymentGateways as Record<string, any>) || {};
+      const currentBob = currentPg.bob || {};
+      const currentBnb = currentPg.bnb || {};
+
+      updatePayload.paymentGateways = {
+        ...currentPg,
+        ...(updatePayload.paymentGateways || {}),
+        bob: {
+          accountNumber: body.bobAccountNumber ?? currentBob.accountNumber ?? body.checkoutAccountNumber ?? '200847291038',
+          accountTitle: body.bobAccountTitle ?? currentBob.accountTitle ?? body.checkoutAccountTitle ?? 'Handicrafts Association of Bhutan',
+          bankName: body.bobBankName ?? currentBob.bankName ?? body.checkoutBankName ?? 'Bank of Bhutan (BoB)',
+          phone: body.bobPhone ?? currentBob.phone ?? '+975-2-338089',
+          qrUrl: body.bobQrUrl ?? currentBob.qrUrl ?? '/images/mbob_qr_placeholder.png',
+        },
+        bnb: {
+          accountNumber: body.bnbAccountNumber ?? currentBnb.accountNumber ?? '0000028471019',
+          accountTitle: body.bnbAccountTitle ?? currentBnb.accountTitle ?? 'Handicrafts Association of Bhutan',
+          bankName: body.bnbBankName ?? currentBnb.bankName ?? 'Bhutan National Bank Limited (BNB)',
+          phone: body.bnbPhone ?? currentBnb.phone ?? '+975-2-338089',
+          qrUrl: body.bnbQrUrl ?? currentBnb.qrUrl ?? '/images/bnb_qr_placeholder.png',
+        },
       };
     }
 

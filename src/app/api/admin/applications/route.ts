@@ -5,6 +5,11 @@ import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { sendMembershipStatusEmail } from '@/lib/email-service';
+import {
+  getAllFallbackApplications,
+  updateFallbackApplicationStatus,
+  deleteFallbackApplication,
+} from '@/lib/application-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,18 +17,42 @@ export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'applications:view');
 
-    const applications = await prisma.membershipApplication.findMany({
-      include: {
-        reviewer: {
-          select: { id: true, name: true, email: true },
+    let dbApplications: any[] = [];
+    try {
+      dbApplications = await prisma.membershipApplication.findMany({
+        include: {
+          reviewer: {
+            select: { id: true, name: true, email: true },
+          },
         },
-      },
-      orderBy: { submittedAt: 'desc' },
-    });
+        orderBy: { submittedAt: 'desc' },
+      });
+    } catch (dbErr: any) {
+      console.warn('[admin/applications] DB read error, using fallback store:', dbErr.message);
+    }
+
+    const fallbackApps = getAllFallbackApplications();
+    const existingIds = new Set(dbApplications.map((a) => a.id));
+    const merged = [...dbApplications];
+
+    for (const fa of fallbackApps) {
+      if (!existingIds.has(fa.id)) {
+        merged.push({
+          ...fa,
+          submittedAt: new Date(fa.submittedAt),
+          reviewedAt: fa.reviewedAt ? new Date(fa.reviewedAt) : null,
+          updatedAt: new Date(fa.updatedAt),
+          reviewer: null,
+        });
+      }
+    }
+
+    // Sort descending by submittedAt
+    merged.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
 
     return NextResponse.json({
       success: true,
-      applications,
+      applications: merged,
     });
   } catch (err: any) {
     console.error('Error fetching membership applications:', err);
@@ -126,11 +155,20 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const application = await prisma.membershipApplication.findUnique({
+    let application = await prisma.membershipApplication.findUnique({
       where: { id },
-    });
+    }).catch(() => null);
+
+    const fallbackApp = getAllFallbackApplications().find((a) => a.id === id);
 
     if (!application) {
+      if (fallbackApp) {
+        const updatedFallback = updateFallbackApplicationStatus(id, status, reviewerNotes, rejectionReason);
+        return NextResponse.json({
+          success: true,
+          application: updatedFallback,
+        });
+      }
       return NextResponse.json(
         { success: false, error: 'Membership application not found.' },
         { status: 404 }
@@ -441,29 +479,37 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const application = await prisma.membershipApplication.findUnique({
+    let application = await prisma.membershipApplication.findUnique({
       where: { id },
-    });
+    }).catch(() => null);
 
-    if (!application) {
+    const fallbackApp = getAllFallbackApplications().find((a) => a.id === id);
+
+    if (!application && !fallbackApp) {
       return NextResponse.json(
         { success: false, error: 'Membership application not found.' },
         { status: 404 }
       );
     }
 
+    const appStatus = application?.status || fallbackApp?.status;
+    const appName = application?.applicantName || fallbackApp?.applicantName || 'Applicant';
+
     // Safety guard: only unfinalized applications can be deleted
-    if (application.status === 'APPROVED' || application.status === 'REJECTED') {
+    if (appStatus === 'APPROVED' || appStatus === 'REJECTED') {
       return NextResponse.json(
         {
           success: false,
-          error: `Cannot delete finalized application (${application.status}). Decisions are legally auditable association records.`,
+          error: `Cannot delete finalized application (${appStatus}). Decisions are legally auditable association records.`,
         },
         { status: 400 }
       );
     }
 
-    await prisma.membershipApplication.delete({ where: { id } });
+    if (application) {
+      await prisma.membershipApplication.delete({ where: { id } }).catch(() => null);
+    }
+    deleteFallbackApplication(id);
 
     const ip = getClientIp(req);
     await logAudit({
@@ -475,16 +521,16 @@ export async function DELETE(req: NextRequest) {
       entityType: 'MembershipApplication',
       entityId: id,
       details: {
-        applicantName: application.applicantName,
-        cidNumber: application.cidNumber,
-        email: application.email,
-        statusAtDeletion: application.status,
+        applicantName: appName,
+        cidNumber: application?.cidNumber || fallbackApp?.cidNumber || '',
+        email: application?.email || fallbackApp?.email || '',
+        statusAtDeletion: appStatus,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Application for '${application.applicantName}' successfully purged.`,
+      message: `Application for '${appName}' successfully purged.`,
     });
   } catch (err: any) {
     console.error('Error deleting application:', err);

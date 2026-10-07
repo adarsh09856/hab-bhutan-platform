@@ -36,18 +36,43 @@ export default function CheckoutPage() {
     totalUSD, 
     clearCart 
   } = useCart();
-  const { currency, fmt } = useCurrency();
+  const { currency, fmt, alt } = useCurrency();
 
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD'>('CARD');
   const [gatewayMethods, setGatewayMethods] = useState<any>(null);
   const [mbobRef, setMbobRef] = useState('');
   const [bnbRef, setBnbRef] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
+  const [uploadingSlip, setUploadingSlip] = useState(false);
   const [cardDetails, setCardDetails] = useState({
     number: '',
     expiry: '',
     cvc: '',
     nameOnCard: '',
   });
+
+  const handleUploadSlip = async (file: File) => {
+    setUploadingSlip(true);
+    setError('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setProofUrl(data.url);
+      } else {
+        setError(data.error || 'Failed to upload payment slip.');
+      }
+    } catch {
+      setError('Network error uploading payment slip.');
+    } finally {
+      setUploadingSlip(false);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/payment-methods', { cache: 'no-store' })
@@ -187,6 +212,7 @@ export default function CheckoutPage() {
           email: customer.email.trim(),
           phone: customer.phone.trim() || null,
           mBOBTransactionRef: paymentMethod === 'MBOB' ? mbobRef.trim() : paymentMethod === 'BNB' ? bnbRef.trim() : null,
+          proofUrl: proofUrl || null,
           shippingAddress: {
             fullName: customer.fullName.trim(),
             email: customer.email.trim(),
@@ -534,15 +560,31 @@ export default function CheckoutPage() {
 
               {paymentMethod === 'MBOB' && (
                 <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-3">
-                  <div className="text-xs text-amber-900 font-semibold flex items-center gap-1.5">
-                    <QrCode className="w-4 h-4 text-amber-700" />
-                    <span>Bank of Bhutan (mBoB) Official Account</span>
+                  <div className="text-xs text-amber-900 font-semibold flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <QrCode className="w-4 h-4 text-amber-700" />
+                      <span>Bank of Bhutan (mBoB) Official Account</span>
+                    </span>
+                    <span className="text-[11px] font-mono text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded">
+                      Local Currency: Nu.
+                    </span>
                   </div>
-                  <div className="bg-white p-3 rounded-lg border border-amber-200 text-xs space-y-1 font-mono text-slate-800">
-                    <div><strong>Account Title:</strong> {siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
-                    <div><strong>Account Number:</strong> {siteSettings?.checkoutAccountNumber || '200847291038'}</div>
-                    <div><strong>Bank:</strong> {siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'}, {siteSettings?.checkoutBankAddress || 'Main Branch Thimphu'}</div>
+                  <div className="bg-white p-3 rounded-lg border border-amber-200 text-xs space-y-1.5 font-mono text-slate-800">
+                    <div><strong>Account Title:</strong> {siteSettings?.bobAccountTitle || siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
+                    <div><strong>Account Number:</strong> {siteSettings?.bobAccountNumber || siteSettings?.checkoutAccountNumber || '200847291038'}</div>
+                    <div><strong>Bank:</strong> {siteSettings?.bobBankName || siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'}</div>
+                    {siteSettings?.bobPhone && <div><strong>Mobile / Contact:</strong> {siteSettings.bobPhone}</div>}
                   </div>
+                  {siteSettings?.bobQrUrl && (
+                    <div className="bg-white p-3 rounded-lg border border-amber-200 flex flex-col items-center gap-1.5">
+                      <span className="text-[11px] font-semibold text-slate-700">Scan mBoB QR Code to Pay</span>
+                      <img
+                        src={siteSettings.bobQrUrl}
+                        alt="mBoB Payment QR"
+                        className="w-40 h-40 object-contain rounded-lg border border-slate-200 p-1 bg-white shadow-xs"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
                       mBOB Journal / Reference Number *
@@ -559,20 +601,55 @@ export default function CheckoutPage() {
                       Transfer in Nu. via mBOB and enter the transaction reference number from your receipt.
                     </p>
                   </div>
+                  <div className="pt-2 border-t border-amber-200/80">
+                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
+                      Upload Payment Slip / Screenshot (Optional)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUploadSlip(f);
+                        }}
+                        disabled={uploadingSlip}
+                        className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 cursor-pointer"
+                      />
+                      {uploadingSlip && <span className="text-xs text-amber-800 animate-pulse">Uploading...</span>}
+                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">✓ Slip Attached</span>}
+                    </div>
+                  </div>
                 </div>
               )}
 
               {paymentMethod === 'BNB' && (
                 <div className="p-4 rounded-xl bg-orange-50/60 border border-orange-200/80 space-y-3">
-                  <div className="text-xs text-orange-950 font-semibold flex items-center gap-1.5">
-                    <Building2 className="w-4 h-4 text-orange-700" />
-                    <span>Bhutan National Bank (BNB) Official Account</span>
+                  <div className="text-xs text-orange-950 font-semibold flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-orange-700" />
+                      <span>Bhutan National Bank (BNB) Official Account</span>
+                    </span>
+                    <span className="text-[11px] font-mono text-orange-800 bg-orange-100/70 px-2 py-0.5 rounded">
+                      Local Currency: Nu.
+                    </span>
                   </div>
-                  <div className="bg-white p-3 rounded-lg border border-orange-200 text-xs space-y-1 font-mono text-slate-800">
-                    <div><strong>Account Title:</strong> Handicrafts Association of Bhutan</div>
-                    <div><strong>Account Number:</strong> 0000028471019</div>
-                    <div><strong>Bank:</strong> Bhutan National Bank Limited (BNB), Thimphu Corporate Branch</div>
+                  <div className="bg-white p-3 rounded-lg border border-orange-200 text-xs space-y-1.5 font-mono text-slate-800">
+                    <div><strong>Account Title:</strong> {siteSettings?.bnbAccountTitle || 'Handicrafts Association of Bhutan'}</div>
+                    <div><strong>Account Number:</strong> {siteSettings?.bnbAccountNumber || '0000028471019'}</div>
+                    <div><strong>Bank:</strong> {siteSettings?.bnbBankName || 'Bhutan National Bank Limited (BNB), Thimphu Corporate Branch'}</div>
+                    {siteSettings?.bnbPhone && <div><strong>Mobile / Contact:</strong> {siteSettings.bnbPhone}</div>}
                   </div>
+                  {siteSettings?.bnbQrUrl && (
+                    <div className="bg-white p-3 rounded-lg border border-orange-200 flex flex-col items-center gap-1.5">
+                      <span className="text-[11px] font-semibold text-slate-700">Scan BNB mPay QR Code to Pay</span>
+                      <img
+                        src={siteSettings.bnbQrUrl}
+                        alt="BNB mPay Payment QR"
+                        className="w-40 h-40 object-contain rounded-lg border border-slate-200 p-1 bg-white shadow-xs"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
                       BNB Journal / Reference Number *
@@ -589,11 +666,30 @@ export default function CheckoutPage() {
                       Transfer in Nu. via BNB / mPay and enter the transaction reference number from your receipt.
                     </p>
                   </div>
+                  <div className="pt-2 border-t border-orange-200/80">
+                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
+                      Upload Payment Slip / Screenshot (Optional)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUploadSlip(f);
+                        }}
+                        disabled={uploadingSlip}
+                        className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-900 hover:file:bg-orange-200 cursor-pointer"
+                      />
+                      {uploadingSlip && <span className="text-xs text-orange-800 animate-pulse">Uploading...</span>}
+                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">✓ Slip Attached</span>}
+                    </div>
+                  </div>
                 </div>
               )}
 
               {paymentMethod === 'BANK' && (
-                <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] space-y-2 text-xs">
+                <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] space-y-3 text-xs">
                   <div className="font-semibold text-[#33261F] flex items-center gap-1.5">
                     <Building2 className="w-4 h-4 text-[#8B2E24]" />
                     <span>International Wire Transfer (SWIFT)</span>
@@ -608,6 +704,25 @@ export default function CheckoutPage() {
                   <p className="text-[11px] text-[#6B5A4C]">
                     Please quote your Order Number in the wire transfer reference. Orders ship once transfer settles.
                   </p>
+                  <div className="pt-2 border-t border-[#E4DDD1]">
+                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
+                      Upload Bank Transfer Slip / Swift Copy (Optional)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUploadSlip(f);
+                        }}
+                        disabled={uploadingSlip}
+                        className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-900 hover:file:bg-slate-200 cursor-pointer"
+                      />
+                      {uploadingSlip && <span className="text-xs text-slate-600 animate-pulse">Uploading...</span>}
+                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">✓ Slip Attached</span>}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -660,12 +775,12 @@ export default function CheckoutPage() {
               <div className="pt-3 border-t border-[#E4DDD1] space-y-2 text-xs">
                 <div className="flex items-center justify-between text-[#6B5A4C]">
                   <span>Subtotal</span>
-                  <span className="font-mono font-semibold text-[#33261F]">${subtotalUSD.toFixed(2)}</span>
+                  <span className="font-mono font-semibold text-[#33261F]">{fmt(subtotalUSD)}</span>
                 </div>
                 <div className="flex items-center justify-between text-[#6B5A4C]">
                   <span>Shipping ({shippingOption.name})</span>
                   <span className="font-mono font-semibold text-[#33261F]">
-                    {shippingFeeUSD === 0 ? 'FREE' : `$${shippingFeeUSD.toFixed(2)}`}
+                    {shippingFeeUSD === 0 ? 'FREE' : fmt(shippingFeeUSD)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-[#E4DDD1] flex items-baseline justify-between">
@@ -675,10 +790,10 @@ export default function CheckoutPage() {
                   </div>
                   <div className="text-right">
                     <span className="font-mono font-extrabold text-lg text-[#8B2E24]">
-                      ${totalUSD.toFixed(2)} USD
+                      {fmt(totalUSD)}
                     </span>
                     <div className="font-mono text-xs text-[#6B5A4C]">
-                      {fmt(totalUSD)}
+                      ≈ {alt(totalUSD)}
                     </div>
                   </div>
                 </div>

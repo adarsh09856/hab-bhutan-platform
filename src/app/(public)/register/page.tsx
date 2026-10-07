@@ -103,7 +103,7 @@ function RegisterContent() {
     const refNum = `HAB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
-      await fetch('/api/applications', {
+      const res = await fetch('/api/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,9 +120,16 @@ function RegisterContent() {
           refNumber: refNum,
         }),
       });
-    } catch {}
+      const data = await res.json().catch(() => null);
+      if (data?.reference) {
+        setReferenceNumber(data.reference);
+      } else {
+        setReferenceNumber(refNum);
+      }
+    } catch {
+      setReferenceNumber(refNum);
+    }
 
-    setReferenceNumber(refNum);
     setIsSubmitting(false);
     setStep(5);
     window.scrollTo(0, 0);

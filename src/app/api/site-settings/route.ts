@@ -113,6 +113,9 @@ export async function GET() {
       ? tb.tickerMessages
       : defaultTicker;
 
+    const bobBanking = pg.bob || {};
+    const bnbBanking = pg.bnb || {};
+
     const enriched = {
       ...setting,
       defaultCurrency,
@@ -124,6 +127,16 @@ export async function GET() {
       aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
       tickerMessages,
       topBarContactMode: tb.topBarContactMode || 'PHONE_ONLY',
+      bobAccountNumber: bobBanking.accountNumber || setting?.checkoutAccountNumber || '200847291038',
+      bobAccountTitle: bobBanking.accountTitle || setting?.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
+      bobBankName: bobBanking.bankName || setting?.checkoutBankName || 'Bank of Bhutan (BoB)',
+      bobPhone: bobBanking.phone || '+975-2-338089',
+      bobQrUrl: bobBanking.qrUrl || '/images/mbob_qr_placeholder.png',
+      bnbAccountNumber: bnbBanking.accountNumber || '0000028471019',
+      bnbAccountTitle: bnbBanking.accountTitle || 'Handicrafts Association of Bhutan',
+      bnbBankName: bnbBanking.bankName || 'Bhutan National Bank Limited (BNB)',
+      bnbPhone: bnbBanking.phone || '+975-2-338089',
+      bnbQrUrl: bnbBanking.qrUrl || '/images/bnb_qr_placeholder.png',
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
@@ -217,6 +230,16 @@ export async function GET() {
         supportedCurrencies: ['USD', 'BTN'],
         supportedLanguages: ['en', 'dz'],
         fxRate: 84.0,
+        bobAccountNumber: '200847291038',
+        bobAccountTitle: 'Handicrafts Association of Bhutan',
+        bobBankName: 'Bank of Bhutan (BoB)',
+        bobPhone: '+975-2-338089',
+        bobQrUrl: '/images/mbob_qr_placeholder.png',
+        bnbAccountNumber: '0000028471019',
+        bnbAccountTitle: 'Handicrafts Association of Bhutan',
+        bnbBankName: 'Bhutan National Bank Limited (BNB)',
+        bnbPhone: '+975-2-338089',
+        bnbQrUrl: '/images/bnb_qr_placeholder.png',
       };
       const response = NextResponse.json({
         success: true,

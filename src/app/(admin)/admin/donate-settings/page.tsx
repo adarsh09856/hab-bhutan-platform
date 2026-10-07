@@ -45,6 +45,11 @@ interface Donation {
   donorName: string;
   donorEmail: string;
   amountUSD: number;
+  amountBTN?: number;
+  currency?: string;
+  paymentMethod?: string;
+  proofUrl?: string | null;
+  journalRef?: string | null;
   frequency: string;
   status: string;
   receiptNumber: string;
@@ -109,11 +114,22 @@ export default function AdminDonateSettingsPage() {
     checkoutAccountTitle: 'Handicrafts Association of Bhutan',
     checkoutSwiftCode: 'BOBTBLBT',
     checkoutBankAddress: 'Thimphu Main Branch, Thimphu, Bhutan',
+    bobAccountNumber: '200847291038',
+    bobAccountTitle: 'Handicrafts Association of Bhutan',
+    bobBankName: 'Bank of Bhutan Limited (BoB)',
+    bobPhone: '+975-2-338089',
+    bobQrUrl: '/images/mbob_qr_placeholder.png',
+    bnbAccountNumber: '0000028471019',
+    bnbAccountTitle: 'Handicrafts Association of Bhutan',
+    bnbBankName: 'Bhutan National Bank Limited (BNB)',
+    bnbPhone: '+975-2-338089',
+    bnbQrUrl: '/images/bnb_qr_placeholder.png',
   });
   const [savingContent, setSavingContent] = useState(false);
 
   // Receipt Modal state
   const [selectedReceipt, setSelectedReceipt] = useState<Donation | null>(null);
+  const [selectedProofUrl, setSelectedProofUrl] = useState<string | null>(null);
   const [copiedBank, setCopiedBank] = useState(false);
 
   // Flash message
@@ -145,6 +161,16 @@ export default function AdminDonateSettingsPage() {
           checkoutAccountTitle: s.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
           checkoutSwiftCode: s.checkoutSwiftCode || 'BOBTBLBT',
           checkoutBankAddress: s.checkoutBankAddress || 'Thimphu Main Branch, Thimphu, Bhutan',
+          bobAccountNumber: s.bobAccountNumber || '200847291038',
+          bobAccountTitle: s.bobAccountTitle || 'Handicrafts Association of Bhutan',
+          bobBankName: s.bobBankName || 'Bank of Bhutan Limited (BoB)',
+          bobPhone: s.bobPhone || '+975-2-338089',
+          bobQrUrl: s.bobQrUrl || '/images/mbob_qr_placeholder.png',
+          bnbAccountNumber: s.bnbAccountNumber || '0000028471019',
+          bnbAccountTitle: s.bnbAccountTitle || 'Handicrafts Association of Bhutan',
+          bnbBankName: s.bnbBankName || 'Bhutan National Bank Limited (BNB)',
+          bnbPhone: s.bnbPhone || '+975-2-338089',
+          bnbQrUrl: s.bnbQrUrl || '/images/bnb_qr_placeholder.png',
         });
       }
     } catch {
@@ -714,6 +740,7 @@ SWIFT Code: BOBTBLBT`;
                       <th className="px-5 py-3">Pillar</th>
                       <th className="px-5 py-3">Amount</th>
                       <th className="px-5 py-3">Frequency</th>
+                      <th className="px-5 py-3">Payment Proof</th>
                       <th className="px-5 py-3 text-center">Status</th>
                       <th className="px-5 py-3 text-right">Actions</th>
                     </tr>
@@ -752,6 +779,22 @@ SWIFT Code: BOBTBLBT`;
                           <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-800 border border-slate-200">
                             {d.frequency === 'MONTHLY' ? 'Monthly' : 'One-Time'}
                           </span>
+                        </td>
+
+                        <td className="px-5 py-3.5">
+                          {d.proofUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedProofUrl(d.proofUrl || null)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-colors shadow-xs cursor-pointer"
+                              title="View uploaded payment slip screenshot"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-amber-700" />
+                              <span>View Slip</span>
+                            </button>
+                          ) : (
+                            <span className="text-xs admin-muted italic">None</span>
+                          )}
                         </td>
 
                         <td className="px-5 py-3.5 text-center">
@@ -804,55 +847,184 @@ SWIFT Code: BOBTBLBT`;
 
       {/* Tab 3: Banking & Exemption Settings */}
       {activeTab === 'banking' && (
-        <div className="space-y-6">
-          <div className="admin-card rounded-xl border admin-border p-6 shadow-sm">
-            <div className="flex items-start justify-between">
+        <form onSubmit={handleSaveContent} className="space-y-6">
+          {/* BoB and mBoB Card */}
+          <div className="admin-card rounded-xl border admin-border p-6 shadow-sm space-y-4">
+            <div className="flex items-start justify-between border-b admin-border pb-3">
               <div>
-                <h2 className="text-lg font-bold admin-title flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold admin-title flex items-center gap-2">
                   <Landmark className="w-5 h-5 text-amber-700" />
-                  Bank of Bhutan Wire & mBoB Details
+                  Bank of Bhutan (BoB) &amp; mBoB Credentials
                 </h2>
-                <p className="text-xs admin-muted mt-1">
-                  Official banking credentials provided to donors choosing direct bank transfer or mBoB mobile QR payment.
+                <p className="text-xs admin-muted mt-0.5">
+                  Official BoB credentials and mobile banking QR code for donors and checkout customers.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={copyBankDetails}
-                className="admin-button-secondary px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5"
+                className="admin-button-secondary px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
               >
                 {copiedBank ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                {copiedBank ? 'Copied' : 'Copy Banking Details'}
+                {copiedBank ? 'Copied' : 'Copy Credentials'}
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-              <div className="p-4 rounded-lg bg-slate-50 border admin-border space-y-1">
-                <span className="text-xs admin-muted uppercase tracking-wider font-semibold">Account Name</span>
-                <p className="text-sm font-bold admin-title">Handicrafts Association of Bhutan</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BoB Account Title / Beneficiary Name
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bobAccountTitle}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bobAccountTitle: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Handicrafts Association of Bhutan"
+                />
               </div>
 
-              <div className="p-4 rounded-lg bg-slate-50 border admin-border space-y-1">
-                <span className="text-xs admin-muted uppercase tracking-wider font-semibold">Bank Name & Branch</span>
-                <p className="text-sm font-bold admin-title">Bank of Bhutan Limited (BoB) · Thimphu Main Branch</p>
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BoB Account Number
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bobAccountNumber}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bobAccountNumber: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono"
+                  placeholder="200847291038"
+                />
               </div>
 
-              <div className="p-4 rounded-lg bg-slate-50 border admin-border space-y-1">
-                <span className="text-xs admin-muted uppercase tracking-wider font-semibold">Account Number</span>
-                <p className="text-sm font-mono font-bold text-slate-800">201104300189</p>
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BoB Bank &amp; Branch Name
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bobBankName}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bobBankName: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Bank of Bhutan Limited (BoB) · Thimphu Main Branch"
+                />
               </div>
 
-              <div className="p-4 rounded-lg bg-slate-50 border admin-border space-y-1">
-                <span className="text-xs admin-muted uppercase tracking-wider font-semibold">SWIFT / BIC Code</span>
-                <p className="text-sm font-mono font-bold text-slate-800">BOBTBLBT</p>
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  mBoB Registered Phone / Hotline
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bobPhone}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bobPhone: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono"
+                  placeholder="+975-2-338089"
+                />
               </div>
+
+              <div className="md:col-span-2">
+                <FileUploadInput
+                  label="mBoB Official QR Code Image"
+                  value={contentForm.bobQrUrl}
+                  onChange={(url) => setContentForm((prev) => ({ ...prev, bobQrUrl: url }))}
+                  hint="Upload official Bank of Bhutan mBoB payment QR code image (PNG, JPG, SVG)."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* BNB and mPay Card */}
+          <div className="admin-card rounded-xl border admin-border p-6 shadow-sm space-y-4">
+            <div className="border-b admin-border pb-3">
+              <h2 className="text-base sm:text-lg font-bold admin-title flex items-center gap-2">
+                <Landmark className="w-5 h-5 text-amber-700" />
+                Bhutan National Bank (BNB) &amp; mPay Credentials
+              </h2>
+              <p className="text-xs admin-muted mt-0.5">
+                Official BNB credentials and mPay QR code for local transfers.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BNB Account Title / Beneficiary Name
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bnbAccountTitle}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bnbAccountTitle: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Handicrafts Association of Bhutan"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BNB Account Number
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bnbAccountNumber}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bnbAccountNumber: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono"
+                  placeholder="0000028471019"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BNB Bank &amp; Branch Name
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bnbBankName}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bnbBankName: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none"
+                  placeholder="Bhutan National Bank Limited (BNB) · Thimphu Corporate Branch"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold admin-muted uppercase mb-1">
+                  BNB Registered Phone / Helpline
+                </label>
+                <input
+                  type="text"
+                  value={contentForm.bnbPhone}
+                  onChange={(e) => setContentForm((prev) => ({ ...prev, bnbPhone: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-lg admin-input border admin-border focus:outline-none font-mono"
+                  placeholder="+975-2-338089"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <FileUploadInput
+                  label="BNB mPay Official QR Code Image"
+                  value={contentForm.bnbQrUrl}
+                  onChange={(url) => setContentForm((prev) => ({ ...prev, bnbQrUrl: url }))}
+                  hint="Upload Bhutan National Bank mPay payment QR code image (PNG, JPG, SVG)."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t admin-border">
+              <button
+                type="submit"
+                disabled={savingContent}
+                className="admin-button-primary px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
+              >
+                <Save className="w-4 h-4" />
+                <span>{savingContent ? 'Saving...' : 'Save Banking & QR Code Settings'}</span>
+              </button>
             </div>
           </div>
 
           <div className="admin-card rounded-xl border admin-border p-6 shadow-sm space-y-3">
             <h2 className="text-lg font-bold admin-title flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-emerald-700" />
-              CSO Tax Exemption & Regulatory Authority
+              CSO Tax Exemption &amp; Regulatory Authority
             </h2>
             <p className="text-sm admin-text leading-relaxed">
               Handicrafts Association of Bhutan (HAB) is registered under the{' '}
@@ -865,7 +1037,7 @@ SWIFT Code: BOBTBLBT`;
               legal sanction.
             </p>
           </div>
-        </div>
+        </form>
       )}
 
       {/* Tab 4: Page Content & Wire Settings */}
@@ -1465,6 +1637,56 @@ SWIFT Code: BOBTBLBT`;
               >
                 <Printer className="w-4 h-4" />
                 Print / Save PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal for Payment Slip Preview */}
+      {selectedProofUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
+          onClick={() => setSelectedProofUrl(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b bg-slate-50">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Payment Proof / Bank Slip Verification
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedProofUrl(null)}
+                className="text-slate-500 hover:text-slate-800 p-1 rounded-md"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 flex-1 overflow-auto flex items-center justify-center bg-slate-900/10 min-h-[300px]">
+              <img
+                src={selectedProofUrl}
+                alt="Payment proof screenshot"
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-lg shadow-md"
+              />
+            </div>
+            <div className="p-3 border-t bg-slate-50 flex justify-between items-center text-xs">
+              <a
+                href={selectedProofUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-700 hover:underline font-semibold flex items-center gap-1"
+              >
+                Open Original Image ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setSelectedProofUrl(null)}
+                className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-medium cursor-pointer"
+              >
+                Close Preview
               </button>
             </div>
           </div>

@@ -76,6 +76,7 @@ export default function AdminOrdersPage() {
   const [cancellingOrder, setCancellingOrder] = useState<any | null>(null);
   const [fulfillingOrder, setFulfillingOrder] = useState<any | null>(null);
   const [showDeleteAttemptModal, setShowDeleteAttemptModal] = useState<any | null>(null);
+  const [selectedProofUrl, setSelectedProofUrl] = useState<string | null>(null);
 
   // Forms & Feedbacks
   const [trackingInput, setTrackingInput] = useState('');
@@ -657,6 +658,19 @@ export default function AdminOrdersPage() {
                         {o.mBOBTransactionRef && (
                           <div className="text-[10px] text-teal-800 font-mono mt-0.5 truncate max-w-[130px] font-semibold" title={`mBoB Journal: ${o.mBOBTransactionRef}`}>
                             Ref: {o.mBOBTransactionRef}
+                          </div>
+                        )}
+                        {o.proofUrl && (
+                          <div className="mt-1">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedProofUrl(o.proofUrl)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-semibold transition-colors cursor-pointer"
+                              title="View customer payment proof slip"
+                            >
+                              <Eye className="w-3 h-3 text-amber-700" />
+                              <span>View Slip</span>
+                            </button>
                           </div>
                         )}
                         {o.paymentMethod === 'COD' && o.paymentStatus !== 'PAID' && (
@@ -1802,6 +1816,56 @@ export default function AdminOrdersPage() {
             items: invoiceModalOrder.orderItems || invoiceModalOrder.items,
           }}
         />
+      )}
+
+      {/* Lightbox Modal for Customer Payment Slip Verification */}
+      {selectedProofUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs print:hidden"
+          onClick={() => setSelectedProofUrl(null)}
+        >
+          <div
+            className="relative max-w-3xl w-full max-h-[90vh] bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b bg-slate-50">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Order Payment Proof Slip
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedProofUrl(null)}
+                className="text-slate-500 hover:text-slate-800 p-1 rounded-md"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 flex-1 overflow-auto flex items-center justify-center bg-slate-900/10 min-h-[300px]">
+              <img
+                src={selectedProofUrl}
+                alt="Order Payment Proof Slip"
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-lg shadow-md"
+              />
+            </div>
+            <div className="p-3 border-t bg-slate-50 flex justify-between items-center text-xs">
+              <a
+                href={selectedProofUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-amber-700 hover:underline font-semibold flex items-center gap-1"
+              >
+                Open Original File ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setSelectedProofUrl(null)}
+                className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-medium cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
