@@ -29,6 +29,10 @@ export async function POST(req: NextRequest) {
       customOrderNotes,
       customOrderDate,
       selectedCrafts,
+      paymentMethod,
+      paymentRef,
+      mobilePhone,
+      proofUrl,
     } = body;
 
     if (!businessName?.trim() || !contactPerson?.trim() || !email?.trim()) {
@@ -58,6 +62,10 @@ export async function POST(req: NextRequest) {
       customNotes ? `Production Notes: ${customNotes}` : '',
       customOrderNotes ? `Order Details: ${customOrderNotes}` : '',
       customOrderDate ? `Target Delivery: ${customOrderDate}` : '',
+      paymentMethod ? `Payment Method: ${paymentMethod}` : '',
+      paymentRef ? `Payment Ref: ${paymentRef}` : '',
+      mobilePhone ? `mBoB Phone: ${mobilePhone}` : '',
+      proofUrl ? `Payment Slip Proof: ${proofUrl}` : '',
     ].filter(Boolean).join('\n');
 
     const buyerId = crypto.randomUUID();

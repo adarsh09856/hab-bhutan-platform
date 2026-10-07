@@ -33,6 +33,15 @@ export default function WholesaleRegisterPage() {
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  // Payment states (matching donate section)
+  const [payMethod, setPayMethod] = useState<'card' | 'mbob' | 'bank'>('card');
+  const [mobilePhone, setMobilePhone] = useState('');
+  const [bankRef, setBankRef] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofUrl, setProofUrl] = useState('');
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const toggleAllCrafts = () => {
     if (selectedCrafts.length === CLIENT_DATA.crafts.length) {
       setSelectedCrafts([]);
@@ -52,6 +61,33 @@ export default function WholesaleRegisterPage() {
       const names = Array.from(e.target.files).map((f) => f.name);
       setFileNames(names);
       setFileCount(names.length);
+    }
+  };
+
+  const handlePaymentProofUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProofFile(file);
+    setUploadError(null);
+    setUploadingFile(true);
+
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload deposit proof');
+      }
+      setProofUrl(data.url);
+    } catch (err: any) {
+      setUploadError(err.message || 'File upload failed');
+    } finally {
+      setUploadingFile(false);
     }
   };
 
@@ -86,6 +122,10 @@ export default function WholesaleRegisterPage() {
         body: JSON.stringify({
           ...formData,
           selectedCrafts,
+          paymentMethod: payMethod,
+          paymentRef: bankRef,
+          mobilePhone,
+          proofUrl,
         }),
       });
 
@@ -425,7 +465,130 @@ export default function WholesaleRegisterPage() {
               </div>
             </section>
 
-            {/* 5. Declaration */}
+            {/* 5. Payment Method & Trade Verification Dues */}
+            <section className="regblock">
+              <h2 className="regblock__title">Trade verification &amp; annual dues</h2>
+              <p className="regblock__lede">
+                Wholesale verification fee: <strong>Nu. 2,500 / USD $30</strong> per year. Covers craft provenance audit, trade desk account provisioning, and access to confidential bulk discount tiers.
+              </p>
+
+              <div className="checkout" style={{ marginTop: 16 }}>
+                <div className="panel">
+                  <h3 className="newsaside__title">Choose payment method</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+                    {[
+                      { key: 'card', name: 'International card (3-D Secure)', note: 'Visa, Mastercard, Amex — instant card authorization' },
+                      { key: 'mbob', name: 'Bhutan mobile pay (mBoB / RMA QR)', note: 'mBoB / RMA-approved digital wallets, in Nu.' },
+                      { key: 'bank', name: 'Bank transfer (BOB / BNB)', note: 'Wire transfer or direct branch deposit slip' },
+                    ].map((opt) => (
+                      <div
+                        key={opt.key}
+                        className={`payopt ${payMethod === opt.key ? 'is-active' : ''}`}
+                        onClick={() => setPayMethod(opt.key as any)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <span className="payopt__dot"></span>
+                        <span>
+                          <span className="payopt__name">{opt.name}</span>
+                          <span className="payopt__note">{opt.note}</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* mBoB details */}
+                  {payMethod === 'mbob' && (
+                    <div style={{ marginTop: 16, padding: 14, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, color: '#8B2E24' }}>
+                        mBoB Transfer Details
+                      </p>
+                      <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                        Transfer <strong>Nu. 2,500</strong> to Bank of Bhutan Account <strong>0100234891001</strong> (Handicrafts Association of Bhutan).
+                      </p>
+                      <div className="formgrid">
+                        <label className="field">
+                          <span className="field__label">Your mBoB Registered Phone</span>
+                          <input
+                            type="tel"
+                            className="input"
+                            placeholder="+975 17……"
+                            value={mobilePhone}
+                            onChange={(e) => setMobilePhone(e.target.value)}
+                          />
+                        </label>
+                        <label className="field">
+                          <span className="field__label">Journal / Transaction Reference</span>
+                          <input
+                            type="text"
+                            className="input"
+                            placeholder="e.g. MB-849201"
+                            value={bankRef}
+                            onChange={(e) => setBankRef(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div style={{ marginTop: 10 }}>
+                        <span className="field__label">Upload Payment Screenshot / Slip</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handlePaymentProofUpload}
+                          className="input input--file"
+                        />
+                        {uploadingFile && <p style={{ fontSize: 11, color: '#0284c7' }}>Uploading slip...</p>}
+                        {proofUrl && <p style={{ fontSize: 11, color: '#16a34a' }}>✓ Slip uploaded successfully</p>}
+                        {uploadError && <p style={{ fontSize: 11, color: '#dc2626' }}>{uploadError}</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bank transfer details */}
+                  {payMethod === 'bank' && (
+                    <div style={{ marginTop: 16, padding: 14, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, color: '#8B2E24' }}>
+                        Bank Deposit / SWIFT Wire Details
+                      </p>
+                      <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                        Bank of Bhutan Account: <strong>100234891001</strong> · Bhutan National Bank (BNB): <strong>00234891001</strong> · SWIFT: <strong>BOBTBT22</strong>.
+                      </p>
+                      <div className="formgrid">
+                        <label className="field field--wide">
+                          <span className="field__label">Bank Deposit Reference Number</span>
+                          <input
+                            type="text"
+                            className="input"
+                            placeholder="Deposit ref or counter foil #"
+                            value={bankRef}
+                            onChange={(e) => setBankRef(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div style={{ marginTop: 10 }}>
+                        <span className="field__label">Upload Bank Deposit Slip / Wire Confirmation</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handlePaymentProofUpload}
+                          className="input input--file"
+                        />
+                        {uploadingFile && <p style={{ fontSize: 11, color: '#0284c7' }}>Uploading document...</p>}
+                        {proofUrl && <p style={{ fontSize: 11, color: '#16a34a' }}>✓ Slip uploaded successfully</p>}
+                        {uploadError && <p style={{ fontSize: 11, color: '#dc2626' }}>{uploadError}</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Card payment note */}
+                  {payMethod === 'card' && (
+                    <div style={{ marginTop: 14, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569' }}>
+                      3-D Secure card authorization is handled by our gateway upon clicking Submit. No card details are stored on our servers.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* 6. Declaration */}
             <section className="regblock">
               <h2 className="regblock__title">Declaration</h2>
               <label className="check">

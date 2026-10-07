@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { CRAFTS } from '@/lib/data';
 import ProductCard from '@/components/public/ProductCard';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function ShopGridContent() {
   const params = useParams();
@@ -62,7 +63,8 @@ function ShopGridContent() {
   }, [productsList]);
 
   return (
-    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24">
+    <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24 relative" data-hab-section="shop-craft">
+      <SectionEditBadge label="Products Studio" studioHref="/admin/products" />
       {/* Breadcrumbs */}
       <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}

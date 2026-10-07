@@ -214,7 +214,9 @@ export default function ProductDetailPage() {
                       objectPosition: 'center',
                     }}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = primaryImg;
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = '/assets/photos/product-sad03.jpg';
                     }}
                   />
                 </div>

@@ -80,6 +80,8 @@ export async function GET(req: NextRequest) {
       par06: '/assets/photos/product-mas01.jpg',
       lha08: '/assets/photos/product-lha01.jpg',
       tsh11: '/assets/photos/product-ftb04.jpg',
+      gaki: '/assets/photos/product-gaki.jpg',
+      gaki01: '/assets/photos/product-gaki.jpg',
     };
 
     const CRAFT_FALLBACKS: Record<string, string> = {
@@ -132,6 +134,8 @@ export async function GET(req: NextRequest) {
           imageUrl: img,
           images: Array.isArray(p.images) && (p.images as any).length > 0 ? p.images : [{ url: img, role: 'primary' }],
           price: p.priceUSD,
+          price_usd: p.priceUSD,
+          priceUSD: p.priceUSD,
         };
       });
       const response = NextResponse.json({

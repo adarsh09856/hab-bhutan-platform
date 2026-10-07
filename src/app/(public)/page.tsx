@@ -197,6 +197,11 @@ export default function HomePage() {
     membershipRightTitle: 'Become a member',
     membershipRightText: 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.',
     membershipRightCtaText: 'Apply for membership',
+    shopEyebrow: 'Latest arrivals',
+    shopHeading: 'New in the shop',
+    shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+    shopCtaText: 'Visit the shop →',
+    shopCtaLink: '/shop',
     partnersList: CLIENT_VERBATIM.partners,
     homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER,
   });
@@ -599,6 +604,11 @@ export default function HomePage() {
               membershipRightTitle: d.setting.membershipRightTitle || prev.membershipRightTitle,
               membershipRightText: d.setting.membershipRightText || prev.membershipRightText,
               membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
+              shopEyebrow: d.setting.shopEyebrow || prev.shopEyebrow,
+              shopHeading: d.setting.shopHeading || prev.shopHeading,
+              shopLede: d.setting.shopLede || prev.shopLede,
+              shopCtaText: d.setting.shopCtaText || prev.shopCtaText,
+              shopCtaLink: d.setting.shopCtaLink || prev.shopCtaLink,
               partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
               homepageSectionOrder: Array.isArray(d.setting.homepageSectionOrder) && d.setting.homepageSectionOrder.length > 0 ? d.setting.homepageSectionOrder : prev.homepageSectionOrder,
             }));
@@ -1094,18 +1104,23 @@ export default function HomePage() {
       </section>
     ),
     'shop': (
-<section className="section relative" id="shop" data-hab-section="shop">
-        <SectionEditBadge label="Featured Crafts Shop" studioHref="/admin/products" {...getMoveProps('shop')} />
+      <section className="section relative" id="shop" data-hab-section="shop">
+        <SectionEditBadge
+          label="Featured Crafts Shop"
+          studioHref="/admin/products"
+          onQuickEdit={() => openQuickEdit('products', 'New in the Shop (Latest Arrivals)', '/admin/products')}
+          {...getMoveProps('shop')}
+        />
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">{t('home.latest_arrivals', 'Latest arrivals')}</p>
-            <h2 className="display display--band">{t('home.new_in_shop', 'New in the shop')}</h2>
+            <p className="eyebrow eyebrow--accent">{siteSettings.shopEyebrow || t('home.latest_arrivals', 'Latest arrivals')}</p>
+            <h2 className="display display--band">{siteSettings.shopHeading || t('home.new_in_shop', 'New in the shop')}</h2>
             <p className="section__lede">
-              A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.
+              {siteSettings.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.'}
             </p>
           </div>
-          <Link className="btn btn--ink btn--sm" href="/shop">
-            {t('home.visit_shop', 'Visit the shop →')}
+          <Link className="btn btn--ink btn--sm" href={siteSettings.shopCtaLink || '/shop'}>
+            {siteSettings.shopCtaText || t('home.visit_shop', 'Visit the shop →')}
           </Link>
         </div>
         <div className="grid grid--4">

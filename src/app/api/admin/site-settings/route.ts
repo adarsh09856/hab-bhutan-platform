@@ -75,6 +75,11 @@ export async function GET(req: NextRequest) {
     bnbPhone: bnbBanking.phone || '+975-2-338089',
     bnbQrUrl: bnbBanking.qrUrl || '/images/bnb_qr_placeholder.png',
     homepageSectionOrder: (setting as any)?.homepageSectionOrder || (tb as any)?.homepageSectionOrder || null,
+    shopEyebrow: tb.shopEyebrow || 'Latest arrivals',
+    shopHeading: tb.shopHeading || 'New in the shop',
+    shopLede: tb.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+    shopCtaText: tb.shopCtaText || 'Visit the shop →',
+    shopCtaLink: tb.shopCtaLink || '/shop',
   } : null;
 
   return NextResponse.json({ success: true, setting: enriched });
@@ -398,6 +403,11 @@ export async function PUT(req: NextRequest) {
     if (body.aboutBannerPosition !== undefined) {
       currentTrust.aboutBannerPosition = body.aboutBannerPosition;
     }
+    if (body.shopEyebrow !== undefined) currentTrust.shopEyebrow = body.shopEyebrow;
+    if (body.shopHeading !== undefined) currentTrust.shopHeading = body.shopHeading;
+    if (body.shopLede !== undefined) currentTrust.shopLede = body.shopLede;
+    if (body.shopCtaText !== undefined) currentTrust.shopCtaText = body.shopCtaText;
+    if (body.shopCtaLink !== undefined) currentTrust.shopCtaLink = body.shopCtaLink;
     updatePayload.trustBadges = currentTrust;
     createPayload.trustBadges = currentTrust;
 

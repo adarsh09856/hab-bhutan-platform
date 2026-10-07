@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
     const yearsPractising = body.yearsPractising ? parseInt(String(body.yearsPractising), 10) || 1 : 1;
     const planTierRaw = body.planTier || body.categoryKey || 'ACTIVE_SECTOR_MEMBER';
     const paymentMethodRaw = body.paymentMethod || 'CARD';
+    const uploadedDocUrl = body.uploadedDocUrl || body.proofUrl || null;
+    const uploadedCidUrl = body.uploadedCidUrl || null;
+    const paymentNotes = body.paymentRef
+      ? `Payment: ${paymentMethodRaw.toUpperCase()} · Ref: ${body.paymentRef}${body.mobilePhone ? ` · Phone: ${body.mobilePhone}` : ''}`
+      : null;
 
     if (!applicantName || !email || !phone || !rawCID || !craftKey || !dzongkhag) {
       return NextResponse.json(
@@ -68,6 +73,9 @@ export async function POST(req: NextRequest) {
       yearsPractising,
       planTier: mappedTier,
       paymentMethod: mappedPayment,
+      uploadedDocUrl,
+      uploadedCidUrl,
+      reviewerNotes: paymentNotes,
       status: 'PENDING',
       submittedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -108,6 +116,9 @@ export async function POST(req: NextRequest) {
             yearsPractising,
             planTier: mappedTier,
             paymentMethod: mappedPayment,
+            uploadedDocUrl,
+            uploadedCidUrl,
+            reviewerNotes: paymentNotes,
             status: 'PENDING',
           },
         }).catch((err) => {

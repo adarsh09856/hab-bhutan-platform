@@ -467,6 +467,48 @@ export default function AdminApplicationsPage() {
                     <span className="admin-muted block text-[10px]">Trade License</span>
                     <span className="font-mono admin-text">{selectedApp.businessLicense || 'None (Artisan Individual)'}</span>
                   </div>
+                  <div>
+                    <span className="admin-muted block text-[10px]">Payment Method</span>
+                    <span className="inline-block mt-0.5 px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                      {selectedApp.paymentMethod || 'CARD'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="admin-muted block text-[10px]">Application Tier</span>
+                    <span className="font-semibold admin-text">{selectedApp.planTier}</span>
+                  </div>
+                  {selectedApp.uploadedDocUrl && (
+                    <div className="col-span-2 p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded">
+                      <span className="admin-muted block text-[10px] text-emerald-400 font-semibold mb-1">
+                        ✓ Payment Deposit Slip / Proof Uploaded:
+                      </span>
+                      <a
+                        href={selectedApp.uploadedDocUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-sky-400 hover:text-sky-300 underline font-mono flex items-center gap-1.5"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View Deposit Slip ({selectedApp.uploadedDocUrl.split('/').pop()})</span>
+                      </a>
+                    </div>
+                  )}
+                  {selectedApp.uploadedCidUrl && (
+                    <div className="col-span-2 p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded">
+                      <span className="admin-muted block text-[10px] text-indigo-400 font-semibold mb-1">
+                        CID Document Copy:
+                      </span>
+                      <a
+                        href={selectedApp.uploadedCidUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-sky-400 hover:text-sky-300 underline font-mono flex items-center gap-1.5"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View CID Document</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {selectedApp.rejectionReason && (

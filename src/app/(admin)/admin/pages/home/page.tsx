@@ -28,7 +28,8 @@ import {
   ArrowDown,
   RotateCcw,
   ListOrdered,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ShoppingBag
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -89,7 +90,7 @@ const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionDef[] = [
 const DEFAULT_HOMEPAGE_SECTION_ORDER = DEFAULT_HOMEPAGE_SECTIONS.map((s) => s.id);
 
 export default function HomePageStudio() {
-  const [activeTab, setActiveTab] = useState<'hero' | 'announcement' | 'mission' | 'punakha' | 'assurances' | 'partners' | 'order'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'announcement' | 'mission' | 'shop' | 'punakha' | 'assurances' | 'partners' | 'order'>('hero');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -121,6 +122,13 @@ export default function HomePageStudio() {
     heroCtaPrimaryLink: '/shop',
     heroCtaSecondaryText: 'Our Mission & Mandate',
     heroCtaSecondaryLink: '/about',
+
+    // Featured Shop Section
+    shopEyebrow: 'Latest arrivals',
+    shopHeading: 'New in the shop',
+    shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+    shopCtaText: 'Visit the shop →',
+    shopCtaLink: '/shop',
     
     // 4 Key Statistics
     stat1Number: '2,500+',
@@ -555,6 +563,19 @@ export default function HomePageStudio() {
 
         <button
           type="button"
+          onClick={() => setActiveTab('shop')}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
+            activeTab === 'shop'
+              ? 'border-[#8B2E24] text-[#8B2E24]'
+              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          <span>4. New in the Shop (Arrivals)</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('punakha')}
           className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'punakha'
@@ -563,7 +584,7 @@ export default function HomePageStudio() {
           }`}
         >
           <MapPin className="w-4 h-4" />
-          <span>4. Punakha Market Spotlight</span>
+          <span>5. Punakha Market Spotlight</span>
         </button>
 
         <button
@@ -576,7 +597,7 @@ export default function HomePageStudio() {
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
-          <span>5. Assurances & Banners</span>
+          <span>6. Assurances & Banners</span>
         </button>
 
         <button
@@ -589,7 +610,7 @@ export default function HomePageStudio() {
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          <span>6. Partners (Image 1)</span>
+          <span>7. Partners (Image 1)</span>
         </button>
 
         <button
@@ -602,7 +623,7 @@ export default function HomePageStudio() {
           }`}
         >
           <ListOrdered className="w-4 h-4" />
-          <span>7. Section Order (Move Up/Down)</span>
+          <span>8. Section Order (Move Up/Down)</span>
           <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-600 font-mono">
             {settings.homepageSectionOrder.length}
           </span>
@@ -1062,7 +1083,126 @@ export default function HomePageStudio() {
         </div>
       )}
 
-      {/* TAB 4: PUNAKHA MARKET SPOTLIGHT */}
+      {/* TAB 4: NEW IN THE SHOP (LATEST ARRIVALS) */}
+      {activeTab === 'shop' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">New in the Shop (Latest Arrivals Section)</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Configure the title, subtitle/lede, and call-to-action button for the featured products showcase on the homepage.
+              </p>
+            </div>
+            <Link
+              href="/admin/products"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold transition-colors"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Manage All Products, Prices, & Stock →</span>
+            </Link>
+          </div>
+
+          <div className="space-y-4 max-w-4xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Section Eyebrow Label
+                </label>
+                <input
+                  type="text"
+                  value={settings.shopEyebrow}
+                  onChange={(e) => setSettings((s) => ({ ...s, shopEyebrow: e.target.value }))}
+                  placeholder="Latest arrivals"
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+                <p className="text-[11px] text-slate-400">Small uppercase badge shown above the main heading.</p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Main Section Heading
+                </label>
+                <input
+                  type="text"
+                  value={settings.shopHeading}
+                  onChange={(e) => setSettings((s) => ({ ...s, shopHeading: e.target.value }))}
+                  placeholder="New in the shop"
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+                <p className="text-[11px] text-slate-400">Primary headline for the latest arrivals showcase.</p>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                Section Subtext / Lede
+              </label>
+              <textarea
+                rows={3}
+                value={settings.shopLede}
+                onChange={(e) => setSettings((s) => ({ ...s, shopLede: e.target.value }))}
+                placeholder="A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB."
+                className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+              />
+              <p className="text-[11px] text-slate-400">Explanatory description introducing how HAB sources and curates handicrafts.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  CTA Button Label
+                </label>
+                <input
+                  type="text"
+                  value={settings.shopCtaText}
+                  onChange={(e) => setSettings((s) => ({ ...s, shopCtaText: e.target.value }))}
+                  placeholder="Visit the shop →"
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  CTA Button Destination
+                </label>
+                <input
+                  type="text"
+                  value={settings.shopCtaLink}
+                  onChange={(e) => setSettings((s) => ({ ...s, shopCtaLink: e.target.value }))}
+                  placeholder="/shop"
+                  className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                <ShoppingBag className="w-4 h-4" />
+              </div>
+              <div className="text-xs text-amber-900 space-y-1">
+                <p className="font-bold">Product Catalog & Inventory Live Sync</p>
+                <p className="text-amber-800 leading-relaxed">
+                  Individual products, images, prices (Nu.), craft tags, and stock are managed in the Products CRUD studio. Homepage automatically features the top latest approved products.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                type="button"
+                onClick={() => handleSaveSettings()}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+              >
+                <Save className="w-4 h-4" />
+                <span>{saving ? 'Saving...' : 'Save Shop Section Settings'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: PUNAKHA MARKET SPOTLIGHT */}
       {activeTab === 'punakha' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1112,7 +1252,7 @@ export default function HomePageStudio() {
         </div>
       )}
 
-      {/* TAB 5: ASSURANCES & BANNERS */}
+      {/* TAB 6: ASSURANCES & BANNERS */}
       {activeTab === 'assurances' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div>
@@ -1266,7 +1406,7 @@ export default function HomePageStudio() {
         </div>
       )}
 
-      {/* TAB 6: PARTNERS (IMAGE 1) */}
+      {/* TAB 7: PARTNERS (IMAGE 1) */}
       {activeTab === 'partners' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
@@ -1383,7 +1523,7 @@ export default function HomePageStudio() {
         </div>
       )}
 
-      {/* TAB 7: SECTION ORDER MANAGER (MOVE UP / DOWN) */}
+      {/* TAB 8: SECTION ORDER MANAGER (MOVE UP / DOWN) */}
       {activeTab === 'order' && (
         <div className="space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">

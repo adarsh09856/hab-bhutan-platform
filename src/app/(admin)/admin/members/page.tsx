@@ -4,9 +4,18 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Download, Upload, FileSpreadsheet, Check } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import {
+  generateExcelCsv,
+  parseCsv,
+  triggerDownload,
+  MEMBER_HEADERS,
+  MEMBER_SAMPLE_ROWS,
+  validateMemberImport,
+  MemberImportValidationResult,
+} from '@/lib/spreadsheet';
 
 const DZONGKHAGS = [
   'Thimphu', 'Paro', 'Punakha', 'Wangdue Phodrang', 'Chhukha', 'Haa', 'Samtse',
@@ -22,6 +31,12 @@ export default function AdminMembersPage() {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionError, setActionError] = useState('');
+
+  // Bulk import state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importValidation, setImportValidation] = useState<MemberImportValidationResult | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importFileName, setImportFileName] = useState('');
 
   // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -255,6 +270,81 @@ export default function AdminMembersPage() {
     }
   };
 
+  // Export Members to Excel / CSV
+  const handleExportMembers = () => {
+    const rows = members.map((m) => [
+      m.name,
+      m.craftKey || m.craft?.key || 'thagzo',
+      m.dzongkhag || 'Thimphu',
+      m.village || '',
+      m.cidNumber || m.regNumber || '',
+      m.phone || '',
+      m.email || '',
+      m.tier || 'ACTIVE_SECTOR_MEMBER',
+      m.status || 'VERIFIED',
+      m.joinYear || new Date().getFullYear(),
+      (m.bio || '').replace(/\r?\n/g, ' | '),
+    ]);
+
+    const csvContent = generateExcelCsv(MEMBER_HEADERS, rows);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    triggerDownload(`HAB_Certified_Members_${dateStr}.csv`, csvContent);
+    setActionSuccess(`✓ Exported ${members.length} members to Excel-ready CSV.`);
+  };
+
+  const handleDownloadMemberTemplate = () => {
+    const csvContent = generateExcelCsv(MEMBER_HEADERS, MEMBER_SAMPLE_ROWS);
+    triggerDownload('HAB_Member_Import_Template.csv', csvContent);
+  };
+
+  const handleMemberFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImportFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      const rawRows = parseCsv(text);
+      const existingCids = new Set(members.map((m) => (m.cidNumber || '').trim()).filter(Boolean));
+      const existingNames = new Set(members.map((m) => (m.name || '').trim().toLowerCase()));
+
+      const validation = validateMemberImport(rawRows, existingCids, existingNames);
+      setImportValidation(validation);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleExecuteMemberImport = async () => {
+    if (!importValidation || importValidation.validRows.length === 0) return;
+
+    setImporting(true);
+    try {
+      const res = await fetch('/api/admin/members/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rows: importValidation.validRows }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setActionSuccess(`✓ Successfully imported ${data.count} artisan members.`);
+        setShowImportModal(false);
+        setImportValidation(null);
+        setImportFileName('');
+        loadMembers();
+      } else {
+        setActionError(data.error || 'Failed to import members.');
+      }
+    } catch {
+      setActionError('Network error during member bulk import.');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const filtered = members.filter((m) => {
     const matchQ =
       !filterQuery ||
@@ -276,7 +366,29 @@ export default function AdminMembersPage() {
             Complete management of certified Bhutanese handicraft enterprises, artisans, and guild members.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleExportMembers}
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
+            title="Export all members to Excel / CSV"
+          >
+            <Download className="w-4 h-4 text-emerald-600" />
+            <span>Export (Excel/CSV)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setImportValidation(null);
+              setImportFileName('');
+              setShowImportModal(true);
+            }}
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
+            title="Bulk import members via Excel / CSV"
+          >
+            <Upload className="w-4 h-4 text-sky-600" />
+            <span>Import (Excel/CSV)</span>
+          </button>
+
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-2 transition"
@@ -919,6 +1031,127 @@ export default function AdminMembersPage() {
                   Delete
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BULK IMPORT MODAL (Excel / CSV) */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[90vh] overflow-hidden text-slate-900">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-sky-600" />
+                <span>Bulk Import Artisan Members from Excel / CSV</span>
+              </h3>
+              <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-700 text-base font-bold">✕</button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+              <div className="p-4 bg-sky-50 rounded-xl border border-sky-100 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-sky-950">Download Member Excel Template</p>
+                  <p className="text-[11px] text-sky-700 mt-0.5">
+                    Official template with columns for Enterprise name, Craft, Dzongkhag, CID, and Contact.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadMemberTemplate}
+                  className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg flex items-center gap-1.5 text-xs shadow-xs"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Template</span>
+                </button>
+              </div>
+
+              {/* Upload Input */}
+              <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-[#8B2E24] transition">
+                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <label className="cursor-pointer">
+                  <span className="text-[#8B2E24] font-semibold underline">Choose CSV / Excel file</span> or drag &amp; drop
+                  <input
+                    type="file"
+                    accept=".csv,text/csv,.tsv,text/tab-separated-values"
+                    onChange={handleMemberFileChange}
+                    className="hidden"
+                  />
+                </label>
+                {importFileName && (
+                  <p className="font-mono text-slate-700 mt-2 text-[11px]">Selected: {importFileName}</p>
+                )}
+              </div>
+
+              {/* Validation Summary */}
+              {importValidation && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                      <span className="text-[11px] text-emerald-700 block">Valid to Import</span>
+                      <span className="text-lg font-bold text-emerald-900">{importValidation.validRows.length}</span>
+                    </div>
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                      <span className="text-[11px] text-amber-700 block">Duplicates Skipped</span>
+                      <span className="text-lg font-bold text-amber-900">{importValidation.duplicateCount}</span>
+                    </div>
+                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-center">
+                      <span className="text-[11px] text-rose-700 block">Bad Rows</span>
+                      <span className="text-lg font-bold text-rose-900">{importValidation.badRows.length}</span>
+                    </div>
+                  </div>
+
+                  {/* Bad rows list */}
+                  {importValidation.badRows.length > 0 && (
+                    <div className="p-3 bg-rose-50/70 border border-rose-200 rounded-xl max-h-40 overflow-y-auto">
+                      <h4 className="font-bold text-rose-900 mb-1 flex items-center gap-1 text-[11px]">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Issues Encountered ({importValidation.badRows.length}):</span>
+                      </h4>
+                      <ul className="space-y-1 text-[11px] text-rose-800 font-mono">
+                        {importValidation.badRows.map((b, idx) => (
+                          <li key={idx}>
+                            • Row {b.rowNumber}: {b.reason}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Valid preview sample */}
+                  {importValidation.validRows.length > 0 && (
+                    <div>
+                      <h4 className="font-bold text-slate-800 mb-1">Previewing First 3 Valid Records:</h4>
+                      <div className="space-y-1 font-mono text-[11px] bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        {importValidation.validRows.slice(0, 3).map((r, i) => (
+                          <div key={i} className="text-slate-700">
+                            {i + 1}. <strong>{r.name}</strong> ({r.craftKey}) — {r.dzongkhag} · CID: {r.cidNumber}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowImportModal(false)}
+                className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleExecuteMemberImport}
+                disabled={importing || !importValidation || importValidation.validRows.length === 0}
+                className="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-semibold rounded-lg flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>{importing ? 'Importing...' : `Import ${importValidation?.validRows.length || 0} Members`}</span>
+              </button>
             </div>
           </div>
         </div>

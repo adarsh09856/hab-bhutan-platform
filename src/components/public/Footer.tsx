@@ -294,35 +294,23 @@ export default function Footer() {
                 : settings.footerAbout}
             </p>
           </div>
-          {hasSocial && (
-            <div className="signoff__social">
-              {(settings as any).facebookUrl && (
-                <a className="social__link" href={(settings as any).facebookUrl} target="_blank" rel="noopener noreferrer">
-                  Facebook
-                </a>
-              )}
-              {(settings as any).instagramUrl && (
-                <a className="social__link" href={(settings as any).instagramUrl} target="_blank" rel="noopener noreferrer">
-                  Instagram
-                </a>
-              )}
-              {(settings as any).twitterUrl && (
-                <a className="social__link" href={(settings as any).twitterUrl} target="_blank" rel="noopener noreferrer">
-                  X
-                </a>
-              )}
-              {(settings as any).youtubeUrl && (
-                <a className="social__link" href={(settings as any).youtubeUrl} target="_blank" rel="noopener noreferrer">
-                  YouTube
-                </a>
-              )}
-              {(settings as any).tiktokUrl && (
-                <a className="social__link" href={(settings as any).tiktokUrl} target="_blank" rel="noopener noreferrer">
-                  TikTok
-                </a>
-              )}
-            </div>
-          )}
+          <div className="signoff__social">
+            <a className="social__link" href={(settings as any).facebookUrl || 'https://www.facebook.com/'} target="_blank" rel="noopener noreferrer">
+              Facebook
+            </a>
+            <a className="social__link" href={(settings as any).instagramUrl || 'https://www.instagram.com/'} target="_blank" rel="noopener noreferrer">
+              Instagram
+            </a>
+            <a className="social__link" href={(settings as any).twitterUrl || 'https://x.com/'} target="_blank" rel="noopener noreferrer">
+              X
+            </a>
+            <a className="social__link" href={(settings as any).youtubeUrl || 'https://www.youtube.com/'} target="_blank" rel="noopener noreferrer">
+              YouTube
+            </a>
+            <a className="social__link" href={(settings as any).tiktokUrl || 'https://www.tiktok.com/'} target="_blank" rel="noopener noreferrer">
+              TikTok
+            </a>
+          </div>
         </div>
       </div>
 

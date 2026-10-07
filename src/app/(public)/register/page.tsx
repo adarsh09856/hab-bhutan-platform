@@ -31,9 +31,40 @@ function RegisterContent() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'mbob' | 'bank'>('card');
+  const [bankRef, setBankRef] = useState('');
+  const [mobilePhone, setMobilePhone] = useState('');
+  const [proofUrl, setProofUrl] = useState<string | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [referenceNumber, setReferenceNumber] = useState('HAB-2026-0417');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const handlePaymentProofUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+    setUploadingFile(true);
+
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload deposit proof');
+      }
+      setProofUrl(data.url);
+    } catch (err: any) {
+      setUploadError(err.message || 'File upload failed');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
 
   const types = [
     {
@@ -117,6 +148,9 @@ function RegisterContent() {
           village: formData.village.trim(),
           workSummary: formData.workSummary.trim(),
           paymentMethod,
+          paymentRef: bankRef,
+          mobilePhone,
+          proofUrl,
           refNumber: refNum,
         }),
       });
@@ -426,6 +460,88 @@ function RegisterContent() {
                       </div>
                     ))}
                   </div>
+
+                  {/* mBoB details */}
+                  {paymentMethod === 'mbob' && (
+                    <div style={{ marginTop: 16, padding: 14, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, color: '#8B2E24' }}>
+                        mBoB Transfer Details
+                      </p>
+                      <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                        Transfer <strong>{currentTypeObj.fee}</strong> to Bank of Bhutan Account <strong>0100234891001</strong> (Handicrafts Association of Bhutan).
+                      </p>
+                      <div className="formgrid">
+                        <label className="field">
+                          <span className="field__label">Your mBoB Registered Phone</span>
+                          <input
+                            type="tel"
+                            className="input"
+                            placeholder="+975 17……"
+                            value={mobilePhone}
+                            onChange={(e) => setMobilePhone(e.target.value)}
+                          />
+                        </label>
+                        <label className="field">
+                          <span className="field__label">Journal / Transaction Reference</span>
+                          <input
+                            type="text"
+                            className="input"
+                            placeholder="e.g. MB-849201"
+                            value={bankRef}
+                            onChange={(e) => setBankRef(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div style={{ marginTop: 10 }}>
+                        <span className="field__label">Upload Payment Screenshot / Slip</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handlePaymentProofUpload}
+                          className="input input--file"
+                        />
+                        {uploadingFile && <p style={{ fontSize: 11, color: '#0284c7' }}>Uploading slip...</p>}
+                        {proofUrl && <p style={{ fontSize: 11, color: '#16a34a' }}>✓ Slip uploaded successfully</p>}
+                        {uploadError && <p style={{ fontSize: 11, color: '#dc2626' }}>{uploadError}</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bank transfer details */}
+                  {paymentMethod === 'bank' && (
+                    <div style={{ marginTop: 16, padding: 14, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, color: '#8B2E24' }}>
+                        Bank Deposit / SWIFT Wire Details
+                      </p>
+                      <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
+                        Bank of Bhutan Account: <strong>100234891001</strong> · Bhutan National Bank (BNB): <strong>00234891001</strong> · SWIFT: <strong>BOBTBT22</strong>. Dues: <strong>{currentTypeObj.fee}</strong>.
+                      </p>
+                      <div className="formgrid">
+                        <label className="field field--wide">
+                          <span className="field__label">Bank Deposit Reference Number</span>
+                          <input
+                            type="text"
+                            className="input"
+                            placeholder="Deposit ref or counter foil #"
+                            value={bankRef}
+                            onChange={(e) => setBankRef(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div style={{ marginTop: 10 }}>
+                        <span className="field__label">Upload Deposit Slip / Counterfoil</span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handlePaymentProofUpload}
+                          className="input input--file"
+                        />
+                        {uploadingFile && <p style={{ fontSize: 11, color: '#0284c7' }}>Uploading slip...</p>}
+                        {proofUrl && <p style={{ fontSize: 11, color: '#16a34a' }}>✓ Slip uploaded successfully</p>}
+                        {uploadError && <p style={{ fontSize: 11, color: '#dc2626' }}>{uploadError}</p>}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="panel">

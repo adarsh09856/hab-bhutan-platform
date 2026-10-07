@@ -18,6 +18,8 @@ export interface FallbackApplication {
   reviewerNotes?: string | null;
   rejectionReason?: string | null;
   submittedAt: string;
+  uploadedDocUrl?: string | null;
+  uploadedCidUrl?: string | null;
   reviewedAt?: string | null;
   updatedAt: string;
   referenceNumber?: string;

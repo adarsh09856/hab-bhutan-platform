@@ -138,6 +138,11 @@ export async function GET() {
       bnbPhone: bnbBanking.phone || '+975-2-338089',
       bnbQrUrl: bnbBanking.qrUrl || '/images/bnb_qr_placeholder.png',
       homepageSectionOrder: (setting as any)?.homepageSectionOrder || (tb as any)?.homepageSectionOrder || null,
+      shopEyebrow: tb.shopEyebrow || 'Latest arrivals',
+      shopHeading: tb.shopHeading || 'New in the shop',
+      shopLede: tb.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+      shopCtaText: tb.shopCtaText || 'Visit the shop →',
+      shopCtaLink: tb.shopCtaLink || '/shop',
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
@@ -242,6 +247,11 @@ export async function GET() {
         bnbPhone: '+975-2-338089',
         bnbQrUrl: '/images/bnb_qr_placeholder.png',
         homepageSectionOrder: null,
+        shopEyebrow: 'Latest arrivals',
+        shopHeading: 'New in the shop',
+        shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+        shopCtaText: 'Visit the shop →',
+        shopCtaLink: '/shop',
       };
       const response = NextResponse.json({
         success: true,

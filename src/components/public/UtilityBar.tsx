@@ -203,23 +203,20 @@ export default function UtilityBar() {
           </span>
 
           {tickerMessages.length > 1 && (
-            <div className="flex items-center gap-1 mr-1 text-[10px] text-white/60 select-none flex-shrink-0">
+            <div className="flex items-center gap-0.5 mr-1 text-[11px] text-white/60 select-none flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setCurrentTickerIdx((prev) => (prev === 0 ? tickerMessages.length - 1 : prev - 1))}
                 aria-label="Previous announcement"
-                className="hover:text-white transition-colors cursor-pointer px-0.5"
+                className="hover:text-white transition-colors cursor-pointer px-1 py-0.5"
               >
                 ‹
               </button>
-              <span className="font-mono text-[9px] text-[#e6ca65]">
-                {currentTickerIdx + 1}/{tickerMessages.length}
-              </span>
               <button
                 type="button"
                 onClick={() => setCurrentTickerIdx((prev) => (prev + 1) % tickerMessages.length)}
                 aria-label="Next announcement"
-                className="hover:text-white transition-colors cursor-pointer px-0.5"
+                className="hover:text-white transition-colors cursor-pointer px-1 py-0.5"
               >
                 ›
               </button>

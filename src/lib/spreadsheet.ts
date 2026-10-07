@@ -1,0 +1,367 @@
+/**
+ * Comprehensive RFC-4180 compliant CSV / Excel spreadsheet generator and parser.
+ * Supports UTF-8 BOM (\uFEFF) for seamless Microsoft Excel import without encoding corruption.
+ */
+
+export function generateExcelCsv(headers: string[], rows: (string | number | null | undefined)[][]): string {
+  const escapeCell = (val: string | number | null | undefined): string => {
+    if (val === null || val === undefined) return '';
+    const str = String(val);
+    if (str.includes('"') || str.includes(',') || str.includes('\n') || str.includes('\r')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const headerLine = headers.map(escapeCell).join(',');
+  const rowLines = rows.map((r) => r.map(escapeCell).join(','));
+  
+  // Prepend UTF-8 BOM for Microsoft Excel auto-detection
+  return '\uFEFF' + [headerLine, ...rowLines].join('\r\n');
+}
+
+export function parseCsv(text: string): string[][] {
+  // Strip UTF-8 BOM if present
+  let cleanText = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+  cleanText = cleanText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentCell = '';
+  let inQuotes = false;
+  let i = 0;
+
+  while (i < cleanText.length) {
+    const char = cleanText[i];
+    const nextChar = cleanText[i + 1];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (nextChar === '"') {
+          currentCell += '"';
+          i += 2;
+          continue;
+        } else {
+          inQuotes = false;
+          i++;
+          continue;
+        }
+      } else {
+        currentCell += char;
+        i++;
+        continue;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+        i++;
+        continue;
+      } else if (char === ',') {
+        currentRow.push(currentCell.trim());
+        currentCell = '';
+        i++;
+        continue;
+      } else if (char === '\n') {
+        currentRow.push(currentCell.trim());
+        if (currentRow.some((cell) => cell.length > 0)) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentCell = '';
+        i++;
+        continue;
+      } else {
+        currentCell += char;
+        i++;
+        continue;
+      }
+    }
+  }
+
+  if (currentCell.length > 0 || currentRow.length > 0) {
+    currentRow.push(currentCell.trim());
+    if (currentRow.some((cell) => cell.length > 0)) {
+      rows.push(currentRow);
+    }
+  }
+
+  return rows;
+}
+
+export function triggerDownload(filename: string, content: string, mimeType = 'text/csv;charset=utf-8;') {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
+// Wholesale Buyer Schema & Validation
+// ---------------------------------------------------------------------------
+
+export const WHOLESALE_HEADERS = [
+  'Company Name*',
+  'Contact Person*',
+  'Email*',
+  'Phone',
+  'Country*',
+  'City',
+  'Tax or License ID',
+  'Discount Tier (%)',
+  'Status (ACTIVE/PENDING/INACTIVE)',
+  'Notes / Purchasing Purpose',
+];
+
+export const WHOLESALE_SAMPLE_ROWS = [
+  [
+    'Aman Kora Resorts',
+    'Tashi Wangchuk',
+    'procurement@amankora.bt',
+    '+975-2-321234',
+    'Bhutan',
+    'Thimphu',
+    'HAB-TL-48921',
+    '25',
+    'ACTIVE',
+    'Luxury resort group sourcing authentic Bhutanese textiles and bamboo ware for 5 lodges',
+  ],
+  [
+    'Himalayan Heritage Gallery Inc',
+    'Sarah Jenkins',
+    's.jenkins@himalayangallery.com',
+    '+1-415-555-0199',
+    'United States',
+    'San Francisco',
+    'US-EIN-94-382910',
+    '30',
+    'ACTIVE',
+    'Specialist Himalayan cultural craft retailer with quarterly wholesale purchase cycle',
+  ],
+  [
+    'Kyoto Silk & Wood Guild',
+    'Kenji Sato',
+    'orders@kyotocraftguild.jp',
+    '+81-75-746-2001',
+    'Japan',
+    'Kyoto',
+    'JP-CORP-0182-3819',
+    '20',
+    'PENDING',
+    'Artisanal cooperative seeking Yathra wool and handwoven Kira fabrics',
+  ],
+];
+
+export interface WholesaleImportValidationResult {
+  validRows: any[];
+  badRows: { rowNumber: number; data: string[]; reason: string }[];
+  duplicateCount: number;
+}
+
+export function validateWholesaleImport(
+  rawRows: string[][],
+  existingEmails: Set<string>,
+  existingUsernames: Set<string>
+): WholesaleImportValidationResult {
+  const validRows: any[] = [];
+  const badRows: { rowNumber: number; data: string[]; reason: string }[] = [];
+  let duplicateCount = 0;
+
+  if (rawRows.length <= 1) {
+    return { validRows: [], badRows: [{ rowNumber: 1, data: [], reason: 'File contains no data rows.' }], duplicateCount: 0 };
+  }
+
+  // Row 0 is header
+  for (let idx = 1; idx < rawRows.length; idx++) {
+    const row = rawRows[idx];
+    const company = row[0]?.trim();
+    const contact = row[1]?.trim();
+    const email = row[2]?.trim().toLowerCase();
+    const phone = row[3]?.trim();
+    const country = row[4]?.trim() || 'Bhutan';
+    const city = row[5]?.trim();
+    const taxId = row[6]?.trim();
+    const discount = parseInt(row[7]?.trim() || '20', 10);
+    const status = (row[8]?.trim().toUpperCase() || 'ACTIVE');
+    const notes = row[9]?.trim();
+
+    if (!company) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required Company Name.' });
+      continue;
+    }
+    if (!contact) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required Contact Person.' });
+      continue;
+    }
+    if (!email || !email.includes('@')) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Invalid or missing email: "${email || ''}".` });
+      continue;
+    }
+
+    if (existingEmails.has(email)) {
+      duplicateCount++;
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: Email "${email}" is already registered.` });
+      continue;
+    }
+
+    // Generate clean username base
+    const usernameBase = (email.split('@')[0] || company)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 15);
+    let username = `${usernameBase || 'buyer'}_${Math.floor(100 + Math.random() * 900)}`;
+    if (existingUsernames.has(username)) {
+      username = `${usernameBase}_${Date.now().toString().slice(-4)}`;
+    }
+
+    validRows.push({
+      companyName: company,
+      contactName: contact,
+      email,
+      phone: phone || null,
+      country,
+      city: city || null,
+      taxId: taxId || null,
+      discountTier: isNaN(discount) ? 20 : Math.min(50, Math.max(5, discount)),
+      status: ['ACTIVE', 'PENDING', 'INACTIVE', 'SUSPENDED'].includes(status) ? status : 'ACTIVE',
+      notes: notes || null,
+      username,
+    });
+  }
+
+  return { validRows, badRows, duplicateCount };
+}
+
+// ---------------------------------------------------------------------------
+// Member Schema & Validation
+// ---------------------------------------------------------------------------
+
+export const MEMBER_HEADERS = [
+  'Artisan / Enterprise Name*',
+  'Craft Key (e.g. thagzo, shingzo)*',
+  'Dzongkhag*',
+  'Village / Place',
+  'CID or Business License*',
+  'Contact Phone',
+  'Email',
+  'Membership Tier (ACTIVE_SECTOR_MEMBER/ASSOCIATE/INSTITUTIONAL)',
+  'Verification Status (VERIFIED/PENDING)',
+  'Join Year',
+  'Bio / Description',
+];
+
+export const MEMBER_SAMPLE_ROWS = [
+  [
+    'Pema Choden Weaving Workshop',
+    'thagzo',
+    'Lhuentse',
+    'Khoma Village',
+    'CID-10802001924',
+    '+975-17123456',
+    'pema.khoma@hab.bt',
+    'ACTIVE_SECTOR_MEMBER',
+    'VERIFIED',
+    '2018',
+    'Master weaver specializing in supplementary-weft silk Kishuthara with 22 years on the backstrap loom.',
+  ],
+  [
+    'Kelzang Dorji Woodcrafts',
+    'shingzo',
+    'Trashi Yangtse',
+    'Dongdi',
+    'CID-11603004821',
+    '+975-17654321',
+    'kelzang.dorji@gmail.com',
+    'ACTIVE_SECTOR_MEMBER',
+    'VERIFIED',
+    '2015',
+    'Traditional carpentry and religious wood carving for temple restorations and altar cabinetry.',
+  ],
+  [
+    'Kheng Bamboo & Cane Collective',
+    'tshazo',
+    'Zhemgang',
+    'Buli',
+    'CID-12001000341',
+    '+975-77889900',
+    'kheng.bamboo@hab.bt',
+    'ACTIVE_SECTOR_MEMBER',
+    'VERIFIED',
+    '2019',
+    'Cooperative of 34 bamboo harvesters producing woven bangchung baskets and floor mats.',
+  ],
+];
+
+export interface MemberImportValidationResult {
+  validRows: any[];
+  badRows: { rowNumber: number; data: string[]; reason: string }[];
+  duplicateCount: number;
+}
+
+export function validateMemberImport(
+  rawRows: string[][],
+  existingCids: Set<string>,
+  existingNames: Set<string>
+): MemberImportValidationResult {
+  const validRows: any[] = [];
+  const badRows: { rowNumber: number; data: string[]; reason: string }[] = [];
+  let duplicateCount = 0;
+
+  if (rawRows.length <= 1) {
+    return { validRows: [], badRows: [{ rowNumber: 1, data: [], reason: 'File contains no data rows.' }], duplicateCount: 0 };
+  }
+
+  for (let idx = 1; idx < rawRows.length; idx++) {
+    const row = rawRows[idx];
+    const name = row[0]?.trim();
+    const craftKey = (row[1]?.trim().toLowerCase() || 'thagzo');
+    const dzongkhag = row[2]?.trim() || 'Thimphu';
+    const village = row[3]?.trim();
+    const cid = row[4]?.trim();
+    const phone = row[5]?.trim();
+    const email = row[6]?.trim().toLowerCase();
+    const tier = row[7]?.trim().toUpperCase() || 'ACTIVE_SECTOR_MEMBER';
+    const status = row[8]?.trim().toUpperCase() || 'VERIFIED';
+    const joinYear = parseInt(row[9]?.trim() || new Date().getFullYear().toString(), 10);
+    const bio = row[10]?.trim();
+
+    if (!name) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required Artisan/Enterprise Name.' });
+      continue;
+    }
+    if (!cid) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required CID or Business License.' });
+      continue;
+    }
+
+    if (existingCids.has(cid) || existingNames.has(name.toLowerCase())) {
+      duplicateCount++;
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: CID "${cid}" or Name "${name}" already exists.` });
+      continue;
+    }
+
+    validRows.push({
+      name,
+      craftKey,
+      dzongkhag,
+      village: village || null,
+      cidNumber: cid,
+      businessLicense: cid.startsWith('CID') ? null : cid,
+      phone: phone || null,
+      email: email || null,
+      tier: ['ACTIVE_SECTOR_MEMBER', 'ASSOCIATE_SECTOR_MEMBER', 'INSTITUTIONAL'].includes(tier)
+        ? tier
+        : 'ACTIVE_SECTOR_MEMBER',
+      status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(status) ? status : 'VERIFIED',
+      joinYear: isNaN(joinYear) ? new Date().getFullYear() : joinYear,
+      bio: bio || null,
+    });
+  }
+
+  return { validRows, badRows, duplicateCount };
+}

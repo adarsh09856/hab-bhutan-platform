@@ -45,8 +45,9 @@ export default function CraftProfilePage() {
               craft_key: p.craftKey || p.craft_key,
               region: p.region || 'Bhutan',
               maker: p.maker?.name || p.maker || 'Registered Master',
-              price: p.priceUSD || p.price,
-              hero_image: p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
+              price_usd: p.priceUSD ?? p.price ?? p.price_usd ?? 0,
+              image_path: p.images?.[0]?.url || p.image_path || `/images/products/${(p.code || '').toLowerCase()}.jpg`,
+              hero_image: p.images?.[0]?.url || p.image_path || `/images/products/${(p.code || '').toLowerCase()}.jpg`,
               summary: p.description || p.summary || '',
             }))
           );
@@ -271,17 +272,46 @@ export default function CraftProfilePage() {
       {/* 5. Visual Triptych */}
       <section className="section section--tight">
         <div className="triptych">
-          {triptychCaptions.map((cap, i) => (
-            <div key={i} className="triptych__cell">
-              <figure className="frame frame--wide16 has-image" data-cms-img>
-                <img
-                  src={i === 0 ? `/images/hero-1.jpg` : i === 1 ? `/images/product-sad03.jpg` : `/images/hero-3.jpg`}
-                  alt={cap}
-                  className="w-full h-full object-cover"
-                />
-              </figure>
-            </div>
-          ))}
+          {triptychCaptions.map((cap, i) => {
+            const craftTriptychs: Record<string, string[]> = {
+              parzo: ['/images/crafts/parzo.jpg', '/assets/photos/product-mas01.jpg', '/assets/photos/hero-2-punakha.jpg'],
+              thagzo: ['/images/crafts/thagzo.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/hero-4-textiles.jpg'],
+              shingzo: ['/images/crafts/shingzo.jpg', '/images/crafts/parzo.jpg', '/assets/photos/hero-2-punakha.jpg'],
+              lhazo: ['/images/crafts/lhazo.jpg', '/assets/photos/product-lha01.jpg', '/assets/photos/about-hab.jpg'],
+              shagzo: ['/images/crafts/shagzo.jpg', '/assets/photos/product-dap02.jpg', '/images/crafts/shingzo.jpg'],
+              tshazo: ['/images/crafts/tshazo.jpg', '/assets/photos/product-ftb04.jpg', '/assets/photos/product-lud01.jpg'],
+              troezo: ['/images/crafts/troezo.jpg', '/assets/photos/product-tro04.jpg', '/images/crafts/garzo.jpg'],
+              dezo: ['/images/crafts/dezo.jpg', '/assets/photos/hero-5-desho.jpg', '/assets/photos/product-dez01.jpg'],
+              tshemzo: ['/images/crafts/tshemzo.jpg', '/assets/photos/product-cam01.jpg', '/assets/photos/product-cus02.jpg'],
+              dozo: ['/images/crafts/dozo.jpg', '/assets/photos/hero-2-punakha.jpg', '/images/crafts/shingzo.jpg'],
+              garzo: ['/images/crafts/garzo.jpg', '/images/crafts/troezo.jpg', '/assets/photos/product-tro04.jpg'],
+              jinzo: ['/images/crafts/jinzo.jpg', '/assets/photos/hero-3-clay.jpg', '/images/crafts/parzo.jpg'],
+              lugzo: ['/images/crafts/lugzo.jpg', '/images/crafts/garzo.jpg', '/images/crafts/troezo.jpg'],
+            };
+            const specificTriptych = craftTriptychs[craft.key] || [
+              `/images/crafts/${craft.key}.jpg`,
+              '/assets/photos/hero-1-weaving.jpg',
+              '/assets/photos/hero-2-punakha.jpg',
+            ];
+            const tripSrc = specificTriptych[i] || `/images/crafts/${craft.key}.jpg`;
+
+            return (
+              <div key={i} className="triptych__cell">
+                <figure className="frame frame--wide16 has-image" data-cms-img>
+                  <img
+                    src={tripSrc}
+                    alt={cap}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = `/images/crafts/${craft.key}.jpg`;
+                    }}
+                  />
+                </figure>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -308,10 +338,14 @@ export default function CraftProfilePage() {
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img>
                     <img
-                      src={p.image_path || `/images/products/${p.code.toLowerCase()}.jpg`}
+                      src={p.image_path || `/images/products/${(p.code || '').toLowerCase()}.jpg`}
                       alt={p.name}
                       loading="lazy"
-                      onError={(e) => { (e.target as HTMLImageElement).src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`; }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = `/images/crafts/${craft.key}.jpg`;
+                      }}
                     />
                   </figure>
                   <span className="product__ref">{p.code}</span>
@@ -325,7 +359,7 @@ export default function CraftProfilePage() {
                     {p.maker} · {p.region}
                   </p>
                   <div className="card__foot">
-                    <span className="price">{fmt(p.price_usd)}</span>
+                    <span className="price">{fmt(p.price_usd ?? p.price ?? p.priceUSD ?? 0)}</span>
                     <button
                       type="button"
                       className="btn btn--outline btn--xs"

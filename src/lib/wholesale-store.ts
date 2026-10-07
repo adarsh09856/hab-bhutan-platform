@@ -13,7 +13,7 @@ export interface FallbackWholesaleBuyer {
   city?: string | null;
   taxId?: string | null;
   discountTier: number;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED';
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED' | 'REJECTED';
   notes?: string | null;
   lastLoginAt?: string | null;
   createdAt: string;
@@ -68,7 +68,7 @@ export function saveFallbackWholesaleBuyer(buyer: FallbackWholesaleBuyer): Fallb
 
 export function updateFallbackWholesaleBuyerStatus(
   id: string,
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED'
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED' | 'REJECTED'
 ): FallbackWholesaleBuyer | null {
   try {
     ensureDir();
