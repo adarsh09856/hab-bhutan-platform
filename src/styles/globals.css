@@ -185,11 +185,19 @@ body.hab-visual-edit-on [data-hab-section]:hover {
 }
 
 .hab-section-edit-badge {
-  display: none !important;
+  display: flex !important;
+  z-index: 50 !important;
 }
 
-body.has-admin-live-bar.hab-visual-edit-on .hab-section-edit-badge {
+body.hab-visual-edit-on .hab-section-edit-badge {
   display: flex !important;
+  animation: fadeInBadge 0.2s ease-in;
 }
+
+@keyframes fadeInBadge {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 

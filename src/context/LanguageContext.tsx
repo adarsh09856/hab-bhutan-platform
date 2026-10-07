@@ -70,7 +70,7 @@ export const TRANSLATIONS: Translations = {
   'craft.chuzo': { en: 'Chuzo (Carpentry)', dz: 'ཆུ་བཟོ / ཤིང་བཟོ' },
   'craft.lugzo': { en: 'Lugzo (Bronze Casting)', dz: 'ལུགས་བཟོ (ལུགས་སྐུ)' },
 
-  // Homepage Sections
+  // Homepage Sections & UI Blocks
   'home.latest_arrivals': { en: 'Latest arrivals', dz: 'ཐོན་གསར' },
   'home.new_in_shop': { en: 'New in the shop', dz: 'ཚོང་ཁང་ནང་ཐོན་གསར' },
   'home.visit_shop': { en: 'Visit the shop →', dz: 'ཚོང་ཁང་ནང་གཟིགས →' },
@@ -79,6 +79,35 @@ export const TRANSLATIONS: Translations = {
   'home.give_now': { en: 'Give Now', dz: 'ད་ལྟོ་ཕུལ' },
   'home.find_member': { en: 'Find a member', dz: 'འཐུས་མི་འཚོལ' },
   'home.become_member': { en: 'Become a member', dz: 'འཐུས་མི་འགྱུར' },
+  'home.buy_ways': { en: 'Two ways to buy', dz: 'ཉོ་ཐངས་ལམ་ལུགས་གཉིས' },
+  'home.buy_retail_title': { en: 'Retail e-shop', dz: 'ཐད་ཀར་ཚོང་ཁང' },
+  'home.buy_retail_desc': { en: 'Direct purchases from individual artisans with tracked origin.', dz: 'ལག་བཟོ་བ་ཚུ་ལས་ཐད་ཀར་ཉོ་སྒྲུབ་འབད་ནི' },
+  'home.buy_trade_title': { en: 'Wholesale & Trade', dz: 'སྡེབ་ཚོང་དང་ཚོང་འབྲེལ' },
+  'home.buy_trade_desc': { en: 'Volume procurement, export paperwork and made-to-order production.', dz: 'བཀའ་རྒྱ་ཆེན་པོ་དང་ཕྱིར་ཚོང་གཞུང་འབྲེལ་ཡིག་ཆ' },
+  'home.about_title': { en: 'About the Association', dz: 'ང་བཅས་ཀྱི་སྐོར' },
+  'home.about_tag': { en: 'Handicrafts Association of Bhutan', dz: 'འབྲུག་གི་ལག་བཟོ་ཚོགས་པ' },
+  'home.outlets_title': { en: 'Outlets & clusters', dz: 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང' },
+  'home.punakha_title': { en: 'Punakha crafts market', dz: 'སྤུ་ན་ཁ་ལག་བཟོའི་ཁྲོམ་ར' },
+  'home.punakha_tag': { en: 'The only authentic crafts market validated and managed by HAB', dz: 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ངོས་འཛིན་འབད་ཡོད་པའི་ཁྲོམ་ར' },
+  'home.crafts_title': { en: 'The 13 Arts & Crafts of Bhutan', dz: 'འབྲུག་གི་ཟོ་རིག་བཅུ་གསུམ' },
+  'home.crafts_sub': { en: 'Zorig Chusum Heritage', dz: 'ཟོ་རིག་བཅུ་གསུམ་གྱི་རིག་གཞུང' },
+  'home.masters_title': { en: 'Master Craftspeople', dz: 'མཁས་དབང་ལག་བཟོ་བ' },
+  'home.masters_tag': { en: 'Living Treasures of Bhutan', dz: 'འབྲུག་གི་རྩ་ཆེའི་མཁས་དབང་ཚུ' },
+  'home.programmes_title': { en: 'Training Programmes', dz: 'སྦྱོང་བརྡར་ལས་རིམ' },
+  'home.support_title': { en: 'Support Our Work', dz: 'ང་བཅས་ཀྱི་ལས་དོན་ལུ་རྒྱབ་སྐྱོར' },
+  'home.support_sub': { en: 'Three Donation Pillars', dz: 'ཞལ་འདེབས་ཀྱི་ཀ་ཆེན་གསུམ' },
+  'home.membership_title': { en: 'Search the Artisan Directory', dz: 'ལག་བཟོ་བའི་ཐོ་དེབ་འཚོལ' },
+  'home.news_title': { en: 'News & Upcoming Events', dz: 'གནས་ཚུལ་དང་བྱུང་རིམ' },
+  'home.publications_title': { en: 'Reports & Publications', dz: 'སྙན་ཞུ་དང་དཔེ་སྐྲུན' },
+  'home.partners_title': { en: 'Development Partners', dz: 'གོང་འཕེལ་མཉམ་འབྲེལ་པ' },
+  'home.view_more_outlets': { en: 'View more outlets', dz: 'ཚོང་ཁང་ཧེང་སྐལ་གཟིགས' },
+  'home.all_crafts': { en: 'View all 13 crafts →', dz: 'ཟོ་རིག་བཅུ་གསུམ་ཆ་མཉམ་གཟིགས →' },
+  'home.all_masters': { en: 'Meet all master artisans →', dz: 'མཁས་དབང་ཚུ་ཆ་མཉམ་གཟིགས →' },
+  'home.all_programmes': { en: 'All programmes (A–K) →', dz: 'ལས་རིམ་ཆ་མཉམ་གཟིགས →' },
+  'home.donate_cta': { en: 'Donate to HAB →', dz: 'ཞལ་འདེབས་ཕུལ →' },
+  'home.register_artisan': { en: 'Join HAB as an artisan →', dz: 'ལག་བཟོ་བའི་འཐུས་མི་འགྱུར →' },
+  'home.all_news': { en: 'All news & dispatches →', dz: 'གནས་ཚུལ་ཆ་མཉམ་གཟིགས →' },
+  'home.all_publications': { en: 'All publications & downloads →', dz: 'དཔེ་སྐྲུན་ཆ་མཉམ་གཟིགས →' },
   
   // Assurances
   'assurance.tracked': { en: 'Tracked Origin', dz: 'འབྱུང་ཁུངས་རྗེས་འདེད' },
@@ -157,6 +186,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       if (saved === 'en' || saved === 'dz') {
         setLanguageState(saved);
         document.documentElement.lang = saved;
+      }
+      // Clear residual Google Translate cookies to guarantee original pristine DOM design
+      const host = typeof window !== 'undefined' ? window.location.hostname : '';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      if (host) {
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${host};`;
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${host};`;
       }
     } catch {}
 

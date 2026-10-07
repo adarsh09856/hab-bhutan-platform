@@ -216,13 +216,28 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
       {/* Story / Description */}
       <section className="section">
-        <div className="longread">
+        <div 
+          className="longread"
+          style={(event.documentUrl || event.pdfUrl) ? { gridTemplateColumns: 'minmax(330px, 0.44fr) 0.56fr', gap: '40px', alignItems: 'start' } : undefined}
+        >
           <div>
             <p className="eyebrow eyebrow--accent">About this event</p>
             {event.subCategory && (
               <span className="inline-block mt-2 px-2.5 py-1 rounded bg-[#EDE5D6] text-[#6B5A4C] font-mono text-xs font-semibold">
                 {event.subCategory}
               </span>
+            )}
+
+            {/* Designated space for Event Supporting Document (PDF / Flipbook) positioned on left under event intro */}
+            {(event.documentUrl || event.pdfUrl) && (
+              <div className="mt-6">
+                <DocumentEmbedViewer
+                  documentUrl={event.documentUrl || event.pdfUrl}
+                  documentType={event.documentType || 'PDF'}
+                  documentTitle={event.documentTitle || `${event.title} – Schedule & Guide`}
+                  className="my-0 shadow-xs"
+                />
+              </div>
             )}
           </div>
           <div>
@@ -231,13 +246,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                 {para.trim()}
               </p>
             ))}
-
-            {/* Designated space for Event Supporting Document (PDF / Flipbook) - Feedback Item 4 */}
-            <DocumentEmbedViewer
-              documentUrl={event.documentUrl || event.pdfUrl}
-              documentType={event.documentType || 'PDF'}
-              documentTitle={event.documentTitle || `${event.title} – Schedule & Guide`}
-            />
           </div>
         </div>
       </section>

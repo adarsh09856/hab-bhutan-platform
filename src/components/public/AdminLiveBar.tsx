@@ -66,10 +66,18 @@ export default function AdminLiveBar() {
   const toggleVisualEdit = () => {
     const next = !editMode;
     setEditMode(next);
+    if (next) {
+      document.body.classList.add('has-admin-live-bar', 'hab-visual-edit-on');
+    } else {
+      document.body.classList.remove('hab-visual-edit-on');
+    }
     try {
       localStorage.setItem('hab_visual_edit', next ? '1' : '0');
     } catch {
       // Ignore
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hab:visual-edit-toggled', { detail: { active: next } }));
     }
   };
 
@@ -208,8 +216,8 @@ export default function AdminLiveBar() {
         </>
       )}
 
-      {/* 2. Floating Bottom-Right Quick Edit Mode Switcher */}
-      <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2">
+      {/* 2. Floating Bottom-Left Quick Edit Mode Switcher (Prevents overlap with Ask HAB) */}
+      <div className="fixed bottom-5 left-5 z-[55] flex items-center gap-2">
         <button
           type="button"
           onClick={toggleVisualEdit}

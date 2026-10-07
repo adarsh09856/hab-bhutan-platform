@@ -472,12 +472,41 @@ export default function HomePageStudio() {
             type="button"
             onClick={() => handleSaveSettings()}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-sm font-semibold shadow-xs transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-sm font-semibold shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Saving Changes...' : 'Save All Settings'}</span>
           </button>
         </div>
+      </div>
+
+      {/* Quick Jump Banner for Section Reordering & Layout */}
+      <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+            <ListOrdered className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+              <span>Homepage Section Reorder & Visibility</span>
+              <span className="text-[10px] font-mono uppercase bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-300">
+                15 Sections Live Control
+              </span>
+            </h4>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Move any section up or down (Hero, Shop, Outlets, Masters, Donations, etc.) or hide sections from the public homepage.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('order')}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-[#8B2E24] text-white text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+        >
+          <ArrowUp className="w-3.5 h-3.5" />
+          <ArrowDown className="w-3.5 h-3.5" />
+          <span>Reorder Sections (Tab 7) →</span>
+        </button>
       </div>
 
       {/* WordPress-Style Tabs */}

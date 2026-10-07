@@ -30,7 +30,12 @@ import {
   AlertCircle,
   Clock,
   Layers,
-  Check
+  Check,
+  ArrowUp,
+  ArrowDown,
+  Zap,
+  RotateCcw,
+  ListOrdered
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -271,6 +276,25 @@ export default function AdminPagesHub() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pageToDelete, setPageToDelete] = useState<{ id: string; title: string } | null>(null);
 
+  // Sorting & Reorder State
+  const [sortBy, setSortBy] = useState<'custom' | 'title-asc' | 'title-desc' | 'category' | 'status' | 'custom-first'>('custom');
+  const [customPagesOrder, setCustomPagesOrder] = useState<string[]>([]);
+  const [coreOverrides, setCoreOverrides] = useState<Record<string, Partial<WebPageItem>>>({});
+
+  // Quick Edit Modal State
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
+  const [quickEditTarget, setQuickEditTarget] = useState<WebPageItem | null>(null);
+  const [quickEditForm, setQuickEditForm] = useState({
+    title: '',
+    category: 'General',
+    subCategory: '',
+    summary: '',
+    isPublished: true,
+    showInHeaderNav: false,
+    showInFooterNav: false,
+  });
+  const [quickSaving, setQuickSaving] = useState(false);
+
   // Form fields
   const [form, setForm] = useState<AdvancedEditorFormState>({
     title: '',
@@ -318,12 +342,137 @@ export default function AdminPagesHub() {
   useEffect(() => {
     loadCustomPages();
     if (typeof window !== 'undefined') {
+      try {
+        const savedOrder = localStorage.getItem('hab_admin_pages_order');
+        if (savedOrder) setCustomPagesOrder(JSON.parse(savedOrder));
+        const savedOverrides = localStorage.getItem('hab_admin_core_page_overrides');
+        if (savedOverrides) setCoreOverrides(JSON.parse(savedOverrides));
+      } catch {}
+
       const sp = new URLSearchParams(window.location.search);
       if (sp.get('new') === '1' || sp.get('create') === 'true') {
         openCreateModal();
       }
     }
   }, []);
+
+  const movePageUp = (pageId: string) => {
+    const ids = orderedAllPages.map((p) => p.id);
+    const idx = ids.indexOf(pageId);
+    if (idx <= 0) return;
+    const newOrder = [...ids];
+    const temp = newOrder[idx];
+    newOrder[idx] = newOrder[idx - 1];
+    newOrder[idx - 1] = temp;
+    setCustomPagesOrder(newOrder);
+    setSortBy('custom');
+    try {
+      localStorage.setItem('hab_admin_pages_order', JSON.stringify(newOrder));
+    } catch {}
+    showToast('success', 'Page moved up in sequence.');
+  };
+
+  const movePageDown = (pageId: string) => {
+    const ids = orderedAllPages.map((p) => p.id);
+    const idx = ids.indexOf(pageId);
+    if (idx === -1 || idx >= ids.length - 1) return;
+    const newOrder = [...ids];
+    const temp = newOrder[idx];
+    newOrder[idx] = newOrder[idx + 1];
+    newOrder[idx + 1] = temp;
+    setCustomPagesOrder(newOrder);
+    setSortBy('custom');
+    try {
+      localStorage.setItem('hab_admin_pages_order', JSON.stringify(newOrder));
+    } catch {}
+    showToast('success', 'Page moved down in sequence.');
+  };
+
+  const resetPagesOrder = () => {
+    setCustomPagesOrder([]);
+    setSortBy('custom');
+    try {
+      localStorage.removeItem('hab_admin_pages_order');
+    } catch {}
+    showToast('success', 'Reset page sequence to default.');
+  };
+
+  const openQuickEditModal = (page: WebPageItem) => {
+    setQuickEditTarget(page);
+    setQuickEditForm({
+      title: page.title,
+      category: page.category || 'General',
+      subCategory: page.subCategory || '',
+      summary: page.summary || '',
+      isPublished: page.isPublished !== false,
+      showInHeaderNav: Boolean(page.showInHeaderNav),
+      showInFooterNav: Boolean(page.showInFooterNav),
+    });
+    setQuickEditOpen(true);
+  };
+
+  const handleSaveQuickEdit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!quickEditTarget) return;
+    if (!quickEditForm.title.trim()) {
+      showToast('error', 'Page title cannot be empty.');
+      return;
+    }
+
+    setQuickSaving(true);
+    try {
+      if (quickEditTarget.isCustom) {
+        const cp = customPages.find((c) => c.id === quickEditTarget.id);
+        const res = await fetch('/api/admin/pages', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: quickEditTarget.id,
+            title: quickEditForm.title.trim(),
+            category: quickEditForm.category,
+            subCategory: quickEditForm.subCategory.trim() || null,
+            excerpt: quickEditForm.summary.trim(),
+            isPublished: quickEditForm.isPublished,
+            showInHeaderNav: quickEditForm.showInHeaderNav,
+            showInFooterNav: quickEditForm.showInFooterNav,
+            content: cp?.content || '',
+            bannerUrl: cp?.bannerUrl || '',
+          }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('success', 'Page updated via Quick Edit!');
+          setQuickEditOpen(false);
+          loadCustomPages();
+        } else {
+          showToast('error', data.error || 'Failed to update page.');
+        }
+      } else {
+        const updatedOverrides = {
+          ...coreOverrides,
+          [quickEditTarget.id]: {
+            title: quickEditForm.title.trim(),
+            category: quickEditForm.category,
+            subCategory: quickEditForm.subCategory.trim() || null,
+            summary: quickEditForm.summary.trim(),
+            isPublished: quickEditForm.isPublished,
+            showInHeaderNav: quickEditForm.showInHeaderNav,
+            showInFooterNav: quickEditForm.showInFooterNav,
+          },
+        };
+        setCoreOverrides(updatedOverrides);
+        try {
+          localStorage.setItem('hab_admin_core_page_overrides', JSON.stringify(updatedOverrides));
+        } catch {}
+        showToast('success', `Quick Edit applied to ${quickEditTarget.title}!`);
+        setQuickEditOpen(false);
+      }
+    } catch (err: any) {
+      showToast('error', err.message || 'Error saving Quick Edit.');
+    } finally {
+      setQuickSaving(false);
+    }
+  };
 
   const openCreateModal = () => {
     setEditingPageId(null);
@@ -480,8 +629,54 @@ export default function AdminPagesHub() {
     createdAt: cp.createdAt,
   }));
 
+  // Merge coreOverrides with CORE_WEBSITE_PAGES
+  const effectiveCorePages = CORE_WEBSITE_PAGES.map((cp) => {
+    const ov = coreOverrides[cp.id];
+    if (!ov) return cp;
+    return {
+      ...cp,
+      title: ov.title || cp.title,
+      category: ov.category || cp.category,
+      subCategory: ov.subCategory !== undefined ? ov.subCategory : cp.subCategory,
+      summary: ov.summary || cp.summary,
+      isPublished: ov.isPublished !== undefined ? ov.isPublished : cp.isPublished,
+      showInHeaderNav: ov.showInHeaderNav !== undefined ? ov.showInHeaderNav : cp.showInHeaderNav,
+      showInFooterNav: ov.showInFooterNav !== undefined ? ov.showInFooterNav : cp.showInFooterNav,
+    };
+  });
+
   // Unified all-pages list
-  const allPages = [...formattedCustomPages, ...CORE_WEBSITE_PAGES];
+  const allPages = [...formattedCustomPages, ...effectiveCorePages];
+
+  const orderedAllPages = React.useMemo(() => {
+    let list = [...allPages];
+    if (sortBy === 'title-asc') {
+      return list.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (sortBy === 'title-desc') {
+      return list.sort((a, b) => b.title.localeCompare(a.title));
+    }
+    if (sortBy === 'category') {
+      return list.sort((a, b) => a.category.localeCompare(b.category));
+    }
+    if (sortBy === 'status') {
+      return list.sort((a, b) => (b.isPublished ? 1 : 0) - (a.isPublished ? 1 : 0));
+    }
+    if (sortBy === 'custom-first') {
+      return list.sort((a, b) => (b.isCustom ? 1 : 0) - (a.isCustom ? 1 : 0));
+    }
+    if (customPagesOrder.length > 0) {
+      return list.sort((a, b) => {
+        const idxA = customPagesOrder.indexOf(a.id);
+        const idxB = customPagesOrder.indexOf(b.id);
+        if (idxA === -1 && idxB === -1) return 0;
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      });
+    }
+    return list;
+  }, [allPages, sortBy, customPagesOrder]);
 
   const dynamicCustomCategories = Array.from(
     new Set(customPages.map((p) => p.category).filter(Boolean))
@@ -516,7 +711,7 @@ export default function AdminPagesHub() {
     ].filter(Boolean))
   );
 
-  const filteredPages = allPages.filter((p) => {
+  const filteredPages = orderedAllPages.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.summary.toLowerCase().includes(search.toLowerCase()) ||
@@ -630,9 +825,43 @@ export default function AdminPagesHub() {
         </div>
       </div>
 
+      {/* Sorting & Order Controls Bar */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <ListOrdered className="w-4 h-4 text-[#8B2E24]" />
+          <span className="text-xs font-semibold text-slate-700">Sort & Sequence:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 font-medium focus:ring-1 focus:ring-[#8B2E24] focus:outline-hidden"
+          >
+            <option value="custom">Custom Sequence (Reorder with ↑ / ↓)</option>
+            <option value="title-asc">Title: A to Z</option>
+            <option value="title-desc">Title: Z to A</option>
+            <option value="category">Category</option>
+            <option value="status">Live Pages First</option>
+            <option value="custom-first">Custom CMS Pages First</option>
+          </select>
+          {customPagesOrder.length > 0 && (
+            <button
+              type="button"
+              onClick={resetPagesOrder}
+              className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 transition-colors ml-1"
+              title="Reset order to default"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+        <div className="text-[11px] text-slate-500 font-medium">
+          Showing <span className="font-bold text-slate-800">{filteredPages.length}</span> pages. Use <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">↑</span> and <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">↓</span> to reorder pages.
+        </div>
+      </div>
+
       {/* Pages Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredPages.map((page) => {
+        {filteredPages.map((page, pageIdx) => {
           const Icon = page.icon || FileText;
           return (
             <div
@@ -643,10 +872,34 @@ export default function AdminPagesHub() {
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${
-                    page.isCustom ? 'bg-amber-100 text-[#8B2E24] border border-amber-200' : 'bg-slate-100 text-[#8B2E24] border border-slate-200'
-                  }`}>
-                    <Icon className="w-5 h-5" />
+                  <div className="flex items-center gap-2">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform ${
+                      page.isCustom ? 'bg-amber-100 text-[#8B2E24] border border-amber-200' : 'bg-slate-100 text-[#8B2E24] border border-slate-200'
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    {/* Position & Move Up/Down Controls */}
+                    <div className="flex items-center gap-0.5 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                      <span className="text-[10px] font-mono font-bold text-slate-600 px-1.5" title="Page display order">#{pageIdx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => movePageUp(page.id)}
+                        disabled={pageIdx === 0}
+                        className="p-1 rounded hover:bg-white text-slate-600 hover:text-slate-900 disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                        title="Move Page Up"
+                      >
+                        <ArrowUp className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => movePageDown(page.id)}
+                        disabled={pageIdx === filteredPages.length - 1}
+                        className="p-1 rounded hover:bg-white text-slate-600 hover:text-slate-900 disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                        title="Move Page Down"
+                      >
+                        <ArrowDown className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {page.isCustom ? (
@@ -709,7 +962,7 @@ export default function AdminPagesHub() {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                 <Link
                   href={page.publicPath}
                   target="_blank"
@@ -720,35 +973,48 @@ export default function AdminPagesHub() {
                   <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
                 </Link>
 
-                {page.isCustom ? (
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => openEditModal(customPages.find((c) => c.id === page.id))}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-[#8B2E24] text-white text-xs font-semibold transition-colors shadow-xs"
-                      title="Edit custom page content and media"
+                <div className="flex items-center gap-1.5">
+                  {/* Quick Edit button available on all pages */}
+                  <button
+                    type="button"
+                    onClick={() => openQuickEditModal(page)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition-colors shadow-xs"
+                    title="Instant Quick Edit (title, status, category, navigation)"
+                  >
+                    <Zap className="w-3 h-3" />
+                    <span>Quick Edit</span>
+                  </button>
+
+                  {page.isCustom ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(customPages.find((c) => c.id === page.id))}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-[#8B2E24] text-white text-xs font-semibold transition-colors shadow-xs"
+                        title="Edit custom page content and media"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => confirmDeletePage(page.id, page.title)}
+                        className="p-1.5 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 transition-colors"
+                        title="Delete page"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      href={page.adminHref || '/admin'}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#8B2E24] text-white text-xs font-semibold transition-colors shadow-xs"
                     >
                       <Edit3 className="w-3 h-3" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => confirmDeletePage(page.id, page.title)}
-                      className="p-1.5 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 transition-colors"
-                      title="Delete page"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    href={page.adminHref || '/admin'}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#8B2E24] text-white text-xs font-semibold transition-colors shadow-xs"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>Manage Studio →</span>
-                  </Link>
-                )}
+                      <span>Studio →</span>
+                    </Link>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -857,6 +1123,157 @@ export default function AdminPagesHub() {
                 {submitting ? 'Deleting...' : 'Yes, Delete Page'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK EDIT MODAL */}
+      {quickEditOpen && quickEditTarget && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150 my-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                    <Zap className="w-3 h-3 text-amber-600" />
+                    Quick Edit
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-500">{quickEditTarget.publicPath}</span>
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mt-1 truncate max-w-md">
+                  {quickEditTarget.title}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQuickEditOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveQuickEdit} className="mt-4 space-y-4">
+              {/* Page Title */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Page Title <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={quickEditForm.title}
+                  onChange={(e) => setQuickEditForm((prev) => ({ ...prev, title: e.target.value }))}
+                  required
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-[#8B2E24]"
+                />
+              </div>
+
+              {/* Category & SubCategory */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={quickEditForm.category}
+                    onChange={(e) => setQuickEditForm((prev) => ({ ...prev, category: e.target.value }))}
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-[#8B2E24]"
+                  >
+                    {availableFormCategories.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Sub-Category (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Textiles, Policy, Annual"
+                    value={quickEditForm.subCategory}
+                    onChange={(e) => setQuickEditForm((prev) => ({ ...prev, subCategory: e.target.value }))}
+                    className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-[#8B2E24]"
+                  />
+                </div>
+              </div>
+
+              {/* Summary / Excerpt */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Summary / Excerpt
+                </label>
+                <textarea
+                  rows={2}
+                  value={quickEditForm.summary}
+                  onChange={(e) => setQuickEditForm((prev) => ({ ...prev, summary: e.target.value }))}
+                  placeholder="Brief description shown in cards and search previews..."
+                  className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:bg-white focus:outline-hidden focus:ring-1 focus:ring-[#8B2E24]"
+                />
+              </div>
+
+              {/* Status and Navigation Toggles */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-slate-800">Publish Status</div>
+                    <div className="text-[11px] text-slate-500">Enable or hide this page from public view</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQuickEditForm((prev) => ({ ...prev, isPublished: !prev.isPublished }))}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
+                      quickEditForm.isPublished
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-slate-200 text-slate-600 border border-slate-300'
+                    }`}
+                  >
+                    {quickEditForm.isPublished ? '● Live' : '○ Draft'}
+                  </button>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/70 flex items-center justify-between text-xs">
+                  <span className="font-medium text-slate-700">Display in Header Navigation</span>
+                  <input
+                    type="checkbox"
+                    checked={quickEditForm.showInHeaderNav}
+                    onChange={(e) => setQuickEditForm((prev) => ({ ...prev, showInHeaderNav: e.target.checked }))}
+                    className="w-4 h-4 rounded text-[#8B2E24] focus:ring-[#8B2E24]"
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/70 flex items-center justify-between text-xs">
+                  <span className="font-medium text-slate-700">Display in Footer Quick Links</span>
+                  <input
+                    type="checkbox"
+                    checked={quickEditForm.showInFooterNav}
+                    onChange={(e) => setQuickEditForm((prev) => ({ ...prev, showInFooterNav: e.target.checked }))}
+                    className="w-4 h-4 rounded text-[#8B2E24] focus:ring-[#8B2E24]"
+                  />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setQuickEditOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={quickSaving}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-bold transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{quickSaving ? 'Saving...' : 'Apply Quick Edit'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

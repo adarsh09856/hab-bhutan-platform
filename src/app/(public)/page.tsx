@@ -362,21 +362,23 @@ export default function HomePage() {
   ]);
 
   const displayedProducts = React.useMemo(() => {
-    if (allProductsPool.length === 0) return products.slice(0, 8);
-    if (allProductsPool.length <= 8) return allProductsPool;
+    const pool = allProductsPool.length > 0 ? allProductsPool : products;
+    if (pool.length === 0) return [];
+    const count = Math.min(8, pool.length);
     const res = [];
-    for (let i = 0; i < 8; i++) {
-      res.push(allProductsPool[(productOffset + i) % allProductsPool.length]);
+    for (let i = 0; i < count; i++) {
+      res.push(pool[(productOffset + i) % pool.length]);
     }
     return res;
   }, [allProductsPool, productOffset, products]);
 
   const displayedOutlets = React.useMemo(() => {
-    if (allOutletsPool.length === 0) return outlets.slice(0, 3);
-    if (allOutletsPool.length <= 3) return allOutletsPool;
+    const pool = allOutletsPool.length > 0 ? allOutletsPool : outlets;
+    if (pool.length === 0) return [];
+    const count = Math.min(3, pool.length);
     const res = [];
-    for (let i = 0; i < 3; i++) {
-      res.push(allOutletsPool[(outletOffset + i) % allOutletsPool.length]);
+    for (let i = 0; i < count; i++) {
+      res.push(pool[(outletOffset + i) % pool.length]);
     }
     return res;
   }, [allOutletsPool, outletOffset, outlets]);
@@ -829,21 +831,23 @@ export default function HomePage() {
 
   // 5-second continuous auto-rotation for Shop Products
   useEffect(() => {
-    if (allProductsPool.length <= 8) return;
+    const pool = allProductsPool.length > 0 ? allProductsPool : products;
+    if (pool.length <= 1) return;
     const t = setInterval(() => {
-      setProductOffset((prev) => (prev + 1) % allProductsPool.length);
+      setProductOffset((prev) => (prev + 1) % pool.length);
     }, 5000);
     return () => clearInterval(t);
-  }, [allProductsPool.length]);
+  }, [allProductsPool.length, products.length]);
 
   // 5-second continuous auto-rotation for Outlets
   useEffect(() => {
-    if (allOutletsPool.length <= 3) return;
+    const pool = allOutletsPool.length > 0 ? allOutletsPool : outlets;
+    if (pool.length <= 1) return;
     const t = setInterval(() => {
-      setOutletOffset((prev) => (prev + 1) % allOutletsPool.length);
+      setOutletOffset((prev) => (prev + 1) % pool.length);
     }, 5000);
     return () => clearInterval(t);
-  }, [allOutletsPool.length]);
+  }, [allOutletsPool.length, outlets.length]);
 
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -875,8 +879,14 @@ export default function HomePage() {
     }));
 
     try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('hab_homepage_section_order', JSON.stringify(currentOrder));
+      }
+    } catch {}
+
+    try {
       await fetch('/api/admin/site-settings', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           homepageSectionOrder: currentOrder,
@@ -884,7 +894,7 @@ export default function HomePage() {
       });
       window.dispatchEvent(new CustomEvent('hab:settings-updated'));
     } catch (err) {
-      console.warn('Failed to save section order:', err);
+      console.warn('Failed to save section order to API:', err);
     }
   };
 
@@ -1064,12 +1074,12 @@ export default function HomePage() {
 
         <div className="band__inner about">
           <div>
-            <p className="eyebrow eyebrow--brass">About us</p>
-            <h2 className="display display--band">{siteSettings.aboutBandTitle}</h2>
-            <p className="band__body">{siteSettings.aboutBandPara1}</p>
-            <p className="band__body">{siteSettings.aboutBandPara2}</p>
+            <p className="eyebrow eyebrow--brass">{isDz ? 'ང་བཅས་ཀྱི་སྐོར' : 'About us'}</p>
+            <h2 className="display display--band">{isDz ? 'འབྲུག་གི་ལག་བཟོ་ཚོགས་པ' : siteSettings.aboutBandTitle}</h2>
+            <p className="band__body">{isDz ? 'འབྲུག་ལག་བཟོ་ཚོགས་པ་འདི་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་བ་ཚུ་ལུ་རྒྱབ་སྐྱོར་འབད་དེ་ རྒྱལ་ཁབ་ནང་འཁོད་དང་ རྒྱལ་སྤྱིའི་ཁྲོམ་རའི་ནང་ ལག་བཟོ་གོང་འཕེལ་གཏང་ནི་དང་ ལག་རྩལ་ཡར་རྒྱས་གཏང་ནི་ལུ་ ཕྱག་ཞུ་དོ་ཡོད།' : siteSettings.aboutBandPara1}</p>
+            <p className="band__body">{isDz ? 'ང་བཅས་ཀྱིས་ འབྲུག་གི་སྔར་སྲོལ་ཟོ་རིག་བཅུ་གསུམ་གྱི་རིག་གཞུང་ཉམས་པ་སོར་ཆུད་དང་ མི་རབས་གསར་པ་ཚུ་ལུ་ ལག་རྩལ་སྤྲོད་ནིའི་ལས་རིམ་ཚུ་ འགོ་འདྲེན་འཐབ་ཨིན།' : siteSettings.aboutBandPara2}</p>
             <Link className="link-brass" href="/programmes">
-              Read about our programmes
+              {isDz ? 'ལས་རིམ་སྐོར་ལྷག་པར་གཟིགས →' : 'Read about our programmes'}
             </Link>
           </div>
           <figure className="frame frame--square frame--dark">
@@ -1420,14 +1430,16 @@ export default function HomePage() {
         <SectionEditBadge label="Living Treasures & Honours" studioHref="/admin/honours" {...getMoveProps('masters')} />
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Recognised by the association</p>
-            <h2 className="display display--band">Master craftspeople</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'ཚོགས་པ་གིས་ངོས་འཛིན་འབད་ཡོད' : 'Recognised by the association'}</p>
+            <h2 className="display display--band">{isDz ? 'མཁས་དབང་ལག་བཟོ་བ' : 'Master craftspeople'}</h2>
             <p className="section__lede">
-              Members honoured for mastery of a Zorig Chusum craft, for national craft awards, and for the standards they set for everyone else working in it.
+              {isDz
+                ? 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ རིག་གནས་ལུ་མཁས་པའི་ རྒྱལ་ཡོངས་ལག་བཟོའི་གཟེངས་བསྟོད་ཐོབ་མི་ ཚོགས་མི་ཚུ།'
+                : 'Members honoured for mastery of a Zorig Chusum craft, for national craft awards, and for the standards they set for everyone else working in it.'}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/masters">
-            All recognised members →
+            {isDz ? 'མཁས་དབང་ཆ་མཉམ་གཟིགས →' : 'All recognised members →'}
           </Link>
         </div>
 
@@ -1459,14 +1471,16 @@ export default function HomePage() {
 
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Programmes &amp; projects</p>
-            <h2 className="display display--band">Change lives, build a better community</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'ལས་རིམ་དང་ལས་འགུལ' : 'Programmes & projects'}</p>
+            <h2 className="display display--band">{isDz ? 'མི་ཚེ་སོར་བསྒྱུར་དང་ མི་སྡེ་གོང་འཕེལ' : 'Change lives, build a better community'}</h2>
             <p className="section__lede">
-              Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association.
+              {isDz
+                ? 'ལས་རིམ་རེ་རེ་བཞིན་དུ་ འབྲུག་ལག་བཟོ་ཚོགས་པའི་ རྩ་ཁྲིམས་དོན་ཚན་ ༣.༢ པའི་དམིགས་ཡུལ་དང་འཁྲིལ་ཏེ་ ལག་ལེན་འཐབ་ཨིན།'
+                : 'Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association.'}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/programmes">
-            All eleven programme areas →
+            {isDz ? 'ལས་རིམ་ ༡༡ ཆ་མཉམ་གཟིགས →' : 'All eleven programme areas →'}
           </Link>
         </div>
 
@@ -1479,7 +1493,7 @@ export default function HomePage() {
               </div>
               <p className="card__text programme__desc">{p.description}</p>
               <Link className="link-accent programme__toggle" href={`/programmes/${p.ref}`}>
-                Read more &rarr;
+                {isDz ? 'ལྷག་པར་གཟིགས →' : 'Read more →'}
               </Link>
             </article>
           ))}
@@ -1491,14 +1505,16 @@ export default function HomePage() {
         <SectionEditBadge label="Donor Support Pillars" studioHref="/admin/donate-settings" sectionType="donate" {...getMoveProps('support')} />
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Support us</p>
-            <h2 className="display display--band">Support the Living Heritage of Bhutan</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'རྒྱབ་སྐྱོར་གནང' : 'Support us'}</p>
+            <h2 className="display display--band">{isDz ? 'འབྲུག་གི་གསོན་པོའི་རིག་གཞུང་ལུ་རྒྱབ་སྐྱོར་གནང' : 'Support the Living Heritage of Bhutan'}</h2>
             <p className="section__lede">
-              We empower the entire craft value chain. Your support directly sustains rural creators, safeguards ancestral arts, and protects our natural landscapes.
+              {isDz
+                ? 'ཁྱོད་ཀྱི་རྒྱབ་སྐྱོར་གྱིས་ གུང་གསེབ་ཀྱི་ལག་བཟོ་བ་ཚུ་ལུ་ ཐད་ཀར་རྒྱབ་སྐྱོར་དང་ སྔར་སྲོལ་ལག་རྩལ་ཉམས་སྲུང་འབད་ཚུགས།'
+                : 'We empower the entire craft value chain. Your support directly sustains rural creators, safeguards ancestral arts, and protects our natural landscapes.'}
             </p>
           </div>
           <Link className="btn btn--accent" href="/donate">
-            Donate now
+            {isDz ? 'ད་ལྟོ་ཞལ་འདེབས་ཕུལ' : 'Donate now'}
           </Link>
         </div>
 
@@ -1602,6 +1618,21 @@ export default function HomePage() {
           </Link>
         </div>
 
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'གནས་ཚུལ་དང་བྱུང་རིམ' : 'Dispatches & updates'}</p>
+            <h2 className="display display--band">{isDz ? 'གསར་ཤོས་དང་བྱུང་རིམ' : 'Stay informed, stay empowered.'}</h2>
+            <p className="section__lede">
+              {isDz
+                ? 'འབྲུག་ལག་བཟོ་ཚོགས་པའི་ ལས་རིམ་དང་ སྦྱོང་བརྡར་ དེ་ལས་ བྱུང་རིམ་གྱི་གནས་ཚུལ་ཚུ།'
+                : 'Dispatches from programmes, announcements of upcoming markets and trainings, and sector policy updates.'}
+            </p>
+          </div>
+          <Link className="btn btn--ink btn--sm" href="/news">
+            {isDz ? 'གནས་ཚུལ་ཆ་མཉམ་གཟིགས →' : 'All news & events →'}
+          </Link>
+        </div>
+
         <div className="newsrow">
           <div className="grid grid--3">
             {news.map((item, idx) => (
@@ -1622,7 +1653,7 @@ export default function HomePage() {
                   <h3 className="news__title clamp-2">{item.title}</h3>
                   <p className="card__text clamp-4">{item.blurb}</p>
                   <Link className="news__more" href={`/news/${item.slug}`}>
-                    Read more →
+                    {isDz ? 'ལྷག་པར་གཟིགས →' : 'Read more →'}
                   </Link>
                 </div>
               </article>
@@ -1632,9 +1663,9 @@ export default function HomePage() {
           <aside className="newsaside">
             <div className="newsaside__block">
               <div className="newsaside__head">
-                <h3 className="newsaside__title">Upcoming events</h3>
+                <h3 className="newsaside__title">{isDz ? 'འབྱུང་ལ་ཉེ་བའི་བྱུང་རིམ' : 'Upcoming events'}</h3>
                 <Link className="link-accent" href="/events">
-                  All events →
+                  {isDz ? 'བྱུང་རིམ་ཆ་མཉམ →' : 'All events →'}
                 </Link>
               </div>
               <div>
@@ -1655,12 +1686,14 @@ export default function HomePage() {
               </div>
             </div>
             <div className="newsaside__block newsaside__block--dark">
-              <h3 className="newsaside__title newsaside__title--light">Reports &amp; publications</h3>
+              <h3 className="newsaside__title newsaside__title--light">{isDz ? 'སྙན་ཞུ་དང་དཔེ་སྐྲུན' : 'Reports & publications'}</h3>
               <p className="newsaside__body">
-                Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.
+                {isDz
+                  ? 'ལོ་བསྟར་སྙན་ཞུ་དང་ རྩིས་ཞིབ་སྙན་ཞུ་ དེ་ལས་ ཟོ་རིག་བཅུ་གསུམ་གྱི་ དཔེ་དེབ་ཚུ་ རིན་མེད་ཕབ་ལེན་འབད།'
+                  : 'Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.'}
               </p>
               <Link className="link-brass" href="/publications">
-                Browse all reports
+                {isDz ? 'སྙན་ཞུ་ཆ་མཉམ་གཟིགས' : 'Browse all reports'}
               </Link>
             </div>
           </aside>
@@ -1673,13 +1706,15 @@ export default function HomePage() {
         <div className="rule-top">
           <div className="pubs">
             <div>
-              <p className="eyebrow eyebrow--accent">Accountability</p>
-              <h2 className="display display--sub">Reports &amp; publications</h2>
+              <p className="eyebrow eyebrow--accent">{isDz ? 'འགན་འཁྲི' : 'Accountability'}</p>
+              <h2 className="display display--sub">{isDz ? 'སྙན་ཞུ་དང་དཔེ་སྐྲུན' : 'Reports & publications'}</h2>
               <p className="section__lede">
-                HAB publishes programme outcomes, sector research and audited accounts every year, in English and Dzongkha.
+                {isDz
+                  ? 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ལོ་བསྟར་ལས་རིམ་གྲུབ་འབྲས་དང་ རྩིས་ཞིབ་སྙན་ཞུ་ཚུ་ དབྱིན་སྐད་དང་རྫོང་ཁ་གཉིས་ཆ་རའི་ནང་ དཔེ་སྐྲུན་འབདཝ་ཨིན།'
+                  : 'HAB publishes programme outcomes, sector research and audited accounts every year, in English and Dzongkha.'}
               </p>
               <Link className="link-accent" href="/publications">
-                All publications →
+                {isDz ? 'དཔེ་སྐྲུན་ཆ་མཉམ་གཟིགས →' : 'All publications →'}
               </Link>
             </div>
             <div className="grid grid--2">
@@ -1706,7 +1741,7 @@ export default function HomePage() {
       <section className="section section--last relative" data-hab-section="partners">
         <SectionEditBadge label="Development Partners" studioHref="/admin/site-settings" {...getMoveProps('partners')} />
 
-        <p className="eyebrow eyebrow--muted">Development Partners</p>
+        <p className="eyebrow eyebrow--muted">{isDz ? 'གོང་འཕེལ་མཉམ་འབྲེལ་པ' : 'Development Partners'}</p>
         <div className="partners">
           {siteSettings.partnersList.map((partner: any, idx: number) => {
             const name = typeof partner === 'string' ? partner : partner.name;

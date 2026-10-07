@@ -66,28 +66,28 @@ export default function SectionEditBadge({
 
   useEffect(() => {
     const checkVisibility = () => {
-      if (typeof document === 'undefined') return;
-      const urlHasEdit = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('edit') === 'true';
-      const localEdit = typeof localStorage !== 'undefined' && (localStorage.getItem('hab_visual_edit') === '1' || localStorage.getItem('hab_visual_edit') === 'true');
-      const isVisible =
-        document.body.classList.contains('hab-visual-edit-on') ||
-        (document.body.classList.contains('has-admin-live-bar') && document.body.classList.contains('hab-visual-edit-on')) ||
-        urlHasEdit ||
-        localEdit;
-
-      if (urlHasEdit || localEdit) {
-        document.body.classList.add('has-admin-live-bar', 'hab-visual-edit-on');
-      }
-
-      setVisible(Boolean(isVisible));
+      if (typeof window === 'undefined') return;
+      const urlHasEdit = new URLSearchParams(window.location.search).get('edit') === 'true';
+      const localEdit = localStorage.getItem('hab_visual_edit') === '1' || localStorage.getItem('hab_visual_edit') === 'true';
+      const bodyHasClass = document.body.classList.contains('hab-visual-edit-on');
+      setVisible(Boolean(urlHasEdit || localEdit || bodyHasClass));
     };
 
     checkVisibility();
 
-    const observer = new MutationObserver(checkVisibility);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    const handleToggle = (e: any) => {
+      if (e?.detail?.active !== undefined) {
+        setVisible(Boolean(e.detail.active));
+      } else {
+        checkVisibility();
+      }
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener('hab:visual-edit-toggled', handleToggle);
+
+    return () => {
+      window.removeEventListener('hab:visual-edit-toggled', handleToggle);
+    };
   }, []);
 
   if (!visible) return null;
@@ -108,7 +108,7 @@ export default function SectionEditBadge({
   return (
     <>
       <aside
-        className={`hab-section-edit-badge absolute z-40 items-center gap-1.5 bg-slate-900/95 text-white text-[11px] font-medium px-3 py-1.5 rounded-xl border border-amber-400/60 shadow-xl backdrop-blur-md transition-all hover:bg-slate-900 ${className}`}
+        className={`hab-section-edit-badge absolute z-50 items-center gap-1.5 bg-slate-900/95 text-white text-[11px] font-medium px-3 py-1.5 rounded-xl border border-amber-400/80 shadow-2xl backdrop-blur-md transition-all hover:bg-slate-900 ${className}`}
         aria-label={`Visual edit options for ${label}`}
       >
         <div className="flex items-center gap-1.5">

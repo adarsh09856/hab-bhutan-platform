@@ -105,15 +105,11 @@ const PRODUCT_POOL = [
     });
   };
 
-  // Continuous 6-second auto-rotation of catalog products (Item: auto 5 7s)
+  // Continuous 6-second auto-shuffle of catalog products (Item: auto 5-7s)
   useEffect(() => {
     if (products.length <= 1) return;
     const interval = setInterval(() => {
-      setProducts((prev) => {
-        if (prev.length <= 1) return prev;
-        const [first, ...rest] = prev;
-        return [...rest, first];
-      });
+      handleShuffle();
     }, 6000);
     return () => clearInterval(interval);
   }, [products.length]);

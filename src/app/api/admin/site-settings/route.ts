@@ -464,3 +464,4 @@ export async function PUT(req: NextRequest) {
 }
 
 export const PATCH = PUT;
+export const POST = PUT;
