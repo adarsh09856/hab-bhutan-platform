@@ -733,18 +733,6 @@ export default function Header() {
             {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
           </button>
 
-          <button
-            className="chip"
-            id="languageToggleDesktop"
-            title="Switch Language: English / རྫོང་ཁ (Dzongkha)"
-            aria-live="polite"
-            type="button"
-            onClick={toggleLanguage}
-            style={{ cursor: 'pointer', fontWeight: 600 }}
-          >
-            {language === 'en' ? 'EN / རྫོ' : 'རྫོ / EN'}
-          </button>
-
           <div
             className="menu"
             data-menu
