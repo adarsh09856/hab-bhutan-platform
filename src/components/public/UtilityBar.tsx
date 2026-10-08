@@ -47,7 +47,7 @@ export default function UtilityBar() {
   const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
   const [topBarContactMode, setTopBarContactMode] = useState<'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF'>('PHONE_ONLY');
   const [visible, setVisible] = useState(true);
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const isDz = language === 'dz';
 
   const textContainerRef = React.useRef<HTMLDivElement>(null);
@@ -287,19 +287,8 @@ export default function UtilityBar() {
           </Link>
         </nav>
 
-        {/* Right side items: the shared language control, Secretary Desk and Wholesale. */}
+        {/* Right side items: Secretary Desk and Wholesale. */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <button
-            type="button"
-            className="utility__lang"
-            onClick={toggleLanguage}
-            aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
-            title="Switch language / སྐད་ཡིག"
-          >
-            <span className={language === 'en' ? 'is-active' : ''}>EN</span>
-            <span aria-hidden="true">/</span>
-            <span className={language === 'dz' ? 'is-active' : ''}>རྫོང་ཁ</span>
-          </button>
           {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
           {topBarContactMode !== 'OFF' && (
             <div

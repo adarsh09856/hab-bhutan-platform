@@ -791,7 +791,7 @@ The larger project remains open. In particular, every reference page still needs
 - The page-wide capture listener could intercept clicks in the live section, header, visual-section and custom-page editors. Those dialogs are now explicitly excluded, so their controls (including Close) receive clicks. Authenticated browser verification is still **UNVERIFIED**.
 - The universal editor now checks the current staff session before attaching click-to-edit behavior. Anonymous visual-edit flags alone cannot activate that editor.
 - The live section dialog initially tried an embedded Admin Records screen. That did not meet the requirement for separate Quick Edit controls. It has been removed; Admin pages again deny all framing.
-- The desktop EN/Dz switcher was moved into the upper utility bar. Navigation and existing translated UI strings react to it, but core translation across every page remains **PENDING**.
+- The EN/Dz switcher was moved from the upper utility strip to the far-right end of the main desktop menu bar, after the basket control. The mobile menu keeps its switcher in the drawer. Navigation and existing translated UI strings react to it, but core translation across every page remains **PENDING**.
 
 ### Native Quick Edit record controls (8 October 2026, continuation)
 
@@ -851,4 +851,5 @@ The larger project remains open. In particular, every reference page still needs
 ### Cross-page language QA
 
 - Direct browser inspection of `/strategic-plan` while the page language was Dzongkha showed the header and footer translated but the main title, body copy, and all five card descriptions remained in English. This confirms the site's current language switch does **not** translate the core content across all pages.
-- The shared product card now uses the existing `shop.add_to_cart` and `shop.out_of_stock` Dzongkha translations, so those common controls follow the selected language. Typecheck passed; optimized build and live display are pending. Full public-page text localization remains **PENDING**.
+- The shared product card now uses the existing `shop.add_to_cart` and `shop.out_of_stock` Dzongkha translations, so those common controls follow the selected language. Typecheck and optimized production build passed; live display is pending. Full public-page text localization remains **PENDING**.
+- The language switcher was moved from the upper utility strip to the right edge of the main desktop header menu, and removed from the utility row. It remains in the mobile drawer for narrow screens. Typecheck and optimized build passed; live position check is pending.

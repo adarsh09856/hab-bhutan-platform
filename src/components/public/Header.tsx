@@ -816,6 +816,18 @@ export default function Header() {
           </Link>
 
           <button
+            type="button"
+            className="chip hidden min-[1192px]:inline-flex items-center gap-1.5"
+            onClick={toggleLanguage}
+            aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
+            title="Switch language / སྐད་ཡིག"
+          >
+            <span className={language === 'en' ? 'font-bold text-[#8B2E24]' : ''}>EN</span>
+            <span aria-hidden="true">/</span>
+            <span className={language === 'dz' ? 'font-bold text-[#8B2E24]' : ''}>རྫོང་ཁ</span>
+          </button>
+
+          <button
             className="nav-toggle"
             id="navToggle"
             aria-expanded={mobileNavOpen}
