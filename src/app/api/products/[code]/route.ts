@@ -6,10 +6,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const code = params.code?.toUpperCase();
+    const { code: rawCode } = await params;
+    const code = rawCode?.toUpperCase();
 
     const product = await prisma.product.findFirst({
       where: {

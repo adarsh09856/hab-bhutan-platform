@@ -1068,7 +1068,7 @@ export default function AdminMembersPage() {
                   <span className="text-[#8B2E24] font-semibold underline">Choose CSV / Excel file</span> or drag &amp; drop
                   <input
                     type="file"
-                    accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                    accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
                     onChange={handleMemberFileChange}
                     className="hidden"
                   />

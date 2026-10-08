@@ -9,7 +9,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 export const dynamic = 'force-dynamic';
 
 interface PolicyRouteProps {
-  params: { slug: string } | Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 const DEFAULT_POLICIES: Record<string, { title: string; lede: string; content: string }> = {

@@ -6,10 +6,10 @@ import { moveToRecycleBin } from '@/lib/recycle-bin';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requirePermission(req, 'content:view');
-    const { id } = params;
+    const { id } = await params;
 
     const page = await prisma.customPage.findUnique({
       where: { id },
@@ -25,10 +25,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await requirePermission(req, 'content:edit');
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     const existing = await prisma.customPage.findUnique({
@@ -199,10 +199,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await requirePermission(req, 'content:delete');
-    const { id } = params;
+    const { id } = await params;
 
     const page = await prisma.customPage.findUnique({
       where: { id },

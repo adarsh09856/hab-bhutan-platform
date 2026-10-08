@@ -15,13 +15,14 @@ async function verifyAdmin(req: NextRequest) {
   return isStaff ? user : null;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { id } = await params;
   const body = await req.json();
   const { imageUrl, caption, altText, linkUrl, sortOrder, isActive } = body;
   try {
     const slide = await prisma.heroSlide.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(imageUrl !== undefined && { imageUrl: imageUrl.trim() }),
         ...(caption !== undefined && { caption: caption.trim() }),
@@ -37,10 +38,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { id } = await params;
   try {
-    await prisma.heroSlide.delete({ where: { id: params.id } });
+    await prisma.heroSlide.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Slide not found' }, { status: 404 });

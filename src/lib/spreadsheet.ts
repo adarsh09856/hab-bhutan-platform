@@ -2,7 +2,7 @@
  * Comprehensive RFC-4180 compliant CSV / Excel spreadsheet generator and parser.
  * Supports UTF-8 BOM (\uFEFF) for seamless Microsoft Excel import without encoding corruption.
  */
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export function generateExcelCsv(headers: string[], rows: (string | number | null | undefined)[][]): string {
   const escapeCell = (val: string | number | null | undefined): string => {
@@ -102,33 +102,56 @@ export function triggerDownload(filename: string, content: string, mimeType = 't
   URL.revokeObjectURL(url);
 }
 
-export function downloadExcelWorkbook(
+export async function downloadExcelWorkbook(
   filename: string,
   sheetName: string,
   headers: string[],
   rows: (string | number | null | undefined)[][]
 ) {
-  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  worksheet['!cols'] = headers.map((header, index) => ({
-    wch: Math.min(60, Math.max(header.length + 2, ...rows.map((row) => String(row[index] ?? '').length + 2))),
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Handicrafts Association of Bhutan';
+  const worksheet = workbook.addWorksheet(sheetName.slice(0, 31));
+  worksheet.addRow(headers);
+  rows.forEach((row) => worksheet.addRow(row.map((value) => value ?? '')));
+  worksheet.getRow(1).font = { bold: true };
+  worksheet.columns = headers.map((header, index) => ({
+    width: Math.min(60, Math.max(header.length + 2, ...rows.map((row) => String(row[index] ?? '').length + 2))),
   }));
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName.slice(0, 31));
-  XLSX.writeFile(workbook, filename, { compression: true });
+  const output = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([output], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 export async function parseSpreadsheetFile(file: File): Promise<string[][]> {
   const lower = file.name.toLowerCase();
-  if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
-    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false });
-    const firstSheet = workbook.SheetNames[0];
-    if (!firstSheet) return [];
-    return XLSX.utils.sheet_to_json<string[]>(workbook.Sheets[firstSheet], {
-      header: 1,
-      raw: false,
-      defval: '',
-      blankrows: false,
-    }).map((row) => row.map((cell) => String(cell ?? '').trim()));
+  if (lower.endsWith('.xlsx')) {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await file.arrayBuffer());
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) return [];
+    const rows: string[][] = [];
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      const values = row.values as ExcelJS.CellValue[];
+      rows.push(values.slice(1).map((value) => {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'object') {
+          if ('text' in value) return String(value.text).trim();
+          if ('result' in value) return String(value.result ?? '').trim();
+        }
+        return String(value).trim();
+      }));
+    });
+    return rows;
+  }
+  if (lower.endsWith('.xls')) {
+    throw new Error('Legacy .xls files are not supported. Save the workbook as .xlsx or CSV and try again.');
   }
   return parseCsv(await file.text());
 }

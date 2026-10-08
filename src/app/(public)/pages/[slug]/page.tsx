@@ -7,7 +7,7 @@ import CustomPageClientView from '@/components/public/CustomPageClientView';
 export const dynamic = 'force-dynamic';
 
 interface CustomPageRouteProps {
-  params: { slug: string } | Promise<{ slug: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: CustomPageRouteProps): Promise<Metadata> {
@@ -70,7 +70,7 @@ export default async function CustomPageRoute({ params }: CustomPageRouteProps) 
 
   // If unpublished, only allow access if admin session cookie is present
   if (!page.isPublished) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('hab_session')?.value;
     if (!sessionCookie) {
       notFound();
