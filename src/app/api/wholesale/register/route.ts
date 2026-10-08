@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { getClientIp } from '@/lib/rbac';
-import { saveFallbackWholesaleBuyer } from '@/lib/wholesale-store';
+import { getAllFallbackWholesaleBuyers, saveFallbackWholesaleBuyer } from '@/lib/wholesale-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +52,19 @@ export async function POST(req: NextRequest) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanCompany = businessName.trim();
     const cleanContact = contactPerson.trim();
+    const duplicateMessage = 'This email already has a wholesale registration. Contact HAB if you need to update it.';
+    if (getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.trim().toLowerCase() === cleanEmail)) {
+      return NextResponse.json({ success: false, error: duplicateMessage }, { status: 409 });
+    }
+    let databaseAvailable = true;
+    try {
+      const existing = await prisma.wholesaleBuyer.findFirst({ where: { email: cleanEmail }, select: { id: true } });
+      if (existing) return NextResponse.json({ success: false, error: duplicateMessage }, { status: 409 });
+    } catch (error: any) {
+      databaseAvailable = false;
+      console.warn('[wholesale/register] Database duplicate check unavailable; using fallback storage:', error.message);
+    }
+
     const cleanUsernameBase = (cleanEmail.split('@')[0] || cleanCompany)
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
@@ -80,46 +93,11 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(tempPassword, 10);
     const reference = `HAB-W-${buyerId.slice(0, 6).toUpperCase()}`;
 
-    // 1. Resilient Fallback Storage
-    saveFallbackWholesaleBuyer({
-      id: buyerId,
-      username,
-      companyName: cleanCompany,
-      contactName: cleanContact,
-      email: cleanEmail,
-      phone: phone ? String(phone).trim() : null,
-      country: String(country).trim(),
-      city: city ? String(city).trim() : null,
-      taxId: regNumber ? String(regNumber).trim() : null,
-      discountTier: 20,
-      status: 'PENDING',
-      notes: notesSummary,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    // 2. Database Storage
+    // Write the database record first when available, so a uniqueness race cannot
+    // overwrite an existing fallback application before the duplicate is detected.
     let dbBuyer: any = null;
-    try {
-      // Check if email already registered in DB
-      const existing = await prisma.wholesaleBuyer.findFirst({
-        where: { OR: [{ email: cleanEmail }, { username }] },
-      }).catch(() => null);
-
-      if (existing) {
-        dbBuyer = await prisma.wholesaleBuyer.update({
-          where: { id: existing.id },
-          data: {
-            companyName: cleanCompany,
-            contactName: cleanContact,
-            phone: phone ? String(phone).trim() : existing.phone,
-            country: String(country).trim(),
-            city: city ? String(city).trim() : existing.city,
-            taxId: regNumber ? String(regNumber).trim() : existing.taxId,
-            notes: notesSummary,
-          },
-        }).catch(() => null);
-      } else {
+    if (databaseAvailable) {
+      try {
         dbBuyer = await prisma.wholesaleBuyer.create({
           data: {
             id: buyerId,
@@ -136,12 +114,35 @@ export async function POST(req: NextRequest) {
             status: 'PENDING',
             notes: notesSummary,
           },
-        }).catch((err) => {
-          console.warn('[wholesale/register] Database insert error (fallback preserved):', err.message);
-          return null;
         });
+      } catch (error: any) {
+        if (error?.code === 'P2002') {
+          return NextResponse.json({ success: false, error: duplicateMessage }, { status: 409 });
+        }
+        console.warn('[wholesale/register] Database insert error (fallback preserved):', error.message);
       }
+    }
 
+    // Resilient fallback storage is written after duplicate checks/database insert.
+    saveFallbackWholesaleBuyer({
+      id: buyerId,
+      username,
+      passwordHash,
+      companyName: cleanCompany,
+      contactName: cleanContact,
+      email: cleanEmail,
+      phone: phone ? String(phone).trim() : null,
+      country: String(country).trim(),
+      city: city ? String(city).trim() : null,
+      taxId: regNumber ? String(regNumber).trim() : null,
+      discountTier: 20,
+      status: 'PENDING',
+      notes: notesSummary,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    try {
       if (dbBuyer) {
         const ip = getClientIp(req);
         logAudit({
@@ -159,7 +160,7 @@ export async function POST(req: NextRequest) {
         }).catch(() => {});
       }
     } catch (dbErr: any) {
-      console.warn('[wholesale/register] DB operation skipped, preserved in fallback store:', dbErr.message);
+      console.warn('[wholesale/register] Audit logging skipped:', dbErr.message);
     }
 
     return NextResponse.json({
