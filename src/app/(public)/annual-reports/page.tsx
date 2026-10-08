@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import { FileText, Download, Calendar, ShieldCheck, ArrowRight, ExternalLink, Sparkles, Building } from 'lucide-react';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
+import { FileText, Download, Sparkles } from 'lucide-react';
+import { isPublicPublicationTitle } from '@/lib/publication-visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,49 +13,6 @@ export const metadata: Metadata = {
   title: 'Official Annual Reports · Handicrafts Association of Bhutan',
   description: 'Annual reports, programme outcomes, artisan impact statistics, and statutory governance filings published by the Handicrafts Association of Bhutan.',
 };
-
-const DEFAULT_ANNUAL_REPORTS = [
-  {
-    year: 2025,
-    title: 'HAB Annual Report 2025: Empowering Heritage & Rural Enterprises',
-    meta: 'PDF · 4.8 MB · English & Dzongkha',
-    abstract: 'Comprehensive annual overview of nationwide interventions across 20 Dzongkhags. Details the onboarding of 1,200 new female weavers, completion of the Punakha riverfront market renovation, and direct artisan disbursements exceeding Nu. 42 million.',
-    highlights: ['7,500+ Rural Artisans Supported', 'Nu. 42M+ Direct Artisan Payments', '24 Capacity Building Workshops', 'Full Audited Accounts Included'],
-    downloadUrl: null,
-    publishedDate: 'January 2026',
-    isLatest: true,
-  },
-  {
-    year: 2024,
-    title: 'HAB Annual Report 2024: Sustainable Value Chains & Craft Modernisation',
-    meta: 'PDF · 3.9 MB · English & Dzongkha',
-    abstract: 'Focuses on the launch of natural vegetable dye cultivation in Eastern Bhutan, export facilitation to European and Asian markets, and standardized quality certification benchmarks.',
-    highlights: ['5,800 Members Documented', 'Natural Dye Co-op Established', '14 International Exhibitions Attended'],
-    downloadUrl: null,
-    publishedDate: 'January 2025',
-    isLatest: false,
-  },
-  {
-    year: 2023,
-    title: 'HAB Annual Report 2023: Post-Pandemic Resilience & Artisan Recovery',
-    meta: 'PDF · 3.2 MB · English & Dzongkha',
-    abstract: 'Details emergency revolving credit funds disbursed to vulnerable woodcarvers and cane-weavers, alongside digital catalogue modernization for overseas direct consignments.',
-    highlights: ['Revolving Fund Disbursed', 'E-Commerce Platform Beta Launch', 'Regional Guild Elections'],
-    downloadUrl: null,
-    publishedDate: 'January 2024',
-    isLatest: false,
-  },
-  {
-    year: 2022,
-    title: 'HAB Annual Report 2022: Preserving the Sacred Arts of Zorig Chusum',
-    meta: 'PDF · 2.8 MB · English & Dzongkha',
-    abstract: 'Documenting master-to-apprentice placements in endangered crafts including Desho papermaking, bronze casting, and intricate backstrap Kishuthara weaving.',
-    highlights: ['Master-Apprentice Placements', 'National Craft Award Support', 'CSO Governance Audit Pass'],
-    downloadUrl: null,
-    publishedDate: 'January 2023',
-    isLatest: false,
-  },
-];
 
 async function getAnnualReports() {
   try {
@@ -66,22 +25,19 @@ async function getAnnualReports() {
       },
       orderBy: { year: 'desc' },
     });
-    if (pubs.length > 0) {
-      return pubs.map((p, idx) => ({
-        year: p.year || 2025,
-        title: p.title,
-        meta: p.metaDetails || 'PDF · English & Dzongkha',
-        abstract: (p as any).abstract || p.metaDetails || 'Official annual report of the Handicrafts Association of Bhutan.',
-        highlights: ['CSO Regulatory Filing', 'Programme Metrics Included', 'Audited Accounts'],
-        downloadUrl: p.fileUrl || null,
-        publishedDate: `${p.year || 2025}`,
-        isLatest: idx === 0,
-      }));
-    }
+    return pubs.filter((publication) => isPublicPublicationTitle(publication.title)).map((publication) => ({
+      year: publication.year,
+      title: publication.title,
+      titleDz: publication.titleDz,
+      meta: publication.metaDetails,
+      metaDz: publication.metaDetailsDz,
+      summaryDz: publication.summaryDz,
+      downloadUrl: publication.fileUrl,
+    }));
   } catch {
-    // fallback
+    // Avoid presenting unverified report claims when publication data is unavailable.
   }
-  return DEFAULT_ANNUAL_REPORTS;
+  return [];
 }
 
 export default async function AnnualReportsPage() {
@@ -95,32 +51,32 @@ export default async function AnnualReportsPage() {
       <section className="section relative" data-hab-section="annual-reports-hero">
         <SectionEditBadge label="Publications CMS" studioHref="/admin/publications" />
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/publications">Publications</Link> / Annual Reports
+          <Link href="/"><LocalizedRecordField english="Home" dzongkha="གདོང་ཤོག" /></Link> / <Link href="/publications"><LocalizedRecordField english="Publications" dzongkha="དཔེ་སྐྲུན" /></Link> / <LocalizedRecordField english="Annual Reports" dzongkha="ལོ་བསྟར་སྙན་ཞུ" />
         </p>
         <div className="pagehero">
           <div>
-            <p className="eyebrow eyebrow--accent">Statutory Transparency</p>
-            <h1 className="display display--page">Annual Reports</h1>
+            <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="Statutory Transparency" dzongkha="ཁྲིམས་མཐུན་གསལ་སྟོན" /></p>
+            <h1 className="display display--page"><LocalizedRecordField english="Annual Reports" dzongkha="ལོ་བསྟར་སྙན་ཞུ" /></h1>
             <p className="lede">
-              Official yearly reports detailing our nationwide craft programs, artisan impact metrics, donor funded projects, and audited statutory ledgers published in both English and Dzongkha.
+              <LocalizedRecordField english="Browse the annual reports published by HAB. Use each report as the authoritative source for its programme outcomes, financial information, and governance disclosures." dzongkha="HAB གིས་དཔེ་སྐྲུན་འབད་བའི་ལོ་བསྟར་སྙན་ཞུ་ཚུ་གཟིགས་གནང་། ལས་རིམ་གྱི་གྲུབ་འབྲས་ དངུལ་འབྲེལ་གནས་ཚུལ་ དང་འཛིན་སྐྱོང་གསལ་སྟོན་ཚུའི་དོན་ལུ་སྙན་ཞུ་རེ་རེ་ལུ་ཁུངས་བཙུགས་གནང་།" />
             </p>
           </div>
           <div className="craftfacts craftfacts--2">
             <div className="craftfacts__cell">
-              <span className="craftfacts__key">Authority Filing</span>
-              <span className="craftfacts__val">CSO Authority of Bhutan</span>
+              <span className="craftfacts__key"><LocalizedRecordField english="Published reports" dzongkha="དཔེ་སྐྲུན་སྙན་ཞུ" /></span>
+              <span className="craftfacts__val">{reports.length}</span>
             </div>
             <div className="craftfacts__cell">
-              <span className="craftfacts__key">Bilingual Format</span>
-              <span className="craftfacts__val">English &amp; Dzongkha</span>
+              <span className="craftfacts__key"><LocalizedRecordField english="Displayed records" dzongkha="བཀོད་ཡོད་པའི་ཐོ་གཞུང" /></span>
+              <span className="craftfacts__val"><LocalizedRecordField english="Admin-managed" dzongkha="བདག་སྐྱོང་གིས་འཛིན་སྐྱོང" /></span>
             </div>
             <div className="craftfacts__cell">
-              <span className="craftfacts__key">Financial Disclosure</span>
-              <span className="craftfacts__val">Independent Audit Pass</span>
+              <span className="craftfacts__key"><LocalizedRecordField english="Report source" dzongkha="སྙན་ཞུའི་འབྱུང་ཁུངས" /></span>
+              <span className="craftfacts__val"><LocalizedRecordField english="Original publication" dzongkha="དཔེ་སྐྲུན་ངོ་མ" /></span>
             </div>
             <div className="craftfacts__cell">
-              <span className="craftfacts__key">Frequency</span>
-              <span className="craftfacts__val">Annual Public Release</span>
+              <span className="craftfacts__key"><LocalizedRecordField english="Updates" dzongkha="གསར་བཅོས" /></span>
+              <span className="craftfacts__val"><LocalizedRecordField english="As published" dzongkha="དཔེ་སྐྲུན་བཞིན" /></span>
             </div>
           </div>
         </div>
@@ -133,36 +89,27 @@ export default async function AnnualReportsPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
               <div className="max-w-2xl space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B2E24] text-white text-xs font-bold uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5" /> Latest Official Release · {latest.year}
+                  <Sparkles className="w-3.5 h-3.5" /> <LocalizedRecordField english="Latest publication" dzongkha="དཔེ་སྐྲུན་གསར་ཤོས" /> · {latest.year}
                 </div>
                 <h2 className="font-serif text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
-                  {latest.title}
+                  <LocalizedRecordField english={latest.title} dzongkha={latest.titleDz} />
                 </h2>
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  {latest.abstract}
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                  {latest.highlights.map((h, i) => (
-                    <div key={i} className="p-3 bg-white border border-stone-200 rounded-xl text-center">
-                      <span className="text-[11px] font-bold text-stone-800 block">{h}</span>
-                    </div>
-                  ))}
-                </div>
+                {latest.summaryDz && <p className="text-sm text-stone-600 leading-relaxed"><LocalizedRecordField english="" dzongkha={latest.summaryDz} /></p>}
               </div>
 
               <div className="flex flex-col items-center justify-center p-8 bg-white border border-stone-200 rounded-2xl shadow-xs text-center flex-shrink-0 w-full lg:w-72">
                 <div className="w-16 h-16 rounded-2xl bg-amber-100 text-[#8B2E24] flex items-center justify-center mb-4">
                   <FileText className="w-8 h-8" />
                 </div>
-                <h3 className="font-serif text-base font-bold text-stone-900 mb-1">Dual-Language Edition</h3>
-                <p className="text-xs text-stone-500 mb-5">{latest.meta}</p>
+                <h3 className="font-serif text-base font-bold text-stone-900 mb-1"><LocalizedRecordField english="Publication file" dzongkha="དཔེ་སྐྲུན་ཡིག་ཆ" /></h3>
+                <p className="text-xs text-stone-500 mb-5"><LocalizedRecordField english={latest.meta} dzongkha={latest.metaDz} /></p>
                 {latest.downloadUrl ? <a
                   href={latest.downloadUrl}
                   download
                   className="w-full py-3 px-4 bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
-                  <Download className="w-4 h-4" /> Download Report (PDF)
-                </a> : <span className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">PDF awaiting publication</span>}
+                  <Download className="w-4 h-4" /> <LocalizedRecordField english="Download report" dzongkha="སྙན་ཞུ་ཕབ་ལེན" />
+                </a> : <span className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500"><LocalizedRecordField english="No document attached" dzongkha="ཡིག་ཆ་མཐུད་མེད" /></span>}
               </div>
             </div>
           </div>
@@ -173,8 +120,8 @@ export default async function AnnualReportsPage() {
       {archive.length > 0 && (
         <section className="section" data-hab-section="annual-reports-archive">
           <div className="mb-8 pb-4 border-b border-stone-200">
-            <p className="eyebrow eyebrow--brass">Historical Records</p>
-            <h2 className="display display--sub">Past Annual Publications Archive</h2>
+            <p className="eyebrow eyebrow--brass"><LocalizedRecordField english="Historical Records" dzongkha="ལོ་རྒྱུས་ཐོ་གཞུང" /></p>
+            <h2 className="display display--sub"><LocalizedRecordField english="Past Annual Publications Archive" dzongkha="སྔོན་གྱི་ལོ་བསྟར་དཔེ་སྐྲུན་ཡིག་མཛོད" /></h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -186,29 +133,35 @@ export default async function AnnualReportsPage() {
                 <div>
                   <div className="flex items-center justify-between text-xs text-stone-400 mb-3">
                     <span className="font-bold text-[#8B2E24] bg-amber-50 px-2.5 py-0.5 rounded-md font-mono">{rep.year}</span>
-                    <span>{rep.publishedDate}</span>
+                    <span>{rep.year}</span>
                   </div>
                   <h3 className="font-serif text-lg font-bold text-stone-900 leading-snug mb-2">
-                    {rep.title}
+                    <LocalizedRecordField english={rep.title} dzongkha={rep.titleDz} />
                   </h3>
-                  <p className="text-xs text-stone-600 leading-relaxed mb-4">
-                    {rep.abstract}
-                  </p>
+                  {rep.summaryDz && <p className="text-xs text-stone-600 leading-relaxed mb-4"><LocalizedRecordField english="" dzongkha={rep.summaryDz} /></p>}
                 </div>
 
                 <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-                  <span className="text-[11px] text-stone-400 font-mono">{rep.meta}</span>
+                  <span className="text-[11px] text-stone-400 font-mono"><LocalizedRecordField english={rep.meta} dzongkha={rep.metaDz} /></span>
                   {rep.downloadUrl ? <a
                     href={rep.downloadUrl}
                     download
                     className="p-2 text-[#8B2E24] hover:bg-amber-50 rounded-lg transition-colors inline-flex items-center gap-1 text-xs font-bold"
                   >
                     <Download className="w-4 h-4" /> PDF
-                  </a> : <span className="text-xs font-semibold text-stone-400">PDF unavailable</span>}
+                  </a> : <span className="text-xs font-semibold text-stone-400"><LocalizedRecordField english="No document attached" dzongkha="ཡིག་ཆ་མཐུད་མེད" /></span>}
                 </div>
               </article>
             ))}
           </div>
+        </section>
+      )}
+
+      {reports.length === 0 && (
+        <section className="section">
+          <p className="rounded-2xl border border-stone-200 bg-stone-50 p-6 text-sm text-stone-600">
+            <LocalizedRecordField english="No annual reports are currently listed." dzongkha="ད་ལྟོ་ལོ་བསྟར་སྙན་ཞུ་གང་ཡང་ཐོ་བཀོད་མེད།" />
+          </p>
         </section>
       )}
 
