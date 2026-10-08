@@ -232,7 +232,7 @@ export default function AboutPage() {
       </section>
 
       {/* 3. Objectives */}
-      <section className="section relative" data-hab-section="about-objectives">
+      <section className="section relative" id="mandate" data-hab-section="about-objectives">
         <SectionEditBadge
           label="Strategic Objectives"
           studioHref="/admin/pages/about#mandate"
@@ -266,7 +266,7 @@ export default function AboutPage() {
       </section>
 
       {/* 4. Values */}
-      <section className="section relative" data-hab-section="about-values">
+      <section className="section relative" id="ethics" data-hab-section="about-values">
         <SectionEditBadge
           label="Core Values (C-R-A-F-T)"
           studioHref="/admin/pages/about#mandate"
@@ -292,6 +292,31 @@ export default function AboutPage() {
               <p className="valuecell__body">{v.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Keep legacy footer anchors useful while linking visitors to the canonical policy pages. */}
+      <section className="section relative" id="support" data-hab-section="about-support-policies">
+        <SectionEditBadge
+          label="Shop & Support Policies"
+          sectionType="policies"
+          studioHref="/admin/policies"
+          onQuickEdit={() => {
+            setActiveSection({
+              type: 'policies',
+              title: 'Shop & Support Policies',
+              studioHref: '/admin/policies',
+            });
+            setLiveEditorOpen(true);
+          }}
+        />
+        <p className="eyebrow eyebrow--accent">Shop &amp; support</p>
+        <h2 className="display display--sub">Customer policies</h2>
+        <p className="section__lede">Read the current delivery, returns and customs guidance before placing an order.</p>
+        <div className="actions" style={{ flexWrap: 'wrap', gap: 12 }}>
+          <Link className="btn btn--outline" href="/shipping-policy">Shipping &amp; delivery</Link>
+          <Link className="btn btn--outline" href="/returns-policy">Returns &amp; refunds</Link>
+          <Link className="btn btn--outline" href="/customs-policy">Duties &amp; customs</Link>
         </div>
       </section>
 
