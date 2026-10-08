@@ -16,6 +16,8 @@ let actor;
 let buyer;
 let product;
 let heroSlide;
+let originalWholesaleAssurances;
+let wholesaleAssurancesChanged = false;
 const createdOrderIds = [];
 const createdInquiryIds = [];
 
@@ -132,6 +134,27 @@ async function run() {
     assert(deletedSlide.response.ok && deletedSlide.body.success, 'authorized hero slide deletion failed');
     heroSlide = null;
 
+    const existingSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+    assert(existingSetting, 'Local test database needs its existing SiteSetting record for safe catalog-save verification.');
+    originalWholesaleAssurances = existingSetting.wholesaleAssurances;
+    const unsafeCatalogMedia = await tradeRequest(token, {
+      action: 'save_catalog', payload: { catalogPdfUrl: 'javascript:alert(1)', lookbookCoverUrl: '' },
+    });
+    assert(unsafeCatalogMedia.response.status === 400, 'unsafe catalog media URL must be rejected');
+    const catalogSave = await tradeRequest(token, {
+      action: 'save_catalog', payload: { catalogPdfUrl: '/uploads/local-test-catalog.pdf', lookbookCoverUrl: '/assets/photos/hero-1-weaving.jpg' },
+    });
+    assert(catalogSave.response.ok && catalogSave.body.success, `catalog media save failed: ${catalogSave.body.error || catalogSave.response.status}`);
+    wholesaleAssurancesChanged = true;
+    const savedAssurances = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { wholesaleAssurances: true } });
+    assert(savedAssurances?.wholesaleAssurances?.catalogPdfUrl === '/uploads/local-test-catalog.pdf', 'catalog media save reported success without persisting its data');
+    await prisma.role.update({ where: { id: role.id }, data: { permissions: ['products:view', 'content:view'] } });
+    const viewerCatalogSave = await tradeRequest(token, {
+      action: 'save_catalog', payload: { catalogPdfUrl: '/uploads/should-not-save.pdf', lookbookCoverUrl: '' },
+    });
+    assert(viewerCatalogSave.response.status === 403, 'content:view-only role must not update catalog media');
+    await prisma.role.update({ where: { id: role.id }, data: { permissions } });
+
     const privateCatalog = await fetch(`${baseUrl}/api/trade`);
     assert(privateCatalog.status === 401, 'anonymous visitors cannot read wholesale price data');
 
@@ -235,11 +258,12 @@ async function run() {
     const termsDeleted = await tradeRequest(token, { action: 'delete_terms', payload: { productCode: code } });
     assert(termsDeleted.response.ok && !(await prisma.wholesaleProductTerms.findUnique({ where: { productId: product.id } })), 'Admin could not remove product-specific wholesale terms.');
 
-    console.log('PASS: Hero slide CRUD and role permissions; unsafe URL rejection; Admin product wholesale terms create/read/update/delete; bad-tier rejection; anonymous price privacy; approved-buyer catalogue and quote submission; server-side buyer identity, MOQ and tier pricing; wholesale order and inventory verified locally.');
+    console.log('PASS: Hero slide CRUD and role permissions; catalog media URL validation, persistence and permission checks; Admin product wholesale terms create/read/update/delete; bad-tier rejection; anonymous price privacy; approved-buyer catalogue and quote submission; server-side buyer identity, MOQ and tier pricing; wholesale order and inventory verified locally.');
   } finally {
     if (createdOrderIds.length) await prisma.order.deleteMany({ where: { id: { in: createdOrderIds } } }).catch(() => {});
     if (createdInquiryIds.length) await prisma.inquiry.deleteMany({ where: { id: { in: createdInquiryIds } } }).catch(() => {});
     if (heroSlide) await prisma.heroSlide.deleteMany({ where: { id: heroSlide.id } }).catch(() => {});
+    if (wholesaleAssurancesChanged) await prisma.siteSetting.update({ where: { id: 'default' }, data: { wholesaleAssurances: originalWholesaleAssurances } }).catch(() => {});
     if (product) await prisma.product.deleteMany({ where: { id: product.id } }).catch(() => {});
     if (buyer) await prisma.wholesaleBuyer.deleteMany({ where: { id: buyer.id } }).catch(() => {});
     if (actor) await prisma.auditLog.deleteMany({ where: { actorId: actor.id } }).catch(() => {});

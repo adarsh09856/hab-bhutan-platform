@@ -203,6 +203,8 @@ export async function PATCH(request: NextRequest) {
     const { action, payload } = body;
     const permission = action === 'delete_terms'
       ? 'products:delete'
+      : action === 'save_catalog'
+        ? 'content:edit'
       : action === 'update_quote_status'
         ? 'orders:edit'
         : action === 'update_buyer_status'
@@ -291,29 +293,26 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (action === 'save_catalog') {
-      const { catalogPdfUrl, lookbookCoverUrl } = payload;
-      try {
-        const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
-        const existingAssurances = (setting?.wholesaleAssurances as Record<string, any>) || {};
-        const updated = {
-          ...existingAssurances,
-          catalogPdfUrl,
-          lookbookCoverUrl,
-        };
-        await (prisma.siteSetting as any).upsert({
-          where: { id: 'default' },
-          create: {
-            id: 'default',
-            wholesaleAssurances: updated,
-            heroParagraph: 'Handicrafts Association of Bhutan promotes living craft heritage across all dzongkhags.',
-            footerAbout: 'Apex Civil Society Organization established under the CSO Act of Bhutan 2007.',
-            partnersList: [],
-          },
-          update: { wholesaleAssurances: updated },
-        });
-      } catch (e: any) {
-        console.error('Error saving wholesale catalog:', e);
+      const catalogPdfUrl = String(payload?.catalogPdfUrl || '').trim();
+      const lookbookCoverUrl = String(payload?.lookbookCoverUrl || '').trim();
+      const safeAssetUrl = (value: string) => !value || (!value.includes('\\') && !value.startsWith('//') && (value.startsWith('/') || /^https:\/\//i.test(value)));
+      if (!safeAssetUrl(catalogPdfUrl) || !safeAssetUrl(lookbookCoverUrl)) {
+        return NextResponse.json({ success: false, error: 'Use a site-relative path or secure HTTPS URL for catalog media.' }, { status: 400 });
       }
+      const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+      const existingAssurances = (setting?.wholesaleAssurances as Record<string, any>) || {};
+      const updated = { ...existingAssurances, catalogPdfUrl, lookbookCoverUrl };
+      await prisma.siteSetting.upsert({
+        where: { id: 'default' },
+        create: {
+          id: 'default',
+          wholesaleAssurances: updated,
+          heroParagraph: 'Handicrafts Association of Bhutan promotes living craft heritage across all dzongkhags.',
+          footerAbout: 'Apex Civil Society Organization established under the CSO Act of Bhutan 2007.',
+          partnersList: [],
+        },
+        update: { wholesaleAssurances: updated },
+      });
       return NextResponse.json({ success: true, message: 'Wholesale B2B catalog and lookbook saved.' });
     }
 

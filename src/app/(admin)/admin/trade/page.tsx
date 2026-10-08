@@ -226,11 +226,11 @@ export default function AdminTradePage() {
         showToast('Your session has expired. Please open /admin/login to re-authenticate.');
         return;
       }
-      if (res.ok) {
-        showToast('Wholesale catalog and lookbook media saved!');
-      }
-    } catch {
-      showToast('Error saving wholesale media');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || 'Wholesale media could not be saved.');
+      showToast('Wholesale catalog and lookbook media saved!');
+    } catch (error: any) {
+      showToast(error?.message || 'Error saving wholesale media');
     } finally {
       setSavingCatalog(false);
     }
