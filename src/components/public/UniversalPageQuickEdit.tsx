@@ -13,9 +13,14 @@ const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-
 function elementKey(element: Element, root: Element): string {
   const explicit = element.getAttribute('data-hab-edit-key');
   if (explicit) return explicit;
+  const zone = element.closest('.hab-public-shell, header, footer, .utility') || root;
+  const zoneName = zone.matches('.hab-public-shell') ? 'main'
+    : zone.matches('header') ? 'header'
+      : zone.matches('footer') ? 'footer'
+        : zone.matches('.utility') ? 'utility' : 'page';
   const parts: string[] = [];
   let current: Element | null = element;
-  while (current && current !== root && parts.length < 10) {
+  while (current && current !== zone && parts.length < 10) {
     const parent: Element | null = current.parentElement;
     if (!parent) break;
     const tag = current.tagName.toLowerCase();
@@ -23,7 +28,7 @@ function elementKey(element: Element, root: Element): string {
     parts.unshift(`${tag}:${Math.max(1, siblings.indexOf(current) + 1)}`);
     current = parent;
   }
-  return parts.join('/');
+  return `${zoneName}/${parts.join('/')}`;
 }
 
 function editableElements(): HTMLElement[] {
@@ -125,11 +130,12 @@ export default function UniversalPageQuickEdit() {
     if (!selected) return;
     const key = selected.dataset.habEditKey;
     if (!key) return;
+    const storagePath = /^(header|footer|utility)\//.test(key) ? '/__global__' : pathname;
     setSaving(true); setMessage('');
     try {
       const response = await fetch('/api/page-overrides', {
         method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pathname, key, override: draft }),
+        body: JSON.stringify({ pathname: storagePath, key, override: draft }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Save failed.');
@@ -144,10 +150,11 @@ export default function UniversalPageQuickEdit() {
     if (!selected?.dataset.habEditKey) return;
     setSaving(true); setMessage('');
     const key = selected.dataset.habEditKey;
+    const storagePath = /^(header|footer|utility)\//.test(key) ? '/__global__' : pathname;
     try {
       const response = await fetch('/api/page-overrides', {
         method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pathname, key, remove: true, override: {} }),
+        body: JSON.stringify({ pathname: storagePath, key, remove: true, override: {} }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Reset failed.');

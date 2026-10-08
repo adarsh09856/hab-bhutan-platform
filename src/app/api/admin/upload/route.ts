@@ -3,13 +3,15 @@ import fs from 'fs';
 import path from 'path';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { storeResponsiveImage } from '@/lib/image-processing';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const user = await getSessionUser(req);
-    if (!user) {
+    const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+    if (!user || !['super_admin', 'staff_operator'].includes(role)) {
       return NextResponse.json({ success: false, error: 'Unauthorized. Staff session required.' }, { status: 401 });
     }
 
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
     // Validate MIME type & file extension
     const validMimes = [
       // Images
-      'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/svg+xml',
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif',
       // Documents & PDFs
       'application/pdf',
       'application/msword',
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
       'application/octet-stream' // fallback
     ];
 
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv'];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv'];
     const fileExt = file.name && file.name.includes('.') ? file.name.split('.').pop()?.toLowerCase() || '' : '';
 
     if (!validMimes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
@@ -67,7 +69,6 @@ export async function POST(req: NextRequest) {
     else if (file.type === 'image/png') ext = 'png';
     else if (file.type === 'image/webp') ext = 'webp';
     else if (file.type === 'image/gif') ext = 'gif';
-    else if (file.type === 'image/svg+xml') ext = 'svg';
     else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') ext = 'docx';
     else if (file.type === 'application/msword') ext = 'doc';
 
@@ -77,14 +78,16 @@ export async function POST(req: NextRequest) {
       .slice(0, 30);
     const uniqueSuffix = Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     const filename = `${safeBaseName}_${uniqueSuffix}.${ext}`;
-    const filePath = path.join(uploadsDir, filename);
-
-    // Write file buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    await fs.promises.writeFile(filePath, buffer);
+    const isProcessableImage = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(file.type);
+    const imageResult = isProcessableImage
+      ? await storeResponsiveImage(buffer, `${safeBaseName}_${uniqueSuffix}`, ext)
+      : null;
+    const filePath = path.join(uploadsDir, filename);
+    if (!imageResult) await fs.promises.writeFile(filePath, buffer);
 
-    const publicUrl = `/uploads/${filename}`;
+    const publicUrl = imageResult?.url || `/uploads/${filename}`;
 
     try {
       await logAudit({
@@ -94,7 +97,7 @@ export async function POST(req: NextRequest) {
         action: 'MEDIA_IMAGE_UPLOADED',
         entityType: 'MediaUpload',
         entityId: filename,
-        details: { filename, size: file.size, type: file.type, url: publicUrl },
+        details: { filename, size: file.size, type: file.type, url: publicUrl, originalUrl: imageResult?.originalUrl, variants: imageResult?.variants },
       });
     } catch {
       // Audit non-blocking
@@ -106,6 +109,10 @@ export async function POST(req: NextRequest) {
       filename,
       size: file.size,
       type: file.type,
+      originalUrl: imageResult?.originalUrl || publicUrl,
+      variants: imageResult?.variants || [],
+      width: imageResult?.width || null,
+      height: imageResult?.height || null,
     });
   } catch (error: any) {
     console.error('File upload error:', error);

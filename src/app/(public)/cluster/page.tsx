@@ -8,7 +8,7 @@ function RedirectContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const val = searchParams.get('cluster') || searchParams.get('key') || 'khoma-silk';
+    const val = searchParams.get('cluster') || searchParams.get('key') || 'khoma';
     router.replace(`/clusters/${encodeURIComponent(val)}`);
   }, [router, searchParams]);
 

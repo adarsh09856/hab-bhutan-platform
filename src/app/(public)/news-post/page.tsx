@@ -8,7 +8,7 @@ function RedirectContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const val = searchParams.get('post') || searchParams.get('slug') || 'switch-asia-completion';
+    const val = searchParams.get('post') || searchParams.get('slug') || 'trade-facilitation-desk-autumn';
     router.replace(`/news/${encodeURIComponent(val)}`);
   }, [router, searchParams]);
 

@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, SmtpConfig } from '@/lib/email-service';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { getSessionUser } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getSessionUser(req);
+    const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+    if (!user || !['super_admin', 'staff_operator'].includes(role)) {
+      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+    }
     const body = await req.json();
     const { toEmail, host, port, secure, username, password, fromName, fromEmail } = body;
 
@@ -57,8 +63,8 @@ CSO Registration No: CSO/2011/043 · Thimphu, Kingdom of Bhutan`;
     if (result.success) {
       await logAudit({
         actorType: 'STAFF',
-        actorId: 'admin',
-        actorIdentifier: 'Admin Staff Operator',
+        actorId: user.id,
+        actorIdentifier: user.email,
         action: 'EMAIL_TEST_DISPATCHED',
         entityType: 'EmailSettings',
         entityId: toEmail.trim(),

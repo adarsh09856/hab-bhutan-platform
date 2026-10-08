@@ -8,7 +8,7 @@ function RedirectContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const val = searchParams.get('event') || searchParams.get('key') || 'national-craft-fair';
+    const val = searchParams.get('event') || searchParams.get('key') || 'craft-bazaar-2026';
     router.replace(`/events/${encodeURIComponent(val)}`);
   }, [router, searchParams]);
 

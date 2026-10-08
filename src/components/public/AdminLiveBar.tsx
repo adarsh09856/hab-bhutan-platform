@@ -94,10 +94,15 @@ export default function AdminLiveBar() {
     } else {
       document.body.classList.remove('hab-visual-edit-on');
     }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('hab:visual-edit-toggled', {
+        detail: { active: Boolean(editMode && isAdmin && !pathname.startsWith('/admin')) },
+      }));
+    }
     return () => {
       document.body.classList.remove('hab-visual-edit-on');
     };
-  }, [editMode, pathname]);
+  }, [editMode, isAdmin, pathname]);
 
   if (pathname.startsWith('/admin')) {
     return null;

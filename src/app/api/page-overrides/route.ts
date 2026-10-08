@@ -46,7 +46,11 @@ export async function GET(req: NextRequest) {
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
       });
     }
-    const page = (pages[pathname] as Record<string, unknown> | null) || {};
+    const globalPage = (pages['/__global__'] as Record<string, unknown> | null) || {};
+    const page = {
+      ...globalPage,
+      ...((pages[pathname] as Record<string, unknown> | null) || {}),
+    };
     const overrides = Object.fromEntries(
       Object.entries(page).map(([key, value]) => [key, cleanOverride(value)])
     );
@@ -81,9 +85,14 @@ export async function PUT(req: NextRequest) {
     const pages = { ...((trustBadges.pageOverrides as Record<string, unknown> | null) || {}) };
     const page = { ...((pages[pathname] as Record<string, unknown> | null) || {}) };
 
-    if (body.remove === true) delete page[key];
-    else page[key] = override;
-    pages[pathname] = page;
+    if (body.remove === true) {
+      delete page[key];
+      if (Object.keys(page).length === 0) delete pages[pathname];
+      else pages[pathname] = page;
+    } else {
+      page[key] = override;
+      pages[pathname] = page;
+    }
 
     await prisma.siteSetting.update({
       where: { id: 'default' },

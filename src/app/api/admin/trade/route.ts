@@ -1,10 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
+import { getSessionUser } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+async function staff(request: NextRequest) {
+  const user = await getSessionUser(request);
+  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+  return user && ['super_admin', 'staff_operator'].includes(role);
+}
+
+export async function GET(request: NextRequest) {
+  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     let siteSetting: any = null;
     let dbInquiries: any[] = [];
@@ -186,7 +194,8 @@ export async function GET() {
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
+  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
     const { action, payload } = body;

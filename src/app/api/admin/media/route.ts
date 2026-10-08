@@ -1,10 +1,19 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
+import { getSessionUser } from '@/lib/rbac';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+async function requireStaff(request: NextRequest) {
+  const user = await getSessionUser(request);
+  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+  return user && ['super_admin', 'staff_operator'].includes(role) ? user : null;
+}
+
+export async function GET(request: NextRequest) {
+  if (!(await requireStaff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     let siteSetting: any = null;
     let heroSlides: any[] = [];
@@ -100,8 +109,10 @@ export async function GET() {
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
+    const user = await requireStaff(request);
+    if (!user) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
     const body = await request.json();
     const { key, url, caption } = body;
 
@@ -144,6 +155,11 @@ export async function PATCH(request: Request) {
       // In-memory fallback
     }
 
+    await logAudit({
+      actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email,
+      action: 'MEDIA_SLOT_UPDATED', entityType: 'MediaSlot', entityId: key,
+      details: { url, caption: caption || null },
+    }).catch(() => {});
     return NextResponse.json({ success: true, message: `Media slot ${key} updated successfully.` });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

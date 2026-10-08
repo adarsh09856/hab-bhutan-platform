@@ -1,9 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSessionUser } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+async function staff(request: NextRequest) {
+  const user = await getSessionUser(request);
+  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+  return user && ['super_admin', 'staff_operator'].includes(role);
+}
+
+export async function GET(request: NextRequest) {
+  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     let dbPolicies: any[] = [];
     try {
@@ -91,7 +99,8 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
     const { slug: rawSlug, title, content } = body;
@@ -130,7 +139,8 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
+  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
     const { slug, title, content } = body;
@@ -153,7 +163,8 @@ export async function PATCH(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
