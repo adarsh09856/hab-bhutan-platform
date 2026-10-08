@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { fallbackHeroPhoto } from '@/lib/public-images';
 import { ShieldCheck, Award, FileText, ArrowRight, Building, Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -60,7 +61,7 @@ async function getBoardData() {
           name: r.individualName,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: r.photoUrl || photo.trim() || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`,
+          photo: r.photoUrl || photo.trim() || fallbackHeroPhoto(idx),
           bio: r.bio || '',
         };
       });
@@ -132,7 +133,7 @@ export default async function BoardOfTrusteesPage() {
             >
               <figure className="relative aspect-4/3 bg-stone-100 overflow-hidden">
                 <img
-                  src={(member as any).photo || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  src={(member as any).photo || fallbackHeroPhoto(idx)}
                   alt={member.name}
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />

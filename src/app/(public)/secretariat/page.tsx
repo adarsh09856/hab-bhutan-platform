@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { fallbackHeroPhoto } from '@/lib/public-images';
 import { Mail, Phone, MapPin, Clock, ShieldCheck, Users, Briefcase, FileText } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -78,7 +79,7 @@ async function getSecretariatData() {
           name: r.individualName,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: r.photoUrl || photo.trim() || `/assets/photos/hero-${(i % 5) + 1}-${i === 0 ? 'weaving' : i === 1 ? 'punakha' : i === 2 ? 'clay' : i === 3 ? 'textiles' : 'desho'}.jpg`,
+          photo: r.photoUrl || photo.trim() || fallbackHeroPhoto(i),
           phone: r.phone || '',
           email: r.email || '',
           bio: r.bio || '',
@@ -155,7 +156,7 @@ export default async function SecretariatPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
                       <img
-                        src={(staff as any).photo || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                        src={(staff as any).photo || fallbackHeroPhoto(idx)}
                         alt={staff.name}
                         className="w-full h-full object-cover"
                       />

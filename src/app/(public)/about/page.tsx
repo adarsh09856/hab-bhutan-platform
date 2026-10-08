@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { fallbackHeroPhoto } from '@/lib/public-images';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 
@@ -359,7 +360,7 @@ export default function AboutPage() {
             <article key={idx} className="card">
               <figure className="frame frame--square">
                 <img
-                  src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  src={fallbackHeroPhoto(idx)}
                   alt={b.role}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
@@ -397,7 +398,7 @@ export default function AboutPage() {
             <div key={idx} className="teamrow">
               <div className="teamrow__avatar" style={{ overflow: 'hidden' }}>
                 <img
-                  src={`/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`}
+                  src={fallbackHeroPhoto(idx)}
                   alt={t.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
