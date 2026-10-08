@@ -47,6 +47,8 @@ export interface ClusterData {
   summary: string;
   story: string;
   visitor_note?: string;
+  image_path?: string;
+  image_alt?: string;
 }
 
 export interface OutletData {

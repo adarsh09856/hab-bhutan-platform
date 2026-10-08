@@ -434,7 +434,11 @@ export default function CraftProfilePage() {
                 <Link className="card__shot" href={`/clusters/${c.key}`}>
                   <figure className="frame frame--wide16 has-image" data-cms-img>
                     <img
-                      src={c.imageUrl || `/images/hero-${(c.sort_order || 1) % 5 + 1}.jpg`}
+                      src={
+                        c.imageUrl ||
+                        CLIENT_DATA.clusters.find((knownCluster) => knownCluster.key === c.key)?.image_path ||
+                        '/assets/photos/hero-2-punakha.jpg'
+                      }
                       alt={c.name}
                       loading="lazy"
                     />
