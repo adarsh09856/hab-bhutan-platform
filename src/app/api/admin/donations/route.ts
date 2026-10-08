@@ -126,8 +126,11 @@ export async function POST(req: NextRequest) {
     }
 
     const numAmount = Number(amountUSD);
-    if (isNaN(numAmount) || numAmount <= 0) {
+    if (!Number.isFinite(numAmount) || numAmount <= 0) {
       return NextResponse.json({ error: 'Valid positive amount is required' }, { status: 400 });
+    }
+    if (!['ONE_TIME', 'MONTHLY'].includes(frequency) || !['PENDING', 'COMPLETED'].includes(status)) {
+      return NextResponse.json({ success: false, error: 'Unsupported donation frequency or initial status.' }, { status: 400 });
     }
 
     // Generate unique receipt number if not provided
@@ -138,36 +141,27 @@ export async function POST(req: NextRequest) {
 
     let donation: any = null;
     try {
-      donation = await prisma.donationRecord.create({
-        data: {
-          pillarKey: pillarKey.trim().toLowerCase(),
-          donorName: donorName.trim(),
-          donorEmail: donorEmail.trim().toLowerCase(),
-          amountUSD: numAmount,
-          frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
-          status: status === 'PENDING' ? 'PENDING' : 'COMPLETED',
-          receiptNumber,
-        },
-        include: {
-          pillar: {
-            select: { title: true, key: true },
+      donation = await prisma.$transaction(async (tx) => {
+        const created = await tx.donationRecord.create({
+          data: {
+            pillarKey: pillarKey.trim().toLowerCase(),
+            donorName: donorName.trim(),
+            donorEmail: donorEmail.trim().toLowerCase(),
+            amountUSD: numAmount,
+            frequency,
+            status,
+            receiptNumber,
           },
-        },
-      });
-
-      // If completed, increment raised amount on the pillar
-      if (donation.status === 'COMPLETED') {
-        try {
-          await prisma.supportPillar.update({
+          include: { pillar: { select: { title: true, key: true } } },
+        });
+        if (created.status === 'COMPLETED') {
+          await tx.supportPillar.update({
             where: { key: pillarKey.trim().toLowerCase() },
-            data: {
-              raisedAmountUSD: { increment: numAmount },
-            },
+            data: { raisedAmountUSD: { increment: numAmount } },
           });
-        } catch {
-          // Non-blocking if pillar not matched
         }
-      }
+        return created;
+      });
     } catch (dbErr: any) {
       if (dbErr.code === 'P2002') {
         return NextResponse.json({ error: 'Receipt number already exists. Please use a unique receipt number.' }, { status: 400 });
@@ -181,8 +175,8 @@ export async function POST(req: NextRequest) {
       donorName: donorName.trim(),
       donorEmail: donorEmail.trim().toLowerCase(),
       amountUSD: numAmount,
-      frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
-      status: status === 'PENDING' ? 'PENDING' : 'COMPLETED',
+      frequency,
+      status,
       receiptNumber,
       createdAt: donation?.createdAt?.toISOString?.() || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
