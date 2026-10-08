@@ -1,194 +1,109 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff =
-    user.roleSlug === 'super_admin' ||
-    user.roleSlug === 'staff_operator' ||
-    user.permissions?.includes('*') ||
-    user.permissions?.includes('content:edit') ||
-    user.permissions?.includes('content:view');
-  return isStaff ? user : null;
+function failure(error: any, fallback: string) {
+  const message = String(error?.message || '');
+  if (message.includes('22P05') || /encoding|character.*byte sequence/i.test(message)) {
+    return NextResponse.json({ error: 'The database cannot store one or more characters in this text. Its encoding must be migrated to UTF-8; no characters were removed or substituted.' }, { status: 503 });
+  }
+  return NextResponse.json({ error: error?.message || fallback }, { status: error?.statusCode || 500 });
 }
 
-export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+const cleanText = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 
+export async function GET(req: NextRequest) {
   try {
+    await requirePermission(req, 'content:view');
     const pillars = await prisma.supportPillar.findMany({
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-      include: {
-        _count: { select: { donations: true } },
-      },
+      include: { _count: { select: { donations: true } } },
     });
-    const mapped = pillars.map((p) => ({
-      ...p,
-      iconEmoji: p.key === 'grassroots' ? 'leaf' : (p.iconEmoji === 'leaf' ? '' : (p.iconEmoji || '')),
+    const mapped = pillars.map((pillar) => ({
+      ...pillar,
+      iconEmoji: pillar.key === 'grassroots' ? 'leaf' : (pillar.iconEmoji === 'leaf' ? '' : (pillar.iconEmoji || '')),
     }));
     return NextResponse.json({ success: true, pillars: mapped });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to fetch support pillars' }, { status: 500 });
+  } catch (error: any) {
+    return failure(error, 'Failed to fetch support pillars.');
   }
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
+    const user = await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { key, title, description, targetAmountUSD, raisedAmountUSD, iconEmoji, isActive, sortOrder } = body;
-
+    const key = cleanText(body?.key).toLowerCase();
+    const title = cleanText(body?.title);
+    const description = cleanText(body?.description);
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
 
-    let pillar;
-    try {
-      pillar = await prisma.supportPillar.create({
-        data: {
-          key: key.trim().toLowerCase(),
-          title: title.trim(),
-          description: description.trim(),
-          targetAmountUSD: Number(targetAmountUSD) || 0,
-          raisedAmountUSD: Number(raisedAmountUSD) || 0,
-          iconEmoji: iconEmoji?.trim() || (key.trim().toLowerCase() === 'grassroots' ? 'leaf' : ''),
-          isActive: isActive !== undefined ? Boolean(isActive) : true,
-          sortOrder: Number(sortOrder) || 0,
-        },
-      });
-    } catch (createErr: any) {
-      if (createErr.message?.includes('22P05') || createErr.message?.includes('encoding')) {
-        pillar = await prisma.supportPillar.create({
-          data: {
-            key: key.trim().toLowerCase(),
-            title: title.trim().replace(/[^\x00-\x7F]/g, ''),
-            description: description.trim().replace(/[^\x00-\x7F]/g, ''),
-            targetAmountUSD: Number(targetAmountUSD) || 0,
-            raisedAmountUSD: Number(raisedAmountUSD) || 0,
-            iconEmoji: key.trim().toLowerCase() === 'grassroots' ? 'leaf' : '',
-            isActive: isActive !== undefined ? Boolean(isActive) : true,
-            sortOrder: Number(sortOrder) || 0,
-          },
-        });
-      } else {
-        throw createErr;
-      }
-    }
-
-    await logAudit({
-      actorType: 'STAFF',
-      actorId: user.id,
-      actorIdentifier: user.email,
-      action: 'SUPPORT_PILLAR_CREATED',
-      entityType: 'SupportPillar',
-      entityId: pillar.id,
-      details: { key: pillar.key, title: pillar.title },
+    const pillar = await prisma.supportPillar.create({
+      data: {
+        key,
+        title,
+        description,
+        targetAmountUSD: Number(body.targetAmountUSD) || 0,
+        raisedAmountUSD: Number(body.raisedAmountUSD) || 0,
+        iconEmoji: cleanText(body.iconEmoji) || (key === 'grassroots' ? 'leaf' : ''),
+        isActive: body.isActive !== undefined ? Boolean(body.isActive) : true,
+        sortOrder: Number(body.sortOrder) || 0,
+      },
     });
 
-    return NextResponse.json({ success: true, pillar });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to create support pillar' }, { status: 500 });
+    await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'SUPPORT_PILLAR_CREATED', entityType: 'SupportPillar', entityId: pillar.id, details: { key: pillar.key, title: pillar.title } });
+    return NextResponse.json({ success: true, pillar }, { status: 201 });
+  } catch (error: any) {
+    return failure(error, 'Failed to create support pillar.');
   }
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
+    const user = await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { id, key, title, description, targetAmountUSD, raisedAmountUSD, iconEmoji, isActive, sortOrder } = body;
-
-    if (!id && !key) {
-      return NextResponse.json({ error: 'id or key is required for update' }, { status: 400 });
-    }
+    const id = cleanText(body?.id);
+    const key = cleanText(body?.key).toLowerCase();
+    if (!id && !key) return NextResponse.json({ error: 'id or key is required for update' }, { status: 400 });
 
     const where = id ? { id } : { key };
-    let pillar;
-    try {
-      pillar = await prisma.supportPillar.update({
-        where,
-        data: {
-          ...(title !== undefined && { title: title.trim() }),
-          ...(description !== undefined && { description: description.trim() }),
-          ...(targetAmountUSD !== undefined && { targetAmountUSD: Number(targetAmountUSD) || 0 }),
-          ...(raisedAmountUSD !== undefined && { raisedAmountUSD: Number(raisedAmountUSD) || 0 }),
-          ...(iconEmoji !== undefined && { iconEmoji: iconEmoji?.trim() || null }),
-          ...(isActive !== undefined && { isActive: Boolean(isActive) }),
-          ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
-        },
-      });
-    } catch (updateErr: any) {
-      if (updateErr.message?.includes('22P05') || updateErr.message?.includes('encoding')) {
-        pillar = await prisma.supportPillar.update({
-          where,
-          data: {
-            ...(title !== undefined && { title: title.trim().replace(/[^\x00-\x7F]/g, '') }),
-            ...(description !== undefined && { description: description.trim().replace(/[^\x00-\x7F]/g, '') }),
-            ...(targetAmountUSD !== undefined && { targetAmountUSD: Number(targetAmountUSD) || 0 }),
-            ...(raisedAmountUSD !== undefined && { raisedAmountUSD: Number(raisedAmountUSD) || 0 }),
-            ...(iconEmoji !== undefined && { iconEmoji: iconEmoji?.trim() || '' }),
-            ...(isActive !== undefined && { isActive: Boolean(isActive) }),
-            ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
-          },
-        });
-      } else {
-        throw updateErr;
-      }
-    }
-
-    await logAudit({
-      actorType: 'STAFF',
-      actorId: user.id,
-      actorIdentifier: user.email,
-      action: 'SUPPORT_PILLAR_UPDATED',
-      entityType: 'SupportPillar',
-      entityId: pillar.id,
-      details: { key: pillar.key, title: pillar.title },
+    const pillar = await prisma.supportPillar.update({
+      where,
+      data: {
+        ...(body.title !== undefined && { title: cleanText(body.title) }),
+        ...(body.description !== undefined && { description: cleanText(body.description) }),
+        ...(body.targetAmountUSD !== undefined && { targetAmountUSD: Number(body.targetAmountUSD) || 0 }),
+        ...(body.raisedAmountUSD !== undefined && { raisedAmountUSD: Number(body.raisedAmountUSD) || 0 }),
+        ...(body.iconEmoji !== undefined && { iconEmoji: cleanText(body.iconEmoji) || null }),
+        ...(body.isActive !== undefined && { isActive: Boolean(body.isActive) }),
+        ...(body.sortOrder !== undefined && { sortOrder: Number(body.sortOrder) || 0 }),
+      },
     });
 
+    await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'SUPPORT_PILLAR_UPDATED', entityType: 'SupportPillar', entityId: pillar.id, details: { key: pillar.key, title: pillar.title } });
     return NextResponse.json({ success: true, pillar });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to update support pillar' }, { status: 500 });
+  } catch (error: any) {
+    return failure(error, 'Failed to update support pillar.');
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get('id');
-    const key = searchParams.get('key');
-
-    if (!id && !key) {
-      return NextResponse.json({ error: 'id or key required for deletion' }, { status: 400 });
-    }
+    const user = await requirePermission(req, 'content:edit');
+    const id = req.nextUrl.searchParams.get('id');
+    const key = req.nextUrl.searchParams.get('key')?.trim().toLowerCase();
+    if (!id && !key) return NextResponse.json({ error: 'id or key required for deletion' }, { status: 400 });
 
     const where = id ? { id } : { key: key! };
     const deleted = await prisma.supportPillar.delete({ where });
-
-    await logAudit({
-      actorType: 'STAFF',
-      actorId: user.id,
-      actorIdentifier: user.email,
-      action: 'SUPPORT_PILLAR_DELETED',
-      entityType: 'SupportPillar',
-      entityId: deleted.id,
-      details: { key: deleted.key, title: deleted.title },
-    });
-
+    await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'SUPPORT_PILLAR_DELETED', entityType: 'SupportPillar', entityId: deleted.id, details: { key: deleted.key, title: deleted.title } });
     return NextResponse.json({ success: true, deleted: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to delete support pillar' }, { status: 500 });
+  } catch (error: any) {
+    return failure(error, 'Failed to delete support pillar.');
   }
 }
