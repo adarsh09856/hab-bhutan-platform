@@ -55,6 +55,18 @@ const configs: Record<string, Config> = {
       { key: 'content', label: 'Policy text', kind: 'long' },
     ],
   },
+  membership: {
+    endpoint: '/api/admin/membership-categories', collection: 'categories', title: 'Membership categories', labelKey: 'name', updateMethod: 'PUT',
+    fields: [
+      { key: 'key', label: 'Category key (used in the page address)', required: true },
+      { key: 'name', label: 'Public category name', required: true }, { key: 'shortName', label: 'Short name / status' },
+      { key: 'duesBTN', label: 'Annual dues (Nu.)', kind: 'number' }, { key: 'duesUSD', label: 'Annual dues (USD)', kind: 'number' },
+      { key: 'description', label: 'Description', kind: 'long', required: true },
+      { key: 'eligibility', label: 'Eligibility', kind: 'long' }, { key: 'benefits', label: 'Member benefits (one per line)', kind: 'lines' },
+      { key: 'bannerImageUrl', label: 'Category banner image', kind: 'image' },
+      { key: 'sortOrder', label: 'Display order', kind: 'number' }, { key: 'isActive', label: 'Publicly visible', kind: 'check' },
+    ],
+  },
   'board-records': {
     endpoint: '/api/admin/governance', collection: 'records', title: 'Board of Trustees', labelKey: 'individualName', governanceCategory: 'BOARD_OF_TRUSTEES',
     fields: [
@@ -255,7 +267,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       setMessage('');
     } catch (error: any) { setMessage(error?.message || 'Records could not be loaded.'); }
     finally { setLoading(false); }
-  }, [config]);
+  }, [config, sectionType]);
 
   useEffect(() => { load(); }, [load]);
   if (!config) return null;

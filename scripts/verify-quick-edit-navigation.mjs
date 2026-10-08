@@ -7,11 +7,16 @@ nextEnv.loadEnvConfig(process.cwd(), true);
 const prisma = new PrismaClient();
 const baseUrl = process.env.QUICK_EDIT_TEST_URL || 'http://127.0.0.1:3033';
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-const permissions = ['content:view', 'content:create', 'content:edit', 'content:delete'];
+const permissions = ['content:view', 'content:create', 'content:edit', 'content:delete', 'members:view', 'members:create', 'members:edit', 'members:delete'];
 const roleSlug = `codex_nav_check_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
+const viewerRoleSlug = `codex_nav_view_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
+const categoryKey = `qe-check-${Date.now()}`;
 let role;
 let user;
+let viewerRole;
+let viewer;
 let navigationId;
+let categoryId;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -29,6 +34,30 @@ async function request(path, token, options = {}) {
   return { response, body };
 }
 
+async function createToken(targetUser, targetRole, tokenPermissions) {
+  const secret = process.env.JWT_SECRET;
+  return new SignJWT({
+    user: {
+      id: targetUser.id,
+      userId: targetUser.id,
+      email: targetUser.email,
+      name: targetUser.name,
+      roleId: targetRole.id,
+      role: targetRole.slug,
+      roleSlug: targetRole.slug,
+      roleVersion: targetRole.version,
+      roleStatus: targetRole.status,
+      permissions: tokenPermissions,
+      sessionVersion: targetUser.sessionVersion,
+      mustChangePassword: false,
+    },
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('5m')
+    .sign(new TextEncoder().encode(secret));
+}
+
 try {
   const secret = process.env.JWT_SECRET;
   assert(secret && secret.length >= 32, 'Local JWT_SECRET is missing or too short.');
@@ -44,27 +73,20 @@ try {
       roleId: role.id,
     },
   });
+  const token = await createToken(user, role, permissions);
 
-  const token = await new SignJWT({
-    user: {
-      id: user.id,
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      roleId: role.id,
-      role: role.slug,
-      roleSlug: role.slug,
-      roleVersion: role.version,
-      roleStatus: role.status,
-      permissions,
-      sessionVersion: user.sessionVersion,
-      mustChangePassword: false,
+  viewerRole = await prisma.role.create({
+    data: { name: 'Temporary membership read-only verification', slug: viewerRoleSlug, permissions: ['members:view'] },
+  });
+  viewer = await prisma.user.create({
+    data: {
+      email: `codex-nav-view-${suffix}@example.invalid`,
+      name: 'Temporary Membership Read-only Check',
+      passwordHash: 'not-used',
+      roleId: viewerRole.id,
     },
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('5m')
-    .sign(new TextEncoder().encode(secret));
+  });
+  const viewerToken = await createToken(viewer, viewerRole, ['members:view']);
 
   const anonymous = await request('/api/admin/navigation', null, {
     method: 'POST',
@@ -97,13 +119,46 @@ try {
   const afterDelete = await prisma.navigationItem.findUnique({ where: { id: created.body.item.id } });
   assert(afterDelete === null, 'Deleted navigation item still exists in the database.');
 
-  console.log('PASS: anonymous writes denied; authenticated header navigation create/read/update/delete round-trip succeeded; temporary records cleaned up.');
+  const viewerCreate = await request('/api/admin/membership-categories', viewerToken, {
+    method: 'POST',
+    body: JSON.stringify({ key: `${categoryKey}-denied`, name: 'Should not be created', description: 'Unauthorized write probe.' }),
+  });
+  assert(viewerCreate.response.status === 403, `Read-only role create returned ${viewerCreate.response.status}, expected 403.`);
+
+  const categoryCreated = await request('/api/admin/membership-categories', token, {
+    method: 'POST',
+    body: JSON.stringify({ key: categoryKey, name: `Temporary ${suffix}`, description: 'Temporary Quick Edit category check.', duesBTN: 1200, duesUSD: 15, eligibility: 'Local integration verification only.', benefits: ['Benefit one'], bannerImageUrl: null, isActive: true, sortOrder: 9876 }),
+  });
+  assert(categoryCreated.response.status === 200 && categoryCreated.body.success, `Category create failed: ${categoryCreated.body.error || categoryCreated.response.status}.`);
+  categoryId = categoryCreated.body.category?.id;
+  assert(categoryId, 'Category create returned no record ID.');
+
+  const categoryUpdated = await request('/api/admin/membership-categories', token, {
+    method: 'PUT',
+    body: JSON.stringify({ id: categoryId, name: `Updated ${suffix}`, description: 'Updated Quick Edit category check.', duesBTN: 1500, benefits: ['Benefit one', 'Benefit two'], isActive: true, sortOrder: 9877 }),
+  });
+  assert(categoryUpdated.response.ok && categoryUpdated.body.success, `Category update failed: ${categoryUpdated.body.error || categoryUpdated.response.status}.`);
+  assert(categoryUpdated.body.category?.name === `Updated ${suffix}` && categoryUpdated.body.category?.duesBTN === 1500, 'Category update did not round-trip.');
+
+  const categoryPublicRead = await request(`/api/membership-categories?key=${encodeURIComponent(categoryKey)}`, null);
+  assert(categoryPublicRead.response.ok && categoryPublicRead.body.category?.name === `Updated ${suffix}`, 'Public membership page API did not expose the saved category.');
+
+  const categoryDeleted = await request(`/api/admin/membership-categories?id=${encodeURIComponent(categoryId)}`, token, { method: 'DELETE' });
+  assert(categoryDeleted.response.ok && categoryDeleted.body.success, `Category delete failed: ${categoryDeleted.body.error || categoryDeleted.response.status}.`);
+  categoryId = null;
+  const categoryAfterDelete = await prisma.membershipCategory.findUnique({ where: { key: categoryKey } });
+  assert(categoryAfterDelete === null, 'Deleted membership category still exists in the database.');
+
+  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; a members:view-only role was denied category writes; authenticated membership-category CRUD/public read succeeded; temporary records cleaned up.');
 } catch (error) {
   console.error(`FAIL: ${error?.message || error}`);
   process.exitCode = 1;
 } finally {
   if (navigationId) await prisma.navigationItem.deleteMany({ where: { id: navigationId } }).catch(() => {});
+  if (categoryId) await prisma.membershipCategory.deleteMany({ where: { id: categoryId } }).catch(() => {});
   if (user) await prisma.user.deleteMany({ where: { id: user.id } }).catch(() => {});
   if (role) await prisma.role.deleteMany({ where: { id: role.id } }).catch(() => {});
+  if (viewer) await prisma.user.deleteMany({ where: { id: viewer.id } }).catch(() => {});
+  if (viewerRole) await prisma.role.deleteMany({ where: { id: viewerRole.id } }).catch(() => {});
   await prisma.$disconnect();
 }

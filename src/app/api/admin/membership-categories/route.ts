@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
-
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff =
-    user.roleSlug === 'super_admin' ||
-    user.roleSlug === 'staff_operator' ||
-    user.permissions?.includes('*') ||
-    user.permissions?.includes('members:edit') ||
-    user.permissions?.includes('members:view');
-  return isStaff ? user : null;
-}
 
 function unpackCategory(cat: any) {
   if (!cat) return cat;
@@ -27,25 +15,21 @@ function unpackCategory(cat: any) {
 }
 
 export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
+    await requirePermission(req, 'members:view');
     const rawCategories = await prisma.membershipCategory.findMany({
       orderBy: [{ sortOrder: 'asc' }, { duesBTN: 'asc' }],
     });
     const categories = rawCategories.map(unpackCategory);
     return NextResponse.json({ success: true, categories });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to fetch membership categories' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to fetch membership categories' }, { status: err.statusCode || 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
+    const user = await requirePermission(req, 'members:create');
     const body = await req.json();
     const { key, name, shortName, duesBTN, duesUSD, description, eligibility, benefits, documents, isActive, sortOrder, bannerImageUrl } = body;
 
@@ -88,15 +72,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, category: unpackCategory(category) });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to create membership category' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to create membership category' }, { status: err.statusCode || 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
+    const user = await requirePermission(req, 'members:edit');
     const body = await req.json();
     const { id, key, name, shortName, duesBTN, duesUSD, description, eligibility, benefits, documents, isActive, sortOrder, bannerImageUrl } = body;
 
@@ -143,15 +125,13 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ success: true, category });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to update membership category' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to update membership category' }, { status: err.statusCode || 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
   try {
+    const user = await requirePermission(req, 'members:delete');
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const key = searchParams.get('key');
@@ -175,6 +155,6 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true, deleted: true });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Failed to delete membership category' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to delete membership category' }, { status: err.statusCode || 500 });
   }
 }
