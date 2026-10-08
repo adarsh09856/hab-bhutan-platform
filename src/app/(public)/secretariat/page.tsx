@@ -13,65 +13,18 @@ export const metadata: Metadata = {
   description: 'The Secretariat of the Handicrafts Association of Bhutan is the executive operational body based in Thimphu, managing artisan clusters, quality certification, and sector initiatives.',
 };
 
-const DEFAULT_TEAM = [
-  {
-    name: 'Chhimi Dorji',
-    role: 'Executive Director',
-    note: 'Sector Lead & CSO Administrator · edhab2021@gmail.com',
-    phone: '+975-77654508',
-    email: 'edhab2021@gmail.com',
-    bio: 'Leads the operational execution of HAB strategic plans, donor partnership negotiations, national artisan guild representation, and institutional reporting to the Board and CSO Authority.',
-  },
-  {
-    name: 'Sonam Choden',
-    role: 'Finance & Procurement Officer',
-    note: 'Chartered Accounting & Grant Compliance',
-    phone: '+975-2-338089',
-    email: 'finance@hab.org.bt',
-    bio: 'Oversees statutory financial ledgers, procurement tenders, donor fund disbursements, and ensures transparent auditing compliance for all institutional accounts.',
-  },
-  {
-    name: 'Tashi Wangmo',
-    role: 'Quality & Craft Certification Lead',
-    note: 'Seal of Authenticity & Provenance Verification',
-    phone: '+975-2-338089',
-    email: 'quality@hab.org.bt',
-    bio: 'Manages standards inspection, master artisan qualification reviews, and coordinates the verification of materials across weaving, metal casting, and woodcarving sectors.',
-  },
-  {
-    name: 'Ugyen Penjor',
-    role: 'Artisan Cluster & Field Coordinator',
-    note: '20 Dzongkhags Grassroots Liaison',
-    phone: '+975-17462636',
-    email: 'clusters@hab.org.bt',
-    bio: 'Coordinates logistical support, field training workshops, and raw material distribution for over 7,500 rural artisans and micro-enterprises throughout Bhutan.',
-  },
-  {
-    name: 'Pema Zangmo',
-    role: 'Marketing, E-Commerce & Logistics Desk',
-    note: 'Domestic Outlets & Worldwide EMS Dispatch',
-    phone: '+975-17881111',
-    email: 'marketing@hab.org.bt',
-    bio: 'Supervises retail consignment, international order tracking, exhibition booth logistics, and wholesale trade buyer inquiries.',
-  },
-  {
-    name: 'Dechen Wangchuk',
-    role: 'Secretariat Administrator & Reception Desk',
-    note: 'Public Inquiries & Member Registrations',
-    phone: '+975-2-338089',
-    email: 'officehab@gmail.com',
-    bio: 'First point of contact for membership applications, visitor coordination, and official secretariat correspondence.',
-  },
-];
-
 async function getSecretariatData() {
   try {
     const records = await prisma.governanceRecord.findMany({
       where: { category: 'SECRETARIAT' },
       orderBy: { sortOrder: 'asc' },
     });
-    if (records.length > 0) {
-      return records.map((r, i) => {
+    return records
+      .filter((record) => {
+        const name = (record.individualName || '').trim();
+        return name.length > 0 && !/^(name to confirm|to be confirmed|placeholder)$/i.test(name);
+      })
+      .map((r, i) => {
         const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
           ? (r.chapterOrNote || '').split('||photo:')
           : [r.chapterOrNote || '', ''];
@@ -85,11 +38,10 @@ async function getSecretariatData() {
           bio: r.bio || '',
         };
       });
-    }
   } catch {
-    // fallback
+    // Keep the public page neutral when current, verified records cannot be read.
   }
-  return DEFAULT_TEAM;
+  return [];
 }
 
 export default async function SecretariatPage() {
@@ -145,7 +97,8 @@ export default async function SecretariatPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {teamList.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {teamList.map((staff, idx) => (
             <article 
               key={idx} 
@@ -186,7 +139,13 @@ export default async function SecretariatPage() {
               </div>
             </article>
           ))}
-        </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 text-sm leading-relaxed text-stone-600" role="status">
+            <p className="font-semibold text-stone-800">Staff names and portraits will be published after they are confirmed by the Secretariat.</p>
+            <p className="mt-2">For assistance, contact <a className="text-[#8B2E24] underline" href="mailto:officehab@gmail.com">officehab@gmail.com</a> or call <a className="text-[#8B2E24] underline" href="tel:+9752338089">+975-2-338089</a>.</p>
+          </div>
+        )}
       </section>
 
       {/* 3. Secretariat Offices & Visitation */}
