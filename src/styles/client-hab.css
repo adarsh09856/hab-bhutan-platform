@@ -306,10 +306,15 @@ textarea.input{line-height:1.5;resize:vertical}
   color:var(--on-dark-body);
 }
 .utility__lang--switch{
+  position:sticky;
+  right:0;
   flex-shrink:0;
+  z-index:3;
+  margin-left:auto;
   min-height:30px;
   border:1px solid rgba(255,255,255,.24);
   background:var(--ink);
+  box-shadow:-8px 0 12px var(--ink);
   cursor:pointer;
 }
 .utility__lang:hover{
@@ -2605,14 +2610,6 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .utility__trade-short{display:inline}
   .utility__links{display:flex !important;gap:8px !important;font-size:10.5px}
   .utility__secretary-desk{display:none !important}
-  .utility__lang--switch{
-    position:sticky;
-    right:0;
-    z-index:3;
-    margin-left:auto;
-    background:var(--ink);
-    box-shadow:-8px 0 12px var(--ink);
-  }
   .buyband{gap:22px}
   .buybtn{min-width:0;width:100%}
   .buyband__actions{width:100%}
