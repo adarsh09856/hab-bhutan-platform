@@ -53,10 +53,10 @@ async function run() {
       .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
     const rows = [
-      { companyName: `Temporary buyer ${suffix}`, contactName: 'Local Test', email: freshEmail, country: 'Bhutan', discountTier: 20, status: 'PENDING' },
-      { companyName: 'Duplicate existing', contactName: 'Existing', email: existingEmail },
-      { companyName: 'Duplicate in file', contactName: 'Again', email: freshEmail },
-      { companyName: 'Invalid email', contactName: 'No email', email: 'bad-email' },
+      { _sourceRowNumber: 2, companyName: `Temporary buyer ${suffix}`, contactName: 'Local Test', email: freshEmail, country: 'Bhutan', discountTier: 20, status: 'PENDING' },
+      { _sourceRowNumber: 7, companyName: 'Duplicate existing', contactName: 'Existing', email: existingEmail },
+      { _sourceRowNumber: 11, companyName: 'Duplicate in file', contactName: 'Again', email: freshEmail },
+      { _sourceRowNumber: 18, companyName: 'Invalid email', contactName: 'No email', email: 'bad-email' },
     ];
     const requestImport = async (payload) => {
       const response = await fetch(`${baseUrl}/api/admin/wholesale/import`, {
@@ -69,6 +69,7 @@ async function run() {
     const first = await requestImport(rows);
     assert(first.response.ok && first.body.success, `Wholesale import failed: ${first.body.error || first.response.status}.`);
     assert(first.body.count === 1 && first.body.skippedCount === 2 && first.body.badRows.length === 3, 'Import should create one buyer and give a reason for both duplicates and the invalid row.');
+    assert(first.body.badRows.map((item) => item.rowNumber).join(',') === '7,11,18', 'API results must preserve original spreadsheet row numbers after invalid/duplicate rows are filtered in preview.');
     const duplicateReasons = first.body.badRows.map((item) => item.reason).join(' ');
     assert(duplicateReasons.includes(existingEmail) && duplicateReasons.includes(freshEmail), 'Duplicate row reasons must identify the email that was skipped.');
     const created = await prisma.wholesaleBuyer.findMany({ where: { email: { equals: freshEmail, mode: 'insensitive' } } });

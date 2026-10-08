@@ -292,6 +292,7 @@ export function validateWholesaleImport(
     seenUsernames.add(username.toLowerCase());
 
     validRows.push({
+      _sourceRowNumber: idx + 1,
       companyName: company,
       contactName: contact,
       email,
@@ -433,6 +434,7 @@ export function validateMemberImport(
     seenNames.add(normalizedName);
 
     validRows.push({
+      _sourceRowNumber: idx + 1,
       name,
       craftKey,
       dzongkhag,

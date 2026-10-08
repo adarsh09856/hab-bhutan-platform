@@ -51,6 +51,8 @@ async function main() {
   assert.equal(memberResult.validRows.length, 1, 'Only the complete unique member row is preview-valid.');
   assert.equal(memberResult.duplicateCount, 1, 'Case-insensitive duplicate CID within file is detected.');
   assert.equal(memberResult.badRows.length, 3, 'Duplicate and missing required fields appear as preview errors.');
+  assert.equal(memberResult.validRows[0]._sourceRowNumber, 2, 'Member preview retains the original spreadsheet row number for server-side results.');
+  assert.equal(memberResult.badRows[0].rowNumber, 3, 'Member preview issues use one-based spreadsheet row numbers including the header.');
 
   const validBuyer = ['Bhutan Craft Store', 'Pema Dorji', 'BUYER@example.bt', '', 'Bhutan', '', '', '20', 'PENDING', ''];
   const duplicateBuyer = ['Second Store', 'Pema Dorji', 'buyer@example.bt', '', 'Bhutan', '', '', '20', 'PENDING', ''];
@@ -63,6 +65,8 @@ async function main() {
   assert.equal(wholesaleResult.validRows.length, 1, 'Only one unique valid wholesaler is preview-valid.');
   assert.equal(wholesaleResult.duplicateCount, 1, 'Case-insensitive duplicate email within file is detected.');
   assert.equal(wholesaleResult.badRows.length, 2, 'Duplicate and invalid email are listed with reasons.');
+  assert.equal(wholesaleResult.validRows[0]._sourceRowNumber, 2, 'Wholesale preview retains original spreadsheet row numbers.');
+  assert.equal(wholesaleResult.badRows[0].rowNumber, 3, 'Wholesale preview issues use one-based spreadsheet row numbers including the header.');
 
   console.log('Spreadsheet validation passed: XLSX Unicode round-trip, required member fields, within-file duplicate CID/email, and invalid wholesaler email.');
 }

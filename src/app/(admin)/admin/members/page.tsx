@@ -34,6 +34,7 @@ export default function AdminMembersPage() {
   // Bulk import state
   const [showImportModal, setShowImportModal] = useState(false);
   const [importValidation, setImportValidation] = useState<MemberImportValidationResult | null>(null);
+  const [importResult, setImportResult] = useState<{ count: number; skippedCount: number; badRows: { rowNumber: number; reason: string }[] } | null>(null);
   const [importing, setImporting] = useState(false);
   const [importFileName, setImportFileName] = useState('');
 
@@ -298,6 +299,7 @@ export default function AdminMembersPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setImportResult(null);
     setImportFileName(file.name);
     try {
       const rawRows = await parseSpreadsheetFile(file);
@@ -325,10 +327,8 @@ export default function AdminMembersPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setActionSuccess(`✓ Successfully imported ${data.count} artisan members.`);
-        setShowImportModal(false);
-        setImportValidation(null);
-        setImportFileName('');
+        setImportResult({ count: Number(data.count) || 0, skippedCount: Number(data.skippedCount) || 0, badRows: Array.isArray(data.badRows) ? data.badRows : [] });
+        setActionSuccess(`✓ Import finished: ${Number(data.count) || 0} members added.`);
         loadMembers();
       } else {
         setActionError(data.error || 'Failed to import members.');
@@ -373,6 +373,7 @@ export default function AdminMembersPage() {
 
           <button
             onClick={() => {
+              setImportResult(null);
               setImportValidation(null);
               setImportFileName('');
               setShowImportModal(true);
@@ -1040,10 +1041,20 @@ export default function AdminMembersPage() {
                 <FileSpreadsheet className="w-5 h-5 text-sky-600" />
                 <span>Bulk Import Artisan Members from Excel / CSV</span>
               </h3>
-              <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-700 text-base font-bold">✕</button>
+              <button onClick={() => { setShowImportModal(false); setImportResult(null); }} aria-label="Close member import" className="text-slate-500 hover:text-slate-900 text-sm font-semibold">Close ×</button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-4 text-xs">
+              {importResult && (
+                <section role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
+                  <h4 className="font-bold text-emerald-950">Import finished</h4>
+                  <p className="text-emerald-900">{importResult.count} imported · {importResult.skippedCount} duplicates skipped · {importResult.badRows.length} rows need review</p>
+                  {importResult.badRows.length > 0 && <div className="max-h-40 overflow-y-auto rounded-lg border border-rose-200 bg-white p-3">
+                    <h5 className="mb-1 font-bold text-rose-900">Rows not imported</h5>
+                    <ul className="space-y-1 text-[11px] text-rose-800">{importResult.badRows.map((row, index) => <li key={`${row.rowNumber}-${index}`}>Row {row.rowNumber}: {row.reason}</li>)}</ul>
+                  </div>}
+                </section>
+              )}
               <div className="p-4 bg-sky-50 rounded-xl border border-sky-100 flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-sky-950">Download Member Excel Template</p>
@@ -1133,19 +1144,19 @@ export default function AdminMembersPage() {
             <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowImportModal(false)}
+                onClick={() => { setShowImportModal(false); setImportResult(null); }}
                 className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg"
               >
-                Cancel
+                {importResult ? 'Done' : 'Cancel'}
               </button>
               <button
                 type="button"
                 onClick={handleExecuteMemberImport}
-                disabled={importing || !importValidation || importValidation.validRows.length === 0}
+                disabled={importing || Boolean(importResult) || !importValidation || importValidation.validRows.length === 0}
                 className="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-semibold rounded-lg flex items-center gap-1.5"
               >
                 <Check className="w-4 h-4" />
-                <span>{importing ? 'Importing...' : `Import ${importValidation?.validRows.length || 0} Members`}</span>
+                <span>{importResult ? 'Import complete' : importing ? 'Importing...' : `Import ${importValidation?.validRows.length || 0} Members`}</span>
               </button>
             </div>
           </div>

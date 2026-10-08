@@ -35,14 +35,17 @@ export async function POST(req: NextRequest) {
         badRows.push({ rowNumber: index + 2, reason: 'Row must contain wholesale buyer fields.' });
         continue;
       }
+      const sourceRowNumber = Number(row._sourceRowNumber);
+      const rowNumber = Number.isSafeInteger(sourceRowNumber) && sourceRowNumber >= 2 && sourceRowNumber <= 100000
+        ? sourceRowNumber : index + 2;
       const email = String(row.email || '').trim().toLowerCase();
       if (!String(row.companyName || '').trim() || !String(row.contactName || '').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        badRows.push({ rowNumber: index + 2, reason: 'Company, contact person and valid email are required.' });
+        badRows.push({ rowNumber, reason: 'Company, contact person and valid email are required.' });
         continue;
       }
       if (seenEmails.has(email)) {
         skippedCount++;
-        badRows.push({ rowNumber: index + 2, reason: `Duplicate skipped: email "${email}" is repeated in this file.` });
+        badRows.push({ rowNumber, reason: `Duplicate skipped: email "${email}" is repeated in this file.` });
         continue;
       }
       seenEmails.add(email);
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
       const fallbackDuplicate = getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.toLowerCase() === email);
       if (duplicate || fallbackDuplicate) {
         skippedCount++;
-        badRows.push({ rowNumber: index + 2, reason: `Duplicate skipped: email "${email}" already exists.` });
+        badRows.push({ rowNumber, reason: `Duplicate skipped: email "${email}" already exists.` });
         continue;
       }
       const buyerId = crypto.randomUUID();
@@ -83,7 +86,7 @@ export async function POST(req: NextRequest) {
         });
         importedCount++;
       } catch (dbErr: any) {
-        badRows.push({ rowNumber: index + 2, reason: dbErr.message || 'Database insert failed.' });
+        badRows.push({ rowNumber, reason: dbErr.message || 'Database insert failed.' });
       }
     }
 

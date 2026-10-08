@@ -34,17 +34,20 @@ export async function POST(req: NextRequest) {
         badRows.push({ rowNumber: index + 2, reason: 'Row must contain member fields.' });
         continue;
       }
+      const sourceRowNumber = Number(row._sourceRowNumber);
+      const rowNumber = Number.isSafeInteger(sourceRowNumber) && sourceRowNumber >= 2 && sourceRowNumber <= 100000
+        ? sourceRowNumber : index + 2;
       const cidNumber = String(row.cidNumber || '').trim();
       const name = String(row.name || '').trim();
       if (!name || !row.craftKey || !row.dzongkhag || !cidNumber) {
-        badRows.push({ rowNumber: index + 2, reason: 'Name, craft, dzongkhag and CID/license are required.' });
+        badRows.push({ rowNumber, reason: 'Name, craft, dzongkhag and CID/license are required.' });
         continue;
       }
       const normalizedCid = cidNumber.toLowerCase();
       const normalizedName = name.toLowerCase();
       if (seenCids.has(normalizedCid) || seenNames.has(normalizedName)) {
         skippedCount++;
-        badRows.push({ rowNumber: index + 2, reason: 'Duplicate skipped: CID/license or name is repeated in this file.' });
+        badRows.push({ rowNumber, reason: 'Duplicate skipped: CID/license or name is repeated in this file.' });
         continue;
       }
       seenCids.add(normalizedCid);
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
       });
       if (duplicate) {
         skippedCount++;
-        badRows.push({ rowNumber: index + 2, reason: 'Duplicate skipped: CID/license or name already exists.' });
+        badRows.push({ rowNumber, reason: 'Duplicate skipped: CID/license or name already exists.' });
         continue;
       }
       const memberId = crypto.randomUUID();
@@ -86,7 +89,7 @@ export async function POST(req: NextRequest) {
         });
         importedCount++;
       } catch (dbErr: any) {
-        badRows.push({ rowNumber: index + 2, reason: dbErr.message || 'Database insert failed.' });
+        badRows.push({ rowNumber, reason: dbErr.message || 'Database insert failed.' });
       }
     }
 
