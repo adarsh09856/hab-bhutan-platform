@@ -28,6 +28,14 @@ function cleanOverride(value: unknown): PageOverride {
   return result;
 }
 
+function safeEditableUrl(value: string, allowContact: boolean) {
+  const url = value.trim();
+  if (!url) return true;
+  if (url.startsWith('/') && !url.startsWith('//') && !url.includes('\\')) return true;
+  if (/^https:\/\//i.test(url)) return true;
+  return allowContact && /^(mailto:|tel:)/i.test(url);
+}
+
 export async function GET(req: NextRequest) {
   const pathname = normalizePath(req.nextUrl.searchParams.get('path'));
   try {
@@ -79,6 +87,12 @@ export async function PUT(req: NextRequest) {
     if (!key) return NextResponse.json({ success: false, error: 'Editable element key is required.' }, { status: 400 });
 
     const override = cleanOverride(body.override);
+    if (override.href !== undefined && !safeEditableUrl(override.href, true)) {
+      return NextResponse.json({ success: false, error: 'Links must be an internal path, HTTPS, email, or telephone URL.' }, { status: 400 });
+    }
+    if (override.src !== undefined && !safeEditableUrl(override.src, false)) {
+      return NextResponse.json({ success: false, error: 'Image URLs must be an internal path or HTTPS URL.' }, { status: 400 });
+    }
     if (body.remove !== true && Object.keys(override).length === 0) {
       return NextResponse.json({ success: false, error: 'At least one editable field is required.' }, { status: 400 });
     }

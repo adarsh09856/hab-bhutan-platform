@@ -49,7 +49,7 @@ export default async function MandatePage() {
     <main id="main">
       {/* 1. Page Hero */}
       <section className="section relative" data-hab-section="mandate-hero">
-        <SectionEditBadge label="Governance CMS" studioHref="/admin/policies" />
+        <SectionEditBadge label="Mandate page sections" studioHref="/admin/pages/sections?path=/mandate" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/about">About Us</Link> / Our Mandate &amp; AoA
         </p>

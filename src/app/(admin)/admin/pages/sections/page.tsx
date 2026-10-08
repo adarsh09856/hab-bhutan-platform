@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageBlockManager } from '@/components/public/PublicPageBlocks';
 
 export default function PageSectionsAdminPage() {
   const [pathInput, setPathInput] = useState('/');
   const [pathname, setPathname] = useState('/');
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('path');
+    if (requested?.startsWith('/') && !requested.startsWith('//')) {
+      const normalized = requested.replace(/\/$/, '') || '/';
+      setPathInput(normalized);
+      setPathname(normalized);
+    }
+  }, []);
   return <main className="mx-auto max-w-4xl p-5 sm:p-8">
     <p className="text-xs font-bold uppercase tracking-widest text-[#8B2E24]">Website & Pages</p>
     <h1 className="mt-1 text-2xl font-bold text-slate-900">Public page sections</h1>

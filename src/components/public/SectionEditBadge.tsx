@@ -131,6 +131,10 @@ export default function SectionEditBadge({
   const handleQuickEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (studioHref.startsWith('/admin/pages/sections')) {
+      window.dispatchEvent(new Event('hab:page-blocks-open'));
+      return;
+    }
     if (effectiveEditHandler) {
       effectiveEditHandler();
     } else if (effectiveSectionType) {

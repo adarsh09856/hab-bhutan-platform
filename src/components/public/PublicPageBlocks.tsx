@@ -75,9 +75,11 @@ export default function PublicPageBlocks() {
   useEffect(() => {
     fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).then((data) => setStaff(['super_admin', 'staff_operator'].includes(String(data?.user?.roleSlug || '').toLowerCase()))).catch(() => setStaff(false));
     const toggle = (event: Event) => setEditMode(Boolean((event as CustomEvent).detail?.active));
+    const openManager = () => setOpen(true);
     window.addEventListener('hab:visual-edit-toggled', toggle);
+    window.addEventListener('hab:page-blocks-open', openManager);
     setEditMode(document.body.classList.contains('hab-visual-edit-on'));
-    return () => window.removeEventListener('hab:visual-edit-toggled', toggle);
+    return () => { window.removeEventListener('hab:visual-edit-toggled', toggle); window.removeEventListener('hab:page-blocks-open', openManager); };
   }, [pathname]);
   return <>
     {blocks.map((block) => <section key={block.id} className="section relative" data-hab-section={`page-block-${block.id}`}>

@@ -49,7 +49,7 @@ export default async function CodeOfEthicsPage() {
     <main id="main">
       {/* 1. Page Hero */}
       <section className="section relative" data-hab-section="ethics-hero">
-        <SectionEditBadge label="Governance CMS" studioHref="/admin/policies" />
+        <SectionEditBadge label="Ethics page sections" studioHref="/admin/pages/sections?path=/code-of-ethics" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/about">About Us</Link> / Code of Ethics
         </p>

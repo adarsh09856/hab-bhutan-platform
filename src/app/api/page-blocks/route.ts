@@ -12,7 +12,7 @@ const pathOf = (value: unknown) => {
 const safeUrl = (value: unknown) => {
   if (typeof value !== 'string' || !value.trim()) return null;
   const url = value.trim();
-  return (url.startsWith('/') && !url.startsWith('//')) || /^https:\/\//i.test(url) ? url : null;
+  return (url.startsWith('/') && !url.startsWith('//') && !url.includes('\\')) || /^https:\/\//i.test(url) ? url : null;
 };
 const fail = (error: string, status: number) => NextResponse.json({ success: false, error }, { status });
 

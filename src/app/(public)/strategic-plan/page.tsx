@@ -49,7 +49,7 @@ export default async function StrategicPlanPage() {
     <main id="main">
       {/* 1. Page Hero */}
       <section className="section relative" data-hab-section="strategic-hero">
-        <SectionEditBadge label="Governance CMS" studioHref="/admin/publications" />
+        <SectionEditBadge label="Strategic page sections" studioHref="/admin/pages/sections?path=/strategic-plan" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/about">About Us</Link> / Strategic Plan 2025–2030
         </p>
