@@ -416,14 +416,17 @@ export default function AdminOrdersPage() {
     setErrorMsg('');
 
     try {
+      const originalOrder = orders.find((order) => order.id === editingOrder.id);
+      const paymentStatusChanged = originalOrder?.paymentStatus !== editingOrder.paymentStatus;
+      const orderStatusChanged = originalOrder?.orderStatus !== editingOrder.orderStatus;
       const res = await fetch('/api/admin/orders', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingOrder.id,
-          orderStatus: editingOrder.orderStatus,
-          paymentStatus: editingOrder.paymentStatus,
+          ...(orderStatusChanged ? { orderStatus: editingOrder.orderStatus } : {}),
+          ...(paymentStatusChanged ? { paymentStatus: editingOrder.paymentStatus } : {}),
           trackingNumber: editingOrder.trackingNumber,
           customerName: editingOrder.customerName,
           customerEmail: editingOrder.customerEmail,

@@ -37,6 +37,7 @@ export type Permission =
   | 'orders:view'
   | 'orders:create'
   | 'orders:edit'
+  | 'orders:payment'
   | 'orders:fulfill'
   | 'orders:cancel'
   | 'orders:refund'
@@ -118,6 +119,7 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
       { slug: 'orders:view', label: 'View Orders', description: 'Inspect order queue, addresses, and line-items' },
       { slug: 'orders:create', label: 'Create Manual Order', description: 'Record telephone/in-person craft purchases' },
       { slug: 'orders:edit', label: 'Edit Order', description: 'Update shipping tracking number or customer notes' },
+      { slug: 'orders:payment', label: 'Verify Payment', description: 'Confirm or correct an order payment after checking the payment provider or bank record' },
       { slug: 'orders:fulfill', label: 'Fulfill & Dispatch', description: 'Transition order to SHIPPED / DELIVERED status' },
       { slug: 'orders:cancel', label: 'Cancel Order', description: 'Cancel order and atomically return stock to catalog' },
       { slug: 'orders:refund', label: 'Refund Order', description: 'Mark payment refunded and adjust accounting state' },

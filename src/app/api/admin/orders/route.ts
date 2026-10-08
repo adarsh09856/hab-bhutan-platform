@@ -306,6 +306,16 @@ export async function PATCH(req: NextRequest) {
       session = await requirePermission(req, 'orders:edit');
     }
 
+    // Payment-state writes are financially sensitive and must not be implied
+    // by general order-edit access. Authorize from the submitted fields before
+    // looking up the order ID, preserving the anti-enumeration behavior.
+    if (Object.prototype.hasOwnProperty.call(body, 'paymentStatus') && paymentStatus !== 'REFUNDED') {
+      await requirePermission(req, 'orders:payment');
+    }
+    if (orderStatus === 'PAID') {
+      await requirePermission(req, 'orders:payment');
+    }
+
     const previous = await prisma.order.findUnique({
       where: { id },
       include: { orderItems: true },
@@ -427,13 +437,15 @@ export async function PATCH(req: NextRequest) {
       actorId: session.id,
       actorIdentifier: session.email,
       actorIp: ip,
-      action: orderStatus === 'CANCELLED' ? 'ORDER_CANCELLED' : orderStatus === 'REFUNDED' || paymentStatus === 'REFUNDED' ? 'ORDER_REFUNDED' : 'ORDER_UPDATED',
+      action: orderStatus === 'CANCELLED' ? 'ORDER_CANCELLED' : orderStatus === 'REFUNDED' || paymentStatus === 'REFUNDED' ? 'ORDER_REFUNDED' : Object.prototype.hasOwnProperty.call(body, 'paymentStatus') || orderStatus === 'PAID' ? 'ORDER_PAYMENT_STATUS_UPDATED' : 'ORDER_UPDATED',
       entityType: 'Order',
       entityId: id,
       details: {
         orderNumber: updated.orderNumber,
         previousStatus: previous.orderStatus,
         newStatus: updated.orderStatus,
+        previousPaymentStatus: previous.paymentStatus,
+        newPaymentStatus: updated.paymentStatus,
         trackingNumber: updated.trackingNumber,
         reason: cancellationReason || notes || null,
         refundPolicy: refundNote || null,
