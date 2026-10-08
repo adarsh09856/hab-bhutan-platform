@@ -162,7 +162,10 @@ const configs: Record<string, Config> = {
       { key: 'craftKey', label: 'Craft key', required: true }, { key: 'priceUSD', label: 'Price (USD)', kind: 'number', required: true },
       { key: 'stock', label: 'Stock', kind: 'number' }, { key: 'region', label: 'Region' },
       { key: 'makerMemberId', label: 'Maker member ID' }, { key: 'status', label: 'Status (DRAFT / PUBLISHED / ARCHIVED)' },
-      { key: 'description', label: 'Description', kind: 'long' }, { key: 'imageUrl', label: 'Primary product image', kind: 'image' },
+      { key: 'description', label: 'Description', kind: 'long' }, { key: 'size', label: 'Dimensions / size' },
+      { key: 'weight', label: 'Weight' }, { key: 'materials', label: 'Materials', kind: 'long' },
+      { key: 'care', label: 'Care instructions', kind: 'long' }, { key: 'lead', label: 'Lead time' },
+      { key: 'imageUrl', label: 'Primary product image', kind: 'image' },
     ],
   },
   clusters: {

@@ -74,6 +74,11 @@ export default function AdminProductsPage() {
     stock: 10,
     status: 'PUBLISHED',
     description: '',
+    size: '',
+    weight: '',
+    materials: '',
+    care: '',
+    lead: '',
     imageUrl: '',
     additionalImages: [] as string[],
     images: [] as { url: string; role: string }[],
@@ -166,6 +171,7 @@ export default function AdminProductsPage() {
           stock: 10,
           status: 'PUBLISHED',
           description: '',
+          size: '', weight: '', materials: '', care: '', lead: '',
           imageUrl: '',
           additionalImages: [],
           images: [],
@@ -215,6 +221,11 @@ export default function AdminProductsPage() {
       stock: p.stock ?? 0,
       status: p.status,
       description: p.description || '',
+      size: p.size || '',
+      weight: p.weight || '',
+      materials: p.materials || '',
+      care: p.care || '',
+      lead: p.lead || '',
       imageUrl: primaryImg,
       additionalImages: extraImages,
       images: existingImages,
@@ -842,6 +853,17 @@ export default function AdminProductsPage() {
             </button>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(['size', 'weight', 'lead'] as const).map((key) => <label key={key} className="block text-xs font-semibold admin-text">
+              {key === 'size' ? 'Dimensions / size' : key === 'weight' ? 'Weight' : 'Lead time'}
+              <input className="admin-input mt-1 w-full rounded-lg border px-3 py-2 text-xs" value={addForm[key] || ''} onChange={(event) => setAddForm({ ...addForm, [key]: event.target.value })} />
+            </label>)}
+            {(['materials', 'care'] as const).map((key) => <label key={key} className="block text-xs font-semibold admin-text sm:col-span-3">
+              {key === 'materials' ? 'Materials' : 'Care instructions'}
+              <textarea rows={2} className="admin-input mt-1 w-full rounded-lg border px-3 py-2 text-xs" value={addForm[key] || ''} onChange={(event) => setAddForm({ ...addForm, [key]: event.target.value })} />
+            </label>)}
+          </div>
+
           <div>
             <RichTextEditor
               label="Curatorial Provenance, Materials & Cultural Context"
@@ -1025,6 +1047,17 @@ export default function AdminProductsPage() {
               >
                 <Plus className="w-3.5 h-3.5" /> Add Another Photograph (Angle, Dimension, Texture)
               </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(['size', 'weight', 'lead'] as const).map((key) => <label key={key} className="block text-xs font-semibold admin-text">
+                {key === 'size' ? 'Dimensions / size' : key === 'weight' ? 'Weight' : 'Lead time'}
+                <input className="admin-input mt-1 w-full rounded-lg border px-3 py-2 text-xs" value={editForm[key] || ''} onChange={(event) => setEditForm({ ...editForm, [key]: event.target.value })} />
+              </label>)}
+              {(['materials', 'care'] as const).map((key) => <label key={key} className="block text-xs font-semibold admin-text sm:col-span-3">
+                {key === 'materials' ? 'Materials' : 'Care instructions'}
+                <textarea rows={2} className="admin-input mt-1 w-full rounded-lg border px-3 py-2 text-xs" value={editForm[key] || ''} onChange={(event) => setEditForm({ ...editForm, [key]: event.target.value })} />
+              </label>)}
             </div>
 
             <div>

@@ -146,6 +146,11 @@ model Product {
   makerMemberId String?
   maker         Member?       @relation(fields: [makerMemberId], references: [id])
   description   String        @db.Text
+  size          String?
+  weight        String?
+  materials     String?       @db.Text
+  care          String?       @db.Text
+  lead          String?
   images        Json          // [{ url, role: "primary"|"angle2"|"angle3" }]
   stock         Int           @default(10)
   status        ProductStatus @default(PUBLISHED)

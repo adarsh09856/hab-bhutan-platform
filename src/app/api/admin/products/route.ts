@@ -48,6 +48,11 @@ export async function POST(req: NextRequest) {
       region,
       makerMemberId,
       description,
+      size,
+      weight,
+      materials,
+      care,
+      lead,
       stock,
       status,
       imageUrl,
@@ -85,6 +90,11 @@ export async function POST(req: NextRequest) {
         region: region || 'Bhutan',
         makerMemberId: makerMemberId || null,
         description: description || 'Authentic artisan handicraft curated by HAB.',
+        size: size?.trim() || null,
+        weight: weight?.trim() || null,
+        materials: materials?.trim() || null,
+        care: care?.trim() || null,
+        lead: lead?.trim() || null,
         images: imageList,
         stock: stock !== undefined ? Math.max(0, Number(stock)) : 10,
         status: ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
@@ -138,6 +148,11 @@ export async function PATCH(req: NextRequest) {
       region,
       makerMemberId,
       description,
+      size,
+      weight,
+      materials,
+      care,
+      lead,
       stock,
       inventoryCount,
       status,
@@ -170,6 +185,11 @@ export async function PATCH(req: NextRequest) {
     if (region !== undefined) updateData.region = region;
     if (makerMemberId !== undefined) updateData.makerMemberId = makerMemberId || null;
     if (description !== undefined) updateData.description = description;
+    if (size !== undefined) updateData.size = size?.trim() || null;
+    if (weight !== undefined) updateData.weight = weight?.trim() || null;
+    if (materials !== undefined) updateData.materials = materials?.trim() || null;
+    if (care !== undefined) updateData.care = care?.trim() || null;
+    if (lead !== undefined) updateData.lead = lead?.trim() || null;
     if (status !== undefined) {
       updateData.status = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
         ? status
@@ -276,6 +296,11 @@ export async function DELETE(req: NextRequest) {
         craftKey: product.craftKey,
         region: product.region,
         description: product.description,
+        size: product.size,
+        weight: product.weight,
+        materials: product.materials,
+        care: product.care,
+        lead: product.lead,
         images: product.images,
         stock: product.stock,
         status: product.status,
