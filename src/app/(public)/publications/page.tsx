@@ -6,8 +6,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function PublicationsPage() {
+  const { t } = useLanguage();
   const [publications, setPublications] = useState<any[]>(() => CLIENT_DATA.publications || []);
   const [selectedKind, setSelectedKind] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
@@ -91,12 +93,12 @@ export default function PublicationsPage() {
       <section className="section relative" data-hab-section="publications">
         <SectionEditBadge label="Publications & Research Studio" studioHref="/admin/publications" sectionType="publications" />
         <p className="crumbs">
-          <Link href="/">Home</Link> / Publications
+          <Link href="/">{t('nav.home', 'Home')}</Link> / {t('publications.title', 'Publications')}
         </p>
         <div style={{ maxWidth: '74ch', marginBottom: 38 }}>
-          <h1 className="display display--page">Publications</h1>
+          <h1 className="display display--page">{t('publications.title', 'Publications')}</h1>
           <p className="lede" style={{ marginBottom: 0 }}>
-            Annual reports, audited accounts, sector research, guidelines and training material — published by HAB and free to download. {publications.length} publications listed.
+            {t('publications.intro', 'Annual reports, audited accounts, sector research, guidelines and training material — published by HAB and free to download.')} {publications.length} {publications.length === 1 ? t('publications.count_one', 'publication listed') : t('publications.count_many', 'publications listed')}.
           </p>
         </div>
 
@@ -106,7 +108,7 @@ export default function PublicationsPage() {
             <div className="publead__copy">
               <div className="publead__tags">
                 <span className="badge badge--ink" style={{ margin: 0 }}>
-                  Latest
+                  {t('publications.latest', 'Latest')}
                 </span>
                 <span className="eyebrow eyebrow--brass eyebrow--sm" id="pubLeadKind">
                   {leadReport.kind}
@@ -126,7 +128,7 @@ export default function PublicationsPage() {
                   rel="noopener noreferrer"
                   download
                 >
-                  Download ↓
+                  {t('publications.download', 'Download ↓')}
                 </a>
                 <span className="publead__meta" id="pubLeadMeta">
                   {leadReport.meta}
@@ -143,7 +145,7 @@ export default function PublicationsPage() {
           </div>
 
           <div className="publead__side">
-            <p className="eyebrow eyebrow--muted eyebrow--sm">Also essential</p>
+            <p className="eyebrow eyebrow--muted eyebrow--sm">{t('publications.also_essential', 'Also essential')}</p>
             <div id="pubSecondary">
               {secondaryReports.map((p, idx) => (
                 <a
@@ -169,18 +171,18 @@ export default function PublicationsPage() {
         {/* Filter Bar */}
         <div className="filterbar">
           <label className="visually-hidden" htmlFor="pubSearch">
-            Search publications
+            {t('publications.search_label', 'Search publications')}
           </label>
           <input
             className="input"
             id="pubSearch"
             type="search"
-            placeholder="Search publications by title"
+            placeholder={t('publications.search_placeholder', 'Search publications by title')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <label className="visually-hidden" htmlFor="pubKind">
-            Type
+            {t('publications.type', 'Type')}
           </label>
           <select
             className="input"
@@ -188,7 +190,7 @@ export default function PublicationsPage() {
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
           >
-            <option value="">All types</option>
+            <option value="">{t('publications.all_types', 'All types')}</option>
             {kinds.map((k) => (
               <option key={k} value={k}>
                 {k}
@@ -196,7 +198,7 @@ export default function PublicationsPage() {
             ))}
           </select>
           <label className="visually-hidden" htmlFor="pubYear">
-            Year
+            {t('publications.year', 'Year')}
           </label>
           <select
             className="input"
@@ -204,7 +206,7 @@ export default function PublicationsPage() {
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
           >
-            <option value="">All years</option>
+            <option value="">{t('publications.all_years', 'All years')}</option>
             {years.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -212,12 +214,12 @@ export default function PublicationsPage() {
             ))}
           </select>
           <button className="btn btn--text" type="button" id="pubReset" onClick={resetFilters}>
-            Reset
+            {t('publications.reset', 'Reset')}
           </button>
         </div>
 
         <p className="craft__count" id="pubCount" style={{ margin: '0 0 20px' }}>
-          {filtered.length} {filtered.length === 1 ? 'publication' : 'publications'} listed
+          {filtered.length} {filtered.length === 1 ? t('publications.count_one', 'publication listed') : t('publications.count_many', 'publications listed')}
         </p>
 
         {/* Publications List */}
@@ -237,32 +239,32 @@ export default function PublicationsPage() {
                 <span className="pubrow__meta">{p.meta}</span>
                 <span className="pubrow__right">
                   <span className="pubrow__year">{p.year}</span>
-                  <span className="pubrow__dl">Download ↓</span>
+                  <span className="pubrow__dl">{t('publications.download', 'Download ↓')}</span>
                 </span>
               </a>
             ))}
           </div>
         ) : (
           <div className="shopempty" id="pubEmpty">
-            <h2 className="shopempty__title">No publications match these filters</h2>
-            <p className="shopempty__body">Try a different type or year, or clear the filters.</p>
+            <h2 className="shopempty__title">{t('publications.no_results', 'No publications match these filters')}</h2>
+            <p className="shopempty__body">{t('publications.try_filters', 'Try a different type or year, or clear the filters.')}</p>
           </div>
         )}
 
         {/* CTA Band */}
         <div className="ctaband" style={{ marginTop: 34 }}>
           <div>
-            <h2 className="display display--panel">Looking for something not listed here?</h2>
+            <h2 className="display display--panel">{t('publications.not_listed', 'Looking for something not listed here?')}</h2>
             <p className="ctaband__body">
-              Board minutes, procurement notices and project evaluations are available from the secretariat on request. Members can also download training material from the members-only area.
+              {t('publications.request_copy', 'Board minutes, procurement notices and project evaluations are available from the secretariat on request. Members can also download training material from the members-only area.')}
             </p>
           </div>
           <div className="actions">
             <Link className="btn btn--light" href="/contact">
-              Contact the secretariat
+              {t('publications.contact_secretariat', 'Contact the secretariat')}
             </Link>
             <Link className="btn btn--ghost" href="/membership#login">
-              Member login
+              {t('publications.member_login', 'Member login')}
             </Link>
           </div>
         </div>

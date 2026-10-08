@@ -5,10 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { useLanguage } from '@/context/LanguageContext';
 
 export const dynamic = 'force-dynamic';
 
 export default function NewsPage() {
+  const { t } = useLanguage();
   const [newsList, setNewsList] = useState<any[]>(() => CLIENT_DATA.news);
   const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
   const [selectedKind, setSelectedKind] = useState<string>('');
@@ -75,17 +77,17 @@ export default function NewsPage() {
       <section className="section relative" data-hab-section="news">
         <SectionEditBadge label="News & Stories" studioHref="/admin/content" sectionType="news" />
         <p className="crumbs">
-          <Link href="/">Home</Link> / News &amp; events
+          <Link href="/">{t('nav.home', 'Home')}</Link> / {t('news.title', 'News & events')}
         </p>
-        <h1 className="display display--page">News &amp; events</h1>
-        <p className="lede">Stay informed, stay empowered.</p>
+        <h1 className="display display--page">{t('news.title', 'News & events')}</h1>
+        <p className="lede">{t('news.subtitle', 'Stay informed, stay empowered.')}</p>
 
         <div className="newsrow" style={{ marginTop: 34 }}>
           {/* Left: Articles List */}
           <div>
             <div className="filterbar filterbar--slim">
               <label className="visually-hidden" htmlFor="newsFilter">
-                Category
+                {t('news.category', 'Category')}
               </label>
               <select
                 className="input"
@@ -93,7 +95,7 @@ export default function NewsPage() {
                 value={selectedKind}
                 onChange={(e) => setSelectedKind(e.target.value)}
               >
-                <option value="">All categories</option>
+                <option value="">{t('news.all_categories', 'All categories')}</option>
                 {kinds.map((k) => (
                   <option key={k} value={k}>
                     {k}
@@ -101,7 +103,7 @@ export default function NewsPage() {
                 ))}
               </select>
               <span className="craft__count" id="newsCount" style={{ margin: 0, alignSelf: 'center' }}>
-                {filtered.length} {filtered.length === 1 ? 'post' : 'posts'}
+                {filtered.length} {filtered.length === 1 ? t('news.post_singular', 'post') : t('news.post_plural', 'posts')}
               </span>
             </div>
 
@@ -110,21 +112,21 @@ export default function NewsPage() {
                 const slug = n.slug || n.id || `post-${idx}`;
                 const customImg = n.image_path || n.imageUrl || n.image_url;
                 const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg');
-                const t = String(n.title || '').toLowerCase();
+                const titleLower = String(n.title || '').toLowerCase();
                 const s = String(slug).toLowerCase();
                 let imgSrc = '';
 
                 if (hasValidCustom) {
                   imgSrc = customImg;
-                } else if (t.includes('innovation') || s.includes('innovation') || t.includes('designer')) {
+                } else if (titleLower.includes('innovation') || s.includes('innovation') || titleLower.includes('designer')) {
                   imgSrc = '/images/programs/design_lab.jpg';
-                } else if (t.includes('annual report') || s.includes('annual-report') || t.includes('accounts')) {
+                } else if (titleLower.includes('annual report') || s.includes('annual-report') || titleLower.includes('accounts')) {
                   imgSrc = '/assets/photos/hero-5-desho.jpg';
-                } else if (t.includes('bazaar') || s.includes('bazaar') || t.includes('clock tower')) {
+                } else if (titleLower.includes('bazaar') || s.includes('bazaar') || titleLower.includes('clock tower')) {
                   imgSrc = '/assets/photos/hero-2-punakha.jpg';
-                } else if (t.includes('dye') || s.includes('dye') || t.includes('lhuentse')) {
+                } else if (titleLower.includes('dye') || s.includes('dye') || titleLower.includes('lhuentse')) {
                   imgSrc = '/images/programs/dye_training.jpg';
-                } else if (t.includes('trade') || s.includes('trade') || t.includes('export')) {
+                } else if (titleLower.includes('trade') || s.includes('trade') || titleLower.includes('export')) {
                   imgSrc = '/images/programs/trade.jpg';
                 } else if (NEWS_PHOTO_MAP[s]) {
                   imgSrc = NEWS_PHOTO_MAP[s];
@@ -156,7 +158,7 @@ export default function NewsPage() {
                       </h2>
                       <p className="newsitem__blurb">{n.blurb}</p>
                       <Link className="news__more" href={`/news/${slug}`}>
-                        Read more →
+                        {t('news.read_more', 'Read more →')}
                       </Link>
                     </div>
                   </article>
@@ -169,9 +171,9 @@ export default function NewsPage() {
           <aside className="newsaside">
             <div className="newsaside__block">
               <div className="newsaside__head">
-                <h2 className="newsaside__title">Upcoming events</h2>
+                <h2 className="newsaside__title">{t('news.upcoming_events', 'Upcoming events')}</h2>
                 <Link className="link-accent" href="/events">
-                  All events →
+                  {t('news.all_events', 'All events →')}
                 </Link>
               </div>
               <div id="newsEvents">
@@ -191,12 +193,12 @@ export default function NewsPage() {
             </div>
 
             <div className="newsaside__block newsaside__block--dark">
-              <h2 className="newsaside__title newsaside__title--light">Reports &amp; publications</h2>
+              <h2 className="newsaside__title newsaside__title--light">{t('news.publications', 'Reports & publications')}</h2>
               <p className="newsaside__body">
-                Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.
+                {t('news.publications_blurb', 'Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.')}
               </p>
               <Link className="link-brass" href="/publications">
-                Browse all reports
+                {t('news.browse_reports', 'Browse all reports')}
               </Link>
             </div>
           </aside>
