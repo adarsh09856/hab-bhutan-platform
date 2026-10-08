@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
-type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password'; required?: boolean; createOnly?: boolean };
-type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; governanceCategory?: string; governanceCardSection?: 'strategic' | 'mandate' | 'ethics' };
+type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password' | 'select'; options?: string[]; required?: boolean; createOnly?: boolean };
+type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; canCreate?: boolean; canDelete?: boolean; governanceCategory?: string; governanceCardSection?: 'strategic' | 'mandate' | 'ethics' };
 
 const configs: Record<string, Config> = {
   'strategic-cards': {
@@ -36,6 +36,16 @@ const configs: Record<string, Config> = {
       { key: 'titleDz', label: 'Standard title (Dzongkha)' }, { key: 'bodyDz', label: 'Description (Dzongkha)', kind: 'long' },
       { key: 'iconKey', label: 'Icon number (0–5)' }, { key: 'sortOrder', label: 'Display order', kind: 'number' },
       { key: 'isActive', label: 'Publicly visible', kind: 'check' },
+    ],
+  },
+  'order-records': {
+    endpoint: '/api/admin/orders', collection: 'orders', title: 'Orders & fulfillment', labelKey: 'orderNumber', updateMethod: 'PATCH', canCreate: false, canDelete: false,
+    fields: [
+      { key: 'orderStatus', label: 'Order status (payment confirmation is read-only)', kind: 'select', options: ['PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'] },
+      { key: 'trackingNumber', label: 'Tracking number' },
+      { key: 'customerName', label: 'Customer name' }, { key: 'customerEmail', label: 'Customer email' },
+      { key: 'customerPhone', label: 'Customer phone' },
+      { key: 'notes', label: 'Internal note / cancellation reason', kind: 'long' },
     ],
   },
   'board-records': {
@@ -229,7 +239,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       const listUrl = config.governanceCardSection ? `${config.endpoint}?section=${config.governanceCardSection}` : config.endpoint;
       const response = await fetch(listUrl, { credentials: 'include', cache: 'no-store' });
       const data = await response.json();
-      if (!response.ok || !data.success) throw new Error(data.error || 'Records could not be loaded.');
+      if (!response.ok || !data.success) throw new Error(data.error || (response.status === 401 ? 'Log in with your staff account to view orders.' : 'Records could not be loaded.'));
       const records = Array.isArray(data[config.collection]) ? data[config.collection] : [];
       setRows(config.governanceCategory ? records.filter((row: Record<string, any>) => row.category === config.governanceCategory) : records);
       setMessage('');
@@ -256,6 +266,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     const [governanceNote, governancePhoto] = config.governanceCategory
       ? String(row.chapterOrNote || '').split('||photo:') : ['', ''];
     setDraft({ ...row, ...dates, imageUrl: row.imageUrl || primaryImage?.url || '',
+      ...(sectionType === 'order-records' ? { notes: row.internalNotes || '' } : {}),
       ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: row.photoUrl || (governancePhoto || '').trim() } : {}),
       activities: Array.isArray(row.activities) ? row.activities.join('\n') : row.activities || '',
       results: Array.isArray(row.results) ? row.results.join('\n') : row.results || '' });
@@ -273,12 +284,33 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       result.category = config.governanceCategory;
     }
     if (config.governanceCardSection) result.section = config.governanceCardSection;
+    if (sectionType === 'order-records' && draft?.id) {
+      const existing = rows.find((row) => row.id === draft.id);
+      if (existing?.orderStatus === draft.orderStatus) delete result.orderStatus;
+    }
     return result;
   };
   const save = async () => {
     if (!draft) return;
     const missing = config.fields.find((field) => field.required && (!field.createOnly || !draft.id) && !String(draft[field.key] ?? '').trim());
     if (missing) { setMessage(`${missing.label} is required.`); return; }
+    if (sectionType === 'order-records') {
+      const existing = rows.find((row) => row.id === draft.id);
+      if (draft.orderStatus === 'PAID' && existing?.orderStatus !== 'PAID') {
+        setMessage('Payment confirmation is managed separately; this Quick Edit cannot mark an order paid.'); return;
+      }
+      if (draft.orderStatus === 'REFUNDED' && existing?.orderStatus !== 'REFUNDED') {
+        if (!window.confirm(`Record a refund for ${draft.orderNumber}? Verify the real payment reversal first. This does not automatically restock items.`)) return;
+      }
+    }
+    if (sectionType === 'order-records' && draft.orderStatus === 'CANCELLED') {
+      if (!String(draft.notes || '').trim()) { setMessage('Enter a cancellation reason before cancelling the order.'); return; }
+      if (!window.confirm('Cancel this order? This restores its product stock and records the cancellation reason.')) return;
+    }
+    if (sectionType === 'order-records' && draft.orderStatus === 'SHIPPED') {
+      const previous = rows.find((row) => row.id === draft.id);
+      if (previous?.orderStatus !== 'SHIPPED' && !window.confirm(`Mark ${draft.orderNumber} as shipped? This attempts to email the customer with the tracking details.`)) return;
+    }
     setSaving(true); setMessage('');
     try {
       const response = await fetch(config.endpoint, {
@@ -326,7 +358,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     } catch (error: any) { setMessage(error?.message || 'Decision failed.'); }
     finally { setSaving(false); }
   };
-  const visible = rows.filter((row) => `${row[config.labelKey] || ''} ${row.key || ''}`.toLowerCase().includes(query.toLowerCase()));
+  const visible = rows.filter((row) => `${row[config.labelKey] || ''} ${row.key || ''} ${row.customerName || ''} ${row.customerEmail || ''}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 text-slate-900">
@@ -334,7 +366,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
         <strong className="text-sm">{config.title} ({rows.length})</strong>
         <div className="flex gap-2">
           <button type="button" onClick={load} disabled={loading || saving} className="rounded-lg border px-2 py-1.5 text-xs"><RefreshCw className="w-4 h-4" /></button>
-          <button type="button" onClick={startCreate} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-1.5 text-xs font-bold text-white"><Plus className="w-4 h-4" /> Create</button>
+          {config.canCreate !== false && <button type="button" onClick={startCreate} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-1.5 text-xs font-bold text-white"><Plus className="w-4 h-4" /> Create</button>}
         </div>
       </div>
       <input aria-label={`Search ${config.title}`} className="mb-3 w-full rounded-lg border px-3 py-2 text-sm" placeholder="Search records" value={query} onChange={(event) => setQuery(event.target.value)} />
@@ -344,15 +376,21 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
           {loading && <p className="p-3 text-sm">Loading…</p>}
           {!loading && visible.length === 0 && <p className="p-3 text-sm">No records found.</p>}
           {visible.map((row) => <div key={row.id} className="flex items-center gap-2 p-2.5">
-            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{row.isActive === false ? ' (hidden)' : ''}</button>
+            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{sectionType === 'order-records' ? ` · ${row.orderStatus || 'Unknown'} · ${row.currencyUsed || 'USD'} ${Number(row.totalPaidCurrency || row.totalUSD || 0).toFixed(2)}` : ''}{row.isActive === false ? ' (hidden)' : ''}</button>
             {sectionType === 'wholesale' && row.status !== 'ACTIVE' && <button type="button" title="Approve and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'APPROVE')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
             {sectionType === 'wholesale' && row.status !== 'REJECTED' && <button type="button" title="Decline and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'DECLINE')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
-            <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving} className="rounded-md p-1.5 text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+            {config.canDelete !== false && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving} className="rounded-md p-1.5 text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
           </div>)}
         </div>
         <div className="rounded-xl border p-3 sm:p-4">
-          {!draft ? <p className="text-sm text-slate-600">Select a record to edit, or create a new one.</p> : <>
+          {!draft ? <p className="text-sm text-slate-600">{config.canCreate === false ? 'Select an order to review its details or update fulfillment.' : 'Select a record to edit, or create a new one.'}</p> : <>
             <div className="mb-3 flex items-center justify-between"><strong className="text-sm">{draft.id ? 'Edit record' : 'New record'}</strong><button type="button" onClick={() => setDraft(null)} aria-label="Close record form"><X className="w-4 h-4" /></button></div>
+            {sectionType === 'order-records' && <div className="mb-3 rounded-lg border bg-slate-50 p-3 text-xs text-slate-700">
+              <strong className="text-sm">Order details · {String(draft.paymentMethod || 'Payment method unavailable')} · {String(draft.paymentStatus || 'Payment status unavailable')}</strong>
+              <p className="mt-1">Total: {String(draft.currencyUsed || 'USD')} {Number(draft.totalPaidCurrency || draft.totalUSD || 0).toFixed(2)} · Shipping: {String(draft.shippingMethod || 'Not set')}</p>
+              <div className="mt-2 space-y-1">{(Array.isArray(draft.orderItems) ? draft.orderItems : Array.isArray(draft.items) ? draft.items : []).map((item: any, index: number) => <p key={`${item.code || item.product?.code || index}-${index}`}>{item.name || item.product?.name || item.code || 'Item'} × {item.quantity || 1}</p>)}</div>
+              <p className="mt-2 break-words">Ship to: {typeof draft.shippingAddress === 'string' ? draft.shippingAddress : JSON.stringify(draft.shippingAddress || {})}</p>
+            </div>}
             {sectionType === 'wholesale' && draft.notes && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
               <strong>Payment details: inspect before approving</strong>
               <pre className="mt-1 whitespace-pre-wrap break-all font-sans">{String(draft.notes)}</pre>
@@ -366,6 +404,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
             <div className="grid gap-3 sm:grid-cols-2">
               {config.fields.map((field) => <div key={field.key} className={field.kind === 'long' || field.kind === 'image' || field.kind === 'file' || field.kind === 'lines' ? 'sm:col-span-2' : ''}>
                 {field.kind === 'check' ? <label className="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={Boolean(draft[field.key])} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.checked })} />{field.label}</label>
+                  : field.kind === 'select' ? <label className="block text-xs font-semibold">{field.label}<select className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal" value={String(draft[field.key] || '')} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })}>{(field.options || []).map((option) => <option key={option} value={option}>{option.replaceAll('_', ' ')}</option>)}</select></label>
                   : field.kind === 'image' || field.kind === 'file' ? <FileUploadInput value={String(draft[field.key] || '')} onChange={(url) => setDraft((current) => ({ ...current, [field.key]: url }))} label={field.label} accept={field.kind === 'image' ? 'image/*' : 'application/pdf,.pdf,.doc,.docx'} />
                     : <label className="block text-xs font-semibold">{field.label}{field.required ? ' *' : ''}
                       {field.kind === 'long' || field.kind === 'lines' ? <textarea rows={3} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={String(draft[field.key] ?? '')} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} />

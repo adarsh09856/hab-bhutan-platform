@@ -61,7 +61,7 @@ export default function OrderConfirmationPage() {
 
   return (
     <main className="min-h-[85vh] bg-[#FBF9F5] py-10 px-4 sm:px-6 lg:px-10 font-figtree relative" data-hab-section="order-confirmation">
-      <SectionEditBadge label="Orders & Fulfillment Studio" studioHref="/admin/orders" />
+      <SectionEditBadge label="Orders & Fulfillment Studio" studioHref="/admin/orders" sectionType="order-records" />
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Success Banner */}
         <div className="bg-white rounded-2xl border border-[#E4DDD1] p-8 text-center shadow-xs space-y-4 print:shadow-none print:border-none">

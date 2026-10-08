@@ -128,7 +128,7 @@ export default function BasketPage() {
   return (
     <main id="main">
       <section className="section section--narrow relative" data-hab-section="basket-checkout">
-        <SectionEditBadge label="Orders & POS Studio" studioHref="/admin/orders" />
+        <SectionEditBadge label="Orders & POS Studio" studioHref="/admin/orders" sectionType="order-records" />
         <p className="crumbs">
           <Link href="/">Home</Link> / Basket &amp; checkout
         </p>

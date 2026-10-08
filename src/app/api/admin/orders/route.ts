@@ -56,6 +56,12 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('Error fetching admin orders:', err);
+    if (err?.statusCode) {
+      return NextResponse.json(
+        { success: false, error: err.message || 'You are not authorized to view orders.' },
+        { status: err.statusCode }
+      );
+    }
     return NextResponse.json({
       success: true,
       orders: getFallbackOrders(),
@@ -287,6 +293,19 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    // Authenticate and authorize before looking up an order ID, so an
+    // unauthenticated caller cannot use response differences to enumerate IDs.
+    let session;
+    if (orderStatus === 'CANCELLED') {
+      session = await requirePermission(req, 'orders:cancel');
+    } else if (orderStatus === 'REFUNDED' || paymentStatus === 'REFUNDED') {
+      session = await requirePermission(req, 'orders:refund');
+    } else if (orderStatus === 'SHIPPED' || orderStatus === 'DELIVERED') {
+      session = await requirePermission(req, 'orders:fulfill');
+    } else {
+      session = await requirePermission(req, 'orders:edit');
+    }
+
     const previous = await prisma.order.findUnique({
       where: { id },
       include: { orderItems: true },
@@ -297,18 +316,6 @@ export async function PATCH(req: NextRequest) {
         { success: false, error: 'Order not found.' },
         { status: 404 }
       );
-    }
-
-    // Permission enforcement
-    let session;
-    if (orderStatus === 'CANCELLED') {
-      session = await requirePermission(req, 'orders:cancel');
-    } else if (orderStatus === 'REFUNDED' || paymentStatus === 'REFUNDED') {
-      session = await requirePermission(req, 'orders:refund');
-    } else if (orderStatus === 'SHIPPED' || orderStatus === 'DELIVERED') {
-      session = await requirePermission(req, 'orders:fulfill');
-    } else {
-      session = await requirePermission(req, 'orders:edit');
     }
 
     // If cancelling, validate status transitions and execute atomic stock restoration

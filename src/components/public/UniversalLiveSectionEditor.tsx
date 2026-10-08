@@ -96,7 +96,8 @@ export type SectionType =
   | 'secretariat-records'
   | 'strategic-cards'
   | 'mandate-cards'
-  | 'ethics-cards';
+  | 'ethics-cards'
+  | 'order-records';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -1041,6 +1042,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Board of Trustees'
       : sectionType === 'secretariat-records'
       ? 'Secretariat Team'
+      : sectionType === 'order-records'
+      ? 'Order Fulfillment (protected payment records)'
       : 'Live Section Editor');
 
   return createPortal(
