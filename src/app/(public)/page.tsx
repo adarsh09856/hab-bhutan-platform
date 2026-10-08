@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { removeRepeatedLead } from '@/lib/display-copy';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -786,12 +787,14 @@ export default function HomePage() {
         if (d?.pillars && d.pillars.length > 0) {
           const mapped = d.pillars.map((p: any) => {
             const isGrassroots = p.key === 'grassroots';
+            const description = p.description || p.body || '';
+            const line = p.tagline || p.line || (description ? `${description.split('.')[0]}.` : '');
             return {
               key: p.key,
               letter: isGrassroots ? 'leaf' : '',
               title: p.title,
-              line: p.tagline || p.line || (p.description?.split('.')[0] + '.'),
-              body: p.description || p.body,
+              line,
+              body: removeRepeatedLead(line, description),
             };
           });
           setSupportPillars(mapped);
