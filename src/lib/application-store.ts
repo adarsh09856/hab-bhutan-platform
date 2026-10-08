@@ -100,6 +100,23 @@ export function updateFallbackApplicationStatus(
   }
 }
 
+export function updateFallbackApplication(
+  id: string,
+  updates: Partial<Omit<FallbackApplication, 'id' | 'submittedAt'>>
+): FallbackApplication | null {
+  try {
+    const existing = getAllFallbackApplications();
+    const idx = existing.findIndex((item) => item.id === id);
+    if (idx < 0) return null;
+    existing[idx] = { ...existing[idx], ...updates, updatedAt: new Date().toISOString() };
+    fs.writeFileSync(FILE_PATH, JSON.stringify(existing, null, 2), 'utf-8');
+    return existing[idx];
+  } catch (err) {
+    console.error('[application-store] Failed to update fallback application:', err);
+    return null;
+  }
+}
+
 export function deleteFallbackApplication(id: string): boolean {
   try {
     ensureDir();

@@ -73,6 +73,7 @@ export type SectionType =
   | 'about'
   | 'assurances'
   | 'membership'
+  | 'membership-applications'
   | 'about-page'
   | 'donate'
   | 'contact'
@@ -185,7 +186,7 @@ export default function UniversalLiveSectionEditor({
       setActiveTab('COLUMNS');
       setSelectedFooterCol('Association');
       setNewLinkCol('Association');
-    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records' || sectionType === 'strategic-cards' || sectionType === 'mandate-cards' || sectionType === 'ethics-cards' || sectionType === 'order-records' || sectionType === 'policies') {
+    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records' || sectionType === 'strategic-cards' || sectionType === 'mandate-cards' || sectionType === 'ethics-cards' || sectionType === 'order-records' || sectionType === 'membership-applications' || sectionType === 'policies') {
       setActiveTab('RECORDS');
     } else {
       setActiveTab('CONTENT');
@@ -1040,6 +1041,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Quality Assurances Band'
       : sectionType === 'membership'
       ? 'Membership Callouts'
+      : sectionType === 'membership-applications'
+      ? 'Membership Applications & Review'
       : sectionType === 'about-page'
       ? 'About Page Story & Mandate'
       : sectionType === 'donate'

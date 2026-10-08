@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit';
 import { sendMembershipStatusEmail } from '@/lib/email-service';
 import {
   getAllFallbackApplications,
+  updateFallbackApplication,
   updateFallbackApplicationStatus,
   deleteFallbackApplication,
 } from '@/lib/application-store';
@@ -155,93 +156,20 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    let application = await prisma.membershipApplication.findUnique({
-      where: { id },
-    }).catch(() => null);
-
-    const fallbackApp = getAllFallbackApplications().find((a) => a.id === id);
-
-    if (!application) {
-      if (fallbackApp) {
-        const updatedFallback = updateFallbackApplicationStatus(id, status, reviewerNotes, rejectionReason);
-        return NextResponse.json({
-          success: true,
-          application: updatedFallback,
-        });
-      }
+    const isProfileEdit = Object.keys(editFields).length > 0 && !status;
+    if (!isProfileEdit && !status) {
       return NextResponse.json(
-        { success: false, error: 'Membership application not found.' },
-        { status: 404 }
-      );
-    }
-
-    const ip = getClientIp(req);
-
-    // MODE 1: Profile/Data Correction (editFields present)
-    if (Object.keys(editFields).length > 0 && !status) {
-      const session = await requirePermission(req, 'applications:edit');
-      const updateData: any = {};
-
-      if (editFields.applicantName !== undefined) updateData.applicantName = editFields.applicantName.trim();
-      if (editFields.email !== undefined) updateData.email = editFields.email.trim().toLowerCase();
-      if (editFields.phone !== undefined) updateData.phone = editFields.phone.trim();
-      if (editFields.craftKey !== undefined) updateData.craftKey = editFields.craftKey;
-      if (editFields.dzongkhag !== undefined) updateData.dzongkhag = editFields.dzongkhag;
-      if (editFields.villageGewog !== undefined) updateData.villageGewog = editFields.villageGewog.trim();
-      if (editFields.yearsPractising !== undefined) updateData.yearsPractising = parseInt(editFields.yearsPractising, 10);
-      if (editFields.planTier !== undefined) updateData.planTier = editFields.planTier;
-      if (editFields.businessLicense !== undefined) updateData.businessLicense = editFields.businessLicense.trim() || null;
-
-      if (editFields.cidNumber !== undefined) {
-        const cleanCID = String(editFields.cidNumber).replace(/\D/g, '');
-        if (cleanCID.length !== 11) {
-          return NextResponse.json(
-            { success: false, error: 'Bhutan Citizenship ID (CID) must be exactly 11 digits.' },
-            { status: 400 }
-          );
-        }
-        updateData.cidNumber = cleanCID;
-      }
-
-      const updated = await prisma.membershipApplication.update({
-        where: { id },
-        data: updateData,
-      });
-
-      await logAudit({
-        actorType: 'STAFF',
-        actorId: session.id,
-        actorIdentifier: session.email,
-        actorIp: ip,
-        action: 'MEMBERSHIP_APPLICATION_EDITED',
-        entityType: 'MembershipApplication',
-        entityId: id,
-        details: {
-          previous: {
-            applicantName: application.applicantName,
-            cidNumber: application.cidNumber,
-            email: application.email,
-          },
-          changes: updateData,
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        application: updated,
-      });
-    }
-
-    // MODE 2: Status Review (APPROVE / REJECT / UNDER_REVIEW)
-    if (!status) {
-      return NextResponse.json(
-        { success: false, error: 'Application status is required for review update.' },
+        { success: false, error: 'Application status or profile changes are required.' },
         { status: 400 }
       );
     }
 
+    // Authorize before looking up the submitted ID. Otherwise a caller could
+    // distinguish real application IDs from missing ones via 404 responses.
     let session;
-    if (status === 'APPROVED') {
+    if (isProfileEdit) {
+      session = await requirePermission(req, 'applications:edit');
+    } else if (status === 'APPROVED') {
       session = await requirePermission(req, 'applications:approve');
     } else if (status === 'REJECTED') {
       session = await requirePermission(req, 'applications:reject');
@@ -254,6 +182,85 @@ export async function PATCH(req: NextRequest) {
     } else {
       session = await requirePermission(req, 'applications:review');
     }
+
+    const updateData: any = {};
+    if (isProfileEdit) {
+      if (editFields.applicantName !== undefined) updateData.applicantName = String(editFields.applicantName).trim();
+      if (editFields.email !== undefined) updateData.email = String(editFields.email).trim().toLowerCase();
+      if (editFields.phone !== undefined) updateData.phone = String(editFields.phone).trim();
+      if (editFields.craftKey !== undefined) updateData.craftKey = editFields.craftKey;
+      if (editFields.dzongkhag !== undefined) updateData.dzongkhag = editFields.dzongkhag;
+      if (editFields.villageGewog !== undefined) updateData.villageGewog = String(editFields.villageGewog).trim();
+      if (editFields.yearsPractising !== undefined) updateData.yearsPractising = parseInt(editFields.yearsPractising, 10);
+      if (editFields.planTier !== undefined) updateData.planTier = editFields.planTier;
+      if (editFields.businessLicense !== undefined) updateData.businessLicense = String(editFields.businessLicense).trim() || null;
+
+      if (editFields.cidNumber !== undefined) {
+        const cleanCID = String(editFields.cidNumber).replace(/\D/g, '');
+        if (cleanCID.length !== 11) {
+          return NextResponse.json(
+            { success: false, error: 'Bhutan Citizenship ID (CID) must be exactly 11 digits.' },
+            { status: 400 }
+          );
+        }
+        updateData.cidNumber = cleanCID;
+      }
+    }
+
+    let application = await prisma.membershipApplication.findUnique({ where: { id } }).catch(() => null);
+    const fallbackApp = getAllFallbackApplications().find((a) => a.id === id);
+    const ip = getClientIp(req);
+
+    if (!application && fallbackApp && isProfileEdit) {
+      const updatedFallback = updateFallbackApplication(id, updateData);
+      if (!updatedFallback) throw new Error('Fallback application could not be updated.');
+      await logAudit({
+        actorType: 'STAFF', actorId: session.id, actorIdentifier: session.email, actorIp: ip,
+        action: 'MEMBERSHIP_APPLICATION_EDITED', entityType: 'MembershipApplication', entityId: id,
+        details: { previous: { applicantName: fallbackApp.applicantName, cidNumber: fallbackApp.cidNumber, email: fallbackApp.email }, changes: updateData, storage: 'fallback' },
+      });
+      return NextResponse.json({ success: true, application: updatedFallback });
+    }
+
+    if (!application && fallbackApp && status === 'UNDER_REVIEW') {
+      const updatedFallback = updateFallbackApplicationStatus(id, status, reviewerNotes, rejectionReason);
+      await logAudit({ actorType: 'STAFF', actorId: session.id, actorIdentifier: session.email, actorIp: ip, action: 'MEMBERSHIP_APPLICATION_REVIEWED', entityType: 'MembershipApplication', entityId: id, details: { status, storage: 'fallback' } });
+      return NextResponse.json({ success: true, application: updatedFallback });
+    }
+
+    // Promote fallback submissions before final decisions so approvals still
+    // create the linked Member/User records through the same database transaction.
+    if (!application && fallbackApp && (status === 'APPROVED' || status === 'REJECTED')) {
+      if (fallbackApp.status === 'APPROVED' || fallbackApp.status === 'REJECTED') {
+        return NextResponse.json({ success: false, error: `This fallback application is already finalized (${fallbackApp.status}) and cannot be processed again.` }, { status: 400 });
+      }
+      application = await prisma.membershipApplication.create({
+        data: {
+          id: fallbackApp.id, applicantName: fallbackApp.applicantName, email: fallbackApp.email, phone: fallbackApp.phone,
+          cidNumber: fallbackApp.cidNumber, businessLicense: fallbackApp.businessLicense || null, craftKey: fallbackApp.craftKey,
+          dzongkhag: fallbackApp.dzongkhag, villageGewog: fallbackApp.villageGewog, yearsPractising: fallbackApp.yearsPractising,
+          planTier: fallbackApp.planTier, paymentMethod: fallbackApp.paymentMethod, uploadedDocUrl: fallbackApp.uploadedDocUrl || null,
+          uploadedCidUrl: fallbackApp.uploadedCidUrl || null, reviewerNotes: fallbackApp.reviewerNotes || null, status: 'PENDING',
+        },
+      });
+    }
+
+    if (!application) {
+      return NextResponse.json({ success: false, error: 'Membership application not found.' }, { status: 404 });
+    }
+
+    // MODE 1: Profile/Data Correction
+    if (isProfileEdit) {
+      const updated = await prisma.membershipApplication.update({ where: { id }, data: updateData });
+      await logAudit({
+        actorType: 'STAFF', actorId: session.id, actorIdentifier: session.email, actorIp: ip,
+        action: 'MEMBERSHIP_APPLICATION_EDITED', entityType: 'MembershipApplication', entityId: id,
+        details: { previous: { applicantName: application.applicantName, cidNumber: application.cidNumber, email: application.email }, changes: updateData },
+      });
+      return NextResponse.json({ success: true, application: updated });
+    }
+
+    // MODE 2: Status Review (APPROVE / REJECT / UNDER_REVIEW)
 
     // Atomic Approval & Enrolment Transaction
     if (status === 'APPROVED') {

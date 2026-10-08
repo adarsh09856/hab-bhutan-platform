@@ -85,6 +85,18 @@ const configs: Record<string, Config> = {
       { key: 'sortOrder', label: 'Display order', kind: 'number' },
     ],
   },
+  'membership-applications': {
+    endpoint: '/api/admin/applications', collection: 'applications', title: 'Membership applications', labelKey: 'applicantName', updateMethod: 'PATCH',
+    fields: [
+      { key: 'applicantName', label: 'Applicant name', required: true }, { key: 'email', label: 'Email', required: true },
+      { key: 'phone', label: 'Phone', required: true }, { key: 'cidNumber', label: 'CID (11 digits)', required: true },
+      { key: 'businessLicense', label: 'Business licence' }, { key: 'craftKey', label: 'Craft key', required: true },
+      { key: 'dzongkhag', label: 'Dzongkhag', required: true }, { key: 'villageGewog', label: 'Village / Gewog', required: true },
+      { key: 'yearsPractising', label: 'Years practising', kind: 'number' },
+      { key: 'planTier', label: 'Membership tier', kind: 'select', options: ['ACTIVE_SECTOR_MEMBER', 'ASSOCIATE_SECTOR_MEMBER', 'INSTITUTIONAL'] },
+      { key: 'paymentMethod', label: 'Payment method', kind: 'select', options: ['CARD', 'MBOB', 'BANK'], createOnly: true },
+    ],
+  },
   wholesale: {
     endpoint: '/api/admin/wholesale', collection: 'buyers', title: 'Wholesale buyers', labelKey: 'companyName',
     fields: [
@@ -381,6 +393,40 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     } catch (error: any) { setMessage(error?.message || 'Decision failed.'); }
     finally { setSaving(false); }
   };
+  const reviewMembershipApplication = async (row: Record<string, any>, status: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW') => {
+    const name = String(row.applicantName || 'this applicant');
+    let rejectionReason = '';
+    if (status === 'REJECTED') {
+      const enteredReason = window.prompt(`Required reason to send to ${name}:`);
+      if (enteredReason === null) return;
+      rejectionReason = enteredReason.trim();
+      if (!rejectionReason) { setMessage('A rejection reason is required.'); return; }
+    }
+    const actionLabel = status === 'APPROVED' ? 'approve and enroll' : status === 'REJECTED' ? 'reject' : 'mark for review';
+    if (!window.confirm(`${actionLabel} ${name}? ${status === 'APPROVED' ? 'This creates the member account and sends an activation email.' : status === 'REJECTED' ? 'This records a final decision and sends a rejection email.' : 'This changes the application review status.'}`)) return;
+    setSaving(true); setMessage('');
+    try {
+      const response = await fetch(config.endpoint, {
+        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: row.id, status, reviewerNotes: status === 'APPROVED' ? 'Approved from public Quick Edit.' : undefined, rejectionReason: status === 'REJECTED' ? rejectionReason : undefined }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.success) throw new Error(data.error || `Review action failed (HTTP ${response.status}).`);
+      await load(); router.refresh();
+      if (status === 'APPROVED') {
+        const enrollment = data.member?.regNumber ? ` Enrolled as ${data.member.regNumber}.` : '';
+        const delivery = data.emailDelivery?.success && !data.emailDelivery?.simulated
+          ? ' Activation email delivered.'
+          : data.emailDelivery?.simulated ? ' Email is simulated in this environment.' : ' Email delivery was not confirmed.';
+        const backupAccess = data.tempCredentials && (!data.emailDelivery?.success || data.emailDelivery?.simulated)
+          ? ` Staff-only initial access: ${data.tempCredentials.email} / ${data.tempCredentials.temporaryPassword}. Activation link: ${data.tempCredentials.activationLink}` : '';
+        setMessage(`Application approved.${enrollment}${delivery}${backupAccess}`);
+      } else {
+        setMessage(status === 'REJECTED' ? `Application for ${name} rejected. Email delivery: ${data.emailDelivery?.success && !data.emailDelivery?.simulated ? 'delivered' : 'not confirmed'}.` : `Application for ${name} moved to review.`);
+      }
+    } catch (error: any) { setMessage(error?.message || 'Review action failed.'); }
+    finally { setSaving(false); }
+  };
   const visible = rows.filter((row) => `${row[config.labelKey] || ''} ${row.key || ''} ${row.customerName || ''} ${row.customerEmail || ''}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
@@ -399,10 +445,13 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
           {loading && <p className="p-3 text-sm">Loading…</p>}
           {!loading && visible.length === 0 && <p className="p-3 text-sm">No records found.</p>}
           {visible.map((row) => <div key={row.id} className="flex items-center gap-2 p-2.5">
-            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{sectionType === 'order-records' ? ` · ${row.orderStatus || 'Unknown'} · ${row.currencyUsed || 'USD'} ${Number(row.totalPaidCurrency || row.totalUSD || 0).toFixed(2)}` : ''}{row.isActive === false ? ' (hidden)' : ''}</button>
+            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{sectionType === 'order-records' ? ` · ${row.orderStatus || 'Unknown'} · ${row.currencyUsed || 'USD'} ${Number(row.totalPaidCurrency || row.totalUSD || 0).toFixed(2)}` : ''}{sectionType === 'membership-applications' ? ` · ${row.status || 'PENDING'}` : ''}{row.isActive === false ? ' (hidden)' : ''}</button>
+            {sectionType === 'membership-applications' && !['APPROVED', 'REJECTED'].includes(String(row.status)) && <button type="button" title="Approve, enroll and notify applicant" disabled={saving} onClick={() => reviewMembershipApplication(row, 'APPROVED')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
+            {sectionType === 'membership-applications' && !['APPROVED', 'REJECTED'].includes(String(row.status)) && <button type="button" title="Reject with reason and notify applicant" disabled={saving} onClick={() => reviewMembershipApplication(row, 'REJECTED')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
+            {sectionType === 'membership-applications' && row.status === 'PENDING' && <button type="button" title="Mark under review" disabled={saving} onClick={() => reviewMembershipApplication(row, 'UNDER_REVIEW')} className="rounded-md border border-amber-300 px-2 py-1 text-[11px] font-bold text-amber-800">Review</button>}
             {sectionType === 'wholesale' && row.status !== 'ACTIVE' && <button type="button" title="Approve and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'APPROVE')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
             {sectionType === 'wholesale' && row.status !== 'REJECTED' && <button type="button" title="Decline and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'DECLINE')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
-            {config.canDelete !== false && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving || (sectionType === 'policies' && ['terms', 'privacy', 'shipping-policy', 'conduct'].includes(String(row.slug)))} className="rounded-md p-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"><Trash2 className="w-4 h-4" /></button>}
+            {config.canDelete !== false && !(sectionType === 'membership-applications' && ['APPROVED', 'REJECTED'].includes(String(row.status))) && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving || (sectionType === 'policies' && ['terms', 'privacy', 'shipping-policy', 'conduct'].includes(String(row.slug)))} className="rounded-md p-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"><Trash2 className="w-4 h-4" /></button>}
           </div>)}
         </div>
         <div className="rounded-xl border p-3 sm:p-4">
@@ -413,6 +462,15 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
               <p className="mt-1">Total: {String(draft.currencyUsed || 'USD')} {Number(draft.totalPaidCurrency || draft.totalUSD || 0).toFixed(2)} · Shipping: {String(draft.shippingMethod || 'Not set')}</p>
               <div className="mt-2 space-y-1">{(Array.isArray(draft.orderItems) ? draft.orderItems : Array.isArray(draft.items) ? draft.items : []).map((item: any, index: number) => <p key={`${item.code || item.product?.code || index}-${index}`}>{item.name || item.product?.name || item.code || 'Item'} × {item.quantity || 1}</p>)}</div>
               <p className="mt-2 break-words">Ship to: {typeof draft.shippingAddress === 'string' ? draft.shippingAddress : JSON.stringify(draft.shippingAddress || {})}</p>
+            </div>}
+            {sectionType === 'membership-applications' && <div className="mb-3 rounded-lg border bg-slate-50 p-3 text-xs text-slate-700">
+              <strong className="text-sm">Application review · {String(draft.status || 'PENDING')} · {String(draft.paymentMethod || 'Payment method unavailable')}</strong>
+              {draft.reviewerNotes && <p className="mt-1 whitespace-pre-wrap">Payment / reviewer notes: {String(draft.reviewerNotes)}</p>}
+              {draft.rejectionReason && <p className="mt-1 whitespace-pre-wrap">Decision reason: {String(draft.rejectionReason)}</p>}
+              <div className="mt-2 flex flex-wrap gap-3">{[['uploadedDocUrl', 'Open payment proof'], ['uploadedCidUrl', 'Open CID document']].map(([key, label]) => {
+                const url = String(draft[key] || '');
+                return url && (url.startsWith('/uploads/') || /^https:\/\//i.test(url)) ? <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="font-bold underline">{label}</a> : null;
+              })}</div>
             </div>}
             {sectionType === 'wholesale' && draft.notes && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
               <strong>Payment details: inspect before approving</strong>

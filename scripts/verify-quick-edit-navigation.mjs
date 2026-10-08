@@ -7,7 +7,7 @@ nextEnv.loadEnvConfig(process.cwd(), true);
 const prisma = new PrismaClient();
 const baseUrl = process.env.QUICK_EDIT_TEST_URL || 'http://127.0.0.1:3033';
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-const permissions = ['content:view', 'content:create', 'content:edit', 'content:delete', 'members:view', 'members:create', 'members:edit', 'members:delete'];
+const permissions = ['content:view', 'content:create', 'content:edit', 'content:delete', 'members:view', 'members:create', 'members:edit', 'members:delete', 'applications:view', 'applications:create', 'applications:edit', 'applications:delete'];
 const roleSlug = `codex_nav_check_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
 const viewerRoleSlug = `codex_nav_view_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
 const categoryKey = `qe-check-${Date.now()}`;
@@ -17,6 +17,7 @@ let viewerRole;
 let viewer;
 let navigationId;
 let categoryId;
+let applicationId;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -149,13 +150,43 @@ try {
   const categoryAfterDelete = await prisma.membershipCategory.findUnique({ where: { key: categoryKey } });
   assert(categoryAfterDelete === null, 'Deleted membership category still exists in the database.');
 
-  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; a members:view-only role was denied category writes; authenticated membership-category CRUD/public read succeeded; temporary records cleaned up.');
+  const applicationCreated = await request('/api/admin/applications', token, {
+    method: 'POST',
+    body: JSON.stringify({ applicantName: `Temporary ${suffix}`, email: `codex-application-check-${suffix}@example.invalid`, phone: '+975-17000000', cidNumber: '12345678901', businessLicense: 'LOCAL-QA', craftKey: 'thagzo', dzongkhag: 'Thimphu', villageGewog: 'Local test', yearsPractising: 3, planTier: 'ACTIVE_SECTOR_MEMBER', paymentMethod: 'CARD' }),
+  });
+  assert(applicationCreated.response.ok && applicationCreated.body.success, `Application create failed: ${applicationCreated.body.error || applicationCreated.response.status}.`);
+  applicationId = applicationCreated.body.application?.id;
+  assert(applicationId && applicationCreated.body.application.status === 'PENDING', 'Manual application create did not return its pending application.');
+
+  const anonymousEdit = await request('/api/admin/applications', null, {
+    method: 'PATCH',
+    body: JSON.stringify({ id: applicationId, applicantName: 'Unauthorized probe' }),
+  });
+  assert(anonymousEdit.response.status === 401, `Anonymous application edit returned ${anonymousEdit.response.status}, expected 401 before ID lookup.`);
+
+  const listedApplications = await request('/api/admin/applications', token);
+  assert(listedApplications.response.ok && listedApplications.body.applications?.some((item) => item.id === applicationId), 'Staff application list did not return the created record.');
+
+  const applicationUpdated = await request('/api/admin/applications', token, {
+    method: 'PATCH',
+    body: JSON.stringify({ id: applicationId, applicantName: `Updated ${suffix}`, villageGewog: 'Edited locally' }),
+  });
+  assert(applicationUpdated.response.ok && applicationUpdated.body.success && applicationUpdated.body.application?.applicantName === `Updated ${suffix}`, 'Application edit did not round-trip.');
+
+  const applicationDeleted = await request(`/api/admin/applications?id=${encodeURIComponent(applicationId)}`, token, { method: 'DELETE' });
+  assert(applicationDeleted.response.ok && applicationDeleted.body.success, `Application delete failed: ${applicationDeleted.body.error || applicationDeleted.response.status}.`);
+  applicationId = null;
+
+  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; a members:view-only role was denied category writes; membership-category CRUD/public read succeeded; membership-application CRUD succeeded; anonymous application edit was denied before record lookup; temporary records cleaned up.');
 } catch (error) {
   console.error(`FAIL: ${error?.message || error}`);
   process.exitCode = 1;
 } finally {
   if (navigationId) await prisma.navigationItem.deleteMany({ where: { id: navigationId } }).catch(() => {});
   if (categoryId) await prisma.membershipCategory.deleteMany({ where: { id: categoryId } }).catch(() => {});
+  if (applicationId) await prisma.membershipApplication.deleteMany({ where: { id: applicationId } }).catch(() => {});
+  const testActorIds = [user?.id, viewer?.id].filter(Boolean);
+  if (testActorIds.length) await prisma.auditLog.deleteMany({ where: { actorId: { in: testActorIds } } }).catch(() => {});
   if (user) await prisma.user.deleteMany({ where: { id: user.id } }).catch(() => {});
   if (role) await prisma.role.deleteMany({ where: { id: role.id } }).catch(() => {});
   if (viewer) await prisma.user.deleteMany({ where: { id: viewer.id } }).catch(() => {});
