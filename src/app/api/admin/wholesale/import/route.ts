@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
       seenEmails.add(email);
       const duplicate = await prisma.wholesaleBuyer.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
       const fallbackDuplicate = getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.toLowerCase() === email);
-      if (duplicate || fallbackDuplicate) { skippedCount++; continue; }
+      if (duplicate || fallbackDuplicate) {
+        skippedCount++;
+        badRows.push({ rowNumber: index + 2, reason: `Duplicate skipped: email "${email}" already exists.` });
+        continue;
+      }
       const buyerId = crypto.randomUUID();
       const username = row.username || `buyer_${Math.floor(1000 + Math.random() * 9000)}`;
       const passwordHash = await bcrypt.hash(crypto.randomBytes(18).toString('base64url'), 12);

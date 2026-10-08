@@ -57,7 +57,11 @@ export async function POST(req: NextRequest) {
           ],
         },
       });
-      if (duplicate) { skippedCount++; continue; }
+      if (duplicate) {
+        skippedCount++;
+        badRows.push({ rowNumber: index + 2, reason: 'Duplicate skipped: CID/license or name already exists.' });
+        continue;
+      }
       const memberId = crypto.randomUUID();
       const regNumber = row.regNumber || `HAB-M-${Math.floor(100000 + Math.random() * 900000)}`;
       const bioText = row.bio || (row.village ? `Village: ${row.village}. Registered artisan member of HAB.` : 'Registered artisan member of Handicrafts Association of Bhutan.');
