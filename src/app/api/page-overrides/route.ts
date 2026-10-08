@@ -79,6 +79,9 @@ export async function PUT(req: NextRequest) {
     if (!key) return NextResponse.json({ success: false, error: 'Editable element key is required.' }, { status: 400 });
 
     const override = cleanOverride(body.override);
+    if (body.remove !== true && Object.keys(override).length === 0) {
+      return NextResponse.json({ success: false, error: 'At least one editable field is required.' }, { status: 400 });
+    }
     const current = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
     if (!current) return NextResponse.json({ success: false, error: 'Site settings are not initialized.' }, { status: 409 });
 

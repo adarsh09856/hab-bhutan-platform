@@ -43,6 +43,7 @@ export default function LiveContentOverridesPage() {
     setPages((current) => {
       const next = { ...current, [pathname]: { ...(current[pathname] || {}) } };
       delete next[pathname][key];
+      if (Object.keys(next[pathname]).length === 0) delete next[pathname];
       return next;
     });
     setMessage('Override removed.');
@@ -54,7 +55,7 @@ export default function LiveContentOverridesPage() {
     try {
       const response = await fetch('/api/page-overrides', {
         method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editing),
+        body: JSON.stringify({ pathname: editing.pathname, key: editing.key, override: editing.value }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save content.');
