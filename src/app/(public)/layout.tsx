@@ -4,7 +4,6 @@ import AdminLiveBar from '@/components/public/AdminLiveBar';
 import UtilityBar from '@/components/public/UtilityBar';
 import Header from '@/components/public/Header';
 import Footer from '@/components/public/Footer';
-import AdminDrawer from '@/components/public/AdminDrawer';
 import AskHabAssistant from '@/components/public/AskHabAssistant';
 import DesignTweaks from '@/components/public/DesignTweaks';
 import PolicyModal from '@/components/public/PolicyModal';
@@ -23,7 +22,6 @@ export default function PublicLayout({
       <Header />
       <div className="hab-public-shell flex-1 w-full overflow-x-clip">{children}<PublicPageBlocks /></div>
       <Footer />
-      <AdminDrawer />
       <AskHabAssistant />
       <DesignTweaks />
       <PolicyModal />

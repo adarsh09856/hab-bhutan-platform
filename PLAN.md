@@ -791,6 +791,7 @@ The larger project remains open. In particular, every reference page still needs
 - The page-wide capture listener could intercept clicks in the live section, header, visual-section and custom-page editors. Those dialogs are now explicitly excluded, so their controls (including Close) receive clicks. Authenticated browser verification is still **UNVERIFIED**.
 - The universal editor now checks the current staff session before attaching click-to-edit behavior. Anonymous visual-edit flags alone cannot activate that editor.
 - The live section dialog initially tried an embedded Admin Records screen. That did not meet the requirement for separate Quick Edit controls. It has been removed; Admin pages again deny all framing.
+- The unused legacy AdminDrawer public component contained toast-only save stubs and could open as a second editor through a shortcut, #admin, or repeated logo clicks. It is no longer mounted in the public layout; its source file is retained but inactive. The functioning staff-only in-page and section Quick Edit tools remain mounted. Browser confirmation after deployment is pending.
 - The EN/Dz switcher was moved from the upper utility strip to the far-right end of the main desktop menu bar, after the basket control. The mobile menu keeps its switcher in the drawer. Navigation and existing translated UI strings react to it, but core translation across every page remains **PENDING**.
 
 ### Native Quick Edit record controls (8 October 2026, continuation)
