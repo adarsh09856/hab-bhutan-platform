@@ -79,6 +79,50 @@ const FOOTER_TRANSLATIONS: Record<string, string> = {
   "Website Policies & Standards": "དྲ་ཚིགས་ཀྱི་སྲིད་བྱུས་དང་ཚད་གཞི",
 };
 
+/** Keep legacy/badly saved footer links on the page their label promises. */
+function resolveFooterHref(label: string, href: string): string {
+  const text = (label || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const path = (href || '').trim().toLowerCase();
+  const isAboutFallback = path === '/about' || path.startsWith('/about#');
+  if (!isAboutFallback) {
+    if (path.startsWith('/shipping-policy#returns')) return '/returns-policy';
+    if (path.startsWith('/shipping-policy#duty')) return '/customs-policy';
+    if (path.startsWith('/about#board')) return '/board-of-trustees';
+    if (path.startsWith('/about#secretariat') || path.startsWith('/about#contact')) return '/secretariat';
+    if (path.startsWith('/about#mandate')) return '/mandate';
+    if (path.startsWith('/about#ethics')) return '/code-of-ethics';
+    return href;
+  }
+
+  if (text.includes('mandate') || text.includes('aoa')) return '/mandate';
+  if (text.includes('ethic')) return '/code-of-ethics';
+  if (text.includes('strategic')) return '/strategic-plan';
+  if (text.includes('board') || text.includes('trustee')) return '/board-of-trustees';
+  if (text.includes('secretariat')) return '/secretariat';
+  if (text.includes('programme')) return '/programmes';
+  if (text.includes('project')) return '/projects';
+  if (text.includes('apply to join')) return '/membership/apply';
+  if (text.includes('membership') || text.includes('join')) return '/membership';
+  if (text.includes('news') || text.includes('event')) return '/news';
+  if (text.includes('contact')) return '/contact';
+  if (text.includes('wholesale') || text.includes('bulk order')) return '/wholesale';
+  if (text.includes('shop') || text.includes('product')) return '/shop';
+  if (text.includes('shipping') || text.includes('delivery')) return '/shipping-policy';
+  if (text.includes('return') || text.includes('refund')) return '/returns-policy';
+  if (text.includes('custom') || text.includes('dut')) return '/customs-policy';
+  if (text.includes('track') && text.includes('order')) return '/track-order';
+  if (text.includes('directory') || text === 'members') return '/members';
+  if (text.includes('publication') || text.includes('download')) return '/publications';
+  if (text.includes('cluster') || text.includes('outlet')) return '/outlets';
+  if (text.includes('login')) return '/login';
+  if (text.includes('annual report')) return '/annual-reports';
+  if (text.includes('audited account')) return '/audited-accounts';
+  if (text.includes('tender') || text.includes('vacanc')) return '/tenders';
+  if (text.includes('privacy')) return '/privacy';
+  if (text.includes('term')) return '/terms';
+  return href;
+}
+
 export default function Footer() {
   const { currency } = useCurrency();
   const { language } = useLanguage();
@@ -331,7 +375,7 @@ export default function Footer() {
               {col.links.map((link) => {
                 const linkText = translateText(link.label);
                 return (
-                  <Link key={link.label} href={link.href}>{linkText}</Link>
+                  <Link key={`${link.label}-${link.href}`} href={resolveFooterHref(link.label, link.href)}>{linkText}</Link>
                 );
               })}
             </nav>
