@@ -10,11 +10,12 @@ const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const buyerEmail = `local-wholesale-${suffix}@example.invalid`;
 const roleSlug = `local_wholesale_order_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
 const code = `LOCAL-WH-${Date.now()}`;
-const permissions = ['orders:view', 'orders:create', 'orders:edit', 'products:view', 'products:edit', 'products:delete'];
+const permissions = ['orders:view', 'orders:create', 'orders:edit', 'products:view', 'products:edit', 'products:delete', 'content:view', 'content:create', 'content:edit', 'content:delete'];
 let role;
 let actor;
 let buyer;
 let product;
+let heroSlide;
 const createdOrderIds = [];
 const createdInquiryIds = [];
 
@@ -59,6 +60,15 @@ async function getTradeAdmin(token) {
   return { response, body: await response.json().catch(() => ({})) };
 }
 
+async function heroRequest(token, path, method = 'GET', payload) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method,
+    headers: { ...(payload ? { 'content-type': 'application/json' } : {}), ...(token ? { Cookie: `hab_session=${token}` } : {}) },
+    ...(payload ? { body: JSON.stringify(payload) } : {}),
+  });
+  return { response, body: await response.json().catch(() => ({})) };
+}
+
 async function run() {
   const dbHost = process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : '';
   const appHost = new URL(baseUrl).hostname;
@@ -89,6 +99,38 @@ async function run() {
       },
     });
     const token = await createToken();
+
+    const anonymousSlides = await heroRequest(null, '/api/admin/hero-slides');
+    assert(anonymousSlides.response.status === 401, 'anonymous staff-only hero slide listing must be denied');
+    const unsafeSlide = await heroRequest(token, '/api/admin/hero-slides', 'POST', {
+      imageUrl: 'javascript:alert(1)', caption: 'Local test', altText: 'Local test image',
+    });
+    assert(unsafeSlide.response.status === 400, 'unsafe hero slide asset URL must be rejected');
+    const createdSlide = await heroRequest(token, '/api/admin/hero-slides', 'POST', {
+      imageUrl: '/assets/photos/hero-1-weaving.jpg', caption: 'Local permission test', altText: 'Test weaving image',
+    });
+    assert(createdSlide.response.status === 201 && createdSlide.body.success, `hero slide create failed: ${createdSlide.body.error || createdSlide.response.status}`);
+    heroSlide = createdSlide.body.slide;
+    const listedSlides = await heroRequest(token, '/api/admin/hero-slides');
+    assert(listedSlides.response.ok && listedSlides.body.slides?.some((slide) => slide.id === heroSlide.id), 'created hero slide was not listed');
+    const updatedSlide = await heroRequest(token, `/api/admin/hero-slides/${heroSlide.id}`, 'PUT', { caption: 'Updated local permission test' });
+    assert(updatedSlide.response.ok && updatedSlide.body.slide.caption === 'Updated local permission test', 'hero slide update failed');
+    await prisma.role.update({ where: { id: role.id }, data: { permissions: ['content:view'] } });
+    const viewerRead = await heroRequest(token, '/api/admin/hero-slides');
+    assert(viewerRead.response.ok, 'content:view role should be allowed to list hero slides');
+    const viewerCreate = await heroRequest(token, '/api/admin/hero-slides', 'POST', {
+      imageUrl: '/assets/photos/hero-1-weaving.jpg', caption: 'Denied', altText: 'Denied',
+    });
+    assert(viewerCreate.response.status === 403, 'content:view-only role must not create hero slides');
+    const viewerUpdate = await heroRequest(token, `/api/admin/hero-slides/${heroSlide.id}`, 'PUT', { caption: 'Must not change' });
+    assert(viewerUpdate.response.status === 403, 'content:view-only role must not update hero slides');
+    const viewerDelete = await heroRequest(token, `/api/admin/hero-slides/${heroSlide.id}`, 'DELETE');
+    assert(viewerDelete.response.status === 403, 'content:view-only role must not delete hero slides');
+    assert((await prisma.heroSlide.findUnique({ where: { id: heroSlide.id } })).caption === 'Updated local permission test', 'denied role changed the hero slide');
+    await prisma.role.update({ where: { id: role.id }, data: { permissions } });
+    const deletedSlide = await heroRequest(token, `/api/admin/hero-slides/${heroSlide.id}`, 'DELETE');
+    assert(deletedSlide.response.ok && deletedSlide.body.success, 'authorized hero slide deletion failed');
+    heroSlide = null;
 
     const privateCatalog = await fetch(`${baseUrl}/api/trade`);
     assert(privateCatalog.status === 401, 'anonymous visitors cannot read wholesale price data');
@@ -193,10 +235,11 @@ async function run() {
     const termsDeleted = await tradeRequest(token, { action: 'delete_terms', payload: { productCode: code } });
     assert(termsDeleted.response.ok && !(await prisma.wholesaleProductTerms.findUnique({ where: { productId: product.id } })), 'Admin could not remove product-specific wholesale terms.');
 
-    console.log('PASS: Admin product wholesale terms create/read/update/delete; bad-tier rejection; anonymous price privacy; approved-buyer catalogue and quote submission; server-side buyer identity, MOQ and tier pricing; wholesale order and inventory verified locally.');
+    console.log('PASS: Hero slide CRUD and role permissions; unsafe URL rejection; Admin product wholesale terms create/read/update/delete; bad-tier rejection; anonymous price privacy; approved-buyer catalogue and quote submission; server-side buyer identity, MOQ and tier pricing; wholesale order and inventory verified locally.');
   } finally {
     if (createdOrderIds.length) await prisma.order.deleteMany({ where: { id: { in: createdOrderIds } } }).catch(() => {});
     if (createdInquiryIds.length) await prisma.inquiry.deleteMany({ where: { id: { in: createdInquiryIds } } }).catch(() => {});
+    if (heroSlide) await prisma.heroSlide.deleteMany({ where: { id: heroSlide.id } }).catch(() => {});
     if (product) await prisma.product.deleteMany({ where: { id: product.id } }).catch(() => {});
     if (buyer) await prisma.wholesaleBuyer.deleteMany({ where: { id: buyer.id } }).catch(() => {});
     if (actor) await prisma.auditLog.deleteMany({ where: { actorId: actor.id } }).catch(() => {});

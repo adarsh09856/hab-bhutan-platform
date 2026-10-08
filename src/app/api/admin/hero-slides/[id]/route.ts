@@ -1,26 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission, getClientIp } from '@/lib/rbac';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff = user.roleSlug === 'super_admin' ||
-                  user.roleSlug === 'staff_operator' ||
-                  user.roleSlug === 'trustee_viewer' ||
-                  user.permissions?.includes('*') ||
-                  user.permissions?.includes('content:edit');
-  return isStaff ? user : null;
+function safeLink(value: unknown, optional = false): value is string {
+  if (typeof value !== 'string' || !value.trim()) return optional;
+  const url = value.trim();
+  return !url.includes('\\') && !url.startsWith('//') &&
+    (url.startsWith('/') || /^https:\/\//i.test(url));
+}
+
+function errorResponse(error: any) {
+  return NextResponse.json({ success: false, error: error?.message || 'Hero slide request failed.' }, { status: error?.statusCode || 500 });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { id } = await params;
-  const body = await req.json();
-  const { imageUrl, caption, altText, linkUrl, sortOrder, isActive } = body;
   try {
+    const session = await requirePermission(req, 'content:edit');
+    const { id } = await params;
+    const body = await req.json();
+    const { imageUrl, caption, altText, linkUrl, sortOrder, isActive } = body;
+    if ((imageUrl !== undefined && !safeLink(imageUrl)) || (linkUrl !== undefined && !safeLink(linkUrl, true))) {
+      return NextResponse.json({ success: false, error: 'Use a site-relative path or secure HTTPS URL for slide media and links.' }, { status: 400 });
+    }
     const slide = await prisma.heroSlide.update({
       where: { id },
       data: {
@@ -32,19 +36,21 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
       },
     });
-    return NextResponse.json({ slide });
-  } catch {
-    return NextResponse.json({ error: 'Slide not found' }, { status: 404 });
+    await logAudit({ actorType: 'STAFF', actorId: session.id, actorIdentifier: session.email, actorIp: getClientIp(req), action: 'HERO_SLIDE_UPDATED', entityType: 'HeroSlide', entityId: slide.id, details: { caption: slide.caption } });
+    return NextResponse.json({ success: true, slide });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error?.code === 'P2025' ? 'Slide not found.' : error?.message || 'Could not update slide.' }, { status: error?.code === 'P2025' ? 404 : error?.statusCode || 500 });
   }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { id } = await params;
   try {
+    const session = await requirePermission(req, 'content:delete');
+    const { id } = await params;
     await prisma.heroSlide.delete({ where: { id } });
+    await logAudit({ actorType: 'STAFF', actorId: session.id, actorIdentifier: session.email, actorIp: getClientIp(req), action: 'HERO_SLIDE_DELETED', entityType: 'HeroSlide', entityId: id });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: 'Slide not found' }, { status: 404 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error?.code === 'P2025' ? 'Slide not found.' : error?.message || 'Could not delete slide.' }, { status: error?.code === 'P2025' ? 404 : error?.statusCode || 500 });
   }
 }

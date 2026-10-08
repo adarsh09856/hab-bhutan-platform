@@ -29,10 +29,16 @@ export default function HeroSlidesAdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const r = await fetch('/api/admin/hero-slides', { cache: 'no-store' });
-    const d = await r.json();
-    setSlides(d.slides || []);
-    setLoading(false);
+    try {
+      const r = await fetch('/api/admin/hero-slides', { cache: 'no-store' });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Could not load homepage slides.');
+      setSlides(d.slides || []);
+    } catch (error: any) {
+      setMsg(error?.message || 'Could not load homepage slides.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -78,22 +84,30 @@ export default function HeroSlidesAdminPage() {
 
   const handleDelete = async (id: string, caption: string) => {
     if (!confirm(`Delete slide "${caption}"?`)) return;
-    await fetch(`/api/admin/hero-slides/${id}`, { method: 'DELETE' });
-    flash('Slide deleted.');
-    load();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+    try {
+      const response = await fetch(`/api/admin/hero-slides/${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Slide could not be deleted.');
+      flash('Slide deleted.');
+      await load();
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+    } catch (error: any) {
+      flash(error?.message || 'Slide could not be deleted.');
     }
   };
 
   const toggleActive = async (s: Slide) => {
-    await fetch(`/api/admin/hero-slides/${s.id}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !s.isActive }),
-    });
-    load();
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+    try {
+      const response = await fetch(`/api/admin/hero-slides/${s.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !s.isActive }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Slide visibility could not be updated.');
+      await load();
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('hab:hero-slides-updated'));
+    } catch (error: any) {
+      flash(error?.message || 'Slide visibility could not be updated.');
     }
   };
 

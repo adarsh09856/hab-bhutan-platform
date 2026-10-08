@@ -429,6 +429,12 @@ export default function AdminTradePage() {
             <ExternalLink className="w-3.5 h-3.5 text-amber-600" />
             Live B2B Catalogue
           </Link>
+          <Link
+            href="/admin/products"
+            className="px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#72241c] text-white text-xs font-semibold border border-[#8B2E24] flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            Manage Catalog Products
+          </Link>
           <GlassButton variant="secondary" onClick={loadData} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
