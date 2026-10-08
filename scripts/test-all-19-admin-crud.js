@@ -15,8 +15,8 @@ const fs = require('fs');
 
 const BASE_URL = process.env.TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
 
-let adminEmail = process.env.ADMIN_EMAIL || 'admin@handicraftsbhutan.org';
-let adminPassword = process.env.ADMIN_PASSWORD || 'HabAdminProduction2026!#';
+let adminEmail = process.env.ADMIN_EMAIL || '';
+let adminPassword = process.env.ADMIN_PASSWORD || '';
 if (fs.existsSync('.admin_credentials.local')) {
   try {
     const credContent = fs.readFileSync('.admin_credentials.local', 'utf-8');
@@ -92,6 +92,14 @@ function assert(condition, message) {
 }
 
 async function run() {
+  const targetHost = new URL(BASE_URL).hostname.toLowerCase();
+  if (!['localhost', '127.0.0.1', '::1'].includes(targetHost)) {
+    throw new Error(`Safety stop: the 19-module suite creates and deletes records; it may only target localhost, not ${targetHost}.`);
+  }
+  if (!adminEmail || !adminPassword) {
+    throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD for a local test account, or provide .admin_credentials.local. No built-in credentials are used.');
+  }
+
   console.log('===============================================================');
   console.log('HAB BHUTAN - 19-MODULE ADMIN CRUD & PUBLIC SYNC VERIFICATION');
   console.log(`Target: ${BASE_URL}`);
