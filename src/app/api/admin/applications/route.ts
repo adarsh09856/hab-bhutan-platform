@@ -32,19 +32,42 @@ export async function GET(req: NextRequest) {
       console.warn('[admin/applications] DB read error, using fallback store:', dbErr.message);
     }
 
+    const applicantCids = [...new Set(dbApplications.map((application) => String(application.cidNumber || '').trim()).filter(Boolean))];
+    const memberAccounts = applicantCids.length
+      ? await prisma.member.findMany({
+          where: { cidNumber: { in: applicantCids }, status: 'VERIFIED' },
+          include: { user: { select: { email: true } } },
+        }).catch(() => [])
+      : [];
+    const memberByCid = new Map<string, (typeof memberAccounts)[number]>();
+    for (const member of memberAccounts) {
+      const key = String(member.cidNumber || '').trim();
+      if (key && (!memberByCid.has(key) || (!memberByCid.get(key)?.userId && member.userId))) memberByCid.set(key, member);
+    }
+    const withEnrollment = (application: any) => {
+      const member = memberByCid.get(String(application.cidNumber || '').trim());
+      return {
+        ...application,
+        enrolledMemberId: member?.id || null,
+        memberRegNumber: member?.regNumber || null,
+        memberUserId: member?.userId || null,
+        memberAccountEmail: member?.user?.email || null,
+      };
+    };
+
     const fallbackApps = getAllFallbackApplications();
     const existingIds = new Set(dbApplications.map((a) => a.id));
-    const merged = [...dbApplications];
+    const merged = dbApplications.map(withEnrollment);
 
     for (const fa of fallbackApps) {
       if (!existingIds.has(fa.id)) {
-        merged.push({
+        merged.push(withEnrollment({
           ...fa,
           submittedAt: new Date(fa.submittedAt),
           reviewedAt: fa.reviewedAt ? new Date(fa.reviewedAt) : null,
           updatedAt: new Date(fa.updatedAt),
           reviewer: null,
-        });
+        }));
       }
     }
 

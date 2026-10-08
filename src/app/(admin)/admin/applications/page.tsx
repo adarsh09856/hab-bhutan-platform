@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
-import { UserCheck, Search, CheckCircle, XCircle, Clock, Shield, AlertCircle, FileText, Plus, Edit2, Trash2, Copy, Check, CheckCircle2 } from 'lucide-react';
+import { UserCheck, Search, CheckCircle, XCircle, Clock, Shield, AlertCircle, FileText, Plus, Edit2, Trash2, Copy, Check, CheckCircle2, Eye, KeyRound } from 'lucide-react';
 
 const DZONGKHAGS = [
   'Thimphu', 'Paro', 'Punakha', 'Wangdue Phodrang', 'Chhukha', 'Haa', 'Samtse',
@@ -24,10 +24,12 @@ export default function AdminApplicationsPage() {
   const [editingApp, setEditingApp] = useState<any | null>(null);
   const [rejectingApp, setRejectingApp] = useState<any | null>(null);
   const [deletingApp, setDeletingApp] = useState<any | null>(null);
+  const [resettingMember, setResettingMember] = useState<any | null>(null);
   const [approvedCredentials, setApprovedCredentials] = useState<{
     name: string;
     email: string;
     temporaryPassword: string;
+    purpose: 'enrollment' | 'reset';
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -167,6 +169,8 @@ export default function AdminApplicationsPage() {
   };
 
   const handleApprove = async (appId: string) => {
+    const application = applications.find((item) => item.id === appId);
+    if (!application || !window.confirm(`Approve ${application.applicantName}'s membership application and create their member account? This will send the configured notification email.`)) return;
     setSubmitting(true);
     setActionError('');
     setActionSuccess('');
@@ -192,6 +196,7 @@ export default function AdminApplicationsPage() {
             name: data.member?.name || 'Artisan Member',
             email: data.tempCredentials.email,
             temporaryPassword: data.tempCredentials.temporaryPassword,
+            purpose: 'enrollment',
           });
           setCopied(false);
         }
@@ -201,6 +206,38 @@ export default function AdminApplicationsPage() {
       }
     } catch (err: any) {
       setActionError(err.message || 'Error processing approval.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResetMemberPassword = async () => {
+    if (!resettingMember?.memberUserId) return;
+    setSubmitting(true);
+    setActionError('');
+    try {
+      const response = await fetch('/api/admin/users/credentials', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: resettingMember.memberUserId, action: 'RESET_PASSWORD' }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.temporaryPassword) {
+        setActionError(data.error || 'Could not reset this member’s password.');
+        return;
+      }
+      setApprovedCredentials({
+        name: resettingMember.applicantName,
+        email: resettingMember.memberAccountEmail || resettingMember.email,
+        temporaryPassword: data.temporaryPassword,
+        purpose: 'reset',
+      });
+      setCopied(false);
+      setResettingMember(null);
+      setActionSuccess(`Temporary password generated for ${resettingMember.applicantName}.`);
+    } catch (error: any) {
+      setActionError(error.message || 'Network error resetting member password.');
     } finally {
       setSubmitting(false);
     }
@@ -398,23 +435,17 @@ export default function AdminApplicationsPage() {
                           {a.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => setEditingApp({ ...a })}
-                          className="px-2 py-1 admin-button-secondary border rounded text-[11px]"
-                          title="Edit application data"
-                        >
-                          Edit
-                        </button>
-                        {a.status !== 'APPROVED' && a.status !== 'REJECTED' && (
-                          <button
-                            onClick={() => setDeletingApp(a)}
-                            className="px-1.5 py-1 text-rose-300 hover:text-rose-200 border border-rose-500/30 hover:bg-rose-500/15 rounded text-[11px]"
-                            title="Delete draft application"
-                          >
-                            ✕
-                          </button>
-                        )}
+                      <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end items-center gap-1">
+                          {a.status !== 'APPROVED' && a.status !== 'REJECTED' && <>
+                            <button onClick={() => handleApprove(a.id)} disabled={submitting} className="p-2 rounded-md text-emerald-700 hover:bg-emerald-50 disabled:opacity-40" title="Approve and enroll member" aria-label="Approve and enroll member"><CheckCircle className="w-4 h-4" /></button>
+                            <button onClick={() => { setRejectingApp(a); setRejectionReasonInput(''); }} disabled={submitting} className="p-2 rounded-md text-rose-700 hover:bg-rose-50 disabled:opacity-40" title="Decline application" aria-label="Decline application"><XCircle className="w-4 h-4" /></button>
+                          </>}
+                          <button onClick={() => setSelectedApp(a)} className="p-2 rounded-md text-sky-700 hover:bg-sky-50" title="View application" aria-label="View application"><Eye className="w-4 h-4" /></button>
+                          {a.status === 'APPROVED' && a.memberUserId && <button onClick={() => setResettingMember(a)} className="px-2 py-1.5 rounded-md text-amber-800 hover:bg-amber-50 text-[10px] font-bold" title="Reset member password" aria-label="Reset member password">PWD</button>}
+                          <button onClick={() => setEditingApp({ ...a })} className="p-2 rounded-md admin-button-secondary hover:bg-slate-100" title="Edit application data" aria-label="Edit application data"><Edit2 className="w-4 h-4" /></button>
+                          {a.status !== 'APPROVED' && a.status !== 'REJECTED' && <button onClick={() => setDeletingApp(a)} className="p-2 rounded-md text-rose-700 hover:bg-rose-50" title="Delete draft application" aria-label="Delete draft application"><Trash2 className="w-4 h-4" /></button>}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -887,7 +918,23 @@ export default function AdminApplicationsPage() {
         </div>
       )}
 
-      {/* Temporary Credentials Modal (Fix 2 - shown once upon approval) */}
+      {resettingMember && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="reset-member-password-title">
+          <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300"><KeyRound className="w-5 h-5" /></div>
+              <div><h3 id="reset-member-password-title" className="font-bold admin-title">Reset member password?</h3><p className="text-xs admin-muted">{resettingMember.applicantName} · {resettingMember.email}</p></div>
+            </div>
+            <p className="text-sm admin-text">This generates a one-time temporary password, signs out existing sessions, and requires a new password at next login. The temporary password is shown once. Give it to the member through a secure channel.</p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setResettingMember(null)} disabled={submitting} className="px-4 py-2 admin-button-secondary border rounded-lg text-xs font-semibold">Cancel</button>
+              <button type="button" onClick={handleResetMemberPassword} disabled={submitting} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold disabled:opacity-50">{submitting ? 'Resetting…' : 'Reset password'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Temporary Credentials Modal (shown once after enrollment or an explicit reset) */}
       {approvedCredentials && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
           <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4 animate-in fade-in zoom-in duration-150">
@@ -896,7 +943,7 @@ export default function AdminApplicationsPage() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold admin-title text-base">Application Approved & Member Enrolled</h3>
+                <h3 className="font-bold admin-title text-base">{approvedCredentials.purpose === 'reset' ? 'Member Password Reset' : 'Application Approved & Member Enrolled'}</h3>
                 <p className="text-xs admin-muted">Temporary access credentials generated</p>
               </div>
             </div>
