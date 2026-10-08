@@ -90,6 +90,23 @@ export const TRANSLATIONS: Translations = {
   'publications.member_login': { en: 'Member login', dz: 'འཐུས་མི་ནང་འཛུལ' },
   'publications.count_one': { en: 'publication listed', dz: 'དཔེ་སྐྲུན་ཐོ་བཀོད་འབད་ཡོད།' },
   'publications.count_many': { en: 'publications listed', dz: 'དཔེ་སྐྲུན་ཐོ་བཀོད་འབད་ཡོད།' },
+
+  // Events page controls
+  'events.title': { en: 'Events', dz: 'མཛད་སྒོ' },
+  'events.upcoming': { en: "What's coming up", dz: 'ག་ཅི་འཆར་གཞི་ཡོདཔ་སྨོ?' },
+  'events.intro': { en: 'Craft bazaars, training courses, export clinics, buyer missions and the Annual Sector Forum. Most are open to members; the bazaars are open to everyone.', dz: 'ལག་བཟོའི་ཚོང་སྟོན་ སྦྱོང་བརྡར་སློབ་ཚན་ ཕྱིར་ཚོང་སྨན་ཁང་ ཉོ་མཁན་ལྟ་སྐོར་དང་ ལོ་བསྟར་སྡེ་ཚན་ཚོགས་འདུ། མང་ཤོས་རང་འཐུས་མི་ཚུ་གི་དོན་ལུ་ཨིནམ་དང་ ཚོང་སྟོན་ཚུ་མི་ཚང་མའི་དོན་ལུ་ཁ་ཕྱེ་ཡོད།' },
+  'events.attending': { en: 'Attending', dz: 'བཅའ་མར་གཏོགས་ནི' },
+  'events.attending_help': { en: 'Places and stalls are arranged through the secretariat. Write to', dz: 'ས་སྟོང་དང་སྟབས་བདེ་ཚུ་དྲུང་ཆེའི་ཡིག་ཚང་བརྒྱུད་དེ་སྒྲིག་སྟངས་འབདཝ་ཨིན། ཡིག་འབྲི་གནང་' },
+  'events.type': { en: 'Event type', dz: 'མཛད་སྒོའི་དབྱེ་ཁག' },
+  'events.all_types': { en: 'All event types', dz: 'མཛད་སྒོའི་དབྱེ་ཁག་ཆ་མཉམ' },
+  'events.count_one': { en: 'event', dz: 'མཛད་སྒོ' },
+  'events.count_many': { en: 'events', dz: 'མཛད་སྒོ' },
+  'events.open_to_all': { en: 'Open to all', dz: 'མི་ཚང་མའི་དོན་ལུ་ཁ་ཕྱེ་ཡོད' },
+  'events.details': { en: 'Read More & Event Details →', dz: 'ལྷག་པར་གཟིགས་ནི་དང་མཛད་སྒོའི་རྒྱས་བཤད →' },
+  'events.host_title': { en: 'Host or sponsor an event', dz: 'མཛད་སྒོ་གཙོ་འཛིན་ཡང་ན་རྒྱབ་སྐྱོར་འབད' },
+  'events.host_intro': { en: 'HAB works with partners on trade fairs, exhibitions and training. Associate members and development partners can propose an event through the secretariat.', dz: 'HAB གིས་ཚོང་སྟོན་ འགྲེམས་སྟོན་དང་སྦྱོང་བརྡར་ནང་རོགས་རམ་ཚུ་དང་མཉམ་འབྲེལ་འབདཝ་ཨིན། འབྲེལ་ཡོད་འཐུས་མི་དང་གོང་འཕེལ་རོགས་རམ་པ་ཚུ་གིས་དྲུང་ཆེའི་ཡིག་ཚང་བརྒྱུད་དེ་མཛད་སྒོའི་གྲོས་འཆར་ཕུལ་ཆོག།' },
+  'events.talk_to_us': { en: 'Talk to us', dz: 'ང་བཅས་ལུ་གསུང་གནང' },
+  'events.read_news': { en: 'Read the news', dz: 'གནས་ཚུལ་ལྷག' },
   
   // 13 Zorig Chusum Crafts
   'craft.thagzo': { en: 'Thagzo (Weaving)', dz: 'ཐག་བཟོ (འཐག་ལས)' },
