@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { resolveWholesaleOffer } from '../src/lib/wholesale-offer.ts';
+import { getWholesaleJwtSecret } from '../src/lib/wholesale-auth-secret.ts';
 
 const configuredLegacy = {
   moq: 10,
@@ -21,4 +22,17 @@ assert.equal(resolveWholesaleOffer({ moq: 5, tiers: [], isActive: true }, null),
 assert.equal(resolveWholesaleOffer(null, { moq: 5, tiers: [[5, 10], [5, 9]] }), null, 'Duplicate quantity breaks must be rejected.');
 assert.equal(resolveWholesaleOffer({ moq: 5, tiers: [[5, 0]], isActive: true }, null)?.tiers[0][1], 0, 'A valid explicitly configured zero price is not silently rewritten.');
 
-console.log('Wholesale pricing eligibility checks passed.');
+const originalSecret = process.env.JWT_SECRET;
+try {
+  delete process.env.JWT_SECRET;
+  assert.throws(() => getWholesaleJwtSecret(), /not configured securely/);
+  process.env.JWT_SECRET = 'short-secret';
+  assert.throws(() => getWholesaleJwtSecret(), /not configured securely/);
+  process.env.JWT_SECRET = 'local-verification-secret-with-at-least-32-characters';
+  assert.ok(getWholesaleJwtSecret().length >= 32);
+} finally {
+  if (originalSecret === undefined) delete process.env.JWT_SECRET;
+  else process.env.JWT_SECRET = originalSecret;
+}
+
+console.log('Wholesale pricing eligibility and JWT secret checks passed.');

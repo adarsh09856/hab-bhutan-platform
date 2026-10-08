@@ -4,18 +4,13 @@ import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { SignJWT, jwtVerify } from 'jose';
 import { getAllFallbackWholesaleBuyers } from '@/lib/wholesale-store';
+import { getWholesaleJwtSecret } from '@/lib/wholesale-auth-secret';
 
 export const dynamic = 'force-dynamic';
 
-function getJwtSecret() {
-  const value = process.env.JWT_SECRET;
-  if (!value || value.length < 32) throw new Error('Wholesale authentication is not configured securely.');
-  return new TextEncoder().encode(value);
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const jwtSecret = getJwtSecret();
+    const jwtSecret = getWholesaleJwtSecret();
     const body = await req.json();
     const { username, password } = body;
 
@@ -148,18 +143,18 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message || 'Login failed.' },
-      { status: 500 }
+      { status: String(err.message || '').includes('not configured securely') ? 503 : 500 }
     );
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const jwtSecret = getJwtSecret();
     const token = req.cookies.get('hab_wholesale_session')?.value;
     if (!token) {
       return NextResponse.json({ authenticated: false });
     }
+    const jwtSecret = getWholesaleJwtSecret();
 
     const { payload } = await jwtVerify(token, jwtSecret);
     const buyerSession = payload.wholesaleBuyer as any;
@@ -203,7 +198,10 @@ export async function GET(req: NextRequest) {
       authenticated: true,
       buyer,
     });
-  } catch {
+  } catch (error: any) {
+    if (String(error?.message || '').includes('not configured securely')) {
+      return NextResponse.json({ success: false, authenticated: false, error: error.message }, { status: 503 });
+    }
     return NextResponse.json({ authenticated: false });
   }
 }

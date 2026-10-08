@@ -3,17 +3,19 @@ import { jwtVerify } from 'jose';
 import prisma from '@/lib/prisma';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
+import { getWholesaleJwtSecret } from '@/lib/wholesale-auth-secret';
 
 export const dynamic = 'force-dynamic';
-const jwtKey = new TextEncoder().encode(process.env.JWT_SECRET || '122e08790446e8ac0439219e4e508d8904792f81a061eacb8e58333a31261d46');
-
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('hab_wholesale_session')?.value;
     if (!token) return NextResponse.json({ success: false, error: 'Sign in with an approved wholesale account before requesting a quote.' }, { status: 401 });
+    let jwtSecret: Uint8Array;
+    try { jwtSecret = getWholesaleJwtSecret(); }
+    catch (error: any) { return NextResponse.json({ success: false, error: error.message }, { status: 503 }); }
     let buyerId = '';
     try {
-      const { payload } = await jwtVerify(token, jwtKey);
+      const { payload } = await jwtVerify(token, jwtSecret);
       buyerId = String((payload.wholesaleBuyer as any)?.id || '');
     } catch {
       return NextResponse.json({ success: false, error: 'Your wholesale session expired. Please sign in again.' }, { status: 401 });
