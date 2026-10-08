@@ -13,6 +13,8 @@ interface Craft {
   english: string;
   dzongkha?: string | null;
   description: string;
+  longDescription?: string | null;
+  typicalProducts?: string | null;
   technique?: string | null;
   materials?: string | null;
   practisedIn?: string | null;
@@ -194,6 +196,26 @@ export default function AdminCraftsPage() {
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                   className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">How it is made — full description</label>
+                <textarea
+                  rows={6}
+                  value={editing.longDescription || ''}
+                  onChange={(e) => setEditing({ ...editing, longDescription: e.target.value })}
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Typical products</label>
+                <input
+                  type="text"
+                  value={editing.typicalProducts || ''}
+                  onChange={(e) => setEditing({ ...editing, typicalProducts: e.target.value })}
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24]"
                 />
               </div>
 

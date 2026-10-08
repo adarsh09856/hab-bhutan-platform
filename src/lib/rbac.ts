@@ -100,6 +100,25 @@ export async function getSessionUser(req: NextRequest): Promise<SessionUser | nu
   }
 }
 
+/** Validate a draft preview against the current account and role, not just a cookie. */
+export async function canPreviewDraftPage(token: string | undefined): Promise<boolean> {
+  if (!token) return false;
+  const session = await verifyToken(token);
+  if (!session) return false;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.id },
+      include: { role: true },
+    });
+    if (!user || user.status !== 'ACTIVE' || user.role.status !== 'ACTIVE') return false;
+    if (session.sessionVersion && session.sessionVersion < user.sessionVersion) return false;
+    const permissions = user.role.permissions as string[];
+    return Array.isArray(permissions) && (permissions.includes('*') || permissions.includes('content:view'));
+  } catch {
+    return false;
+  }
+}
+
 export async function requirePermission(req: NextRequest, permission: Permission): Promise<SessionUser> {
   const user = await getSessionUser(req);
   const clientIp = getClientIp(req);

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/prisma';
 import CustomPageClientView from '@/components/public/CustomPageClientView';
+import { canPreviewDraftPage } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: CustomPageRouteProps): Promis
       where: { slug: slug.toLowerCase().trim() },
     });
 
-    if (!page) {
+    if (!page || (!page.isPublished && !await canPreviewDraftPage((await cookies()).get('hab_session')?.value))) {
       return { title: 'Page Not Found · HAB' };
     }
 
@@ -68,11 +69,10 @@ export default async function CustomPageRoute({ params }: CustomPageRouteProps) 
     notFound();
   }
 
-  // If unpublished, only allow access if admin session cookie is present
+  // Drafts are visible only to active staff with content viewing permission.
   if (!page.isPublished) {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('hab_session')?.value;
-    if (!sessionCookie) {
+    if (!await canPreviewDraftPage(cookieStore.get('hab_session')?.value)) {
       notFound();
     }
   }

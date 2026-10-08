@@ -90,6 +90,8 @@ model Craft {
   english     String
   dzongkha    String?
   description String    @db.Text
+  longDescription String? @db.Text
+  typicalProducts String? @db.Text
   bannerUrl   String?
   technique   String?   @db.Text
   materials   String?   @db.Text

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { canPreviewDraftPage } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,11 +19,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
       return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
-    // Check if published or if admin session is active
-    // If not published, only allow if session cookie present
     if (!page.isPublished) {
-      const sessionCookie = req.cookies.get('hab_session')?.value;
-      if (!sessionCookie) {
+      if (!await canPreviewDraftPage(req.cookies.get('hab_session')?.value)) {
         return NextResponse.json({ error: 'This page is in draft mode and not publicly available' }, { status: 403 });
       }
     }

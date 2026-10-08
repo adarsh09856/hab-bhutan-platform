@@ -4,7 +4,7 @@ import { calculateShipping } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUser, requirePermission, AuthError } from '@/lib/rbac';
 import { CLIENT_DATA } from '@/lib/client-data';
 import { sendOrderConfirmationEmail } from '@/lib/email-service';
 import { getFallbackOrders, saveFallbackOrder, FallbackOrder } from '@/lib/order-store';
@@ -13,6 +13,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    await requirePermission(req, 'orders:view');
     let orders: any[] = [];
     try {
       orders = await prisma.order.findMany({
@@ -43,6 +44,9 @@ export async function GET(req: NextRequest) {
       orders: merged,
     });
   } catch (err: any) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ success: false, error: err.message }, { status: err.statusCode });
+    }
     console.error('Error fetching orders:', err);
     return NextResponse.json({
       success: true,

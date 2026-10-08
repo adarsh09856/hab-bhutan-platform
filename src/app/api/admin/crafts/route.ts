@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
   const user = await verifyAdmin(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
-  const { key, name, english, dzongkha, description, bannerUrl, technique, materials, practisedIn, history, shopNote, sortOrder, isActive } = body;
+  const { key, name, english, dzongkha, description, longDescription, typicalProducts, bannerUrl, technique, materials, practisedIn, history, shopNote, sortOrder, isActive } = body;
   if (!key) return NextResponse.json({ error: 'key required' }, { status: 400 });
   try {
     const updated = await prisma.craft.update({
@@ -39,6 +39,8 @@ export async function PUT(req: NextRequest) {
         ...(english !== undefined && { english: english.trim() }),
         ...(dzongkha !== undefined && { dzongkha: dzongkha?.trim() || null }),
         ...(description !== undefined && { description: description.trim() }),
+        ...(longDescription !== undefined && { longDescription: longDescription?.trim() || null }),
+        ...(typicalProducts !== undefined && { typicalProducts: typicalProducts?.trim() || null }),
         ...(bannerUrl !== undefined && { bannerUrl: bannerUrl?.trim() || null }),
         ...(technique !== undefined && { technique: technique?.trim() || null }),
         ...(materials !== undefined && { materials: materials?.trim() || null }),
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await req.json();
-    const { key, name, english, dzongkha, description, bannerUrl, technique, materials, practisedIn, history, shopNote, sortOrder, isActive } = body;
+    const { key, name, english, dzongkha, description, longDescription, typicalProducts, bannerUrl, technique, materials, practisedIn, history, shopNote, sortOrder, isActive } = body;
     if (!key || !name || !english) {
       return NextResponse.json({ error: 'Category key, Dzongkha name, and English name are required.' }, { status: 400 });
     }
@@ -77,6 +79,8 @@ export async function POST(req: NextRequest) {
         english: english.trim(),
         dzongkha: dzongkha?.trim() || null,
         description: description?.trim() || `Master craft heritage of Bhutan.`,
+        longDescription: longDescription?.trim() || null,
+        typicalProducts: typicalProducts?.trim() || null,
         bannerUrl: bannerUrl?.trim() || null,
         technique: technique?.trim() || null,
         materials: materials?.trim() || null,

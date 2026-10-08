@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
 
-type Override = { text?: string; href?: string; src?: string; alt?: string };
+type Override = { text?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
 
-const EDITABLE_SELECTOR = 'h1,h2,h3,h4,p,li,button,a,figcaption,img,[data-hab-editable]';
+const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,input[placeholder],textarea[placeholder],[data-hab-editable]';
 const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],script,style,noscript';
 
 function elementKey(element: Element, root: Element): string {
@@ -36,9 +36,37 @@ function editableElements(): HTMLElement[] {
   if (!shell) return [];
   return Array.from(shell.querySelectorAll<HTMLElement>(EDITABLE_SELECTOR)).filter((element) => {
     if (element.closest(EXCLUDED_SELECTOR)) return false;
+    if (element.matches('input,textarea')) return Boolean(element.getAttribute('placeholder'));
+    if (!element.matches('img') && !element.textContent?.trim()) return false;
     if (element.matches('a,button') && element.querySelector('h1,h2,h3,h4,p,li')) return false;
     return true;
   });
+}
+
+function editableTextNodes(element: HTMLElement): Text[] {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      return node.parentElement?.closest('svg,[aria-hidden="true"],script,style')
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  const nodes: Text[] = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode as Text);
+  const direct = nodes.filter((node) => node.parentElement === element && node.textContent?.trim());
+  return direct.length > 0 ? direct : nodes.filter((node) => node.textContent?.trim());
+}
+
+function setVisibleText(element: HTMLElement, text: string) {
+  const nodes = editableTextNodes(element);
+  const first = nodes.find((node) => node.textContent?.trim());
+  if (!first) {
+    element.appendChild(document.createTextNode(text));
+    return;
+  }
+  if (first.textContent !== text) first.textContent = text;
+  for (const node of nodes) {
+    if (node !== first && node.textContent?.trim()) node.textContent = '';
+  }
 }
 
 export default function UniversalPageQuickEdit() {
@@ -62,9 +90,12 @@ export default function UniversalPageQuickEdit() {
       if (element instanceof HTMLImageElement) {
         if (value.src && element.getAttribute('src') !== value.src) element.src = value.src;
         if (value.alt !== undefined && element.alt !== value.alt) element.alt = value.alt;
+      } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        if (value.placeholder !== undefined && element.placeholder !== value.placeholder) element.placeholder = value.placeholder;
       } else {
-        if (value.text !== undefined && element.textContent !== value.text) element.textContent = value.text;
-        if (element instanceof HTMLAnchorElement && value.href !== undefined && element.getAttribute('href') !== value.href) element.setAttribute('href', value.href);
+        if (value.text !== undefined && editableTextNodes(element).map((node) => node.textContent).join(' ').trim() !== value.text) setVisibleText(element, value.text);
+        const anchor = element instanceof HTMLAnchorElement ? element : element.closest('a');
+        if (anchor && value.href !== undefined && anchor.getAttribute('href') !== value.href) anchor.setAttribute('href', value.href);
       }
     }
   }, []);
@@ -109,7 +140,9 @@ export default function UniversalPageQuickEdit() {
       setMessage('');
       setDraft(target instanceof HTMLImageElement
         ? { src: target.currentSrc || target.src, alt: target.alt }
-        : { text: target.textContent || '', href: target instanceof HTMLAnchorElement ? target.getAttribute('href') || '' : undefined });
+        : target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+          ? { placeholder: target.placeholder }
+          : { text: editableTextNodes(target).map((node) => node.textContent).join(' ').trim(), href: target.closest('a')?.getAttribute('href') || undefined });
     };
     shell.addEventListener('click', onClick, true);
     return () => {
@@ -179,7 +212,8 @@ export default function UniversalPageQuickEdit() {
 
   if (!active || !selected) return null;
   const image = selected instanceof HTMLImageElement;
-  const link = selected instanceof HTMLAnchorElement;
+  const field = selected instanceof HTMLInputElement || selected instanceof HTMLTextAreaElement;
+  const link = Boolean(selected.closest('a'));
 
   return (
     <aside className="hab-page-quick-editor fixed right-4 bottom-4 z-[90] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
@@ -194,6 +228,9 @@ export default function UniversalPageQuickEdit() {
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
+      </> : field ? <>
+        <label className="block text-xs font-semibold mb-1">Form placeholder</label>
+        <input className="w-full rounded-lg border px-3 py-2 text-sm" value={draft.placeholder || ''} onChange={(e) => setDraft({ ...draft, placeholder: e.target.value })} />
       </> : <>
         <label className="block text-xs font-semibold mb-1">Visible text</label>
         <textarea rows={4} className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.text || ''} onChange={(e) => setDraft({ ...draft, text: e.target.value })} />

@@ -2,6 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
 
+function publicCraft(craft: any) {
+  const reference = CLIENT_DATA.crafts.find((item) => item.key === craft.key);
+  return {
+    key: craft.key,
+    name: craft.name,
+    english: craft.english,
+    dzongkha: craft.dzongkha,
+    description: craft.description,
+    long_description: craft.longDescription || reference?.long_description || craft.description,
+    longDescription: craft.longDescription || reference?.long_description || craft.description,
+    typical_products: craft.typicalProducts || reference?.typical_products || null,
+    typicalProducts: craft.typicalProducts || reference?.typical_products || null,
+    history: craft.history || reference?.history || null,
+    bannerUrl: craft.bannerUrl || reference?.image_path || null,
+    image_alt: reference?.image_alt || `${craft.name} — ${craft.english}`,
+    technique: craft.technique,
+    materials: craft.materials,
+    shop_note: craft.shopNote,
+    shopNote: craft.shopNote,
+    practised_in: craft.practisedIn,
+    practisedIn: craft.practisedIn,
+    sort_order: craft.sortOrder,
+    sortOrder: craft.sortOrder,
+  };
+}
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -16,22 +42,7 @@ export async function GET(req: NextRequest) {
       if (craft) {
         return NextResponse.json({
           success: true,
-          craft: {
-            key: craft.key,
-            name: craft.name,
-            english: craft.english,
-            dzongkha: craft.dzongkha,
-            description: craft.description,
-            bannerUrl: craft.bannerUrl,
-            technique: craft.technique,
-            materials: craft.materials,
-            shop_note: craft.shopNote,
-            shopNote: craft.shopNote,
-            practised_in: craft.practisedIn,
-            practisedIn: craft.practisedIn,
-            sort_order: craft.sortOrder,
-            sortOrder: craft.sortOrder,
-          },
+          craft: publicCraft(craft),
         });
       }
       const fallback = CLIENT_DATA.crafts.find((c) => c.key === key);
@@ -46,23 +57,7 @@ export async function GET(req: NextRequest) {
     if (crafts.length > 0) {
       return NextResponse.json({
         success: true,
-        crafts: crafts.map((craft) => ({
-          key: craft.key,
-          name: craft.name,
-          english: craft.english,
-          dzongkha: craft.dzongkha,
-          description: craft.description,
-          bannerUrl: craft.bannerUrl,
-          technique: craft.technique,
-          materials: craft.materials,
-          practised_in: craft.practisedIn,
-          practisedIn: craft.practisedIn,
-          history: craft.history,
-          shop_note: craft.shopNote,
-          shopNote: craft.shopNote,
-          sort_order: craft.sortOrder,
-          sortOrder: craft.sortOrder,
-        })),
+        crafts: crafts.map(publicCraft),
       });
     }
 

@@ -28,6 +28,8 @@ export default function CraftProfilePage() {
   const [members, setMembers] = useState<any[]>(() => (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === craft.key));
 
   useEffect(() => {
+    const fallbackCraft = getCraftByKey(craftKey);
+    if (fallbackCraft) setCraft(fallbackCraft);
     fetch(`/api/crafts?key=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
@@ -71,10 +73,28 @@ export default function CraftProfilePage() {
                 craft_key: c.craftKey || c.craft_key,
                 dzongkhag: c.dzongkhag,
                 members: c.members,
+                established: c.established,
                 summary: c.summary,
+                imageUrl: c.imageUrl,
+                sort_order: c.sortOrder || c.sort_order,
               }))
             );
           }
+        }
+      })
+      .catch(() => {});
+
+    fetch(`/api/members?craft=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d?.members) && d.members.length > 0) {
+          setMembers(d.members.map((member: any) => ({
+            name: member.name,
+            regNumber: member.regNumber,
+            dzongkhag: member.dzongkhag,
+            blurb: member.bio,
+            member_since: member.joinYear,
+          })));
         }
       })
       .catch(() => {});
@@ -168,12 +188,12 @@ export default function CraftProfilePage() {
           <div className="flipper" tabIndex={0} aria-label="Photographs of this craft">
             {slideCaptions.map((cap, i) => {
               const flipperImgs = [
-                (craft as any).bannerUrl || `/images/crafts/${craft.key}.jpg`,
-                products[0]?.hero_image ? (products[0].hero_image.startsWith('/') ? products[0].hero_image : `/${products[0].hero_image}`) : '/assets/photos/hero-4-textiles.jpg',
-                products[1]?.hero_image ? (products[1].hero_image.startsWith('/') ? products[1].hero_image : `/${products[1].hero_image}`) : '/assets/photos/hero-3-clay.jpg',
+                (craft as any).bannerUrl || craft.image_path || `/images/crafts/${craft.key}.jpg`,
+                products[0]?.hero_image ? (/^(https?:)?\//.test(products[0].hero_image) ? products[0].hero_image : `/${products[0].hero_image}`) : '/assets/photos/hero-4-textiles.jpg',
+                products[1]?.hero_image ? (/^(https?:)?\//.test(products[1].hero_image) ? products[1].hero_image : `/${products[1].hero_image}`) : '/assets/photos/hero-3-clay.jpg',
               ];
               const fallbacks = [
-                (craft as any).bannerUrl || `/images/crafts/${craft.key}.jpg`,
+                (craft as any).bannerUrl || craft.image_path || `/images/crafts/${craft.key}.jpg`,
                 '/assets/photos/hero-4-textiles.jpg',
                 '/assets/photos/hero-3-clay.jpg',
               ];
@@ -413,7 +433,7 @@ export default function CraftProfilePage() {
                 <Link className="card__shot" href={`/clusters/${c.key}`}>
                   <figure className="frame frame--wide16 has-image" data-cms-img>
                     <img
-                      src={`/images/hero-${(c.sort_order || 1) % 5 + 1}.jpg`}
+                      src={c.imageUrl || `/images/hero-${(c.sort_order || 1) % 5 + 1}.jpg`}
                       alt={c.name}
                       loading="lazy"
                     />
@@ -453,7 +473,7 @@ export default function CraftProfilePage() {
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{m.dzongkhag}</p>
                   <h3 className="card__title">
-                    <Link href={`/members/${encodeURIComponent(m.name)}`}>{m.name}</Link>
+                    <Link href={`/members/${encodeURIComponent(m.regNumber || m.name)}`}>{m.name}</Link>
                   </h3>
                   <p className="card__text clamp-3">{m.blurb}</p>
                   <p className="card__meta">HAB member since {m.member_since}</p>
