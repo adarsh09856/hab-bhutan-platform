@@ -186,7 +186,7 @@ export default function CustomPageLiveEditor({
   const allCategories = Array.from(new Set([...DEFAULT_CATEGORIES, form.category].filter(Boolean)));
 
   const modalContent = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/75 backdrop-blur-xs overflow-y-auto">
+    <div data-hab-no-quick-edit className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/75 backdrop-blur-xs overflow-y-auto">
       <div
         className="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-4xl max-h-[94dvh] flex flex-col my-auto overflow-hidden text-stone-900"
         role="dialog"

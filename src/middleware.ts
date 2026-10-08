@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/rbac';
 
-function applySecurityHeaders(res: NextResponse): NextResponse {
-  res.headers.set('X-Frame-Options', 'DENY');
+function applySecurityHeaders(res: NextResponse, pathname = ''): NextResponse {
+  // Staff record editors may be embedded only by this same-origin public Quick Edit dialog.
+  res.headers.set('X-Frame-Options', pathname.startsWith('/admin/') && pathname !== '/admin/login' ? 'SAMEORIGIN' : 'DENY');
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.headers.set('X-XSS-Protection', '1; mode=block');
@@ -48,7 +49,7 @@ export async function middleware(req: NextRequest) {
         return applyNoStoreHeaders(applySecurityHeaders(NextResponse.redirect(new URL('/admin', req.url))));
       }
     }
-    return applyNoStoreHeaders(applySecurityHeaders(NextResponse.next()));
+    return applyNoStoreHeaders(applySecurityHeaders(NextResponse.next(), pathname));
   }
 
   // 2. Protect all other /admin routes exclusively for authenticated staff
@@ -87,7 +88,7 @@ export async function middleware(req: NextRequest) {
       return applyNoStoreHeaders(applySecurityHeaders(NextResponse.redirect(adminLoginUrl)));
     }
 
-    return applyNoStoreHeaders(applySecurityHeaders(NextResponse.next()));
+    return applyNoStoreHeaders(applySecurityHeaders(NextResponse.next(), pathname));
   }
 
   // 3. Protect /portal routes for authenticated members

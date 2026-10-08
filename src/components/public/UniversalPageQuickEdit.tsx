@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
 
 type Override = { text?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
 
 const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,input[placeholder],textarea[placeholder],[data-hab-editable]';
-const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],script,style,noscript';
+const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],[role="dialog"],script,style,noscript';
 
 function elementKey(element: Element, root: Element): string {
   const explicit = element.getAttribute('data-hab-edit-key');
@@ -72,12 +73,25 @@ function setVisibleText(element: HTMLElement, text: string) {
 export default function UniversalPageQuickEdit() {
   const pathname = usePathname() || '/';
   const [active, setActive] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
   const [draft, setDraft] = useState<Override>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const overridesRef = useRef<OverrideMap>({});
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' })
+      .then((response) => response.json())
+      .then((data) => {
+        const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
+        if (!cancelled) setIsStaff(['super_admin', 'staff_operator'].includes(role));
+      })
+      .catch(() => { if (!cancelled) setIsStaff(false); });
+    return () => { cancelled = true; };
+  }, [pathname]);
 
   const applyOverrides = useCallback((overrides: OverrideMap) => {
     const shell = document.body;
@@ -123,7 +137,16 @@ export default function UniversalPageQuickEdit() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!selected) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelected(null);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [selected]);
+
+  useEffect(() => {
+    if (!active || !isStaff) return;
     const shell = document.body;
     if (!shell) return;
     const elements = editableElements();
@@ -149,7 +172,7 @@ export default function UniversalPageQuickEdit() {
       shell.removeEventListener('click', onClick, true);
       for (const element of elements) element.classList.remove('hab-universal-editable');
     };
-  }, [active, pathname]);
+  }, [active, isStaff, pathname]);
 
   useEffect(() => {
     const shell = document.body;
@@ -210,13 +233,13 @@ export default function UniversalPageQuickEdit() {
     finally { setSaving(false); }
   };
 
-  if (!active || !selected) return null;
+  if (!active || !isStaff || !selected) return null;
   const image = selected instanceof HTMLImageElement;
   const field = selected instanceof HTMLInputElement || selected instanceof HTMLTextAreaElement;
   const link = Boolean(selected.closest('a'));
 
-  return (
-    <aside className="hab-page-quick-editor fixed right-4 bottom-4 z-[90] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
+  return createPortal(
+    <aside className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
       <div className="flex items-center justify-between gap-3 mb-3">
         <strong className="text-sm">Quick edit {image ? 'image' : selected.tagName.toLowerCase()}</strong>
         <button type="button" onClick={() => setSelected(null)} aria-label="Close quick editor"><X className="w-4 h-4" /></button>
@@ -241,6 +264,7 @@ export default function UniversalPageQuickEdit() {
         <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>
         <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : 'Save live'}</button>
       </div>
-    </aside>
+    </aside>,
+    document.body
   );
 }

@@ -23,6 +23,7 @@ import {
   Users,
   Sparkles,
   Columns,
+  Layers,
   ArrowUp,
   ArrowDown,
   Eye,
@@ -114,7 +115,7 @@ export default function UniversalLiveSectionEditor({
   const [sessionExpired, setSessionExpired] = useState(false);
 
   // Active tab within the section editor (e.g. Content, Actions, Media/Stats, Columns)
-  const [activeTab, setActiveTab] = useState<'CONTENT' | 'ACTIONS' | 'MEDIA' | 'STATS' | 'COLUMNS'>('CONTENT');
+  const [activeTab, setActiveTab] = useState<'CONTENT' | 'ACTIONS' | 'MEDIA' | 'STATS' | 'COLUMNS' | 'RECORDS'>('CONTENT');
 
   // Form Fields State (covers SiteSettings fields)
   const [form, setForm] = useState<Record<string, any>>({});
@@ -152,10 +153,15 @@ export default function UniversalLiveSectionEditor({
   useEffect(() => {
     if (!isOpen) return;
     document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', closeOnEscape);
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('keydown', closeOnEscape);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Load initial settings and data
   useEffect(() => {
@@ -1053,13 +1059,14 @@ export default function UniversalLiveSectionEditor({
 
   return createPortal(
     <div
+      data-hab-no-quick-edit
       className="fixed inset-0 z-[99999] overflow-y-auto bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150 select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="relative w-full max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-2xl my-auto flex flex-col max-h-[92vh] overflow-hidden select-text"
+        className={`relative w-full ${activeTab === 'RECORDS' ? 'max-w-7xl' : 'max-w-3xl'} bg-white rounded-2xl border border-slate-200 shadow-2xl my-auto flex flex-col max-h-[92vh] overflow-hidden select-text`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -1174,9 +1181,23 @@ export default function UniversalLiveSectionEditor({
               <span>Impact Counters ({form.stat1Number ? '4' : '0'})</span>
             </button>
           )}
+          <button type="button" onClick={() => setActiveTab('RECORDS')}
+            className={'pb-2.5 px-3 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap ' +
+              (activeTab === 'RECORDS' ? 'border-[#8B2E24] text-[#8B2E24]' : 'border-transparent text-slate-500 hover:text-slate-900')}>
+            <Layers className="w-3.5 h-3.5" /> Records: create, edit, delete
+          </button>
         </div>
 
         {/* Modal Body */}
+        {activeTab === 'RECORDS' ? (
+          <div className="flex-1 min-h-[65vh] bg-white flex flex-col">
+            <div className="px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3 text-xs text-slate-600">
+              <span>Manage records here using your staff permissions. Changes are saved to the same public database.</span>
+              <button type="button" onClick={() => router.refresh()} className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 font-semibold text-[#8B2E24]">Refresh public page</button>
+            </div>
+            <iframe title={`${displayTitle} records editor`} src={defaultStudioHref} className="w-full h-[65vh] border-0" />
+          </div>
+        ) : (
         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-4 no-scrollbar">
             {/* Feedback Alerts */}
@@ -4030,6 +4051,7 @@ export default function UniversalLiveSectionEditor({
             </div>
           </div>
         </form>
+        )}
       </div>
     </div>,
     document.body

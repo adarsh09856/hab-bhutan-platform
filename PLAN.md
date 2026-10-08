@@ -785,6 +785,14 @@ Column 4: Governance (འཛིན་སྐྱོང)
 
 The larger project remains open. In particular, every reference page still needs direct content and visual parity review; many visible strings remain in page/components; public/admin CRUD flows and payment email delivery require a working database and browser verification. None of those items are marked complete by the successful build alone.
 
+### Quick Edit interaction and CRUD audit (8 October 2026)
+
+- The universal page editor was rendered at `z-[90]`, below existing floating controls at z-index 130–140. Its panel now uses a body portal at `z-[99999]` and accepts Escape to close.
+- The page-wide capture listener could intercept clicks in the live section, header, visual-section and custom-page editors. Those dialogs are now explicitly excluded, so their controls (including Close) receive clicks. Authenticated browser verification is still **UNVERIFIED**.
+- The universal editor now checks the current staff session before attaching click-to-edit behavior. Anonymous visual-edit flags alone cannot activate that editor.
+- The live section dialog has an in-place Records tab exposing the existing module CRUD screen. This is a bridge to create/read/update/delete records without leaving the public page; it is **not** yet a dedicated native Quick Edit CRUD form for each section. Same-origin framing is allowed only for authenticated `/admin/*` pages; cross-origin framing remains denied. Record creation, edit and deletion in the embedded screen are **UNVERIFIED** in an authenticated browser.
+- The desktop EN/Dz switcher was moved into the upper utility bar. Navigation and existing translated UI strings react to it, but core translation across every page remains **PENDING**.
+
 ## 9. Whole-site continuation: craft detail and editor coverage
 
 - Compared the 13 craft records in the read-only HTML reference `data.js` against `src/lib/client-data.json`. Names, descriptions, history, long descriptions, techniques, materials, regions, typical products and shop notes match for all 13. Image paths differ only by the leading `/` needed by Next.js.
