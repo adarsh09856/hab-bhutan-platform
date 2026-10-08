@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { validatePublicUpload } from '@/lib/upload-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,11 +39,13 @@ export async function POST(req: NextRequest) {
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadsDir, { recursive: true });
 
-    const extByType: Record<string, string> = {
-      'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
-      'image/gif': 'gif', 'application/pdf': 'pdf',
-    };
-    const ext = extByType[file.type];
+    const ext = validatePublicUpload(buffer, file.type);
+    if (!ext) {
+      return NextResponse.json(
+        { error: 'The uploaded file content does not match its declared image or PDF type.' },
+        { status: 400 }
+      );
+    }
     const cleanFileName = `hab-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}.${ext}`;
     const filePath = join(uploadsDir, cleanFileName);
 
