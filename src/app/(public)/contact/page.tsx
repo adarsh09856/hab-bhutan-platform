@@ -354,7 +354,7 @@ function ContactContent() {
 
 export default function ContactPage() {
   return (
-    <Suspense fallback={<main id="main"><section className="section section--narrow"><p>Loading contact form…</p></section></main>}>
+    <Suspense fallback={<main id="main"><section className="section section--narrow"><h1 className="display display--page">Write to the secretariat</h1><p>Loading contact form…</p></section></main>}>
       <ContactContent />
     </Suspense>
   );

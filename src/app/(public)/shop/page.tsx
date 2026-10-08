@@ -369,7 +369,7 @@ const PRODUCT_POOL = [
 
 export default function ShopPage() {
   return (
-    <Suspense fallback={<main id="main"><section className="section"><p>Loading shop…</p></section></main>}>
+    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">The HAB e-shop</h1><p>Loading shop…</p></section></main>}>
       <ShopContent />
     </Suspense>
   );

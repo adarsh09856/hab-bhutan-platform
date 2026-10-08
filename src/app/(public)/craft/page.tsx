@@ -15,6 +15,7 @@ function CraftRedirectContent() {
   return (
     <main id="main">
       <section className="section section--narrow">
+        <h1 className="display display--page">Craft</h1>
         <p>Loading craft…</p>
       </section>
     </main>
@@ -23,7 +24,7 @@ function CraftRedirectContent() {
 
 export default function CraftIndexPage() {
   return (
-    <Suspense fallback={<div className="section"><p>Loading…</p></div>}>
+    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">Craft</h1><p>Loading…</p></section></main>}>
       <CraftRedirectContent />
     </Suspense>
   );

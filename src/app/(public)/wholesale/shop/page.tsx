@@ -422,7 +422,7 @@ function WholesaleShopContent() {
 
 export default function WholesaleShopPage() {
   return (
-    <Suspense fallback={<div className="section"><p>Loading catalogue…</p></div>}>
+    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">Sign in to see trade pricing</h1><p>Loading catalogue…</p></section></main>}>
       <WholesaleShopContent />
     </Suspense>
   );

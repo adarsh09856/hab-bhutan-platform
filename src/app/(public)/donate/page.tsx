@@ -715,7 +715,7 @@ function DonateContent() {
 
 export default function DonatePage() {
   return (
-    <Suspense fallback={<div className="section"><p>Loading donation form…</p></div>}>
+    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">Support Bhutanese craft</h1><p>Loading donation form…</p></section></main>}>
       <DonateContent />
     </Suspense>
   );

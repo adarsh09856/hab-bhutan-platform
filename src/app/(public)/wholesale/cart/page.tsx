@@ -150,6 +150,7 @@ export default function WholesaleCartPage() {
     return (
       <main id="main">
         <section className="section section--narrow">
+          <h1 className="display display--page">Quote basket</h1>
           <p>Loading quote basket…</p>
         </section>
       </main>

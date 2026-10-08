@@ -660,7 +660,7 @@ function RegisterContent() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="section"><p>Loading registration form…</p></div>}>
+    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">Register as a member</h1><p>Loading registration form…</p></section></main>}>
       <RegisterContent />
     </Suspense>
   );
