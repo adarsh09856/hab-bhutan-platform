@@ -156,8 +156,13 @@ export default function UniversalPageQuickEdit() {
       element.dataset.habEditKey = elementKey(element, shell);
     }
     const onClick = (event: Event) => {
-      const target = (event.target as HTMLElement | null)?.closest<HTMLElement>(EDITABLE_SELECTOR);
-      if (!target || !shell.contains(target) || target.closest(EXCLUDED_SELECTOR)) return;
+      const clicked = event.target as HTMLElement | null;
+      if (clicked?.closest('.hab-page-quick-editor')) return;
+      const target = clicked?.closest<HTMLElement>(EDITABLE_SELECTOR);
+      if (!target || !shell.contains(target) || target.closest(EXCLUDED_SELECTOR)) {
+        setSelected(null);
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       setSelected(target);
@@ -241,10 +246,10 @@ export default function UniversalPageQuickEdit() {
   const link = Boolean(selected.closest('a'));
 
   return createPortal(
-    <aside className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
+    <aside role="dialog" aria-modal="false" aria-label="Quick edit selected page content" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
       <div className="flex items-center justify-between gap-3 mb-3">
         <strong className="text-sm">Quick edit {image ? 'image' : selected.tagName.toLowerCase()}</strong>
-        <button type="button" onClick={() => setSelected(null)} aria-label="Close quick editor"><X className="w-4 h-4" /></button>
+        <button type="button" onClick={() => setSelected(null)} aria-label="Close quick editor" className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-500"><X className="w-4 h-4" /><span>Close</span></button>
       </div>
       {image ? <>
         <label className="block text-xs font-semibold mb-1">Image URL</label>
