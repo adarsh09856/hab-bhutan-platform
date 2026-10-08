@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
-type Override = { text?: string; href?: string; src?: string; alt?: string; placeholder?: string };
+type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
 
 const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,input[placeholder],textarea[placeholder],[data-hab-editable]';
@@ -70,6 +71,7 @@ function setVisibleText(element: HTMLElement, text: string) {
 
 export default function UniversalPageQuickEdit() {
   const pathname = usePathname() || '/';
+  const { language } = useLanguage();
   const [active, setActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
@@ -105,12 +107,13 @@ export default function UniversalPageQuickEdit() {
       } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
         if (value.placeholder !== undefined && element.placeholder !== value.placeholder) element.placeholder = value.placeholder;
       } else {
-        if (value.text !== undefined && editableTextNodes(element).map((node) => node.textContent).join(' ').trim() !== value.text) setVisibleText(element, value.text);
+        const localizedText = language === 'dz' ? value.textDz : value.text;
+        if (localizedText !== undefined && editableTextNodes(element).map((node) => node.textContent).join(' ').trim() !== localizedText) setVisibleText(element, localizedText);
         const anchor = element instanceof HTMLAnchorElement ? element : element.closest('a');
         if (anchor && value.href !== undefined && anchor.getAttribute('href') !== value.href) anchor.setAttribute('href', value.href);
       }
     }
-  }, []);
+  }, [language]);
 
   const load = useCallback(async () => {
     try {
@@ -159,11 +162,12 @@ export default function UniversalPageQuickEdit() {
       event.stopPropagation();
       setSelected(target);
       setMessage('');
+      const saved = overridesRef.current[elementKey(target, shell)];
       setDraft(target instanceof HTMLImageElement
-        ? { src: target.currentSrc || target.src, alt: target.alt }
+        ? { ...(saved || {}), src: saved?.src || target.currentSrc || target.src, alt: saved?.alt ?? target.alt }
         : target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
-          ? { placeholder: target.placeholder }
-          : { text: editableTextNodes(target).map((node) => node.textContent).join(' ').trim(), href: target.closest('a')?.getAttribute('href') || undefined });
+          ? { ...(saved || {}), placeholder: saved?.placeholder ?? target.placeholder }
+          : { ...(saved || {}), text: saved?.text ?? editableTextNodes(target).map((node) => node.textContent).join(' ').trim(), href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) });
     };
     shell.addEventListener('click', onClick, true);
     return () => {
@@ -253,8 +257,10 @@ export default function UniversalPageQuickEdit() {
         <label className="block text-xs font-semibold mb-1">Form placeholder</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm" value={draft.placeholder || ''} onChange={(e) => setDraft({ ...draft, placeholder: e.target.value })} />
       </> : <>
-        <label className="block text-xs font-semibold mb-1">Visible text</label>
-        <textarea rows={4} className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.text || ''} onChange={(e) => setDraft({ ...draft, text: e.target.value })} />
+        <label className="block text-xs font-semibold mb-1">English text</label>
+        <textarea rows={3} className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.text || ''} onChange={(e) => setDraft({ ...draft, text: e.target.value })} />
+        <label className="block text-xs font-semibold mb-1">Dzongkha text (optional)</label>
+        <textarea rows={3} className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.textDz || ''} onChange={(e) => setDraft({ ...draft, textDz: e.target.value })} />
         {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
       </>}
       {message && <p className="mt-3 text-xs text-slate-600">{message}</p>}

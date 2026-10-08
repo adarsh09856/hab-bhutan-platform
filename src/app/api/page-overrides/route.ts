@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 type PageOverride = {
   text?: string;
+  textDz?: string;
   href?: string;
   src?: string;
   alt?: string;
@@ -22,7 +23,7 @@ function cleanOverride(value: unknown): PageOverride {
   if (!value || typeof value !== 'object') return {};
   const source = value as Record<string, unknown>;
   const result: PageOverride = {};
-  for (const key of ['text', 'href', 'src', 'alt', 'placeholder'] as const) {
+  for (const key of ['text', 'textDz', 'href', 'src', 'alt', 'placeholder'] as const) {
     if (typeof source[key] === 'string') result[key] = source[key] as string;
   }
   return result;
