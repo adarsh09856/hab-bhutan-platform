@@ -9,7 +9,7 @@ import { useLanguage } from '@/context/LanguageContext';
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
 
-const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,input[placeholder],textarea[placeholder],[data-hab-editable]';
+const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,div,input[placeholder],textarea[placeholder],[data-hab-editable]';
 const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],[role="dialog"],script,style,noscript';
 
 function elementKey(element: Element, root: Element): string {

@@ -47,7 +47,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
 
   const project = {
     ...rawProj,
-    key: rawProj.key || rawProj.id,
+    key: fallback?.key || rawProj.key || key || rawProj.id,
     name: rawProj.name || rawProj.title || 'Project',
     title: rawProj.name || rawProj.title || 'Project',
     status: rawProj.status || 'Current',
@@ -64,10 +64,11 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const partnerName = project.partner || project.funder || 'HAB';
 
   const allProjects = CLIENT_DATA.projects;
-  const currentIndex = allProjects.findIndex((p) => p.key === project.key);
-  const prevProj = allProjects[(currentIndex - 1 + allProjects.length) % allProjects.length];
-  const nextProj = allProjects[(currentIndex + 1) % allProjects.length];
-  const otherProjects = allProjects.filter((p) => p.key !== project.key).slice(0, 3);
+  const currentIndex = allProjects.findIndex((p) => p.key === project.key || p.name === project.name);
+  const safeProjectIndex = currentIndex >= 0 ? currentIndex : 0;
+  const prevProj = allProjects[(safeProjectIndex - 1 + allProjects.length) % allProjects.length];
+  const nextProj = allProjects[(safeProjectIndex + 1) % allProjects.length];
+  const otherProjects = allProjects.filter((p) => p.key !== project.key && p.name !== project.name).slice(0, 3);
 
   const isCurrent = project.status.toLowerCase().includes('current') || project.status.toLowerCase().includes('progress');
 
@@ -79,7 +80,8 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
     '/assets/photos/hero-2-punakha.jpg',
     '/assets/photos/about-hab.jpg',
   ];
-  const bannerImg = project.bannerUrl || project.imageUrl || project.image_url || photoPool[currentIndex % photoPool.length];
+  const bannerImg = project.coverPhotoUrl || project.bannerUrl || project.imageUrl || project.image_url || project.image_path
+    || photoPool[safeProjectIndex % photoPool.length] || photoPool[0];
 
   return (
     <main id="main">

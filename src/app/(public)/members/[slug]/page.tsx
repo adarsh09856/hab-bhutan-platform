@@ -68,7 +68,7 @@ export default function MemberProfilePage() {
               region: p.region || member.dzongkhag,
               maker: p.maker?.name || p.maker || member.name,
               price_usd: p.priceUSD || p.price,
-              image_path: p.images?.[0]?.url || '/assets/photos/product-sad03.jpg',
+              image_path: p.image_path || p.images?.[0]?.url || '/assets/photos/product-sad03.jpg',
             }))
           );
         }

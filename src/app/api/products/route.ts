@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { SAMPLE_PRODUCTS } from '@/lib/data';
+import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,43 +61,6 @@ export async function GET(req: NextRequest) {
       take: limit,
     });
 
-    const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
-      lha01: '/assets/photos/product-lha01.jpg',
-      sad03: '/assets/photos/product-sad03.jpg',
-      tro04: '/assets/photos/product-tro04.jpg',
-      ftb04: '/assets/photos/product-ftb04.jpg',
-      dap02: '/assets/photos/product-dap02.jpg',
-      mas01: '/assets/photos/product-mas01.jpg',
-      dez01: '/assets/photos/product-dez01.jpg',
-      cus02: '/assets/photos/product-cus02.jpg',
-      hhb01: '/assets/photos/product-hhb01.jpg',
-      hhb10: '/assets/photos/product-hhb10.jpg',
-      lud01: '/assets/photos/product-lud01.jpg',
-      cam01: '/assets/photos/product-cam01.jpg',
-      kis02: '/assets/photos/product-sad03.jpg',
-      pho03: '/assets/photos/product-dap02.jpg',
-      dez07: '/assets/photos/product-dez01.jpg',
-      tro09: '/assets/photos/product-tro04.jpg',
-      par06: '/assets/photos/product-mas01.jpg',
-      lha08: '/assets/photos/product-lha01.jpg',
-      tsh11: '/assets/photos/product-ftb04.jpg',
-      gaki: '/assets/photos/product-gaki.jpg',
-      gaki01: '/assets/photos/product-gaki.jpg',
-    };
-
-    const CRAFT_FALLBACKS: Record<string, string> = {
-      thagzo: '/assets/photos/product-sad03.jpg',
-      shagzo: '/assets/photos/product-dap02.jpg',
-      troezo: '/assets/photos/product-tro04.jpg',
-      tshazo: '/assets/photos/product-ftb04.jpg',
-      lhazo: '/assets/photos/product-lha01.jpg',
-      parzo: '/assets/photos/product-mas01.jpg',
-      dezo: '/assets/photos/product-dez01.jpg',
-      tshemzo: '/assets/photos/product-cus02.jpg',
-      garzo: '/assets/photos/product-tro04.jpg',
-      jinzo: '/assets/photos/hero-3-clay.jpg',
-    };
-
     const shouldShuffle = searchParams.get('shuffle') !== 'false' && !sort;
 
     if (dbProducts.length > 0) {
@@ -123,16 +87,12 @@ export async function GET(req: NextRequest) {
       }
 
       const mapped = sortedList.map((p) => {
-        const codeLower = p.code.toLowerCase();
-        let img = (p.images as any)?.[0]?.url;
-        if (!img || img.includes('placeholder') || img.includes('parotaktshang')) {
-          img = KNOWN_PRODUCT_IMAGES[codeLower] || CRAFT_FALLBACKS[p.craftKey] || '/assets/photos/product-hhb01.jpg';
-        }
+        const normalizedImages = normalizeProductImages(p.code, p.craftKey, p.images);
         return {
           ...p,
-          image_path: img,
-          imageUrl: img,
-          images: Array.isArray(p.images) && (p.images as any).length > 0 ? p.images : [{ url: img, role: 'primary' }],
+          image_path: normalizedImages.imageUrl,
+          imageUrl: normalizedImages.imageUrl,
+          images: normalizedImages.images,
           price: p.priceUSD,
           price_usd: p.priceUSD,
           priceUSD: p.priceUSD,

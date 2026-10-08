@@ -87,7 +87,7 @@ function WholesaleShopContent() {
               region: p.region || 'Bhutan',
               maker: p.maker?.name || p.maker || 'Registered Master',
               price: p.priceUSD || p.price,
-              hero_image: p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
+              hero_image: p.image_path || p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
               summary: p.description || p.summary || '',
             }))
           );
