@@ -1046,7 +1046,7 @@ export default function UniversalLiveSectionEditor({
       : sectionType === 'about-page'
       ? 'About Page Story & Mandate'
       : sectionType === 'donate'
-      ? 'Donations & Philanthropy'
+      ? 'Donations, Giving & Support Pillars'
       : sectionType === 'contact'
       ? 'Contact & Secretariate Info'
       : sectionType === 'footer'

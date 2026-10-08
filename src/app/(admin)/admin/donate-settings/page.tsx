@@ -375,14 +375,14 @@ export default function AdminDonateSettingsPage() {
   };
 
   const handleDeleteDonation = async (id: string, receiptNumber: string) => {
-    if (!confirm(`Delete donation record "${receiptNumber}"? Pillar totals will be reconciled.`)) return;
+    if (!confirm(`Void donation receipt "${receiptNumber}"? The receipt and audit record will be retained, and completed totals will be reconciled.`)) return;
     try {
       const res = await fetch(`/api/admin/donations?id=${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        showFlash('success', `Deleted donation ${receiptNumber}.`);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        showFlash('success', `Voided donation ${receiptNumber}; the receipt was retained.`);
         loadData();
       } else {
-        const data = await res.json();
         showFlash('error', data.error || 'Failed to delete donation.');
       }
     } catch {
@@ -811,7 +811,9 @@ SWIFT Code: BOBTBLBT`;
                           >
                             <option value="COMPLETED">Completed</option>
                             <option value="PENDING">Pending</option>
+                            <option value="FAILED">Failed</option>
                             <option value="REFUNDED">Refunded</option>
+                            <option value="CANCELLED">Voided</option>
                           </select>
                         </td>
 
@@ -829,7 +831,7 @@ SWIFT Code: BOBTBLBT`;
                               type="button"
                               onClick={() => handleDeleteDonation(d.id, d.receiptNumber)}
                               className="p-1.5 rounded hover:bg-slate-100 text-rose-600 transition"
-                              title="Delete donation"
+                              title="Void donation; retain receipt"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>

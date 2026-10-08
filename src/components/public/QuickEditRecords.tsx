@@ -48,6 +48,16 @@ const configs: Record<string, Config> = {
       { key: 'notes', label: 'Internal note / cancellation reason', kind: 'long' },
     ],
   },
+  donate: {
+    endpoint: '/api/admin/donations', collection: 'donations', title: 'Donation ledger', labelKey: 'donorName', updateMethod: 'PATCH',
+    fields: [
+      { key: 'pillarKey', label: 'Support pillar key', required: true, createOnly: true },
+      { key: 'donorName', label: 'Donor name', required: true }, { key: 'donorEmail', label: 'Donor email', required: true },
+      { key: 'amountUSD', label: 'Amount (USD)', kind: 'number', required: true },
+      { key: 'frequency', label: 'Frequency', kind: 'select', options: ['ONE_TIME', 'MONTHLY'] },
+      { key: 'status', label: 'Ledger status', kind: 'select', options: ['PENDING', 'COMPLETED', 'FAILED', 'CANCELLED'] },
+    ],
+  },
   policies: {
     endpoint: '/api/admin/policies', collection: 'policies', title: 'Policies', labelKey: 'title', updateMethod: 'PATCH',
     fields: [
@@ -292,6 +302,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if ('closingDate' in next) next.closingDate = new Date().toISOString().slice(0, 10);
     if ('status' in next) next.status = sectionType === 'tenders' ? 'OPEN' : sectionType === 'members' ? 'VERIFIED' : sectionType === 'products' ? 'PUBLISHED' : 'current';
     if (sectionType === 'wholesale') { next.status = 'PENDING'; next.country = 'Bhutan'; next.discountTier = 20; }
+    if (sectionType === 'donate') { next.status = 'PENDING'; next.frequency = 'ONE_TIME'; }
     setDraft(next); setMessage('');
   };
   const startEdit = (row: Record<string, any>) => {
@@ -361,7 +372,12 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
   const remove = async (row: Record<string, any>) => {
     const archiveCraft = sectionType === 'crafts';
     const archiveGovernance = Boolean(config.governanceCardSection);
-    if (!window.confirm(`${archiveCraft || archiveGovernance ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)} from the public site?`)) return;
+    const voidDonation = sectionType === 'donate';
+    const rowLabel = String(row[config.labelKey] || row.key || row.id);
+    const confirmation = voidDonation
+      ? `Void donation receipt ${row.receiptNumber || row.id} for ${rowLabel}? The receipt record will remain for audit, and completed donation totals will be adjusted.`
+      : `${archiveCraft || archiveGovernance ? 'Hide' : 'Delete'} ${rowLabel} from the public site?`;
+    if (!window.confirm(confirmation)) return;
     setSaving(true); setMessage('');
     try {
       const deleteUrl = `${config.endpoint}?${sectionType === 'policies' ? `slug=${encodeURIComponent(row.slug)}` : `id=${encodeURIComponent(row.id)}${config.contentType ? `&type=${encodeURIComponent(config.contentType)}` : ''}${config.governanceCardSection ? `&section=${config.governanceCardSection}` : ''}`}`;
@@ -371,7 +387,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Delete failed.');
       if (draft?.id === row.id || (sectionType === 'policies' && draft?.slug === row.slug)) setDraft(null);
-      await load(); router.refresh(); setMessage(archiveCraft || archiveGovernance ? 'Record hidden. Edit it to make it visible again.' : 'Record deleted.');
+      await load(); router.refresh(); setMessage(voidDonation ? 'Donation voided; the receipt and audit record were retained.' : archiveCraft || archiveGovernance ? 'Record hidden. Edit it to make it visible again.' : 'Record deleted.');
     } catch (error: any) { setMessage(error?.message || 'Delete failed.'); }
     finally { setSaving(false); }
   };
@@ -451,7 +467,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
             {sectionType === 'membership-applications' && row.status === 'PENDING' && <button type="button" title="Mark under review" disabled={saving} onClick={() => reviewMembershipApplication(row, 'UNDER_REVIEW')} className="rounded-md border border-amber-300 px-2 py-1 text-[11px] font-bold text-amber-800">Review</button>}
             {sectionType === 'wholesale' && row.status !== 'ACTIVE' && <button type="button" title="Approve and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'APPROVE')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
             {sectionType === 'wholesale' && row.status !== 'REJECTED' && <button type="button" title="Decline and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'DECLINE')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
-            {config.canDelete !== false && !(sectionType === 'membership-applications' && ['APPROVED', 'REJECTED'].includes(String(row.status))) && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving || (sectionType === 'policies' && ['terms', 'privacy', 'shipping-policy', 'conduct'].includes(String(row.slug)))} className="rounded-md p-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"><Trash2 className="w-4 h-4" /></button>}
+            {config.canDelete !== false && !(sectionType === 'membership-applications' && ['APPROVED', 'REJECTED'].includes(String(row.status))) && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : sectionType === 'donate' ? 'Void' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : sectionType === 'donate' ? 'Void donation' : 'Delete'} onClick={() => remove(row)} disabled={saving || (sectionType === 'policies' && ['terms', 'privacy', 'shipping-policy', 'conduct'].includes(String(row.slug))) || (sectionType === 'donate' && row.status === 'CANCELLED')} className="rounded-md p-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"><Trash2 className="w-4 h-4" /></button>}
           </div>)}
         </div>
         <div className="rounded-xl border p-3 sm:p-4">
@@ -471,6 +487,12 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
                 const url = String(draft[key] || '');
                 return url && (url.startsWith('/uploads/') || /^https:\/\//i.test(url)) ? <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="font-bold underline">{label}</a> : null;
               })}</div>
+            </div>}
+            {sectionType === 'donate' && <div className="mb-3 rounded-lg border bg-slate-50 p-3 text-xs text-slate-700">
+              <strong className="text-sm">Receipt · {String(draft.receiptNumber || 'New donation')} · {String(draft.status || 'PENDING')}</strong>
+              <p className="mt-1">Pillar: {String(draft.pillar?.title || draft.pillarKey || 'Not selected')} · Amount: USD {Number(draft.amountUSD || 0).toFixed(2)} · {String(draft.frequency || 'ONE_TIME')}</p>
+              {draft.proofUrl && <a className="mt-2 inline-block text-[#8B2E24] underline" href={String(draft.proofUrl)} target="_blank" rel="noreferrer">View payment proof</a>}
+              <p className="mt-2 text-slate-500">Voiding preserves the receipt record and removes completed gifts from the public totals.</p>
             </div>}
             {sectionType === 'wholesale' && draft.notes && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
               <strong>Payment details: inspect before approving</strong>

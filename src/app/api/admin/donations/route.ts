@@ -1,32 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import {
   getAllFallbackDonations,
   saveFallbackDonation,
   updateFallbackDonationStatus,
-  deleteFallbackDonation,
 } from '@/lib/donation-store';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff =
-    user.roleSlug === 'super_admin' ||
-    user.roleSlug === 'staff_operator' ||
-    user.permissions?.includes('*') ||
-    user.permissions?.includes('reports:view') ||
-    user.permissions?.includes('orders:edit');
-  return isStaff ? user : null;
+async function verifyAdmin(req: NextRequest, permission: 'donations:view' | 'donations:create' | 'donations:edit' | 'donations:delete') {
+  try {
+    return await requirePermission(req, permission);
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error?.message || 'You are not authorized to manage donations.' },
+      { status: error?.statusCode || 500 }
+    );
+  }
 }
 
 // GET /api/admin/donations - list donations with filters
 export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await verifyAdmin(req, 'donations:view');
+  if (user instanceof NextResponse) return user;
 
   try {
     const { searchParams } = new URL(req.url);
@@ -105,8 +103,8 @@ export async function GET(req: NextRequest) {
 
 // POST /api/admin/donations - record manual/offline donation
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await verifyAdmin(req, 'donations:create');
+  if (user instanceof NextResponse) return user;
 
   try {
     const body = await req.json();
@@ -222,8 +220,8 @@ export async function POST(req: NextRequest) {
 
 // PATCH /api/admin/donations - update status or donation details
 export async function PATCH(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await verifyAdmin(req, 'donations:edit');
+  if (user instanceof NextResponse) return user;
 
   try {
     const body = await req.json();
@@ -244,60 +242,47 @@ export async function PATCH(req: NextRequest) {
 
     const newAmount = amountUSD !== undefined ? Number(amountUSD) : (existing?.amountUSD ?? 0);
     const newStatus = status || existing?.status || 'COMPLETED';
-
-    if (existing) {
-      // Financial reconciliation if status or amount changes
-      const wasCompleted = existing.status === 'COMPLETED';
-      const isNowCompleted = newStatus === 'COMPLETED';
-
-      if (wasCompleted && !isNowCompleted) {
-        // Decrement previously added amount
-        await prisma.supportPillar.update({
-          where: { key: existing.pillarKey },
-          data: { raisedAmountUSD: { decrement: existing.amountUSD } },
-        }).catch(() => {});
-      } else if (!wasCompleted && isNowCompleted) {
-        // Increment newly completed amount
-        await prisma.supportPillar.update({
-          where: { key: existing.pillarKey },
-          data: { raisedAmountUSD: { increment: newAmount } },
-        }).catch(() => {});
-      } else if (wasCompleted && isNowCompleted && newAmount !== existing.amountUSD) {
-        // Adjust difference
-        const diff = newAmount - existing.amountUSD;
-        await prisma.supportPillar.update({
-          where: { key: existing.pillarKey },
-          data: { raisedAmountUSD: { increment: diff } },
-        }).catch(() => {});
-      }
+    if (amountUSD !== undefined && (!Number.isFinite(newAmount) || newAmount <= 0)) {
+      return NextResponse.json({ success: false, error: 'Donation amount must be a finite positive number.' }, { status: 400 });
+    }
+    if (!['PENDING', 'COMPLETED', 'FAILED', 'CANCELLED', 'REFUNDED'].includes(newStatus)) {
+      return NextResponse.json({ success: false, error: 'Unsupported donation status.' }, { status: 400 });
+    }
+    if (frequency !== undefined && !['ONE_TIME', 'MONTHLY'].includes(frequency)) {
+      return NextResponse.json({ success: false, error: 'Unsupported donation frequency.' }, { status: 400 });
     }
 
     let updated: any = null;
-    try {
-      updated = await prisma.donationRecord.update({
-        where: { id },
-        data: {
-          ...(donorName && { donorName: donorName.trim() }),
-          ...(donorEmail && { donorEmail: donorEmail.trim().toLowerCase() }),
-          ...(amountUSD !== undefined && { amountUSD: newAmount }),
-          ...(frequency && { frequency }),
-          ...(status && { status: newStatus }),
-        },
-        include: {
-          pillar: { select: { title: true, key: true } },
-        },
+    if (existing) {
+      updated = await prisma.$transaction(async (tx) => {
+        const completedDelta = (newStatus === 'COMPLETED' ? newAmount : 0) - (existing.status === 'COMPLETED' ? existing.amountUSD : 0);
+        if (completedDelta !== 0) {
+          await tx.supportPillar.update({
+            where: { key: existing.pillarKey },
+            data: { raisedAmountUSD: { increment: completedDelta } },
+          });
+        }
+        return tx.donationRecord.update({
+          where: { id },
+          data: {
+            ...(donorName !== undefined && { donorName: donorName.trim() }),
+            ...(donorEmail !== undefined && { donorEmail: donorEmail.trim().toLowerCase() }),
+            ...(amountUSD !== undefined && { amountUSD: newAmount }),
+            ...(frequency !== undefined && { frequency }),
+            ...(status !== undefined && { status: newStatus }),
+          },
+          include: { pillar: { select: { title: true, key: true } } },
+        });
       });
-    } catch {
-      // Fallback
     }
 
-    // Always update fallback store
-    const updatedFallback = updateFallbackDonationStatus(id, newStatus as any, {
-      ...(donorName && { donorName: donorName.trim() }),
-      ...(donorEmail && { donorEmail: donorEmail.trim().toLowerCase() }),
+    const updatedFallback = existing ? null : updateFallbackDonationStatus(id, newStatus as any, {
+      ...(donorName !== undefined && { donorName: donorName.trim() }),
+      ...(donorEmail !== undefined && { donorEmail: donorEmail.trim().toLowerCase() }),
       ...(amountUSD !== undefined && { amountUSD: newAmount }),
-      ...(frequency && { frequency }),
+      ...(frequency !== undefined && { frequency }),
     });
+    if (!updated && !updatedFallback) return NextResponse.json({ success: false, error: 'Donation record not found.' }, { status: 404 });
 
     try {
       await logAudit({
@@ -309,7 +294,9 @@ export async function PATCH(req: NextRequest) {
         entityId: id,
         details: {
           receiptNumber: updated?.receiptNumber || updatedFallback?.receiptNumber,
+          previousStatus: existing?.status || null,
           status: newStatus,
+          previousAmountUSD: existing?.amountUSD ?? null,
           amountUSD: newAmount,
         },
       });
@@ -325,8 +312,8 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE /api/admin/donations - delete donation
 export async function DELETE(req: NextRequest) {
-  const user = await verifyAdmin(req);
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await verifyAdmin(req, 'donations:delete');
+  if (user instanceof NextResponse) return user;
 
   try {
     const { searchParams } = new URL(req.url);
@@ -336,29 +323,31 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Donation id is required' }, { status: 400 });
     }
 
-    try {
-      const existing = await prisma.donationRecord.findUnique({ where: { id } });
-      if (existing) {
+    let existing: any = null;
+    try { existing = await prisma.donationRecord.findUnique({ where: { id } }); } catch { /* Check fallback store below. */ }
+
+    let voided: any = null;
+    if (existing) {
+      voided = await prisma.$transaction(async (tx) => {
         if (existing.status === 'COMPLETED') {
-          await prisma.supportPillar.update({
+          await tx.supportPillar.update({
             where: { key: existing.pillarKey },
             data: { raisedAmountUSD: { decrement: existing.amountUSD } },
-          }).catch(() => {});
+          });
         }
-        await prisma.donationRecord.delete({ where: { id } });
-      }
-    } catch {
-      // DB delete attempted
+        return tx.donationRecord.update({ where: { id }, data: { status: 'CANCELLED' } });
+      });
+    } else {
+      voided = updateFallbackDonationStatus(id, 'CANCELLED');
     }
-
-    deleteFallbackDonation(id);
+    if (!voided) return NextResponse.json({ success: false, error: 'Donation record not found.' }, { status: 404 });
 
     try {
       await logAudit({
         actorType: 'STAFF',
         actorId: user.id,
         actorIdentifier: user.email,
-        action: 'DONATION_RECORD_DELETED',
+        action: 'DONATION_RECORD_VOIDED',
         entityType: 'DonationRecord',
         entityId: id,
       });
@@ -366,7 +355,7 @@ export async function DELETE(req: NextRequest) {
       // Non-blocking
     }
 
-    return NextResponse.json({ success: true, deleted: true });
+    return NextResponse.json({ success: true, voided: true, donation: voided });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete donation' }, { status: 500 });
   }

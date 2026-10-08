@@ -519,6 +519,7 @@ await runTest('RBAC Matrix: All granular permissions declared in permissions.ts'
     'members:view', 'members:create', 'members:edit', 'members:verify', 'members:suspend', 'members:delete',
     'products:view', 'products:create', 'products:edit', 'products:publish', 'products:archive', 'products:delete',
     'orders:view', 'orders:create', 'orders:edit', 'orders:payment', 'orders:fulfill', 'orders:cancel', 'orders:refund',
+    'donations:view', 'donations:create', 'donations:edit', 'donations:delete',
     'applications:view', 'applications:create', 'applications:review', 'applications:approve', 'applications:reject', 'applications:delete',
     'content:view', 'content:create', 'content:edit', 'content:delete',
     'governance:view', 'governance:create', 'governance:edit', 'governance:delete',

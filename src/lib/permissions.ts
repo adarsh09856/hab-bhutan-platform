@@ -41,6 +41,11 @@ export type Permission =
   | 'orders:fulfill'
   | 'orders:cancel'
   | 'orders:refund'
+  // Donations & finance
+  | 'donations:view'
+  | 'donations:create'
+  | 'donations:edit'
+  | 'donations:delete'
   // Content & CMS
   | 'content:view'
   | 'content:create'
@@ -123,6 +128,15 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
       { slug: 'orders:fulfill', label: 'Fulfill & Dispatch', description: 'Transition order to SHIPPED / DELIVERED status' },
       { slug: 'orders:cancel', label: 'Cancel Order', description: 'Cancel order and atomically return stock to catalog' },
       { slug: 'orders:refund', label: 'Refund Order', description: 'Mark payment refunded and adjust accounting state' },
+    ],
+  },
+  {
+    name: 'Donations & Giving',
+    permissions: [
+      { slug: 'donations:view', label: 'View Donation Ledger', description: 'Inspect donor, receipt, proof and reconciliation records' },
+      { slug: 'donations:create', label: 'Record Donation', description: 'Enter a verified offline or direct contribution and issue a receipt' },
+      { slug: 'donations:edit', label: 'Edit Donation Record', description: 'Correct donor details or reconcile a donation status and amount' },
+      { slug: 'donations:delete', label: 'Void Donation', description: 'Remove a donation from totals while retaining the receipt and audit record' },
     ],
   },
   {
