@@ -47,7 +47,7 @@ export default function UtilityBar() {
   const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
   const [topBarContactMode, setTopBarContactMode] = useState<'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF'>('PHONE_ONLY');
   const [visible, setVisible] = useState(true);
-  const { language, t } = useLanguage();
+  const { language, toggleLanguage, t } = useLanguage();
   const isDz = language === 'dz';
 
   const textContainerRef = React.useRef<HTMLDivElement>(null);
@@ -343,6 +343,17 @@ export default function UtilityBar() {
           </Link>
 
         </div>
+        <button
+          type="button"
+          className="utility__lang utility__lang--switch"
+          onClick={toggleLanguage}
+          aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
+          title="Switch language / སྐད་ཡིག"
+        >
+          <span className={language === 'en' ? 'is-active' : ''}>EN</span>
+          <span aria-hidden="true">/</span>
+          <span className={language === 'dz' ? 'is-active' : ''}>རྫོང་ཁ</span>
+        </button>
       </div>
     </div>
   );

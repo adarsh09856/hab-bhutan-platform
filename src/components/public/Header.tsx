@@ -59,7 +59,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { currency, toggleCurrency } = useCurrency();
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const { cartCount } = useCart();
 
   const [membersOpen, setMembersOpen] = useState(false);
@@ -829,17 +829,6 @@ export default function Header() {
             <span></span>
           </button>
 
-          <button
-            type="button"
-            className="chip header__language inline-flex items-center gap-1.5"
-            onClick={toggleLanguage}
-            aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
-            title="Switch language / སྐད་ཡིག"
-          >
-            <span className={language === 'en' ? 'font-bold text-[#8B2E24]' : ''}>EN</span>
-            <span aria-hidden="true">/</span>
-            <span className={language === 'dz' ? 'font-bold text-[#8B2E24]' : ''}>རྫོང་ཁ</span>
-          </button>
         </div>
       </div>
 
