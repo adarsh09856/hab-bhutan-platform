@@ -858,6 +858,23 @@ model CustomPage {
   @@index([category])
 }
 
+// Additional public-page sections controlled from both Quick Edit and Admin.
+model PublicPageBlock {
+  id          String   @id @default(uuid())
+  pathname    String
+  title       String
+  body        String   @db.Text
+  imageUrl    String?
+  buttonLabel String?
+  buttonHref  String?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([pathname, sortOrder])
+}
+
 // Dedicated Wholesale Buyers Accounts & Access Control (Feedback Item 7)
 model WholesaleBuyer {
   id              String    @id @default(uuid())

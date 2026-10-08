@@ -9,6 +9,7 @@ import AskHabAssistant from '@/components/public/AskHabAssistant';
 import DesignTweaks from '@/components/public/DesignTweaks';
 import PolicyModal from '@/components/public/PolicyModal';
 import UniversalPageQuickEdit from '@/components/public/UniversalPageQuickEdit';
+import PublicPageBlocks from '@/components/public/PublicPageBlocks';
 
 export default function PublicLayout({
   children,
@@ -20,7 +21,7 @@ export default function PublicLayout({
       <AdminLiveBar />
       <UtilityBar />
       <Header />
-      <div className="hab-public-shell flex-1 w-full overflow-x-clip">{children}</div>
+      <div className="hab-public-shell flex-1 w-full overflow-x-clip">{children}<PublicPageBlocks /></div>
       <Footer />
       <AdminDrawer />
       <AskHabAssistant />

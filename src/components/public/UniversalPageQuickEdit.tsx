@@ -38,7 +38,7 @@ function editableElements(): HTMLElement[] {
   return Array.from(shell.querySelectorAll<HTMLElement>(EDITABLE_SELECTOR)).filter((element) => {
     if (element.closest(EXCLUDED_SELECTOR)) return false;
     if (element.matches('input,textarea')) return Boolean(element.getAttribute('placeholder'));
-    if (!element.matches('img') && !element.textContent?.trim()) return false;
+    if (!element.matches('img') && !element.matches('input,textarea') && editableTextNodes(element).length === 0) return false;
     if (element.matches('a,button') && element.querySelector('h1,h2,h3,h4,p,li')) return false;
     return true;
   });
@@ -53,15 +53,13 @@ function editableTextNodes(element: HTMLElement): Text[] {
   });
   const nodes: Text[] = [];
   while (walker.nextNode()) nodes.push(walker.currentNode as Text);
-  const direct = nodes.filter((node) => node.parentElement === element && node.textContent?.trim());
-  return direct.length > 0 ? direct : nodes.filter((node) => node.textContent?.trim());
+  return nodes.filter((node) => node.parentElement === element && node.textContent?.trim());
 }
 
 function setVisibleText(element: HTMLElement, text: string) {
   const nodes = editableTextNodes(element);
   const first = nodes.find((node) => node.textContent?.trim());
   if (!first) {
-    element.appendChild(document.createTextNode(text));
     return;
   }
   if (first.textContent !== text) first.textContent = text;
