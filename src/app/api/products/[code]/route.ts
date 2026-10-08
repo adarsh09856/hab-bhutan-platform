@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { SAMPLE_PRODUCTS, SAMPLE_MEMBERS, CRAFTS } from '@/lib/data';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
+import { isPublicCatalogProduct } from '@/lib/public-catalog-visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,10 @@ export async function GET(
       },
     });
 
+    if (product && !isPublicCatalogProduct(product)) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
     if (product) {
       // Also fetch 4 related products from the same craft
       const related = await prisma.product.findMany({
@@ -36,7 +41,7 @@ export async function GET(
           status: 'PUBLISHED',
         },
         include: { maker: { select: { name: true } } },
-        take: 4,
+        take: 12,
       });
 
       const normalizedImages = normalizeProductImages(product.code, product.craftKey, product.images);
@@ -52,7 +57,10 @@ export async function GET(
           images: normalizedImages.images,
           gallery: resolvedGallery,
         },
-        related: related.map((item) => {
+        related: related
+          .filter(isPublicCatalogProduct)
+          .slice(0, 4)
+          .map((item) => {
           const images = normalizeProductImages(item.code, item.craftKey, item.images);
           return {
             ...item,
@@ -60,7 +68,7 @@ export async function GET(
             imageUrl: images.imageUrl,
             images: images.images,
           };
-        }),
+          }),
       });
     }
 

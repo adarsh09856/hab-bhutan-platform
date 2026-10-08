@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { normalizeProductImages } from '../src/lib/product-image-fallbacks.ts';
+import { isPublicCatalogProduct } from '../src/lib/public-catalog-visibility.ts';
 
 const brokenHhb10 = normalizeProductImages('HHB10', 'thagzo', [
   { url: '/placeholders/hhb10_1.jpg', role: 'primary' },
@@ -28,7 +29,22 @@ const relatedWithLegacyPlaceholders = ['HHB01', 'SAD03', 'KIS02'].map((code) => 
 assert.deepEqual(relatedWithLegacyPlaceholders.map((item) => item.imageUrl), [
   '/assets/photos/product-hhb01.jpg',
   '/assets/photos/product-sad03.jpg',
-  '/assets/photos/product-sad03.jpg',
+  '/assets/photos/product-kis02.jpg',
 ]);
 
-console.log('PASS: placeholder variants resolve to stable product/craft photos; uploaded images and metadata are preserved; unknown and related products receive deterministic fallbacks.');
+assert.equal(normalizeProductImages('LHA01', 'lhazo', [
+  { url: '/assets/photos/product-sad03.jpg', role: 'primary' },
+]).imageUrl, '/assets/photos/product-lha01.jpg');
+assert.equal(normalizeProductImages('KIS02', 'thagzo', [
+  { url: '/assets/photos/product-cam01.jpg', role: 'primary' },
+]).imageUrl, '/assets/photos/product-kis02.jpg');
+assert.equal(normalizeProductImages('PAR06', 'parzo', [
+  { url: '/assets/photos/product-cam01.jpg', role: 'primary' },
+  { url: '/uploads/member-photo.jpg', role: 'angle2' },
+]).images.some((image) => image.url === '/uploads/member-photo.jpg'), true);
+
+assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', status: 'PUBLISHED' }), true);
+assert.equal(isPublicCatalogProduct({ code: 'SKU-TEST-44899', name: 'Automated Test Kishuthara Textile', status: 'PUBLISHED' }), false);
+assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', status: 'DRAFT' }), false);
+
+console.log('PASS: legacy/cross-assigned static photos resolve to the correct product asset; member uploads and metadata are preserved; test/draft catalogue records stay out of public responses.');

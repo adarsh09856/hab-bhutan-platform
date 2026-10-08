@@ -13,13 +13,13 @@ const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
   hhb10: '/assets/photos/product-hhb10.jpg',
   lud01: '/assets/photos/product-lud01.jpg',
   cam01: '/assets/photos/product-cam01.jpg',
-  kis02: '/assets/photos/product-sad03.jpg',
-  pho03: '/assets/photos/product-dap02.jpg',
-  dez07: '/assets/photos/product-dez01.jpg',
-  tro09: '/assets/photos/product-tro04.jpg',
-  par06: '/assets/photos/product-mas01.jpg',
-  lha08: '/assets/photos/product-lha01.jpg',
-  tsh11: '/assets/photos/product-ftb04.jpg',
+  kis02: '/assets/photos/product-kis02.jpg',
+  pho03: '/assets/photos/product-pho03.jpg',
+  dez07: '/assets/photos/product-dez07.jpg',
+  tro09: '/assets/photos/product-tro09.jpg',
+  par06: '/assets/photos/product-par06.jpg',
+  lha08: '/assets/photos/product-lha08.jpg',
+  tsh11: '/assets/photos/product-tsh11.jpg',
   gaki: '/assets/photos/product-gaki.jpg',
   gaki01: '/assets/photos/product-gaki.jpg',
 };
@@ -51,11 +51,15 @@ export function normalizeProductImages(code: string, craftKey: string, rawImages
     if (!record || isUnusableImageUrl(record.url)) return [];
     return [{ ...record, url: record.url.trim(), role: String(record.role || 'gallery') }];
   });
-  const primary = usable.find((image) => image.role.toLowerCase() === 'primary') || usable[0];
+  const expectedProductImage = KNOWN_PRODUCT_IMAGES[code.toLowerCase()];
+  const productPhotos = expectedProductImage
+    ? usable.filter((image) => !/^\/assets\/photos\/product-[^/]+\.jpg$/i.test(image.url) || image.url === expectedProductImage)
+    : usable;
+  const primary = productPhotos.find((image) => image.role.toLowerCase() === 'primary') || productPhotos[0];
   const images = primary
     ? [
         { ...primary, role: 'primary' },
-        ...usable.filter((image) => image !== primary),
+        ...productPhotos.filter((image) => image !== primary),
       ]
     : [{ url: fallbackUrl, role: 'primary' }];
 

@@ -16,6 +16,10 @@ export async function GET(req: NextRequest) {
 
     const where: any = {
       status: 'PUBLISHED',
+      AND: [
+        { NOT: { code: { startsWith: 'SKU-TEST-', mode: 'insensitive' } } },
+        { NOT: { name: { contains: 'Automated Test', mode: 'insensitive' } } },
+      ],
     };
 
     if (craft && craft !== 'all') {
