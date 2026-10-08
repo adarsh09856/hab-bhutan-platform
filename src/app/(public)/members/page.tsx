@@ -44,7 +44,8 @@ const regionCounts = [
 async function getRecognisedMembers() {
   try {
     const dbHonours = await prisma.honourRecord.findMany({
-      orderBy: { yearAwarded: 'desc' },
+      where: { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { yearAwarded: 'desc' }, { name: 'asc' }],
       take: 6,
     });
     if (dbHonours.length > 0) {
@@ -55,11 +56,15 @@ async function getRecognisedMembers() {
         honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : 'Master Craftsperson',
         since: h.yearAwarded,
         note: h.citation,
-        image_path: h.portraitUrl || '/assets/photos/hero-1-weaving.jpg',
+        image_path: h.portraitUrl || '',
       }));
     }
   } catch {}
-  return CLIENT_DATA.recognised;
+  return CLIENT_DATA.recognised.filter((member) => !/^name to confirm$/i.test(member.name.trim()));
+}
+
+function isPlaceholderPortrait(src: string) {
+  return /\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(src);
 }
 
 export default async function MembersPage() {
@@ -242,29 +247,31 @@ export default async function MembersPage() {
         </div>
 
         <div className="grid grid--3" id="honourGrid" data-cms-repeat>
-          {recognised.slice(0, 6).map((m, i) => {
+          {recognised.slice(0, 6).map((m) => {
             const craft = CLIENT_DATA.crafts.find((c) => c.key === m.craft_key) || {
               name: m.craft_key || 'Craft',
             };
-            const photoPool = [
-              '/assets/photos/hero-1-weaving.jpg',
-              '/assets/photos/hero-4-textiles.jpg',
-              '/assets/photos/hero-5-desho.jpg',
-              '/assets/photos/hero-3-clay.jpg',
-              '/assets/photos/hero-2-punakha.jpg',
-            ];
-            const imgSrc = m.image_path || photoPool[i % photoPool.length];
+            const imgSrc = m.image_path || '';
+            const hasPortrait = Boolean(imgSrc) && !isPlaceholderPortrait(imgSrc);
+            const initials = m.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
             return (
-              <article key={i} className="card honour">
+              <article key={m.name} className="card honour">
                 <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-                  <Image
-                    src={imgSrc}
-                    alt={m.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    style={{ objectFit: 'cover' }}
-                  />
+                  {hasPortrait ? (
+                    <Image
+                      src={imgSrc}
+                      alt={`Portrait of ${m.name}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#e8dfd0] text-[#6d5949]" role="img" aria-label={`Portrait pending for ${m.name}`}>
+                      <span className="text-4xl font-semibold tracking-wide">{initials}</span>
+                      <span className="text-xs font-medium">Portrait to be supplied</span>
+                    </div>
+                  )}
                 </figure>
                 <div className="card__body">
                   <span className="honour__badge">{m.honour}</span>
@@ -283,9 +290,7 @@ export default async function MembersPage() {
             );
           })}
         </div>
-        <p className="footnote" style={{ marginTop: 20 }}>
-          Names, portraits and citations to be supplied by the secretariat.
-        </p>
+        {recognised.length === 0 && <p className="footnote" style={{ marginTop: 20 }}>Recognised-member profiles are awaiting approved records from the secretariat.</p>}
       </section>
 
       {/* 5. CTA Band */}
