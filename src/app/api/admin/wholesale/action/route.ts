@@ -29,10 +29,16 @@ export async function POST(req: NextRequest) {
       : null;
     const passwordHash = temporaryPassword ? await bcrypt.hash(temporaryPassword, 12) : null;
 
-    // 1. Fetch buyer info
-    let buyer = await prisma.wholesaleBuyer.findUnique({
+    // 1. Fetch buyer info and remember whether it came from durable DB storage.
+    let databaseLookupFailed = false;
+    let buyer: any = await prisma.wholesaleBuyer.findUnique({
       where: { id: buyerId },
-    }).catch(() => null);
+    }).catch((error) => {
+      databaseLookupFailed = true;
+      console.warn('[wholesale/action] Database lookup failed:', error?.message);
+      return null;
+    });
+    const databaseBuyer = Boolean(buyer);
 
     if (!buyer) {
       buyer = getAllFallbackWholesaleBuyers().find((b) => b.id === buyerId) as any;
@@ -42,30 +48,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Wholesale buyer record not found.' }, { status: 404 });
     }
 
-    // 2. Update status in DB
-    try {
-      await prisma.wholesaleBuyer.update({
-        where: { id: buyerId },
-        data: {
-          status: newStatus,
-          ...(passwordHash ? { passwordHash } : {}),
-          notes: reason ? `${buyer.notes || ''}\n[${action}]: ${reason}` : buyer.notes,
-        },
-      });
-    } catch (dbErr: any) {
-      console.warn('[wholesale/action] DB update error, applying to fallback:', dbErr.message);
-    }
-
-    const fallbackRecord = getAllFallbackWholesaleBuyers().find((record) => record.id === buyerId);
-    if (fallbackRecord) {
-      // Keep fallback authentication in sync with the status and temporary password shown to the admin.
-      saveFallbackWholesaleBuyer({
+    // 2. Persist the decision before sending credentials or reporting success.
+    const updatedNotes = reason ? `${buyer.notes || ''}\n[${action}]: ${reason}` : buyer.notes;
+    if (databaseBuyer) {
+      try {
+        buyer = await prisma.wholesaleBuyer.update({
+          where: { id: buyerId },
+          data: {
+            status: newStatus,
+            ...(passwordHash ? { passwordHash } : {}),
+            notes: updatedNotes,
+          },
+        });
+      } catch (dbErr: any) {
+        console.error('[wholesale/action] Could not persist the account decision:', dbErr?.message);
+        return NextResponse.json({ error: 'The buyer account could not be updated. No approval email was sent; retry after the database is available.' }, { status: 503 });
+      }
+    } else {
+      if (databaseLookupFailed) {
+        const fallbackExists = getAllFallbackWholesaleBuyers().some((record) => record.id === buyerId);
+        if (!fallbackExists) {
+          return NextResponse.json({ error: 'The database is unavailable and no fallback account exists. No decision or email was sent.' }, { status: 503 });
+        }
+      }
+      const fallbackRecord = getAllFallbackWholesaleBuyers().find((record) => record.id === buyerId);
+      if (!fallbackRecord) {
+        return NextResponse.json({ error: 'Wholesale buyer record not found.' }, { status: 404 });
+      }
+      const saved = saveFallbackWholesaleBuyer({
         ...fallbackRecord,
         status: newStatus,
         ...(passwordHash ? { passwordHash } : {}),
-        notes: reason ? `${fallbackRecord.notes || ''}\n[${action}]: ${reason}` : fallbackRecord.notes,
+        notes: updatedNotes,
         updatedAt: new Date().toISOString(),
       });
+      const persisted = getAllFallbackWholesaleBuyers().find((record) => record.id === buyerId);
+      if (!persisted || persisted.status !== newStatus || (passwordHash && persisted.passwordHash !== passwordHash) || saved.id !== buyerId) {
+        return NextResponse.json({ error: 'The buyer decision could not be persisted. No approval email was sent.' }, { status: 503 });
+      }
+      buyer = persisted as any;
     }
 
     // 3. Dispatch automated notification email

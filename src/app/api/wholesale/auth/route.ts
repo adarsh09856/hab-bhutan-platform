@@ -7,11 +7,15 @@ import { getAllFallbackWholesaleBuyers } from '@/lib/wholesale-store';
 
 export const dynamic = 'force-dynamic';
 
-const secretString = process.env.JWT_SECRET || '122e08790446e8ac0439219e4e508d8904792f81a061eacb8e58333a31261d46';
-const JWT_SECRET = new TextEncoder().encode(secretString);
+function getJwtSecret() {
+  const value = process.env.JWT_SECRET;
+  if (!value || value.length < 32) throw new Error('Wholesale authentication is not configured securely.');
+  return new TextEncoder().encode(value);
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const jwtSecret = getJwtSecret();
     const body = await req.json();
     const { username, password } = body;
 
@@ -65,16 +69,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify password hash (or fallback plaintext match if local testing)
+    // Never authenticate records without a password hash or accept plaintext legacy values.
     let isValid = false;
-    if (buyer.passwordHash) {
-      try {
-        isValid = await bcrypt.compare(password, buyer.passwordHash);
-      } catch {
-        isValid = buyer.passwordHash === password;
-      }
-    } else {
-      isValid = true;
+    if (typeof buyer.passwordHash === 'string' && buyer.passwordHash.startsWith('$2')) {
+      try { isValid = await bcrypt.compare(password, buyer.passwordHash); }
+      catch { isValid = false; }
     }
 
     if (!isValid) {
@@ -109,7 +108,7 @@ export async function POST(req: NextRequest) {
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('7d')
-      .sign(JWT_SECRET);
+      .sign(jwtSecret);
 
     try {
       await logAudit({
@@ -156,12 +155,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    const jwtSecret = getJwtSecret();
     const token = req.cookies.get('hab_wholesale_session')?.value;
     if (!token) {
       return NextResponse.json({ authenticated: false });
     }
 
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, jwtSecret);
     const buyerSession = payload.wholesaleBuyer as any;
 
     if (!buyerSession) {
