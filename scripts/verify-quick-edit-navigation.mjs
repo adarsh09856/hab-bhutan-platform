@@ -16,7 +16,7 @@ let user;
 let viewerRole;
 let viewer;
 let navigationId;
-let footerNavigationId;
+const footerNavigationIds = [];
 let categoryId;
 let applicationId;
 
@@ -115,17 +115,34 @@ try {
   assert(publicRead.response.ok && publicRead.body.success, `Public read failed (${publicRead.response.status}).`);
   assert(publicRead.body.header?.some((item) => item.id === navigationId && item.label === `Updated ${suffix}`), 'Public navigation did not immediately expose the saved change.');
 
-  const staleFooterLink = await request('/api/admin/navigation', token, {
-    method: 'POST',
-    body: JSON.stringify({ menuType: 'FOOTER', column: 'Association', label: 'Projects', href: '/about', sortOrder: 9876 }),
-  });
-  assert(staleFooterLink.response.status === 201 && staleFooterLink.body.success, `Footer link fixture create failed: ${staleFooterLink.body.error || staleFooterLink.response.status}.`);
-  footerNavigationId = staleFooterLink.body.item?.id;
+  const footerFixtures = [
+    ['Projects', '/about', '/projects'],
+    ['Strategic Plan', '/publications', '/strategic-plan'],
+    ['Board of Trustees', '/about#governance', '/board-of-trustees'],
+    ['Secretariat', '/about#governance', '/secretariat'],
+    ['Member shops', '/shop', '/outlets'],
+    ['Annual reports', '/publications', '/annual-reports'],
+    ['Audited accounts', '/publications', '/audited-accounts'],
+    ['Tenders & vacancies', '/news', '/tenders'],
+    ['Shipping & delivery', '/about#support', '/shipping-policy'],
+    ['Returns', '/about#support', '/returns-policy'],
+    ['Duty & customs', '/about#support', '/customs-policy'],
+    ['About HAB', '/about', '/about'],
+  ];
+  for (const [label, href] of footerFixtures) {
+    const createdFooterLink = await request('/api/admin/navigation', token, {
+      method: 'POST',
+      body: JSON.stringify({ menuType: 'FOOTER', column: `Temporary ${suffix}`, label: `${label} ${suffix}`, href, sortOrder: 9876 }),
+    });
+    assert(createdFooterLink.response.status === 201 && createdFooterLink.body.success, `Footer link fixture create failed for ${label}: ${createdFooterLink.body.error || createdFooterLink.response.status}.`);
+    footerNavigationIds.push(createdFooterLink.body.item?.id);
+  }
   const publicFooterRead = await request('/api/navigation', null);
-  const publicFooterLinks = publicFooterRead.body.footer?.Association || [];
-  assert(publicFooterLinks.find((item) => item.id === footerNavigationId)?.href === '/projects', 'Legacy footer Projects link still points to About instead of its own page.');
-  const aboutLink = publicFooterLinks.find((item) => item.label === 'About HAB');
-  assert(!aboutLink || aboutLink.href === '/about', 'The real About HAB footer link should continue to point to About.');
+  const publicFooterLinks = Object.values(publicFooterRead.body.footer || {}).flat();
+  for (let index = 0; index < footerFixtures.length; index += 1) {
+    const [label, , expectedHref] = footerFixtures[index];
+    assert(publicFooterLinks.find((item) => item.id === footerNavigationIds[index])?.href === expectedHref, `Footer link “${label}” did not resolve to ${expectedHref}.`);
+  }
 
   const deleted = await request(`/api/admin/navigation?id=${encodeURIComponent(navigationId)}`, token, { method: 'DELETE' });
   assert(deleted.response.ok && deleted.body.success, `Delete failed: ${deleted.body.error || deleted.response.status}.`);
@@ -190,13 +207,13 @@ try {
   assert(applicationDeleted.response.ok && applicationDeleted.body.success, `Application delete failed: ${applicationDeleted.body.error || applicationDeleted.response.status}.`);
   applicationId = null;
 
-  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; stale footer Projects→/about link resolves to /projects while About HAB remains /about; a members:view-only role was denied category writes; membership-category CRUD/public read succeeded; membership-application CRUD succeeded; anonymous application edit was denied before record lookup; temporary records cleaned up.');
+  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; 12 legacy footer labels resolve to their own canonical routes (including About HAB); a members:view-only role was denied category writes; membership-category CRUD/public read succeeded; membership-application CRUD succeeded; anonymous application edit was denied before record lookup; temporary records cleaned up.');
 } catch (error) {
   console.error(`FAIL: ${error?.message || error}`);
   process.exitCode = 1;
 } finally {
   if (navigationId) await prisma.navigationItem.deleteMany({ where: { id: navigationId } }).catch(() => {});
-  if (footerNavigationId) await prisma.navigationItem.deleteMany({ where: { id: footerNavigationId } }).catch(() => {});
+  if (footerNavigationIds.length) await prisma.navigationItem.deleteMany({ where: { id: { in: footerNavigationIds.filter(Boolean) } } }).catch(() => {});
   if (categoryId) await prisma.membershipCategory.deleteMany({ where: { id: categoryId } }).catch(() => {});
   if (applicationId) await prisma.membershipApplication.deleteMany({ where: { id: applicationId } }).catch(() => {});
   const testActorIds = [user?.id, viewer?.id].filter(Boolean);

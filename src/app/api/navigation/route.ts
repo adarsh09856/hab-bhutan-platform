@@ -47,35 +47,40 @@ function sanitizeHref(label: string, href: string): string {
   const l = (label || '').toLowerCase();
   const h = (href || '').toLowerCase();
 
+  // Keep standard footer destinations tied to their own pages even when a
+  // legacy saved URL points at About, Publications, News, or the Shop.
+  if (l.includes('about hab') || l === 'about us') return '/about';
+  if (l.includes('mandate') || l.includes('aoa')) return '/mandate';
+  if (l.includes('ethic')) return '/code-of-ethics';
+  if (l.includes('strategic')) return '/strategic-plan';
+  if (l.includes('board') || l.includes('trustee')) return '/board-of-trustees';
+  if (l.includes('secretariat')) return '/secretariat';
+  if (l.includes('programme')) return '/programmes';
+  if (l.includes('project')) return '/projects';
+  if (l.includes('apply to join')) return '/membership/apply';
+  if (l.includes('membership')) return '/membership';
+  if (l.includes('news') || l.includes('event')) return '/news';
+  if (l === 'contact us' || l === 'contact' || l === 'contact hab') return '/contact';
+  if (l.includes('wholesale') || l.includes('bulk order')) return '/wholesale';
+  if (l.includes('e-shop') || l === 'shop' || l.includes('product')) return '/shop';
+  if (l.includes('shipping') || l.includes('delivery')) return '/shipping-policy';
+  if (l.includes('return') || l.includes('refund')) return '/returns-policy';
+  if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
+  if (l.includes('track') && l.includes('order')) return '/track-order';
+  if (l.includes('directory') || l.trim() === 'members') return '/members';
+  if (l.includes('annual report')) return '/annual-reports';
+  if (l.includes('audited account')) return '/audited-accounts';
+  if (l.includes('publication') || l.includes('download')) return '/publications';
+  if (l.includes('cluster') || l.includes('outlet') || l.includes('member shop')) return '/outlets';
+  if (l.includes('member login')) return '/login';
+  if (l.includes('tender') || l.includes('vacanc')) return '/tenders';
+  if (l.includes('privacy')) return '/privacy';
+  if (l.includes('term')) return '/terms';
+  if (l === 'donate' || l.includes('donation')) return '/donate';
+
   // Older footer entries were saved with /about as a generic placeholder.
   // Resolve those entries by their visible label so they open their own page.
   if (h === '/about' || h.startsWith('/about#')) {
-    if (l.includes('mandate') || l.includes('aoa')) return '/mandate';
-    if (l.includes('ethic')) return '/code-of-ethics';
-    if (l.includes('strategic')) return '/strategic-plan';
-    if (l.includes('board') || l.includes('trustee')) return '/board-of-trustees';
-    if (l.includes('secretariat')) return '/secretariat';
-    if (l.includes('programme')) return '/programmes';
-    if (l.includes('project')) return '/projects';
-    if (l.includes('apply to join')) return '/membership/apply';
-    if (l.includes('membership')) return '/membership';
-    if (l.includes('news') || l.includes('event')) return '/news';
-    if (l.includes('contact')) return '/contact';
-    if (l.includes('wholesale') || l.includes('bulk order')) return '/wholesale';
-    if (l.includes('shop') || l.includes('product')) return '/shop';
-    if (l.includes('shipping') || l.includes('delivery')) return '/shipping-policy';
-    if (l.includes('return') || l.includes('refund')) return '/returns-policy';
-    if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
-    if (l.includes('track') && l.includes('order')) return '/track-order';
-    if (l.includes('directory') || l.trim() === 'members') return '/members';
-    if (l.includes('publication') || l.includes('download')) return '/publications';
-    if (l.includes('cluster') || l.includes('outlet')) return '/outlets';
-    if (l.includes('login')) return '/login';
-    if (l.includes('annual report')) return '/annual-reports';
-    if (l.includes('audited account')) return '/audited-accounts';
-    if (l.includes('tender') || l.includes('vacanc')) return '/tenders';
-    if (l.includes('privacy')) return '/privacy';
-    if (l.includes('term')) return '/terms';
   }
 
   // Mandate & AoA
