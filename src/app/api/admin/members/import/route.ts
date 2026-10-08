@@ -18,19 +18,45 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(rows) || rows.length === 0) {
       return NextResponse.json({ error: 'No rows provided for bulk member import' }, { status: 400 });
     }
+    if (rows.length > 5000) {
+      return NextResponse.json({ error: 'Member imports are limited to 5,000 rows per file.' }, { status: 400 });
+    }
 
     let importedCount = 0;
     let skippedCount = 0;
     const badRows: { rowNumber: number; reason: string }[] = [];
+    const seenCids = new Set<string>();
+    const seenNames = new Set<string>();
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
+      if (!row || typeof row !== 'object' || Array.isArray(row)) {
+        badRows.push({ rowNumber: index + 2, reason: 'Row must contain member fields.' });
+        continue;
+      }
       const cidNumber = String(row.cidNumber || '').trim();
-      if (!row.name || !row.craftKey || !row.dzongkhag || !cidNumber) {
+      const name = String(row.name || '').trim();
+      if (!name || !row.craftKey || !row.dzongkhag || !cidNumber) {
         badRows.push({ rowNumber: index + 2, reason: 'Name, craft, dzongkhag and CID/license are required.' });
         continue;
       }
-      const duplicate = await prisma.member.findFirst({ where: { cidNumber } }).catch(() => null);
+      const normalizedCid = cidNumber.toLowerCase();
+      const normalizedName = name.toLowerCase();
+      if (seenCids.has(normalizedCid) || seenNames.has(normalizedName)) {
+        skippedCount++;
+        badRows.push({ rowNumber: index + 2, reason: 'Duplicate skipped: CID/license or name is repeated in this file.' });
+        continue;
+      }
+      seenCids.add(normalizedCid);
+      seenNames.add(normalizedName);
+      const duplicate = await prisma.member.findFirst({
+        where: {
+          OR: [
+            { cidNumber: { equals: cidNumber, mode: 'insensitive' } },
+            { name: { equals: name, mode: 'insensitive' } },
+          ],
+        },
+      });
       if (duplicate) { skippedCount++; continue; }
       const memberId = crypto.randomUUID();
       const regNumber = row.regNumber || `HAB-M-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -40,7 +66,7 @@ export async function POST(req: NextRequest) {
         await prisma.member.create({
           data: {
             id: memberId,
-            name: row.name,
+            name,
             craftKey: row.craftKey || 'thagzo',
             dzongkhag: row.dzongkhag || 'Thimphu',
             cidNumber,

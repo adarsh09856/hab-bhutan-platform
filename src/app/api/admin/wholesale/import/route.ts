@@ -20,19 +20,33 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(rows) || rows.length === 0) {
       return NextResponse.json({ error: 'No rows provided for bulk import' }, { status: 400 });
     }
+    if (rows.length > 5000) {
+      return NextResponse.json({ error: 'Wholesale imports are limited to 5,000 rows per file.' }, { status: 400 });
+    }
 
     let importedCount = 0;
     let skippedCount = 0;
     const badRows: { rowNumber: number; reason: string }[] = [];
+    const seenEmails = new Set<string>();
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
+      if (!row || typeof row !== 'object' || Array.isArray(row)) {
+        badRows.push({ rowNumber: index + 2, reason: 'Row must contain wholesale buyer fields.' });
+        continue;
+      }
       const email = String(row.email || '').trim().toLowerCase();
-      if (!row.companyName || !row.contactName || !email.includes('@')) {
+      if (!String(row.companyName || '').trim() || !String(row.contactName || '').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         badRows.push({ rowNumber: index + 2, reason: 'Company, contact person and valid email are required.' });
         continue;
       }
-      const duplicate = await prisma.wholesaleBuyer.findFirst({ where: { email } }).catch(() => null);
+      if (seenEmails.has(email)) {
+        skippedCount++;
+        badRows.push({ rowNumber: index + 2, reason: `Duplicate skipped: email "${email}" is repeated in this file.` });
+        continue;
+      }
+      seenEmails.add(email);
+      const duplicate = await prisma.wholesaleBuyer.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
       const fallbackDuplicate = getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.toLowerCase() === email);
       if (duplicate || fallbackDuplicate) { skippedCount++; continue; }
       const buyerId = crypto.randomUUID();

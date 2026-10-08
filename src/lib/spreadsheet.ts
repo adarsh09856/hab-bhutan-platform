@@ -226,6 +226,8 @@ export function validateWholesaleImport(
   const validRows: any[] = [];
   const badRows: { rowNumber: number; data: string[]; reason: string }[] = [];
   let duplicateCount = 0;
+  const seenEmails = new Set([...existingEmails].map((email) => email.trim().toLowerCase()));
+  const seenUsernames = new Set([...existingUsernames].map((username) => username.trim().toLowerCase()));
 
   if (rawRows.length <= 1) {
     return { validRows: [], badRows: [{ rowNumber: 1, data: [], reason: 'File contains no data rows.' }], duplicateCount: 0 };
@@ -253,14 +255,14 @@ export function validateWholesaleImport(
       badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required Contact Person.' });
       continue;
     }
-    if (!email || !email.includes('@')) {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       badRows.push({ rowNumber: idx + 1, data: row, reason: `Invalid or missing email: "${email || ''}".` });
       continue;
     }
 
-    if (existingEmails.has(email)) {
+    if (seenEmails.has(email)) {
       duplicateCount++;
-      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: Email "${email}" is already registered.` });
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: Email "${email}" is already registered or repeated in this file.` });
       continue;
     }
 
@@ -270,9 +272,13 @@ export function validateWholesaleImport(
       .replace(/[^a-z0-9]/g, '')
       .slice(0, 15);
     let username = `${usernameBase || 'buyer'}_${Math.floor(100 + Math.random() * 900)}`;
-    if (existingUsernames.has(username)) {
-      username = `${usernameBase}_${Date.now().toString().slice(-4)}`;
+    let attempt = 0;
+    while (seenUsernames.has(username.toLowerCase())) {
+      attempt++;
+      username = `${usernameBase || 'buyer'}_${Date.now().toString().slice(-6)}${attempt}`;
     }
+    seenEmails.add(email);
+    seenUsernames.add(username.toLowerCase());
 
     validRows.push({
       companyName: company,
@@ -366,6 +372,8 @@ export function validateMemberImport(
   const validRows: any[] = [];
   const badRows: { rowNumber: number; data: string[]; reason: string }[] = [];
   let duplicateCount = 0;
+  const seenCids = new Set([...existingCids].map((cid) => cid.trim().toLowerCase()));
+  const seenNames = new Set([...existingNames].map((name) => name.trim().toLowerCase()));
 
   if (rawRows.length <= 1) {
     return { validRows: [], badRows: [{ rowNumber: 1, data: [], reason: 'File contains no data rows.' }], duplicateCount: 0 };
@@ -374,8 +382,8 @@ export function validateMemberImport(
   for (let idx = 1; idx < rawRows.length; idx++) {
     const row = rawRows[idx];
     const name = row[0]?.trim();
-    const craftKey = (row[1]?.trim().toLowerCase() || 'thagzo');
-    const dzongkhag = row[2]?.trim() || 'Thimphu';
+    const craftKey = row[1]?.trim().toLowerCase();
+    const dzongkhag = row[2]?.trim();
     const village = row[3]?.trim();
     const cid = row[4]?.trim();
     const phone = row[5]?.trim();
@@ -393,12 +401,25 @@ export function validateMemberImport(
       badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required CID or Business License.' });
       continue;
     }
-
-    if (existingCids.has(cid) || existingNames.has(name.toLowerCase())) {
-      duplicateCount++;
-      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: CID "${cid}" or Name "${name}" already exists.` });
+    if (!craftKey) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required craft key.' });
       continue;
     }
+    if (!dzongkhag) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required Dzongkhag.' });
+      continue;
+    }
+
+    const normalizedCid = cid.toLowerCase();
+    const normalizedName = name.toLowerCase();
+    if (seenCids.has(normalizedCid) || seenNames.has(normalizedName)) {
+      duplicateCount++;
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: CID "${cid}" or Name "${name}" already exists or is repeated in this file.` });
+      continue;
+    }
+
+    seenCids.add(normalizedCid);
+    seenNames.add(normalizedName);
 
     validRows.push({
       name,
