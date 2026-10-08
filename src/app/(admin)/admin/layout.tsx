@@ -203,7 +203,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: '1. Website & Pages',
+      group: 'Website & Pages',
       key: 'web',
       items: [
         { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
@@ -217,7 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: '2. Stories & Events',
+      group: 'Stories & Events',
       key: 'stories',
       items: [
         { label: 'News & Articles', href: '/admin/content', icon: FileText },
@@ -229,7 +229,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: '3. Artisans & Heritage',
+      group: 'Artisans & Heritage',
       key: 'heritage',
       items: [
         { label: 'Artisans & Members', href: '/admin/members', icon: Users },
@@ -240,7 +240,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: '4. Store & Commerce',
+      group: 'Commerce & Orders',
       key: 'store',
       items: [
         { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
@@ -254,7 +254,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: '5. Settings & Legal',
+      group: 'Operations & Settings',
       key: 'settings',
       items: [
         { label: 'Site Details & Contact', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
@@ -526,7 +526,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {navGroups.map((group) => {
               const visibleItems = group.items.filter((item) =>
-                !quickSearch || item.label.toLowerCase().includes(quickSearch.toLowerCase())
+                !quickSearch.trim() || item.label.toLowerCase().includes(quickSearch.trim().toLowerCase())
               );
 
               if (visibleItems.length === 0) return null;
