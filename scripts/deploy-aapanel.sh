@@ -1,158 +1,73 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# Handicrafts Association of Bhutan (HAB) — Production VPS aaPanel Deploy Script
-# Usage on VPS: bash scripts/deploy-aapanel.sh
-# ==============================================================================
-set -e
+# Safe in-place aaPanel release. Preserves untracked server data and credentials.
+set -Eeuo pipefail
 
-echo "===================================================="
-echo "🇧🇹 HAB Platform — aaPanel Production Deployment"
-echo "===================================================="
+APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_NAME="habbhutanplatform"
+cd "$APP_ROOT"
 
-# 0. Git Synchronization (Pull latest code from origin/main)
-if [ -d .git ]; then
-    echo "📥 [1/7] Fetching and synchronizing latest code from GitHub..."
-    git checkout main || true
-    git fetch origin main --prune || true
-    git reset --hard origin/main || git pull origin main || echo "⚠️ Git update skipped or in detached HEAD state."
-    echo "   Current active commit: $(git log -1 --oneline)"
+echo "HAB deployment: validating checkout and runtime"
+
+if [[ "$(git branch --show-current)" != "main" ]]; then
+  echo "Error: deploy from the main branch only; no branch checkout is performed." >&2
+  exit 1
+fi
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Error: tracked local changes exist. Commit or review them before deploying." >&2
+  exit 1
+fi
+
+PREVIOUS_COMMIT="$(git rev-parse HEAD)"
+git fetch origin main
+git pull --ff-only origin main
+
+if [[ ! -f .env ]]; then
+  echo "Error: production .env is missing. Create/configure it through the server's secret manager." >&2
+  exit 1
+fi
+if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+  echo "Error: Node.js and npm must be available in PATH." >&2
+  exit 1
+fi
+if ! command -v pm2 >/dev/null 2>&1; then
+  echo "Error: PM2 is not in PATH; no process was stopped or started." >&2
+  exit 1
+fi
+if ! pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+  echo "Error: expected PM2 process '$APP_NAME' was not found; refusing to start a second service." >&2
+  exit 1
+fi
+
+APP_PORT="${PORT:-$(awk -F= '$1 == "PORT" { gsub(/["[:space:]]/, "", $2); print $2; exit }' .env)}"
+APP_PORT="${APP_PORT:-3001}"
+
+if ! git diff --quiet "$PREVIOUS_COMMIT" HEAD -- package.json package-lock.json; then
+  echo "Dependency manifests changed; installing dependencies without removing the active node_modules tree"
+  npm install --legacy-peer-deps
 else
-    echo "ℹ️ [1/7] .git directory not found; skipping git sync."
+  echo "Dependency manifests unchanged; keeping the active node_modules tree intact"
 fi
 
-# 1. Environment & Node.js Validation
-echo "🚀 [2/7] Validating Node.js and Environment..."
-if ! command -v node &> /dev/null; then
-    # Check aaPanel Node paths if node isn't in default PATH
-    for node_bin in /www/server/nodejs/v*/bin; do
-        if [ -d "$node_bin" ]; then
-            export PATH="$node_bin:$PATH"
-            break
-        fi
-    done
-fi
-
-if ! command -v node &> /dev/null; then
-    echo "❌ Error: Node.js is not found. Please install Node.js 18 or 20 in aaPanel Node Version Manager."
-    exit 1
-fi
-
-echo "   Node version: $(node -v)"
-echo "   NPM version:  $(npm -v)"
-
-if [ ! -f .env ]; then
-    if [ -f .env.production ]; then
-        echo "ℹ️ Copying .env.production to .env..."
-        cp .env.production .env
-    elif [ -f .env.production.example ]; then
-        echo "⚠️ Notice: .env file missing. Copying .env.production.example to .env..."
-        cp .env.production.example .env
-        echo "⚠️ Please verify your DATABASE_URL in .env before proceeding!"
-    fi
-fi
-
-# Extract configured port from .env (default: 3001)
-APP_PORT=3001
-if [ -f .env ]; then
-    DETECTED_PORT=$(grep -E '^PORT=' .env | cut -d '=' -f2 | tr -d ' "\r\n' || true)
-    if [ -n "$DETECTED_PORT" ]; then
-        APP_PORT=$DETECTED_PORT
-    fi
-fi
-echo "   Target Server Port: $APP_PORT"
-
-# 2. Dependencies Installation
-echo "📦 [3/7] Installing production dependencies on Linux..."
-rm -rf .next
-npm install --legacy-peer-deps
-
-# 3. PostgreSQL Database Schema Sync
-echo "🗄️ [4/7] Generating Prisma Client and Syncing Database..."
+echo "Generating Prisma Client and applying schema without data-loss override"
 npx prisma generate
-npx prisma db push --accept-data-loss
+npx prisma db push --skip-generate
 
-# 4. Master Data Seed & Admin Verification
-echo "🌱 [5/7] Verifying Seed & Master Catalog Data..."
-npm run prisma:seed || echo "ℹ️ Seed script finished."
-if [ -f scripts/reset-admin.js ]; then
-    node scripts/reset-admin.js "HabAdminProduction2026!#" || true
-fi
-
-# 5. Production Next.js Compilation
-echo "🏗️ [6/7] Compiling Next.js Production Build on Linux..."
+echo "Building production application"
 npm run build
 
-# 6. PM2 Process Management
-echo "🔄 [7/7] Reloading Application in PM2..."
+echo "Restarting only $APP_NAME"
+pm2 restart "$APP_NAME" --update-env
 
-# Locate PM2 binary across standard VPS and aaPanel locations
-PM2_BIN="pm2"
-if ! command -v pm2 &> /dev/null; then
-    for candidate in \
-        /www/server/nodejs/v20*/bin/pm2 \
-        /www/server/nodejs/v18*/bin/pm2 \
-        /root/.nvm/versions/node/v*/bin/pm2 \
-        /usr/local/bin/pm2 \
-        /usr/bin/pm2; do
-        if [ -x "$candidate" ]; then
-            PM2_BIN="$candidate"
-            break
-        fi
-    done
-fi
+echo "Waiting for local health endpoint on port $APP_PORT"
+for attempt in {1..30}; do
+  if curl --silent --fail "http://127.0.0.1:${APP_PORT}/api/admin/health" >/dev/null; then
+    echo "Deployment healthy at commit $(git rev-parse --short HEAD)."
+    pm2 status "$APP_NAME"
+    exit 0
+  fi
+  sleep 1
+done
 
-# Clean up port if held by an orphan or defunct process
-echo "🧹 Releasing ports ${APP_PORT} and 3001 if occupied..."
-if command -v fuser &> /dev/null; then
-    fuser -k "${APP_PORT}/tcp" 2>/dev/null || true
-    fuser -k 3001/tcp 2>/dev/null || true
-elif command -v lsof &> /dev/null; then
-    kill -9 $(lsof -t -i:"${APP_PORT}" 2>/dev/null) 2>/dev/null || true
-    kill -9 $(lsof -t -i:3001 2>/dev/null) 2>/dev/null || true
-fi
-pkill -f "node.*server.js" 2>/dev/null || true
-sleep 1
-
-APP_NAME="habbhutanplatform"
-
-if command -v "$PM2_BIN" &> /dev/null || [ -x "$PM2_BIN" ]; then
-    # If the app is in errored/stopped state, delete it to clear restart backoff & stale ports
-    if "$PM2_BIN" describe "$APP_NAME" 2>/dev/null | grep -iq "errored\|stopped"; then
-        echo "⚠️ PM2 process '$APP_NAME' was in errored/stopped state. Performing clean reset..."
-        "$PM2_BIN" delete "$APP_NAME" 2>/dev/null || true
-    fi
-
-    if "$PM2_BIN" describe "$APP_NAME" &> /dev/null; then
-        echo "⚡ Restarting PM2 instance '$APP_NAME' with updated environment..."
-        "$PM2_BIN" restart "$APP_NAME" --update-env || "$PM2_BIN" reload "$APP_NAME" --update-env
-    elif [ -f ecosystem.config.js ]; then
-        echo "🚀 Starting PM2 instance from ecosystem.config.js..."
-        "$PM2_BIN" start ecosystem.config.js
-    elif [ -f server.js ]; then
-        echo "🚀 Starting Next.js via PM2 server.js execution..."
-        "$PM2_BIN" start server.js --name "$APP_NAME"
-    else
-        echo "🚀 Starting Next.js via PM2 direct execution..."
-        "$PM2_BIN" start "npm" --name "$APP_NAME" -- start
-    fi
-    "$PM2_BIN" save || true
-    echo "✅ PM2 process successfully started and saved."
-    "$PM2_BIN" list || true
-else
-    echo "⚠️ Notice: PM2 binary not found in standard paths."
-    echo "   If using aaPanel Node.js Project Manager, restart the project in the aaPanel web UI."
-fi
-
-echo "===================================================="
-echo "🎉 Deployment Complete! Application running on port ${APP_PORT}."
-echo "   Health check: curl http://127.0.0.1:${APP_PORT}/api/admin/health"
-echo "===================================================="
-echo ""
-echo "📋 Handy PM2 Management Commands:"
-echo "   pm2 status                      # View running services & uptime"
-echo "   pm2 logs habbhutanplatform      # View live application logs"
-echo "   pm2 restart habbhutanplatform   # Restart the app"
-echo "   pm2 reload habbhutanplatform    # Zero-downtime reload"
-echo "   pm2 stop habbhutanplatform      # Stop the app"
-echo "   pm2 monit                       # Interactive CPU/Memory dashboard"
-echo "===================================================="
+echo "Error: health endpoint did not recover. PM2 status follows; no other process was killed." >&2
+pm2 status "$APP_NAME" || true
+exit 1
