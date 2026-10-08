@@ -35,6 +35,7 @@ export async function GET(
           code: { not: product.code },
           status: 'PUBLISHED',
         },
+        include: { maker: { select: { name: true } } },
         take: 4,
       });
 
@@ -51,7 +52,15 @@ export async function GET(
           images: normalizedImages.images,
           gallery: resolvedGallery,
         },
-        related,
+        related: related.map((item) => {
+          const images = normalizeProductImages(item.code, item.craftKey, item.images);
+          return {
+            ...item,
+            image_path: images.imageUrl,
+            imageUrl: images.imageUrl,
+            images: images.images,
+          };
+        }),
       });
     }
 

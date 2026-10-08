@@ -21,4 +21,14 @@ assert.ok(uploaded.images.every((image) => !image.url.toLowerCase().includes('pl
 const missingImage = normalizeProductImages('UNKNOWN-01', 'thagzo', []);
 assert.equal(missingImage.imageUrl, '/assets/photos/product-sad03.jpg');
 
-console.log('PASS: placeholder variants resolve to the product-code photo; uploaded images and metadata are preserved; unknown products receive a deterministic craft fallback.');
+const relatedWithLegacyPlaceholders = ['HHB01', 'SAD03', 'KIS02'].map((code) => ({
+  code,
+  ...normalizeProductImages(code, 'thagzo', [{ url: `/placeholders/${code.toLowerCase()}_1.jpg`, role: 'primary' }]),
+}));
+assert.deepEqual(relatedWithLegacyPlaceholders.map((item) => item.imageUrl), [
+  '/assets/photos/product-hhb01.jpg',
+  '/assets/photos/product-sad03.jpg',
+  '/assets/photos/product-sad03.jpg',
+]);
+
+console.log('PASS: placeholder variants resolve to stable product/craft photos; uploaded images and metadata are preserved; unknown and related products receive deterministic fallbacks.');
