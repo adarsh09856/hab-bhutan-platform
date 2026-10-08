@@ -58,6 +58,7 @@ const FOOTER_TRANSLATIONS: Record<string, string> = {
   "Publications & downloads": "དཔེ་སྐྲུན་དང་ཕབ་ལེན",
   "Member shops & clusters": "འཐུས་མིའི་ཚོང་ཁང་དང་ལག་བཟོའི་གླིང",
   "Member shops & outlets": "འཐུས་མིའི་ཚོང་ཁང་ཚུ",
+  "Member shops": "འཐུས་མིའི་ཚོང་ཁང་ཚུ",
   "Craft clusters": "ལག་བཟོའི་གླིང",
   "Member login": "འཐུས་མི་ནང་འཛུལ",
   "Apply to join": "འཐུས་མིའི་ཞུ་བ་ཕུལ",
