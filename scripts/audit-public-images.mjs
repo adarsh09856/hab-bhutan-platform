@@ -17,7 +17,6 @@ const dynamicRouteExamples = {
   '/product/[code]': '/product/LHA01',
   '/shop/[craft]': '/shop/shingzo',
   '/order-confirmation/[orderNumber]': '/order-confirmation/HAB-UNKNOWN',
-  '/pages/[slug]': '/pages/strategic-plan',
 };
 
 function collectPublicRoutes() {
@@ -30,6 +29,20 @@ function collectPublicRoutes() {
       return path.includes('[') ? null : path;
     })
     .filter(Boolean);
+}
+
+async function discoverLinkedCustomPages() {
+  try {
+    const response = await fetch(new URL('/api/navigation', baseUrl), { signal: AbortSignal.timeout(12_000) });
+    if (!response.ok) return [];
+    const navigation = await response.json();
+    const links = [...(navigation.header || []), ...(navigation.footer || [])];
+    return links
+      .map((item) => String(item.href || '').split(/[?#]/)[0])
+      .filter((href) => /^\/pages\/[a-z0-9-]+$/i.test(href));
+  } catch {
+    return [];
+  }
 }
 
 function addUrl(urls, raw, pageUrl) {
@@ -98,7 +111,7 @@ async function fetchStylesheet(url) {
   return response.ok ? await response.text() : '';
 }
 
-const routes = collectPublicRoutes();
+const routes = [...new Set([...collectPublicRoutes(), ...await discoverLinkedCustomPages()])];
 const pageResults = [];
 for (let index = 0; index < routes.length; index += 5) {
   pageResults.push(...await Promise.all(routes.slice(index, index + 5).map(fetchHtml)));
@@ -147,7 +160,9 @@ for (let index = 0; index < sameOrigin.length; index += 10) {
   failures.push(...results.filter((result) => typeof result.status !== 'number' || result.status < 200 || result.status >= 400));
 }
 
-console.log(`Pages fetched: ${pageResults.length}; non-200 pages: ${pageResults.filter((page) => page.status !== 200).length}`);
+const non200Pages = pageResults.filter((page) => page.status !== 200);
+console.log(`Pages fetched: ${pageResults.length}; non-200 pages: ${non200Pages.length}`);
+for (const page of non200Pages) console.error(`Page request failed: ${page.status} ${page.path}`);
 console.log(`Unique rendered and CSS image URLs: ${images.size}; same-origin checked: ${sameOrigin.length}; external URLs skipped: ${externalCount}; same-origin stylesheets scanned: ${stylesheets.size}`);
 if (failures.length) {
   console.error('Failed same-origin image/media URLs:');
