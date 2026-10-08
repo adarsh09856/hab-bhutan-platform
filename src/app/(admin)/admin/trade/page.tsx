@@ -244,14 +244,9 @@ export default function AdminTradePage() {
     const tiers = Array.isArray(t.tiers) ? t.tiers : [];
     setTermsForm({
       moq: t.moq || 5,
-      lead_time: t.lead_time || '4–6 weeks',
-      tiers: (tiers.length ? tiers : [
-        [5, Math.round((p.retailPrice || 100) * 0.9)],
-        [15, Math.round((p.retailPrice || 100) * 0.82)],
-        [40, Math.round((p.retailPrice || 100) * 0.75)],
-        [100, Math.round((p.retailPrice || 100) * 0.68)],
-      ]).map((tier: number[]) => ({ quantity: Number(tier[0]), price: Number(tier[1]) })),
-      customisation: t.customisation || 'Available on request',
+      lead_time: t.lead_time || '',
+      tiers: tiers.map((tier: number[]) => ({ quantity: Number(tier[0]), price: Number(tier[1]) })),
+      customisation: t.customisation || '',
       is_active: t.is_active !== false,
     });
   };

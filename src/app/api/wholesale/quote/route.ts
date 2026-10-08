@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import prisma from '@/lib/prisma';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
+import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 
 export const dynamic = 'force-dynamic';
 const jwtKey = new TextEncoder().encode(process.env.JWT_SECRET || '122e08790446e8ac0439219e4e508d8904792f81a061eacb8e58333a31261d46');
@@ -38,23 +39,23 @@ export async function POST(request: NextRequest) {
     });
     if (products.length !== normalized.length) return NextResponse.json({ success: false, error: 'One or more selected products are no longer available.' }, { status: 400 });
     const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { wholesaleTerms: true } });
-    const legacyTerms = (setting?.wholesaleTerms as Record<string, any> | null) || {};
+    const legacyTerms: Record<string, any> = {
+      ...SERVER_WHOLESALE_TERMS,
+      ...((setting?.wholesaleTerms as Record<string, any> | null) || {}),
+    };
     let total = 0;
     const lines = normalized.map(({ code, quantity }: any) => {
       const product = products.find((entry) => entry.code === code)!;
-      const saved = product.wholesaleTerms;
-      const terms: any = saved ? {
-        moq: saved.moq, tiers: saved.tiers, is_active: saved.isActive,
-      } : legacyTerms[code] || SERVER_WHOLESALE_TERMS[code];
-      if (saved?.isActive === false || terms?.is_active === false) throw new Error(`${code} is not currently available for wholesale quotes.`);
-      const moq = Number(terms?.moq || 1);
+      const terms = resolveWholesaleOffer(product.wholesaleTerms, legacyTerms[code]);
+      if (!terms) throw new Error(`${code} is not currently available for wholesale quotes.`);
+      const moq = Number(terms.moq || 1);
       if (quantity < moq) throw new Error(`${code} requires a minimum wholesale quantity of ${moq}.`);
       const tiers = Array.isArray(terms?.tiers) ? terms.tiers : [];
       const sorted = tiers.filter((tier: any) => Array.isArray(tier) && Number.isFinite(Number(tier[0])) && Number.isFinite(Number(tier[1])))
         .sort((a: any, b: any) => Number(a[0]) - Number(b[0]));
       const applicable = sorted.filter((tier: any) => quantity >= Number(tier[0]));
-      const unitPrice = sorted.length ? Number((applicable.at(-1) || sorted[0])[1])
-        : Math.round(product.priceUSD * (1 - Math.min(100, Math.max(0, buyer.discountTier || 0)) / 100) * 100) / 100;
+      if (sorted.length === 0) throw new Error(`${code} is not currently available for wholesale quotes.`);
+      const unitPrice = Number((applicable.at(-1) || sorted[0])[1]);
       total += unitPrice * quantity;
       return `- [${code}] ${product.name}: ${quantity} units @ $${unitPrice.toFixed(2)} = $${(unitPrice * quantity).toFixed(2)} USD`;
     });
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, inquiryId: inquiry.id }, { status: 201 });
   } catch (error: any) {
     const message = error?.message || '';
-    if (message.includes('minimum wholesale quantity') || message.includes('no longer available') || message.includes('listed once')) {
+    if (message.includes('minimum wholesale quantity') || message.includes('no longer available') || message.includes('not currently available') || message.includes('listed once')) {
       return NextResponse.json({ success: false, error: message }, { status: 400 });
     }
     console.error('Wholesale quote submission failed:', error);

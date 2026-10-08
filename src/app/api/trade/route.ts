@@ -4,6 +4,7 @@ import { jwtVerify } from 'jose';
 import prisma from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
+import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,28 +30,15 @@ export async function GET(request: NextRequest) {
       orderBy: { code: 'asc' },
     });
 
-    const wholesaleTerms = setting?.wholesaleTerms || SERVER_WHOLESALE_TERMS;
+    const wholesaleTerms = {
+      ...SERVER_WHOLESALE_TERMS,
+      ...((setting?.wholesaleTerms as Record<string, any> | null) || {}),
+    };
     const assurances = setting?.wholesaleAssurances || CLIENT_DATA.wholesaleAssurance || [];
     const buyerTypes = setting?.wholesaleBuyerTypes || CLIENT_DATA.buyerTypes || [];
 
     const mapped = products.map((p) => {
-      const saved = p.wholesaleTerms;
-      const t = saved ? {
-        moq: saved.moq,
-        lead_time: saved.leadTime,
-        tiers: saved.tiers,
-        customisation: saved.customisation || '',
-        is_active: saved.isActive,
-      } : (wholesaleTerms as any)[p.code] || {
-        moq: setting?.wholesaleMoq || 5,
-        lead: setting?.wholesaleLeadTime || '2 to 4 weeks',
-        tiers: [
-          [5, Math.round(p.priceUSD * 0.9)],
-          [15, Math.round(p.priceUSD * 0.82)],
-          [40, Math.round(p.priceUSD * 0.75)],
-          [100, Math.round(p.priceUSD * 0.68)],
-        ],
-      };
+      const t = resolveWholesaleOffer(p.wholesaleTerms, (wholesaleTerms as any)[p.code]);
       const img = (p.images as any)?.[0]?.url || '/assets/photos/product-sad03.jpg';
       return {
         ...p,
@@ -58,7 +46,7 @@ export async function GET(request: NextRequest) {
         hero_image: img,
         terms: t,
       };
-    });
+    }).filter((p) => p.terms !== null);
 
     const res = NextResponse.json({
       success: true,

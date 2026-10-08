@@ -14,6 +14,12 @@
 - Product CRUD: Admin → Products. B2B terms (MOQ, lead time, customization, tier pricing): Admin → Wholesale Trade Desk. Wholesale order creation is now a primary action in the Wholesale Buyer Accounts page.
 - `npm run typecheck` and `git diff --check` passed. Production build and browser interaction for this exact toolbar change are **UNVERIFIED**; this is a focused usability fix, not full-plan completion.
 
+## Recent progress — B2B pricing integrity (8 Oct 2026)
+
+- Removed the Trade Desk's fictional sample wholesale quotes and buyer inquiries and its client-data product fallback. A database read outage now surfaces as an error rather than showing fabricated business records.
+- New retail products no longer receive guessed B2B tiers derived from their retail price. The Admin Trade Desk shows unconfigured products as inactive with no price breaks; the public wholesale catalogue omits them until terms are explicitly saved. Quote submission rejects products without active, valid configured terms rather than calculating an unapproved buyer-discount price.
+- Shared eligibility validation normalizes saved/legacy tiers, rejects inactive or malformed/missing pricing, and is covered by `scripts/verify-wholesale-offer.mjs` (passed). `npm run typecheck` and `git diff --check` passed. Production build, authenticated browser catalogue, and real quote workflow remain **UNVERIFIED**; no production data or submitted quote was changed.
+
 ---
 
 ## 1. Executive Alignment & Core Mandate

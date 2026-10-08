@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 import { requirePermission } from '@/lib/rbac';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 
@@ -9,13 +8,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     await requirePermission(request, 'products:view');
-    let siteSetting: any = null;
-    let dbInquiries: any[] = [];
-    let dbProducts: any[] = [];
-
-    try {
-      siteSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
-      dbInquiries = await prisma.inquiry.findMany({
+    const [siteSetting, dbInquiries, dbProducts] = await Promise.all([
+      prisma.siteSetting.findUnique({ where: { id: 'default' } }),
+      prisma.inquiry.findMany({
         where: {
           OR: [
             { subject: { contains: 'Wholesale' } },
@@ -23,73 +18,45 @@ export async function GET(request: NextRequest) {
           ],
         },
         orderBy: { createdAt: 'desc' },
-      });
-      dbProducts = await prisma.product.findMany({
+      }),
+      prisma.product.findMany({
         include: { craft: true, wholesaleTerms: true },
         orderBy: { code: 'asc' },
-      });
-    } catch {
-      // Graceful fallback if database connection is offline
-    }
+      }),
+    ]);
 
-    // Merge wholesale terms from siteSetting or CLIENT_DATA
-    const termsMap: Record<string, any> = (siteSetting?.wholesaleTerms as Record<string, any>) || SERVER_WHOLESALE_TERMS;
+    // Merge staff-managed overrides over approved legacy B2B terms.
+    const termsMap: Record<string, any> = {
+      ...SERVER_WHOLESALE_TERMS,
+      ...((siteSetting?.wholesaleTerms as Record<string, any> | null) || {}),
+    };
 
     // Combine products with their wholesale terms
-    const productsList = dbProducts.length > 0
-      ? dbProducts.map((p) => {
+    const productsList = dbProducts.map((p) => {
           const savedTerms = p.wholesaleTerms;
+          const legacyTerms = termsMap[p.code] as any;
           const t = savedTerms ? {
             moq: savedTerms.moq,
             lead_time: savedTerms.leadTime,
             tiers: savedTerms.tiers,
             customisation: savedTerms.customisation || '',
             is_active: savedTerms.isActive,
-          } : termsMap[p.code] || {
-            moq: 5,
-            lead_time: '4–6 weeks',
-            tiers: [
-              [5, Math.round(p.priceUSD * 0.9)],
-              [15, Math.round(p.priceUSD * 0.82)],
-              [40, Math.round(p.priceUSD * 0.75)],
-              [100, Math.round(p.priceUSD * 0.68)],
-            ],
-            customisation: 'Available on request',
-            is_active: true,
-          };
+          } : legacyTerms ? {
+            moq: legacyTerms.moq,
+            lead_time: legacyTerms.lead_time || legacyTerms.lead || '',
+            tiers: legacyTerms.tiers,
+            customisation: legacyTerms.customisation || legacyTerms.custom || '',
+            is_active: legacyTerms.is_active !== false,
+          } : { moq: 0, lead_time: '', tiers: [], customisation: '', is_active: false };
           return {
             code: p.code,
             name: p.name,
             retailPrice: p.priceUSD,
             craftKey: p.craftKey,
             craftName: p.craft?.name || p.craftKey,
-            image: p.images?.[0]?.url || '/assets/photos/product-hhb01.jpg',
+            image: (p.images as any)?.[0]?.url || '/assets/photos/product-hhb01.jpg',
             terms: t,
-            hasSavedTerms: Boolean(savedTerms || (termsMap as Record<string, any>)[p.code]),
-          };
-        })
-      : CLIENT_DATA.products.map((p) => {
-          const rawPrice = (p as any).price_usd || (p as any).price || 100;
-          const t = termsMap[p.code] || {
-            moq: 5,
-            lead_time: '4–6 weeks',
-            tiers: [
-              [5, Math.round(rawPrice * 0.9)],
-              [15, Math.round(rawPrice * 0.82)],
-              [40, Math.round(rawPrice * 0.75)],
-              [100, Math.round(rawPrice * 0.68)],
-            ],
-            customisation: 'Available on request',
-            is_active: true,
-          };
-          return {
-            code: p.code,
-            name: p.name,
-            retailPrice: rawPrice,
-            craftKey: p.craft_key,
-            craftName: (p as any).craft_name || p.craft_key,
-            image: p.image_path,
-            terms: t,
+            hasSavedTerms: Boolean(savedTerms || termsMap[p.code]),
           };
         });
 
@@ -98,9 +65,7 @@ export async function GET(request: NextRequest) {
     const quoteInquiries = dbInquiries.filter((inq) => inq.subject.includes('Quotation') || inq.message.includes('QUOTATION'));
     const buyerInquiries = dbInquiries.filter((inq) => inq.subject.includes('Registration') || inq.message.includes('REGISTRATION'));
 
-    // Fallback seed quotations if none in DB
-    const quotes = quoteInquiries.length > 0
-      ? quoteInquiries.map((q) => {
+    const quotes = quoteInquiries.map((q) => {
           return {
             id: q.id,
             reference: `HAB-Q-${q.id.slice(0, 6).toUpperCase()}`,
@@ -113,37 +78,9 @@ export async function GET(request: NextRequest) {
             adminNotes: q.adminNotes || '',
             createdAt: q.createdAt,
           };
-        })
-      : [
-          {
-            id: 'quote-seed-1',
-            reference: 'HAB-Q-89214A',
-            buyerName: 'Himalayan Arts Gallery Ltd',
-            email: 'procurement@himalayan-arts.sg',
-            phone: '+65 6789 2210',
-            subject: 'Wholesale Quotation Request: Himalayan Arts Gallery (65 units · $14,200 USD)',
-            details: 'Line-items:\n- [LHA01] Thagzo Silk Scarf: 25 units @ $221\n- [MAS01] Wrathful Deity Mask: 15 units @ $410\n- [KIR01] Traditional Kushuthara: 25 units @ $204\nDestination: Singapore\nRequired by: 2026-11-15\nCustomisation: Gift boxed with HAB certificates.',
-            status: 'new',
-            adminNotes: 'Awaiting shipping calculation from Bhutan Post EMS.',
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: 'quote-seed-2',
-            reference: 'HAB-Q-77142B',
-            buyerName: 'Druk Heritage Boutique',
-            email: 'buyer@drukheritage.co.uk',
-            phone: '+44 20 7946 0912',
-            subject: 'Wholesale Quotation Request: Druk Heritage Boutique (120 units · $21,450 USD)',
-            details: 'Line-items:\n- [DES01] Handmade Daphne Paper Notebook: 80 units @ $28\n- [ZAM01] Bronze Incense Burner: 40 units @ $190\nDestination: London, UK\nRequired by: 2026-12-01',
-            status: 'quoted',
-            adminNotes: 'Quotation sent via email on 12 Sep 2026.',
-            createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-          },
-        ];
+        });
 
-    // Fallback seed buyers if none in DB
-    const buyers = buyerInquiries.length > 0
-      ? buyerInquiries.map((b) => {
+    const buyers = buyerInquiries.map((b) => {
           return {
             id: b.id,
             businessName: b.subject.replace('Wholesale Buyer Registration: ', '').split('(')[0].trim() || b.name,
@@ -155,31 +92,7 @@ export async function GET(request: NextRequest) {
             status: b.status === 'RESOLVED' ? 'verified' : b.status === 'ARCHIVED' ? 'rejected' : 'pending',
             createdAt: b.createdAt,
           };
-        })
-      : [
-          {
-            id: 'buyer-seed-1',
-            businessName: 'Himalayan Arts Gallery Ltd',
-            contactName: 'Tenzin Wangchuk',
-            email: 'procurement@himalayan-arts.sg',
-            phone: '+65 6789 2210',
-            subject: 'Wholesale Buyer Registration: Himalayan Arts Gallery (Singapore)',
-            details: 'Buyer Type: Boutique Retailer\nCountry: Singapore\nReg ID: UEN202419082M\nWebsite: https://himalayan-arts.sg\nPurpose: Retail distribution in Southeast Asia.',
-            status: 'verified',
-            createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-          },
-          {
-            id: 'buyer-seed-2',
-            businessName: 'Nordic Heritage Craft Imports',
-            contactName: 'Astrid Lind',
-            email: 'astrid@nordiccrafts.se',
-            phone: '+46 8 123 4567',
-            subject: 'Wholesale Buyer Registration: Nordic Heritage Craft Imports (Sweden)',
-            details: 'Buyer Type: Museum Shop / Gallery\nCountry: Sweden\nReg ID: SE5560123456\nPurpose: Scandinavian museum exhibition & fair-trade retail.',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-          },
-        ];
+        });
 
     return NextResponse.json({
       success: true,
