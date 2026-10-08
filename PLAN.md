@@ -8,6 +8,12 @@
 **Commit Reference**: `40ee78f` / `7c2e6b0`  
 **Last Updated**: October 2026  
 
+## Recent progress — Wholesale Admin shortcuts (8 Oct 2026)
+
+- Elevated **Create wholesale order** (opens `/admin/orders?createWholesale=1`) and **Manage products** (`/admin/products`) to the main wholesale-page toolbar; removed the duplicate task-card block below the header.
+- Product CRUD: Admin → Products. B2B terms (MOQ, lead time, customization, tier pricing): Admin → Wholesale Trade Desk. Wholesale order creation is now a primary action in the Wholesale Buyer Accounts page.
+- `npm run typecheck` and `git diff --check` passed. Production build and browser interaction for this exact toolbar change are **UNVERIFIED**; this is a focused usability fix, not full-plan completion.
+
 ---
 
 ## 1. Executive Alignment & Core Mandate

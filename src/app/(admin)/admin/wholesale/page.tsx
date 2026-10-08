@@ -384,6 +384,18 @@ export default function AdminWholesalePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="/admin/orders?createWholesale=1"
+            className="px-3 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold rounded-xl transition"
+          >
+            Create wholesale order
+          </a>
+          <a
+            href="/admin/products"
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition"
+          >
+            Manage products
+          </a>
           <button
             onClick={handleExportCsv}
             className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-xs transition"
@@ -416,25 +428,6 @@ export default function AdminWholesalePage() {
           </button>
         </div>
       </div>
-
-      <section aria-label="Wholesale tasks" className="grid gap-3 sm:grid-cols-2">
-        <a
-          href="/admin/orders?createWholesale=1"
-          className="group rounded-xl border border-[#8B2E24]/20 bg-white p-4 transition hover:border-[#8B2E24]/50 hover:shadow-sm"
-        >
-          <span className="block text-sm font-semibold text-slate-900">Create wholesale order</span>
-          <span className="mt-1 block text-xs leading-5 text-slate-600">Choose an active buyer, add catalog products, and record payment status.</span>
-          <span className="mt-3 inline-flex text-xs font-semibold text-[#8B2E24]">Open order form →</span>
-        </a>
-        <a
-          href="/admin/products"
-          className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
-        >
-          <span className="block text-sm font-semibold text-slate-900">Manage products</span>
-          <span className="mt-1 block text-xs leading-5 text-slate-600">Add or edit products in the catalog used by wholesale orders.</span>
-          <span className="mt-3 inline-flex text-xs font-semibold text-slate-700">Open product catalog →</span>
-        </a>
-      </section>
 
       {flashMsg && (
         <div
