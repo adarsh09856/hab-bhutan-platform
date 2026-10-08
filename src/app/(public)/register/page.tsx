@@ -18,6 +18,19 @@ function RegisterContent() {
     if (t) setSelectedType(t);
   }, [searchParams]);
 
+  useEffect(() => {
+    fetch('/api/membership-settings', { cache: 'no-store' }).then((response) => response.json()).then((data) => {
+      if (data?.success && data.setting) setMembershipSettings(data.setting);
+    }).catch(() => {});
+    fetch('/api/site-settings', { cache: 'no-store' }).then((response) => response.json()).then((data) => {
+      if (data?.success && data.setting) setPaymentSettings(data.setting);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setPaymentMethod(selectedType === 'honorary' ? 'card' : 'mbob');
+  }, [selectedType]);
+
   const [formData, setFormData] = useState({
     fullName: '',
     primaryCraft: 'thagzo',
@@ -30,7 +43,9 @@ function RegisterContent() {
     declared: false,
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'mbob' | 'bank'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'mbob' | 'bank'>('mbob');
+  const [membershipSettings, setMembershipSettings] = useState<any>(null);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
   const [bankRef, setBankRef] = useState('');
   const [mobilePhone, setMobilePhone] = useState('');
   const [proofUrl, setProofUrl] = useState<string | null>(null);
@@ -105,6 +120,17 @@ function RegisterContent() {
   ];
 
   const currentTypeObj = types.find((t) => t.key === selectedType) || types[0];
+  const feeForType = (typeKey: string) => {
+    if (typeKey === 'honorary') return 'No fee';
+    const amount = typeKey === 'associate'
+      ? membershipSettings?.associateDuesBTN
+      : typeKey === 'institution'
+        ? membershipSettings?.institutionalDuesBTN
+        : membershipSettings?.activeDuesBTN;
+    return Number.isFinite(Number(amount)) ? `Nu. ${Number(amount).toLocaleString('en-US')}` : 'Dues unavailable';
+  };
+  const currentTypeFee = feeForType(currentTypeObj.key);
+  const noFeeApplication = currentTypeObj.key === 'honorary';
 
   const handleStep2Next = () => {
     setErrorMsg('');
@@ -125,6 +151,10 @@ function RegisterContent() {
 
   const handleFinalSubmit = async () => {
     setErrorMsg('');
+    if (!noFeeApplication && (!membershipSettings || !paymentSettings || !paymentSettings.bobAccountNumber)) {
+      setErrorMsg('The current dues or official payment details could not be loaded. Please refresh before paying.');
+      return;
+    }
     if (!formData.declared) {
       setErrorMsg('Please confirm the declaration before submitting.');
       return;
@@ -223,7 +253,7 @@ function RegisterContent() {
                 >
                   <div className="plan__head">
                     <span className="plan__name">{t.name}</span>
-                    <span className="plan__price">{t.fee}</span>
+                    <span className="plan__price">{feeForType(t.key)}</span>
                   </div>
                   <p className="plan__cat">{t.status}</p>
                   <p className="plan__who">{t.tagline}</p>
@@ -239,7 +269,7 @@ function RegisterContent() {
                 Continue to your details →
               </button>
               <span className="craft__count" style={{ margin: 0, alignSelf: 'center' }}>
-                Selected: {currentTypeObj.name} ({currentTypeObj.fee})
+                Selected: {currentTypeObj.name} ({currentTypeFee})
               </span>
             </div>
           </div>
@@ -389,7 +419,7 @@ function RegisterContent() {
                 </div>
                 <div className="deeplist__row">
                   <dt className="deeplist__key">Annual dues</dt>
-                  <dd className="deeplist__val">{currentTypeObj.fee}</dd>
+                  <dd className="deeplist__val">{currentTypeFee}</dd>
                 </div>
                 <div className="deeplist__row">
                   <dt className="deeplist__key">Name</dt>
@@ -426,30 +456,17 @@ function RegisterContent() {
           <div id="regStep4">
             <h2 className="display display--sub">Pay your first year&apos;s dues</h2>
             <p className="section__lede" style={{ marginBottom: 0 }}>
-              Your application is complete and saved. Paying now submits it to the secretariat — the same secure gateway used across the site.
+              {noFeeApplication ? 'No dues are charged for honorary applications. Submit your application for Board review.' : 'Transfer the annual dues, then submit your transaction reference and payment proof. HAB reviews the payment and application before approval.'}
             </p>
 
             <div className="checkout" style={{ marginTop: 24 }}>
               <div>
                 <div className="panel" style={{ marginBottom: 22 }}>
                   <h3 className="newsaside__title">Payment method</h3>
-                  <div className="paybar paybar--inset">
-                    <p className="paybar__label">Secure payment</p>
-                    <div className="paybar__brands" style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
-                      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>VISA</span>
-                      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>Mastercard</span>
-                      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>mBoB</span>
-                    </div>
-                    <p className="paybar__note">
-                      3-D Secure verified. Cards are processed by our gateway; HAB never sees your card number.
-                    </p>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
+                  {noFeeApplication ? <p className="section__lede">No payment is due for this category.</p> : <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
                     {[
-                      { key: 'card', name: 'International card', note: 'Visa, Mastercard, Amex — 3-D Secure' },
-                      { key: 'mbob', name: 'Bhutan mobile pay', note: 'mBoB / RMA-approved wallets, in Nu.' },
-                      { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
+                      { key: 'mbob', name: 'Bhutan mobile pay', note: 'Transfer using the official account details below.' },
+                      { key: 'bank', name: 'Bank transfer', note: 'Transfer to the account published by HAB below.' },
                     ].map((opt) => (
                       <div
                         key={opt.key}
@@ -464,16 +481,16 @@ function RegisterContent() {
                         </span>
                       </div>
                     ))}
-                  </div>
+                  </div>}
 
                   {/* mBoB details */}
-                  {paymentMethod === 'mbob' && (
+                  {!noFeeApplication && paymentMethod === 'mbob' && (
                     <div style={{ marginTop: 16, padding: 14, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                       <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, color: '#8B2E24' }}>
                         mBoB Transfer Details
                       </p>
                       <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                        Transfer <strong>{currentTypeObj.fee}</strong> to Bank of Bhutan Account <strong>0100234891001</strong> (Handicrafts Association of Bhutan).
+                        Transfer <strong>{currentTypeFee}</strong> to {paymentSettings?.bobBankName || 'HAB’s configured bank'} Account <strong>{paymentSettings?.bobAccountNumber || 'Payment details unavailable'}</strong> ({paymentSettings?.bobAccountTitle || 'Handicrafts Association of Bhutan'}).
                       </p>
                       <div className="formgrid">
                         <label className="field">
@@ -513,13 +530,13 @@ function RegisterContent() {
                   )}
 
                   {/* Bank transfer details */}
-                  {paymentMethod === 'bank' && (
+                  {!noFeeApplication && paymentMethod === 'bank' && (
                     <div style={{ marginTop: 16, padding: 14, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                       <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 6, color: '#8B2E24' }}>
                         Bank Deposit / SWIFT Wire Details
                       </p>
                       <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                        Bank of Bhutan Account: <strong>100234891001</strong> · Bhutan National Bank (BNB): <strong>00234891001</strong> · SWIFT: <strong>BOBTBT22</strong>. Dues: <strong>{currentTypeObj.fee}</strong>.
+                        {paymentSettings?.bobBankName || 'Bank of Bhutan'} Account: <strong>{paymentSettings?.bobAccountNumber || 'Payment details unavailable'}</strong>{paymentSettings?.bnbAccountNumber ? <> · {paymentSettings?.bnbBankName || 'Bhutan National Bank (BNB)'}: <strong>{paymentSettings.bnbAccountNumber}</strong></> : null}. Dues: <strong>{currentTypeFee}</strong>.
                       </p>
                       <div className="formgrid">
                         <label className="field field--wide">
@@ -586,11 +603,11 @@ function RegisterContent() {
                 </div>
                 <div className="summary__row">
                   <span>Paying with</span>
-                  <span>{paymentMethod === 'card' ? 'Card' : paymentMethod === 'mbob' ? 'mBoB' : 'Bank'}</span>
+                  <span>{noFeeApplication ? 'No dues' : paymentMethod === 'mbob' ? 'mBoB' : 'Bank transfer'}</span>
                 </div>
                 <div className="summary__total">
                   <span>Due today</span>
-                  <span>{currentTypeObj.fee}</span>
+                  <span>{currentTypeFee}</span>
                 </div>
                 <button
                   className="btn btn--light btn--full"

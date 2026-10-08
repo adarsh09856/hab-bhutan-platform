@@ -22,12 +22,22 @@ export async function POST(req: NextRequest) {
     const yearsPractising = body.yearsPractising ? parseInt(String(body.yearsPractising), 10) || 1 : 1;
     const planTierRaw = body.planTier || body.categoryKey || 'ACTIVE_SECTOR_MEMBER';
     const paymentMethodRaw = body.paymentMethod || 'CARD';
+    const noFeeApplication = ['honorary', 'HONORARY'].includes(String(planTierRaw).trim());
+    const normalizedPaymentMethod = String(paymentMethodRaw).trim().toUpperCase();
     const uploadedDocUrl = body.uploadedDocUrl || body.proofUrl || null;
     const uploadedCidUrl = body.uploadedCidUrl || null;
-    const paymentNotes = body.paymentRef
+    const paymentNotes = noFeeApplication
+      ? 'No payment required for honorary application.'
+      : body.paymentRef
       ? `Payment: ${paymentMethodRaw.toUpperCase()} · Ref: ${body.paymentRef}${body.mobilePhone ? ` · Phone: ${body.mobilePhone}` : ''}`
       : null;
     const offlinePayment = ['MBOB', 'BANK'].includes(String(paymentMethodRaw).toUpperCase());
+    if (!noFeeApplication && normalizedPaymentMethod === 'CARD') {
+      return NextResponse.json({ success: false, error: 'Card checkout is not configured for membership applications. Pay by mBoB or bank transfer and submit your reference and proof.' }, { status: 503 });
+    }
+    if (!noFeeApplication && !offlinePayment) {
+      return NextResponse.json({ success: false, error: 'Choose a supported membership payment method.' }, { status: 400 });
+    }
     if (offlinePayment && (!String(body.paymentRef || '').trim() || !uploadedDocUrl)) {
       return NextResponse.json({ success: false, error: 'Payment reference and deposit proof are required for mBoB or bank transfer.' }, { status: 400 });
     }
@@ -56,7 +66,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Map payment method to schema PaymentMethod enum
-    let mappedPayment: 'CARD' | 'MBOB' | 'BANK' = 'CARD';
+    let mappedPayment: 'CARD' | 'MBOB' | 'BANK' = noFeeApplication ? 'CARD' : 'MBOB';
     if (String(paymentMethodRaw).toUpperCase() === 'MBOB') mappedPayment = 'MBOB';
     else if (String(paymentMethodRaw).toUpperCase() === 'BANK') mappedPayment = 'BANK';
 

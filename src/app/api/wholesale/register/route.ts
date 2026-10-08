@@ -41,6 +41,13 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const normalizedPaymentMethod = String(paymentMethod || '').trim().toUpperCase();
+    if (normalizedPaymentMethod === 'CARD') {
+      return NextResponse.json({ success: false, error: 'Card checkout is not configured for wholesale applications. Pay by mBoB or bank transfer and submit your reference and proof.' }, { status: 503 });
+    }
+    if (!['MBOB', 'BANK'].includes(normalizedPaymentMethod)) {
+      return NextResponse.json({ success: false, error: 'Choose a supported wholesale payment method.' }, { status: 400 });
+    }
     const offlinePayment = ['mbob', 'bank'].includes(String(paymentMethod || '').toLowerCase());
     if (offlinePayment && (!String(paymentRef || '').trim() || !String(proofUrl || '').trim())) {
       return NextResponse.json(

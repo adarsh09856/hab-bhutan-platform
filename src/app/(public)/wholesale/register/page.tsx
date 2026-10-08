@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -32,9 +32,22 @@ export default function WholesaleRegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [membershipSettings, setMembershipSettings] = useState<any>(null);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/membership-settings', { cache: 'no-store' }).then((response) => response.json()).then((data) => {
+      if (data?.success && data.setting) setMembershipSettings(data.setting);
+    }).catch(() => {});
+    fetch('/api/site-settings', { cache: 'no-store' }).then((response) => response.json()).then((data) => {
+      if (data?.success && data.setting) setPaymentSettings(data.setting);
+    }).catch(() => {});
+  }, []);
 
   // Payment states (matching donate section)
-  const [payMethod, setPayMethod] = useState<'card' | 'mbob' | 'bank'>('card');
+  const [payMethod, setPayMethod] = useState<'card' | 'mbob' | 'bank'>('mbob');
+  const wholesaleFee = Number(membershipSettings?.associateDuesBTN);
+  const wholesaleFeeLabel = Number.isFinite(wholesaleFee) ? `Nu. ${wholesaleFee.toLocaleString('en-US')}` : 'Dues unavailable';
   const [mobilePhone, setMobilePhone] = useState('');
   const [bankRef, setBankRef] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -111,6 +124,10 @@ export default function WholesaleRegisterPage() {
 
     if (!formData.declared) {
       setErrorMessage('Please confirm the declaration before submitting.');
+      return;
+    }
+    if (!membershipSettings || !paymentSettings || !paymentSettings.bobAccountNumber) {
+      setErrorMessage('The current dues or official payment details could not be loaded. Please refresh before paying.');
       return;
     }
     if ((payMethod === 'mbob' || payMethod === 'bank') && !bankRef.trim()) {
@@ -477,7 +494,7 @@ export default function WholesaleRegisterPage() {
             <section className="regblock">
               <h2 className="regblock__title">Trade verification &amp; annual dues</h2>
               <p className="regblock__lede">
-                Wholesale verification fee: <strong>Nu. 2,500 / USD $30</strong> per year. Covers craft provenance audit, trade desk account provisioning, and access to confidential bulk discount tiers.
+                Wholesale verification dues: <strong>{wholesaleFeeLabel}</strong> per year. Covers craft provenance audit, trade desk account provisioning, and access to confidential bulk discount tiers.
               </p>
 
               <div className="checkout" style={{ marginTop: 16 }}>
@@ -485,9 +502,8 @@ export default function WholesaleRegisterPage() {
                   <h3 className="newsaside__title">Choose payment method</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
                     {[
-                      { key: 'card', name: 'International card (3-D Secure)', note: 'Visa, Mastercard, Amex — instant card authorization' },
-                      { key: 'mbob', name: 'Bhutan mobile pay (mBoB / RMA QR)', note: 'mBoB / RMA-approved digital wallets, in Nu.' },
-                      { key: 'bank', name: 'Bank transfer (BOB / BNB)', note: 'Wire transfer or direct branch deposit slip' },
+                      { key: 'mbob', name: 'Bhutan mobile pay (mBoB / RMA QR)', note: 'Transfer to the configured HAB account and attach your reference/proof.' },
+                      { key: 'bank', name: 'Bank transfer (BOB / BNB)', note: 'Transfer to the configured HAB account and attach your reference/proof.' },
                     ].map((opt) => (
                       <div
                         key={opt.key}
@@ -511,7 +527,7 @@ export default function WholesaleRegisterPage() {
                         mBoB Transfer Details
                       </p>
                       <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                        Transfer <strong>Nu. 2,500</strong> to Bank of Bhutan Account <strong>0100234891001</strong> (Handicrafts Association of Bhutan).
+                        Transfer <strong>{wholesaleFeeLabel}</strong> to {paymentSettings?.bobBankName || 'HAB’s configured bank'} Account <strong>{paymentSettings?.bobAccountNumber || 'Payment details unavailable'}</strong> ({paymentSettings?.bobAccountTitle || 'Handicrafts Association of Bhutan'}).
                       </p>
                       <div className="formgrid">
                         <label className="field">
@@ -557,7 +573,7 @@ export default function WholesaleRegisterPage() {
                         Bank Deposit / SWIFT Wire Details
                       </p>
                       <p style={{ fontSize: 12, color: '#475569', marginBottom: 10 }}>
-                        Bank of Bhutan Account: <strong>100234891001</strong> · Bhutan National Bank (BNB): <strong>00234891001</strong> · SWIFT: <strong>BOBTBT22</strong>.
+                        {paymentSettings?.bobBankName || 'Bank of Bhutan'} Account: <strong>{paymentSettings?.bobAccountNumber || 'Payment details unavailable'}</strong>{paymentSettings?.bnbAccountNumber ? <> · {paymentSettings?.bnbBankName || 'Bhutan National Bank (BNB)'}: <strong>{paymentSettings.bnbAccountNumber}</strong></> : null}.
                       </p>
                       <div className="formgrid">
                         <label className="field field--wide">
@@ -586,12 +602,6 @@ export default function WholesaleRegisterPage() {
                     </div>
                   )}
 
-                  {/* Card payment note */}
-                  {payMethod === 'card' && (
-                    <div style={{ marginTop: 14, padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569' }}>
-                      3-D Secure card authorization is handled by our gateway upon clicking Submit. No card details are stored on our servers.
-                    </div>
-                  )}
                 </div>
               </div>
             </section>

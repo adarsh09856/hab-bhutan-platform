@@ -29,7 +29,7 @@ async function submit(businessName) {
   const response = await fetch(`${baseUrl}/api/wholesale/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ businessName, contactPerson: 'Temporary Local Test', email, paymentMethod: 'card' }),
+    body: JSON.stringify({ businessName, contactPerson: 'Temporary Local Test', email, paymentMethod: 'mbob', paymentRef: 'LOCAL-TEST-ONLY', proofUrl: '/local-test-only.png' }),
   });
   return { response, body: await response.json().catch(() => ({})) };
 }
