@@ -201,9 +201,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     const { action, payload } = body;
-    const permission = action === 'delete_terms'
-      ? 'products:delete'
-      : action === 'save_catalog'
+    const permission = action === 'save_catalog'
         ? 'content:edit'
       : action === 'update_quote_status'
         ? 'orders:edit'
