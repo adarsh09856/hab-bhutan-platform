@@ -74,11 +74,15 @@ export async function POST(req: NextRequest) {
       const article = await prisma.newsArticle.create({
         data: {
           kind: data.kind || data.category || 'Programs',
+          kindDz: data.kindDz || null,
           subCategory: data.subCategory || null,
           title: data.title.trim(),
+          titleDz: data.titleDz || null,
           dateString: data.dateString || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           blurb: data.blurb || data.excerpt || '',
+          blurbDz: data.blurbDz || null,
           content: finalContent || null,
+          contentDz: data.contentDz || null,
           documentUrl: data.documentUrl || null,
           documentType: data.documentType || 'PDF',
           documentTitle: data.documentTitle || null,
@@ -110,9 +114,13 @@ export async function POST(req: NextRequest) {
       const pub = await prisma.publication.create({
         data: {
           kind: data.kind || data.category || 'Annual report',
+          kindDz: data.kindDz || null,
           title: data.title.trim(),
+          titleDz: data.titleDz || null,
           year: Number(data.year) || new Date().getFullYear(),
           metaDetails: data.metaDetails || 'PDF · Document',
+          metaDetailsDz: data.metaDetailsDz || null,
+          summaryDz: data.summaryDz || null,
           fileUrl: data.fileUrl || null,
           isFeatured: Boolean(data.isFeatured),
         },
@@ -189,10 +197,14 @@ export async function PATCH(req: NextRequest) {
       const session = await requirePermission(req, 'content:edit');
       const updateData: any = {};
       if (data.title) updateData.title = data.title.trim();
+      if (data.titleDz !== undefined) updateData.titleDz = data.titleDz || null;
       if (data.kind || data.category) updateData.kind = data.kind || data.category;
+      if (data.kindDz !== undefined) updateData.kindDz = data.kindDz || null;
       if (data.subCategory !== undefined) updateData.subCategory = data.subCategory;
       if (data.dateString) updateData.dateString = data.dateString;
       if (data.blurb !== undefined || data.excerpt !== undefined) updateData.blurb = data.blurb ?? data.excerpt;
+      if (data.blurbDz !== undefined) updateData.blurbDz = data.blurbDz || null;
+      if (data.contentDz !== undefined) updateData.contentDz = data.contentDz || null;
       if (data.isPublished !== undefined) updateData.isPublished = Boolean(data.isPublished);
       if (data.documentUrl !== undefined) updateData.documentUrl = data.documentUrl;
       if (data.documentType !== undefined) updateData.documentType = data.documentType;
@@ -235,9 +247,13 @@ export async function PATCH(req: NextRequest) {
       const session = await requirePermission(req, 'content:edit');
       const updateData: any = {};
       if (data.title) updateData.title = data.title.trim();
+      if (data.titleDz !== undefined) updateData.titleDz = data.titleDz || null;
       if (data.kind || data.category) updateData.kind = data.kind || data.category;
+      if (data.kindDz !== undefined) updateData.kindDz = data.kindDz || null;
       if (data.year !== undefined) updateData.year = Number(data.year);
       if (data.metaDetails) updateData.metaDetails = data.metaDetails;
+      if (data.metaDetailsDz !== undefined) updateData.metaDetailsDz = data.metaDetailsDz || null;
+      if (data.summaryDz !== undefined) updateData.summaryDz = data.summaryDz || null;
       if (data.fileUrl !== undefined) updateData.fileUrl = data.fileUrl;
       if (data.isFeatured !== undefined) updateData.isFeatured = Boolean(data.isFeatured);
 

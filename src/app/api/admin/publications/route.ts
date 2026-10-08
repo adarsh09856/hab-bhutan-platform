@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { title, kind, year, metaDetails, fileUrl, isFeatured } = body;
+    const { title, titleDz, kind, kindDz, year, metaDetails, metaDetailsDz, summaryDz, fileUrl, isFeatured } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -38,9 +38,13 @@ export async function POST(req: NextRequest) {
     const publication = await prisma.publication.create({
       data: {
         title: title.trim(),
+        titleDz: titleDz?.trim() || null,
         kind: kind ? kind.trim() : 'Annual report',
+        kindDz: kindDz?.trim() || null,
         year: Number(year) || new Date().getFullYear(),
         metaDetails: metaDetails ? metaDetails.trim() : 'PDF · Document',
+        metaDetailsDz: metaDetailsDz?.trim() || null,
+        summaryDz: summaryDz?.trim() || null,
         fileUrl: fileUrl ? fileUrl.trim() : null,
         isFeatured: Boolean(isFeatured),
       },
@@ -60,7 +64,7 @@ export async function PUT(req: NextRequest) {
   try {
     await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { id, title, kind, year, metaDetails, fileUrl, isFeatured } = body;
+    const { id, title, titleDz, kind, kindDz, year, metaDetails, metaDetailsDz, summaryDz, fileUrl, isFeatured } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'Publication ID is required.' }, { status: 400 });
@@ -70,9 +74,13 @@ export async function PUT(req: NextRequest) {
       where: { id },
       data: {
         title: title !== undefined ? title.trim() : undefined,
+        titleDz: titleDz !== undefined ? titleDz?.trim() || null : undefined,
         kind: kind !== undefined ? kind.trim() : undefined,
+        kindDz: kindDz !== undefined ? kindDz?.trim() || null : undefined,
         year: year !== undefined ? Number(year) : undefined,
         metaDetails: metaDetails !== undefined ? metaDetails.trim() : undefined,
+        metaDetailsDz: metaDetailsDz !== undefined ? metaDetailsDz?.trim() || null : undefined,
+        summaryDz: summaryDz !== undefined ? summaryDz?.trim() || null : undefined,
         fileUrl: fileUrl !== undefined ? fileUrl : undefined,
         isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : undefined,
       },

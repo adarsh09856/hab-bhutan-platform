@@ -6,6 +6,7 @@ import { CLIENT_DATA, getEventByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
 
@@ -169,15 +170,15 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> /{' '}
-          <Link href="/events">Events</Link> / {event.title}
+          <Link href="/events">Events</Link> / <LocalizedRecordField as="span" english={event.title} dzongkha={event.titleDz} />
         </p>
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            {event.kind} · {event.day} {event.mon} {event.year}
+            <LocalizedRecordField as="span" english={event.kind} dzongkha={event.categoryDz} /> · {event.day} {event.mon} {event.year}
           </p>
-          <h1 className="display display--page">{event.title}</h1>
-          <p className="lede lede--wide">{event.summary}</p>
+          <LocalizedRecordField as="h1" className="display display--page" english={event.title} dzongkha={event.titleDz} />
+          <LocalizedRecordField as="p" className="lede lede--wide" english={event.summary} dzongkha={event.summaryDz || event.descriptionDz} />
         </div>
 
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
@@ -205,11 +206,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Location</span>
-            <span className="craftfacts__val">{event.place}</span>
+            <LocalizedRecordField as="span" className="craftfacts__val" english={event.place} dzongkha={event.locationDz || event.venueDz} />
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Attendance</span>
-            <span className="craftfacts__val">{event.who || 'Open to all'}</span>
+            <LocalizedRecordField as="span" className="craftfacts__val" english={event.who || 'Open to all'} dzongkha={event.registrationDz} />
           </div>
         </div>
       </section>
@@ -241,11 +242,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             )}
           </div>
           <div>
-            {(event.detail || event.summary || '').split('\n\n').map((para: string, i: number) => (
-              <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
-                {para.trim()}
-              </p>
-            ))}
+            <LocalizedRecordField as="p" className="longread__body" style={{ marginBottom: 20 }} english={event.detail || event.summary} dzongkha={event.descriptionDz} splitParagraphs />
           </div>
         </div>
       </section>
@@ -301,10 +298,8 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                     <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>
                       {oe.day} {oe.mon} · {oe.kind}
                     </p>
-                    <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
-                      {oe.title}
-                    </h3>
-                    <p className="card__text clamp-2">{oe.place}</p>
+                    <LocalizedRecordField as="h3" className="card__title clamp-2" style={{ marginBottom: 4 }} english={oe.title} dzongkha={oe.titleDz} />
+                    <LocalizedRecordField as="p" className="card__text clamp-2" english={oe.place || oe.location || oe.venue} dzongkha={oe.locationDz || oe.venueDz} />
                   </div>
                 </Link>
               );

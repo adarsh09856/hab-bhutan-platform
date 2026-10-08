@@ -6,6 +6,7 @@ import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,9 +62,13 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     id: rawPost.id || rawPost.slug || 'news-item',
     slug: rawPost.slug || rawPost.id,
     title: rawPost.title,
+    titleDz: rawPost.titleDz,
     kind: rawPost.kind || 'Programs',
+    kindDz: rawPost.kindDz,
     blurb: rawPost.blurb || rawPost.summary || '',
+    blurbDz: rawPost.blurbDz,
     body: cleanContent,
+    bodyDz: rawPost.contentDz,
     image_path,
     published_at: rawPost.dateString || rawPost.published_at || rawPost.date || 'Recent',
     documentUrl: rawPost.documentUrl || rawPost.pdfUrl || null,
@@ -137,15 +142,15 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
         </div>
 
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / {post.title}
+          <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> / <LocalizedRecordField as="span" english={post.title} dzongkha={post.titleDz} />
         </p>
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            {post.kind} · {displayDate}
+            <LocalizedRecordField as="span" english={post.kind} dzongkha={post.kindDz} /> · {displayDate}
           </p>
-          <h1 className="display display--page">{post.title}</h1>
-          <p className="lede lede--wide">{post.blurb || post.summary}</p>
+          <LocalizedRecordField as="h1" className="display display--page" english={post.title} dzongkha={post.titleDz} />
+          <LocalizedRecordField as="p" className="lede lede--wide" english={post.blurb || post.summary} dzongkha={post.blurbDz} />
         </div>
 
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
@@ -187,11 +192,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             )}
           </div>
           <div>
-            {(post.body || post.blurb || '').split('\n\n').map((para: string, i: number) => (
-              <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
-                {para.trim()}
-              </p>
-            ))}
+            <LocalizedRecordField as="p" className="longread__body" style={{ marginBottom: 20 }} english={post.body || post.blurb} dzongkha={post.bodyDz} splitParagraphs />
           </div>
         </div>
       </section>

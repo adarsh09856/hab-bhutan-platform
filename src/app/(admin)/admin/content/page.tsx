@@ -73,11 +73,15 @@ export default function AdminContentPage() {
   // Form states
   const [newsForm, setNewsForm] = useState({
     title: '',
+    titleDz: '',
     kind: 'Programs',
+    kindDz: '',
     subCategory: 'Field Report',
     dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     blurb: '',
+    blurbDz: '',
     content: '',
+    contentDz: '',
     image_path: '',
     documentUrl: '',
     documentType: 'PDF',
@@ -86,9 +90,13 @@ export default function AdminContentPage() {
 
   const [pubForm, setPubForm] = useState({
     title: '',
+    titleDz: '',
     kind: 'Annual report',
+    kindDz: '',
     year: new Date().getFullYear(),
     metaDetails: 'PDF · 4.2 MB · English & Dzongkha',
+    metaDetailsDz: '',
+    summaryDz: '',
     fileUrl: '',
   });
 
@@ -808,6 +816,7 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Article Headline (Dzongkha)</label><input type="text" value={newsForm.titleDz} onChange={(e) => setNewsForm({ ...newsForm, titleDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="block font-medium admin-text mb-1">Primary Category</label>
@@ -848,6 +857,7 @@ export default function AdminContentPage() {
                       />
                     </div>
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Primary Category (Dzongkha)</label><input type="text" value={newsForm.kindDz} onChange={(e) => setNewsForm({ ...newsForm, kindDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div>
                     <label className="block font-medium admin-text mb-1">Summary / Blurb</label>
                     <textarea
@@ -857,6 +867,7 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Summary / Blurb (Dzongkha)</label><textarea rows={3} value={newsForm.blurbDz} onChange={(e) => setNewsForm({ ...newsForm, blurbDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div>
                     <FileUploadInput
                       label="Article Cover Photograph"
@@ -916,6 +927,7 @@ export default function AdminContentPage() {
                       hint="Detailed article narrative, quotes, and reports."
                     />
                   </div>
+                  <div><RichTextEditor label="Full Article Story / Content (Dzongkha)" value={newsForm.contentDz} onChange={(html) => setNewsForm({ ...newsForm, contentDz: html })} hint="Optional full story translation." /></div>
                 </>
               )}
 
@@ -931,6 +943,7 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Publication Title (Dzongkha)</label><input type="text" value={pubForm.titleDz} onChange={(e) => setPubForm({ ...pubForm, titleDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block font-medium admin-text mb-1">Document Category</label>
@@ -964,6 +977,8 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-3"><label className="block font-medium admin-text mb-1">Category (Dzongkha)<input type="text" value={pubForm.kindDz} onChange={(e) => setPubForm({ ...pubForm, kindDz: e.target.value })} className="mt-1 w-full admin-input border rounded px-2.5 py-1.5" /></label><label className="block font-medium admin-text mb-1">Format / Details (Dzongkha)<input type="text" value={pubForm.metaDetailsDz} onChange={(e) => setPubForm({ ...pubForm, metaDetailsDz: e.target.value })} className="mt-1 w-full admin-input border rounded px-2.5 py-1.5" /></label></div>
+                  <div><label className="block font-medium admin-text mb-1">Summary (Dzongkha)</label><textarea rows={3} value={pubForm.summaryDz} onChange={(e) => setPubForm({ ...pubForm, summaryDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div>
                     <FileUploadInput
                       label="Attached Document File (PDF, DOC, DOCX up to 30MB)"
@@ -1087,6 +1102,7 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Headline (Dzongkha)</label><input type="text" value={editingItem.data.titleDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, titleDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div>
                     <label className="block font-medium admin-text mb-1">Summary / Blurb</label>
                     <textarea
@@ -1096,6 +1112,7 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Summary / Blurb (Dzongkha)</label><textarea rows={3} value={editingItem.data.blurbDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurbDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block font-medium admin-text mb-1">Primary Category</label>
@@ -1127,6 +1144,8 @@ export default function AdminContentPage() {
                       </select>
                     </div>
                   </div>
+
+                  <div><label className="block font-medium admin-text mb-1">Primary Category (Dzongkha)</label><input type="text" value={editingItem.data.kindDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kindDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
 
                   <div>
                     <FileUploadInput
@@ -1187,6 +1206,7 @@ export default function AdminContentPage() {
                       hint="Detailed article narrative, quotes, and reports."
                     />
                   </div>
+                  <div><RichTextEditor label="Full Article Story / Content (Dzongkha)" value={editingItem.data.contentDz || ''} onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, contentDz: html } })} /></div>
                 </>
               )}
 
@@ -1202,6 +1222,7 @@ export default function AdminContentPage() {
                       className="w-full admin-input border rounded px-2.5 py-1.5"
                     />
                   </div>
+                  <div><label className="block font-medium admin-text mb-1">Title (Dzongkha)</label><input type="text" value={editingItem.data.titleDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, titleDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block font-medium admin-text mb-1">Year</label>
@@ -1222,6 +1243,8 @@ export default function AdminContentPage() {
                       />
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-3"><label className="block font-medium admin-text mb-1">Category (Dzongkha)<input type="text" value={editingItem.data.kindDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kindDz: e.target.value } })} className="mt-1 w-full admin-input border rounded px-2.5 py-1.5" /></label><label className="block font-medium admin-text mb-1">Details (Dzongkha)<input type="text" value={editingItem.data.metaDetailsDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, metaDetailsDz: e.target.value } })} className="mt-1 w-full admin-input border rounded px-2.5 py-1.5" /></label></div>
+                  <div><label className="block font-medium admin-text mb-1">Summary (Dzongkha)</label><textarea rows={3} value={editingItem.data.summaryDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, summaryDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div>
                     <FileUploadInput
                       label="Attached Document File (PDF, DOC, DOCX up to 30MB)"

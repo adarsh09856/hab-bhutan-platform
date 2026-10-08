@@ -9,7 +9,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function PublicationsPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [publications, setPublications] = useState<any[]>(() => CLIENT_DATA.publications || []);
   const [selectedKind, setSelectedKind] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
@@ -24,10 +24,14 @@ export default function PublicationsPage() {
             d.publications.map((p: any) => ({
               key: p.key || p.id,
               kind: p.kind || 'Annual report',
+              kindDz: p.kindDz || '',
               title: p.title,
+              titleDz: p.titleDz || '',
               year: p.year || 2026,
               meta: p.metaDetails || p.meta || 'PDF · English & Dzongkha',
+              metaDz: p.metaDetailsDz || '',
               abstract: p.abstract || p.summary || p.description || '',
+              abstractDz: p.summaryDz || '',
               file_url: p.fileUrl || p.file_url || '#',
               is_featured: Boolean(p.isFeatured || p.is_featured),
             }))
@@ -47,9 +51,14 @@ export default function PublicationsPage() {
     }
   }, []);
 
+  const displayKind = (p: any) => language === 'dz' ? (p.kindDz || p.kind) : p.kind;
+  const displayTitle = (p: any) => language === 'dz' ? (p.titleDz || p.title) : p.title;
+  const displayMeta = (p: any) => language === 'dz' ? (p.metaDz || p.meta) : p.meta;
+  const displayAbstract = (p: any) => language === 'dz' ? (p.abstractDz || p.abstract) : p.abstract;
+
   const kinds = useMemo(() => {
-    return Array.from(new Set(publications.map((p) => p.kind))).filter(Boolean).sort();
-  }, [publications]);
+    return Array.from(new Set(publications.map(displayKind))).filter(Boolean).sort();
+  }, [publications, language]);
 
   const years = useMemo(() => {
     return Array.from(new Set(publications.map((p) => String(p.year)))).filter(Boolean).sort().reverse();
@@ -59,17 +68,19 @@ export default function PublicationsPage() {
     const q = searchQuery.trim().toLowerCase();
     const selK = selectedKind.trim().toLowerCase();
     return publications.filter((p) => {
-      const pKind = (p.kind || '').toLowerCase();
+      const pKind = String(displayKind(p) || '').toLowerCase();
       const matchKind =
         !selK ||
         pKind === selK ||
         (selK.includes('account') && pKind.includes('account')) ||
         (selK.includes('annual') && pKind.includes('annual'));
       const matchYear = !selectedYear || String(p.year) === selectedYear;
-      const matchQ = !q || p.title.toLowerCase().includes(q) || (p.abstract && p.abstract.toLowerCase().includes(q));
+      const title = String(displayTitle(p) || '').toLowerCase();
+      const abstract = String(displayAbstract(p) || '').toLowerCase();
+      const matchQ = !q || title.includes(q) || abstract.includes(q);
       return matchKind && matchYear && matchQ;
     });
-  }, [publications, selectedKind, selectedYear, searchQuery]);
+  }, [publications, selectedKind, selectedYear, searchQuery, language]);
 
   const leadReport = publications.find((p) => p.is_featured) || publications[0] || {
     kind: 'Annual report',
@@ -111,14 +122,14 @@ export default function PublicationsPage() {
                   {t('publications.latest', 'Latest')}
                 </span>
                 <span className="eyebrow eyebrow--brass eyebrow--sm" id="pubLeadKind">
-                  {leadReport.kind}
+                  {displayKind(leadReport)}
                 </span>
               </div>
               <h2 className="display display--lead" id="pubLeadTitle">
-                {leadReport.title}
+                {displayTitle(leadReport)}
               </h2>
               <p className="band__body">
-                {leadReport.abstract || 'Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.'}
+                {displayAbstract(leadReport) || 'Programme outcomes, sector figures and audited accounts for the year, published in English and Dzongkha.'}
               </p>
               <div className="publead__foot">
                 <a
@@ -131,15 +142,15 @@ export default function PublicationsPage() {
                   {t('publications.download', 'Download ↓')}
                 </a>
                 <span className="publead__meta" id="pubLeadMeta">
-                  {leadReport.meta}
+                  {displayMeta(leadReport)}
                 </span>
               </div>
             </div>
             <figure className="frame frame--dark publead__cover" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '24px', textAlign: 'center', background: 'linear-gradient(145deg, #2b1f1a 0%, #1a120e 100%)' }}>
-                <span className="eyebrow eyebrow--brass eyebrow--sm" style={{ marginBottom: 8 }}>{leadReport.kind} · {leadReport.year}</span>
-                <h3 style={{ fontFamily: 'var(--display)', fontSize: '20px', color: '#fff', margin: '0 0 10px', lineHeight: 1.25 }}>{leadReport.title}</h3>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>{leadReport.meta}</span>
+                <span className="eyebrow eyebrow--brass eyebrow--sm" style={{ marginBottom: 8 }}>{displayKind(leadReport)} · {leadReport.year}</span>
+                <h3 style={{ fontFamily: 'var(--display)', fontSize: '20px', color: '#fff', margin: '0 0 10px', lineHeight: 1.25 }}>{displayTitle(leadReport)}</h3>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>{displayMeta(leadReport)}</span>
               </div>
             </figure>
           </div>
@@ -158,9 +169,9 @@ export default function PublicationsPage() {
                 >
                   <span className="pubside__cover" style={{ backgroundImage: `url(/assets/photos/${['hero-1-weaving.jpg', 'hero-4-textiles.jpg', 'hero-5-desho.jpg'][idx % 3]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <span className="pubside__body">
-                    <span className="eyebrow eyebrow--accent eyebrow--sm">{p.kind} · {p.year}</span>
-                    <span className="pubside__title">{p.title}</span>
-                    <span className="pubside__meta">{p.meta} ↓</span>
+                    <span className="eyebrow eyebrow--accent eyebrow--sm">{displayKind(p)} · {p.year}</span>
+                    <span className="pubside__title">{displayTitle(p)}</span>
+                    <span className="pubside__meta">{displayMeta(p)} ↓</span>
                   </span>
                 </a>
               ))}
@@ -234,9 +245,9 @@ export default function PublicationsPage() {
                 rel="noopener noreferrer"
                 download
               >
-                <span className="pubrow__kind">{p.kind}</span>
-                <span className="pubrow__title clamp-2">{p.title}</span>
-                <span className="pubrow__meta">{p.meta}</span>
+                <span className="pubrow__kind">{displayKind(p)}</span>
+                <span className="pubrow__title clamp-2">{displayTitle(p)}</span>
+                <span className="pubrow__meta">{displayMeta(p)}</span>
                 <span className="pubrow__right">
                   <span className="pubrow__year">{p.year}</span>
                   <span className="pubrow__dl">{t('publications.download', 'Download ↓')}</span>

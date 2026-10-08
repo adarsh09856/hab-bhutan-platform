@@ -24,9 +24,13 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 interface Publication {
   id: string;
   title: string;
+  titleDz?: string | null;
   kind: string;
+  kindDz?: string | null;
   year: number;
   metaDetails?: string | null;
+  metaDetailsDz?: string | null;
+  summaryDz?: string | null;
   fileUrl?: string | null;
   isFeatured: boolean;
 }
@@ -57,9 +61,13 @@ export default function PublicationsStudio() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: '',
+    titleDz: '',
     kind: 'Annual reports',
+    kindDz: '',
     year: new Date().getFullYear(),
     metaDetails: 'PDF · Document',
+    metaDetailsDz: '',
+    summaryDz: '',
     fileUrl: '',
     isFeatured: false,
   });
@@ -92,9 +100,13 @@ export default function PublicationsStudio() {
     setEditingId(null);
     setForm({
       title: '',
+      titleDz: '',
       kind: 'Annual reports',
+      kindDz: '',
       year: new Date().getFullYear(),
       metaDetails: 'PDF · Document',
+      metaDetailsDz: '',
+      summaryDz: '',
       fileUrl: '',
       isFeatured: false,
     });
@@ -105,9 +117,13 @@ export default function PublicationsStudio() {
     setEditingId(p.id);
     setForm({
       title: p.title,
+      titleDz: p.titleDz || '',
       kind: p.kind || 'Annual reports',
+      kindDz: p.kindDz || '',
       year: p.year || new Date().getFullYear(),
       metaDetails: p.metaDetails || 'PDF · Document',
+      metaDetailsDz: p.metaDetailsDz || '',
+      summaryDz: p.summaryDz || '',
       fileUrl: p.fileUrl || '',
       isFeatured: Boolean(p.isFeatured),
     });
@@ -317,6 +333,11 @@ export default function PublicationsStudio() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Publication Title (Dzongkha)</label>
+                <input type="text" value={form.titleDz || ''} onChange={(e) => setForm({ ...form, titleDz: e.target.value })} className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800" />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
@@ -360,6 +381,19 @@ export default function PublicationsStudio() {
                   placeholder="e.g. PDF · Document · 4.2 MB · English & Dzongkha"
                   className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 focus:outline-hidden focus:border-[#8B2E24]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Category (Dzongkha)</label>
+                <input type="text" value={form.kindDz || ''} onChange={(e) => setForm({ ...form, kindDz: e.target.value })} className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Format / Details (Dzongkha)</label>
+                <input type="text" value={form.metaDetailsDz || ''} onChange={(e) => setForm({ ...form, metaDetailsDz: e.target.value })} className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Summary (Dzongkha)</label>
+                <textarea rows={3} value={form.summaryDz || ''} onChange={(e) => setForm({ ...form, summaryDz: e.target.value })} className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800" />
               </div>
 
               <div>

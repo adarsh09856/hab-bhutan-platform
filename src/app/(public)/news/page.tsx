@@ -10,7 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 export const dynamic = 'force-dynamic';
 
 export default function NewsPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [newsList, setNewsList] = useState<any[]>(() => CLIENT_DATA.news);
   const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
   const [selectedKind, setSelectedKind] = useState<string>('');
@@ -25,8 +25,11 @@ export default function NewsPage() {
               id: a.id,
               slug: a.slug || a.id,
               kind: a.kind || 'Notice',
+              kindDz: a.kindDz || '',
               title: a.title,
+              titleDz: a.titleDz || '',
               blurb: a.blurb || a.summary || '',
+              blurbDz: a.blurbDz || '',
               published_at: a.dateString || a.published_at || 'Recent',
               image_path: a.image_path || '',
             }))
@@ -45,11 +48,14 @@ export default function NewsPage() {
       .catch(() => {});
   }, []);
 
-  const kinds = Array.from(new Set(newsList.map((n) => n.kind))).filter(Boolean);
+  const displayKind = (n: any) => language === 'dz' ? (n.kindDz || n.kind) : n.kind;
+  const displayTitle = (n: any) => language === 'dz' ? (n.titleDz || n.title) : n.title;
+  const displayBlurb = (n: any) => language === 'dz' ? (n.blurbDz || n.blurb) : n.blurb;
+  const kinds = Array.from(new Set(newsList.map(displayKind))).filter(Boolean);
 
   const filtered = !selectedKind
     ? newsList
-    : newsList.filter((n) => n.kind === selectedKind);
+    : newsList.filter((n) => displayKind(n) === selectedKind);
 
   const NEWS_PHOTO_MAP: Record<string, string> = {
     'trade-facilitation-desk-autumn': '/images/programs/trade.jpg',
@@ -112,7 +118,7 @@ export default function NewsPage() {
                 const slug = n.slug || n.id || `post-${idx}`;
                 const customImg = n.image_path || n.imageUrl || n.image_url;
                 const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg');
-                const titleLower = String(n.title || '').toLowerCase();
+                const titleLower = String(displayTitle(n) || n.title || '').toLowerCase();
                 const s = String(slug).toLowerCase();
                 let imgSrc = '';
 
@@ -140,7 +146,7 @@ export default function NewsPage() {
                       <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', height: '100%', minHeight: 190, overflow: 'hidden' }}>
                         <Image
                           src={imgSrc}
-                          alt={n.title}
+                          alt={displayTitle(n)}
                           fill
                           sizes="(max-width: 768px) 100vw, 260px"
                           style={{ objectFit: 'cover' }}
@@ -150,13 +156,13 @@ export default function NewsPage() {
 
                     <div className="newsitem__body">
                       <div className="news__meta">
-                        <span className="tag">{n.kind}</span>
+                      <span className="tag">{displayKind(n)}</span>
                         <span className="news__date">{n.published_at || 'Recent'}</span>
                       </div>
                       <h2 className="newsitem__title">
-                        <Link href={`/news/${slug}`}>{n.title}</Link>
+                        <Link href={`/news/${slug}`}>{displayTitle(n)}</Link>
                       </h2>
-                      <p className="newsitem__blurb">{n.blurb}</p>
+                      <p className="newsitem__blurb">{displayBlurb(n)}</p>
                       <Link className="news__more" href={`/news/${slug}`}>
                         {t('news.read_more', 'Read more →')}
                       </Link>
@@ -184,8 +190,8 @@ export default function NewsPage() {
                       <span>{e.mon || 'SEP'}</span>
                     </span>
                     <span className="eventrow__body">
-                      <span className="eventrow__title clamp-2">{e.title}</span>
-                      <span className="eventrow__place clamp-1">{e.place}</span>
+                      <span className="eventrow__title clamp-2">{language === 'dz' ? (e.titleDz || e.title) : e.title}</span>
+                      <span className="eventrow__place clamp-1">{language === 'dz' ? (e.locationDz || e.venueDz || e.placeDz || e.place) : e.place}</span>
                     </span>
                   </Link>
                 ))}

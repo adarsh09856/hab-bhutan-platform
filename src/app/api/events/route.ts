@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
         kind: e.kind || e.category || 'Exhibition',
         place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
         summary: e.summary || (e.description ? e.description.slice(0, 160) : ''),
+        summaryDz: e.summaryDz || (e.descriptionDz ? e.descriptionDz.slice(0, 160) : ''),
         url: e.url || `/events/${e.key || e.id}`,
         imageUrl: eventImg,
         bannerUrl: eventImg,

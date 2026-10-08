@@ -11,7 +11,9 @@ interface EventItem {
   id: string;
   key: string;
   title: string;
+  titleDz?: string | null;
   category: string;
+  categoryDz?: string | null;
   dateDisplay: string;
   day?: string;
   mon?: string;
@@ -19,11 +21,15 @@ interface EventItem {
   imageUrl?: string;
   pdfUrl?: string;
   location: string;
+  locationDz?: string | null;
   venue?: string | null;
+  venueDz?: string | null;
   craft?: string | null;
   organiser?: string | null;
   description: string;
+  descriptionDz?: string | null;
   registration?: string | null;
+  registrationDz?: string | null;
   isActive: boolean;
   sortOrder: number;
   schedule?: any;
@@ -32,7 +38,9 @@ interface EventItem {
 const EMPTY_FORM = {
   key: '',
   title: '',
+  titleDz: '',
   category: 'Exhibition',
+  categoryDz: '',
   dateDisplay: '',
   day: '12',
   mon: 'SEP',
@@ -40,11 +48,15 @@ const EMPTY_FORM = {
   imageUrl: '',
   pdfUrl: '',
   location: 'Thimphu',
+  locationDz: '',
   venue: 'Clock Tower Square',
+  venueDz: '',
   craft: '',
   organiser: 'Handicrafts Association of Bhutan',
   description: '',
+  descriptionDz: '',
   registration: 'Open to the public · Free admission',
+  registrationDz: '',
   isActive: true,
   sortOrder: 0,
 };
@@ -95,7 +107,9 @@ export default function AdminEventsPage() {
     setForm({
       key: ev.key,
       title: ev.title,
+      titleDz: ev.titleDz || '',
       category: ev.category,
+      categoryDz: ev.categoryDz || '',
       dateDisplay: ev.dateDisplay,
       day: ev.day || sched.day || '12',
       mon: ev.mon || sched.mon || 'SEP',
@@ -103,11 +117,15 @@ export default function AdminEventsPage() {
       imageUrl: ev.imageUrl || sched.imageUrl || '',
       pdfUrl: ev.pdfUrl || sched.pdfUrl || '',
       location: ev.location,
+      locationDz: ev.locationDz || '',
       venue: ev.venue || '',
+      venueDz: ev.venueDz || '',
       craft: ev.craft || '',
       organiser: ev.organiser || '',
       description: ev.description,
+      descriptionDz: ev.descriptionDz || '',
       registration: ev.registration || '',
+      registrationDz: ev.registrationDz || '',
       isActive: ev.isActive,
       sortOrder: ev.sortOrder,
     });
@@ -407,6 +425,11 @@ export default function AdminEventsPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Event Title (Dzongkha)</label>
+                  <input type="text" value={form.titleDz || ''} onChange={(e) => setForm({ ...form, titleDz: e.target.value })} className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800" />
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Date Display (Public Range) *</label>
@@ -490,6 +513,12 @@ export default function AdminEventsPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Category (Dzongkha)<input type="text" value={form.categoryDz || ''} onChange={(e) => setForm({ ...form, categoryDz: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Location (Dzongkha)<input type="text" value={form.locationDz || ''} onChange={(e) => setForm({ ...form, locationDz: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Venue (Dzongkha)<input type="text" value={form.venueDz || ''} onChange={(e) => setForm({ ...form, venueDz: e.target.value })} className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                </div>
+
                 {/* Direct Image and Document Uploads */}
                 <div className="space-y-3 pt-2">
                   <FileUploadInput
@@ -530,6 +559,10 @@ export default function AdminEventsPage() {
                 </div>
 
                 <div>
+                  <RichTextEditor label="Event Description (Dzongkha)" value={form.descriptionDz || ''} onChange={(html) => setForm({ ...form, descriptionDz: html })} placeholder="དུས་སྟོན་གྱི་ཞིབ་ཕྲ་འབྲི།" />
+                </div>
+
+                <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Registration / Target Audience</label>
                   <input
                     type="text"
@@ -538,6 +571,10 @@ export default function AdminEventsPage() {
                     placeholder="Open to public · Free entry"
                     className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Registration / Target Audience (Dzongkha)</label>
+                  <textarea rows={2} value={form.registrationDz || ''} onChange={(e) => setForm({ ...form, registrationDz: e.target.value })} className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-2">

@@ -10,7 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 export const dynamic = 'force-dynamic';
 
 export default function EventsPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
   const [selectedKind, setSelectedKind] = useState<string>('');
 
@@ -28,16 +28,16 @@ export default function EventsPage() {
   const kinds = useMemo(() => {
     const set = new Set<string>();
     eventsList.forEach((e) => {
-      const k = e.kind || e.category;
+      const k = language === 'dz' ? (e.categoryDz || e.kindDz || e.kind || e.category) : (e.kind || e.category);
       if (k) set.add(k);
     });
     return Array.from(set);
-  }, [eventsList]);
+  }, [eventsList, language]);
 
   const filteredEvents = useMemo(() => {
     if (!selectedKind) return eventsList;
-    return eventsList.filter((e) => (e.kind || e.category) === selectedKind);
-  }, [selectedKind, eventsList]);
+    return eventsList.filter((e) => (language === 'dz' ? (e.categoryDz || e.kindDz || e.kind || e.category) : (e.kind || e.category)) === selectedKind);
+  }, [selectedKind, eventsList, language]);
 
   const EVENT_PHOTO_MAP: Record<string, string> = {
     'craft-bazaar-2026': '/assets/photos/hero-2-punakha.jpg',
@@ -114,9 +114,13 @@ export default function EventsPage() {
         {/* Events List */}
         <div className="eventlist" id="eventList" data-cms-repeat>
           {filteredEvents.map((e, idx) => {
+            const displayTitle = language === 'dz' ? (e.titleDz || e.title) : e.title;
+            const displayKind = language === 'dz' ? (e.categoryDz || e.kindDz || e.kind || e.category) : (e.kind || e.category);
+            const displayPlace = language === 'dz' ? (e.locationDz || e.venueDz || e.placeDz || e.place) : (e.place || e.location || e.venue);
+            const displaySummary = language === 'dz' ? (e.summaryDz || e.descriptionDz || e.summary) : e.summary;
             const customImg = e.bannerUrl || e.imageUrl || e.image_path || e.image_url;
             const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg') && !customImg.includes('hero-1-weaving.jpg');
-            const titleLower = String(e.title || '').toLowerCase();
+            const titleLower = String(displayTitle || '').toLowerCase();
             const k = String(e.key || e.id || '').toLowerCase();
             let imgSrc = '';
 
@@ -146,7 +150,7 @@ export default function EventsPage() {
                   <figure className="frame frame--eventshot has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={imgSrc}
-                      alt={e.title}
+                      alt={displayTitle}
                       fill
                       sizes="(max-width: 768px) 100vw, 30vw"
                       style={{ objectFit: 'cover' }}
@@ -161,16 +165,16 @@ export default function EventsPage() {
 
                 <div className="eventcard__body">
                   <div className="news__meta">
-                    <span className="tag">{e.kind}</span>
+                  <span className="tag">{displayKind}</span>
                     <span className="news__date">{e.time || 'All day'}</span>
                   </div>
                   <h2 className="eventcard__title">
-                    <Link href={`/events/${e.key}`}>{e.title}</Link>
+                    <Link href={`/events/${e.key}`}>{displayTitle}</Link>
                   </h2>
                   <p className="eventcard__place">
-                    {e.place} · {e.who || t('events.open_to_all', 'Open to all')}
+                    {displayPlace} · {e.who || t('events.open_to_all', 'Open to all')}
                   </p>
-                  <p className="card__text">{e.summary}</p>
+                  <p className="card__text">{displaySummary}</p>
                   <Link className="news__more font-semibold" href={`/events/${e.key}`}>
                     {t('events.details', 'Read More & Event Details →')}
                   </Link>

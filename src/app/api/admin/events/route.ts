@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, title, category, subCategory, dateDisplay, day, mon, time, imageUrl, pdfUrl, documentUrl, documentType, documentTitle, startDate, endDate, location, venue, craft, organiser, description, schedule, speakers, registration, isActive, sortOrder } = body;
+    const { key, title, titleDz, category, categoryDz, subCategory, dateDisplay, day, mon, time, imageUrl, pdfUrl, documentUrl, documentType, documentTitle, startDate, endDate, location, locationDz, venue, venueDz, craft, organiser, description, descriptionDz, schedule, speakers, registration, registrationDz, isActive, sortOrder } = body;
 
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
@@ -69,13 +69,17 @@ export async function POST(req: NextRequest) {
       data: {
         key: key.trim().toLowerCase(),
         title: title.trim(),
+        titleDz: titleDz?.trim() || null,
         category: category?.trim() || 'Exhibition',
+        categoryDz: categoryDz?.trim() || null,
         subCategory: subCategory?.trim() || null,
         dateDisplay: dateDisplay?.trim() || '',
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         location: location?.trim() || '',
+        locationDz: locationDz?.trim() || null,
         venue: venue?.trim() || null,
+        venueDz: venueDz?.trim() || null,
         craft: craft?.trim() || null,
         organiser: organiser?.trim() || null,
         documentUrl: docUrlToSave,
@@ -83,9 +87,11 @@ export async function POST(req: NextRequest) {
         documentTitle: documentTitle || null,
         imageUrl: imageUrl || null,
         description: description.trim(),
+        descriptionDz: descriptionDz?.trim() || null,
         schedule: mergedSchedule,
         speakers: speakers || null,
         registration: registration?.trim() || null,
+        registrationDz: registrationDz?.trim() || null,
         isActive: isActive !== undefined ? Boolean(isActive) : true,
         sortOrder: Number(sortOrder) || 0,
       },
@@ -139,13 +145,17 @@ export async function PUT(req: NextRequest) {
       where,
       data: {
         ...(title !== undefined && { title: title.trim() }),
+        ...(body.titleDz !== undefined && { titleDz: body.titleDz?.trim() || null }),
         ...(category !== undefined && { category: category.trim() }),
+        ...(body.categoryDz !== undefined && { categoryDz: body.categoryDz?.trim() || null }),
         ...(body.subCategory !== undefined && { subCategory: body.subCategory?.trim() || null }),
         ...(dateDisplay !== undefined && { dateDisplay: dateDisplay.trim() }),
         ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
         ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
         ...(location !== undefined && { location: location.trim() }),
+        ...(body.locationDz !== undefined && { locationDz: body.locationDz?.trim() || null }),
         ...(venue !== undefined && { venue: venue?.trim() || null }),
+        ...(body.venueDz !== undefined && { venueDz: body.venueDz?.trim() || null }),
         ...(craft !== undefined && { craft: craft?.trim() || null }),
         ...(organiser !== undefined && { organiser: organiser?.trim() || null }),
         ...(body.documentUrl !== undefined && { documentUrl: body.documentUrl }),
@@ -153,9 +163,11 @@ export async function PUT(req: NextRequest) {
         ...(body.documentTitle !== undefined && { documentTitle: body.documentTitle }),
         ...(imageUrl !== undefined && { imageUrl }),
         ...(description !== undefined && { description: description.trim() }),
+        ...(body.descriptionDz !== undefined && { descriptionDz: body.descriptionDz?.trim() || null }),
         ...(mergedSchedule !== undefined && { schedule: mergedSchedule }),
         ...(speakers !== undefined && { speakers }),
         ...(registration !== undefined && { registration: registration?.trim() || null }),
+        ...(body.registrationDz !== undefined && { registrationDz: body.registrationDz?.trim() || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),
       },

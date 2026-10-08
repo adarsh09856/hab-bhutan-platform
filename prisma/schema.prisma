@@ -245,8 +245,12 @@ model Publication {
   id          String   @id @default(uuid())
   kind        String   // Annual report, Strategy, Sector study, etc.
   title       String
+  kindDz      String?
+  titleDz     String?
   year        Int
   metaDetails String   // PDF · 4.2 MB · English & Dzongkha
+  metaDetailsDz String?
+  summaryDz   String?  @db.Text
   fileUrl     String?
   isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
@@ -281,9 +285,13 @@ model NewsArticle {
   kind          String   // Programs, Artisan support, Events, Publications, Projects
   subCategory   String?  // e.g. "Press Release", "Field Report", "Artisan Feature", "Announcement"
   title         String
+  kindDz        String?
+  titleDz       String?
   dateString    String   // e.g. "28 Aug 2026"
   blurb         String   @db.Text
+  blurbDz       String?  @db.Text
   content       String?  @db.Text
+  contentDz     String?  @db.Text
   documentUrl   String?  // PDF / Flipbook URL
   documentType  String?  @default("PDF") // PDF | FLIPBOOK | DOC
   documentTitle String?  // Optional label e.g. "Official Project Guidelines"
@@ -299,7 +307,9 @@ model CalendarEvent {
   day       String   // "12"
   mon       String   // "SEP"
   title     String
+  titleDz   String?
   place     String
+  placeDz   String?
   createdAt DateTime @default(now())
 }
 
@@ -696,12 +706,16 @@ model EventRecord {
   id           String    @id @default(uuid())
   key          String    @unique
   title        String
+  titleDz      String?
   category     String    @default("Exhibition") // Exhibition | Masterclass | Trade Expo | National Festival
+  categoryDz   String?
   dateDisplay  String
   startDate    DateTime?
   endDate      DateTime?
   location     String
+  locationDz   String?
   venue        String?
+  venueDz      String?
   craft        String?
   organiser    String?
   subCategory  String?   // e.g. "Workshops", "International Expo", "Community Gathering"
@@ -710,9 +724,12 @@ model EventRecord {
   documentTitle String?  // e.g. "Exhibition Brochure & Catalogue"
   imageUrl     String?
   description  String    @db.Text
+  descriptionDz String?  @db.Text
+  summaryDz    String?   @db.Text
   schedule     Json?
   speakers     Json?
   registration String?   @db.Text
+  registrationDz String? @db.Text
   isActive     Boolean   @default(true)
   sortOrder    Int       @default(0)
   createdAt    DateTime  @default(now())
