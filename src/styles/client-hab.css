@@ -342,6 +342,7 @@ textarea.input{line-height:1.5;resize:vertical}
 }
 .header__spacer{flex:1;display:block}
 .header__actions{display:flex;align-items:center;gap:clamp(4px, 1vw, 8px);flex-shrink:0}
+.header__language{flex:none;justify-content:center}
 
 .logo{display:flex;align-items:center;gap:11px;flex:none;color:inherit}
 .logo:hover{color:inherit}
@@ -480,6 +481,10 @@ textarea.input{line-height:1.5;resize:vertical}
 @media (max-width:480px){
   .menu__panel--wide{right:-6px;width:calc(100vw - 12px);max-width:calc(100vw - 12px)}
   .menu__grid{grid-template-columns:1fr;gap:2px}
+  /* On narrow phones these controls remain available inside the menu drawer;
+     reserve the persistent header edge for the language switcher and menu. */
+  .header__actions>#currencyToggle,
+  .header__actions>.menu{display:none}
 }
 .menu__cats{display:flex;flex-direction:column;gap:1px;margin-top:6px}
 .menu__cat{display:block;padding:6px 9px;border-radius:var(--radius-sm);color:var(--ink)}
@@ -2739,6 +2744,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .logo__img{height:30px;max-width:180px;object-fit:contain}
   .header__inner{gap:6px;padding:8px 12px}
   .chip{padding:6px 8px;font-size:11px}
+  .header__actions .header__language{gap:3px;padding:6px 5px;font-size:9.5px}
   .btn--sm{padding:8px 10px;font-size:12px}
   .hero__copy .display--hero,
   .display--hero{font-size:clamp(22px, 6.5vw, 26px) !important;line-height:1.14}

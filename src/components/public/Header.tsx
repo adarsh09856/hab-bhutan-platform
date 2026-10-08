@@ -816,18 +816,6 @@ export default function Header() {
           </Link>
 
           <button
-            type="button"
-            className="chip hidden min-[1192px]:inline-flex items-center gap-1.5"
-            onClick={toggleLanguage}
-            aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
-            title="Switch language / སྐད་ཡིག"
-          >
-            <span className={language === 'en' ? 'font-bold text-[#8B2E24]' : ''}>EN</span>
-            <span aria-hidden="true">/</span>
-            <span className={language === 'dz' ? 'font-bold text-[#8B2E24]' : ''}>རྫོང་ཁ</span>
-          </button>
-
-          <button
             className="nav-toggle"
             id="navToggle"
             aria-expanded={mobileNavOpen}
@@ -839,6 +827,18 @@ export default function Header() {
             <span></span>
             <span></span>
             <span></span>
+          </button>
+
+          <button
+            type="button"
+            className="chip header__language inline-flex items-center gap-1.5"
+            onClick={toggleLanguage}
+            aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
+            title="Switch language / སྐད་ཡིག"
+          >
+            <span className={language === 'en' ? 'font-bold text-[#8B2E24]' : ''}>EN</span>
+            <span aria-hidden="true">/</span>
+            <span className={language === 'dz' ? 'font-bold text-[#8B2E24]' : ''}>རྫོང་ཁ</span>
           </button>
         </div>
       </div>
@@ -1044,7 +1044,7 @@ export default function Header() {
               </div>
             </div>
 
-            {/* Currency & Language */}
+            {/* Currency control; language remains in the top header at every width. */}
             <div className="pt-4 border-t border-[#E4DDD1] flex gap-2">
               <button
                 type="button"
@@ -1052,13 +1052,6 @@ export default function Header() {
                 onClick={toggleCurrency}
               >
                 {currency === 'USD' ? 'USD $' : 'Nu. BTN'}
-              </button>
-              <button
-                type="button"
-                className="chip flex-1 text-center py-2 font-semibold text-xs cursor-pointer"
-                onClick={toggleLanguage}
-              >
-                {language === 'en' ? 'EN (English)' : 'རྫོང་ཁ (Dzongkha)'}
               </button>
             </div>
           </div>
