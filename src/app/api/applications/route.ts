@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { CLIENT_DATA } from '@/lib/client-data';
-import { saveFallbackApplication } from '@/lib/application-store';
+import { getAllFallbackApplications, saveFallbackApplication } from '@/lib/application-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +49,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!CLIENT_DATA.crafts.some((craft) => craft.key === craftKey)) {
+      return NextResponse.json({ success: false, error: 'Choose a valid HAB craft category before submitting.' }, { status: 400 });
+    }
+
     const cleanCID = String(rawCID).replace(/\D/g, '');
     if (cleanCID.length !== 11) {
       return NextResponse.json(
@@ -73,8 +77,8 @@ export async function POST(req: NextRequest) {
     const appId = crypto.randomUUID();
     const reference = `HAB-2026-${appId.slice(0, 6).toUpperCase()}`;
 
-    // Always mirror to resilient JSON fallback store
-    saveFallbackApplication({
+    const submittedAt = new Date().toISOString();
+    const fallbackApplication = {
       id: appId,
       applicantName,
       email,
@@ -91,10 +95,10 @@ export async function POST(req: NextRequest) {
       uploadedCidUrl,
       reviewerNotes: paymentNotes,
       status: 'PENDING',
-      submittedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      submittedAt,
+      updatedAt: submittedAt,
       referenceNumber: reference,
-    });
+    } as const;
 
     let dbApp: any = null;
     try {
@@ -160,7 +164,25 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (dbErr: any) {
-      console.warn('[api/applications] DB operation skipped, preserved in fallback store:', dbErr.message);
+      console.warn('[api/applications] Database operation failed; will verify fallback persistence:', dbErr.message);
+    }
+
+    // Use the JSON fallback only when PostgreSQL did not accept the application.
+    // A success response must correspond to a record that was actually persisted.
+    let fallbackPersisted = false;
+    if (!dbApp) {
+      try {
+        saveFallbackApplication(fallbackApplication);
+        fallbackPersisted = getAllFallbackApplications().some((saved) => saved.id === appId && saved.email === email);
+      } catch (fallbackError: any) {
+        console.error('[api/applications] Fallback persistence failed:', fallbackError?.message);
+      }
+    }
+    if (!dbApp && !fallbackPersisted) {
+      return NextResponse.json(
+        { success: false, error: 'The application could not be saved. No application was submitted; please try again later.' },
+        { status: 503 }
+      );
     }
 
     return NextResponse.json({
