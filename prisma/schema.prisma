@@ -899,8 +899,12 @@ model GovernancePageCard {
   number      String?
   title       String
   body        String   @db.Text
+  titleDz     String?
+  bodyDz      String?  @db.Text
   metric      String?
+  metricDz    String?
   tags        String?
+  tagsDz      String?  @db.Text
   iconKey     String?
   sortOrder   Int      @default(0)
   isActive    Boolean  @default(true)

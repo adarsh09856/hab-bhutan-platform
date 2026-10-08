@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import prisma from '@/lib/prisma';
 import { MANDATE_ARTICLES } from '@/lib/governance-page-defaults';
 import { ShieldCheck, BookOpen, Scale, Award, Users, Download, ArrowRight, CheckCircle2, FileText } from 'lucide-react';
@@ -15,7 +16,9 @@ export const metadata: Metadata = {
 
 export default async function MandatePage() {
   const saved = await prisma.governancePageCard.findMany({ where: { section: 'mandate' }, orderBy: { sortOrder: 'asc' } }).catch(() => []);
-  const articles = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ num: card.number || '', title: card.title, body: card.body, tags: (card.tags || '').split('\n').filter(Boolean) })) : MANDATE_ARTICLES;
+  const articles: Array<{ num: string; title: string; titleDz?: string | null; body: string; bodyDz?: string | null; tags: string[]; tagsDz: string[] }> = saved.length
+    ? saved.filter((card) => card.isActive).map((card) => ({ num: card.number || '', title: card.title, titleDz: card.titleDz, body: card.body, bodyDz: card.bodyDz, tags: (card.tags || '').split('\n').filter(Boolean), tagsDz: (card.tagsDz || '').split('\n').filter(Boolean) }))
+    : MANDATE_ARTICLES.map((item) => ({ ...item, tagsDz: [] }));
   return (
     <main id="main">
       {/* 1. Page Hero */}
@@ -74,19 +77,19 @@ export default async function MandatePage() {
                     {art.num}
                   </span>
                   <h3 className="font-serif text-lg lg:text-xl font-bold text-stone-900">
-                    {art.title}
+                    <LocalizedRecordField english={art.title} dzongkha={art.titleDz} />
                   </h3>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {art.tags.map((t, i) => (
                     <span key={i} className="px-2 py-0.5 bg-stone-100 text-stone-600 rounded text-[10px] font-medium">
-                      {t}
+                      <LocalizedRecordField english={t} dzongkha={art.tagsDz[i]} />
                     </span>
                   ))}
                 </div>
               </div>
               <p className="text-xs lg:text-sm text-stone-600 leading-relaxed pl-0 md:pl-1 mt-2">
-                {art.body}
+                <LocalizedRecordField as="span" english={art.body} dzongkha={art.bodyDz} />
               </p>
             </article>
           ))}

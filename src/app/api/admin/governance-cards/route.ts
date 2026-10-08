@@ -43,8 +43,10 @@ export async function POST(req: NextRequest) {
     await ensureDefaults(data.section);
     const record = await prisma.governancePageCard.create({ data: {
       section: data.section, number: String(data.number || '').trim() || null, title: String(data.title).trim().slice(0, 250),
-      body: String(data.body || '').slice(0, 20000), metric: String(data.metric || '').trim() || null,
-      tags: String(data.tags || '').trim() || null, iconKey: String(data.iconKey || '').trim() || null,
+      body: String(data.body || '').slice(0, 20000), titleDz: String(data.titleDz || '').trim() || null,
+      bodyDz: String(data.bodyDz || '').slice(0, 20000) || null, metric: String(data.metric || '').trim() || null,
+      metricDz: String(data.metricDz || '').trim() || null, tags: String(data.tags || '').trim() || null,
+      tagsDz: String(data.tagsDz || '').slice(0, 20000) || null, iconKey: String(data.iconKey || '').trim() || null,
       sortOrder: Number.isFinite(Number(data.sortOrder)) ? Number(data.sortOrder) : 0, isActive: data.isActive !== false,
     } });
     await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'GOVERNANCE_CARD_CREATED', entityType: 'GovernancePageCard', entityId: record.id, details: { section: record.section } });
@@ -65,8 +67,12 @@ export async function PUT(req: NextRequest) {
       number: data.number === undefined ? undefined : String(data.number).trim() || null,
       title: data.title === undefined ? undefined : String(data.title).trim().slice(0, 250),
       body: data.body === undefined ? undefined : String(data.body).slice(0, 20000),
+      titleDz: data.titleDz === undefined ? undefined : String(data.titleDz).trim() || null,
+      bodyDz: data.bodyDz === undefined ? undefined : String(data.bodyDz).slice(0, 20000) || null,
       metric: data.metric === undefined ? undefined : String(data.metric).trim() || null,
+      metricDz: data.metricDz === undefined ? undefined : String(data.metricDz).trim() || null,
       tags: data.tags === undefined ? undefined : String(data.tags).trim() || null,
+      tagsDz: data.tagsDz === undefined ? undefined : String(data.tagsDz).slice(0, 20000) || null,
       iconKey: data.iconKey === undefined ? undefined : String(data.iconKey).trim() || null,
       sortOrder: Number.isFinite(Number(data.sortOrder)) ? Number(data.sortOrder) : undefined,
       isActive: typeof data.isActive === 'boolean' ? data.isActive : undefined,

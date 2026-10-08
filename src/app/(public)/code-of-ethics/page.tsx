@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import prisma from '@/lib/prisma';
 import { ETHICS_STANDARDS } from '@/lib/governance-page-defaults';
 import { ShieldCheck, HeartHandshake, Leaf, Scale, Users, AlertTriangle, Phone, Mail, Award, CheckCircle2 } from 'lucide-react';
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 export default async function CodeOfEthicsPage() {
   const saved = await prisma.governancePageCard.findMany({ where: { section: 'ethics' }, orderBy: { sortOrder: 'asc' } }).catch(() => []);
   const icons = [HeartHandshake, Scale, Award, Users, Leaf, ShieldCheck];
-  const pillars = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ title: card.title, body: card.body, icon: icons[Number(card.iconKey) % icons.length] || ShieldCheck })) : ETHICS_STANDARDS.map((card) => ({ ...card, icon: icons[Number(card.iconKey)] }));
+  const pillars = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ title: card.title, titleDz: card.titleDz, body: card.body, bodyDz: card.bodyDz, icon: icons[Number(card.iconKey) % icons.length] || ShieldCheck })) : ETHICS_STANDARDS.map((card) => ({ ...card, icon: icons[Number(card.iconKey)] }));
   return (
     <main id="main">
       {/* 1. Page Hero */}
@@ -76,10 +77,10 @@ export default async function CodeOfEthicsPage() {
                     <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="font-serif text-lg font-bold text-stone-900 mb-2">
-                    {pillar.title}
+                    <LocalizedRecordField english={pillar.title} dzongkha={'titleDz' in pillar ? pillar.titleDz : undefined} />
                   </h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
-                    {pillar.body}
+                    <LocalizedRecordField as="span" english={pillar.body} dzongkha={'bodyDz' in pillar ? pillar.bodyDz : undefined} />
                   </p>
                 </div>
                 <div className="pt-4 mt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">

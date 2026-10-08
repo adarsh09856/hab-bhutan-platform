@@ -13,7 +13,9 @@ const configs: Record<string, Config> = {
     endpoint: '/api/admin/governance-cards', collection: 'records', title: 'Strategic plan pillars', labelKey: 'title', governanceCardSection: 'strategic',
     fields: [
       { key: 'number', label: 'Pillar number' }, { key: 'title', label: 'Pillar title', required: true },
-      { key: 'body', label: 'Description', kind: 'long' }, { key: 'metric', label: '2030 milestone' },
+      { key: 'body', label: 'Description', kind: 'long' }, { key: 'titleDz', label: 'Pillar title (Dzongkha)' },
+      { key: 'bodyDz', label: 'Description (Dzongkha)', kind: 'long' }, { key: 'metric', label: '2030 milestone' },
+      { key: 'metricDz', label: 'Milestone (Dzongkha)' },
       { key: 'sortOrder', label: 'Display order', kind: 'number' }, { key: 'isActive', label: 'Publicly visible', kind: 'check' },
     ],
   },
@@ -21,7 +23,9 @@ const configs: Record<string, Config> = {
     endpoint: '/api/admin/governance-cards', collection: 'records', title: 'Articles of Association', labelKey: 'title', governanceCardSection: 'mandate',
     fields: [
       { key: 'number', label: 'Article number' }, { key: 'title', label: 'Article title', required: true },
-      { key: 'body', label: 'Article text', kind: 'long' }, { key: 'tags', label: 'Tags (one per line)', kind: 'long' },
+      { key: 'body', label: 'Article text', kind: 'long' }, { key: 'titleDz', label: 'Article title (Dzongkha)' },
+      { key: 'bodyDz', label: 'Article text (Dzongkha)', kind: 'long' }, { key: 'tags', label: 'Tags (one per line)', kind: 'long' },
+      { key: 'tagsDz', label: 'Tags (Dzongkha, one per line)', kind: 'long' },
       { key: 'sortOrder', label: 'Display order', kind: 'number' }, { key: 'isActive', label: 'Publicly visible', kind: 'check' },
     ],
   },
@@ -29,6 +33,7 @@ const configs: Record<string, Config> = {
     endpoint: '/api/admin/governance-cards', collection: 'records', title: 'Ethical standards', labelKey: 'title', governanceCardSection: 'ethics',
     fields: [
       { key: 'title', label: 'Standard title', required: true }, { key: 'body', label: 'Description', kind: 'long' },
+      { key: 'titleDz', label: 'Standard title (Dzongkha)' }, { key: 'bodyDz', label: 'Description (Dzongkha)', kind: 'long' },
       { key: 'iconKey', label: 'Icon number (0–5)' }, { key: 'sortOrder', label: 'Display order', kind: 'number' },
       { key: 'isActive', label: 'Publicly visible', kind: 'check' },
     ],

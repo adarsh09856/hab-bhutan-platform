@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import prisma from '@/lib/prisma';
 import { STRATEGIC_PILLARS } from '@/lib/governance-page-defaults';
 import { Target, TrendingUp, Users, Sparkles, Download, ArrowRight, ShieldCheck, CheckCircle2, Leaf, Globe } from 'lucide-react';
@@ -15,7 +16,9 @@ export const metadata: Metadata = {
 
 export default async function StrategicPlanPage() {
   const saved = await prisma.governancePageCard.findMany({ where: { section: 'strategic' }, orderBy: { sortOrder: 'asc' } }).catch(() => []);
-  const pillars = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ num: card.number || '', title: card.title, desc: card.body, metric: card.metric || '' })) : STRATEGIC_PILLARS;
+  const pillars: Array<{ num: string; title: string; titleDz?: string | null; desc: string; descDz?: string | null; metric: string; metricDz?: string | null }> = saved.length
+    ? saved.filter((card) => card.isActive).map((card) => ({ num: card.number || '', title: card.title, titleDz: card.titleDz, desc: card.body, descDz: card.bodyDz, metric: card.metric || '', metricDz: card.metricDz }))
+    : STRATEGIC_PILLARS.map((item) => ({ ...item, titleDz: null, descDz: null, metricDz: null }));
   return (
     <main id="main">
       {/* 1. Page Hero */}
@@ -74,18 +77,18 @@ export default async function StrategicPlanPage() {
                     {p.num}
                   </span>
                   <h3 className="font-serif text-lg lg:text-xl font-bold text-stone-900">
-                    {p.title}
+                    <LocalizedRecordField english={p.title} dzongkha={p.titleDz} />
                   </h3>
                 </div>
                 <p className="text-xs lg:text-sm text-stone-600 leading-relaxed pl-0 lg:pl-12">
-                  {p.desc}
+                  <LocalizedRecordField as="span" english={p.desc} dzongkha={p.descDz} />
                 </p>
               </div>
 
               <div className="flex-shrink-0 lg:text-right pl-0 lg:pl-6 border-t lg:border-t-0 pt-3 lg:pt-0 border-stone-100">
                 <span className="text-[10px] uppercase font-bold text-stone-400 block mb-0.5">2030 Key Milestone</span>
                 <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold font-mono">
-                  {p.metric}
+                  <LocalizedRecordField as="span" english={p.metric} dzongkha={p.metricDz} />
                 </span>
               </div>
             </article>
