@@ -5,10 +5,21 @@ import { useRouter } from 'next/navigation';
 import { Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
-type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date'; required?: boolean };
+type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password'; required?: boolean; createOnly?: boolean };
 type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH' };
 
 const configs: Record<string, Config> = {
+  wholesale: {
+    endpoint: '/api/admin/wholesale', collection: 'buyers', title: 'Wholesale buyers', labelKey: 'companyName',
+    fields: [
+      { key: 'username', label: 'Username', required: true }, { key: 'password', label: 'Password (leave blank to keep current)', kind: 'password', required: true, createOnly: true },
+      { key: 'companyName', label: 'Company name', required: true }, { key: 'contactName', label: 'Contact name', required: true },
+      { key: 'email', label: 'Email', required: true }, { key: 'phone', label: 'Phone' },
+      { key: 'country', label: 'Country' }, { key: 'city', label: 'City' }, { key: 'taxId', label: 'Tax ID' },
+      { key: 'discountTier', label: 'Discount percentage', kind: 'number' }, { key: 'status', label: 'Status' },
+      { key: 'notes', label: 'Internal notes', kind: 'long' },
+    ],
+  },
   tenders: {
     endpoint: '/api/admin/tenders', collection: 'tenders', title: 'Tenders and procurement', labelKey: 'title',
     fields: [
@@ -180,6 +191,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if ('year' in next) next.year = new Date().getFullYear();
     if ('closingDate' in next) next.closingDate = new Date().toISOString().slice(0, 10);
     if ('status' in next) next.status = sectionType === 'tenders' ? 'OPEN' : sectionType === 'members' ? 'VERIFIED' : sectionType === 'products' ? 'PUBLISHED' : 'current';
+    if (sectionType === 'wholesale') { next.status = 'PENDING'; next.country = 'Bhutan'; next.discountTier = 20; }
     setDraft(next); setMessage('');
   };
   const startEdit = (row: Record<string, any>) => {
@@ -202,7 +214,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
   };
   const save = async () => {
     if (!draft) return;
-    const missing = config.fields.find((field) => field.required && !String(draft[field.key] ?? '').trim());
+    const missing = config.fields.find((field) => field.required && (!field.createOnly || !draft.id) && !String(draft[field.key] ?? '').trim());
     if (missing) { setMessage(`${missing.label} is required.`); return; }
     setSaving(true); setMessage('');
     try {
@@ -232,6 +244,24 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     } catch (error: any) { setMessage(error?.message || 'Delete failed.'); }
     finally { setSaving(false); }
   };
+  const decideWholesale = async (row: Record<string, any>, action: 'APPROVE' | 'DECLINE') => {
+    const company = String(row.companyName || row.username);
+    if (!window.confirm(`${action === 'APPROVE' ? 'Approve' : 'Decline'} ${company}? Verify the payment reference and deposit proof first. This changes account access and attempts to send an email.`)) return;
+    const reason = action === 'DECLINE' ? window.prompt('Reason to include in the decline email (optional):') : '';
+    if (reason === null) return;
+    setSaving(true); setMessage('');
+    try {
+      const response = await fetch('/api/admin/wholesale/action', {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buyerId: row.id, action, reason }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Decision failed.');
+      await load(); router.refresh();
+      setMessage(`${data.message || 'Decision saved.'}${data.temporaryPassword && !data.emailSent ? ` Temporary password: ${data.temporaryPassword}` : ''}`);
+    } catch (error: any) { setMessage(error?.message || 'Decision failed.'); }
+    finally { setSaving(false); }
+  };
   const visible = rows.filter((row) => `${row[config.labelKey] || ''} ${row.key || ''}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
@@ -251,19 +281,31 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
           {!loading && visible.length === 0 && <p className="p-3 text-sm">No records found.</p>}
           {visible.map((row) => <div key={row.id} className="flex items-center gap-2 p-2.5">
             <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}</button>
+            {sectionType === 'wholesale' && row.status !== 'ACTIVE' && <button type="button" title="Approve and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'APPROVE')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
+            {sectionType === 'wholesale' && row.status !== 'REJECTED' && <button type="button" title="Decline and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'DECLINE')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
             <button type="button" aria-label={`${sectionType === 'crafts' ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' ? 'Hide craft' : 'Delete'} onClick={() => remove(row)} disabled={saving} className="rounded-md p-1.5 text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
           </div>)}
         </div>
         <div className="rounded-xl border p-3 sm:p-4">
           {!draft ? <p className="text-sm text-slate-600">Select a record to edit, or create a new one.</p> : <>
             <div className="mb-3 flex items-center justify-between"><strong className="text-sm">{draft.id ? 'Edit record' : 'New record'}</strong><button type="button" onClick={() => setDraft(null)} aria-label="Close record form"><X className="w-4 h-4" /></button></div>
+            {sectionType === 'wholesale' && draft.notes && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+              <strong>Payment details: inspect before approving</strong>
+              <pre className="mt-1 whitespace-pre-wrap break-all font-sans">{String(draft.notes)}</pre>
+              {(() => {
+                const proof = String(draft.notes).match(/Payment Slip Proof:\s*(\S+)/i)?.[1];
+                return proof && (proof.startsWith('/uploads/') || /^https?:\/\//i.test(proof))
+                  ? <a href={proof} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-bold underline">Open deposit proof</a>
+                  : null;
+              })()}
+            </div>}
             <div className="grid gap-3 sm:grid-cols-2">
               {config.fields.map((field) => <div key={field.key} className={field.kind === 'long' || field.kind === 'image' || field.kind === 'file' || field.kind === 'lines' ? 'sm:col-span-2' : ''}>
                 {field.kind === 'check' ? <label className="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={Boolean(draft[field.key])} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.checked })} />{field.label}</label>
                   : field.kind === 'image' || field.kind === 'file' ? <FileUploadInput value={String(draft[field.key] || '')} onChange={(url) => setDraft((current) => ({ ...current, [field.key]: url }))} label={field.label} accept={field.kind === 'image' ? 'image/*' : 'application/pdf,.pdf,.doc,.docx'} />
                     : <label className="block text-xs font-semibold">{field.label}{field.required ? ' *' : ''}
                       {field.kind === 'long' || field.kind === 'lines' ? <textarea rows={3} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={String(draft[field.key] ?? '')} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} />
-                        : <input type={field.kind === 'number' ? 'number' : field.kind === 'date' ? 'date' : 'text'} required={field.required} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={draft[field.key] ?? ''} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} />}
+                        : <input type={field.kind === 'number' ? 'number' : field.kind === 'date' ? 'date' : field.kind === 'password' ? 'password' : 'text'} required={field.required && (!field.createOnly || !draft.id)} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={draft[field.key] ?? ''} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} />}
                     </label>}
               </div>)}
             </div>
