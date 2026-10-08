@@ -93,7 +93,10 @@ export type SectionType =
   | 'products'
   | 'crafts'
   | 'board-records'
-  | 'secretariat-records';
+  | 'secretariat-records'
+  | 'strategic-cards'
+  | 'mandate-cards'
+  | 'ethics-cards';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -181,7 +184,7 @@ export default function UniversalLiveSectionEditor({
       setActiveTab('COLUMNS');
       setSelectedFooterCol('Association');
       setNewLinkCol('Association');
-    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records') {
+    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records' || sectionType === 'strategic-cards' || sectionType === 'mandate-cards' || sectionType === 'ethics-cards') {
       setActiveTab('RECORDS');
     } else {
       setActiveTab('CONTENT');

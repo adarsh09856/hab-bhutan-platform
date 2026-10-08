@@ -833,6 +833,12 @@ The larger project remains open. In particular, every reference page still needs
 
 ## 12. Final admin usability pass (requested after functional plan completion)
 
+### Governance card collections (8 October 2026)
+
+- Strategic pillars, mandate articles and ethical standards now have database-backed records with create, list, update, order, show/hide and native public-page Quick Edit controls. The Admin page `/admin/pages/governance-cards` manages the same records. Existing published wording was copied into shared defaults and seeded additively; no existing records are overwritten.
+- Local authenticated test created and updated a strategic card and observed the changed text in public HTML. A separate visibility probe confirmed that hiding a card removes its rendered `<h3>` even though Next.js still includes the card data in its serialized page payload; the temporary test records were removed. Mandate and ethics mutation flows, in-browser Quick Edit clicks and production-authenticated CRUD remain **UNVERIFIED**.
+- Hero and other static governance text is still hardcoded, so this is not completion of the all-visible-text requirement.
+
 - Once all page parity, public/admin synchronization, Quick Edit CRUD, payment, import/export, media and language work is verified, simplify the Admin panel. Group tasks by plain-language purpose; remove duplicate or misleading navigation entries; make record list, create, edit, preview, publish, approve/decline and restore actions consistent; show concise help and meaningful errors; check keyboard and mobile use.
 - Preserve every existing module and capability while reorganizing. The usability pass is **PENDING** because the functional plan is not complete. Do not call the Admin easy to use until a real staff workflow has been tested.
 

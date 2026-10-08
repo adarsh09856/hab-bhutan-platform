@@ -6,9 +6,33 @@ import { Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
 type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password'; required?: boolean; createOnly?: boolean };
-type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; governanceCategory?: string };
+type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; governanceCategory?: string; governanceCardSection?: 'strategic' | 'mandate' | 'ethics' };
 
 const configs: Record<string, Config> = {
+  'strategic-cards': {
+    endpoint: '/api/admin/governance-cards', collection: 'records', title: 'Strategic plan pillars', labelKey: 'title', governanceCardSection: 'strategic',
+    fields: [
+      { key: 'number', label: 'Pillar number' }, { key: 'title', label: 'Pillar title', required: true },
+      { key: 'body', label: 'Description', kind: 'long' }, { key: 'metric', label: '2030 milestone' },
+      { key: 'sortOrder', label: 'Display order', kind: 'number' }, { key: 'isActive', label: 'Publicly visible', kind: 'check' },
+    ],
+  },
+  'mandate-cards': {
+    endpoint: '/api/admin/governance-cards', collection: 'records', title: 'Articles of Association', labelKey: 'title', governanceCardSection: 'mandate',
+    fields: [
+      { key: 'number', label: 'Article number' }, { key: 'title', label: 'Article title', required: true },
+      { key: 'body', label: 'Article text', kind: 'long' }, { key: 'tags', label: 'Tags (one per line)', kind: 'long' },
+      { key: 'sortOrder', label: 'Display order', kind: 'number' }, { key: 'isActive', label: 'Publicly visible', kind: 'check' },
+    ],
+  },
+  'ethics-cards': {
+    endpoint: '/api/admin/governance-cards', collection: 'records', title: 'Ethical standards', labelKey: 'title', governanceCardSection: 'ethics',
+    fields: [
+      { key: 'title', label: 'Standard title', required: true }, { key: 'body', label: 'Description', kind: 'long' },
+      { key: 'iconKey', label: 'Icon number (0–5)' }, { key: 'sortOrder', label: 'Display order', kind: 'number' },
+      { key: 'isActive', label: 'Publicly visible', kind: 'check' },
+    ],
+  },
   'board-records': {
     endpoint: '/api/admin/governance', collection: 'records', title: 'Board of Trustees', labelKey: 'individualName', governanceCategory: 'BOARD_OF_TRUSTEES',
     fields: [
@@ -190,7 +214,8 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if (!config) return;
     setLoading(true);
     try {
-      const response = await fetch(config.endpoint, { credentials: 'include', cache: 'no-store' });
+      const listUrl = config.governanceCardSection ? `${config.endpoint}?section=${config.governanceCardSection}` : config.endpoint;
+      const response = await fetch(listUrl, { credentials: 'include', cache: 'no-store' });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Records could not be loaded.');
       const records = Array.isArray(data[config.collection]) ? data[config.collection] : [];
@@ -235,6 +260,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if (config.governanceCategory) {
       result.category = config.governanceCategory;
     }
+    if (config.governanceCardSection) result.section = config.governanceCardSection;
     return result;
   };
   const save = async () => {
@@ -255,17 +281,18 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
   };
   const remove = async (row: Record<string, any>) => {
     const archiveCraft = sectionType === 'crafts';
-    if (!window.confirm(`${archiveCraft ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)} from the public site?`)) return;
+    const archiveGovernance = Boolean(config.governanceCardSection);
+    if (!window.confirm(`${archiveCraft || archiveGovernance ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)} from the public site?`)) return;
     setSaving(true); setMessage('');
     try {
-      const deleteUrl = `${config.endpoint}?id=${encodeURIComponent(row.id)}${config.contentType ? `&type=${encodeURIComponent(config.contentType)}` : ''}`;
+      const deleteUrl = `${config.endpoint}?id=${encodeURIComponent(row.id)}${config.contentType ? `&type=${encodeURIComponent(config.contentType)}` : ''}${config.governanceCardSection ? `&section=${config.governanceCardSection}` : ''}`;
       const response = await fetch(archiveCraft ? config.endpoint : deleteUrl, archiveCraft
         ? { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: row.key, isActive: false }) }
         : { method: 'DELETE', credentials: 'include' });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Delete failed.');
       if (draft?.id === row.id) setDraft(null);
-      await load(); router.refresh(); setMessage(archiveCraft ? 'Craft hidden. Edit it to make it visible again.' : 'Record deleted.');
+      await load(); router.refresh(); setMessage(archiveCraft || archiveGovernance ? 'Record hidden. Edit it to make it visible again.' : 'Record deleted.');
     } catch (error: any) { setMessage(error?.message || 'Delete failed.'); }
     finally { setSaving(false); }
   };
@@ -305,10 +332,10 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
           {loading && <p className="p-3 text-sm">Loading…</p>}
           {!loading && visible.length === 0 && <p className="p-3 text-sm">No records found.</p>}
           {visible.map((row) => <div key={row.id} className="flex items-center gap-2 p-2.5">
-            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}</button>
+            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{row.isActive === false ? ' (hidden)' : ''}</button>
             {sectionType === 'wholesale' && row.status !== 'ACTIVE' && <button type="button" title="Approve and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'APPROVE')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
             {sectionType === 'wholesale' && row.status !== 'REJECTED' && <button type="button" title="Decline and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'DECLINE')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
-            <button type="button" aria-label={`${sectionType === 'crafts' ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' ? 'Hide craft' : 'Delete'} onClick={() => remove(row)} disabled={saving} className="rounded-md p-1.5 text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+            <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving} className="rounded-md p-1.5 text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
           </div>)}
         </div>
         <div className="rounded-xl border p-3 sm:p-4">

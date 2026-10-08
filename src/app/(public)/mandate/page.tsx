@@ -2,6 +2,8 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import prisma from '@/lib/prisma';
+import { MANDATE_ARTICLES } from '@/lib/governance-page-defaults';
 import { ShieldCheck, BookOpen, Scale, Award, Users, Download, ArrowRight, CheckCircle2, FileText } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -11,40 +13,9 @@ export const metadata: Metadata = {
   description: 'Official statutory mandate and Articles of Association (AoA) governing the Handicrafts Association of Bhutan under the CSO Act of Bhutan 2007 (CSO/2011/043).',
 };
 
-const ARTICLES = [
-  {
-    num: 'Article I',
-    title: 'Sovereign Heritage & Stewardship of Zorig Chusum',
-    body: 'The Association is constituted as the peak civil society body entrusted with safeguarding, transmitting, and advocating for the thirteen traditional arts and crafts (Zorig Chusum) of the Kingdom of Bhutan, ensuring ancient techniques remain living, thriving economic pursuits rather than museum antiquities.',
-    tags: ['Cultural Continuity', 'Zorig Chusum', 'Crown Heritage'],
-  },
-  {
-    num: 'Article II',
-    title: 'Artisan Economic Protection & Elimination of Middlemen',
-    body: 'HAB holds a statutory mandate to eliminate unfair predatory trading by guaranteeing fair upfront purchase prices to rural creators. The Association operates non-profit consignment and direct market infrastructure, ensuring over 84% of turnover flows directly to artisan producers.',
-    tags: ['Fair Trade', '7,500+ Artisans', 'Upfront Payment'],
-  },
-  {
-    num: 'Article III',
-    title: 'National Quality Standards & Royal Seal of Origin',
-    body: 'Empowered to inspect, accredit, and certify traditional Bhutanese craft pieces with the official Seal of Authenticity. HAB enforces strict origin traceability to protect local makers against mass-produced counterfeit imports sold under Bhutanese names.',
-    tags: ['Provenance Certification', 'Anti-Counterfeit', 'Origin Traceability'],
-  },
-  {
-    num: 'Article IV',
-    title: 'Fiduciary Governance & Public Financial Disclosure',
-    body: 'Under Section 31 of the CSO Act of Bhutan 2007, HAB operates under audited double-entry accounts certified annually by independent Chartered Accountants. No portion of net earnings may inure to any private shareholder or individual trustee.',
-    tags: ['CSO/2011/043', 'Independent Audits', 'Public Ledgers'],
-  },
-  {
-    num: 'Article V',
-    title: 'Nationwide Cluster Representation Across 20 Dzongkhags',
-    body: 'The Association shall maintain democratic artisan representation from all twenty Dzongkhags of Bhutan, fostering self-governing village craft clusters, women-led weaving guilds, and youth apprenticeships with equal access to tools and donor interventions.',
-    tags: ['20 Dzongkhags', '70% Women-Led', 'Village Clusters'],
-  },
-];
-
 export default async function MandatePage() {
+  const saved = await prisma.governancePageCard.findMany({ where: { section: 'mandate' }, orderBy: { sortOrder: 'asc' } }).catch(() => []);
+  const articles = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ num: card.number || '', title: card.title, body: card.body, tags: (card.tags || '').split('\n').filter(Boolean) })) : MANDATE_ARTICLES;
   return (
     <main id="main">
       {/* 1. Page Hero */}
@@ -84,14 +55,15 @@ export default async function MandatePage() {
       </section>
 
       {/* 2. Statutory Legal Foundation */}
-      <section className="section" data-hab-section="mandate-statute">
+      <section className="section relative" data-hab-section="mandate-statute">
+        <SectionEditBadge label="Mandate articles" studioHref="/admin/pages/governance-cards?section=mandate" sectionType="mandate-cards" />
         <div className="mb-8 pb-4 border-b border-stone-200">
           <p className="eyebrow eyebrow--brass">Legal Foundations</p>
           <h2 className="display display--sub">Constitutional Articles of Association</h2>
         </div>
 
         <div className="space-y-6">
-          {ARTICLES.map((art, idx) => (
+          {articles.map((art, idx) => (
             <article 
               key={idx}
               className="bg-white border border-stone-200 rounded-3xl p-6 lg:p-8 shadow-xs hover:border-[#8B2E24]/30 hover:shadow-md transition-all"

@@ -2,6 +2,8 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import prisma from '@/lib/prisma';
+import { ETHICS_STANDARDS } from '@/lib/governance-page-defaults';
 import { ShieldCheck, HeartHandshake, Leaf, Scale, Users, AlertTriangle, Phone, Mail, Award, CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -11,40 +13,10 @@ export const metadata: Metadata = {
   description: 'Ethical standards, artisan welfare commitments, anti-exploitation charters, and ecological harvesting principles enforced by the Handicrafts Association of Bhutan.',
 };
 
-const ETHICAL_PILLARS = [
-  {
-    icon: HeartHandshake,
-    title: 'Upfront Fair Remuneration',
-    body: 'Artisans are paid an agreed fair wholesale rate upon product handover in Thimphu or regional clusters. Payment is strictly never contingent on final retail sale, eliminating inventory risk for grassroots craft families.',
-  },
-  {
-    icon: Scale,
-    title: 'Prohibition of Middlemen & Exploitation',
-    body: 'HAB directly engages producer households and clusters. Intermediary broker fees and unregulated commissions are strictly banned across our e-shop, physical outlets, and donor consignment programs.',
-  },
-  {
-    icon: Award,
-    title: 'Sacred Iconography & Cultural Reverence',
-    body: 'Traditional religious arts—including consecrated bronze statues, ceremonial wood masks, and sacred thangkas—must adhere strictly to Department of Culture proportions and Buddhist aesthetic canons.',
-  },
-  {
-    icon: Users,
-    title: 'Gender Parity & Dignified Workspaces',
-    body: 'Over 70% of HAB-affiliated enterprises are women-led. We enforce zero harassment, equal pay, safe ventilation in dyeing/forging facilities, and child-safe home cluster environments.',
-  },
-  {
-    icon: Leaf,
-    title: 'Sustainable Ecological Harvesting',
-    body: 'All wild craft materials—including Daphne bark for Desho paper, bamboo cane roots, and plant dyestuffs—must be gathered sustainably in compliance with national community forestry guidelines.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Zero Tolerance for Counterfeits',
-    body: 'Imported factory goods or machine-embroidered textiles falsely branded as traditional Bhutanese crafts result in immediate revocation of member credentials, store clearance, and CSO statutory referral.',
-  },
-];
-
 export default async function CodeOfEthicsPage() {
+  const saved = await prisma.governancePageCard.findMany({ where: { section: 'ethics' }, orderBy: { sortOrder: 'asc' } }).catch(() => []);
+  const icons = [HeartHandshake, Scale, Award, Users, Leaf, ShieldCheck];
+  const pillars = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ title: card.title, body: card.body, icon: icons[Number(card.iconKey) % icons.length] || ShieldCheck })) : ETHICS_STANDARDS.map((card) => ({ ...card, icon: icons[Number(card.iconKey)] }));
   return (
     <main id="main">
       {/* 1. Page Hero */}
@@ -84,14 +56,15 @@ export default async function CodeOfEthicsPage() {
       </section>
 
       {/* 2. 6 Pillars Grid */}
-      <section className="section" data-hab-section="ethics-pillars">
+      <section className="section relative" data-hab-section="ethics-pillars">
+        <SectionEditBadge label="Ethical standards" studioHref="/admin/pages/governance-cards?section=ethics" sectionType="ethics-cards" />
         <div className="mb-8 pb-4 border-b border-stone-200">
           <p className="eyebrow eyebrow--brass">Ethical Standards</p>
           <h2 className="display display--sub">Core Pillars of Fair Dealing</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ETHICAL_PILLARS.map((pillar, idx) => {
+          {pillars.map((pillar, idx) => {
             const Icon = pillar.icon;
             return (
               <article 

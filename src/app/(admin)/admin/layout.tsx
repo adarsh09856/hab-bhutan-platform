@@ -209,6 +209,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
         { label: 'Live Quick Edit Content', href: '/admin/pages/live-content', icon: Edit3, badge: 'Live' },
         { label: 'Public Page Sections', href: '/admin/pages/sections', icon: Layers },
+        { label: 'Governance Page Cards', href: '/admin/pages/governance-cards', icon: BookOpen },
         { label: '+ Create New Page', href: '/admin/pages?new=1', icon: Plus, badge: 'New' },
         { label: 'Edit Homepage', href: '/admin/pages/home', icon: LayoutDashboard },
         { label: 'Edit About Us', href: '/admin/pages/about', icon: BookOpen },

@@ -875,6 +875,24 @@ model PublicPageBlock {
   @@index([pathname, sortOrder])
 }
 
+// Editable collections shown inside the three statutory governance pages.
+model GovernancePageCard {
+  id          String   @id @default(uuid())
+  section     String
+  number      String?
+  title       String
+  body        String   @db.Text
+  metric      String?
+  tags        String?
+  iconKey     String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([section, sortOrder])
+}
+
 // Dedicated Wholesale Buyers Accounts & Access Control (Feedback Item 7)
 model WholesaleBuyer {
   id              String    @id @default(uuid())

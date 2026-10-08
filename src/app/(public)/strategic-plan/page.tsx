@@ -2,6 +2,8 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import prisma from '@/lib/prisma';
+import { STRATEGIC_PILLARS } from '@/lib/governance-page-defaults';
 import { Target, TrendingUp, Users, Sparkles, Download, ArrowRight, ShieldCheck, CheckCircle2, Leaf, Globe } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -11,40 +13,9 @@ export const metadata: Metadata = {
   description: 'The Five-Year Strategic Development Framework of the Handicrafts Association of Bhutan, detailing national craft cluster economic development and heritage preservation.',
 };
 
-const PILLARS = [
-  {
-    num: '01',
-    title: 'Cluster Formalization & Market Access',
-    desc: 'Transitioning 7,500 rural household producers into certified village cooperatives across all 20 Dzongkhags. Equipping clusters with common production sheds, centralized raw material procurement, and direct linkages to domestic outlets and the international e-shop.',
-    metric: '10,000+ Active Artisans by 2030',
-  },
-  {
-    num: '02',
-    title: 'Endangered Zorig Chusum Transmission',
-    desc: 'Targeted institutional interventions for endangered traditional arts facing practitioner decline—specifically traditional iron forging (Garo), bronze casting (Lugzo), and slate carving (Doma). Funding long-term paid apprenticeships under Living Master Craftspeople.',
-    metric: '150+ Paid Youth Apprenticeships',
-  },
-  {
-    num: '03',
-    title: 'Raw Material Sovereignty & Ecological Nurseries',
-    desc: 'Reducing dependency on imported yarns and synthetic chemicals through community cultivation of wild Daphne barks, indigo, and madder root gardens. Establishing cooperative dye vats and sustainable timber harvesting permits.',
-    metric: '100% Bhutanese Natural Dye Guarantee',
-  },
-  {
-    num: '04',
-    title: 'Digital Provenance & Global Direct Exports',
-    desc: 'Scaling our digital provenance registry linking physical Royal Seals of Authenticity to artisan maker cards via QR verification. Expanding streamlined DHL and Bhutan Post EMS international air cargo corridors with zero intermediary tariffs.',
-    metric: 'Worldwide Delivery in 5–7 Working Days',
-  },
-  {
-    num: '05',
-    title: 'Female Craft Leadership & Cluster Livelihoods',
-    desc: 'Deepening financial autonomy for the 70%+ women artisans leading our weaving, embroidery, and bamboo basketry sectors through flexible home-based production, equipment micro-grants, and cooperative childcare pilot programs.',
-    metric: 'Nu. 75M+ Annual Direct Female Disbursements',
-  },
-];
-
 export default async function StrategicPlanPage() {
+  const saved = await prisma.governancePageCard.findMany({ where: { section: 'strategic' }, orderBy: { sortOrder: 'asc' } }).catch(() => []);
+  const pillars = saved.length ? saved.filter((card) => card.isActive).map((card) => ({ num: card.number || '', title: card.title, desc: card.body, metric: card.metric || '' })) : STRATEGIC_PILLARS;
   return (
     <main id="main">
       {/* 1. Page Hero */}
@@ -84,14 +55,15 @@ export default async function StrategicPlanPage() {
       </section>
 
       {/* 2. 5 Strategic Pillars */}
-      <section className="section" data-hab-section="strategic-pillars">
+      <section className="section relative" data-hab-section="strategic-pillars">
+        <SectionEditBadge label="Strategic pillars" studioHref="/admin/pages/governance-cards?section=strategic" sectionType="strategic-cards" />
         <div className="mb-8 pb-4 border-b border-stone-200">
           <p className="eyebrow eyebrow--brass">Strategic Pillars</p>
           <h2 className="display display--sub">Five Core Growth Interventions</h2>
         </div>
 
         <div className="space-y-6">
-          {PILLARS.map((p, idx) => (
+          {pillars.map((p, idx) => (
             <article 
               key={idx}
               className="bg-white border border-stone-200 rounded-3xl p-6 lg:p-8 shadow-xs hover:border-[#8B2E24]/30 hover:shadow-md transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6"
