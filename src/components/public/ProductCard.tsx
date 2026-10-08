@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export interface ProductCardProps {
   code: string;
@@ -30,6 +31,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { fmt } = useCurrency();
   const { addToCart } = useCart();
+  const { t } = useLanguage();
   const isOutOfStock = stock <= 0;
 
   const resolvedInitialImage = 
@@ -67,7 +69,7 @@ export default function ProductCard({
         </span>
         {isOutOfStock && (
           <div className="absolute top-3 right-3 z-10 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded shadow-sm">
-            Out of stock
+            {t('shop.out_of_stock', 'Out of stock')}
           </div>
         )}
       </Link>
@@ -104,7 +106,7 @@ export default function ProductCard({
                 : 'border-[#33261F] text-[#33261F] hover:bg-[#33261F] hover:text-[#F4F0E7] cursor-pointer'
             }`}
           >
-            {isOutOfStock ? 'Sold out' : 'Add'}
+            {isOutOfStock ? t('shop.out_of_stock', 'Out of stock') : t('shop.add_to_cart', 'Add')}
           </button>
         </div>
       </div>

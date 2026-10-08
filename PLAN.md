@@ -847,3 +847,8 @@ The larger project remains open. In particular, every reference page still needs
 ### Navigation source-of-truth correction
 
 - The public navigation API previously substituted default header/footer links when saved collections were empty and rewrote footer targets from label text. The public Header and its Quick Edit dialog also forcibly inserted Home and excluded Donate. These behaviors have been removed so saved collections and links remain the source of truth; the explicit “Reset to defaults” control remains available. New navigation writes reject unsafe URL schemes. Source and typecheck verified; authenticated delete-the-last-link and browser synchronization tests remain **UNVERIFIED**.
+
+### Cross-page language QA
+
+- Direct browser inspection of `/strategic-plan` while the page language was Dzongkha showed the header and footer translated but the main title, body copy, and all five card descriptions remained in English. This confirms the site's current language switch does **not** translate the core content across all pages.
+- The shared product card now uses the existing `shop.add_to_cart` and `shop.out_of_stock` Dzongkha translations, so those common controls follow the selected language. Typecheck passed; optimized build and live display are pending. Full public-page text localization remains **PENDING**.
