@@ -30,6 +30,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import QuickEditRecords, { hasNativeRecordEditor } from '@/components/public/QuickEditRecords';
 
 const STATIC_SYSTEM_PAGES = [
   { label: 'Homepage', href: '/', category: 'Core Pages' },
@@ -79,6 +80,9 @@ export type SectionType =
   | 'punakha'
   | 'footer'
   | 'programmes'
+  | 'projects'
+  | 'tenders'
+  | 'members'
   | 'wholesale'
   | 'clusters'
   | 'masters'
@@ -103,7 +107,6 @@ export default function UniversalLiveSectionEditor({
   onClose,
   sectionType,
   sectionTitle,
-  studioHref,
   onSaved,
 }: UniversalLiveSectionEditorProps) {
   const router = useRouter();
@@ -1019,6 +1022,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Footer, Columns & Global Settings'
       : sectionType === 'programmes'
       ? 'Programmes & Strategic Pillars'
+      : sectionType === 'projects'
+      ? 'Donor Projects'
       : sectionType === 'wholesale'
       ? 'Wholesale & Trade Terms'
       : sectionType === 'products'
@@ -1026,36 +1031,6 @@ export default function UniversalLiveSectionEditor({
       : sectionType === 'crafts'
       ? '13 Traditional Crafts (Zorig Chusum)'
       : 'Live Section Editor');
-
-  const defaultStudioHref =
-    studioHref ||
-    (sectionType === 'utility-bar'
-      ? '/admin/site-settings?tab=ANNOUNCEMENT'
-      : sectionType === 'hero'
-      ? '/admin/hero'
-      : sectionType === 'stats'
-      ? '/admin/site-settings'
-      : sectionType === 'buy'
-      ? '/admin/trade'
-      : sectionType === 'about'
-      ? '/admin/pages/about'
-      : sectionType === 'membership'
-      ? '/admin/membership-categories'
-      : sectionType === 'donate'
-      ? '/admin/donate-settings'
-      : sectionType === 'contact'
-      ? '/admin/site-settings?tab=CONTACT'
-      : sectionType === 'footer'
-      ? '/admin/navigation'
-      : sectionType === 'programmes'
-      ? '/admin/programmes'
-      : sectionType === 'wholesale'
-      ? '/admin/trade'
-      : sectionType === 'products'
-      ? '/admin/products'
-      : sectionType === 'crafts'
-      ? '/admin/crafts'
-      : '/admin/site-settings');
 
   return createPortal(
     <div
@@ -1090,15 +1065,6 @@ export default function UniversalLiveSectionEditor({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              href="/admin/pages?new=1"
-              target="_blank"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:border-[#8B2E24] text-[#8B2E24] hover:bg-slate-50 text-xs font-bold shadow-2xs transition-colors"
-              title="Create a brand new standalone public page"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Create New Page</span>
-            </Link>
             <button
               type="button"
               onClick={onClose}
@@ -1181,22 +1147,16 @@ export default function UniversalLiveSectionEditor({
               <span>Impact Counters ({form.stat1Number ? '4' : '0'})</span>
             </button>
           )}
-          <button type="button" onClick={() => setActiveTab('RECORDS')}
+          {hasNativeRecordEditor(sectionType) && <button type="button" onClick={() => setActiveTab('RECORDS')}
             className={'pb-2.5 px-3 text-xs font-bold flex items-center gap-1.5 border-b-2 transition-colors cursor-pointer whitespace-nowrap ' +
               (activeTab === 'RECORDS' ? 'border-[#8B2E24] text-[#8B2E24]' : 'border-transparent text-slate-500 hover:text-slate-900')}>
             <Layers className="w-3.5 h-3.5" /> Records: create, edit, delete
-          </button>
+          </button>}
         </div>
 
         {/* Modal Body */}
         {activeTab === 'RECORDS' ? (
-          <div className="flex-1 min-h-[65vh] bg-white flex flex-col">
-            <div className="px-4 py-2 border-b border-slate-200 flex items-center justify-between gap-3 text-xs text-slate-600">
-              <span>Manage records here using your staff permissions. Changes are saved to the same public database.</span>
-              <button type="button" onClick={() => router.refresh()} className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 font-semibold text-[#8B2E24]">Refresh public page</button>
-            </div>
-            <iframe title={`${displayTitle} records editor`} src={defaultStudioHref} className="w-full h-[65vh] border-0" />
-          </div>
+          <QuickEditRecords sectionType={sectionType} />
         ) : (
         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-4 no-scrollbar">
@@ -4002,25 +3962,7 @@ export default function UniversalLiveSectionEditor({
 
           {/* Modal Footer */}
           <div className="flex-shrink-0 p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Link
-                href={defaultStudioHref}
-                target="_blank"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Open in Admin Studio</span>
-              </Link>
-              <span className="text-slate-300">|</span>
-              <Link
-                href="/admin/pages?new=1"
-                target="_blank"
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#8B2E24] hover:text-[#73241c] transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Create New Page</span>
-              </Link>
-            </div>
+            <span className="text-xs text-slate-600">Quick Edit saves directly to the live site.</span>
 
             <div className="flex items-center gap-2">
               <button

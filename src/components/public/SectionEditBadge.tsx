@@ -44,14 +44,18 @@ function inferSectionType(studioHref: string = '', label: string = ''): SectionT
   if (path.includes('/admin/hero')) return 'hero';
   if (path.includes('/admin/products') || path.includes('/shop') || l.includes('shop') || l.includes('product') || l.includes('catalogue')) return 'products';
   if (path.includes('/admin/crafts') || l.includes('craft') || l.includes('zorig')) return 'crafts';
+  if (path.includes('/admin/projects')) return 'projects';
   if (path.includes('/admin/programmes') || l.includes('programme') || l.includes('pillar') || l.includes('training')) return 'programmes';
+  if (l.includes('project')) return 'projects';
   if (path.includes('/admin/wholesale') || path.includes('/admin/trade') || l.includes('wholesale') || l.includes('trade')) return 'wholesale';
+  if (path.includes('/admin/clusters-outlets') || path.includes('/admin/outlets') || l.includes('outlet') || l.includes('punakha') || l.includes('market')) return 'outlets';
   if (path.includes('/admin/clusters') || l.includes('cluster')) return 'clusters';
   if (path.includes('/admin/honours') || path.includes('/admin/masters') || l.includes('master') || l.includes('honour') || l.includes('living treasure')) return 'masters';
   if (path.includes('/admin/content') || path.includes('/admin/news') || l.includes('news') || l.includes('story')) return 'news';
   if (path.includes('/admin/events') || l.includes('event') || l.includes('exhibition')) return 'events';
   if (path.includes('/admin/publications') || l.includes('publication') || l.includes('report') || l.includes('research')) return 'publications';
-  if (path.includes('/admin/clusters-outlets') || path.includes('/admin/outlets') || l.includes('outlet') || l.includes('punakha') || l.includes('market')) return 'outlets';
+  if (path.includes('/admin/tenders') || l.includes('tender') || l.includes('procurement')) return 'tenders';
+  if (path.includes('/admin/members') || l.includes('member directory') || l.includes('artisan directory')) return 'members';
   if (path.includes('/admin/policies') || path.includes('/terms') || path.includes('/privacy') || l.includes('policy') || l.includes('terms') || l.includes('privacy') || l.includes('shipping')) return 'policies';
   if (path.includes('/admin/donations') || path.includes('/donate') || l.includes('donate') || l.includes('support pillar')) return 'donate';
   if (path.includes('/admin/enquiries') || path.includes('/contact') || l.includes('contact') || l.includes('secretariat')) return 'contact';
@@ -62,7 +66,6 @@ function inferSectionType(studioHref: string = '', label: string = ''): SectionT
   if (l.includes('buy') || l.includes('retail')) return 'buy';
   if (l.includes('footer')) return 'footer';
 
-  if (path.includes('/admin/projects') || l.includes('project')) return 'programmes';
   if (path.includes('/admin/site-settings') || path.includes('/admin/settings')) return 'hero';
   if (path.includes('/admin/users') || path.includes('/admin/orders')) return 'about-page';
 

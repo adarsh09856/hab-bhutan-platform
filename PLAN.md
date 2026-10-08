@@ -790,8 +790,16 @@ The larger project remains open. In particular, every reference page still needs
 - The universal page editor was rendered at `z-[90]`, below existing floating controls at z-index 130–140. Its panel now uses a body portal at `z-[99999]` and accepts Escape to close.
 - The page-wide capture listener could intercept clicks in the live section, header, visual-section and custom-page editors. Those dialogs are now explicitly excluded, so their controls (including Close) receive clicks. Authenticated browser verification is still **UNVERIFIED**.
 - The universal editor now checks the current staff session before attaching click-to-edit behavior. Anonymous visual-edit flags alone cannot activate that editor.
-- The live section dialog has an in-place Records tab exposing the existing module CRUD screen. This is a bridge to create/read/update/delete records without leaving the public page; it is **not** yet a dedicated native Quick Edit CRUD form for each section. Same-origin framing is allowed only for authenticated `/admin/*` pages; cross-origin framing remains denied. Record creation, edit and deletion in the embedded screen are **UNVERIFIED** in an authenticated browser.
+- The live section dialog initially tried an embedded Admin Records screen. That did not meet the requirement for separate Quick Edit controls. It has been removed; Admin pages again deny all framing.
 - The desktop EN/Dz switcher was moved into the upper utility bar. Navigation and existing translated UI strings react to it, but core translation across every page remains **PENDING**.
+
+### Native Quick Edit record controls (8 October 2026, continuation)
+
+- Added separate list/search/create/edit/delete forms within the public-page Quick Edit dialog for products, members, clusters, outlets, programmes, projects, masters, news, events, publications and tenders. The forms use the same authenticated database APIs as Admin; image and document fields use the existing upload component. Craft categories can be created, read, edited and hidden/re-enabled, but deliberate hard deletion of the 13 heritage categories is not exposed because products and members can depend on them.
+- Corrected section routing so outlet badges no longer open the cluster editor, and project badges no longer open programme records.
+- No Admin screen is embedded in Quick Edit; the generic links to Admin were removed from the modal header/footer. This means **every section CRUD is still PENDING**, including header/footer collection operations, membership applications, wholesale accounts, orders, and some section-specific cards. Unsupported sections retain their existing text/settings Quick Edit controls; they do not show a nonfunctional Records tab.
+- Read-only `content:view` and `products:review` permissions no longer authorize writes to events, honours or crafts. Authenticated role-matrix and end-to-end browser save/delete tests remain **UNVERIFIED**.
+- Local verification after the native controls change: TypeScript and optimized Next.js build passed; six anonymous record endpoints (clusters, events, honours, tenders, members, products) each returned HTTP 401. These checks do **not** prove authenticated create/edit/delete or UI behavior, which remain **UNVERIFIED**.
 
 ## 9. Whole-site continuation: craft detail and editor coverage
 

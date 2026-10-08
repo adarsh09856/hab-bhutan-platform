@@ -5,13 +5,13 @@ import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
+async function verifyAdmin(req: NextRequest, write = false) {
   const user = await getSessionUser(req);
   if (!user) return null;
   const isStaff = user.roleSlug === 'super_admin' ||
                   user.roleSlug === 'staff_operator' ||
                   user.permissions?.includes('*') ||
-                  user.permissions?.includes('products:review');
+                  (write ? user.permissions?.includes('content:edit') : user.permissions?.includes('products:review') || user.permissions?.includes('content:view'));
   return isStaff ? user : null;
 }
 
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, true);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
   const { key, name, english, dzongkha, description, longDescription, typicalProducts, bannerUrl, technique, materials, practisedIn, history, shopNote, sortOrder, isActive } = body;
@@ -59,7 +59,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, true);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await req.json();
