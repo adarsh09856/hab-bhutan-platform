@@ -78,7 +78,7 @@ export default async function BoardOfTrusteesPage() {
     <main id="main">
       {/* 1. Page Hero */}
       <section className="section relative" data-hab-section="board-hero">
-        <SectionEditBadge label="Governance CMS" studioHref="/admin/pages/about#board" />
+        <SectionEditBadge label="Board records" studioHref="/admin/pages/about#board" sectionType="board-records" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/about">About Us</Link> / Board of Trustees
         </p>

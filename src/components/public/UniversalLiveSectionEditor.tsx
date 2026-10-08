@@ -91,7 +91,9 @@ export type SectionType =
   | 'publications'
   | 'outlets'
   | 'products'
-  | 'crafts';
+  | 'crafts'
+  | 'board-records'
+  | 'secretariat-records';
 
 interface UniversalLiveSectionEditorProps {
   isOpen: boolean;
@@ -179,6 +181,8 @@ export default function UniversalLiveSectionEditor({
       setActiveTab('COLUMNS');
       setSelectedFooterCol('Association');
       setNewLinkCol('Association');
+    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records') {
+      setActiveTab('RECORDS');
     } else {
       setActiveTab('CONTENT');
     }
@@ -1030,6 +1034,10 @@ export default function UniversalLiveSectionEditor({
       ? 'Products & Shop Catalog'
       : sectionType === 'crafts'
       ? '13 Traditional Crafts (Zorig Chusum)'
+      : sectionType === 'board-records'
+      ? 'Board of Trustees'
+      : sectionType === 'secretariat-records'
+      ? 'Secretariat Team'
       : 'Live Section Editor');
 
   return createPortal(

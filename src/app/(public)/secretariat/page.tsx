@@ -98,7 +98,7 @@ export default async function SecretariatPage() {
     <main id="main">
       {/* 1. Page Hero */}
       <section className="section relative" data-hab-section="secretariat-hero">
-        <SectionEditBadge label="Secretariat CMS" studioHref="/admin/pages/about#team" />
+        <SectionEditBadge label="Secretariat records" studioHref="/admin/pages/about#team" sectionType="secretariat-records" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/about">About Us</Link> / The Secretariat
         </p>

@@ -6,9 +6,25 @@ import { Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
 type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password'; required?: boolean; createOnly?: boolean };
-type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH' };
+type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; governanceCategory?: string };
 
 const configs: Record<string, Config> = {
+  'board-records': {
+    endpoint: '/api/admin/governance', collection: 'records', title: 'Board of Trustees', labelKey: 'individualName', governanceCategory: 'BOARD_OF_TRUSTEES',
+    fields: [
+      { key: 'individualName', label: 'Trustee name', required: true }, { key: 'roleTitle', label: 'Board role', required: true },
+      { key: 'chapterOrNote', label: 'Profile note', kind: 'long' }, { key: 'photoUrl', label: 'Portrait', kind: 'image' },
+      { key: 'sortOrder', label: 'Display order', kind: 'number' },
+    ],
+  },
+  'secretariat-records': {
+    endpoint: '/api/admin/governance', collection: 'records', title: 'Secretariat team', labelKey: 'individualName', governanceCategory: 'SECRETARIAT',
+    fields: [
+      { key: 'individualName', label: 'Team member name', required: true }, { key: 'roleTitle', label: 'Position', required: true },
+      { key: 'chapterOrNote', label: 'Profile note', kind: 'long' }, { key: 'photoUrl', label: 'Portrait', kind: 'image' },
+      { key: 'sortOrder', label: 'Display order', kind: 'number' },
+    ],
+  },
   wholesale: {
     endpoint: '/api/admin/wholesale', collection: 'buyers', title: 'Wholesale buyers', labelKey: 'companyName',
     fields: [
@@ -175,7 +191,8 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       const response = await fetch(config.endpoint, { credentials: 'include', cache: 'no-store' });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Records could not be loaded.');
-      setRows(Array.isArray(data[config.collection]) ? data[config.collection] : []);
+      const records = Array.isArray(data[config.collection]) ? data[config.collection] : [];
+      setRows(config.governanceCategory ? records.filter((row: Record<string, any>) => row.category === config.governanceCategory) : records);
       setMessage('');
     } catch (error: any) { setMessage(error?.message || 'Records could not be loaded.'); }
     finally { setLoading(false); }
@@ -197,7 +214,10 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
   const startEdit = (row: Record<string, any>) => {
     const primaryImage = Array.isArray(row.images) ? row.images.find((image: any) => image.role === 'primary') || row.images[0] : null;
     const dates = Object.fromEntries(config.fields.filter((field) => field.kind === 'date').map((field) => [field.key, row[field.key] ? String(row[field.key]).slice(0, 10) : '']));
+    const [governanceNote, governancePhoto] = config.governanceCategory
+      ? String(row.chapterOrNote || '').split('||photo:') : ['', ''];
     setDraft({ ...row, ...dates, imageUrl: row.imageUrl || primaryImage?.url || '',
+      ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: (governancePhoto || '').trim() } : {}),
       activities: Array.isArray(row.activities) ? row.activities.join('\n') : row.activities || '',
       results: Array.isArray(row.results) ? row.results.join('\n') : row.results || '' });
     setMessage('');
@@ -210,6 +230,13 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
             : String(draft?.[field.key] || '').trim()]));
     if (draft?.id) result.id = draft.id;
     if (config.contentType) result.type = config.contentType;
+    if (config.governanceCategory) {
+      result.category = config.governanceCategory;
+      const note = String(result.chapterOrNote || '').trim();
+      const photo = String(result.photoUrl || '').trim();
+      result.chapterOrNote = photo ? `${note}||photo:${photo}` : note;
+      delete result.photoUrl;
+    }
     return result;
   };
   const save = async () => {
