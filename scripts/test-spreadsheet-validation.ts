@@ -3,6 +3,9 @@ import ExcelJS from 'exceljs';
 import {
   MEMBER_HEADERS,
   WHOLESALE_HEADERS,
+  WHOLESALE_SAMPLE_ROWS,
+  MEMBER_SAMPLE_ROWS,
+  createExcelWorkbookBuffer,
   parseSpreadsheetFile,
   validateMemberImport,
   validateWholesaleImport,
@@ -20,6 +23,21 @@ async function main() {
   } as File;
   const parsed = await parseSpreadsheetFile(file);
   assert.equal(parsed[1][0], 'བུམ་ཐང་ལག་བཟོ', 'XLSX parser preserves Dzongkha cell values.');
+
+  for (const [sheetName, headers, samples, unicodeCell] of [
+    ['Members', MEMBER_HEADERS, MEMBER_SAMPLE_ROWS, 'བུམ་ཐང་ལག་བཟོ'],
+    ['Wholesalers', WHOLESALE_HEADERS, WHOLESALE_SAMPLE_ROWS, 'འབྲུག'],
+  ] as const) {
+    const exportRows = [[...samples[0].slice(0, -1), unicodeCell]];
+    const exported = await createExcelWorkbookBuffer(sheetName, [...headers], exportRows);
+    const exportedFile = {
+      name: `${sheetName.toLowerCase()}.xlsx`,
+      arrayBuffer: async () => exported,
+    } as File;
+    const reopened = await parseSpreadsheetFile(exportedFile);
+    assert.deepEqual(reopened[0], [...headers], `${sheetName} XLSX download contains its complete template headers.`);
+    assert(reopened[1]?.some((cell) => cell === unicodeCell), `${sheetName} XLSX output preserves its Dzongkha sample cell.`);
+  }
 
   const validMember = ['Pema Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'CID-100', '', '', '', '', '', ''];
   const repeatedMember = ['Another Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'cid-100', '', '', '', '', '', ''];

@@ -102,12 +102,11 @@ export function triggerDownload(filename: string, content: string, mimeType = 't
   URL.revokeObjectURL(url);
 }
 
-export async function downloadExcelWorkbook(
-  filename: string,
+export async function createExcelWorkbookBuffer(
   sheetName: string,
   headers: string[],
   rows: (string | number | null | undefined)[][]
-) {
+): Promise<ArrayBuffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'Handicrafts Association of Bhutan';
   const worksheet = workbook.addWorksheet(sheetName.slice(0, 31));
@@ -117,7 +116,19 @@ export async function downloadExcelWorkbook(
   worksheet.columns = headers.map((header, index) => ({
     width: Math.min(60, Math.max(header.length + 2, ...rows.map((row) => String(row[index] ?? '').length + 2))),
   }));
-  const output = await workbook.xlsx.writeBuffer();
+  const bytes = new Uint8Array(await workbook.xlsx.writeBuffer());
+  const output = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(output).set(bytes);
+  return output;
+}
+
+export async function downloadExcelWorkbook(
+  filename: string,
+  sheetName: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][]
+) {
+  const output = await createExcelWorkbookBuffer(sheetName, headers, rows);
   const blob = new Blob([output], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   });
