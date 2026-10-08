@@ -833,3 +833,7 @@ The larger project remains open. In particular, every reference page still needs
 
 - Once all page parity, public/admin synchronization, Quick Edit CRUD, payment, import/export, media and language work is verified, simplify the Admin panel. Group tasks by plain-language purpose; remove duplicate or misleading navigation entries; make record list, create, edit, preview, publish, approve/decline and restore actions consistent; show concise help and meaningful errors; check keyboard and mobile use.
 - Preserve every existing module and capability while reorganizing. The usability pass is **PENDING** because the functional plan is not complete. Do not call the Admin easy to use until a real staff workflow has been tested.
+
+### Navigation source-of-truth correction
+
+- The public navigation API previously substituted default header/footer links when saved collections were empty and rewrote footer targets from label text. The public Header and its Quick Edit dialog also forcibly inserted Home and excluded Donate. These behaviors have been removed so saved collections and links remain the source of truth; the explicit “Reset to defaults” control remains available. New navigation writes reject unsafe URL schemes. Source and typecheck verified; authenticated delete-the-last-link and browser synchronization tests remain **UNVERIFIED**.

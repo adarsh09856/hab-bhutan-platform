@@ -96,9 +96,9 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
         if (!isMounted) return;
 
         // Populate Navigation
-        if (navData?.header && Array.isArray(navData.header) && navData.header.length > 0) {
+        if (navData?.header && Array.isArray(navData.header)) {
           const mainLinks = navData.header
-            .filter((i: any) => !i.parent && i.href !== '/donate')
+            .filter((i: any) => !i.parent)
             .map((i: any, idx: number) => ({
               id: i.id,
               label: i.label,
@@ -107,20 +107,7 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
               isActive: i.isActive !== false,
             }));
 
-          const hasHome = mainLinks.some((i: any) => i.href === '/');
-          const finalNav = hasHome
-            ? mainLinks
-            : [{ label: 'Home', href: '/', sortOrder: 0, isActive: true }, ...mainLinks];
-
-          setNavItems(finalNav);
-        } else {
-          setNavItems([
-            { label: 'Home', href: '/', sortOrder: 1, isActive: true },
-            { label: 'About Us', href: '/about', sortOrder: 2, isActive: true },
-            { label: 'Programmes', href: '/programmes', sortOrder: 3, isActive: true },
-            { label: 'Projects', href: '/projects', sortOrder: 4, isActive: true },
-            { label: 'News & Events', href: '/news', sortOrder: 5, isActive: true },
-          ]);
+          setNavItems(mainLinks);
         }
 
         // Populate Settings

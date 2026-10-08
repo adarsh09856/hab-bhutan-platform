@@ -5,6 +5,12 @@ import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
+function validNavigationHref(value: unknown) {
+  if (typeof value !== 'string') return false;
+  const href = value.trim();
+  return (href.startsWith('/') && !href.startsWith('//') && !href.includes('\\')) || (href.startsWith('#') && href.length > 1) || /^https:\/\//i.test(href) || /^(mailto:|tel:)/i.test(href);
+}
+
 export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'content:view');
@@ -60,6 +66,7 @@ export async function POST(req: NextRequest) {
     if (!label?.trim() || !href?.trim() || !menuType) {
       return NextResponse.json({ error: 'Menu type, label, and URL are required' }, { status: 400 });
     }
+    if (!validNavigationHref(href)) return NextResponse.json({ error: 'Use an internal path, HTTPS, email, or telephone link.' }, { status: 400 });
 
     const item = await prisma.navigationItem.create({
       data: {
@@ -100,6 +107,7 @@ export async function PUT(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: 'Navigation item ID is required' }, { status: 400 });
     }
+    if (href !== undefined && !validNavigationHref(href)) return NextResponse.json({ error: 'Use an internal path, HTTPS, email, or telephone link.' }, { status: 400 });
 
     const item = await prisma.navigationItem.update({
       where: { id },

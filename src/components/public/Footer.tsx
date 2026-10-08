@@ -236,12 +236,10 @@ export default function Footer() {
               title: colTitle,
               links: data.footer[colTitle].map((l: any) => ({
                 label: l.label,
-                href: normalizeHref(l.label, l.href),
+                href: l.href,
               })),
             }));
-            if (cols.length > 0) {
-              setFooterCols(cols);
-            }
+            setFooterCols(cols);
           }
         })
         .catch(() => {});

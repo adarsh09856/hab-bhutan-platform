@@ -99,43 +99,19 @@ export async function GET() {
       orderBy: { sortOrder: 'asc' },
     });
 
-    if (items.length === 0) {
-      // Return defaults if database not yet seeded
-      const footerGrouped: Record<string, any[]> = {};
-      DEFAULT_FOOTER_COLUMNS.forEach((item) => {
-        const col = item.column || 'General';
-        if (!footerGrouped[col]) footerGrouped[col] = [];
-        footerGrouped[col].push(item);
-      });
-
-      return NextResponse.json({
-        success: true,
-        header: DEFAULT_HEADER_LINKS,
-        footer: footerGrouped,
-      });
-    }
-
     const customHeader = items.filter((i) => i.menuType === 'HEADER');
-    const header: any[] = customHeader.length > 0 ? customHeader : DEFAULT_HEADER_LINKS;
+    const header: any[] = customHeader;
 
     const footerItems = items.filter((i) => i.menuType === 'FOOTER');
     const footer: Record<string, any[]> = {};
-    if (footerItems.length === 0) {
-      DEFAULT_FOOTER_COLUMNS.forEach((item) => {
-        const col = item.column || 'General';
-        if (!footer[col]) footer[col] = [];
-        footer[col].push(item);
-      });
-    } else {
-      footerItems.forEach((item) => {
+    footerItems.forEach((item) => {
         const col = item.column || 'General';
         if (!footer[col]) footer[col] = [];
         footer[col].push({
           ...item,
-          href: sanitizeHref(item.label, item.href),
+          href: item.href,
         });
-      });
-    }
+    });
 
     const res = NextResponse.json({
       success: true,
@@ -147,18 +123,6 @@ export async function GET() {
     res.headers.set('Expires', '0');
     return res;
   } catch (err: any) {
-    const footerGrouped: Record<string, any[]> = {};
-    DEFAULT_FOOTER_COLUMNS.forEach((item) => {
-      const col = item.column || 'General';
-      if (!footerGrouped[col]) footerGrouped[col] = [];
-      footerGrouped[col].push(item);
-    });
-
-    return NextResponse.json({
-      success: true,
-      header: DEFAULT_HEADER_LINKS,
-      footer: footerGrouped,
-      fallback: true,
-    });
+    return NextResponse.json({ success: false, error: 'Navigation is temporarily unavailable.' }, { status: 503 });
   }
 }

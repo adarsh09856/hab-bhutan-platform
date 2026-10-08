@@ -300,28 +300,20 @@ export default function Header() {
     fetch('/api/navigation', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
-        if (d?.header && Array.isArray(d.header) && d.header.length > 0) {
-          const mainLinks = d.header.filter((i: any) => !i.parent && i.href !== '/donate');
-          if (mainLinks.length > 0) {
-            const hasHome = mainLinks.some((i: any) => i.href === '/');
-            const items = hasHome
-              ? mainLinks.map((i: any) => ({ label: i.label, href: i.href }))
-              : [
-                  { label: 'Home', href: '/' },
-                  ...mainLinks.map((i: any) => ({ label: i.label, href: i.href })),
-                ];
-            setNavItems(items);
-            try {
-              localStorage.setItem('hab_live_nav', JSON.stringify(items));
-            } catch {}
-          }
+        if (d?.header && Array.isArray(d.header)) {
+          const mainLinks = d.header.filter((i: any) => !i.parent);
+          const items = mainLinks.map((i: any) => ({ label: i.label, href: i.href }));
+          setNavItems(items);
+          try {
+            localStorage.setItem('hab_live_nav', JSON.stringify(items));
+          } catch {}
         }
       })
       .catch(() => {});
 
     // 4. Listen for real-time header changes (current tab and cross-tab/viewport sync)
     const handleLiveHeaderUpdate = (e: any) => {
-      if (e.detail?.navItems && Array.isArray(e.detail.navItems) && e.detail.navItems.length > 0) {
+      if (e.detail?.navItems && Array.isArray(e.detail.navItems)) {
         setNavItems(e.detail.navItems);
         try {
           localStorage.setItem('hab_live_nav', JSON.stringify(e.detail.navItems));
@@ -332,7 +324,7 @@ export default function Header() {
       if (e.key === 'hab_live_nav' && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setNavItems(parsed);
           }
         } catch {}
@@ -1066,7 +1058,7 @@ export default function Header() {
         isOpen={headerLiveEditOpen}
         onClose={() => setHeaderLiveEditOpen(false)}
         onSaved={(newNav) => {
-          if (newNav && newNav.length > 0) {
+          if (newNav) {
             setNavItems(newNav);
           }
           router.refresh();
