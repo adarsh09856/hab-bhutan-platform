@@ -20,7 +20,15 @@ export async function GET() {
         },
       });
     }
-    return NextResponse.json({ success: true, setting });
+    return NextResponse.json({
+      success: true,
+      setting: {
+        activeDuesBTN: setting.activeDuesBTN,
+        associateDuesBTN: setting.associateDuesBTN,
+        institutionalDuesBTN: setting.institutionalDuesBTN,
+        updatedAt: setting.updatedAt,
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

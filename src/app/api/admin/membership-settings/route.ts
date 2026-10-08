@@ -16,6 +16,8 @@ async function verifyAdmin(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     let setting = await prisma.membershipSetting.findUnique({ where: { id: 'default' } });
     if (!setting) {
@@ -84,10 +86,6 @@ export async function PUT(req: NextRequest) {
         ...(body.activeDuesBTN !== undefined && { activeDuesBTN: Number(body.activeDuesBTN) }),
         ...(body.associateDuesBTN !== undefined && { associateDuesBTN: Number(body.associateDuesBTN) }),
         ...(body.institutionalDuesBTN !== undefined && { institutionalDuesBTN: Number(body.institutionalDuesBTN) }),
-        ...(body.bankName !== undefined && { bankName: body.bankName }),
-        ...(body.accountNumber !== undefined && { accountNumber: body.accountNumber }),
-        ...(body.accountTitle !== undefined && { accountTitle: body.accountTitle }),
-        ...(body.mbobQrUrl !== undefined && { mbobQrUrl: body.mbobQrUrl }),
       },
       create: {
         id: 'default',

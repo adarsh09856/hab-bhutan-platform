@@ -16,8 +16,19 @@ async function post(path, body) {
   return { status: response.status, body: await response.json().catch(() => ({})) };
 }
 
+async function get(path) {
+  const response = await fetch(`${baseUrl}${path}`);
+  return { status: response.status, body: await response.json().catch(() => ({})) };
+}
+
 async function run() {
   assert(['localhost', '127.0.0.1', '::1'].includes(new URL(baseUrl).hostname), 'Safety stop: test requires a localhost app.');
+
+  const privateMembershipLedger = await get('/api/admin/membership-settings');
+  assert(privateMembershipLedger.status === 401, 'Anonymous user must not read the admin membership ledger.');
+  const publicMembershipDues = await get('/api/membership-settings');
+  assert(publicMembershipDues.status === 200 && publicMembershipDues.body.success, 'Public application form should be able to load membership dues.');
+  assert(!('accountNumber' in (publicMembershipDues.body.setting || {})) && !('mbobQrUrl' in (publicMembershipDues.body.setting || {})), 'Public dues endpoint should not expose the stale duplicate bank configuration.');
 
   const memberCard = await post('/api/applications', { categoryKey: 'individual-artisan', paymentMethod: 'card' });
   assert(memberCard.status === 503 && /not configured/i.test(memberCard.body.error || ''), 'Membership card payment should be rejected clearly while no card checkout is configured.');

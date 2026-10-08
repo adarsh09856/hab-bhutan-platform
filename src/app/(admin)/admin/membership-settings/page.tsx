@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useMemo } from 'react';
 import { CreditCard, Save, CheckCircle2, AlertCircle, Users, Calendar, ShieldCheck, Clock, RefreshCw, Search } from 'lucide-react';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton } from '@/components/admin/AdminUI';
-import FileUploadInput from '@/components/admin/FileUploadInput';
 
 interface MemberDuesItem {
   id: string;
@@ -30,11 +29,8 @@ export default function AdminMembershipSettingsPage() {
     activeDuesBTN: 1200,
     associateDuesBTN: 2500,
     institutionalDuesBTN: 10000,
-    bankName: 'Bank of Bhutan (BoB)',
-    accountNumber: '200847291038',
-    accountTitle: 'Handicrafts Association of Bhutan',
-    mbobQrUrl: '',
   });
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
 
   const [members, setMembers] = useState<MemberDuesItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +51,9 @@ export default function AdminMembershipSettingsPage() {
       const d = await res.json();
       if (d?.setting) setForm(d.setting);
       if (d?.members) setMembers(d.members);
+      const paymentResponse = await fetch('/api/site-settings', { cache: 'no-store' });
+      const paymentData = await paymentResponse.json();
+      if (paymentData?.success && paymentData.setting) setPaymentSettings(paymentData.setting);
     } catch {
       setFeedback({ type: 'error', message: 'Failed to load membership settings & ledger.' });
     } finally {
@@ -85,7 +84,7 @@ export default function AdminMembershipSettingsPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setFeedback({ type: 'success', message: 'Membership tier fees & payment instructions saved successfully!' });
+        setFeedback({ type: 'success', message: 'Membership tier fees saved successfully.' });
       } else {
         setFeedback({ type: 'error', message: data.error || 'Failed to update settings' });
       }
@@ -170,7 +169,7 @@ export default function AdminMembershipSettingsPage() {
             Membership Dues, Tiers &amp; Ledger
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Configure annual membership subscription fees, manage official banking instructions, and track member dues status.
+            Configure annual membership subscription fees and track member dues status. Public payment details are shared with Donate.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -180,7 +179,7 @@ export default function AdminMembershipSettingsPage() {
               activeTab === 'TIERS' ? 'admin-button-primary' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
             }`}
           >
-            Tier Fees &amp; Banking
+            Tier Fees
           </button>
           <button
             onClick={() => setActiveTab('LEDGER')}
@@ -205,7 +204,7 @@ export default function AdminMembershipSettingsPage() {
         </div>
       )}
 
-      {/* TAB 1: TIERS & BANKING */}
+      {/* TAB 1: TIER FEES */}
       {activeTab === 'TIERS' && (
         <form onSubmit={handleSaveTiers} className="admin-card border admin-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
           <h2 className="text-base font-bold admin-title flex items-center gap-2">
@@ -264,54 +263,25 @@ export default function AdminMembershipSettingsPage() {
           </div>
 
           <div className="pt-6 border-t admin-border space-y-4">
-            <h2 className="text-base font-bold admin-title">Official Banking &amp; Dues Collection Details</h2>
-
+            <div>
+              <h2 className="text-base font-bold admin-title">Shared public payment details</h2>
+              <p className="text-xs admin-muted mt-1">These are the same bank details shown on Donate and membership/wholesale applications. Edit them once in Site Settings.</p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold admin-text mb-1.5">Official Bank Name</label>
-                <input
-                  type="text"
-                  value={form.bankName}
-                  onChange={(e) => setForm({ ...form, bankName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm"
-                  required
-                />
+              <div className="p-4 admin-panel border admin-border rounded-lg">
+                <div className="text-xs font-bold admin-text">{paymentSettings?.bobBankName || 'Bank of Bhutan'}</div>
+                <div className="text-xs admin-muted mt-1">{paymentSettings?.bobAccountTitle || 'Account title not configured'}</div>
+                <div className="font-mono text-sm admin-title mt-2">{paymentSettings?.bobAccountNumber || 'Account number not configured'}</div>
               </div>
-
-              <div>
-                <label className="block text-xs font-semibold admin-text mb-1.5">Account Number</label>
-                <input
-                  type="text"
-                  value={form.accountNumber}
-                  onChange={(e) => setForm({ ...form, accountNumber: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm font-mono"
-                  required
-                />
+              <div className="p-4 admin-panel border admin-border rounded-lg">
+                <div className="text-xs font-bold admin-text">{paymentSettings?.bnbBankName || 'Bhutan National Bank'}</div>
+                <div className="text-xs admin-muted mt-1">{paymentSettings?.bnbAccountTitle || 'Account title not configured'}</div>
+                <div className="font-mono text-sm admin-title mt-2">{paymentSettings?.bnbAccountNumber || 'Account number not configured'}</div>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold admin-text mb-1.5">Account Title / Beneficiary</label>
-                <input
-                  type="text"
-                  value={form.accountTitle}
-                  onChange={(e) => setForm({ ...form, accountTitle: e.target.value })}
-                  className="w-full px-3.5 py-2.5 border admin-input rounded-lg text-sm"
-                  required
-                />
-              </div>
-
-              <div>
-                <FileUploadInput
-                  label="mBoB QR Code Image"
-                  value={form.mbobQrUrl || ''}
-                  onChange={(url) => setForm({ ...form, mbobQrUrl: url })}
-                  accept="image/*"
-                  hint="Upload or replace official mBoB QR code artwork (JPG, PNG, SVG)"
-                />
-              </div>
-            </div>
+            <a href="/admin/site-settings" className="inline-flex items-center rounded-lg border admin-border px-3 py-2 text-xs font-semibold admin-text hover:bg-white/5">
+              Manage shared payment details in Site Settings
+            </a>
           </div>
 
           <div className="pt-4 border-t admin-border flex justify-end">
