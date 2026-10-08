@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { resolveFooterHref } from '@/lib/footer-navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,91 +44,6 @@ const DEFAULT_FOOTER_COLUMNS = [
   { id: 'f-24', column: 'Governance', label: 'Privacy policy', href: '/privacy', sortOrder: 7, isActive: true },
 ];
 
-function sanitizeHref(label: string, href: string): string {
-  const l = (label || '').toLowerCase();
-  const h = (href || '').toLowerCase();
-
-  // Keep standard footer destinations tied to their own pages even when a
-  // legacy saved URL points at About, Publications, News, or the Shop.
-  if (l.includes('about hab') || l === 'about us') return '/about';
-  if (l.includes('mandate') || l.includes('aoa')) return '/mandate';
-  if (l.includes('ethic')) return '/code-of-ethics';
-  if (l.includes('strategic')) return '/strategic-plan';
-  if (l.includes('board') || l.includes('trustee')) return '/board-of-trustees';
-  if (l.includes('secretariat')) return '/secretariat';
-  if (l.includes('programme')) return '/programmes';
-  if (l.includes('project')) return '/projects';
-  if (l.includes('apply to join')) return '/membership/apply';
-  if (l.includes('membership')) return '/membership';
-  if (l.includes('news') || l.includes('event')) return '/news';
-  if (l === 'contact us' || l === 'contact' || l === 'contact hab') return '/contact';
-  if (l.includes('wholesale') || l.includes('bulk order')) return '/wholesale';
-  if (l.includes('e-shop') || l === 'shop' || l.includes('product')) return '/shop';
-  if (l.includes('shipping') || l.includes('delivery')) return '/shipping-policy';
-  if (l.includes('return') || l.includes('refund')) return '/returns-policy';
-  if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
-  if (l.includes('track') && l.includes('order')) return '/track-order';
-  if (l.includes('directory') || l.trim() === 'members') return '/members';
-  if (l.includes('annual report')) return '/annual-reports';
-  if (l.includes('audited account')) return '/audited-accounts';
-  if (l.includes('publication') || l.includes('download')) return '/publications';
-  if (l.includes('cluster') || l.includes('outlet') || l.includes('member shop')) return '/outlets';
-  if (l.includes('member login')) return '/login';
-  if (l.includes('tender') || l.includes('vacanc')) return '/tenders';
-  if (l.includes('privacy')) return '/privacy';
-  if (l.includes('term')) return '/terms';
-  if (l === 'donate' || l.includes('donation')) return '/donate';
-
-  // Older footer entries were saved with /about as a generic placeholder.
-  // Resolve those entries by their visible label so they open their own page.
-  if (h === '/about' || h.startsWith('/about#')) {
-  }
-
-  // Mandate & AoA
-  if (l.includes('mandate') || l.includes('aoa') || h.includes('#mandate')) return '/mandate';
-
-  // Ethics
-  if (l.includes('ethic') || h.includes('#ethics')) return '/code-of-ethics';
-
-  // Strategic plan
-  if (l.includes('strategic') || h.includes('strategic')) return '/strategic-plan';
-
-  // Secretariat / Contact secretariat
-  if (l.includes('contact secretariat') || l === 'secretariat' || h.includes('#secretariat') || h.includes('#contact')) return '/secretariat';
-
-  // Board
-  if (h.includes('#board') || l.includes('board of trustees') || l === 'board' || h.includes('#governance')) return '/board-of-trustees';
-
-  // Shipping & delivery
-  if ((l.includes('shipping') || l.includes('delivery')) && !l.includes('return')) return '/shipping-policy';
-
-  // Returns & refunds
-  if (h.includes('#returns') || l.includes('return') || l.includes('refund') || (h.includes('#support') && l.includes('return'))) return '/returns-policy';
-
-  // Duties & customs
-  if (h.includes('#duty') || l.includes('duty') || l.includes('custom') || (h.includes('#support') && (l.includes('duty') || l.includes('custom')))) return '/customs-policy';
-
-  // Annual reports & audited accounts
-  if (h.includes('kind=annual') || l.includes('annual report')) return '/annual-reports';
-  if (h.includes('kind=audited') || l.includes('audited account')) return '/audited-accounts';
-
-  // Direct checks on legacy /about#... links
-  if (h.startsWith('/about#')) {
-    if (h.includes('mandate')) return '/mandate';
-    if (h.includes('ethics')) return '/code-of-ethics';
-    if (h.includes('contact')) return '/secretariat';
-    if (h.includes('support')) {
-      if (l.includes('return')) return '/returns-policy';
-      if (l.includes('custom') || l.includes('dut')) return '/customs-policy';
-      return '/shipping-policy';
-    }
-    if (h.includes('governance')) return '/board-of-trustees';
-    return '/about';
-  }
-
-  return href;
-}
-
 export async function GET() {
   try {
     const items = await prisma.navigationItem.findMany({
@@ -145,7 +61,7 @@ export async function GET() {
         if (!footer[col]) footer[col] = [];
         footer[col].push({
           ...item,
-          href: sanitizeHref(item.label, item.href),
+          href: resolveFooterHref(item.label, item.href),
         });
     });
 

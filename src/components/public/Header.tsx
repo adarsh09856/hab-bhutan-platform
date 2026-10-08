@@ -55,7 +55,7 @@ const CRAFT_THUMBNAIL_MAP: Record<string, string> = {
   masonry: '/images/crafts/dozo.jpg',
 };
 
-export default function Header() {
+export default function Header({ initialNavigation }: { initialNavigation?: { label: string; href: string }[] | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const { currency, toggleCurrency } = useCurrency();
@@ -222,7 +222,7 @@ export default function Header() {
     { key: 'associate', name: 'Affiliated Member', meta: 'Affiliated · Nu. 5,000 / year' },
     { key: 'honorary', name: 'Honorary Member', meta: 'By Board resolution · no fee' },
   ]);
-  const [navItems, setNavItems] = useState<any[]>([
+  const [navItems, setNavItems] = useState<any[]>(initialNavigation ?? [
     { label: 'Home', href: '/' },
     { label: 'About Us', href: '/about' },
     { label: 'Programmes', href: '/programmes' },
@@ -262,7 +262,7 @@ export default function Header() {
     // 0. Optimistic Hydration from localStorage for immediate mobile/desktop parity
     try {
       const cached = localStorage.getItem('hab_live_nav');
-      if (cached) {
+      if (!initialNavigation && cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setNavItems(parsed);
@@ -336,7 +336,7 @@ export default function Header() {
       window.removeEventListener('hab:header-updated', handleLiveHeaderUpdate);
       window.removeEventListener('storage', handleStorageUpdate);
     };
-  }, []);
+  }, [initialNavigation]);
 
   // Monitor navigation item overflow for sliding flex menu
   useEffect(() => {

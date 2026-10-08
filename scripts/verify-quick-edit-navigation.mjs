@@ -143,6 +143,12 @@ try {
     const [label, , expectedHref] = footerFixtures[index];
     assert(publicFooterLinks.find((item) => item.id === footerNavigationIds[index])?.href === expectedHref, `Footer link “${label}” did not resolve to ${expectedHref}.`);
   }
+  const renderedHomeResponse = await fetch(`${baseUrl}/`, { cache: 'no-store' });
+  const renderedHome = await renderedHomeResponse.text();
+  assert(renderedHomeResponse.ok, `Public homepage SSR returned HTTP ${renderedHomeResponse.status}.`);
+  assert(renderedHome.includes(`Updated ${suffix}`), 'Initial server-rendered header did not use saved navigation.');
+  assert(renderedHome.includes(`aria-label="Temporary ${suffix}"`), 'Initial server-rendered footer did not use saved navigation.');
+  assert(renderedHome.includes(`Projects ${suffix}`) && renderedHome.includes('href="/projects"'), 'Initial footer SSR did not apply the canonical Projects destination.');
 
   const deleted = await request(`/api/admin/navigation?id=${encodeURIComponent(navigationId)}`, token, { method: 'DELETE' });
   assert(deleted.response.ok && deleted.body.success, `Delete failed: ${deleted.body.error || deleted.response.status}.`);
@@ -207,7 +213,7 @@ try {
   assert(applicationDeleted.response.ok && applicationDeleted.body.success, `Application delete failed: ${applicationDeleted.body.error || applicationDeleted.response.status}.`);
   applicationId = null;
 
-  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; 12 legacy footer labels resolve to their own canonical routes (including About HAB); a members:view-only role was denied category writes; membership-category CRUD/public read succeeded; membership-application CRUD succeeded; anonymous application edit was denied before record lookup; temporary records cleaned up.');
+  console.log('PASS: anonymous navigation writes denied; authenticated header navigation CRUD/public read succeeded; 12 legacy footer labels resolve to their own canonical routes (including About HAB); server-rendered header/footer immediately use saved navigation; a members:view-only role was denied category writes; membership-category CRUD/public read succeeded; membership-application CRUD succeeded; anonymous application edit was denied before record lookup; temporary records cleaned up.');
 } catch (error) {
   console.error(`FAIL: ${error?.message || error}`);
   process.exitCode = 1;
