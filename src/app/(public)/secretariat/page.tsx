@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import { fallbackHeroPhoto } from '@/lib/public-images';
+import { isConfirmedPublicPersonName } from '@/lib/public-person-name';
 import { Mail, Phone, MapPin, Clock, ShieldCheck, Users, Briefcase, FileText } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -20,10 +20,7 @@ async function getSecretariatData() {
       orderBy: { sortOrder: 'asc' },
     });
     return records
-      .filter((record) => {
-        const name = (record.individualName || '').trim();
-        return name.length > 0 && !/^(name to confirm|to be confirmed|placeholder)$/i.test(name);
-      })
+      .filter((record) => isConfirmedPublicPersonName(record.individualName))
       .map((r, i) => {
         const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
           ? (r.chapterOrNote || '').split('||photo:')
@@ -32,7 +29,7 @@ async function getSecretariatData() {
           name: r.individualName,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: r.photoUrl || photo.trim() || fallbackHeroPhoto(i),
+          photo: r.photoUrl || photo.trim() || '',
           phone: r.phone || '',
           email: r.email || '',
           bio: r.bio || '',
@@ -108,11 +105,11 @@ export default async function SecretariatPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
-                      <img
-                        src={(staff as any).photo || fallbackHeroPhoto(idx)}
-                        alt={staff.name}
-                        className="w-full h-full object-cover"
-                      />
+                      {(staff as any).photo ? <img src={(staff as any).photo} alt={staff.name} className="w-full h-full object-cover" /> : (
+                        <span className="w-full h-full flex items-center justify-center text-sm font-semibold text-stone-500" role="img" aria-label="Portrait not supplied">
+                          {staff.name.split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <span className="inline-block bg-[#8B2E24]/10 text-[#8B2E24] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">

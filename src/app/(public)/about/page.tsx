@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { isConfirmedPublicPersonName } from '@/lib/public-person-name';
 import { fallbackHeroPhoto } from '@/lib/public-images';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
@@ -128,30 +129,8 @@ export default function AboutPage() {
     { tier: 'Endowment Fund', note: 'Held for the long-term financial sustainability of the sector, alongside grants, donations and project funding administered under the Board.', items: ['Long-term sustainability', 'Grants & donations', 'Project funding', 'Board oversight'] },
   ];
 
-  const defaultBoard = [
-    { role: 'Chair, Board of Trustees', name: 'Aum Karma Wangmo', note: 'Master weaver, Lhuentse' },
-    { role: 'Vice-Chair', name: 'Sonam Tashi', note: 'Craft enterprise owner, Thimphu' },
-    { role: 'Trustee — Finance', name: 'Kinley Dorji', note: 'Chairs audit & finance' },
-    { role: 'Trustee — Membership', name: 'Tashi Pelzom', note: 'Eastern dzongkhags' },
-    { role: 'Trustee — Crafts', name: 'Lopen Ugyen Namgyel', note: 'Institute of Zorig Chusum' },
-    { role: 'Trustee — Dzongkhag Chapters', name: 'Dawa Zangmo', note: 'Chapter representation, twenty dzongkhags' },
-    { role: 'Trustee — Market Development', name: 'Pema Rinzin', note: 'Export trade and retail' },
-    { role: 'Trustee — Compliance', name: 'Karma Tshering', note: 'CSOA compliance and reporting' },
-  ];
-
-  const defaultTeam = [
-    { role: 'Executive Director', name: 'Chhimi Bidha', note: '+975-2-338089 · director@handicraftsbhutan.org' },
-    { role: 'Programmes & Projects', name: 'Sonam Choden', note: 'Donor projects, training, M&E' },
-    { role: 'Marketing & E-shop', name: 'Tenzin Norbu', note: '+975-17462636 · shop@handicraftsbhutan.org' },
-    { role: 'Finance & Administration', name: 'Dechen Wangmo', note: 'Accounts, procurement, payroll' },
-    { role: 'Membership Services', name: 'Sangay Lhamo', note: 'Applications, directory, dues' },
-    { role: 'Trade Facilitation', name: 'Karma Dorji', note: 'Export documentation, buyer liaison' },
-    { role: 'Cluster Support Officer', name: 'Tshering Yangzom', note: 'Artisan clusters and producer groups' },
-    { role: 'Communications', name: 'Pema Lhaden', note: 'Publications, website, newsroom' },
-  ];
-
-  const boardList = (governance?.board && governance.board.length > 0) ? governance.board : defaultBoard;
-  const teamList = (governance?.team && governance.team.length > 0) ? governance.team : defaultTeam;
+  const boardList = (governance?.board || []).filter((person) => isConfirmedPublicPersonName(person.name));
+  const teamList = (governance?.team || []).filter((person) => isConfirmedPublicPersonName(person.name));
 
   return (
     <main id="main">
@@ -380,7 +359,7 @@ export default function AboutPage() {
         />
         <p className="eyebrow eyebrow--accent">Board of Trustees</p>
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Oversight body</h2>
-        <div className="grid grid--people">
+        {boardList.length > 0 ? <div className="grid grid--people">
           {boardList.map((b, idx) => (
             <article key={idx} className="card">
               <figure className="frame frame--square">
@@ -398,7 +377,7 @@ export default function AboutPage() {
               </div>
             </article>
           ))}
-        </div>
+        </div> : <p className="footnote" role="status">Trustee names and portraits will be published after they are confirmed by HAB.</p>}
       </section>
 
       {/* 7. Secretariat */}
@@ -418,7 +397,7 @@ export default function AboutPage() {
         <p className="eyebrow eyebrow--accent">Secretariat</p>
 
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Our team</h2>
-        <div className="grid grid--team">
+        {teamList.length > 0 ? <div className="grid grid--team">
           {teamList.map((t, idx) => (
             <div key={idx} className="teamrow">
               <div className="teamrow__avatar" style={{ overflow: 'hidden' }}>
@@ -436,8 +415,8 @@ export default function AboutPage() {
               </div>
             </div>
           ))}
-        </div>
-        <p className="footnote">Names and portfolios accredited by the Secretariat.</p>
+        </div> : <p className="footnote" role="status">Names and portraits to be supplied by the Secretariat. For assistance, contact <a href="mailto:officehab@gmail.com">officehab@gmail.com</a>.</p>}
+        {teamList.length > 0 && <p className="footnote">Names and portfolios accredited by the Secretariat.</p>}
       </section>
 
       {/* 8. CTA Band */}

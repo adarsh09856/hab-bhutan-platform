@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
-import { updateFallbackWholesaleBuyerStatus, getAllFallbackWholesaleBuyers } from '@/lib/wholesale-store';
+import { getAllFallbackWholesaleBuyers, saveFallbackWholesaleBuyer } from '@/lib/wholesale-store';
 import { sendEmail } from '@/lib/email-service';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -56,7 +56,17 @@ export async function POST(req: NextRequest) {
       console.warn('[wholesale/action] DB update error, applying to fallback:', dbErr.message);
     }
 
-    updateFallbackWholesaleBuyerStatus(buyerId, newStatus);
+    const fallbackRecord = getAllFallbackWholesaleBuyers().find((record) => record.id === buyerId);
+    if (fallbackRecord) {
+      // Keep fallback authentication in sync with the status and temporary password shown to the admin.
+      saveFallbackWholesaleBuyer({
+        ...fallbackRecord,
+        status: newStatus,
+        ...(passwordHash ? { passwordHash } : {}),
+        notes: reason ? `${fallbackRecord.notes || ''}\n[${action}]: ${reason}` : fallbackRecord.notes,
+        updatedAt: new Date().toISOString(),
+      });
+    }
 
     // 3. Dispatch automated notification email
     const subject = action === 'APPROVE'

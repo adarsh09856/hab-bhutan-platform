@@ -62,7 +62,7 @@ export default function WholesaleLoginPage() {
       }
 
       setBuyerInfo(data.buyer);
-      router.push('/wholesale');
+      router.push('/wholesale/shop');
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed. Please check your details.');
     } finally {
@@ -112,7 +112,7 @@ export default function WholesaleLoginPage() {
 
               <div className="pt-2 flex items-center gap-3">
                 <Link
-                  href="/wholesale"
+                  href="/wholesale/shop"
                   className="px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#72241C] text-white font-semibold transition"
                 >
                   Enter Wholesale Catalogue →

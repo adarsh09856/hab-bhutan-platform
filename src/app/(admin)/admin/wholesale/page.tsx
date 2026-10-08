@@ -417,6 +417,25 @@ export default function AdminWholesalePage() {
         </div>
       </div>
 
+      <section aria-label="Wholesale tasks" className="grid gap-3 sm:grid-cols-2">
+        <a
+          href="/admin/orders?createWholesale=1"
+          className="group rounded-xl border border-[#8B2E24]/20 bg-white p-4 transition hover:border-[#8B2E24]/50 hover:shadow-sm"
+        >
+          <span className="block text-sm font-semibold text-slate-900">Create wholesale order</span>
+          <span className="mt-1 block text-xs leading-5 text-slate-600">Choose an active buyer, add catalog products, and record payment status.</span>
+          <span className="mt-3 inline-flex text-xs font-semibold text-[#8B2E24]">Open order form →</span>
+        </a>
+        <a
+          href="/admin/products"
+          className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm"
+        >
+          <span className="block text-sm font-semibold text-slate-900">Manage products</span>
+          <span className="mt-1 block text-xs leading-5 text-slate-600">Add or edit products in the catalog used by wholesale orders.</span>
+          <span className="mt-3 inline-flex text-xs font-semibold text-slate-700">Open product catalog →</span>
+        </a>
+      </section>
+
       {flashMsg && (
         <div
           className={`p-3 text-xs font-medium rounded-xl flex justify-between items-center border ${
@@ -654,7 +673,16 @@ export default function AdminWholesalePage() {
               )}
             </div>
 
-            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
+            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-between items-center gap-3">
+              {inspectBuyer.status === 'ACTIVE' ? (
+                <button
+                  type="button"
+                  onClick={() => { window.location.href = `/admin/orders?createWholesale=1&wholesaleBuyerId=${encodeURIComponent(inspectBuyer.id)}`; }}
+                  className="mr-auto px-3 py-2 bg-white border border-slate-200 hover:border-[#8B2E24]/40 text-slate-800 font-semibold rounded-lg"
+                >
+                  Create order for this buyer
+                </button>
+              ) : <span className="mr-auto text-[11px] text-slate-500">Activate this account before creating an order.</span>}
               <div className="flex items-center gap-2">
                 <button
                   type="button"

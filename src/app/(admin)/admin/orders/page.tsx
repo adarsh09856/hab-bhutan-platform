@@ -62,6 +62,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
+  const [wholesaleBuyers, setWholesaleBuyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filter & Search
@@ -90,6 +91,7 @@ export default function AdminOrdersPage() {
   const [orderForm, setOrderForm] = useState({
     customerType: 'GUEST',
     customerMemberId: '',
+    wholesaleBuyerId: '',
     customerName: '',
     customerEmail: '',
     customerPhone: '',
@@ -102,7 +104,7 @@ export default function AdminOrdersPage() {
     },
     shippingMethod: 'EMS',
     paymentMethod: 'CARD',
-    paymentStatus: 'PAID',
+    paymentStatus: 'PENDING',
     orderStatus: 'PROCESSING',
     currencyUsed: 'USD',
     internalNotes: '',
@@ -126,6 +128,7 @@ export default function AdminOrdersPage() {
         try {
           const ordData = await ordRes.json();
           setOrders(Array.isArray(ordData.orders) ? ordData.orders : []);
+          setWholesaleBuyers(Array.isArray(ordData.wholesaleBuyers) ? ordData.wholesaleBuyers : []);
         } catch {
           setOrders([]);
           setErrorMsg('Received malformed response from orders API.');
@@ -167,6 +170,37 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (loading || typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('createWholesale') !== '1') return;
+
+    const buyerId = params.get('wholesaleBuyerId') || '';
+    const buyer = buyerId ? wholesaleBuyers.find((item) => item.id === buyerId) : null;
+    if (buyerId && !buyer) {
+      setErrorMsg('That wholesale account is not active or could not be loaded. Refresh the list and choose an active buyer.');
+    } else {
+      setOrderForm((previous) => ({
+        ...previous,
+        customerType: 'WHOLESALE',
+        customerMemberId: '',
+        wholesaleBuyerId: buyer?.id || '',
+        customerName: buyer?.companyName || '',
+        customerEmail: buyer?.email || '',
+        customerPhone: buyer?.phone || '',
+        paymentMethod: 'BANK',
+        paymentStatus: 'PENDING',
+        orderStatus: 'PROCESSING',
+      }));
+      setShowCreateModal(true);
+    }
+
+    params.delete('createWholesale');
+    params.delete('wholesaleBuyerId');
+    const query = params.toString();
+    window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`);
+  }, [loading, wholesaleBuyers]);
 
   const handleCopyAddress = (orderId: string, addressText: string) => {
     navigator.clipboard.writeText(addressText);
@@ -245,6 +279,9 @@ export default function AdminOrdersPage() {
     if (!prod) return;
 
     setOrderForm((prev) => {
+      const buyer = wholesaleBuyers.find((item) => item.id === prev.wholesaleBuyerId);
+      const discount = prev.customerType === 'WHOLESALE' ? Number(buyer?.discountTier || 0) : 0;
+      const unitPrice = Math.round(Number(prod.priceUSD) * (1 - discount / 100) * 100) / 100;
       const existing = prev.selectedItems.find((i) => i.code === productCode);
       if (existing) {
         return {
@@ -258,7 +295,7 @@ export default function AdminOrdersPage() {
         ...prev,
         selectedItems: [
           ...prev.selectedItems,
-          { code: prod.code, name: prod.name, priceUSD: prod.priceUSD, quantity: 1 },
+          { code: prod.code, name: prod.name, priceUSD: unitPrice, quantity: 1 },
         ],
       };
     });
@@ -303,6 +340,7 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({
           ...orderForm,
           items: orderForm.selectedItems,
+          wholesaleBuyerId: orderForm.customerType === 'WHOLESALE' ? orderForm.wholesaleBuyerId : undefined,
         }),
       });
 
@@ -313,13 +351,14 @@ export default function AdminOrdersPage() {
         setOrderForm({
           customerType: 'GUEST',
           customerMemberId: '',
+          wholesaleBuyerId: '',
           customerName: '',
           customerEmail: '',
           customerPhone: '',
           shippingAddress: { street: '', city: 'Thimphu', dzongkhag: 'Thimphu', country: 'Bhutan', postalCode: '' },
           shippingMethod: 'EMS',
           paymentMethod: 'CARD',
-          paymentStatus: 'PAID',
+          paymentStatus: 'PENDING',
           orderStatus: 'PROCESSING',
           currencyUsed: 'USD',
           internalNotes: '',
@@ -1424,25 +1463,72 @@ export default function AdminOrdersPage() {
           <div className="admin-modal rounded-xl max-w-2xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b admin-border pb-3">
               <div>
-                <h3 className="font-bold admin-title text-base">Create Manual / In-Person Order</h3>
-                <p className="text-xs admin-muted">Atomic inventory decrement and OrderItem referential record creation.</p>
+                <h3 className="font-bold admin-title text-base">{orderForm.customerType === 'WHOLESALE' ? 'Create Wholesale Order' : 'Create Manual Order'}</h3>
+                <p className="text-xs admin-muted">Choose a customer, add products, and record the order. Stock updates when the order is created.</p>
               </div>
               <button onClick={() => setShowCreateModal(false)} className="admin-muted hover:admin-text font-bold">✕</button>
             </div>
 
             <form onSubmit={handleCreateOrder} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-medium admin-text mb-1">Customer Type</label>
                   <select
                     value={orderForm.customerType}
-                    onChange={(e) => setOrderForm({ ...orderForm, customerType: e.target.value })}
+                    onChange={(e) => setOrderForm({
+                      ...orderForm,
+                      customerType: e.target.value,
+                      customerMemberId: '',
+                      wholesaleBuyerId: '',
+                      customerName: '',
+                      customerEmail: '',
+                      customerPhone: '',
+                      selectedItems: [],
+                      paymentMethod: e.target.value === 'WHOLESALE' ? 'BANK' : orderForm.paymentMethod,
+                    })}
                     className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="GUEST">Guest Customer</option>
                     <option value="MEMBER">Registered Artisan Member</option>
+                    <option value="WHOLESALE">Wholesale Buyer</option>
                   </select>
                 </div>
+                {orderForm.customerType === 'WHOLESALE' && (
+                  <div>
+                    <label className="block font-medium admin-text mb-1">Active Wholesale Buyer *</label>
+                    <select
+                      required
+                      value={orderForm.wholesaleBuyerId}
+                      onChange={(e) => {
+                        const buyer = wholesaleBuyers.find((item) => item.id === e.target.value);
+                        const discount = Number(buyer?.discountTier || 0);
+                        setOrderForm((previous) => ({
+                          ...previous,
+                          wholesaleBuyerId: buyer?.id || '',
+                          customerName: buyer?.companyName || '',
+                          customerEmail: buyer?.email || '',
+                          customerPhone: buyer?.phone || '',
+                          shippingAddress: {
+                            ...previous.shippingAddress,
+                            city: buyer?.city || previous.shippingAddress.city,
+                            country: buyer?.country || previous.shippingAddress.country,
+                          },
+                          selectedItems: previous.selectedItems.map((item) => {
+                            const product = products.find((candidate) => candidate.code === item.code);
+                            return product ? { ...item, priceUSD: Math.round(Number(product.priceUSD) * (1 - discount / 100) * 100) / 100 } : item;
+                          }),
+                        }));
+                      }}
+                      className="w-full admin-input border rounded px-2.5 py-1.5"
+                    >
+                      <option value="">Choose an active buyer...</option>
+                      {wholesaleBuyers.map((buyer) => (
+                        <option key={buyer.id} value={buyer.id}>{buyer.companyName} · {buyer.discountTier}% discount</option>
+                      ))}
+                    </select>
+                    {wholesaleBuyers.length === 0 && <p className="mt-1 text-amber-700">No active wholesale buyers found. Activate or create a buyer first.</p>}
+                  </div>
+                )}
                 {orderForm.customerType === 'MEMBER' && (
                   <div>
                     <label className="block font-medium admin-text mb-1">Select Member</label>
@@ -1474,6 +1560,7 @@ export default function AdminOrdersPage() {
                   <input
                     type="text"
                     required
+                    readOnly={orderForm.customerType === 'WHOLESALE'}
                     value={orderForm.customerName}
                     onChange={(e) => setOrderForm({ ...orderForm, customerName: e.target.value })}
                     className="w-full admin-input border rounded px-2.5 py-1.5"
@@ -1484,6 +1571,7 @@ export default function AdminOrdersPage() {
                   <input
                     type="email"
                     required
+                    readOnly={orderForm.customerType === 'WHOLESALE'}
                     value={orderForm.customerEmail}
                     onChange={(e) => setOrderForm({ ...orderForm, customerEmail: e.target.value })}
                     className="w-full admin-input border rounded px-2.5 py-1.5"
@@ -1493,6 +1581,7 @@ export default function AdminOrdersPage() {
                   <label className="block font-medium admin-text mb-1">Customer Phone</label>
                   <input
                     type="text"
+                    readOnly={orderForm.customerType === 'WHOLESALE'}
                     value={orderForm.customerPhone}
                     onChange={(e) => setOrderForm({ ...orderForm, customerPhone: e.target.value })}
                     className="w-full admin-input border rounded px-2.5 py-1.5"
@@ -1571,7 +1660,12 @@ export default function AdminOrdersPage() {
               {/* Product Selection Matrix */}
               <div className="border admin-border rounded-lg p-3 admin-panel space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold admin-title">Add Line Items from Catalog</span>
+                  <div>
+                    <span className="font-bold admin-title block">Products in this order</span>
+                    {orderForm.customerType === 'WHOLESALE' && orderForm.wholesaleBuyerId && (
+                      <span className="text-[10px] admin-muted">Buyer discount applied. The server confirms final prices.</span>
+                    )}
+                  </div>
                   <select
                     onChange={(e) => {
                       if (e.target.value) {
@@ -1584,7 +1678,9 @@ export default function AdminOrdersPage() {
                     <option value="">+ Add Product...</option>
                     {products.map((p) => (
                       <option key={p.code} value={p.code} disabled={p.stock <= 0}>
-                        {p.name} ({p.code}) — ${p.priceUSD} ({p.stock} in stock)
+                        {p.name} ({p.code}) — ${orderForm.customerType === 'WHOLESALE' && orderForm.wholesaleBuyerId
+                          ? (Number(p.priceUSD) * (1 - Number(wholesaleBuyers.find((buyer) => buyer.id === orderForm.wholesaleBuyerId)?.discountTier || 0) / 100)).toFixed(2)
+                          : p.priceUSD} ({p.stock} in stock)
                       </option>
                     ))}
                   </select>
@@ -1626,7 +1722,7 @@ export default function AdminOrdersPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
                   <label className="block font-medium admin-text mb-1">Shipping Method</label>
                   <select
@@ -1646,9 +1742,20 @@ export default function AdminOrdersPage() {
                     className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="CARD">International Card</option>
-                    <option value="COD">Cash on Delivery (COD)</option>
+                    {orderForm.customerType !== 'WHOLESALE' && <option value="COD">Cash on Delivery (COD)</option>}
                     <option value="MBOB">mBOB / QR</option>
                     <option value="BANK">Bank Wire Transfer</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-medium admin-text mb-1">Payment Status</label>
+                  <select
+                    value={orderForm.paymentStatus}
+                    onChange={(e) => setOrderForm({ ...orderForm, paymentStatus: e.target.value })}
+                    className="w-full admin-input border rounded px-2.5 py-1.5"
+                  >
+                    <option value="PENDING">Payment pending</option>
+                    <option value="PAID">Paid (requires verification permission)</option>
                   </select>
                 </div>
                 <div>
@@ -1659,7 +1766,6 @@ export default function AdminOrdersPage() {
                     className="w-full admin-input border rounded px-2.5 py-1.5"
                   >
                     <option value="PROCESSING">Processing</option>
-                    <option value="PAID">Paid</option>
                     <option value="PENDING_PAYMENT">Pending Payment</option>
                   </select>
                 </div>

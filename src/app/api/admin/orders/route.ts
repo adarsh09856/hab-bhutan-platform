@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     await requirePermission(req, 'orders:view');
 
     let orders: any[] = [];
+    let wholesaleBuyers: any[] = [];
     try {
       orders = await prisma.order.findMany({
         include: {
@@ -28,8 +29,16 @@ export async function GET(req: NextRequest) {
           customerMember: {
             select: { id: true, name: true, regNumber: true },
           },
+          wholesaleBuyer: {
+            select: { id: true, companyName: true, contactName: true, email: true, phone: true, discountTier: true },
+          },
         },
         orderBy: { createdAt: 'desc' },
+      });
+      wholesaleBuyers = await prisma.wholesaleBuyer.findMany({
+        where: { status: 'ACTIVE' },
+        select: { id: true, companyName: true, contactName: true, email: true, phone: true, country: true, city: true, discountTier: true },
+        orderBy: { companyName: 'asc' },
       });
     } catch (dbErr) {
       // Database offline fallback
@@ -53,6 +62,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       orders: merged,
+      wholesaleBuyers,
     });
   } catch (err: any) {
     console.error('Error fetching admin orders:', err);
@@ -76,6 +86,7 @@ export async function POST(req: NextRequest) {
     const {
       customerType,
       customerMemberId,
+      wholesaleBuyerId,
       customerName,
       customerEmail,
       customerPhone,
@@ -90,14 +101,48 @@ export async function POST(req: NextRequest) {
     } = body;
 
     const isWalkIn = customerType === 'WALK_IN_POS' || shippingMethod === 'WALK_IN';
-    const effectiveCustomerName = customerName || (isWalkIn ? 'Walk-in Customer' : '');
-    const effectiveCustomerEmail = customerEmail || (isWalkIn ? 'pos@hab.org.bt' : '');
+    const isWholesale = customerType === 'WHOLESALE' || Boolean(wholesaleBuyerId);
+    if (isWholesale && isWalkIn) {
+      return NextResponse.json({ success: false, error: 'Wholesale orders must use a delivery shipping method, not walk-in checkout.' }, { status: 400 });
+    }
+    if (isWholesale && !wholesaleBuyerId) {
+      return NextResponse.json({ success: false, error: 'Select an active wholesale buyer for this order.' }, { status: 400 });
+    }
+    const wholesaleBuyer = isWholesale
+      ? await prisma.wholesaleBuyer.findUnique({ where: { id: String(wholesaleBuyerId) } })
+      : null;
+    if (isWholesale && (!wholesaleBuyer || wholesaleBuyer.status !== 'ACTIVE')) {
+      return NextResponse.json({ success: false, error: 'The selected wholesale buyer is missing or not active.' }, { status: 400 });
+    }
+    if (isWholesale && customerType !== 'WHOLESALE') {
+      return NextResponse.json({ success: false, error: 'Wholesale buyer orders must use the wholesale customer type.' }, { status: 400 });
+    }
+
+    const effectiveCustomerName = isWholesale
+      ? wholesaleBuyer!.companyName
+      : customerName || (isWalkIn ? 'Walk-in Customer' : '');
+    const effectiveCustomerEmail = isWholesale
+      ? wholesaleBuyer!.email
+      : customerEmail || (isWalkIn ? 'pos@hab.org.bt' : '');
+    const effectiveCustomerPhone = isWholesale ? wholesaleBuyer!.phone : customerPhone;
+    const normalizedPaymentStatus = String(paymentStatus || (isWalkIn ? 'PAID' : 'PENDING')).toUpperCase();
+    const normalizedOrderStatus = String(orderStatus || (isWalkIn ? 'DELIVERED' : 'PROCESSING')).toUpperCase();
+
+    if (normalizedPaymentStatus === 'PAID' || normalizedOrderStatus === 'PAID') {
+      await requirePermission(req, 'orders:payment');
+    }
 
     if (!effectiveCustomerName || !effectiveCustomerEmail || !items || !items.length) {
       return NextResponse.json(
         { success: false, error: 'Customer name, email, and at least one order line item are required.' },
         { status: 400 }
       );
+    }
+    if (!['PENDING', 'PAID', 'FAILED', 'REFUNDED'].includes(normalizedPaymentStatus)) {
+      return NextResponse.json({ success: false, error: 'Choose a valid initial payment status.' }, { status: 400 });
+    }
+    if (!['PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'].includes(normalizedOrderStatus)) {
+      return NextResponse.json({ success: false, error: 'Choose a valid initial order status.' }, { status: 400 });
     }
 
     const fxInfo = await getEffectiveFxRate();
@@ -106,6 +151,16 @@ export async function POST(req: NextRequest) {
 
     // Execute order creation and atomic inventory decrement in transaction
     const result = await prisma.$transaction(async (tx) => {
+      const verifiedWholesaleBuyer = isWholesale
+        ? await tx.wholesaleBuyer.findFirst({ where: { id: wholesaleBuyer!.id, status: 'ACTIVE' } })
+        : null;
+      if (isWholesale && !verifiedWholesaleBuyer) {
+        throw new Error('The selected wholesale account is no longer active. Refresh and choose an active buyer.');
+      }
+      const wholesaleDiscount = isWholesale
+        ? Math.min(100, Math.max(0, Number(verifiedWholesaleBuyer!.discountTier) || 0))
+        : 0;
+
       // 1. Verify products & check inventory
       const resolvedItems: Array<{
         product: any;
@@ -136,7 +191,12 @@ export async function POST(req: NextRequest) {
           throw new Error(`Insufficient inventory for '${product.name}' (${product.code}). In stock: ${product.stock}, requested: ${qty}.`);
         }
 
-        const price = item.priceUSD !== undefined ? Number(item.priceUSD) : product.priceUSD;
+        const price = isWholesale
+          ? Math.round(product.priceUSD * (1 - wholesaleDiscount / 100) * 100) / 100
+          : item.priceUSD !== undefined ? Number(item.priceUSD) : product.priceUSD;
+        if (!Number.isFinite(price) || price < 0) {
+          throw new Error(`Invalid unit price for '${product.code}'.`);
+        }
         subtotalUSD += price * qty;
 
         resolvedItems.push({
@@ -182,13 +242,15 @@ export async function POST(req: NextRequest) {
 
       const orderNumber = isWalkIn
         ? `HAB-POS-${Math.floor(10000 + Math.random() * 90000)}`
+        : isWholesale
+          ? `HAB-WH-${Date.now()}-${Math.floor(10000 + Math.random() * 90000)}`
         : `HAB-M-${Math.floor(10000 + Math.random() * 90000)}`;
 
       const mappedPaymentMethod: 'CARD' | 'MBOB' | 'BANK' = 
         paymentMethod === 'MBOB' ? 'MBOB' : paymentMethod === 'CARD' ? 'CARD' : 'BANK';
 
-      const mappedCustomerType: 'STAFF' | 'MEMBER' | 'GUEST' | 'SYSTEM' =
-        customerType === 'STAFF' ? 'STAFF' : customerType === 'MEMBER' ? 'MEMBER' : 'GUEST';
+      const mappedCustomerType: 'STAFF' | 'MEMBER' | 'GUEST' | 'SYSTEM' | 'WHOLESALE' =
+        isWholesale ? 'WHOLESALE' : customerType === 'STAFF' ? 'STAFF' : customerType === 'MEMBER' ? 'MEMBER' : 'GUEST';
 
       // 3. Create Order
       const newOrder = await tx.order.create({
@@ -196,15 +258,16 @@ export async function POST(req: NextRequest) {
           orderNumber,
           customerType: mappedCustomerType,
           customerMemberId: customerMemberId || null,
+          wholesaleBuyerId: isWholesale ? wholesaleBuyer!.id : null,
           customerName: effectiveCustomerName,
           customerEmail: effectiveCustomerEmail,
-          customerPhone: customerPhone || null,
+          customerPhone: effectiveCustomerPhone || null,
           shippingAddress: shippingAddress || (isWalkIn ? { type: 'WALK_IN_POS_STORE_SALE', location: 'HAB Showroom, Thimphu', originalPaymentMethod: paymentMethod } : {}),
           shippingMethod: effectiveShippingMethod,
           shippingFeeUSD,
           paymentMethod: mappedPaymentMethod,
-          paymentStatus: paymentStatus || 'PAID',
-          orderStatus: orderStatus || (isWalkIn ? 'DELIVERED' : 'PROCESSING'),
+          paymentStatus: normalizedPaymentStatus as any,
+          orderStatus: normalizedOrderStatus as any,
           currencyUsed: currency,
           fxRateAtPurchase: fxRate,
           totalUSD,
@@ -242,7 +305,7 @@ export async function POST(req: NextRequest) {
       actorId: session.id,
       actorIdentifier: session.email,
       actorIp: ip,
-      action: isWalkIn ? 'POS_SALE_COMPLETED' : 'MANUAL_ORDER_CREATED',
+      action: isWalkIn ? 'POS_SALE_COMPLETED' : isWholesale ? 'WHOLESALE_ORDER_CREATED' : 'MANUAL_ORDER_CREATED',
       entityType: 'Order',
       entityId: result.id,
       details: {
@@ -253,6 +316,8 @@ export async function POST(req: NextRequest) {
         currencyUsed: result.currencyUsed,
         itemsCount: items.length,
         paymentMethod: result.paymentMethod,
+        wholesaleBuyerId: isWholesale ? wholesaleBuyer!.id : null,
+        wholesaleDiscountTier: isWholesale ? wholesaleBuyer!.discountTier : null,
       },
     });
 

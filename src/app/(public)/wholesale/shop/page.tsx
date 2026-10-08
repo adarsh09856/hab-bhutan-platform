@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, Suspense, useMemo } from 'react';
+import { useState, useEffect, Suspense, useMemo, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -13,7 +13,13 @@ function WholesaleShopContent() {
   const searchParams = useSearchParams();
   const craftParam = searchParams.get('craft');
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [buyerInfo, setBuyerInfo] = useState<any>(null);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
   const [selectedCraft, setSelectedCraft] = useState<string | null>(craftParam);
   const [sortOrder, setSortOrder] = useState<string>('new');
   const [quoteBasket, setQuoteBasket] = useState<Record<string, number>>({});
@@ -24,9 +30,61 @@ function WholesaleShopContent() {
   useEffect(() => {
     if (craftParam) {
       setSelectedCraft(craftParam);
-      setIsAuthenticated(true);
     }
   }, [craftParam]);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/wholesale/auth', { cache: 'no-store', credentials: 'include' })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!active) return;
+        setBuyerInfo(data?.authenticated ? data.buyer : null);
+        setIsAuthenticated(Boolean(data?.authenticated && data?.buyer));
+      })
+      .catch(() => {
+        if (active) setLoginError('Could not check your session. Please try signing in again.');
+      })
+      .finally(() => {
+        if (active) setAuthChecked(true);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const handleWholesaleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    try {
+      const response = await fetch('/api/wholesale/auth', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUsername.trim(), password: loginPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.success || !data?.buyer) throw new Error(data?.error || 'Sign-in failed. Check your username and password.');
+      setBuyerInfo(data.buyer);
+      setIsAuthenticated(true);
+      setLoginPassword('');
+      showToast(`Signed in as ${data.buyer.companyName}.`);
+    } catch (error: any) {
+      setLoginError(error?.message || 'Sign-in failed. Please try again.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleWholesaleLogout = async () => {
+    try {
+      await fetch('/api/wholesale/auth', { method: 'DELETE', credentials: 'include' });
+    } finally {
+      setBuyerInfo(null);
+      setIsAuthenticated(false);
+      setQuoteBasket({});
+      try { localStorage.removeItem('hab_quote_basket'); } catch {}
+    }
+  };
 
   // Load quote basket from localStorage
   useEffect(() => {
@@ -160,10 +218,13 @@ function WholesaleShopContent() {
       )}
 
       {/* Trade Top Bar */}
+      {!authChecked && (
+        <section className="section" aria-live="polite"><p className="section__lede">Checking wholesale account…</p></section>
+      )}
       {isAuthenticated && (
         <div className="tradebar">
           <span className="tradebar__badge">HAB Wholesale</span>
-          <span className="tradebar__who">Verified trade account · wholesale preview</span>
+          <span className="tradebar__who">{buyerInfo?.companyName || 'Verified buyer'} · {buyerInfo?.discountTier ?? 0}% account discount</span>
           <span className="tradebar__spacer"></span>
           <Link className="tradebar__link" href="/wholesale/cart">
             Quote basket <span className="tradebar__n">{totalQuoteCount}</span>
@@ -172,7 +233,7 @@ function WholesaleShopContent() {
             type="button"
             className="tradebar__link tradebar__link--quiet"
             style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            onClick={() => setIsAuthenticated(false)}
+            onClick={handleWholesaleLogout}
           >
             Sign out
           </button>
@@ -180,7 +241,7 @@ function WholesaleShopContent() {
       )}
 
       {/* Sign In State */}
-      {!isAuthenticated && (
+      {authChecked && !isAuthenticated && (
         <section className="section" id="wsLogin">
           <div className="logingrid">
             <div>
@@ -197,30 +258,25 @@ function WholesaleShopContent() {
                 <li>Order history and shipment tracking</li>
               </ul>
             </div>
-            <form
-              className="panel"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setIsAuthenticated(true);
-              }}
-            >
+            <form className="panel" onSubmit={handleWholesaleLogin}>
+              {loginError && <p className="uploadnote" role="alert" style={{ color: '#9b2720', marginBottom: 14 }}>{loginError}</p>}
               <label className="field">
-                <span className="field__label">Business email</span>
-                <input className="input" type="email" placeholder="buying@example.com" required />
+                <span className="field__label">Wholesale username or email</span>
+                <input className="input" type="text" autoComplete="username" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} placeholder="Your approved username or email" required />
               </label>
               <label className="field">
                 <span className="field__label">Password</span>
-                <input className="input" type="password" placeholder="••••••••" required />
+                <input className="input" type="password" autoComplete="current-password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="Your account password" required />
               </label>
-              <button className="btn btn--accent btn--full" type="submit">
-                Sign in
+              <button className="btn btn--accent btn--full" type="submit" disabled={loginLoading}>
+                {loginLoading ? 'Signing in…' : 'Sign in securely'}
               </button>
               <div className="loginfoot">
-                <Link href="/contact?topic=wholesale">Forgot password</Link>
+                <Link href="/contact?topic=wholesale">Need help signing in?</Link>
                 <Link href="/wholesale/register">Not registered yet?</Link>
               </div>
               <p className="uploadnote" style={{ marginTop: 16 }}>
-                Click sign in to reveal the full wholesale catalogue and trade terms.
+                Only approved wholesale accounts can view trade pricing. If your application is pending, contact the HAB Secretariat.
               </p>
             </form>
           </div>
@@ -324,7 +380,7 @@ function WholesaleShopContent() {
                   const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
                   const terms = getTermsForProduct(p.code, p.price);
                   const currentQty = quantities[p.code] || terms.moq;
-                  const unitPrice = getTierPrice(terms, currentQty);
+                  const unitPrice = Math.round(Number(p.price || 0) * (1 - Math.min(100, Math.max(0, Number(buyerInfo?.discountTier) || 0)) / 100) * 100) / 100;
                   const imgSrc = p.image_path
                     ? (p.image_path.startsWith('/') ? p.image_path : `/${p.image_path}`)
                     : (p.hero_image ? (p.hero_image.startsWith('/') || p.hero_image.startsWith('http') ? p.hero_image : `/${p.hero_image}`) : '/assets/photos/product-sad03.jpg');
@@ -374,12 +430,10 @@ function WholesaleShopContent() {
 
                         <div className="wstiers">
                           <span className="wstiers__label">Bulk tiers</span>
-                          {terms.tiers.map(([tierQ, tierP], idx) => (
-                            <span key={idx} className="wstier">
-                              <span className="wstier__q">{tierQ}+</span>
-                              <span className="wstier__p">${tierP}</span>
-                            </span>
-                          ))}
+                          <span className="wstier">
+                            <span className="wstier__q">Account tier</span>
+                            <span className="wstier__p">{buyerInfo?.discountTier ?? 0}% off</span>
+                          </span>
                         </div>
 
                         <div className="wsact">

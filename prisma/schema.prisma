@@ -74,6 +74,7 @@ enum ActorType {
   MEMBER
   GUEST
   SYSTEM
+  WHOLESALE
 }
 
 enum FxStatus {
@@ -170,6 +171,8 @@ model Order {
   customerType      ActorType      @default(GUEST)
   customerMemberId  String?
   customerMember    Member?        @relation(fields: [customerMemberId], references: [id])
+  wholesaleBuyerId  String?
+  wholesaleBuyer    WholesaleBuyer? @relation(fields: [wholesaleBuyerId], references: [id], onDelete: SetNull)
   customerName      String
   customerEmail     String
   customerPhone     String?
@@ -197,6 +200,7 @@ model Order {
   @@index([customerEmail])
   @@index([orderStatus])
   @@index([userId])
+  @@index([wholesaleBuyerId])
 }
 
 // Normalized line-items with foreign-key referential integrity to Product
@@ -935,6 +939,7 @@ model WholesaleBuyer {
   status          String    @default("ACTIVE") // ACTIVE | INACTIVE | PENDING | SUSPENDED
   notes           String?   @db.Text
   lastLoginAt     DateTime?
+  orders          Order[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

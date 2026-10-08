@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import { fallbackHeroPhoto } from '@/lib/public-images';
+import { isConfirmedPublicPersonName } from '@/lib/public-person-name';
 import { ShieldCheck, Award, FileText, ArrowRight, Building, Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -13,47 +13,15 @@ export const metadata: Metadata = {
   description: 'The Board of Trustees provides statutory governance, fiduciary oversight, and strategic guidance for the Handicrafts Association of Bhutan under the CSO Act of Bhutan 2007.',
 };
 
-const DEFAULT_BOARD = [
-  { 
-    name: 'Dasho Sangay Wangchuk', 
-    role: 'Chairman', 
-    note: 'Cultural Heritage Specialist & Former Director of National Commission for Cultural Affairs · 15 yrs service',
-    bio: 'Oversees the strategic alignment of HAB with national cultural preservation frameworks and represents the Association in high-level statutory forums.'
-  },
-  { 
-    name: 'Aum Tshering Pem', 
-    role: 'Vice Chairperson', 
-    note: 'Master Weaver & Rural Artisan Cluster Leader, Radhi, Trashigang',
-    bio: 'Brings thirty years of traditional backstrap weaving expertise, championing fair remuneration and raw silk material security for eastern artisan clusters.'
-  },
-  { 
-    name: 'Karma Dorji', 
-    role: 'Trustee (Fiduciary & Audit)', 
-    note: 'Fellow Chartered Accountant, Thimphu · Former Senior Audit Lead',
-    bio: 'Directs the audit and risk committee, ensuring all donor grants, public subsidies, and retail revenues comply with international financial reporting standards.'
-  },
-  { 
-    name: 'Pema Wangdi', 
-    role: 'Trustee (Artisan Voice)', 
-    note: 'Master Wood Turner & Carver (Shingzo/Tshazo), Trashiyangtse',
-    bio: 'Elected representative for regional craft guilds, ensuring grassroots producers have direct voting input on pricing policies and training quotas.'
-  },
-  { 
-    name: 'Chimi Bidha', 
-    role: 'Trustee (Enterprise & Market Linkage)', 
-    note: 'Export Specialist & Rural Enterprise Mentor, Paro',
-    bio: 'Advises the secretariat on international fair trade compliance, logistics infrastructure, and digital cataloguing for export-ready craft enterprises.'
-  },
-];
-
 async function getBoardData() {
   try {
     const records = await prisma.governanceRecord.findMany({
       where: { category: 'BOARD_OF_TRUSTEES' },
       orderBy: { sortOrder: 'asc' },
     });
-    if (records.length > 0) {
-      return records.map((r, idx) => {
+    return records
+      .filter((record) => isConfirmedPublicPersonName(record.individualName))
+      .map((r) => {
         const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
           ? (r.chapterOrNote || '').split('||photo:')
           : [r.chapterOrNote || '', ''];
@@ -61,15 +29,14 @@ async function getBoardData() {
           name: r.individualName,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: r.photoUrl || photo.trim() || fallbackHeroPhoto(idx),
+          photo: r.photoUrl || photo.trim() || '',
           bio: r.bio || '',
         };
       });
-    }
   } catch {
-    // fallback to DEFAULT_BOARD
+    // Do not substitute unverified people when current governance records are unavailable.
   }
-  return DEFAULT_BOARD;
+  return [];
 }
 
 export default async function BoardOfTrusteesPage() {
@@ -125,18 +92,18 @@ export default async function BoardOfTrusteesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {boardList.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {boardList.map((member, idx) => (
             <article 
               key={idx} 
               className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs hover:border-[#8B2E24]/30 hover:shadow-md transition-all flex flex-col"
             >
               <figure className="relative aspect-4/3 bg-stone-100 overflow-hidden">
-                <img
-                  src={(member as any).photo || fallbackHeroPhoto(idx)}
-                  alt={member.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
+                {(member as any).photo ? <img src={(member as any).photo} alt={member.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" /> : (
+                  <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-500 text-3xl font-semibold" role="img" aria-label="Portrait not supplied">
+                    {member.name.split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <div className="absolute top-3 left-3 bg-[#8B2E24] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-xs">
                   {member.role}
                 </div>
@@ -154,7 +121,10 @@ export default async function BoardOfTrusteesPage() {
               </div>
             </article>
           ))}
-        </div>
+        </div> : <div className="rounded-2xl border border-stone-200 bg-white p-6 text-sm leading-relaxed text-stone-600" role="status">
+          <p className="font-semibold text-stone-800">Trustee names and portraits will be published after they are confirmed by HAB.</p>
+          <p className="mt-2">For assistance, contact the <Link className="text-[#8B2E24] underline" href="/secretariat">Secretariat</Link>.</p>
+        </div>}
       </section>
 
       {/* 3. Mandate & Governance Principles */}
