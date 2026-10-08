@@ -36,5 +36,22 @@ try {
 
 console.log('Postgres is ready on localhost:5432!');
 
-// Keep process alive indefinitely
-setInterval(() => {}, 1000 * 60 * 60);
+// Stop the embedded server cleanly when its wrapper session is interrupted.
+let shuttingDown = false;
+const keepAlive = setInterval(() => {}, 1000 * 60 * 60);
+async function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  clearInterval(keepAlive);
+  console.log('Stopping embedded PostgreSQL...');
+  try {
+    await pg.stop();
+    console.log('Embedded PostgreSQL stopped cleanly.');
+    process.exitCode = 0;
+  } catch (error) {
+    console.error('Could not stop embedded PostgreSQL cleanly:', error);
+    process.exitCode = 1;
+  }
+}
+process.once('SIGINT', () => void shutdown());
+process.once('SIGTERM', () => void shutdown());
