@@ -86,10 +86,7 @@ export default function AdminTradePage() {
   const [termsForm, setTermsForm] = useState({
     moq: 5,
     lead_time: '4–6 weeks',
-    q1: 5, p1: 0,
-    q2: 15, p2: 0,
-    q3: 40, p3: 0,
-    q4: 100, p4: 0,
+    tiers: [{ quantity: 5, price: 0 }, { quantity: 15, price: 0 }, { quantity: 40, price: 0 }, { quantity: 100, price: 0 }],
     customisation: 'Available on request',
     is_active: true,
   });
@@ -248,14 +245,12 @@ export default function AdminTradePage() {
     setTermsForm({
       moq: t.moq || 5,
       lead_time: t.lead_time || '4–6 weeks',
-      q1: tiers[0]?.[0] || 5,
-      p1: tiers[0]?.[1] || Math.round((p.retailPrice || 100) * 0.9),
-      q2: tiers[1]?.[0] || 15,
-      p2: tiers[1]?.[1] || Math.round((p.retailPrice || 100) * 0.82),
-      q3: tiers[2]?.[0] || 40,
-      p3: tiers[2]?.[1] || Math.round((p.retailPrice || 100) * 0.75),
-      q4: tiers[3]?.[0] || 100,
-      p4: tiers[3]?.[1] || Math.round((p.retailPrice || 100) * 0.68),
+      tiers: (tiers.length ? tiers : [
+        [5, Math.round((p.retailPrice || 100) * 0.9)],
+        [15, Math.round((p.retailPrice || 100) * 0.82)],
+        [40, Math.round((p.retailPrice || 100) * 0.75)],
+        [100, Math.round((p.retailPrice || 100) * 0.68)],
+      ]).map((tier: number[]) => ({ quantity: Number(tier[0]), price: Number(tier[1]) })),
       customisation: t.customisation || 'Available on request',
       is_active: t.is_active !== false,
     });
@@ -270,12 +265,9 @@ export default function AdminTradePage() {
         terms: {
           moq: Number(termsForm.moq) || 1,
           lead_time: termsForm.lead_time,
-          tiers: [
-            [Number(termsForm.q1), Number(termsForm.p1)],
-            [Number(termsForm.q2), Number(termsForm.p2)],
-            [Number(termsForm.q3), Number(termsForm.p3)],
-            [Number(termsForm.q4), Number(termsForm.p4)],
-          ].sort((a, b) => a[0] - b[0]),
+          tiers: termsForm.tiers
+            .map((tier) => [Number(tier.quantity), Number(tier.price)])
+            .sort((a, b) => a[0] - b[0]),
           customisation: termsForm.customisation,
           is_active: termsForm.is_active,
         },
@@ -1067,91 +1059,30 @@ export default function AdminTradePage() {
           </div>
 
           <div>
-            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
-              Tier 1 (Starting wholesale break)
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                placeholder="Min Qty"
-                value={termsForm.q1}
-                onChange={(e) => setTermsForm({ ...termsForm, q1: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
-              <input
-                type="number"
-                placeholder="Unit Price USD"
-                value={termsForm.p1}
-                onChange={(e) => setTermsForm({ ...termsForm, p1: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-slate-700 font-semibold uppercase tracking-wider text-[11px]">Volume pricing breaks</label>
+              <button
+                type="button"
+                disabled={termsForm.tiers.length >= 8}
+                onClick={() => setTermsForm((current) => ({
+                  ...current,
+                  tiers: [...current.tiers, { quantity: Math.max(current.moq, ...current.tiers.map((tier) => tier.quantity)) + 10, price: current.tiers[current.tiers.length - 1]?.price || 0 }],
+                }))}
+                className="text-xs font-semibold text-[#8b2e24] hover:underline disabled:text-slate-400 disabled:no-underline"
+              >+ Add price break</button>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
-              Tier 2 (Mid-volume break)
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                placeholder="Min Qty"
-                value={termsForm.q2}
-                onChange={(e) => setTermsForm({ ...termsForm, q2: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
-              <input
-                type="number"
-                placeholder="Unit Price USD"
-                value={termsForm.p2}
-                onChange={(e) => setTermsForm({ ...termsForm, p2: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
+            <div className="space-y-2">
+              {termsForm.tiers.map((tier, index) => (
+                <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                  <label className="sr-only" htmlFor={`trade-tier-qty-${index}`}>Break {index + 1} minimum quantity</label>
+                  <input id={`trade-tier-qty-${index}`} aria-label={`Break ${index + 1} minimum quantity`} type="number" min={termsForm.moq} placeholder="Minimum quantity" value={tier.quantity} onChange={(e) => setTermsForm((current) => ({ ...current, tiers: current.tiers.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(e.target.value) } : row) }))} className="min-w-0 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm" />
+                  <label className="sr-only" htmlFor={`trade-tier-price-${index}`}>Break {index + 1} unit price in USD</label>
+                  <input id={`trade-tier-price-${index}`} aria-label={`Break ${index + 1} unit price in USD`} type="number" min="0" step="0.01" placeholder="Unit price USD" value={tier.price} onChange={(e) => setTermsForm((current) => ({ ...current, tiers: current.tiers.map((row, rowIndex) => rowIndex === index ? { ...row, price: Number(e.target.value) } : row) }))} className="min-w-0 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm" />
+                  <button type="button" aria-label={`Remove price break ${index + 1}`} disabled={termsForm.tiers.length <= 1} onClick={() => setTermsForm((current) => ({ ...current, tiers: current.tiers.filter((_, rowIndex) => rowIndex !== index) }))} className="px-2 py-2 text-rose-700 hover:bg-rose-50 rounded-lg disabled:text-slate-300">Remove</button>
+                </div>
+              ))}
             </div>
-          </div>
-
-          <div>
-            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
-              Tier 3 (High-volume break)
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                placeholder="Min Qty"
-                value={termsForm.q3}
-                onChange={(e) => setTermsForm({ ...termsForm, q3: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
-              <input
-                type="number"
-                placeholder="Unit Price USD"
-                value={termsForm.p3}
-                onChange={(e) => setTermsForm({ ...termsForm, p3: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-slate-700 mb-2 font-semibold uppercase tracking-wider text-[11px]">
-              Tier 4 (Container / bulk break)
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                placeholder="Min Qty"
-                value={termsForm.q4}
-                onChange={(e) => setTermsForm({ ...termsForm, q4: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
-              <input
-                type="number"
-                placeholder="Unit Price USD"
-                value={termsForm.p4}
-                onChange={(e) => setTermsForm({ ...termsForm, p4: Number(e.target.value) })}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm"
-              />
-            </div>
+            <p className="mt-1 text-[11px] text-slate-500">Use increasing quantities, starting at or above the MOQ. Up to 8 price breaks.</p>
           </div>
 
           <div>
