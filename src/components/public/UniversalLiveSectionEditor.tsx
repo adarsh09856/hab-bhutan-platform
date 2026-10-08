@@ -911,12 +911,17 @@ export default function UniversalLiveSectionEditor({
           },
         ];
         for (const p of pillarUpdates) {
-          await fetch('/api/admin/support-pillars', {
+          const pillarResponse = await fetch('/api/admin/support-pillars', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify(p),
-          }).catch(() => {});
+          });
+          const pillarResult = await pillarResponse.json().catch(() => ({}));
+          if (!pillarResponse.ok || pillarResult?.success === false) {
+            if (pillarResponse.status === 401 || pillarResponse.status === 403) setSessionExpired(true);
+            throw new Error(pillarResult?.error || `Saving the “${p.key}” support pillar failed (HTTP ${pillarResponse.status}).`);
+          }
         }
       }
 
@@ -924,10 +929,15 @@ export default function UniversalLiveSectionEditor({
       if (sectionType === 'footer') {
         for (const delId of deletedNavIds) {
           if (!delId.startsWith('new-') && !delId.startsWith('f-')) {
-            await fetch(`/api/admin/navigation?id=${encodeURIComponent(delId)}`, {
+            const deleteResponse = await fetch(`/api/admin/navigation?id=${encodeURIComponent(delId)}`, {
               method: 'DELETE',
               credentials: 'include',
-            }).catch(() => {});
+            });
+            const deleteResult = await deleteResponse.json().catch(() => ({}));
+            if (!deleteResponse.ok || deleteResult?.success === false) {
+              if (deleteResponse.status === 401 || deleteResponse.status === 403) setSessionExpired(true);
+              throw new Error(deleteResult?.error || `Removing the footer link failed (HTTP ${deleteResponse.status}).`);
+            }
           }
         }
 
@@ -936,7 +946,7 @@ export default function UniversalLiveSectionEditor({
           const isDbItem = item.id && !item.isNew && !item.id.startsWith('f-') && !item.id.startsWith('new-');
 
           if (isDbItem) {
-            await fetch('/api/admin/navigation', {
+            const updateResponse = await fetch('/api/admin/navigation', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
@@ -949,9 +959,14 @@ export default function UniversalLiveSectionEditor({
                 sortOrder: item.sortOrder || idx + 1,
                 isActive: item.isActive,
               }),
-            }).catch(() => {});
+            });
+            const updateResult = await updateResponse.json().catch(() => ({}));
+            if (!updateResponse.ok || updateResult?.success === false) {
+              if (updateResponse.status === 401 || updateResponse.status === 403) setSessionExpired(true);
+              throw new Error(updateResult?.error || `Updating footer link “${item.label}” failed (HTTP ${updateResponse.status}).`);
+            }
           } else {
-            await fetch('/api/admin/navigation', {
+            const createResponse = await fetch('/api/admin/navigation', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
@@ -963,7 +978,12 @@ export default function UniversalLiveSectionEditor({
                 sortOrder: item.sortOrder || idx + 1,
                 isActive: item.isActive,
               }),
-            }).catch(() => {});
+            });
+            const createResult = await createResponse.json().catch(() => ({}));
+            if (!createResponse.ok || createResult?.success === false) {
+              if (createResponse.status === 401 || createResponse.status === 403) setSessionExpired(true);
+              throw new Error(createResult?.error || `Adding footer link “${item.label}” failed (HTTP ${createResponse.status}).`);
+            }
           }
         }
       }

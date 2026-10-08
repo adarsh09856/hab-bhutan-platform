@@ -208,6 +208,19 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
     setSessionExpired(false);
 
     try {
+      const saveRequest = async (url: string, init: RequestInit, action: string) => {
+        const response = await fetch(url, init);
+        const result = await response.json().catch(() => ({}));
+        if (response.status === 401 || response.status === 403) {
+          setSessionExpired(true);
+          throw new Error('Your staff session has expired or does not have permission. Please log in again.');
+        }
+        if (!response.ok || result?.success === false) {
+          throw new Error(result?.error || `${action} failed (HTTP ${response.status}).`);
+        }
+        return result;
+      };
+
       // 1. Save Announcement & Tagline to SiteSettings
       const settingsPayload = {
         announcementText: announcementText.trim(),
@@ -216,26 +229,21 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
         tagline: tagline.trim(),
       };
 
-      const settingsRes = await fetch('/api/admin/site-settings', {
+      await saveRequest('/api/admin/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(settingsPayload),
-      });
-
-      if (settingsRes.status === 401) {
-        setSessionExpired(true);
-        throw new Error('Your admin session has expired. Please log in again.');
-      }
+      }, 'Header settings save');
 
       // 2. Save Navigation Items
       // A. Delete removed items
       for (const delId of deletedNavIds) {
         if (!delId.startsWith('new-') && !delId.startsWith('h-')) {
-          await fetch(`/api/admin/navigation?id=${encodeURIComponent(delId)}`, {
+          await saveRequest(`/api/admin/navigation?id=${encodeURIComponent(delId)}`, {
             method: 'DELETE',
             credentials: 'include',
-          }).catch(() => {});
+          }, 'Removing a header link');
         }
       }
 
@@ -245,7 +253,7 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
         const isDbItem = item.id && !item.isNew && !item.id.startsWith('h-') && !item.id.startsWith('new-');
 
         if (isDbItem) {
-          await fetch('/api/admin/navigation', {
+          await saveRequest('/api/admin/navigation', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -257,9 +265,9 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
               sortOrder: idx + 1,
               isActive: item.isActive,
             }),
-          }).catch(() => {});
+          }, `Updating “${item.label}”`);
         } else {
-          await fetch('/api/admin/navigation', {
+          await saveRequest('/api/admin/navigation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -270,7 +278,7 @@ export default function HeaderLiveEditor({ isOpen, onClose, onSaved }: HeaderLiv
               sortOrder: idx + 1,
               isActive: item.isActive,
             }),
-          }).catch(() => {});
+          }, `Adding “${item.label}”`);
         }
       }
 
