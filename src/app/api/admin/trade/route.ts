@@ -125,29 +125,21 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'update_quote_status') {
       const { id, status, adminNotes } = payload;
-      try {
-        const dbStatus = status === 'new' ? 'NEW' : status === 'quoted' ? 'IN_PROGRESS' : status === 'fulfilled' ? 'RESOLVED' : 'ARCHIVED';
-        await prisma.inquiry.update({
-          where: { id },
-          data: { status: dbStatus, adminNotes },
-        });
-      } catch {
-        // In-memory update ok if db not connected
-      }
+      const dbStatus = status === 'new' ? 'NEW' : status === 'quoted' ? 'IN_PROGRESS' : status === 'fulfilled' ? 'RESOLVED' : 'ARCHIVED';
+      await prisma.inquiry.update({
+        where: { id },
+        data: { status: dbStatus, adminNotes },
+      });
       return NextResponse.json({ success: true, message: 'Quote status updated.' });
     }
 
     if (action === 'update_buyer_status') {
       const { id, status } = payload;
-      try {
-        const dbStatus = status === 'verified' ? 'RESOLVED' : status === 'rejected' ? 'ARCHIVED' : 'NEW';
-        await prisma.inquiry.update({
-          where: { id },
-          data: { status: dbStatus },
-        });
-      } catch {
-        // In-memory update ok
-      }
+      const dbStatus = status === 'verified' ? 'RESOLVED' : status === 'rejected' ? 'ARCHIVED' : 'NEW';
+      await prisma.inquiry.update({
+        where: { id },
+        data: { status: dbStatus },
+      });
       return NextResponse.json({ success: true, message: 'Buyer account status updated.' });
     }
 

@@ -19,6 +19,7 @@
 - Removed the Trade Desk's fictional sample wholesale quotes and buyer inquiries and its client-data product fallback. A database read outage now surfaces as an error rather than showing fabricated business records.
 - New retail products no longer receive guessed B2B tiers derived from their retail price. The Admin Trade Desk shows unconfigured products as inactive with no price breaks; the public wholesale catalogue omits them until terms are explicitly saved. Quote submission rejects products without active, valid configured terms rather than calculating an unapproved buyer-discount price.
 - Shared eligibility validation normalizes saved/legacy tiers, rejects inactive or malformed/missing pricing, and is covered by `scripts/verify-wholesale-offer.mjs` (passed). `npm run typecheck` and `git diff --check` passed. Production build, authenticated browser catalogue, and real quote workflow remain **UNVERIFIED**; no production data or submitted quote was changed.
+- Follow-up reliability fix: Trade Desk quote/registration status actions no longer swallow database errors and return false success; they report success only after the PostgreSQL update resolves. Typecheck and full optimized build passed. Authenticated UI mutation remains **UNVERIFIED**.
 
 ---
 
