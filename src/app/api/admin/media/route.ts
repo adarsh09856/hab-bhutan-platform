@@ -73,7 +73,7 @@ export async function GET() {
         key: 'publication.annual2026',
         category: 'Publications',
         label: 'Annual Sector Review 2026 Cover',
-        url: '/images/report_placeholder.png',
+        url: '/assets/photos/about-hab.jpg',
         aspect: '3:4 / Portrait',
         description: 'Document cover thumbnail shown on /publications.',
       },

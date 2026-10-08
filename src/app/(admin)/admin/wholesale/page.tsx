@@ -23,9 +23,8 @@ import {
   FileText
 } from 'lucide-react';
 import { 
-  generateExcelCsv, 
-  parseCsv, 
-  triggerDownload, 
+  downloadExcelWorkbook,
+  parseSpreadsheetFile,
   WHOLESALE_HEADERS, 
   WHOLESALE_SAMPLE_ROWS, 
   validateWholesaleImport, 
@@ -64,6 +63,11 @@ const EMPTY_FORM = {
   notes: '',
 };
 
+function paymentProofFromNotes(notes?: string | null) {
+  const value = notes?.match(/^Payment Slip Proof:\s*(\S+)/m)?.[1] || '';
+  return value.startsWith('/uploads/') ? value : '';
+}
+
 export default function AdminWholesalePage() {
   const [buyers, setBuyers] = useState<WholesaleBuyerItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,6 +90,9 @@ export default function AdminWholesalePage() {
   const [declineBuyer, setDeclineBuyer] = useState<WholesaleBuyerItem | null>(null);
   const [declineReason, setDeclineReason] = useState('');
   const [actingAction, setActingAction] = useState(false);
+  const [approvedCredentials, setApprovedCredentials] = useState<{
+    companyName: string; username: string; email: string; temporaryPassword: string; emailSent: boolean;
+  } | null>(null);
 
   // Bulk Import Modal
   const [showImportModal, setShowImportModal] = useState(false);
@@ -189,6 +196,15 @@ export default function AdminWholesalePage() {
       const data = await res.json();
       if (res.ok && data.success) {
         showFlash('success', data.message || `Account for ${b.companyName} approved.`);
+        if (data.temporaryPassword) {
+          setApprovedCredentials({
+            companyName: b.companyName,
+            username: b.username,
+            email: b.email,
+            temporaryPassword: data.temporaryPassword,
+            emailSent: Boolean(data.emailSent),
+          });
+        }
         loadBuyers();
       } else {
         showFlash('error', data.error || 'Failed to approve account.');
@@ -285,37 +301,33 @@ export default function AdminWholesalePage() {
       (b.notes || '').replace(/\r?\n/g, ' | '),
     ]);
 
-    const csvContent = generateExcelCsv(WHOLESALE_HEADERS, rows);
     const dateStr = new Date().toISOString().slice(0, 10);
-    triggerDownload(`HAB_Wholesale_Buyers_${dateStr}.csv`, csvContent);
-    showFlash('success', `Exported ${buyers.length} wholesale buyers to Excel-ready CSV.`);
+    downloadExcelWorkbook(`HAB_Wholesale_Buyers_${dateStr}.xlsx`, 'Wholesale Buyers', WHOLESALE_HEADERS, rows);
+    showFlash('success', `Exported ${buyers.length} wholesale buyers to Excel.`);
   };
 
   // Download Sample Template
   const handleDownloadTemplate = () => {
-    const csvContent = generateExcelCsv(WHOLESALE_HEADERS, WHOLESALE_SAMPLE_ROWS);
-    triggerDownload('HAB_Wholesale_Import_Template.csv', csvContent);
+    downloadExcelWorkbook('HAB_Wholesale_Import_Template.xlsx', 'Import Template', WHOLESALE_HEADERS, WHOLESALE_SAMPLE_ROWS);
   };
 
   // Handle File Pick for Import
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImportFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      if (!text) return;
-
-      const rawRows = parseCsv(text);
+    try {
+      const rawRows = await parseSpreadsheetFile(file);
       const existingEmails = new Set(buyers.map((b) => b.email.toLowerCase()));
       const existingUsernames = new Set(buyers.map((b) => b.username.toLowerCase()));
 
       const validation = validateWholesaleImport(rawRows, existingEmails, existingUsernames);
       setImportValidation(validation);
-    };
-    reader.readAsText(file);
+    } catch (error: any) {
+      showFlash('error', error?.message || 'Unable to read the spreadsheet.');
+      setImportValidation(null);
+    }
   };
 
   // Submit Bulk Import
@@ -631,6 +643,14 @@ export default function AdminWholesalePage() {
                   </pre>
                 </div>
               )}
+              {paymentProofFromNotes(inspectBuyer.notes) && (
+                <div className="rounded-xl border border-sky-200 bg-sky-50 p-4">
+                  <h4 className="font-bold text-slate-900">Payment / deposit proof</h4>
+                  <a href={paymentProofFromNotes(inspectBuyer.notes)} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-2 rounded-lg bg-sky-700 px-3 py-2 font-semibold text-white">
+                    <Eye className="w-4 h-4" /> View uploaded proof
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
@@ -760,7 +780,7 @@ export default function AdminWholesalePage() {
                   <span className="text-[#8B2E24] font-semibold underline">Choose CSV / Excel file</span> or drag &amp; drop
                   <input
                     type="file"
-                    accept=".csv,text/csv,.tsv,text/tab-separated-values"
+                    accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -1058,6 +1078,25 @@ export default function AdminWholesalePage() {
               >
                 Update Password
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {approvedCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl">
+            <h3 className="font-bold text-slate-900">Wholesale account approved</h3>
+            <p className="mt-1 text-xs text-slate-500">{approvedCredentials.emailSent ? 'The credentials email was delivered.' : 'Live email delivery was not confirmed. Copy these credentials and send them securely.'}</p>
+            <div className="mt-4 space-y-2 rounded-xl bg-slate-50 p-4 text-sm">
+              <p><span className="text-slate-500">Company:</span> <strong>{approvedCredentials.companyName}</strong></p>
+              <p><span className="text-slate-500">Email:</span> <strong>{approvedCredentials.email}</strong></p>
+              <p><span className="text-slate-500">Username:</span> <code>{approvedCredentials.username}</code></p>
+              <p><span className="text-slate-500">Temporary password:</span> <code className="font-bold">{approvedCredentials.temporaryPassword}</code></p>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => navigator.clipboard.writeText(`Username: ${approvedCredentials.username}\nTemporary password: ${approvedCredentials.temporaryPassword}\nLogin: ${window.location.origin}/wholesale/login`)} className="rounded-lg border px-3 py-2 text-xs font-semibold">Copy credentials</button>
+              <button type="button" onClick={() => setApprovedCredentials(null)} className="rounded-lg bg-[#8B2E24] px-4 py-2 text-xs font-bold text-white">Done</button>
             </div>
           </div>
         </div>

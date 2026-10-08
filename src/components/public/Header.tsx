@@ -723,6 +723,16 @@ export default function Header() {
         <div className="header__actions">
           <button
             className="chip"
+            type="button"
+            onClick={toggleLanguage}
+            aria-label={language === 'en' ? 'Switch to Dzongkha' : 'Switch to English'}
+            title="Switch language / སྐད་ཡིག"
+            style={{ cursor: 'pointer' }}
+          >
+            {language === 'en' ? 'EN' : 'རྫོང་ཁ'}
+          </button>
+          <button
+            className="chip"
             id="currencyToggle"
             title="Switch currency / དངུལ་ཀྲམ་བརྗེ་སོར"
             aria-live="polite"

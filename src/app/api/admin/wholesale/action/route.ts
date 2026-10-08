@@ -4,12 +4,15 @@ import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { updateFallbackWholesaleBuyerStatus, getAllFallbackWholesaleBuyers } from '@/lib/wholesale-store';
 import { sendEmail } from '@/lib/email-service';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user) {
+  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+  if (!user || !['super_admin', 'staff_operator'].includes(role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -21,6 +24,10 @@ export async function POST(req: NextRequest) {
     }
 
     const newStatus = action === 'APPROVE' ? 'ACTIVE' : 'REJECTED';
+    const temporaryPassword = action === 'APPROVE'
+      ? `HAB-${crypto.randomBytes(6).toString('base64url')}`
+      : null;
+    const passwordHash = temporaryPassword ? await bcrypt.hash(temporaryPassword, 12) : null;
 
     // 1. Fetch buyer info
     let buyer = await prisma.wholesaleBuyer.findUnique({
@@ -41,6 +48,7 @@ export async function POST(req: NextRequest) {
         where: { id: buyerId },
         data: {
           status: newStatus,
+          ...(passwordHash ? { passwordHash } : {}),
           notes: reason ? `${buyer.notes || ''}\n[${action}]: ${reason}` : buyer.notes,
         },
       });
@@ -63,6 +71,7 @@ export async function POST(req: NextRequest) {
           <p>Your account details:</p>
           <ul>
             <li><strong>Username:</strong> @${buyer.username}</li>
+            <li><strong>Temporary password:</strong> ${temporaryPassword}</li>
             <li><strong>Discount Tier:</strong> ${buyer.discountTier || 20}% OFF Catalogue Pricing</li>
             <li><strong>Catalogue Access:</strong> <a href="https://hab.touratbhutan.info/wholesale/shop" style="color: #8B2E24;">Visit Wholesale Shop</a></li>
           </ul>
@@ -85,16 +94,20 @@ export async function POST(req: NextRequest) {
       `;
 
     let emailSent = false;
+    let emailSimulated = false;
     try {
-      await sendEmail({
+      const emailResult = await sendEmail({
         to: buyer.email,
         subject,
         body: action === 'APPROVE'
-          ? `Kuzuzangpo la ${buyer.contactName},\n\nYour wholesale trade application for ${buyer.companyName} has been approved.`
+          ? `Kuzuzangpo la ${buyer.contactName},\n\nYour wholesale trade application for ${buyer.companyName} has been approved.\n\nUsername: ${buyer.username}\nTemporary password: ${temporaryPassword}\nSign in: https://hab.touratbhutan.info/wholesale/login\n\nPlease change your password after signing in.`
           : `Kuzuzangpo la ${buyer.contactName},\n\nYour wholesale application for ${buyer.companyName} was not approved.${reason ? ` Reason: ${reason}` : ''}`,
         html: htmlBody,
+        auditEntityType: 'WholesaleBuyer',
+        auditEntityId: buyerId,
       });
-      emailSent = true;
+      emailSent = emailResult.success && !emailResult.simulated;
+      emailSimulated = Boolean(emailResult.simulated);
     } catch (e: any) {
       console.warn('[wholesale/action] Automated email send failed (or simulated):', e.message);
     }
@@ -110,6 +123,7 @@ export async function POST(req: NextRequest) {
         email: buyer.email,
         companyName: buyer.companyName,
         emailSent,
+        emailSimulated,
         reason: reason || null,
       },
     }).catch(() => {});
@@ -119,7 +133,9 @@ export async function POST(req: NextRequest) {
       action,
       status: newStatus,
       emailSent,
-      message: `Account for ${buyer.companyName} ${action === 'APPROVE' ? 'approved' : 'declined'} successfully. ${emailSent ? 'Notification email dispatched.' : 'Email queued.'}`,
+      emailSimulated,
+      temporaryPassword: action === 'APPROVE' ? temporaryPassword : undefined,
+      message: `Account for ${buyer.companyName} ${action === 'APPROVE' ? 'approved' : 'declined'} successfully. ${emailSent ? 'Notification email dispatched.' : emailSimulated ? 'SMTP is not configured; email was simulated and credentials are shown in Admin.' : 'Email delivery failed; review the audit log.'}`,
     });
   } catch (err: any) {
     console.error('Error handling wholesale action:', err);

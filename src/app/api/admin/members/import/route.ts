@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user) {
+  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+  if (!user || !['super_admin', 'staff_operator'].includes(role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -19,8 +20,18 @@ export async function POST(req: NextRequest) {
     }
 
     let importedCount = 0;
+    let skippedCount = 0;
+    const badRows: { rowNumber: number; reason: string }[] = [];
 
-    for (const row of rows) {
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
+      const cidNumber = String(row.cidNumber || '').trim();
+      if (!row.name || !row.craftKey || !row.dzongkhag || !cidNumber) {
+        badRows.push({ rowNumber: index + 2, reason: 'Name, craft, dzongkhag and CID/license are required.' });
+        continue;
+      }
+      const duplicate = await prisma.member.findFirst({ where: { cidNumber } }).catch(() => null);
+      if (duplicate) { skippedCount++; continue; }
       const memberId = crypto.randomUUID();
       const regNumber = row.regNumber || `HAB-M-${Math.floor(100000 + Math.random() * 900000)}`;
       const bioText = row.bio || (row.village ? `Village: ${row.village}. Registered artisan member of HAB.` : 'Registered artisan member of Handicrafts Association of Bhutan.');
@@ -32,7 +43,7 @@ export async function POST(req: NextRequest) {
             name: row.name,
             craftKey: row.craftKey || 'thagzo',
             dzongkhag: row.dzongkhag || 'Thimphu',
-            cidNumber: row.cidNumber || '00000000000',
+            cidNumber,
             regNumber,
             businessLicense: row.businessLicense || null,
             tier: row.tier || 'ACTIVE_SECTOR_MEMBER',
@@ -45,7 +56,7 @@ export async function POST(req: NextRequest) {
         });
         importedCount++;
       } catch (dbErr: any) {
-        console.warn(`[members/import] DB insert skipped for ${row.name}:`, dbErr.message);
+        badRows.push({ rowNumber: index + 2, reason: dbErr.message || 'Database insert failed.' });
       }
     }
 
@@ -56,13 +67,15 @@ export async function POST(req: NextRequest) {
       action: 'MEMBERS_BULK_IMPORTED',
       entityType: 'Member',
       entityId: 'BULK_IMPORT',
-      details: { count: importedCount },
+      details: { count: importedCount, skippedCount, badRows },
     }).catch(() => {});
 
     return NextResponse.json({
       success: true,
       count: importedCount,
-      message: `Successfully imported ${importedCount} artisan members into the directory.`,
+      skippedCount,
+      badRows,
+      message: `Imported ${importedCount} artisan members; skipped ${skippedCount} duplicates.`,
     });
   } catch (err: any) {
     console.error('Error during members bulk import:', err);

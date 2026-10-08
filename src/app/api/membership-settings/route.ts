@@ -16,7 +16,7 @@ export async function GET() {
           bankName: 'Bank of Bhutan (BoB)',
           accountNumber: '200847291038',
           accountTitle: 'Handicrafts Association of Bhutan',
-          mbobQrUrl: '/images/mbob_qr_placeholder.png',
+          mbobQrUrl: '',
         },
       });
     }

@@ -3268,3 +3268,13 @@ body.hab-admin-body,
   padding-top: 0 !important;
   margin-top: 0 !important;
 }
+/* Universal public-page editing is enabled only after the authenticated admin bar dispatches edit mode. */
+.hab-universal-editable {
+  outline: 1px dashed rgba(180, 121, 34, .7) !important;
+  outline-offset: 3px;
+  cursor: pointer !important;
+}
+.hab-universal-editable:hover {
+  outline: 2px solid #d39a35 !important;
+  background-color: rgba(255, 244, 207, .18);
+}

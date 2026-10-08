@@ -378,7 +378,7 @@ export async function sendMembershipStatusEmail(params: {
   rejectionReason?: string;
   regNumber?: string;
   activationUrl?: string;
-}): Promise<void> {
+}): Promise<{ success: boolean; simulated?: boolean; error?: string }> {
   try {
     const isApproved = params.status === 'APPROVED';
     const templateKey = isApproved ? 'application_approved' : 'application_rejected';
@@ -397,7 +397,7 @@ export async function sendMembershipStatusEmail(params: {
     const subject = replacePlaceholders(template.subject, variables);
     const body = replacePlaceholders(template.body, variables);
 
-    await sendEmail({
+    return await sendEmail({
       to: params.application.email,
       subject,
       body,
@@ -407,5 +407,6 @@ export async function sendMembershipStatusEmail(params: {
     });
   } catch (err) {
     console.error('[email-service] Error sending membership status email:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Membership email delivery failed.' };
   }
 }

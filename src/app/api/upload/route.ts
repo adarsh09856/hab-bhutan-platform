@@ -23,12 +23,11 @@ export async function POST(req: NextRequest) {
       'image/png',
       'image/webp',
       'image/gif',
-      'image/svg+xml',
       'application/pdf',
     ];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Only image files (JPG, PNG, WebP, SVG) or PDF documents are accepted.' },
+        { error: 'Only JPG, PNG, WebP, GIF or PDF documents are accepted.' },
         { status: 400 }
       );
     }
@@ -39,7 +38,11 @@ export async function POST(req: NextRequest) {
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadsDir, { recursive: true });
 
-    const ext = file.name.split('.').pop() || 'png';
+    const extByType: Record<string, string> = {
+      'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
+      'image/gif': 'gif', 'application/pdf': 'pdf',
+    };
+    const ext = extByType[file.type];
     const cleanFileName = `hab-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}.${ext}`;
     const filePath = join(uploadsDir, cleanFileName);
 

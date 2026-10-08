@@ -129,6 +129,14 @@ function RegisterContent() {
       setErrorMsg('Please confirm the declaration before submitting.');
       return;
     }
+    if ((paymentMethod === 'mbob' || paymentMethod === 'bank') && !bankRef.trim()) {
+      setErrorMsg('Enter the payment transaction or bank deposit reference before submitting.');
+      return;
+    }
+    if ((paymentMethod === 'mbob' || paymentMethod === 'bank') && !proofUrl) {
+      setErrorMsg('Upload the payment or deposit slip before submitting.');
+      return;
+    }
 
     setIsSubmitting(true);
     const refNum = `HAB-2026-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -155,18 +163,15 @@ function RegisterContent() {
         }),
       });
       const data = await res.json().catch(() => null);
-      if (data?.reference) {
-        setReferenceNumber(data.reference);
-      } else {
-        setReferenceNumber(refNum);
-      }
-    } catch {
-      setReferenceNumber(refNum);
+      if (!res.ok || !data?.success) throw new Error(data?.error || 'The application could not be submitted.');
+      setReferenceNumber(data.reference || refNum);
+      setStep(5);
+      window.scrollTo(0, 0);
+    } catch (error: any) {
+      setErrorMsg(error?.message || 'Network error. Your application was not submitted; please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
-    setStep(5);
-    window.scrollTo(0, 0);
   };
 
   return (

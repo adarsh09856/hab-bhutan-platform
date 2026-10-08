@@ -8,9 +8,8 @@ import { AlertCircle, Download, Upload, FileSpreadsheet, Check } from 'lucide-re
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import {
-  generateExcelCsv,
-  parseCsv,
-  triggerDownload,
+  downloadExcelWorkbook,
+  parseSpreadsheetFile,
   MEMBER_HEADERS,
   MEMBER_SAMPLE_ROWS,
   validateMemberImport,
@@ -286,35 +285,31 @@ export default function AdminMembersPage() {
       (m.bio || '').replace(/\r?\n/g, ' | '),
     ]);
 
-    const csvContent = generateExcelCsv(MEMBER_HEADERS, rows);
     const dateStr = new Date().toISOString().slice(0, 10);
-    triggerDownload(`HAB_Certified_Members_${dateStr}.csv`, csvContent);
-    setActionSuccess(`✓ Exported ${members.length} members to Excel-ready CSV.`);
+    downloadExcelWorkbook(`HAB_Certified_Members_${dateStr}.xlsx`, 'Members', MEMBER_HEADERS, rows);
+    setActionSuccess(`✓ Exported ${members.length} members to Excel.`);
   };
 
   const handleDownloadMemberTemplate = () => {
-    const csvContent = generateExcelCsv(MEMBER_HEADERS, MEMBER_SAMPLE_ROWS);
-    triggerDownload('HAB_Member_Import_Template.csv', csvContent);
+    downloadExcelWorkbook('HAB_Member_Import_Template.xlsx', 'Import Template', MEMBER_HEADERS, MEMBER_SAMPLE_ROWS);
   };
 
-  const handleMemberFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMemberFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImportFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      if (!text) return;
-
-      const rawRows = parseCsv(text);
+    try {
+      const rawRows = await parseSpreadsheetFile(file);
       const existingCids = new Set(members.map((m) => (m.cidNumber || '').trim()).filter(Boolean));
       const existingNames = new Set(members.map((m) => (m.name || '').trim().toLowerCase()));
 
       const validation = validateMemberImport(rawRows, existingCids, existingNames);
       setImportValidation(validation);
-    };
-    reader.readAsText(file);
+    } catch (error: any) {
+      setActionError(error?.message || 'Unable to read the spreadsheet.');
+      setImportValidation(null);
+    }
   };
 
   const handleExecuteMemberImport = async () => {
@@ -1073,7 +1068,7 @@ export default function AdminMembersPage() {
                   <span className="text-[#8B2E24] font-semibold underline">Choose CSV / Excel file</span> or drag &amp; drop
                   <input
                     type="file"
-                    accept=".csv,text/csv,.tsv,text/tab-separated-values"
+                    accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
                     onChange={handleMemberFileChange}
                     className="hidden"
                   />

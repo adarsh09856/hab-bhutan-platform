@@ -2,6 +2,7 @@
  * Comprehensive RFC-4180 compliant CSV / Excel spreadsheet generator and parser.
  * Supports UTF-8 BOM (\uFEFF) for seamless Microsoft Excel import without encoding corruption.
  */
+import * as XLSX from 'xlsx';
 
 export function generateExcelCsv(headers: string[], rows: (string | number | null | undefined)[][]): string {
   const escapeCell = (val: string | number | null | undefined): string => {
@@ -99,6 +100,37 @@ export function triggerDownload(filename: string, content: string, mimeType = 't
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+export function downloadExcelWorkbook(
+  filename: string,
+  sheetName: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][]
+) {
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  worksheet['!cols'] = headers.map((header, index) => ({
+    wch: Math.min(60, Math.max(header.length + 2, ...rows.map((row) => String(row[index] ?? '').length + 2))),
+  }));
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName.slice(0, 31));
+  XLSX.writeFile(workbook, filename, { compression: true });
+}
+
+export async function parseSpreadsheetFile(file: File): Promise<string[][]> {
+  const lower = file.name.toLowerCase();
+  if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false });
+    const firstSheet = workbook.SheetNames[0];
+    if (!firstSheet) return [];
+    return XLSX.utils.sheet_to_json<string[]>(workbook.Sheets[firstSheet], {
+      header: 1,
+      raw: false,
+      defval: '',
+      blankrows: false,
+    }).map((row) => row.map((cell) => String(cell ?? '').trim()));
+  }
+  return parseCsv(await file.text());
 }
 
 // ---------------------------------------------------------------------------

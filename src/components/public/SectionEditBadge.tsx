@@ -18,6 +18,24 @@ interface SectionEditBadgeProps {
   canMoveDown?: boolean;
 }
 
+// A page can contain many badges. Share one session check instead of making
+// a health/database request for every section.
+let staffCheck: Promise<boolean> | null = null;
+
+function checkStaffSession(): Promise<boolean> {
+  if (!staffCheck) {
+    staffCheck = fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' })
+      .then((response) => response.json())
+      .then((data) => {
+        const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
+        return ['super_admin', 'staff_operator'].includes(role);
+      })
+      .catch(() => false)
+      .finally(() => { staffCheck = null; });
+  }
+  return staffCheck;
+}
+
 function inferSectionType(studioHref: string = '', label: string = ''): SectionType {
   const path = (studioHref || '').toLowerCase();
   const l = (label || '').toLowerCase();
@@ -64,7 +82,16 @@ export default function SectionEditBadge({
   canMoveDown = true,
 }: SectionEditBadgeProps) {
   const [visible, setVisible] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [internalEditorOpen, setInternalEditorOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    checkStaffSession()
+      .then((staff) => { if (!cancelled) setIsStaff(staff); })
+      .catch(() => { if (!cancelled) setIsStaff(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const checkVisibility = () => {
@@ -92,7 +119,7 @@ export default function SectionEditBadge({
     };
   }, []);
 
-  if (!visible) return null;
+  if (!visible || !isStaff) return null;
 
   const effectiveSectionType = sectionType || inferSectionType(studioHref, label);
   const effectiveEditHandler = onQuickEdit || onEdit;

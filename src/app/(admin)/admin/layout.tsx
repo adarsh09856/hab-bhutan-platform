@@ -45,7 +45,8 @@ import {
   ChevronsUpDown,
   Plus,
   Building2,
-  Trash2
+  Trash2,
+  Edit3
 } from 'lucide-react';
 
 interface HealthData {
@@ -206,6 +207,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       key: 'web',
       items: [
         { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
+        { label: 'Live Quick Edit Content', href: '/admin/pages/live-content', icon: Edit3, badge: 'Live' },
         { label: '+ Create New Page', href: '/admin/pages?new=1', icon: Plus, badge: 'New' },
         { label: 'Edit Homepage', href: '/admin/pages/home', icon: LayoutDashboard },
         { label: 'Edit About Us', href: '/admin/pages/about', icon: BookOpen },

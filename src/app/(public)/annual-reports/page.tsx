@@ -19,7 +19,7 @@ const DEFAULT_ANNUAL_REPORTS = [
     meta: 'PDF · 4.8 MB · English & Dzongkha',
     abstract: 'Comprehensive annual overview of nationwide interventions across 20 Dzongkhags. Details the onboarding of 1,200 new female weavers, completion of the Punakha riverfront market renovation, and direct artisan disbursements exceeding Nu. 42 million.',
     highlights: ['7,500+ Rural Artisans Supported', 'Nu. 42M+ Direct Artisan Payments', '24 Capacity Building Workshops', 'Full Audited Accounts Included'],
-    downloadUrl: '/assets/docs/hab-annual-report-2025.pdf',
+    downloadUrl: null,
     publishedDate: 'January 2026',
     isLatest: true,
   },
@@ -29,7 +29,7 @@ const DEFAULT_ANNUAL_REPORTS = [
     meta: 'PDF · 3.9 MB · English & Dzongkha',
     abstract: 'Focuses on the launch of natural vegetable dye cultivation in Eastern Bhutan, export facilitation to European and Asian markets, and standardized quality certification benchmarks.',
     highlights: ['5,800 Members Documented', 'Natural Dye Co-op Established', '14 International Exhibitions Attended'],
-    downloadUrl: '/assets/docs/hab-annual-report-2024.pdf',
+    downloadUrl: null,
     publishedDate: 'January 2025',
     isLatest: false,
   },
@@ -39,7 +39,7 @@ const DEFAULT_ANNUAL_REPORTS = [
     meta: 'PDF · 3.2 MB · English & Dzongkha',
     abstract: 'Details emergency revolving credit funds disbursed to vulnerable woodcarvers and cane-weavers, alongside digital catalogue modernization for overseas direct consignments.',
     highlights: ['Revolving Fund Disbursed', 'E-Commerce Platform Beta Launch', 'Regional Guild Elections'],
-    downloadUrl: '/assets/docs/hab-annual-report-2023.pdf',
+    downloadUrl: null,
     publishedDate: 'January 2024',
     isLatest: false,
   },
@@ -49,7 +49,7 @@ const DEFAULT_ANNUAL_REPORTS = [
     meta: 'PDF · 2.8 MB · English & Dzongkha',
     abstract: 'Documenting master-to-apprentice placements in endangered crafts including Desho papermaking, bronze casting, and intricate backstrap Kishuthara weaving.',
     highlights: ['Master-Apprentice Placements', 'National Craft Award Support', 'CSO Governance Audit Pass'],
-    downloadUrl: '/assets/docs/hab-annual-report-2022.pdf',
+    downloadUrl: null,
     publishedDate: 'January 2023',
     isLatest: false,
   },
@@ -73,7 +73,7 @@ async function getAnnualReports() {
         meta: p.metaDetails || 'PDF · English & Dzongkha',
         abstract: (p as any).abstract || p.metaDetails || 'Official annual report of the Handicrafts Association of Bhutan.',
         highlights: ['CSO Regulatory Filing', 'Programme Metrics Included', 'Audited Accounts'],
-        downloadUrl: p.fileUrl || '/assets/docs/hab-annual-report-2025.pdf',
+        downloadUrl: p.fileUrl || null,
         publishedDate: `${p.year || 2025}`,
         isLatest: idx === 0,
       }));
@@ -156,13 +156,13 @@ export default async function AnnualReportsPage() {
                 </div>
                 <h3 className="font-serif text-base font-bold text-stone-900 mb-1">Dual-Language Edition</h3>
                 <p className="text-xs text-stone-500 mb-5">{latest.meta}</p>
-                <a
+                {latest.downloadUrl ? <a
                   href={latest.downloadUrl}
                   download
                   className="w-full py-3 px-4 bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors"
                 >
                   <Download className="w-4 h-4" /> Download Report (PDF)
-                </a>
+                </a> : <span className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs font-semibold text-stone-500">PDF awaiting publication</span>}
               </div>
             </div>
           </div>
@@ -198,13 +198,13 @@ export default async function AnnualReportsPage() {
 
                 <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
                   <span className="text-[11px] text-stone-400 font-mono">{rep.meta}</span>
-                  <a
+                  {rep.downloadUrl ? <a
                     href={rep.downloadUrl}
                     download
                     className="p-2 text-[#8B2E24] hover:bg-amber-50 rounded-lg transition-colors inline-flex items-center gap-1 text-xs font-bold"
                   >
                     <Download className="w-4 h-4" /> PDF
-                  </a>
+                  </a> : <span className="text-xs font-semibold text-stone-400">PDF unavailable</span>}
                 </div>
               </article>
             ))}

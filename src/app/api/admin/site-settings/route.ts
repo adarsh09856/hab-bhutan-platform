@@ -68,37 +68,34 @@ export async function GET(req: NextRequest) {
     bobAccountTitle: bobBanking.accountTitle || setting.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
     bobBankName: bobBanking.bankName || setting.checkoutBankName || 'Bank of Bhutan (BoB)',
     bobPhone: bobBanking.phone || '+975-2-338089',
-    bobQrUrl: bobBanking.qrUrl || '/images/mbob_qr_placeholder.png',
+    bobQrUrl: bobBanking.qrUrl || '',
     bnbAccountNumber: bnbBanking.accountNumber || '0000028471019',
     bnbAccountTitle: bnbBanking.accountTitle || 'Handicrafts Association of Bhutan',
     bnbBankName: bnbBanking.bankName || 'Bhutan National Bank Limited (BNB)',
     bnbPhone: bnbBanking.phone || '+975-2-338089',
-    bnbQrUrl: bnbBanking.qrUrl || '/images/bnb_qr_placeholder.png',
+    bnbQrUrl: bnbBanking.qrUrl || '',
     homepageSectionOrder: (setting as any)?.homepageSectionOrder || (tb as any)?.homepageSectionOrder || null,
     shopEyebrow: tb.shopEyebrow || 'Latest arrivals',
     shopHeading: tb.shopHeading || 'New in the shop',
     shopLede: tb.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
     shopCtaText: tb.shopCtaText || 'Visit the shop →',
     shopCtaLink: tb.shopCtaLink || '/shop',
+    clustersHeroTitle: tb.clustersHeroTitle || 'Artisan clusters',
+    clustersHeroLede: tb.clustersHeroLede || 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.',
+    clustersCountText: tb.clustersCountText || '{count} clusters listed',
+    ...Object.fromEntries(
+      ['clustersRegisterTitle', 'clustersRegisterBody', 'clustersRegisterButton', 'clustersCategoryButton', 'clustersVisitEyebrow', 'clustersVisitTitle', 'clustersVisitBody', 'clustersVisitButton', 'clustersShopEyebrow', 'clustersShopTitle', 'clustersShopBody', 'clustersShopButton']
+        .map((key) => [key, tb[key]]).filter(([, value]) => typeof value === 'string')
+    ),
   } : null;
 
   return NextResponse.json({ success: true, setting: enriched });
 }
 
-// Resilient upsert helper that safely catches schema mismatches and DB encoding constraints (e.g. WIN1252 vs UTF8)
+// Preserve editorial text exactly, including Dzongkha and punctuation.
 async function safeUpsertSiteSetting(updateData: Record<string, any>, createData: Record<string, any>) {
   const curUpdate = { ...updateData };
   const curCreate = { ...createData };
-
-  const sanitizeStr = (val: any): any => {
-    if (typeof val === 'string') {
-      return val.replace(/→/g, '->').replace(/—/g, '-').replace(/–/g, '-').replace(/·/g, '-');
-    }
-    return val;
-  };
-
-  for (const k of Object.keys(curUpdate)) curUpdate[k] = sanitizeStr(curUpdate[k]);
-  for (const k of Object.keys(curCreate)) curCreate[k] = sanitizeStr(curCreate[k]);
 
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
@@ -110,23 +107,13 @@ async function safeUpsertSiteSetting(updateData: Record<string, any>, createData
     } catch (err: any) {
       const msg = err?.message || '';
       if (msg.includes('22P05') || msg.includes('encoding')) {
-        // Strip any characters outside ASCII 0x00-0x7F to guarantee storage on non-UTF8 DBs
-        for (const k of Object.keys(curUpdate)) {
-          if (typeof curUpdate[k] === 'string') curUpdate[k] = curUpdate[k].replace(/[^\x00-\x7F]/g, '');
-        }
-        for (const k of Object.keys(curCreate)) {
-          if (typeof curCreate[k] === 'string') curCreate[k] = curCreate[k].replace(/[^\x00-\x7F]/g, '');
-        }
-        continue;
+        throw new Error('Site settings were not saved: the database must support UTF-8 to preserve Dzongkha and other Unicode content.');
       }
-      // Match "Unknown argument `fieldName`" or "Unknown field `fieldName`"
+      // Schema drift must be visible to the editor; silently dropping a field
+      // would report success while leaving that public content unchanged.
       const unknownMatch = msg.match(/Unknown (?:argument|field) ['"`]?(\w+)['"`]?/i);
       if (unknownMatch && unknownMatch[1]) {
-        const badField = unknownMatch[1];
-        delete curUpdate[badField];
-        delete curCreate[badField];
-        console.warn(`[SiteSetting API] Prisma client schema drift: omitted unrecognized argument '${badField}' and retrying.`);
-        continue;
+        throw new Error(`Site settings were not saved: database schema does not recognize ${unknownMatch[1]}. Run the required migration before editing.`);
       }
       throw err;
     }
@@ -318,14 +305,14 @@ export async function PUT(req: NextRequest) {
           accountTitle: body.bobAccountTitle ?? currentBob.accountTitle ?? body.checkoutAccountTitle ?? 'Handicrafts Association of Bhutan',
           bankName: body.bobBankName ?? currentBob.bankName ?? body.checkoutBankName ?? 'Bank of Bhutan (BoB)',
           phone: body.bobPhone ?? currentBob.phone ?? '+975-2-338089',
-          qrUrl: body.bobQrUrl ?? currentBob.qrUrl ?? '/images/mbob_qr_placeholder.png',
+          qrUrl: body.bobQrUrl ?? currentBob.qrUrl ?? '',
         },
         bnb: {
           accountNumber: body.bnbAccountNumber ?? currentBnb.accountNumber ?? '0000028471019',
           accountTitle: body.bnbAccountTitle ?? currentBnb.accountTitle ?? 'Handicrafts Association of Bhutan',
           bankName: body.bnbBankName ?? currentBnb.bankName ?? 'Bhutan National Bank Limited (BNB)',
           phone: body.bnbPhone ?? currentBnb.phone ?? '+975-2-338089',
-          qrUrl: body.bnbQrUrl ?? currentBnb.qrUrl ?? '/images/bnb_qr_placeholder.png',
+          qrUrl: body.bnbQrUrl ?? currentBnb.qrUrl ?? '',
         },
       };
     }
@@ -408,6 +395,9 @@ export async function PUT(req: NextRequest) {
     if (body.shopLede !== undefined) currentTrust.shopLede = body.shopLede;
     if (body.shopCtaText !== undefined) currentTrust.shopCtaText = body.shopCtaText;
     if (body.shopCtaLink !== undefined) currentTrust.shopCtaLink = body.shopCtaLink;
+    for (const key of ['clustersHeroTitle', 'clustersHeroLede', 'clustersCountText', 'clustersRegisterTitle', 'clustersRegisterBody', 'clustersRegisterButton', 'clustersCategoryButton', 'clustersVisitEyebrow', 'clustersVisitTitle', 'clustersVisitBody', 'clustersVisitButton', 'clustersShopEyebrow', 'clustersShopTitle', 'clustersShopBody', 'clustersShopButton'] as const) {
+      if (typeof body[key] === 'string') currentTrust[key] = body[key];
+    }
     updatePayload.trustBadges = currentTrust;
     createPayload.trustBadges = currentTrust;
 

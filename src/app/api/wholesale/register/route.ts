@@ -41,6 +41,13 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    const offlinePayment = ['mbob', 'bank'].includes(String(paymentMethod || '').toLowerCase());
+    if (offlinePayment && (!String(paymentRef || '').trim() || !String(proofUrl || '').trim())) {
+      return NextResponse.json(
+        { success: false, error: 'Payment reference and deposit proof are required for mBoB or bank transfer.' },
+        { status: 400 }
+      );
+    }
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanCompany = businessName.trim();

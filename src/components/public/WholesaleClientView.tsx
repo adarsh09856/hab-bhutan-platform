@@ -160,7 +160,11 @@ export default function WholesaleClientView({
           {initialProducts.map((p) => {
             const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
             const terms = CLIENT_DATA.wholesaleTerms[p.code];
-            const imgSrc = p.image_path ? `/${p.image_path.replace(/^\/+/, '')}` : '/assets/photos/product-sad03.jpg';
+            const imgSrc = p.image_path
+              ? /^(https?:)?\/\//i.test(p.image_path)
+                ? p.image_path
+                : `/${p.image_path.replace(/^\/+/, '')}`
+              : '/assets/photos/product-sad03.jpg';
 
             return (
               <article key={p.code} className="card product">

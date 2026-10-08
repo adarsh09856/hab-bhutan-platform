@@ -4,7 +4,7 @@
 **Target Next.js Platform (Execution Target)**: `E:\ai\bhutanprojects\newbend` (Next.js 15 App Router, Prisma ORM, PostgreSQL, Sharp image pipeline, TypeScript)  
 **Reference Static HTML Source**: `E:\Downloads\Final_webdesign\hab-site` (34 HTML templates, `data.js`, `pages.js`, `backend.js`, `style.css`)  
 **Live Target Reference**: `https://hab.touratbhutan.info`  
-**Safe Backup**: `E:\Downloads\Final_webdesign\hab-site-BACKUP`  
+**Reference policy**: `E:\Downloads\Final_webdesign\hab-site` is read-only; no backup folder is created.
 **Commit Reference**: `40ee78f` / `7c2e6b0`  
 **Last Updated**: October 2026  
 
@@ -721,16 +721,16 @@ Column 4: Governance (འཛིན་སྐྱོང)
 
 | Flow # | Origin | Action | Destination / Effect | Status |
 |---|---|---|---|---|
-| **01** | Public (`/register`) | Submit member application with payment slip upload | Appears in `/admin/applications` with clickable slip viewer and Quick Approve/Decline actions | Verified |
-| **02** | Public (`/wholesale/register`) | Submit wholesale buyer registration with deposit slip | Appears in `/admin/wholesale` with clickable slip viewer and Quick Approve/Decline actions | Verified |
-| **03** | Admin (`/admin/applications`) | Click Quick Approve `[✓]` on member application | Status changes to `APPROVED`, audit logged, notification email dispatched | Verified |
-| **04** | Admin (`/admin/wholesale`) | Click Quick Approve `[✓]` on wholesale application | Status changes to `APPROVED`, audit logged, wholesale credentials email dispatched | Verified |
-| **05** | Public (`/`) via Quick Edit | Modify Hero headline or upload new slide | Saves to `HeroSlide` / `SiteSetting`, immediately renders on homepage | Verified |
-| **06** | Public (`/`) via Quick Edit | Modify Shop section eyebrow, heading, lede | Saves to `SiteSetting`, immediately renders on homepage | Verified |
-| **07** | Admin (`/admin/products`) | Add new artisan piece with price and photo | Immediately appears in `/shop` and corresponding `/craft/[craft]` grid | Verified |
-| **08** | Admin (`/admin/members`) | Import artisans from Excel/CSV file | Directory at `/members` immediately shows imported artisans with Dzongkhag filters | Verified |
-| **09** | Admin (`/admin/wholesale`) | Import trade buyers from Excel/CSV file | Wholesale accounts table updates with buyer profiles and tier levels | Verified |
-| **10** | Public (`/contact`) | Submit inquiry with topic | Appears in Admin Inquiries inbox with reply trigger | Verified |
+| **01** | Public (`/register`) | Submit member application with payment slip upload | Appears in `/admin/applications` with clickable slip viewer and Quick Approve/Decline actions | UNVERIFIED end-to-end |
+| **02** | Public (`/wholesale/register`) | Submit wholesale buyer registration with deposit slip | Appears in `/admin/wholesale` with clickable slip viewer and Quick Approve/Decline actions | UNVERIFIED end-to-end |
+| **03** | Admin (`/admin/applications`) | Click Quick Approve `[✓]` on member application | Status changes to `APPROVED`, audit logged, notification email dispatched | UNVERIFIED end-to-end |
+| **04** | Admin (`/admin/wholesale`) | Click Quick Approve `[✓]` on wholesale application | Status changes to `APPROVED`, audit logged, wholesale credentials email dispatched | UNVERIFIED end-to-end |
+| **05** | Public (`/`) via Quick Edit | Modify Hero headline or upload new slide | Saves to `HeroSlide` / `SiteSetting`, immediately renders on homepage | UNVERIFIED end-to-end |
+| **06** | Public (`/`) via Quick Edit | Modify Shop section eyebrow, heading, lede | Saves to `SiteSetting`, immediately renders on homepage | UNVERIFIED end-to-end |
+| **07** | Admin (`/admin/products`) | Add new artisan piece with price and photo | Immediately appears in `/shop` and corresponding `/craft/[craft]` grid | UNVERIFIED end-to-end |
+| **08** | Admin (`/admin/members`) | Import artisans from Excel/CSV file | Directory at `/members` immediately shows imported artisans with Dzongkhag filters | UNVERIFIED end-to-end |
+| **09** | Admin (`/admin/wholesale`) | Import trade buyers from Excel/CSV file | Wholesale accounts table updates with buyer profiles and tier levels | UNVERIFIED end-to-end |
+| **10** | Public (`/contact`) | Submit inquiry with topic | Appears in Admin Inquiries inbox with reply trigger | UNVERIFIED end-to-end |
 
 ---
 
@@ -742,8 +742,40 @@ Column 4: Governance (འཛིན་སྐྱོང)
 | `src/app/(public)/craft/[craft]/page.tsx` | Mount SectionEditBadge and UniversalLiveSectionEditor on all sub-sections | PENDING | Mount badges & live editor triggers |
 | `src/app/(public)/product/[code]/page.tsx` | Mount SectionEditBadge for product details & specs | PENDING | Mount badge & editor trigger |
 | `src/app/(public)/outlets/page.tsx` | Mount SectionEditBadge for outlets and markets | PENDING | Mount badge & editor trigger |
-| `src/app/(public)/clusters/page.tsx` | Mount SectionEditBadge for clusters directory | PENDING | Mount badge & editor trigger |
+| `src/app/(public)/clusters/page.tsx` | Mount SectionEditBadge and database-backed index copy | PARTIAL | Badge and major headings/panels are wired; row labels, links and authenticated save loop remain |
 | `src/app/(public)/wholesale/page.tsx` | Mount SectionEditBadge for wholesale B2B terms | PENDING | Mount badge & editor trigger |
 | `src/app/(public)/shipping-policy/page.tsx` | Mount SectionEditBadge for shipping policy | PENDING | Mount badge & editor trigger |
 | `src/components/public/Footer.tsx` | Ensure 100% parity with index.html lines 600-677 | VERIFIED | Maintain parity |
 | `src/components/public/UtilityBar.tsx` | Ensure notice numbers (`1/4`) remain removed, arrows preserved | VERIFIED | Maintain parity |
+
+## 7. Current Execution Contract
+
+- All implementation changes are made only in `E:\ai\bhutanprojects\newbend`.
+- `E:\Downloads\Final_webdesign\hab-site` is a read-only comparison source.
+- No backup directory is created.
+- Automated scripts are supplementary evidence only; they never replace direct file and browser verification.
+- Each page, section, text field, button, link, image, footer item, and form is tracked as `VERIFIED`, `UNVERIFIED`, or `PENDING`.
+- Completion requires direct evidence from the affected source files, API behavior, and browser-visible result.
+
+## 8. Current Verified Work and Open Gaps (8 October 2026)
+
+| Area | Direct finding | Status |
+|---|---|---|
+| Build | `npx tsc --noEmit` passed and `npm run build` compiled 109 routes. The local PostgreSQL service was started and the final build completed with the database connected. | Build verified; authenticated edit loops UNVERIFIED |
+| Quick Edit access | The public edit bar previously accepted `?edit=true` or `localStorage` as proof of staff identity. It now waits for a staff session check; section badges use a shared session check. | Source and typecheck verified; browser session check PENDING |
+| Clusters index | Hero title, lede, count template, registration band and visit/shop panel copy now read `SiteSetting.trustBadges`; corresponding editor fields are present. Per-row labels, action links, breadcrumb and edit loop still need work. | Source and typecheck verified; database and browser edit loop UNVERIFIED |
+| Server rendered edits | Quick Editor now refreshes the current Next.js route after a successful save. | Source and typecheck verified; browser edit loop UNVERIFIED |
+| Unicode content | Settings writes previously replaced punctuation and could strip Dzongkha on an encoding error. Writes now preserve exact text and return a visible error when the database cannot store it. Schema drift also returns an error instead of silently dropping fields. | Source and typecheck verified; database write UNVERIFIED |
+| Wholesale product image | The preview previously prepended `/` to an absolute uploaded image URL. It now preserves HTTP URLs and normalizes local paths. | Source and typecheck verified; browser image display PENDING |
+| Footer social links | Browser inspection found generic platform homepages used when HAB profile URLs were unset. Footer now renders only configured HTTPS profile URLs. | Source and typecheck verified; refreshed browser display PENDING |
+| Local database | Existing `hab_platform` database is `WIN1252`, so Dzongkha edits cannot be reliably persisted there. `prisma db push --skip-generate` synced missing tables and columns without a data-loss flag; the original database content was retained. A data-preserving migration to UTF-8 is still required. | Schema sync and encoding directly verified; Unicode migration PENDING |
+| Admin-only live editing | Public edit bar and section badges require a staff session; a URL flag or local storage alone cannot reveal them. Shared session checks are no longer cached indefinitely across login changes. Anonymous `/api/admin/health` returned `user: null`; local public HTML did not render the admin bar. | Source, typecheck and anonymous HTTP verified; authenticated browser edit loop UNVERIFIED |
+| Language switcher | The extra EN/Dz control shown in the utility strip was removed. One language control remains in the main desktop header and one in the mobile menu. Anonymous local `/clusters` HTML returned 200 with no `utility__lang` and the main header control present. | Source, typecheck and local HTTP verified; production deployment UNVERIFIED |
+| Universal page Quick Edit | A shared editor now targets public headings, paragraphs, list items, buttons, links, captions and images across routes. It persists path/element overrides in `SiteSetting.trustBadges.pageOverrides`, supports text/link/image/alt edits, staff-authenticated image upload, live application and per-element undo. | Source, TypeScript, public GET and anonymous-write rejection verified; authenticated browser save/undo UNVERIFIED |
+| Admin Quick Edit manager | `/admin/pages/live-content` lists and searches saved page overrides and can restore an element's original content. It is linked from the Website & Pages admin navigation and its all-pages API requires staff login. | Source and TypeScript verified; authenticated browser workflow UNVERIFIED |
+| Membership submission | The public form previously advanced to a success screen even when the API failed. It now advances only after an HTTP/API success and displays the real failure otherwise. mBoB/bank submissions require a transaction reference and uploaded proof in both UI and API. | Source and TypeScript verified; real payment and browser submission UNVERIFIED |
+| Wholesale approval | Approval now creates and hashes a fresh temporary password, includes working credentials in the approval email, shows them in Admin when live delivery is not confirmed, distinguishes simulated SMTP from delivery, requires a staff role, and exposes uploaded payment proof in the inspector. | Source and TypeScript verified; SMTP delivery and authenticated approval UNVERIFIED |
+| Public upload safety | Public application uploads no longer accept same-origin SVG and derive the stored extension from the accepted MIME type, preventing a submitted filename from selecting an executable extension. | Source and TypeScript verified; hostile-file test PENDING |
+| Excel import/export | Members and wholesalers now accept real `.xlsx`/`.xls` plus CSV, download genuine `.xlsx` templates and exports, preview parsed rows, preserve Unicode, report bad rows and skip database duplicates. Import endpoints now enforce staff roles and return imported/skipped/bad-row counts. | TypeScript and in-memory XLSX Unicode round-trip verified; authenticated browser import/export UNVERIFIED |
+
+The larger project remains open. In particular, every reference page still needs direct content and visual parity review; many visible strings remain in page/components; public/admin CRUD flows and payment email delivery require a working database and browser verification. None of those items are marked complete by the successful build alone.

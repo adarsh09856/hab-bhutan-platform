@@ -376,14 +376,11 @@ export async function PATCH(req: NextRequest) {
         },
       });
 
-      // Asynchronous membership approval email dispatch
-      sendMembershipStatusEmail({
+      const emailResult = await sendMembershipStatusEmail({
         application: result.updatedApp,
         status: 'APPROVED',
         regNumber: result.newMember.regNumber,
         activationUrl: `${req.nextUrl.origin}/auth/reset-password?token=${result.activationToken}`,
-      }).catch((err) => {
-        console.warn('[admin/applications] Membership approval notification dispatch notice:', err.message);
       });
 
       return NextResponse.json({
@@ -403,6 +400,7 @@ export async function PATCH(req: NextRequest) {
           activationToken: result.activationToken,
           activationLink: `/auth/reset-password?token=${result.activationToken}`,
         },
+        emailDelivery: emailResult,
       });
     }
 
@@ -435,13 +433,12 @@ export async function PATCH(req: NextRequest) {
     });
 
     if (status === 'REJECTED') {
-      sendMembershipStatusEmail({
+      const emailResult = await sendMembershipStatusEmail({
         application: updatedApp,
         status: 'REJECTED',
         rejectionReason: rejectionReason || 'Documentation could not be verified at this time.',
-      }).catch((err) => {
-        console.warn('[admin/applications] Membership rejection notification dispatch notice:', err.message);
       });
+      return NextResponse.json({ success: true, application: updatedApp, emailDelivery: emailResult });
     }
 
     return NextResponse.json({

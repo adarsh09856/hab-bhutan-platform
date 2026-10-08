@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   X,
   Save,
@@ -104,6 +105,7 @@ export default function UniversalLiveSectionEditor({
   studioHref,
   onSaved,
 }: UniversalLiveSectionEditorProps) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -430,7 +432,19 @@ export default function UniversalLiveSectionEditor({
         // Specific Secondary Section values
         clustersHeroTitle: s.clustersHeroTitle || 'Artisan clusters',
         clustersHeroLede: s.clustersHeroLede || 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.',
-        clustersCountText: s.clustersCountText || '20 Dzongkhags · Verified Artisan Clusters',
+        clustersCountText: s.clustersCountText || '{count} clusters listed',
+        clustersRegisterTitle: s.clustersRegisterTitle || 'Register your cluster',
+        clustersRegisterBody: s.clustersRegisterBody || 'A cluster of ten or more artisans working the same craft can join as a body under Artisan Cluster membership — one membership for everyone in it, at Nu. 3,000 a year, with a page here telling your story.',
+        clustersRegisterButton: s.clustersRegisterButton || 'Register as a cluster',
+        clustersCategoryButton: s.clustersCategoryButton || 'What the category means',
+        clustersVisitEyebrow: s.clustersVisitEyebrow || 'Plan a visit',
+        clustersVisitTitle: s.clustersVisitTitle || 'See the crafts being made',
+        clustersVisitBody: s.clustersVisitBody || 'The secretariat arranges cluster visits, demonstrations and workshop sessions for individuals and groups.',
+        clustersVisitButton: s.clustersVisitButton || 'Contact the secretariat',
+        clustersShopEyebrow: s.clustersShopEyebrow || 'Buy the work',
+        clustersShopTitle: s.clustersShopTitle || 'Shop by craft',
+        clustersShopBody: s.clustersShopBody || 'Everything the clusters make is available in the HAB shop, bought from the member at an agreed price.',
+        clustersShopButton: s.clustersShopButton || 'Visit the shop →',
 
         mastersHeroEyebrow: s.mastersHeroEyebrow || 'Recognition',
         mastersHeroTitle: s.mastersHeroTitle || 'Accreditations & awards',
@@ -954,6 +968,10 @@ export default function UniversalLiveSectionEditor({
       if (onSaved) {
         onSaved(updatedSetting);
       }
+
+      // Refresh server-rendered sections (including dynamic detail pages) after
+      // the database save so the public copy reflects the new value immediately.
+      router.refresh();
 
       setSuccess(true);
       setTimeout(() => {
@@ -2768,6 +2786,30 @@ export default function UniversalLiveSectionEditor({
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
                           />
                         </div>
+                        {([
+                          ['clustersRegisterTitle', 'Registration heading'],
+                          ['clustersRegisterBody', 'Registration description'],
+                          ['clustersRegisterButton', 'Registration button'],
+                          ['clustersCategoryButton', 'Category button'],
+                          ['clustersVisitEyebrow', 'Visit eyebrow'],
+                          ['clustersVisitTitle', 'Visit heading'],
+                          ['clustersVisitBody', 'Visit description'],
+                          ['clustersVisitButton', 'Visit button'],
+                          ['clustersShopEyebrow', 'Shop eyebrow'],
+                          ['clustersShopTitle', 'Shop heading'],
+                          ['clustersShopBody', 'Shop description'],
+                          ['clustersShopButton', 'Shop button'],
+                        ] as const).map(([key, label]) => (
+                          <div key={key}>
+                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">{label}</label>
+                            <input
+                              type="text"
+                              value={form[key] || ''}
+                              onChange={(e) => updateField(key, e.target.value)}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#8B2E24]/20 focus:border-[#8B2E24]"
+                            />
+                          </div>
+                        ))}
                       </div>
                     )}
 

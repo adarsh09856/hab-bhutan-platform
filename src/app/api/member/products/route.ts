@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         priceUSD: Number(priceUSD),
         stock: Number(stock) || 1,
         description: description.trim(),
-        images: [{ url: imageUrl?.trim() || '/images/products/placeholder.jpg', role: 'primary' }],
+        images: [{ url: imageUrl?.trim() || '/assets/photos/product-hhb01.jpg', role: 'primary' }],
         status: 'DRAFT',
       },
       include: { craft: true },

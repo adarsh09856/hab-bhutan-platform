@@ -22,7 +22,7 @@ const DEFAULT_AUDITED_ACCOUNTS = [
     disbursements: 'Nu. 58,120,000 (84.9% Direct Artisan & Cluster Welfare)',
     adminRatio: '7.8% Operational & Governance Overhead',
     meta: 'Certified PDF · 2.6 MB · Bilingual',
-    downloadUrl: '/assets/docs/hab-audited-accounts-2025.pdf',
+    downloadUrl: null,
     date: 'Certified November 2025',
     isLatest: true,
   },
@@ -35,7 +35,7 @@ const DEFAULT_AUDITED_ACCOUNTS = [
     disbursements: 'Nu. 45,980,000 (84.8% Direct Artisan & Cluster Welfare)',
     adminRatio: '8.2% Operational & Governance Overhead',
     meta: 'Certified PDF · 2.1 MB · Bilingual',
-    downloadUrl: '/assets/docs/hab-audited-accounts-2024.pdf',
+    downloadUrl: null,
     date: 'Certified October 2024',
     isLatest: false,
   },
@@ -48,7 +48,7 @@ const DEFAULT_AUDITED_ACCOUNTS = [
     disbursements: 'Nu. 34,700,000 (84.4% Direct Artisan & Cluster Welfare)',
     adminRatio: '8.5% Operational & Governance Overhead',
     meta: 'Certified PDF · 1.9 MB · Bilingual',
-    downloadUrl: '/assets/docs/hab-audited-accounts-2023.pdf',
+    downloadUrl: null,
     date: 'Certified October 2023',
     isLatest: false,
   },
@@ -76,7 +76,7 @@ async function getAuditedStatements() {
         disbursements: '> 84% Direct Artisan Field Support',
         adminRatio: '< 9% Administrative Ratio',
         meta: p.metaDetails || 'Certified PDF',
-        downloadUrl: p.fileUrl || '/assets/docs/hab-audited-accounts-2025.pdf',
+        downloadUrl: p.fileUrl || null,
         date: `${p.year}`,
         isLatest: idx === 0,
       }));
@@ -178,13 +178,13 @@ export default async function AuditedAccountsPage() {
 
               <div className="flex flex-col items-center justify-center lg:items-end flex-shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-stone-100">
                 <span className="text-[11px] text-stone-400 font-mono mb-2">{stmt.meta}</span>
-                <a
+                {stmt.downloadUrl ? <a
                   href={stmt.downloadUrl}
                   download
                   className="px-5 py-3 bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-xs transition-colors"
                 >
                   <Download className="w-4 h-4" /> Download Statement (PDF)
-                </a>
+                </a> : <span className="rounded-xl border border-stone-200 bg-stone-50 px-5 py-3 text-xs font-semibold text-stone-500">PDF awaiting publication</span>}
               </div>
             </article>
           ))}

@@ -265,13 +265,13 @@ export default function Footer() {
     };
   }, []);
 
-  const hasSocial = Boolean(
-    (settings as any).facebookUrl ||
-    (settings as any).instagramUrl ||
-    (settings as any).twitterUrl ||
-    (settings as any).youtubeUrl ||
-    (settings as any).tiktokUrl
-  );
+  const socialLinks = [
+    { label: 'Facebook', url: (settings as any).facebookUrl },
+    { label: 'Instagram', url: (settings as any).instagramUrl },
+    { label: 'X', url: (settings as any).twitterUrl },
+    { label: 'YouTube', url: (settings as any).youtubeUrl },
+    { label: 'TikTok', url: (settings as any).tiktokUrl },
+  ].filter((item) => typeof item.url === 'string' && /^https?:\/\//i.test(item.url));
 
   return (
     <footer className="footer relative" id="contact" data-hab-section="footer">
@@ -294,23 +294,13 @@ export default function Footer() {
                 : settings.footerAbout}
             </p>
           </div>
-          <div className="signoff__social">
-            <a className="social__link" href={(settings as any).facebookUrl || 'https://www.facebook.com/'} target="_blank" rel="noopener noreferrer">
-              Facebook
-            </a>
-            <a className="social__link" href={(settings as any).instagramUrl || 'https://www.instagram.com/'} target="_blank" rel="noopener noreferrer">
-              Instagram
-            </a>
-            <a className="social__link" href={(settings as any).twitterUrl || 'https://x.com/'} target="_blank" rel="noopener noreferrer">
-              X
-            </a>
-            <a className="social__link" href={(settings as any).youtubeUrl || 'https://www.youtube.com/'} target="_blank" rel="noopener noreferrer">
-              YouTube
-            </a>
-            <a className="social__link" href={(settings as any).tiktokUrl || 'https://www.tiktok.com/'} target="_blank" rel="noopener noreferrer">
-              TikTok
-            </a>
-          </div>
+          {socialLinks.length > 0 && <div className="signoff__social">
+            {socialLinks.map(({ label, url }) => (
+              <a key={label} className="social__link" href={url} target="_blank" rel="noopener noreferrer">
+                {label}
+              </a>
+            ))}
+          </div>}
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import AdminDrawer from '@/components/public/AdminDrawer';
 import AskHabAssistant from '@/components/public/AskHabAssistant';
 import DesignTweaks from '@/components/public/DesignTweaks';
 import PolicyModal from '@/components/public/PolicyModal';
+import UniversalPageQuickEdit from '@/components/public/UniversalPageQuickEdit';
 
 export default function PublicLayout({
   children,
@@ -25,6 +26,7 @@ export default function PublicLayout({
       <AskHabAssistant />
       <DesignTweaks />
       <PolicyModal />
+      <UniversalPageQuickEdit />
     </div>
   );
 }

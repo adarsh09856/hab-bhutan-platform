@@ -49,7 +49,15 @@ async function getClusters() {
 }
 
 export default async function ClustersPage() {
-  const clusters = await getClusters();
+  const [clusters, setting] = await Promise.all([
+    getClusters(),
+    prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } }).catch(() => null),
+  ]);
+  const copy = (setting?.trustBadges as Record<string, unknown> | null) || {};
+  const title = typeof copy.clustersHeroTitle === 'string' ? copy.clustersHeroTitle : 'Artisan clusters';
+  const lede = typeof copy.clustersHeroLede === 'string' ? copy.clustersHeroLede : 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.';
+  const countTemplate = typeof copy.clustersCountText === 'string' ? copy.clustersCountText : '{count} clusters listed';
+  const display = (key: string, fallback: string) => typeof copy[key] === 'string' ? copy[key] as string : fallback;
 
   const photoPool = [
     '/assets/photos/hero-1-weaving.jpg',
@@ -67,13 +75,13 @@ export default async function ClustersPage() {
           <Link href="/">Home</Link> / <Link href="/#clusters">Clusters</Link> / All
         </p>
         <h1 className="display display--hero" style={{ maxWidth: '20ch' }}>
-          Artisan clusters
+          {title}
         </h1>
         <p className="lede">
-          A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.
+          {lede}
         </p>
         <p className="craft__count" id="clusterCount" style={{ margin: '0 0 34px' }}>
-          {clusters.length} clusters listed
+          {countTemplate.replace('{count}', String(clusters.length))}
         </p>
 
         <div className="clusterlist" id="clusterList" data-cms-repeat>
@@ -132,17 +140,17 @@ export default async function ClustersPage() {
       <section className="section">
         <div className="ctaband">
           <div>
-            <h2 className="display display--panel">Register your cluster</h2>
+            <h2 className="display display--panel">{display('clustersRegisterTitle', 'Register your cluster')}</h2>
             <p className="ctaband__body">
-              A cluster of ten or more artisans working the same craft can join as a body under Artisan Cluster membership — one membership for everyone in it, at Nu. 3,000 a year, with a page here telling your story.
+              {display('clustersRegisterBody', 'A cluster of ten or more artisans working the same craft can join as a body under Artisan Cluster membership — one membership for everyone in it, at Nu. 3,000 a year, with a page here telling your story.')}
             </p>
           </div>
           <div className="actions">
             <Link className="btn btn--light" href="/register?type=cluster">
-              Register as a cluster
+              {display('clustersRegisterButton', 'Register as a cluster')}
             </Link>
             <Link className="btn btn--ghost" href="/membership/cluster">
-              What the category means
+              {display('clustersCategoryButton', 'What the category means')}
             </Link>
           </div>
         </div>
@@ -152,23 +160,23 @@ export default async function ClustersPage() {
       <section className="section section--last">
         <div className="duo">
           <div className="panel">
-            <p className="eyebrow eyebrow--muted">Plan a visit</p>
-            <h2 className="display display--panel">See the crafts being made</h2>
+            <p className="eyebrow eyebrow--muted">{display('clustersVisitEyebrow', 'Plan a visit')}</p>
+            <h2 className="display display--panel">{display('clustersVisitTitle', 'See the crafts being made')}</h2>
             <p className="panel__body">
-              The secretariat arranges cluster visits, demonstrations and workshop sessions for individuals and groups.
+              {display('clustersVisitBody', 'The secretariat arranges cluster visits, demonstrations and workshop sessions for individuals and groups.')}
             </p>
             <Link className="btn btn--ink" href="/contact">
-              Contact the secretariat
+              {display('clustersVisitButton', 'Contact the secretariat')}
             </Link>
           </div>
           <div className="panel panel--accent">
-            <p className="eyebrow eyebrow--onaccent">Buy the work</p>
-            <h2 className="display display--panel display--onaccent">Shop by craft</h2>
+            <p className="eyebrow eyebrow--onaccent">{display('clustersShopEyebrow', 'Buy the work')}</p>
+            <h2 className="display display--panel display--onaccent">{display('clustersShopTitle', 'Shop by craft')}</h2>
             <p className="panel__body panel__body--onaccent">
-              Everything the clusters make is available in the HAB shop, bought from the member at an agreed price.
+              {display('clustersShopBody', 'Everything the clusters make is available in the HAB shop, bought from the member at an agreed price.')}
             </p>
             <Link className="btn btn--light" href="/shop">
-              Visit the shop →
+              {display('clustersShopButton', 'Visit the shop →')}
             </Link>
           </div>
         </div>

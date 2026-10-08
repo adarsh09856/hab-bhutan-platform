@@ -47,7 +47,7 @@ export default function UtilityBar() {
   const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
   const [topBarContactMode, setTopBarContactMode] = useState<'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF'>('PHONE_ONLY');
   const [visible, setVisible] = useState(true);
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const isDz = language === 'dz';
 
   const textContainerRef = React.useRef<HTMLDivElement>(null);
@@ -287,7 +287,7 @@ export default function UtilityBar() {
           </Link>
         </nav>
 
-        {/* Right side items: Secretary Desk hotline, Wholesale, Language switcher */}
+        {/* Right side items: Secretary Desk hotline and Wholesale. Language is controlled from the main navigation. */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {/* Secretary Desk Official Line - Configurable: Phone Only, Email Only, Both, or Off */}
           {topBarContactMode !== 'OFF' && (
@@ -342,19 +342,6 @@ export default function UtilityBar() {
             <span>{isDz ? 'ཚོང་འབྲེལ' : 'Wholesale'}</span>
           </Link>
 
-          <span className="utility__rule inline-block" aria-hidden="true" style={{ flexShrink: 0, opacity: 0.5 }}></span>
-
-          <button
-            type="button"
-            onClick={toggleLanguage}
-            className="utility__lang"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, font: 'inherit', color: 'inherit', whiteSpace: 'nowrap' }}
-            title="Switch language / སྐད་ཡིག"
-          >
-            <span className={language === 'en' ? 'is-active' : ''}>EN</span>
-            <span aria-hidden="true">/</span>
-            <span className={language === 'dz' ? 'is-active' : ''} lang="dz">རྫོང་ཁ</span>
-          </button>
         </div>
       </div>
     </div>

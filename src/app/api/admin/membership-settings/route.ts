@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
           bankName: 'Bank of Bhutan (BoB)',
           accountNumber: '200847291038',
           accountTitle: 'Handicrafts Association of Bhutan',
-          mbobQrUrl: '/images/mbob_qr_placeholder.png',
+          mbobQrUrl: '',
         },
       });
     }
@@ -97,7 +97,7 @@ export async function PUT(req: NextRequest) {
         bankName: body.bankName || 'Bank of Bhutan (BoB)',
         accountNumber: body.accountNumber || '200847291038',
         accountTitle: body.accountTitle || 'Handicrafts Association of Bhutan',
-        mbobQrUrl: body.mbobQrUrl || '/images/mbob_qr_placeholder.png',
+        mbobQrUrl: body.mbobQrUrl || '',
       },
     });
     await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'MEMBERSHIP_DUES_UPDATED', entityType: 'MembershipSetting', entityId: 'default' });

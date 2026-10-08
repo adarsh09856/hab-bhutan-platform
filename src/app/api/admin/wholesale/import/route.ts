@@ -4,13 +4,14 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
-import { saveFallbackWholesaleBuyer } from '@/lib/wholesale-store';
+import { getAllFallbackWholesaleBuyers, saveFallbackWholesaleBuyer } from '@/lib/wholesale-store';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user) {
+  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
+  if (!user || !['super_admin', 'staff_operator'].includes(role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -21,40 +22,32 @@ export async function POST(req: NextRequest) {
     }
 
     let importedCount = 0;
-    const defaultPasswordHash = await bcrypt.hash('HabWholesale2026!', 10);
+    let skippedCount = 0;
+    const badRows: { rowNumber: number; reason: string }[] = [];
 
-    for (const row of rows) {
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
+      const email = String(row.email || '').trim().toLowerCase();
+      if (!row.companyName || !row.contactName || !email.includes('@')) {
+        badRows.push({ rowNumber: index + 2, reason: 'Company, contact person and valid email are required.' });
+        continue;
+      }
+      const duplicate = await prisma.wholesaleBuyer.findFirst({ where: { email } }).catch(() => null);
+      const fallbackDuplicate = getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.toLowerCase() === email);
+      if (duplicate || fallbackDuplicate) { skippedCount++; continue; }
       const buyerId = crypto.randomUUID();
       const username = row.username || `buyer_${Math.floor(1000 + Math.random() * 9000)}`;
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(18).toString('base64url'), 12);
 
-      // 1. Resilient fallback storage
-      saveFallbackWholesaleBuyer({
-        id: buyerId,
-        username,
-        companyName: row.companyName,
-        contactName: row.contactName,
-        email: row.email,
-        phone: row.phone || null,
-        country: row.country || 'Bhutan',
-        city: row.city || null,
-        taxId: row.taxId || null,
-        discountTier: row.discountTier || 20,
-        status: row.status || 'ACTIVE',
-        notes: row.notes || 'Imported via Bulk Excel/CSV Studio',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-      // 2. Database storage
       try {
         await prisma.wholesaleBuyer.create({
           data: {
             id: buyerId,
             username,
-            passwordHash: defaultPasswordHash,
+            passwordHash,
             companyName: row.companyName,
             contactName: row.contactName,
-            email: row.email,
+            email,
             phone: row.phone || null,
             country: row.country || 'Bhutan',
             city: row.city || null,
@@ -64,11 +57,16 @@ export async function POST(req: NextRequest) {
             notes: row.notes || 'Imported via Bulk Excel/CSV Studio',
           },
         });
+        saveFallbackWholesaleBuyer({
+          id: buyerId, username, companyName: row.companyName, contactName: row.contactName,
+          email, phone: row.phone || null, country: row.country || 'Bhutan', city: row.city || null,
+          taxId: row.taxId || null, discountTier: row.discountTier || 20, status: row.status || 'ACTIVE',
+          notes: row.notes || 'Imported via Bulk Excel Studio', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        });
+        importedCount++;
       } catch (dbErr: any) {
-        console.warn(`[wholesale/import] DB insert skipped for ${row.email}:`, dbErr.message);
+        badRows.push({ rowNumber: index + 2, reason: dbErr.message || 'Database insert failed.' });
       }
-
-      importedCount++;
     }
 
     await logAudit({
@@ -78,13 +76,15 @@ export async function POST(req: NextRequest) {
       action: 'WHOLESALE_BUYERS_BULK_IMPORTED',
       entityType: 'WholesaleBuyer',
       entityId: 'BULK_IMPORT',
-      details: { count: importedCount },
+      details: { count: importedCount, skippedCount, badRows },
     }).catch(() => {});
 
     return NextResponse.json({
       success: true,
       count: importedCount,
-      message: `Successfully imported ${importedCount} wholesale buyer accounts.`,
+      skippedCount,
+      badRows,
+      message: `Imported ${importedCount} wholesale buyer accounts; skipped ${skippedCount} duplicates.`,
     });
   } catch (err: any) {
     console.error('Error during wholesale bulk import:', err);

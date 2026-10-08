@@ -779,7 +779,7 @@ export default function HomePageStudio() {
                       alt={s.caption}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/assets/photos/hero-1-yathra.jpg';
+                        (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg';
                       }}
                     />
                     <div className="absolute top-2 right-2 flex items-center gap-1.5">

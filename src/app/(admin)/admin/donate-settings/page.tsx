@@ -118,12 +118,12 @@ export default function AdminDonateSettingsPage() {
     bobAccountTitle: 'Handicrafts Association of Bhutan',
     bobBankName: 'Bank of Bhutan Limited (BoB)',
     bobPhone: '+975-2-338089',
-    bobQrUrl: '/images/mbob_qr_placeholder.png',
+    bobQrUrl: '',
     bnbAccountNumber: '0000028471019',
     bnbAccountTitle: 'Handicrafts Association of Bhutan',
     bnbBankName: 'Bhutan National Bank Limited (BNB)',
     bnbPhone: '+975-2-338089',
-    bnbQrUrl: '/images/bnb_qr_placeholder.png',
+    bnbQrUrl: '',
   });
   const [savingContent, setSavingContent] = useState(false);
 
@@ -165,12 +165,12 @@ export default function AdminDonateSettingsPage() {
           bobAccountTitle: s.bobAccountTitle || 'Handicrafts Association of Bhutan',
           bobBankName: s.bobBankName || 'Bank of Bhutan Limited (BoB)',
           bobPhone: s.bobPhone || '+975-2-338089',
-          bobQrUrl: s.bobQrUrl || '/images/mbob_qr_placeholder.png',
+          bobQrUrl: s.bobQrUrl || '',
           bnbAccountNumber: s.bnbAccountNumber || '0000028471019',
           bnbAccountTitle: s.bnbAccountTitle || 'Handicrafts Association of Bhutan',
           bnbBankName: s.bnbBankName || 'Bhutan National Bank Limited (BNB)',
           bnbPhone: s.bnbPhone || '+975-2-338089',
-          bnbQrUrl: s.bnbQrUrl || '/images/bnb_qr_placeholder.png',
+          bnbQrUrl: s.bnbQrUrl || '',
         });
       }
     } catch {

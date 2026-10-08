@@ -27,6 +27,10 @@ export async function POST(req: NextRequest) {
     const paymentNotes = body.paymentRef
       ? `Payment: ${paymentMethodRaw.toUpperCase()} · Ref: ${body.paymentRef}${body.mobilePhone ? ` · Phone: ${body.mobilePhone}` : ''}`
       : null;
+    const offlinePayment = ['MBOB', 'BANK'].includes(String(paymentMethodRaw).toUpperCase());
+    if (offlinePayment && (!String(body.paymentRef || '').trim() || !uploadedDocUrl)) {
+      return NextResponse.json({ success: false, error: 'Payment reference and deposit proof are required for mBoB or bank transfer.' }, { status: 400 });
+    }
 
     if (!applicantName || !email || !phone || !rawCID || !craftKey || !dzongkhag) {
       return NextResponse.json(

@@ -113,6 +113,14 @@ export default function WholesaleRegisterPage() {
       setErrorMessage('Please confirm the declaration before submitting.');
       return;
     }
+    if ((payMethod === 'mbob' || payMethod === 'bank') && !bankRef.trim()) {
+      setErrorMessage('Enter the payment transaction or bank deposit reference before submitting.');
+      return;
+    }
+    if ((payMethod === 'mbob' || payMethod === 'bank') && !proofUrl) {
+      setErrorMessage('Upload the payment or deposit slip before submitting.');
+      return;
+    }
 
     setSubmitting(true);
     try {

@@ -211,7 +211,7 @@ export async function GET(req: NextRequest) {
       subtitle: `${m.dzongkhag} · Reg: ${m.regNumber || 'Verified'}`,
       description: m.bio || '',
       url: `/members?q=${encodeURIComponent(m.name)}`,
-      imageUrl: m.portraitUrl || '/assets/photos/artisan-default.jpg',
+      imageUrl: m.portraitUrl || '/assets/photos/about-hab.jpg',
       category: 'Artisan Member',
       badge: m.tier ? m.tier.replace(/_/g, ' ') : 'VERIFIED',
     }));
@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
       subtitle: `${n.kind || 'Press'} · ${n.dateString || ''}`,
       description: n.blurb || '',
       url: `/news#${n.slug || n.id}`,
-      imageUrl: n.imageUrl || '/assets/photos/news-default.jpg',
+      imageUrl: n.imageUrl || '/assets/photos/hero-2-punakha.jpg',
       category: 'News & Press',
       badge: n.kind || 'NEWS',
     }));

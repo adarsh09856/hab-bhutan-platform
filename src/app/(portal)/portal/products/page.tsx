@@ -152,7 +152,7 @@ export default function MyProductsPage() {
             const primaryImg =
               Array.isArray(product.images) && product.images.length > 0
                 ? product.images[0].url
-                : '/images/products/placeholder.jpg';
+                : '/assets/photos/product-hhb01.jpg';
 
             return (
               <div
