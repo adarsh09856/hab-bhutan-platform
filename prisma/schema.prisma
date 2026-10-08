@@ -155,6 +155,7 @@ model Product {
   images        Json          // [{ url, role: "primary"|"angle2"|"angle3" }]
   stock         Int           @default(10)
   status        ProductStatus @default(PUBLISHED)
+  wholesaleTerms WholesaleProductTerms?
   orderItems    OrderItem[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -162,6 +163,22 @@ model Product {
   @@index([craftKey])
   @@index([makerMemberId])
   @@index([status])
+}
+
+// Per-product trade pricing, managed independently from retail price/catalogue.
+model WholesaleProductTerms {
+  id             String   @id @default(uuid())
+  productId      String   @unique
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  moq            Int      @default(5)
+  leadTime       String   @default("4–6 weeks")
+  tiers          Json     // Array of [minimum quantity, unit price USD]
+  customisation  String?  @db.Text
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isActive])
 }
 
 // Order management with guest and member support

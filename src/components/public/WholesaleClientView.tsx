@@ -159,7 +159,6 @@ export default function WholesaleClientView({
         <div className="grid grid--4">
           {initialProducts.map((p) => {
             const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
-            const terms = CLIENT_DATA.wholesaleTerms[p.code];
             const imgSrc = p.image_path
               ? /^(https?:)?\/\//i.test(p.image_path)
                 ? p.image_path
@@ -188,7 +187,7 @@ export default function WholesaleClientView({
                   <p className="card__meta clamp-1">{p.maker} · {p.region}</p>
                   <div className="card__foot">
                     <span className="tradelock">
-                      {terms ? `MOQ ${terms.moq} · price on account` : 'Price on account'}
+                      Trade terms shown to approved buyers
                     </span>
                   </div>
                 </div>

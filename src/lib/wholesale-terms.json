@@ -1,0 +1,344 @@
+{
+  "LHA01": {
+    "moq": 5,
+    "lead": "8–10 weeks",
+    "tiers": [
+      [
+        5,
+        238
+      ],
+      [
+        15,
+        221
+      ],
+      [
+        40,
+        204
+      ]
+    ],
+    "custom": "Size, deity and brocade mount to order"
+  },
+  "SAD03": {
+    "moq": 20,
+    "lead": "5–6 weeks",
+    "tiers": [
+      [
+        20,
+        111
+      ],
+      [
+        60,
+        103
+      ],
+      [
+        150,
+        95
+      ]
+    ],
+    "custom": "Yathra pattern and strap leather"
+  },
+  "TRO04": {
+    "moq": 25,
+    "lead": "4–5 weeks",
+    "tiers": [
+      [
+        25,
+        84
+      ],
+      [
+        75,
+        78
+      ],
+      [
+        200,
+        72
+      ]
+    ],
+    "custom": "Stone setting; hallmarking on request"
+  },
+  "FTB04": {
+    "moq": 50,
+    "lead": "3–4 weeks",
+    "tiers": [
+      [
+        50,
+        30
+      ],
+      [
+        150,
+        27
+      ],
+      [
+        400,
+        25
+      ]
+    ],
+    "custom": "Dye colour and lid form"
+  },
+  "DAP02": {
+    "moq": 30,
+    "lead": "6–8 weeks",
+    "tiers": [
+      [
+        30,
+        46
+      ],
+      [
+        90,
+        42
+      ],
+      [
+        240,
+        39
+      ]
+    ],
+    "custom": "Diameter, lacquer finish, laser mark"
+  },
+  "MAS01": {
+    "moq": 10,
+    "lead": "6–7 weeks",
+    "tiers": [
+      [
+        10,
+        61
+      ],
+      [
+        30,
+        57
+      ],
+      [
+        80,
+        52
+      ]
+    ],
+    "custom": "Character and paint scheme"
+  },
+  "DEZ01": {
+    "moq": 100,
+    "lead": "2–3 weeks",
+    "tiers": [
+      [
+        100,
+        15
+      ],
+      [
+        300,
+        14
+      ],
+      [
+        800,
+        13
+      ]
+    ],
+    "custom": "Sheet size, deckle edge, inclusions"
+  },
+  "CUS02": {
+    "moq": 40,
+    "lead": "4–5 weeks",
+    "tiers": [
+      [
+        40,
+        48
+      ],
+      [
+        120,
+        44
+      ],
+      [
+        300,
+        41
+      ]
+    ],
+    "custom": "Cover size, silk colour, appliqué motif"
+  },
+  "HHB01": {
+    "moq": 40,
+    "lead": "4–5 weeks",
+    "tiers": [
+      [
+        40,
+        28
+      ],
+      [
+        120,
+        26
+      ],
+      [
+        300,
+        24
+      ]
+    ],
+    "custom": "Strap length, lining, woven label"
+  },
+  "LUD01": {
+    "moq": 25,
+    "lead": "5–6 weeks",
+    "tiers": [
+      [
+        25,
+        35
+      ],
+      [
+        75,
+        32
+      ],
+      [
+        200,
+        30
+      ]
+    ],
+    "custom": "Height and rim binding"
+  },
+  "CAM01": {
+    "moq": 30,
+    "lead": "4–5 weeks",
+    "tiers": [
+      [
+        30,
+        35
+      ],
+      [
+        90,
+        32
+      ],
+      [
+        240,
+        30
+      ]
+    ],
+    "custom": "Internal dividers, embroidered logo"
+  },
+  "KIS02": {
+    "moq": 3,
+    "lead": "10–12 months",
+    "tiers": [
+      [
+        3,
+        686
+      ],
+      [
+        8,
+        637
+      ],
+      [
+        20,
+        588
+      ]
+    ],
+    "custom": "Pattern, ground colour, silk weight"
+  },
+  "PHO03": {
+    "moq": 40,
+    "lead": "6–8 weeks",
+    "tiers": [
+      [
+        40,
+        34
+      ],
+      [
+        120,
+        31
+      ],
+      [
+        300,
+        29
+      ]
+    ],
+    "custom": "Burl figure and lacquer tone"
+  },
+  "DEZ07": {
+    "moq": 100,
+    "lead": "3–4 weeks",
+    "tiers": [
+      [
+        100,
+        13
+      ],
+      [
+        300,
+        12
+      ],
+      [
+        800,
+        11
+      ]
+    ],
+    "custom": "Format, leaf count, cover print"
+  },
+  "TRO09": {
+    "moq": 15,
+    "lead": "6–7 weeks",
+    "tiers": [
+      [
+        15,
+        147
+      ],
+      [
+        45,
+        137
+      ],
+      [
+        120,
+        126
+      ]
+    ],
+    "custom": "Dimensions and filigree density"
+  },
+  "PAR06": {
+    "moq": 15,
+    "lead": "5–6 weeks",
+    "tiers": [
+      [
+        15,
+        67
+      ],
+      [
+        45,
+        62
+      ],
+      [
+        120,
+        58
+      ]
+    ],
+    "custom": "Motif and panel size"
+  },
+  "LHA08": {
+    "moq": 20,
+    "lead": "6–8 weeks",
+    "tiers": [
+      [
+        20,
+        102
+      ],
+      [
+        60,
+        94
+      ],
+      [
+        150,
+        87
+      ]
+    ],
+    "custom": "Motif set and panel dimensions"
+  },
+  "TSH11": {
+    "moq": 25,
+    "lead": "4–5 weeks",
+    "tiers": [
+      [
+        25,
+        52
+      ],
+      [
+        75,
+        48
+      ],
+      [
+        200,
+        44
+      ]
+    ],
+    "custom": "Mat size and weave pattern"
+  }
+}

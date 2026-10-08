@@ -292,10 +292,33 @@ export default function AdminTradePage() {
         setEditingProduct(null);
         loadData();
       } else {
-        showToast('Error saving terms');
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || 'Error saving terms');
       }
     } catch {
       showToast('Network error saving terms');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteTerms = async () => {
+    if (!editingProduct || !editingProduct.hasSavedTerms) return;
+    if (!window.confirm(`Remove saved wholesale prices for ${editingProduct.code}? The retail product will remain unchanged.`)) return;
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/trade', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete_terms', payload: { productCode: editingProduct.code } }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Could not remove wholesale prices.');
+      showToast(result.message || 'Saved wholesale prices removed.');
+      setEditingProduct(null);
+      await loadData();
+    } catch (error: any) {
+      showToast(error?.message || 'Could not remove wholesale prices.');
     } finally {
       setSaving(false);
     }
@@ -559,7 +582,7 @@ export default function AdminTradePage() {
                         <h3 className="font-bold text-slate-900 mt-1 text-base leading-snug">{p.name}</h3>
                       </div>
                       <GlassBadge variant={t.is_active !== false ? 'emerald' : 'secondary'}>
-                        {t.is_active !== false ? 'Active' : 'Disabled'}
+                          {t.is_active !== false ? (p.hasSavedTerms ? 'Custom terms' : 'Default terms') : 'Disabled'}
                       </GlassBadge>
                     </div>
 
@@ -605,7 +628,7 @@ export default function AdminTradePage() {
                     </span>
                     <GlassButton size="sm" variant="secondary" onClick={() => handleOpenTermsDrawer(p)}>
                       <Edit3 className="w-3.5 h-3.5 mr-1.5 text-[#8b2e24]" />
-                      Edit Terms
+                      {p.hasSavedTerms ? 'Edit terms' : 'Set prices'}
                     </GlassButton>
                   </div>
                 </GlassCard>
@@ -1008,12 +1031,12 @@ export default function AdminTradePage() {
       <GlassDrawer
         isOpen={!!editingProduct}
         onClose={() => setEditingProduct(null)}
-        title={`Edit Wholesale Terms: ${editingProduct?.code}`}
+        title={`${editingProduct?.hasSavedTerms ? 'Edit' : 'Set'} wholesale prices: ${editingProduct?.code}`}
         subtitle={editingProduct?.name}
       >
         <div className="space-y-4 text-xs">
           <div className="p-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-900 font-medium">
-            Retail price is <span className="font-bold text-[#8b2e24]">${editingProduct?.retailPrice} USD</span>. Trade prices must be lower and tier-discounted based on ascending volume.
+            Retail price: <span className="font-bold text-[#8b2e24]">${editingProduct?.retailPrice} USD</span>. Set quantity break prices here; larger quantity thresholds must increase.
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -1149,6 +1172,9 @@ export default function AdminTradePage() {
           </div>
 
           <div className="pt-4 border-t border-slate-200 flex justify-end gap-2">
+            {editingProduct?.hasSavedTerms && <GlassButton variant="ghost" onClick={handleDeleteTerms} disabled={saving}>
+              Remove terms
+            </GlassButton>}
             <GlassButton variant="ghost" onClick={() => setEditingProduct(null)}>
               Cancel
             </GlassButton>

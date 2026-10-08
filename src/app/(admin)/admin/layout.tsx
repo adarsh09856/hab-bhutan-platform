@@ -247,7 +247,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Orders & Tracking', href: '/admin/orders', icon: Package, badge: 'Track' },
         { label: 'Point of Sale (POS)', href: '/admin/pos', icon: Store, badge: 'Live' },
         { label: 'Wholesale Buyers', href: '/admin/wholesale', icon: Building2, badge: 'B2B' },
-        { label: 'Wholesale Orders', href: '/admin/trade', icon: BadgePercent, badge: 'Quotes' },
+        { label: 'Wholesale Trade Desk', href: '/admin/trade', icon: BadgePercent, badge: 'Pricing · Quotes' },
         { label: 'Retail Shops & Outlets', href: '/admin/clusters-outlets', icon: Store },
         { label: 'Payment Gateways & Bank', href: '/admin/payments', icon: CreditCard, badge: 'Pay' },
         { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },

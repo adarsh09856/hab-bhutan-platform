@@ -18,8 +18,12 @@ export default function WholesaleCartPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [quoteRef, setQuoteRef] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [buyer, setBuyer] = useState<any>(null);
+  const [catalogue, setCatalogue] = useState<any[]>([]);
 
   useEffect(() => {
+    let active = true;
     try {
       const stored = localStorage.getItem('hab_quote_basket');
       if (stored) {
@@ -28,7 +32,23 @@ export default function WholesaleCartPage() {
     } catch {
       // ignore
     }
-    setIsLoaded(true);
+    fetch('/api/wholesale/auth', { credentials: 'include', cache: 'no-store' })
+      .then((response) => response.json())
+      .then(async (session) => {
+        if (!active) return;
+        if (!session?.authenticated || !session?.buyer) return;
+        setBuyer(session.buyer);
+        setBuyerName(session.buyer.companyName || '');
+        setBuyerEmail(session.buyer.email || '');
+        setBuyerPhone(session.buyer.phone || '');
+        const response = await fetch('/api/trade', { credentials: 'include', cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok || !data?.success) throw new Error(data?.error || 'Wholesale catalogue could not be loaded.');
+        if (active) setCatalogue(Array.isArray(data.products) ? data.products : []);
+      })
+      .catch((error) => { if (active) setErrorMsg(error?.message || 'Could not check your wholesale account.'); })
+      .finally(() => { if (active) { setAuthChecked(true); setIsLoaded(true); } });
+    return () => { active = false; };
   }, []);
 
   const saveBasket = (updated: Record<string, number>) => {
@@ -54,11 +74,12 @@ export default function WholesaleCartPage() {
 
   const items = useMemo(() => {
     return Object.keys(basket)
-      .filter((code) => basket[code] > 0 && CLIENT_DATA.wholesaleTerms[code])
+      .filter((code) => basket[code] > 0 && catalogue.some((product) => product.code === code && product.terms?.is_active !== false))
       .map((code) => {
-        const product = CLIENT_DATA.products.find((p) => p.code === code);
-        const terms = CLIENT_DATA.wholesaleTerms[code];
-        const craft = product ? CLIENT_DATA.crafts.find((c) => c.key === product.craft_key) : null;
+        const product = catalogue.find((p) => p.code === code);
+        const terms = product?.terms;
+        const craft = product ? CLIENT_DATA.crafts.find((c) => c.key === (product.craftKey || product.craft_key)) : null;
+        if (!product || !terms) return null;
         const qty = basket[code];
         const unitPrice = getTierPrice(terms, qty);
         const lineTotal = unitPrice * qty;
@@ -72,8 +93,8 @@ export default function WholesaleCartPage() {
           unitPrice,
           lineTotal,
         };
-      });
-  }, [basket]);
+      }).filter(Boolean) as Array<{ code: string; product: any; terms: any; craft: any; qty: number; unitPrice: number; lineTotal: number }>;
+  }, [basket, catalogue]);
 
   const totalAmount = useMemo(() => {
     return items.reduce((sum, item) => sum + item.lineTotal, 0);
@@ -100,33 +121,15 @@ export default function WholesaleCartPage() {
 
     setSubmitting(true);
     try {
-      const subject = `Wholesale Quotation Request: ${buyerName} (${totalUnits} units · $${totalAmount.toFixed(2)} USD)`;
-      const itemsList = items
-        .map((i) => ` - [${i.code}] ${i.product?.name || 'Craft SKU'}: ${i.qty} units @ $${i.unitPrice} = $${i.lineTotal.toFixed(2)}`)
-        .join('\n');
-
-      const message = [
-        `WHOLESALE QUOTATION INTAKE:`,
-        `Buyer / Company: ${buyerName}`,
-        `Contact Email: ${buyerEmail}`,
-        `Contact Phone: ${buyerPhone || 'N/A'}`,
-        `Destination Country: ${destination || 'Not specified'}`,
-        `Required Delivery Date: ${deliveryDate || 'Flexible'}`,
-        `Total Items: ${items.length} line-items | ${totalUnits} total units`,
-        `Indicative Goods Value (FOB Thimphu): $${totalAmount.toFixed(2)} USD`,
-        `\nREQUESTED LINE-ITEMS:\n${itemsList}`,
-        notes ? `\nCUSTOMISATION & PACKAGING NOTES:\n${notes}` : '',
-      ].filter(Boolean).join('\n');
-
-      const res = await fetch('/api/contact', {
+      const res = await fetch('/api/wholesale/quote', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: buyerName,
-          email: buyerEmail,
-          phone: buyerPhone || null,
-          subject,
-          message,
+          items: items.map((item) => ({ code: item.code, quantity: item.qty })),
+          destination,
+          requiredDate: deliveryDate,
+          notes,
         }),
       });
 
@@ -157,11 +160,28 @@ export default function WholesaleCartPage() {
     );
   }
 
+  if (authChecked && !buyer) {
+    return (
+      <main id="main">
+        <section className="section section--narrow">
+          <p className="eyebrow eyebrow--accent">HAB Wholesale</p>
+          <h1 className="display display--page">Sign in to your trade account</h1>
+          <p className="lede">The quote basket uses private wholesale terms and can only be submitted by an approved buyer.</p>
+          {errorMsg && <p role="alert" className="uploadnote">{errorMsg}</p>}
+          <div className="actions" style={{ marginTop: 20 }}>
+            <Link className="btn btn--accent" href="/wholesale/shop">Sign in to wholesale catalogue</Link>
+            <Link className="btn btn--outline" href="/wholesale/register">Apply for a trade account</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main id="main">
       <div className="tradebar">
         <span className="tradebar__badge">HAB Wholesale</span>
-        <span className="tradebar__who">Verified trade account · wholesale preview</span>
+        <span className="tradebar__who">{buyer?.companyName || 'Verified trade account'} · quote basket</span>
         <span className="tradebar__spacer"></span>
         <Link className="tradebar__link" href="/wholesale/shop">
           Back to catalogue
@@ -215,7 +235,7 @@ export default function WholesaleCartPage() {
                 <div id="wsQuoteLines">
                   {items.map((item) => {
                     const imgSrc = item.product?.image_path
-                      ? `/${item.product.image_path.replace(/^\/+/, '')}`
+                            ? (/^(https?:)?\/\//i.test(item.product.image_path) ? item.product.image_path : `/${item.product.image_path.replace(/^\/+/, '')}`)
                       : '/assets/photos/product-sad03.jpg';
 
                     return (
@@ -238,7 +258,7 @@ export default function WholesaleCartPage() {
                             MOQ {item.terms.moq} · {item.terms.lead} · ${item.unitPrice} per unit at this quantity
                           </p>
                         </div>
-                        <input
+                      <input
                           className="input wsact__qty"
                           type="number"
                           min={item.terms.moq}

@@ -216,7 +216,6 @@ export const CLIENT_DATA = {
   projects: (clientDataJson.projects || []) as unknown as ProjectData[],
   supportPillars: clientDataJson.supportPillars,
   membershipCategories: clientDataJson.membershipCategories as MembershipCategoryData[],
-  wholesaleTerms: (clientDataJson.wholesaleTerms || {}) as unknown as Record<string, WholesaleTermData>,
   buyerTypes: (clientDataJson.buyerTypes || []) as string[],
   wholesaleAssurance: (clientDataJson.wholesaleAssurance || []) as WholesaleAssuranceData[],
   policies: clientDataJson.policies,
@@ -255,7 +254,8 @@ export function getProductsForCraft(craftKey: string): ProductData[] {
 }
 
 export function getWholesaleTerms(code: string): WholesaleTermData | undefined {
-  return CLIENT_DATA.wholesaleTerms[code];
+  void code;
+  return undefined;
 }
 
 export function getTierPrice(terms: WholesaleTermData | undefined, qty: number): number {

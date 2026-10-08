@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     const products = await prisma.product.findMany({
       include: {
         craft: true,
+        wholesaleTerms: true,
         maker: {
           select: { id: true, name: true, regNumber: true, status: true },
         },

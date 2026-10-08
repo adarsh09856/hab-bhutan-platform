@@ -181,6 +181,7 @@ export async function POST(req: NextRequest) {
               ...(item.productId ? [{ id: item.productId }] : []),
             ],
           },
+          include: { wholesaleTerms: true },
         });
 
         if (!product) {
@@ -191,8 +192,24 @@ export async function POST(req: NextRequest) {
           throw new Error(`Insufficient inventory for '${product.name}' (${product.code}). In stock: ${product.stock}, requested: ${qty}.`);
         }
 
+        const activeTerms = product.wholesaleTerms?.isActive ? product.wholesaleTerms : null;
+        if (isWholesale && activeTerms && qty < activeTerms.moq) {
+          throw new Error(`${product.code} requires a minimum wholesale quantity of ${activeTerms.moq}.`);
+        }
+        const configuredTiers = Array.isArray(activeTerms?.tiers)
+          ? (activeTerms!.tiers as unknown[]).filter((tier): tier is number[] => Array.isArray(tier) && tier.length >= 2 && Number.isFinite(Number(tier[0])) && Number.isFinite(Number(tier[1])))
+          : [];
+        const matchingTier = configuredTiers
+          .filter((tier) => qty >= Number(tier[0]))
+          .sort((a, b) => Number(a[0]) - Number(b[0]))
+          .at(-1);
+        const firstTier = configuredTiers.sort((a, b) => Number(a[0]) - Number(b[0]))[0];
         const price = isWholesale
-          ? Math.round(product.priceUSD * (1 - wholesaleDiscount / 100) * 100) / 100
+          ? matchingTier
+            ? Number(matchingTier[1])
+            : firstTier
+              ? Number(firstTier[1])
+              : Math.round(product.priceUSD * (1 - wholesaleDiscount / 100) * 100) / 100
           : item.priceUSD !== undefined ? Number(item.priceUSD) : product.priceUSD;
         if (!Number.isFinite(price) || price < 0) {
           throw new Error(`Invalid unit price for '${product.code}'.`);

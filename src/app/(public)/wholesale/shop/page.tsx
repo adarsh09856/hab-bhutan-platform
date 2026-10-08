@@ -133,7 +133,8 @@ function WholesaleShopContent() {
   const [productsList, setProductsList] = useState<any[]>(() => CLIENT_DATA.products);
 
   useEffect(() => {
-    fetch('/api/products', { cache: 'no-store' })
+    if (!isAuthenticated) return;
+    fetch('/api/trade', { cache: 'no-store', credentials: 'include' })
       .then((r) => r.json())
       .then((data) => {
         if (data?.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -144,22 +145,31 @@ function WholesaleShopContent() {
               craft_key: p.craftKey || p.craft_key,
               region: p.region || 'Bhutan',
               maker: p.maker?.name || p.maker || 'Registered Master',
-              price: p.priceUSD || p.price,
+              price: p.priceUSD ?? p.price,
               hero_image: p.image_path || p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
               summary: p.description || p.summary || '',
+              terms: p.terms ? {
+                moq: p.terms.moq,
+                lead: p.terms.lead_time || p.terms.lead,
+                tiers: p.terms.tiers,
+                custom: p.terms.customisation || p.terms.custom,
+                isActive: p.terms.is_active !== false,
+              } : undefined,
             }))
           );
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => setLoginError('Could not load your confidential wholesale catalogue. Please refresh or sign in again.'));
+  }, [isAuthenticated]);
 
   const counts = getCountsByCraft();
   const activeCraft = selectedCraft ? CLIENT_DATA.crafts.find((c) => c.key === selectedCraft) : null;
 
   // Helper to ensure terms exist for all products (dynamic fallback)
   const getTermsForProduct = (code: string, price: number): WholesaleTermData => {
-    if (CLIENT_DATA.wholesaleTerms[code]) return CLIENT_DATA.wholesaleTerms[code];
+    const saved = productsList.find((product) => product.code === code)?.terms;
+    if (saved) return saved;
+    void code;
     const base = price || 50;
     return {
       moq: 5,
@@ -380,7 +390,7 @@ function WholesaleShopContent() {
                   const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
                   const terms = getTermsForProduct(p.code, p.price);
                   const currentQty = quantities[p.code] || terms.moq;
-                  const unitPrice = Math.round(Number(p.price || 0) * (1 - Math.min(100, Math.max(0, Number(buyerInfo?.discountTier) || 0)) / 100) * 100) / 100;
+                  const unitPrice = getTierPrice(terms, currentQty) || Math.round(Number(p.price || 0) * (1 - Math.min(100, Math.max(0, Number(buyerInfo?.discountTier) || 0)) / 100) * 100) / 100;
                   const imgSrc = p.image_path
                     ? (p.image_path.startsWith('/') ? p.image_path : `/${p.image_path}`)
                     : (p.hero_image ? (p.hero_image.startsWith('/') || p.hero_image.startsWith('http') ? p.hero_image : `/${p.hero_image}`) : '/assets/photos/product-sad03.jpg');
@@ -430,10 +440,12 @@ function WholesaleShopContent() {
 
                         <div className="wstiers">
                           <span className="wstiers__label">Bulk tiers</span>
-                          <span className="wstier">
-                            <span className="wstier__q">Account tier</span>
-                            <span className="wstier__p">{buyerInfo?.discountTier ?? 0}% off</span>
-                          </span>
+                          {terms.tiers.map(([minimum, price]: number[]) => (
+                            <span className="wstier" key={`${p.code}-${minimum}`}>
+                              <span className="wstier__q">{minimum}+ units</span>
+                              <span className="wstier__p">${price} / unit</span>
+                            </span>
+                          ))}
                         </div>
 
                         <div className="wsact">

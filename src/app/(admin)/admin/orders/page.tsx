@@ -274,6 +274,19 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const getWholesaleUnitPrice = (product: any, quantity: number, discount: number) => {
+    const terms = product.wholesaleTerms;
+    if (terms?.isActive && Array.isArray(terms.tiers)) {
+      const applicable = terms.tiers
+        .filter((tier: unknown) => Array.isArray(tier) && Number(quantity) >= Number(tier[0]))
+        .sort((a: number[], b: number[]) => Number(a[0]) - Number(b[0]));
+      if (applicable.length) return Number(applicable[applicable.length - 1][1]);
+      const first = [...terms.tiers].sort((a: number[], b: number[]) => Number(a[0]) - Number(b[0]))[0];
+      if (first) return Number(first[1]);
+    }
+    return Math.round(Number(product.priceUSD) * (1 - discount / 100) * 100) / 100;
+  };
+
   const handleAddItemToOrder = (productCode: string) => {
     const prod = products.find((p) => p.code === productCode);
     if (!prod) return;
@@ -281,13 +294,16 @@ export default function AdminOrdersPage() {
     setOrderForm((prev) => {
       const buyer = wholesaleBuyers.find((item) => item.id === prev.wholesaleBuyerId);
       const discount = prev.customerType === 'WHOLESALE' ? Number(buyer?.discountTier || 0) : 0;
-      const unitPrice = Math.round(Number(prod.priceUSD) * (1 - discount / 100) * 100) / 100;
+      const minimum = prev.customerType === 'WHOLESALE' && prod.wholesaleTerms?.isActive ? Number(prod.wholesaleTerms.moq) : 1;
+      const unitPrice = prev.customerType === 'WHOLESALE'
+        ? getWholesaleUnitPrice(prod, minimum, discount)
+        : Number(prod.priceUSD);
       const existing = prev.selectedItems.find((i) => i.code === productCode);
       if (existing) {
         return {
           ...prev,
           selectedItems: prev.selectedItems.map((i) =>
-            i.code === productCode ? { ...i, quantity: i.quantity + 1 } : i
+            i.code === productCode ? { ...i, quantity: Math.max(minimum, i.quantity + 1), priceUSD: unitPrice } : i
           ),
         };
       }
@@ -295,7 +311,7 @@ export default function AdminOrdersPage() {
         ...prev,
         selectedItems: [
           ...prev.selectedItems,
-          { code: prod.code, name: prod.name, priceUSD: unitPrice, quantity: 1 },
+          { code: prod.code, name: prod.name, priceUSD: unitPrice, quantity: minimum },
         ],
       };
     });
@@ -313,12 +329,18 @@ export default function AdminOrdersPage() {
       handleRemoveItemFromOrder(code);
       return;
     }
-    setOrderForm((prev) => ({
+    setOrderForm((prev) => {
+      const product = products.find((item) => item.code === code);
+      const minimum = prev.customerType === 'WHOLESALE' && product?.wholesaleTerms?.isActive ? Number(product.wholesaleTerms.moq) : 1;
+      const buyer = wholesaleBuyers.find((item) => item.id === prev.wholesaleBuyerId);
+      const nextQty = Math.max(minimum, qty);
+      return ({
       ...prev,
       selectedItems: prev.selectedItems.map((i) =>
-        i.code === code ? { ...i, quantity: qty } : i
+        i.code === code ? { ...i, quantity: nextQty, ...(product && prev.customerType === 'WHOLESALE' ? { priceUSD: getWholesaleUnitPrice(product, nextQty, Number(buyer?.discountTier || 0)) } : {}) } : i
       ),
-    }));
+    });
+    });
   };
 
   const handleCreateOrder = async (e: React.FormEvent) => {
@@ -1515,7 +1537,10 @@ export default function AdminOrdersPage() {
                           },
                           selectedItems: previous.selectedItems.map((item) => {
                             const product = products.find((candidate) => candidate.code === item.code);
-                            return product ? { ...item, priceUSD: Math.round(Number(product.priceUSD) * (1 - discount / 100) * 100) / 100 } : item;
+                            if (!product) return item;
+                            const minimum = product.wholesaleTerms?.isActive ? Number(product.wholesaleTerms.moq) : 1;
+                            const quantity = Math.max(minimum, item.quantity);
+                            return { ...item, quantity, priceUSD: getWholesaleUnitPrice(product, quantity, discount) };
                           }),
                         }));
                       }}
@@ -1663,7 +1688,7 @@ export default function AdminOrdersPage() {
                   <div>
                     <span className="font-bold admin-title block">Products in this order</span>
                     {orderForm.customerType === 'WHOLESALE' && orderForm.wholesaleBuyerId && (
-                      <span className="text-[10px] admin-muted">Buyer discount applied. The server confirms final prices.</span>
+                      <span className="text-[10px] admin-muted">Product quantity pricing applies; the server recalculates the final total.</span>
                     )}
                   </div>
                   <select
@@ -1679,7 +1704,7 @@ export default function AdminOrdersPage() {
                     {products.map((p) => (
                       <option key={p.code} value={p.code} disabled={p.stock <= 0}>
                         {p.name} ({p.code}) — ${orderForm.customerType === 'WHOLESALE' && orderForm.wholesaleBuyerId
-                          ? (Number(p.priceUSD) * (1 - Number(wholesaleBuyers.find((buyer) => buyer.id === orderForm.wholesaleBuyerId)?.discountTier || 0) / 100)).toFixed(2)
+                          ? getWholesaleUnitPrice(p, p.wholesaleTerms?.isActive ? Number(p.wholesaleTerms.moq) : 1, Number(wholesaleBuyers.find((buyer) => buyer.id === orderForm.wholesaleBuyerId)?.discountTier || 0)).toFixed(2)
                           : p.priceUSD} ({p.stock} in stock)
                       </option>
                     ))}
@@ -1700,7 +1725,9 @@ export default function AdminOrdersPage() {
                         <div className="flex items-center gap-3">
                           <input
                             type="number"
-                            min="1"
+                            min={orderForm.customerType === 'WHOLESALE' && products.find((product) => product.code === item.code)?.wholesaleTerms?.isActive
+                              ? Number(products.find((product) => product.code === item.code)?.wholesaleTerms.moq)
+                              : 1}
                             value={item.quantity}
                             onChange={(e) => handleItemQtyChange(item.code, parseInt(e.target.value, 10) || 1)}
                             className="w-14 admin-input border rounded px-2 py-0.5 font-mono text-center"

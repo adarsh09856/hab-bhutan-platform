@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
+import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 
 export const dynamic = 'force-dynamic';
 
-async function staff(request: NextRequest) {
-  const user = await getSessionUser(request);
-  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-  return user && ['super_admin', 'staff_operator'].includes(role);
-}
-
 export async function GET(request: NextRequest) {
-  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
+    await requirePermission(request, 'products:view');
     let siteSetting: any = null;
     let dbInquiries: any[] = [];
     let dbProducts: any[] = [];
@@ -30,7 +25,7 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
       });
       dbProducts = await prisma.product.findMany({
-        include: { craft: true },
+        include: { craft: true, wholesaleTerms: true },
         orderBy: { code: 'asc' },
       });
     } catch {
@@ -38,12 +33,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Merge wholesale terms from siteSetting or CLIENT_DATA
-    const termsMap: Record<string, any> = (siteSetting?.wholesaleTerms as Record<string, any>) || CLIENT_DATA.wholesaleTerms || {};
+    const termsMap: Record<string, any> = (siteSetting?.wholesaleTerms as Record<string, any>) || SERVER_WHOLESALE_TERMS;
 
     // Combine products with their wholesale terms
     const productsList = dbProducts.length > 0
       ? dbProducts.map((p) => {
-          const t = termsMap[p.code] || CLIENT_DATA.wholesaleTerms?.[p.code] || {
+          const savedTerms = p.wholesaleTerms;
+          const t = savedTerms ? {
+            moq: savedTerms.moq,
+            lead_time: savedTerms.leadTime,
+            tiers: savedTerms.tiers,
+            customisation: savedTerms.customisation || '',
+            is_active: savedTerms.isActive,
+          } : termsMap[p.code] || {
             moq: 5,
             lead_time: '4–6 weeks',
             tiers: [
@@ -63,11 +65,12 @@ export async function GET(request: NextRequest) {
             craftName: p.craft?.name || p.craftKey,
             image: p.images?.[0]?.url || '/assets/photos/product-hhb01.jpg',
             terms: t,
+            hasSavedTerms: Boolean(savedTerms || (termsMap as Record<string, any>)[p.code]),
           };
         })
       : CLIENT_DATA.products.map((p) => {
           const rawPrice = (p as any).price_usd || (p as any).price || 100;
-          const t = termsMap[p.code] || CLIENT_DATA.wholesaleTerms?.[p.code] || {
+          const t = termsMap[p.code] || {
             moq: 5,
             lead_time: '4–6 weeks',
             tiers: [
@@ -190,15 +193,22 @@ export async function GET(request: NextRequest) {
     });
   } catch (err: any) {
     console.error('Error fetching trade data:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Could not load the trade desk.' }, { status: err.statusCode || 500 });
   }
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
     const { action, payload } = body;
+    const permission = action === 'delete_terms'
+      ? 'products:delete'
+      : action === 'update_quote_status'
+        ? 'orders:edit'
+        : action === 'update_buyer_status'
+          ? 'applications:review'
+          : 'products:edit';
+    await requirePermission(request, permission);
 
     if (action === 'update_quote_status') {
       const { id, status, adminNotes } = payload;
@@ -230,29 +240,54 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'save_terms') {
       const { productCode, terms } = payload;
-      try {
-        const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
-        const existingTerms = (setting?.wholesaleTerms as Record<string, any>) || {};
-        const updated = {
-          ...existingTerms,
-          [productCode]: terms,
-        };
-        await (prisma.siteSetting as any).upsert({
-          where: { id: 'default' },
-          create: {
-            id: 'default',
-            wholesaleTerms: updated,
-            heroParagraph: 'Handicrafts Association of Bhutan promotes living craft heritage across all dzongkhags.',
-            footerAbout: 'Apex Civil Society Organization established under the CSO Act of Bhutan 2007.',
-            partnersList: [],
-          },
-          update: { wholesaleTerms: updated },
-        });
-
-      } catch {
-        // Fallback ok
+      if (!productCode || !terms || typeof terms !== 'object') {
+        return NextResponse.json({ success: false, error: 'Product and wholesale terms are required.' }, { status: 400 });
       }
+      const moq = Number(terms.moq);
+      const tiers = Array.isArray(terms.tiers)
+        ? terms.tiers.map((tier: unknown) => Array.isArray(tier) ? [Number(tier[0]), Number(tier[1])] : [NaN, NaN])
+        : [];
+      if (!Number.isInteger(moq) || moq < 1 || tiers.length < 1 || tiers.length > 8 ||
+          tiers.some((tier: number[]) => !Number.isInteger(tier[0]) || tier[0] < moq || !Number.isFinite(tier[1]) || tier[1] < 0) ||
+          tiers.some((tier: number[], index: number) => index > 0 && tier[0] <= tiers[index - 1][0])) {
+        return NextResponse.json({ success: false, error: 'Enter a positive MOQ and 1–8 tiers with increasing quantities and valid non-negative prices.' }, { status: 400 });
+      }
+      const product = await prisma.product.findUnique({ where: { code: String(productCode) }, select: { id: true } });
+      if (!product) return NextResponse.json({ success: false, error: 'Product not found.' }, { status: 404 });
+      await prisma.wholesaleProductTerms.upsert({
+        where: { productId: product.id },
+        create: {
+          productId: product.id,
+          moq,
+          leadTime: String(terms.lead_time || '').trim() || '4–6 weeks',
+          tiers,
+          customisation: String(terms.customisation || '').trim() || null,
+          isActive: terms.is_active !== false,
+        },
+        update: {
+          moq,
+          leadTime: String(terms.lead_time || '').trim() || '4–6 weeks',
+          tiers,
+          customisation: String(terms.customisation || '').trim() || null,
+          isActive: terms.is_active !== false,
+        },
+      });
       return NextResponse.json({ success: true, message: 'Wholesale terms saved for SKU ' + productCode });
+    }
+
+    if (action === 'delete_terms') {
+      const productCode = String(payload?.productCode || '').trim();
+      if (!productCode) return NextResponse.json({ success: false, error: 'Product code is required.' }, { status: 400 });
+      const product = await prisma.product.findUnique({ where: { code: productCode }, select: { id: true } });
+      if (!product) return NextResponse.json({ success: false, error: 'Product not found.' }, { status: 404 });
+      const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { wholesaleTerms: true } });
+      const legacy = { ...((setting?.wholesaleTerms as Record<string, any> | null) || {}) };
+      delete legacy[productCode];
+      await prisma.$transaction([
+        prisma.wholesaleProductTerms.deleteMany({ where: { productId: product.id } }),
+        ...(setting ? [prisma.siteSetting.update({ where: { id: 'default' }, data: { wholesaleTerms: legacy } })] : []),
+      ]);
+      return NextResponse.json({ success: true, message: `Wholesale pricing removed for ${productCode}.` });
     }
 
     if (action === 'save_catalog') {
@@ -285,6 +320,6 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Unknown action' }, { status: 400 });
   } catch (err: any) {
     console.error('Trade patch error:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Could not save the trade desk change.' }, { status: err.statusCode || 500 });
   }
 }
