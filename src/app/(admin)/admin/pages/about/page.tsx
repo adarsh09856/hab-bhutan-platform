@@ -908,9 +908,10 @@ export default function AboutPageStudio() {
                   </tr>
                 ) : (
                   boardMembers.map((bm) => {
-                    const [cleanNote, photo] = (bm.chapterOrNote || '').includes('||photo:')
+                    const [cleanNote, legacyPhoto] = (bm.chapterOrNote || '').includes('||photo:')
                       ? (bm.chapterOrNote || '').split('||photo:')
                       : [bm.chapterOrNote || '', ''];
+                    const photo = bm.photoUrl || legacyPhoto;
                     return (
                       <tr key={bm.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-3.5 pl-5 font-semibold text-slate-900">{bm.roleTitle}</td>
@@ -1000,9 +1001,10 @@ export default function AboutPageStudio() {
                   </tr>
                 ) : (
                   teamMembers.map((tm) => {
-                    const [cleanNote, photo] = (tm.chapterOrNote || '').includes('||photo:')
+                    const [cleanNote, legacyPhoto] = (tm.chapterOrNote || '').includes('||photo:')
                       ? (tm.chapterOrNote || '').split('||photo:')
                       : [tm.chapterOrNote || '', ''];
+                    const photo = tm.photoUrl || legacyPhoto;
                     return (
                       <tr key={tm.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-3.5 pl-5 font-semibold text-slate-900">{tm.roleTitle}</td>

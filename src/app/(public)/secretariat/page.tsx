@@ -79,9 +79,9 @@ async function getSecretariatData() {
           role: r.roleTitle,
           note: cleanNote.trim(),
           photo: r.photoUrl || photo.trim() || `/assets/photos/hero-${(i % 5) + 1}-${i === 0 ? 'weaving' : i === 1 ? 'punakha' : i === 2 ? 'clay' : i === 3 ? 'textiles' : 'desho'}.jpg`,
-          phone: r.phone || (i === 0 ? '+975-77654508' : '+975-2-338089'),
-          email: r.email || (i === 0 ? 'edhab2021@gmail.com' : 'officehab@gmail.com'),
-          bio: r.bio || 'Dedicated Secretariat professional serving Bhutanese artisans, clusters, and international patrons.',
+          phone: r.phone || '',
+          email: r.email || '',
+          bio: r.bio || '',
         };
       });
     }
@@ -169,18 +169,18 @@ export default async function SecretariatPage() {
                   </div>
 
                   <p className="text-xs font-medium text-stone-500 mb-2">{staff.note}</p>
-                  <p className="text-xs text-stone-600 leading-relaxed">{staff.bio}</p>
+                  {staff.bio && <p className="text-xs text-stone-600 leading-relaxed">{staff.bio}</p>}
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
-                  <div className="flex items-center gap-2">
+                  {staff.phone && <div className="flex items-center gap-2">
                     <Phone className="w-3.5 h-3.5 text-[#8B2E24]" />
                     <span className="font-mono text-[11px]">{staff.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  </div>}
+                  {staff.email && <div className="flex items-center gap-2">
                     <Mail className="w-3.5 h-3.5 text-[#8B2E24]" />
                     <span className="font-mono text-[11px]">{staff.email}</span>
-                  </div>
+                  </div>}
                 </div>
               </div>
             </article>

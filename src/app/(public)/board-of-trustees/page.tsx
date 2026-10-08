@@ -61,7 +61,7 @@ async function getBoardData() {
           role: r.roleTitle,
           note: cleanNote.trim(),
           photo: r.photoUrl || photo.trim() || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`,
-          bio: r.bio || 'Accredited trustee exercising fiduciary and strategic governance under the CSO Act of Bhutan 2007.',
+          bio: r.bio || '',
         };
       });
     }
@@ -144,7 +144,7 @@ export default async function BoardOfTrusteesPage() {
                 <div>
                   <h3 className="font-serif text-lg font-bold text-stone-900 leading-snug">{member.name}</h3>
                   <p className="text-xs font-medium text-[#8B2E24] mt-1">{member.note}</p>
-                  <p className="text-xs text-stone-600 mt-3 leading-relaxed">{member.bio}</p>
+                  {member.bio && <p className="text-xs text-stone-600 mt-3 leading-relaxed">{member.bio}</p>}
                 </div>
                 <div className="pt-4 mt-4 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400 font-mono">
                   <span>Accredited Trustee</span>
