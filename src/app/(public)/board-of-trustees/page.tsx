@@ -60,8 +60,8 @@ async function getBoardData() {
           name: r.individualName,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: photo.trim() || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`,
-          bio: 'Accredited trustee exercising fiduciary and strategic governance under the CSO Act of Bhutan 2007.',
+          photo: r.photoUrl || photo.trim() || `/assets/photos/hero-${(idx % 5) + 1}-${idx === 0 ? 'weaving' : idx === 1 ? 'punakha' : idx === 2 ? 'clay' : idx === 3 ? 'textiles' : 'desho'}.jpg`,
+          bio: r.bio || 'Accredited trustee exercising fiduciary and strategic governance under the CSO Act of Bhutan 2007.',
         };
       });
     }

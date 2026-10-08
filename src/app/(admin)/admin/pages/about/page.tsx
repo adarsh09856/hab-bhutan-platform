@@ -27,6 +27,10 @@ interface GovRecord {
   roleTitle: string;
   individualName: string;
   chapterOrNote: string;
+  bio?: string | null;
+  photoUrl?: string | null;
+  phone?: string | null;
+  email?: string | null;
   sortOrder: number;
 }
 
@@ -82,6 +86,9 @@ export default function AboutPageStudio() {
     individualName: '',
     chapterOrNote: '',
     photoUrl: '',
+    bio: '',
+    phone: '',
+    email: '',
     sortOrder: 0,
   });
 
@@ -203,6 +210,9 @@ export default function AboutPageStudio() {
       individualName: '',
       chapterOrNote: '',
       photoUrl: '',
+      bio: '',
+      phone: '',
+      email: '',
       sortOrder: records.filter((r) => r.category === cat).length + 1,
     });
     setFormOpen(true);
@@ -218,7 +228,10 @@ export default function AboutPageStudio() {
       roleTitle: rec.roleTitle,
       individualName: rec.individualName,
       chapterOrNote: note.trim(),
-      photoUrl: photo.trim(),
+      photoUrl: rec.photoUrl || photo.trim(),
+      bio: rec.bio || '',
+      phone: rec.phone || '',
+      email: rec.email || '',
       sortOrder: rec.sortOrder,
     });
     setFormOpen(true);
@@ -235,9 +248,7 @@ export default function AboutPageStudio() {
       const url = '/api/admin/governance';
       const method = editingId ? 'PUT' : 'POST';
       const cleanNote = recordForm.chapterOrNote.trim();
-      const finalNote = recordForm.photoUrl.trim()
-        ? `${cleanNote}||photo:${recordForm.photoUrl.trim()}`
-        : cleanNote;
+      const finalNote = cleanNote;
 
       const payload = editingId
         ? { ...recordForm, chapterOrNote: finalNote, id: editingId }
@@ -808,6 +819,18 @@ export default function AboutPageStudio() {
                     hint="Drag and drop or choose file directly from computer (JPG, PNG, WebP)"
                   />
                 </div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Biography
+                  <textarea rows={4} value={recordForm.bio} onChange={(e) => setRecordForm((f) => ({ ...f, bio: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-normal text-slate-800" />
+                </label>
+                {recordForm.category === 'SECRETARIAT' && <>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">Phone
+                    <input type="tel" value={recordForm.phone} onChange={(e) => setRecordForm((f) => ({ ...f, phone: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-normal text-slate-800" />
+                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">Email
+                    <input type="email" value={recordForm.email} onChange={(e) => setRecordForm((f) => ({ ...f, email: e.target.value }))} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-normal text-slate-800" />
+                  </label>
+                </>}
               </>
             )}
 

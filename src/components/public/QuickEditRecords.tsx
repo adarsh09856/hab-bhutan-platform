@@ -13,7 +13,8 @@ const configs: Record<string, Config> = {
     endpoint: '/api/admin/governance', collection: 'records', title: 'Board of Trustees', labelKey: 'individualName', governanceCategory: 'BOARD_OF_TRUSTEES',
     fields: [
       { key: 'individualName', label: 'Trustee name', required: true }, { key: 'roleTitle', label: 'Board role', required: true },
-      { key: 'chapterOrNote', label: 'Profile note', kind: 'long' }, { key: 'photoUrl', label: 'Portrait', kind: 'image' },
+      { key: 'chapterOrNote', label: 'Profile note', kind: 'long' }, { key: 'bio', label: 'Biography', kind: 'long' },
+      { key: 'photoUrl', label: 'Portrait', kind: 'image' },
       { key: 'sortOrder', label: 'Display order', kind: 'number' },
     ],
   },
@@ -21,7 +22,8 @@ const configs: Record<string, Config> = {
     endpoint: '/api/admin/governance', collection: 'records', title: 'Secretariat team', labelKey: 'individualName', governanceCategory: 'SECRETARIAT',
     fields: [
       { key: 'individualName', label: 'Team member name', required: true }, { key: 'roleTitle', label: 'Position', required: true },
-      { key: 'chapterOrNote', label: 'Profile note', kind: 'long' }, { key: 'photoUrl', label: 'Portrait', kind: 'image' },
+      { key: 'chapterOrNote', label: 'Profile note', kind: 'long' }, { key: 'bio', label: 'Biography', kind: 'long' },
+      { key: 'phone', label: 'Phone' }, { key: 'email', label: 'Email' }, { key: 'photoUrl', label: 'Portrait', kind: 'image' },
       { key: 'sortOrder', label: 'Display order', kind: 'number' },
     ],
   },
@@ -217,7 +219,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     const [governanceNote, governancePhoto] = config.governanceCategory
       ? String(row.chapterOrNote || '').split('||photo:') : ['', ''];
     setDraft({ ...row, ...dates, imageUrl: row.imageUrl || primaryImage?.url || '',
-      ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: (governancePhoto || '').trim() } : {}),
+      ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: row.photoUrl || (governancePhoto || '').trim() } : {}),
       activities: Array.isArray(row.activities) ? row.activities.join('\n') : row.activities || '',
       results: Array.isArray(row.results) ? row.results.join('\n') : row.results || '' });
     setMessage('');
@@ -232,10 +234,6 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if (config.contentType) result.type = config.contentType;
     if (config.governanceCategory) {
       result.category = config.governanceCategory;
-      const note = String(result.chapterOrNote || '').trim();
-      const photo = String(result.photoUrl || '').trim();
-      result.chapterOrNote = photo ? `${note}||photo:${photo}` : note;
-      delete result.photoUrl;
     }
     return result;
   };

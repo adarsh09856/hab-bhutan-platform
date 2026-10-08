@@ -78,10 +78,10 @@ async function getSecretariatData() {
           name: r.individualName,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: photo.trim() || `/assets/photos/hero-${(i % 5) + 1}-${i === 0 ? 'weaving' : i === 1 ? 'punakha' : i === 2 ? 'clay' : i === 3 ? 'textiles' : 'desho'}.jpg`,
-          phone: i === 0 ? '+975-77654508' : '+975-2-338089',
-          email: i === 0 ? 'edhab2021@gmail.com' : 'officehab@gmail.com',
-          bio: 'Dedicated Secretariat professional serving Bhutanese artisans, clusters, and international patrons.',
+          photo: r.photoUrl || photo.trim() || `/assets/photos/hero-${(i % 5) + 1}-${i === 0 ? 'weaving' : i === 1 ? 'punakha' : i === 2 ? 'clay' : i === 3 ? 'textiles' : 'desho'}.jpg`,
+          phone: r.phone || (i === 0 ? '+975-77654508' : '+975-2-338089'),
+          email: r.email || (i === 0 ? 'edhab2021@gmail.com' : 'officehab@gmail.com'),
+          bio: r.bio || 'Dedicated Secretariat professional serving Bhutanese artisans, clusters, and international patrons.',
         };
       });
     }

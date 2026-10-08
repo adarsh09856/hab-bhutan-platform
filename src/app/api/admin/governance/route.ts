@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   try {
     await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { category, roleTitle, individualName, chapterOrNote, sortOrder } = body;
+    const { category, roleTitle, individualName, chapterOrNote, bio, photoUrl, phone, email, sortOrder } = body;
 
     if (!category || !roleTitle || !individualName) {
       return NextResponse.json(
@@ -41,6 +41,10 @@ export async function POST(req: NextRequest) {
         roleTitle: roleTitle.trim(),
         individualName: individualName.trim(),
         chapterOrNote: (chapterOrNote || '').trim(),
+        bio: typeof bio === 'string' ? bio.trim() : null,
+        photoUrl: typeof photoUrl === 'string' ? photoUrl.trim() : null,
+        phone: typeof phone === 'string' ? phone.trim() : null,
+        email: typeof email === 'string' ? email.trim() : null,
         sortOrder: typeof sortOrder === 'number' ? sortOrder : 0,
       },
     });
@@ -59,7 +63,7 @@ export async function PUT(req: NextRequest) {
   try {
     await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { id, category, roleTitle, individualName, chapterOrNote, sortOrder } = body;
+    const { id, category, roleTitle, individualName, chapterOrNote, bio, photoUrl, phone, email, sortOrder } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'Record ID is required.' }, { status: 400 });
@@ -72,6 +76,10 @@ export async function PUT(req: NextRequest) {
         roleTitle: roleTitle !== undefined ? roleTitle.trim() : undefined,
         individualName: individualName !== undefined ? individualName.trim() : undefined,
         chapterOrNote: chapterOrNote !== undefined ? chapterOrNote.trim() : undefined,
+        bio: typeof bio === 'string' ? bio.trim() : undefined,
+        photoUrl: typeof photoUrl === 'string' ? photoUrl.trim() : undefined,
+        phone: typeof phone === 'string' ? phone.trim() : undefined,
+        email: typeof email === 'string' ? email.trim() : undefined,
         sortOrder: typeof sortOrder === 'number' ? sortOrder : undefined,
       },
     });

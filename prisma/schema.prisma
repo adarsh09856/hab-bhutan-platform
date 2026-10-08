@@ -310,6 +310,10 @@ model GovernanceRecord {
   roleTitle        String
   individualName   String
   chapterOrNote    String
+  bio              String?  @db.Text
+  photoUrl         String?
+  phone            String?
+  email            String?
   sortOrder        Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
