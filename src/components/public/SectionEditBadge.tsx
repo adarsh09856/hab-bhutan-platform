@@ -67,7 +67,8 @@ function inferSectionType(studioHref: string = '', label: string = ''): SectionT
   if (l.includes('footer')) return 'footer';
 
   if (path.includes('/admin/site-settings') || path.includes('/admin/settings')) return 'hero';
-  if (path.includes('/admin/users') || path.includes('/admin/orders')) return 'about-page';
+  if (path.includes('/admin/orders')) return 'order-records';
+  if (path.includes('/admin/users')) return 'about-page';
 
   return 'hero';
 }

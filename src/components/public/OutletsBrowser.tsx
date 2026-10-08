@@ -154,7 +154,6 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
     <main id="main">
       {/* Featured Market Hero */}
       <section className="section relative" data-hab-section="outlets">
-        <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" sectionType="outlets" />
         <p className="crumbs">
           <Link href="/">{t('nav.home', 'Home')}</Link> / {isDz ? 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང་' : 'Outlets & clusters'}
         </p>

@@ -154,6 +154,7 @@ export default function CraftProfilePage() {
         <SectionEditBadge
           label={`Quick Edit: ${craft.name}`}
           studioHref="/admin/crafts"
+          sectionType="crafts"
           onEdit={() => setEditorOpen(true)}
         />
         

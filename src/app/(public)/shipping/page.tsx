@@ -31,7 +31,7 @@ export default async function ShippingPolicyPage() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="shipping-policy">
-        <SectionEditBadge label="Policies Studio" studioHref="/admin/policies" />
+        <SectionEditBadge label="Policies Studio" studioHref="/admin/policies" sectionType="policies" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / {pageTitle}
         </p>

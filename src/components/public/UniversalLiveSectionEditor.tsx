@@ -185,7 +185,7 @@ export default function UniversalLiveSectionEditor({
       setActiveTab('COLUMNS');
       setSelectedFooterCol('Association');
       setNewLinkCol('Association');
-    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records' || sectionType === 'strategic-cards' || sectionType === 'mandate-cards' || sectionType === 'ethics-cards') {
+    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records' || sectionType === 'strategic-cards' || sectionType === 'mandate-cards' || sectionType === 'ethics-cards' || sectionType === 'order-records' || sectionType === 'policies') {
       setActiveTab('RECORDS');
     } else {
       setActiveTab('CONTENT');
@@ -1044,6 +1044,8 @@ export default function UniversalLiveSectionEditor({
       ? 'Secretariat Team'
       : sectionType === 'order-records'
       ? 'Order Fulfillment (protected payment records)'
+      : sectionType === 'policies'
+      ? 'Policies & public documents'
       : 'Live Section Editor');
 
   return createPortal(

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
 import OutletsBrowser from '@/components/public/OutletsBrowser';
+import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,5 +86,10 @@ async function getOutletsData() {
 
 export default async function OutletsPage() {
   const { outlets, clusters } = await getOutletsData();
-  return <OutletsBrowser initialOutlets={outlets} clusters={clusters} />;
+  return (
+    <div className="relative">
+      <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" sectionType="outlets" />
+      <OutletsBrowser initialOutlets={outlets} clusters={clusters} />
+    </div>
+  );
 }

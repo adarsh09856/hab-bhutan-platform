@@ -48,6 +48,13 @@ const configs: Record<string, Config> = {
       { key: 'notes', label: 'Internal note / cancellation reason', kind: 'long' },
     ],
   },
+  policies: {
+    endpoint: '/api/admin/policies', collection: 'policies', title: 'Policies', labelKey: 'title', updateMethod: 'PATCH',
+    fields: [
+      { key: 'slug', label: 'Page slug', required: true }, { key: 'title', label: 'Policy title', required: true },
+      { key: 'content', label: 'Policy text', kind: 'long' },
+    ],
+  },
   'board-records': {
     endpoint: '/api/admin/governance', collection: 'records', title: 'Board of Trustees', labelKey: 'individualName', governanceCategory: 'BOARD_OF_TRUSTEES',
     fields: [
@@ -241,7 +248,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || (response.status === 401 ? 'Log in with your staff account to view orders.' : 'Records could not be loaded.'));
       const records = Array.isArray(data[config.collection]) ? data[config.collection] : [];
-      setRows(config.governanceCategory ? records.filter((row: Record<string, any>) => row.category === config.governanceCategory) : records);
+      setRows(config.governanceCategory ? records.filter((row: Record<string, any>) => row.category === config.governanceCategory) : sectionType === 'policies' ? records.filter((row: Record<string, any>) => row.isCustom || Boolean(row.id)) : records);
       setMessage('');
     } catch (error: any) { setMessage(error?.message || 'Records could not be loaded.'); }
     finally { setLoading(false); }
@@ -266,6 +273,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     const [governanceNote, governancePhoto] = config.governanceCategory
       ? String(row.chapterOrNote || '').split('||photo:') : ['', ''];
     setDraft({ ...row, ...dates, imageUrl: row.imageUrl || primaryImage?.url || '',
+      ...(sectionType === 'policies' ? { id: row.slug } : {}),
       ...(sectionType === 'order-records' ? { notes: row.internalNotes || '' } : {}),
       ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: row.photoUrl || (governancePhoto || '').trim() } : {}),
       activities: Array.isArray(row.activities) ? row.activities.join('\n') : row.activities || '',
@@ -278,7 +286,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
         : field.kind === 'check' ? Boolean(draft?.[field.key])
           : field.kind === 'lines' ? String(draft?.[field.key] || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
             : String(draft?.[field.key] || '').trim()]));
-    if (draft?.id) result.id = draft.id;
+    if (draft?.id && sectionType !== 'policies') result.id = draft.id;
     if (config.contentType) result.type = config.contentType;
     if (config.governanceCategory) {
       result.category = config.governanceCategory;
@@ -314,7 +322,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     setSaving(true); setMessage('');
     try {
       const response = await fetch(config.endpoint, {
-        method: draft.id ? config.updateMethod || 'PUT' : 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        method: sectionType === 'policies' ? (draft.slug && rows.some((row) => row.slug === draft.slug) ? 'PATCH' : 'POST') : draft.id ? config.updateMethod || 'PUT' : 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload()),
       });
       const data = await response.json();
@@ -329,13 +337,13 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if (!window.confirm(`${archiveCraft || archiveGovernance ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)} from the public site?`)) return;
     setSaving(true); setMessage('');
     try {
-      const deleteUrl = `${config.endpoint}?id=${encodeURIComponent(row.id)}${config.contentType ? `&type=${encodeURIComponent(config.contentType)}` : ''}${config.governanceCardSection ? `&section=${config.governanceCardSection}` : ''}`;
+      const deleteUrl = `${config.endpoint}?${sectionType === 'policies' ? `slug=${encodeURIComponent(row.slug)}` : `id=${encodeURIComponent(row.id)}${config.contentType ? `&type=${encodeURIComponent(config.contentType)}` : ''}${config.governanceCardSection ? `&section=${config.governanceCardSection}` : ''}`}`;
       const response = await fetch(archiveCraft ? config.endpoint : deleteUrl, archiveCraft
         ? { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: row.key, isActive: false }) }
         : { method: 'DELETE', credentials: 'include' });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Delete failed.');
-      if (draft?.id === row.id) setDraft(null);
+      if (draft?.id === row.id || (sectionType === 'policies' && draft?.slug === row.slug)) setDraft(null);
       await load(); router.refresh(); setMessage(archiveCraft || archiveGovernance ? 'Record hidden. Edit it to make it visible again.' : 'Record deleted.');
     } catch (error: any) { setMessage(error?.message || 'Delete failed.'); }
     finally { setSaving(false); }
@@ -379,7 +387,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
             <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{sectionType === 'order-records' ? ` · ${row.orderStatus || 'Unknown'} · ${row.currencyUsed || 'USD'} ${Number(row.totalPaidCurrency || row.totalUSD || 0).toFixed(2)}` : ''}{row.isActive === false ? ' (hidden)' : ''}</button>
             {sectionType === 'wholesale' && row.status !== 'ACTIVE' && <button type="button" title="Approve and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'APPROVE')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
             {sectionType === 'wholesale' && row.status !== 'REJECTED' && <button type="button" title="Decline and notify buyer" disabled={saving} onClick={() => decideWholesale(row, 'DECLINE')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
-            {config.canDelete !== false && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving} className="rounded-md p-1.5 text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
+            {config.canDelete !== false && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : 'Delete'} onClick={() => remove(row)} disabled={saving || (sectionType === 'policies' && ['terms', 'privacy', 'shipping-policy', 'conduct'].includes(String(row.slug)))} className="rounded-md p-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"><Trash2 className="w-4 h-4" /></button>}
           </div>)}
         </div>
         <div className="rounded-xl border p-3 sm:p-4">

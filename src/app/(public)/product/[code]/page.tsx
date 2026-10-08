@@ -176,6 +176,7 @@ export default function ProductDetailPage() {
         <SectionEditBadge
           label={`Quick Edit: ${product.name}`}
           studioHref="/admin/products"
+          sectionType="products"
           onEdit={() => setEditorOpen(true)}
         />
         
