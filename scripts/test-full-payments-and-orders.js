@@ -1,10 +1,17 @@
 const { PrismaClient, PaymentMethod } = require('E:/ai/bhutanprojects/newbend/node_modules/@prisma/client');
 const prisma = new PrismaClient();
+const testOrderNumbers = [];
 
 async function runTests() {
   console.log('=== Starting Full Payment Gateways, COD & Admin Orders Verification ===\n');
 
   try {
+    const configuredDatabase = process.env.DATABASE_URL;
+    const databaseHost = configuredDatabase ? new URL(configuredDatabase).hostname : '';
+    if (!['localhost', '127.0.0.1', '::1'].includes(databaseHost)) {
+      throw new Error('Safety stop: this test may only run against a local PostgreSQL database.');
+    }
+
     // 1. Verify PaymentMethod enum supports COD
     console.log('1. Checking Prisma PaymentMethod Enum...');
     console.log('   Available enum values:', Object.values(PaymentMethod));
@@ -52,6 +59,7 @@ async function runTests() {
         ],
       },
     });
+    testOrderNumbers.push(codOrderNumber);
 
     console.log(`   ✓ Created COD Order: ${createdCodOrder.orderNumber}`);
     console.log(`     Payment Method: ${createdCodOrder.paymentMethod}`);
@@ -100,6 +108,7 @@ async function runTests() {
         ],
       },
     });
+    testOrderNumbers.push(mbobOrderNumber);
 
     console.log(`   ✓ Created mBoB Order: ${createdMbobOrder.orderNumber}`);
     console.log(`     Payment Method: ${createdMbobOrder.paymentMethod}`);
@@ -162,8 +171,14 @@ async function runTests() {
     console.log('🎉 ALL PAYMENT GATEWAYS, COD, AND ADMIN ORDER CHECKS PASSED PERFECTLY!');
   } catch (err) {
     console.error('❌ Test Failed:', err);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
+    if (testOrderNumbers.length) {
+      await prisma.order.deleteMany({ where: { orderNumber: { in: testOrderNumbers } } }).catch((cleanupError) => {
+        console.error('Could not clean up local payment test orders:', cleanupError.message);
+        process.exitCode = 1;
+      });
+    }
     await prisma.$disconnect();
   }
 }
