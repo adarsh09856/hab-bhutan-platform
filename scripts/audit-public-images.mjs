@@ -61,6 +61,26 @@ function imageUrlsFromHtml(html, pageUrl) {
   return urls;
 }
 
+function stylesheetUrlsFromHtml(html, pageUrl) {
+  const urls = new Set();
+  for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+    const tag = match[0];
+    if (!/\brel=["'][^"']*stylesheet/i.test(tag)) continue;
+    const href = tag.match(/\bhref=["']([^"']+)['"]/i)?.[1];
+    if (href) addUrl(urls, href, pageUrl);
+  }
+  return urls;
+}
+
+function imageUrlsFromCss(css, stylesheetUrl) {
+  const urls = new Set();
+  for (const match of css.matchAll(/url\(\s*(["']?)([^)'"\s]+)\1\s*\)/gi)) {
+    const raw = match[2];
+    if (/\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#]|$)/i.test(raw)) addUrl(urls, raw, stylesheetUrl);
+  }
+  return urls;
+}
+
 async function fetchHtml(path) {
   const url = new URL(path, baseUrl);
   const response = await fetch(url, { signal: AbortSignal.timeout(20_000), redirect: 'follow' });
@@ -73,6 +93,11 @@ async function checkAsset(url) {
   return response.status;
 }
 
+async function fetchStylesheet(url) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(20_000), redirect: 'follow' });
+  return response.ok ? await response.text() : '';
+}
+
 const routes = collectPublicRoutes();
 const pageResults = [];
 for (let index = 0; index < routes.length; index += 5) {
@@ -81,12 +106,29 @@ for (let index = 0; index < routes.length; index += 5) {
 
 const images = new Map();
 const imagePages = new Map();
+const stylesheets = new Map();
 for (const page of pageResults) {
   const pageUrl = new URL(page.path, baseUrl).href;
   for (const imageUrl of imageUrlsFromHtml(page.html, pageUrl)) {
     images.set(imageUrl, (images.get(imageUrl) || 0) + 1);
     if (!imagePages.has(imageUrl)) imagePages.set(imageUrl, new Set());
     imagePages.get(imageUrl).add(page.path);
+  }
+  for (const stylesheetUrl of stylesheetUrlsFromHtml(page.html, pageUrl)) {
+    if (new URL(stylesheetUrl).origin === baseUrl.origin) stylesheets.set(stylesheetUrl, page.path);
+  }
+}
+
+for (const [stylesheetUrl, pagePath] of stylesheets) {
+  try {
+    const css = await fetchStylesheet(stylesheetUrl);
+    for (const imageUrl of imageUrlsFromCss(css, stylesheetUrl)) {
+      images.set(imageUrl, (images.get(imageUrl) || 0) + 1);
+      if (!imagePages.has(imageUrl)) imagePages.set(imageUrl, new Set());
+      imagePages.get(imageUrl).add(`${pagePath} (stylesheet)`);
+    }
+  } catch (error) {
+    console.error(`Stylesheet fetch failed (${error.name || 'REQUEST_FAILED'}): ${stylesheetUrl}`);
   }
 }
 
@@ -106,7 +148,7 @@ for (let index = 0; index < sameOrigin.length; index += 10) {
 }
 
 console.log(`Pages fetched: ${pageResults.length}; non-200 pages: ${pageResults.filter((page) => page.status !== 200).length}`);
-console.log(`Unique rendered image/media URLs: ${images.size}; same-origin checked: ${sameOrigin.length}; external URLs skipped: ${externalCount}`);
+console.log(`Unique rendered and CSS image URLs: ${images.size}; same-origin checked: ${sameOrigin.length}; external URLs skipped: ${externalCount}; same-origin stylesheets scanned: ${stylesheets.size}`);
 if (failures.length) {
   console.error('Failed same-origin image/media URLs:');
   for (const failure of failures) {
@@ -115,5 +157,5 @@ if (failures.length) {
   }
   process.exitCode = 1;
 } else {
-  console.log('No broken same-origin rendered image/media URLs detected in the fetched HTML. CSS-only and client-only images were not covered.');
+  console.log('No broken same-origin image URLs detected in the fetched HTML and linked CSS. External-host and client-only images were not covered.');
 }
