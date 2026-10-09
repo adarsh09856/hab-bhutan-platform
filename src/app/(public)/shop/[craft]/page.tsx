@@ -20,17 +20,19 @@ function ShopGridContent() {
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
   const [productsList, setProductsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [catalogueError, setCatalogueError] = useState(false);
   const collectionParam = searchParams.get('collection');
 
   React.useEffect(() => {
-    fetch('/api/products', { cache: 'no-store' })
-      .then((r) => r.json())
+    fetch('/api/products?shuffle=false', { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error('Catalogue unavailable')))
       .then((data) => {
-        if (data?.products && data.products.length > 0) {
+        if (data?.success && Array.isArray(data.products)) {
           setProductsList(data.products);
-        }
+          setCatalogueError(false);
+        } else throw new Error('Invalid catalogue response');
       })
-      .catch(() => {})
+      .catch(() => setCatalogueError(true))
       .finally(() => setLoading(false));
   }, []);
 
@@ -185,6 +187,10 @@ function ShopGridContent() {
                 <div key={i} className="aspect-[3/4] bg-slate-100 rounded-xl animate-pulse" />
               ))}
             </div>
+          ) : catalogueError ? (
+            <div className="border border-[#CDBEA8] rounded-[14px] p-6 sm:p-12 text-center my-6" role="alert">
+              The product catalogue is temporarily unavailable. Please refresh this page shortly.
+            </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px]">
               {filteredProducts.map((p) => (
@@ -192,7 +198,7 @@ function ShopGridContent() {
                   key={p.code}
                   code={p.code}
                   name={p.name}
-                  priceUSD={p.priceUSD || p.price}
+                  priceUSD={p.priceUSD ?? p.price}
                   craftKey={p.craftKey}
                   region={p.region}
                   maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
@@ -209,7 +215,7 @@ function ShopGridContent() {
                 Nothing listed in {currentCraft?.name || 'this craft'} right now
               </h3>
               <p className="font-lora text-xs sm:text-[16px] text-[#6B5A4C] max-w-[58ch] mb-6 sm:mb-8 leading-[1.6]">
-                HAB buys in batches from registered master artisans, so stock in this category rotates throughout the year. You can commission a custom piece directly or register for restock notifications.
+                No saved products are available in this craft right now. Contact the Secretariat to ask about a custom piece.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link

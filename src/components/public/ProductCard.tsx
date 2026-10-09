@@ -25,7 +25,7 @@ export default function ProductCard({
   craftKey,
   region,
   maker,
-  stock = 12,
+  stock = 0,
   imageUrl,
   images,
 }: ProductCardProps) {
@@ -38,30 +38,24 @@ export default function ProductCard({
     imageUrl || 
     (Array.isArray(images) && images[0]?.url) || 
     (images && typeof images === 'object' && images.url) || 
-    `/images/products/${code.toLowerCase()}.jpg`;
+    '/assets/photos/image-unavailable.svg';
 
   const [imgSrc, setImgSrc] = React.useState(resolvedInitialImage);
 
   React.useEffect(() => {
-    if (imageUrl) {
-      setImgSrc(imageUrl);
-    }
-  }, [imageUrl]);
+    setImgSrc(resolvedInitialImage);
+  }, [resolvedInitialImage]);
 
   return (
     <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
       <Link href={`/product/${code}`} data-cms-img className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
         <img
           src={imgSrc}
-          alt={name}
+          alt={imgSrc.includes('/assets/photos/image-unavailable.svg') ? `Photo unavailable for ${name}` : name}
           loading="lazy"
           className="transition-transform duration-500 ease-out group-hover:scale-105 w-full h-full object-cover object-center"
           onError={() => {
-            if (!imgSrc.includes('/assets/photos/product-')) {
-              setImgSrc(`/assets/photos/product-${code.toLowerCase()}.jpg`);
-            } else if (!imgSrc.includes('hhb01')) {
-              setImgSrc('/assets/photos/product-hhb01.jpg');
-            }
+            if (!imgSrc.includes('/assets/photos/image-unavailable.svg')) setImgSrc('/assets/photos/image-unavailable.svg');
           }}
         />
         <span className="product__ref">
@@ -85,7 +79,7 @@ export default function ProductCard({
           {name}
         </Link>
         <div className="text-[13.5px] text-[#6B5A4C] font-lora">
-          {maker} · {region}
+          {[maker, region].filter(Boolean).join(' · ')}
         </div>
 
         <div className="mt-auto pt-3 flex items-center justify-between">

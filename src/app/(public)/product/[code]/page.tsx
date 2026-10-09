@@ -9,7 +9,7 @@ import { CRAFTS } from '@/lib/data';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
+import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -23,6 +23,7 @@ export default function ProductDetailPage() {
   const [craft, setCraft] = useState<any | null>(null);
   const [related, setRelated] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<'missing' | 'unavailable'>('missing');
   const [activeThumb, setActiveThumb] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -30,28 +31,38 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (!code) return;
     setLoading(true);
+    setProduct(null);
+    setRelated([]);
+    setCraft(null);
+    setActiveThumb(0);
+    setQuantity(1);
 
     fetch(`/api/products/${encodeURIComponent(code)}`, { cache: 'no-store' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.status === 404) throw new Error('missing');
+        if (!r.ok) throw new Error('unavailable');
+        return r.json();
+      })
       .then((data) => {
         if (data?.product) {
           const p = data.product;
           setProduct({
             code: p.code,
             name: p.name,
-            priceUSD: p.priceUSD || p.price || 0,
-            craftKey: p.craftKey || 'thagzo',
+            priceUSD: Number(p.priceUSD ?? p.price ?? 0),
+            stock: Number(p.stock ?? 0),
+            craftKey: p.craftKey || '',
             craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
             maker: typeof p.maker === 'object' ? (p.maker?.name || '') : (p.maker || ''),
             maker_avatar: typeof p.maker === 'object' ? (p.maker?.portraitUrl || '') : '',
-            region: p.region || p.dzongkhag || 'Bhutan',
-            description: p.description || p.desc || 'Handcrafted by registered members of the Handicrafts Association of Bhutan using traditional techniques and locally sourced materials.',
+            region: p.region || p.dzongkhag || '',
+            description: p.description || p.desc || '',
             size: p.size || '',
             weight: p.weight || '',
             materials: p.materials || p.material || '',
             care: p.care || '',
             lead: p.lead || '',
-            image_path: p.image_path || p.imageUrl || `/assets/photos/product-${p.code.toLowerCase()}.jpg`,
+            image_path: p.image_path || p.imageUrl || '/assets/photos/image-unavailable.svg',
             gallery: p.gallery,
             images: p.images,
             maker_blurb: p.maker?.bio || '',
@@ -64,20 +75,20 @@ export default function ProductDetailPage() {
           if (data.related && Array.isArray(data.related) && data.related.length > 0) {
             setRelated(data.related);
           }
-        }
+        } else throw new Error('unavailable');
       })
-      .catch(() => {})
+      .catch((error) => setLoadError(error?.message === 'missing' ? 'missing' : 'unavailable'))
       .finally(() => setLoading(false));
   }, [code]);
 
   const handleAddToCart = () => {
-    if (product) {
+    if (product && product.stock >= quantity) {
       addToCart(product.code, quantity);
     }
   };
 
   const handleBuyNow = () => {
-    if (product) {
+    if (product && product.stock >= quantity) {
       handleAddToCart();
       router.push('/basket');
     }
@@ -103,10 +114,10 @@ export default function ProductDetailPage() {
     return (
       <main id="main">
         <section className="section">
-          <p className="crumbs"><Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / Product not found</p>
+          <p className="crumbs"><Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / {loadError === 'missing' ? 'Product not found' : 'Catalogue unavailable'}</p>
           <div className="shopempty" style={{ display: 'block', margin: '40px auto', maxWidth: '600px', textAlign: 'center' }}>
-            <h2 className="shopempty__title">Piece not in catalogue</h2>
-            <p className="shopempty__body">The craft piece with code &quot;{code}&quot; is not currently listed.</p>
+            <h2 className="shopempty__title">{loadError === 'missing' ? 'Piece not in catalogue' : 'Catalogue temporarily unavailable'}</h2>
+            <p className="shopempty__body">{loadError === 'missing' ? <>The craft piece with code &quot;{code}&quot; is not currently listed.</> : 'Please refresh shortly. Your basket has not been changed.'}</p>
             <div className="actions" style={{ justifyContent: 'center' }}>
               <Link className="btn btn--accent" href="/shop">Browse the e-shop</Link>
               <Link className="btn btn--outline" href="/contact">Contact Secretariat</Link>
@@ -117,7 +128,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const primaryImg = product.image_path || (product.images && product.images[0]?.url) || `/assets/photos/product-${product.code.toLowerCase()}.jpg`;
+  const primaryImg = product.image_path || (product.images && product.images[0]?.url) || '/assets/photos/image-unavailable.svg';
 
   // Build authentic gallery images without cross-craft photo bleeding
   let galleryImages: string[] = [];
@@ -186,7 +197,7 @@ export default function ProductDetailPage() {
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
-                      target.src = '/assets/photos/product-sad03.jpg';
+                      target.src = '/assets/photos/image-unavailable.svg';
                     }}
                   />
                 </div>
@@ -226,7 +237,9 @@ export default function ProductDetailPage() {
                           objectPosition: 'center',
                         }}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = primaryImg;
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = '/assets/photos/image-unavailable.svg';
                         }}
                       />
                     </button>
@@ -254,9 +267,7 @@ export default function ProductDetailPage() {
               Approx. {alt(product.priceUSD)} · EMS tracked delivery included on qualifying orders
             </p>
 
-            <p className="prodbuy__desc" id="prodDesc">
-              {product.description}
-            </p>
+            {product.description && <p className="prodbuy__desc" id="prodDesc">{product.description}</p>}
 
             <div className="prodbuy__actions">
               <label className="visually-hidden" htmlFor="prodQty">Quantity</label>
@@ -265,23 +276,26 @@ export default function ProductDetailPage() {
                 id="prodQty"
                 type="number"
                 min="1"
-                max="20"
+                max={Math.max(1, Math.min(20, product.stock))}
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                disabled={product.stock <= 0}
+                onChange={(e) => setQuantity(Math.min(Math.max(1, Math.min(20, product.stock)), Math.max(1, parseInt(e.target.value) || 1)))}
               />
               <button
                 className="btn btn--accent prodbuy__add"
                 type="button"
                 id="prodAdd"
                 onClick={handleAddToCart}
+                disabled={product.stock <= 0 || quantity > product.stock}
               >
-                Add to basket
+                {product.stock <= 0 ? 'Out of stock' : 'Add to basket'}
               </button>
               <button
                 className="btn btn--outline"
                 type="button"
                 id="prodBuy"
                 onClick={handleBuyNow}
+                disabled={product.stock <= 0 || quantity > product.stock}
               >
                 Buy now
               </button>
@@ -385,10 +399,10 @@ export default function ProductDetailPage() {
               <Link className="product__shot" href={`/product/${rp.code}`}>
                 <figure className="frame frame--square">
                   <img
-                    src={rp.image_path || rp.imageUrl || '/assets/photos/product-hhb01.jpg'}
+                    src={rp.image_path || rp.imageUrl || '/assets/photos/image-unavailable.svg'}
                     alt={rp.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/product-hhb01.jpg'; }}
+                    onError={(e) => { const target = e.target as HTMLImageElement; target.onerror = null; target.src = '/assets/photos/image-unavailable.svg'; }}
                   />
                 </figure>
                 <span className="product__ref">{rp.code}</span>
@@ -420,12 +434,10 @@ export default function ProductDetailPage() {
         )}
       </section>
       
-      <UniversalLiveSectionEditor
+      <ProductQuickEdit
         isOpen={editorOpen}
         onClose={() => setEditorOpen(false)}
-        sectionType="products"
-        sectionTitle={product ? `${product.name} (${product.code})` : 'Product Detail'}
-        studioHref="/admin/products"
+        code={code}
       />
     </main>
   );
