@@ -161,7 +161,7 @@ async function main() {
       if (failDatabase) throw new Error('Test database unavailable');
       return operation({
         product: {
-          findMany: async () => available ? [{ id: 'product-local', code: 'LOCAL-01', name: 'Actual catalogue item', priceUSD: 38 }] : [],
+          findMany: async () => available ? [{ id: 'product-local', code: 'LOCAL-01', name: 'Actual catalogue item', priceUSD: 38, status: 'PUBLISHED' }] : [],
           updateMany: async ({ where }: any) => {
             if (inventory < where.stock.gte) return { count: 0 };
             inventory -= where.stock.gte;

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { SAMPLE_PRODUCTS, SAMPLE_MEMBERS, CRAFTS } from '@/lib/data';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import { isPublicCatalogProduct } from '@/lib/public-catalog-visibility';
 import { PUBLIC_PRODUCT_MAKER_SELECT, toPublicProductMaker } from '@/lib/public-product-maker';
@@ -72,47 +71,9 @@ export async function GET(
       });
     }
 
-    // Fallback lookup from sample data if database not yet migrated
-    const sp = SAMPLE_PRODUCTS.find((p) => p.code.toLowerCase() === code.toLowerCase());
-    if (sp) {
-      const craft = CRAFTS.find((c) => c.key === sp.craftKey) || CRAFTS[0];
-      const maker = SAMPLE_MEMBERS.find((m) => m.name === sp.maker);
-
-      const related = SAMPLE_PRODUCTS.filter(
-        (p) => p.craftKey === sp.craftKey && p.code !== sp.code
-      ).slice(0, 4);
-
-      return NextResponse.json({
-        success: true,
-        product: {
-          id: sp.code,
-          code: sp.code,
-          name: sp.name,
-          priceUSD: sp.price,
-          craftKey: sp.craftKey,
-          region: sp.region,
-          stock: 10,
-          status: 'PUBLISHED',
-          description: (sp as any).material || (sp as any).desc || 'Authentic Bhutanese handcrafted object.',
-          images: [{ url: `/images/products/${sp.code.toLowerCase()}.jpg`, role: 'primary' }],
-          craft,
-          maker: maker
-            ? {
-                name: maker.name,
-                dzongkhag: maker.dz,
-                bio: maker.bio,
-                regNumber: 'HAB-M-01',
-                tier: (maker as any).tier || 'ACTIVE_SECTOR_MEMBER',
-              }
-            : null,
-        },
-        related,
-        fallback: true,
-      });
-    }
-
     return NextResponse.json({ error: 'Product not found' }, { status: 404 });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Error fetching product' }, { status: 500 });
+    console.error('[products/detail] Catalogue read failed:', err);
+    return NextResponse.json({ error: 'The product catalogue is temporarily unavailable.' }, { status: 503 });
   }
 }

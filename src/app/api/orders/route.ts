@@ -8,6 +8,7 @@ import { getSessionUser, requirePermission, AuthError } from '@/lib/rbac';
 import { sendOrderConfirmationEmail } from '@/lib/email-service';
 import { notifyStaff } from '@/lib/transaction-notifications';
 import { resolveBankTransferConfig } from '@/lib/payments';
+import { isPublicCatalogProduct } from '@/lib/public-catalog-visibility';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { getFallbackOrders } from '@/lib/order-store';
@@ -234,13 +235,13 @@ export async function POST(req: NextRequest) {
       finalOrder = await prisma.$transaction(async (tx) => {
         const products = await tx.product.findMany({
           where: { code: { in: [...quantities.keys()] }, status: 'PUBLISHED' },
-          select: { id: true, code: true, name: true, priceUSD: true },
+          select: { id: true, code: true, name: true, priceUSD: true, status: true },
         });
         if (products.length !== quantities.size) throw new CheckoutValidationError('One or more products are unavailable. Refresh your basket and try again.');
         const byCode = new Map(products.map(product => [product.code.toUpperCase(), product]));
         const resolvedItems = [...quantities].map(([code, quantity]) => {
           const product = byCode.get(code);
-          if (!product || !Number.isFinite(product.priceUSD) || product.priceUSD < 0) throw new CheckoutValidationError(`Product ${code} is unavailable.`);
+          if (!product || !isPublicCatalogProduct(product) || !Number.isFinite(product.priceUSD) || product.priceUSD < 0) throw new CheckoutValidationError(`Product ${code} is unavailable.`);
           return { productId: product.id, code: product.code, name: product.name, priceUSD: product.priceUSD, quantity };
         });
         const subtotalCents = resolvedItems.reduce((sum, item) => sum + Math.round(item.priceUSD * 100) * item.quantity, 0);

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { SAMPLE_PRODUCTS } from '@/lib/data';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import { PUBLIC_PRODUCT_CARD_MAKER_SELECT } from '@/lib/public-product-maker';
 
@@ -62,8 +61,7 @@ export async function GET(req: NextRequest) {
 
     const shouldShuffle = searchParams.get('shuffle') !== 'false' && !sort;
 
-    if (dbProducts.length > 0) {
-      let sortedList = [...dbProducts];
+    let sortedList = [...dbProducts];
 
       // Feedback Item 9: 15-day priority & Catalog Shuffle
       // Products added within the last 15 days stay pinned at the top (newest first).
@@ -105,53 +103,9 @@ export async function GET(req: NextRequest) {
       response.headers.set('Pragma', 'no-cache');
       response.headers.set('Expires', '0');
       return response;
-    }
 
-    // Fallback to SAMPLE_PRODUCTS mapped to match schema if DB has not been seeded yet
-    let fallback = SAMPLE_PRODUCTS.map((sp) => ({
-      id: sp.code,
-      code: sp.code,
-      name: sp.name,
-      priceUSD: sp.price,
-      craftKey: sp.craftKey,
-      region: sp.region,
-      stock: 10,
-      status: 'PUBLISHED',
-      description: (sp as any).material || (sp as any).desc || 'Authentic Bhutanese handcrafted object.',
-      images: [{ url: `/images/products/${sp.code.toLowerCase()}.jpg`, role: 'primary' }],
-      craft: { key: sp.craftKey, name: sp.craftKey, english: sp.craftKey },
-      maker: { name: sp.maker, dzongkhag: sp.region },
-    }));
-
-    if (craft && craft !== 'all') {
-      fallback = fallback.filter((p) => p.craftKey === craft);
-    }
-    if (collection === 'under50') {
-      fallback = fallback.filter((p) => p.priceUSD < 50);
-    }
-    if (q) {
-      fallback = fallback.filter((p) => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
-    }
-    if (sort === 'low') {
-      fallback.sort((a, b) => a.priceUSD - b.priceUSD);
-    } else if (sort === 'high') {
-      fallback.sort((a, b) => b.priceUSD - a.priceUSD);
-    } else if (shouldShuffle && fallback.length > 1) {
-      for (let i = fallback.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [fallback[i], fallback[j]] = [fallback[j], fallback[i]];
-      }
-    }
-    if (limit) {
-      fallback = fallback.slice(0, limit);
-    }
-
-    return NextResponse.json({
-      success: true,
-      products: fallback,
-      fallback: true,
-    });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    console.error('[products] Catalogue read failed:', err);
+    return NextResponse.json({ success: false, error: 'The product catalogue is temporarily unavailable.' }, { status: 503 });
   }
 }
