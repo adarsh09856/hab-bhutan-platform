@@ -8,7 +8,12 @@ assert(['localhost', '127.0.0.1'].includes(new URL(base).hostname), 'Only local 
 assert(['localhost', '127.0.0.1'].includes(new URL(process.env.DATABASE_URL).hostname), 'Only a local database is permitted.');
 const prisma = new PrismaClient();
 let fixture;
+let unnamedFixture;
 try {
+  unnamedFixture = await prisma.governanceRecord.create({ data: {
+    category: 'BOARD_OF_TRUSTEES', roleTitle: `Unconfirmed role ${Date.now()}`,
+    individualName: 'Name to confirm', chapterOrNote: 'Role awaiting confirmation', sortOrder: 9998,
+  }});
   fixture = await prisma.governanceRecord.create({ data: {
     category: 'BOARD_OF_TRUSTEES', roleTitle: 'Local display verification',
     individualName: `Local verification ${Date.now()}`,
@@ -24,8 +29,17 @@ try {
   assert.equal(person.note, 'Local test note', 'Internal legacy photo syntax must not appear in public notes.');
   const html = await (await fetch(`${base}/board-of-trustees`)).text();
   assert(html.includes(fixture.individualName) && html.includes(fixture.bio), 'Saved board member must render publicly.');
+  assert(html.includes(unnamedFixture.roleTitle) && html.includes('Name to be confirmed'), 'Unnamed saved trustee roles must remain visible.');
+  const members = await prisma.member.findMany({ where: { status: 'VERIFIED' }, select: { name: true, regNumber: true } });
+  const memberHtml = await (await fetch(`${base}/members`)).text();
+  for (const member of members) {
+    assert(memberHtml.includes(member.name.replaceAll('&', '&amp;')), 'Verified registry member must appear in directory.');
+    assert(memberHtml.includes(encodeURIComponent(member.regNumber)), 'Member profile link must use registered number.');
+  }
+  console.log(`PASS: unnamed trustee roles and ${members.length} verified registry members render publicly.`);
   console.log('PASS: saved board name, portrait, biography and clean note reach public API/page.');
 } finally {
   if (fixture) await prisma.governanceRecord.delete({ where: { id: fixture.id } });
+  if (unnamedFixture) await prisma.governanceRecord.delete({ where: { id: unnamedFixture.id } });
   await prisma.$disconnect();
 }

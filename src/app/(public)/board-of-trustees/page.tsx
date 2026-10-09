@@ -20,13 +20,13 @@ async function getBoardData() {
       orderBy: { sortOrder: 'asc' },
     });
     return records
-      .filter((record) => isConfirmedPublicPersonName(record.individualName))
       .map((r) => {
         const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
           ? (r.chapterOrNote || '').split('||photo:')
           : [r.chapterOrNote || '', ''];
         return {
-          name: r.individualName,
+          name: isConfirmedPublicPersonName(r.individualName) ? r.individualName : 'Name to be confirmed',
+          confirmed: isConfirmedPublicPersonName(r.individualName),
           role: r.roleTitle,
           note: cleanNote.trim(),
           photo: r.photoUrl || photo.trim() || '',
@@ -115,7 +115,7 @@ export default async function BoardOfTrusteesPage() {
                   {member.bio && <p className="text-xs text-stone-600 mt-3 leading-relaxed">{member.bio}</p>}
                 </div>
                 <div className="pt-4 mt-4 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400 font-mono">
-                  <span>Accredited Trustee</span>
+                  <span>{member.confirmed ? 'Board of Trustees' : 'Name awaiting HAB confirmation'}</span>
                   <span>HAB CSO/2011/043</span>
                 </div>
               </div>

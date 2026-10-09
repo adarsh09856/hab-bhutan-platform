@@ -400,6 +400,16 @@ export default function AdminMembersPage() {
             <span>+</span>
             <span>Register New Member</span>
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setCreateForm({ ...createForm, name: 'Demo member — replace with real name', status: 'PENDING', cidNumber: '', businessLicense: '', phone: '', email: '', portraitUrl: '', bio: '<p>Editable example: describe this member’s craft, experience and work here. Replace the example details before verification.</p>' });
+              setShowCreateModal(true);
+            }}
+            className="px-4 py-2 border border-slate-300 text-xs font-semibold rounded-lg"
+          >
+            Start with editable example
+          </button>
         </div>
       </div>
 

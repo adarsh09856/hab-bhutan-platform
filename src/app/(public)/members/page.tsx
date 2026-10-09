@@ -44,12 +44,15 @@ export default async function MembersPage() {
   const dynamicMemberCounts: Record<string, number> = Object.fromEntries(CLIENT_DATA.crafts.map((craft) => [craft.key, 0]));
   const dynamicRegionCounts = new Map<string, number>();
   let countsAvailable = true;
+  let registeredMembers: { name: string; regNumber: string; craftKey: string | null; dzongkhag: string | null }[] = [];
 
   try {
     const dbMembers = await prisma.member.findMany({
       where: { status: 'VERIFIED' },
-      select: { craftKey: true, dzongkhag: true },
+      select: { name: true, regNumber: true, craftKey: true, dzongkhag: true },
+      orderBy: { name: 'asc' },
     });
+    registeredMembers = dbMembers;
     dbMembers.forEach((m) => {
       if (m.craftKey && dynamicMemberCounts[m.craftKey] !== undefined) {
         dynamicMemberCounts[m.craftKey] += 1;
@@ -58,7 +61,7 @@ export default async function MembersPage() {
     });
   } catch { countsAvailable = false; }
 
-  const total = Object.values(dynamicMemberCounts).reduce((t, n) => t + n, 0);
+  const total = registeredMembers.length;
 
   const sortedCrafts = CLIENT_DATA.crafts.slice().sort((a, b) => {
     return (dynamicMemberCounts[b.key] || 0) - (dynamicMemberCounts[a.key] || 0);
@@ -102,6 +105,28 @@ export default async function MembersPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="section relative" data-hab-section="registered-members">
+        <SectionEditBadge label="Registered members" studioHref="/admin/members" sectionType="members" />
+        <div className="section__head">
+          <div>
+            <p className="eyebrow eyebrow--accent">Member directory</p>
+            <h2 className="display display--sub">Registered HAB members</h2>
+            <p className="section__lede">Verified records from the membership registry. Contact the secretariat for an introduction.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cms-repeat>
+          {registeredMembers.map((member) => (
+            <article key={member.regNumber} className="rounded-2xl border border-stone-200 bg-white p-6">
+              <h3 className="font-serif text-lg font-bold">{member.name}</h3>
+              <p className="mt-2 text-sm text-stone-600">{CLIENT_DATA.crafts.find((craft) => craft.key === member.craftKey)?.name || member.craftKey || 'Craft not recorded'}</p>
+              {member.dzongkhag && <p className="text-sm text-stone-600">{member.dzongkhag}</p>}
+              <Link className="btn btn--ink btn--sm mt-4" href={`/members/${encodeURIComponent(member.regNumber)}`}>View member profile →</Link>
+            </article>
+          ))}
+        </div>
+        {registeredMembers.length === 0 && <p role="status">{countsAvailable ? 'No verified members have been published yet.' : 'The member directory is temporarily unavailable.'}</p>}
       </section>
 
       {/* 2. By Craft Category */}
