@@ -262,10 +262,11 @@ export default function AdvancedEditorSuite({
                 onChange={(e) => {
                   const val = e.target.value;
                   const autoSlug = val.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                  const previousAutoSlug = form.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                   onChange({
                     title: val,
-                    ...(!form.slug || form.slug === autoSlug.slice(0, -1) ? { slug: autoSlug } : {}),
-                    ...(!form.seoTitle ? { seoTitle: `${val} · Handicrafts Association of Bhutan` } : {}),
+                    ...(!form.slug || form.slug === previousAutoSlug ? { slug: autoSlug } : {}),
+                    ...(!form.seoTitle || form.seoTitle === `${form.title} · Handicrafts Association of Bhutan` ? { seoTitle: `${val} · Handicrafts Association of Bhutan` } : {}),
                   });
                 }}
                 placeholder="e.g. Traditional Paper Making Heritage"

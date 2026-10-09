@@ -14,7 +14,9 @@ export async function GET() {
       .map((r) => ({
         role: r.roleTitle,
         name: r.individualName,
-        note: r.chapterOrNote,
+        note: (r.chapterOrNote || '').split('||photo:')[0].trim(),
+        photo: r.photoUrl || (r.chapterOrNote || '').split('||photo:')[1]?.trim() || '',
+        bio: r.bio || '',
       }));
 
     const team = records
@@ -22,7 +24,9 @@ export async function GET() {
       .map((r) => ({
         role: r.roleTitle,
         name: r.individualName,
-        note: r.chapterOrNote,
+        note: (r.chapterOrNote || '').split('||photo:')[0].trim(),
+        photo: r.photoUrl || (r.chapterOrNote || '').split('||photo:')[1]?.trim() || '',
+        bio: r.bio || '',
       }));
 
     const milestones = records

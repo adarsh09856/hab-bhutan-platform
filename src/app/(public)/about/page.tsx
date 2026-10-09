@@ -6,15 +6,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { isConfirmedPublicPersonName } from '@/lib/public-person-name';
-import { fallbackHeroPhoto } from '@/lib/public-images';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 
 export default function AboutPage() {
   const [siteSettings, setSiteSettings] = useState<any>(null);
   const [governance, setGovernance] = useState<{
-    board: Array<{ role: string; name: string; note: string }>;
-    team: Array<{ role: string; name: string; note: string }>;
+    board: Array<{ role: string; name: string; note: string; photo?: string; bio?: string }>;
+    team: Array<{ role: string; name: string; note: string; photo?: string; bio?: string }>;
     milestones: Array<{ y: string; t: string }>;
   } | null>(null);
 
@@ -366,17 +365,17 @@ export default function AboutPage() {
           {boardList.map((b, idx) => (
             <article key={idx} className="card">
               <figure className="frame frame--square">
-                <img
-                  src={fallbackHeroPhoto(idx)}
-                  alt={b.role}
+                {b.photo ? <img
+                  src={b.photo}
+                  alt={b.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
-                />
+                /> : <div className="flex h-full min-h-32 items-center justify-center bg-stone-100 text-3xl text-stone-600" aria-label="Portrait not supplied">{b.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2)}</div>}
               </figure>
               <div className="card__body">
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{b.role}</p>
                 <h3 className="card__title">{b.name}</h3>
                 <p className="card__meta">{b.note}</p>
+                {b.bio && <p className="card__text">{b.bio}</p>}
               </div>
             </article>
           ))}
@@ -404,17 +403,17 @@ export default function AboutPage() {
           {teamList.map((t, idx) => (
             <div key={idx} className="teamrow">
               <div className="teamrow__avatar" style={{ overflow: 'hidden' }}>
-                <img
-                  src={fallbackHeroPhoto(idx)}
+                {t.photo ? <img
+                  src={t.photo}
                   alt={t.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
-                />
+                /> : <span aria-label="Portrait not supplied">{t.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2)}</span>}
               </div>
               <div>
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{t.role}</p>
                 <p className="teamrow__name">{t.name}</p>
                 <p className="card__meta">{t.note}</p>
+                {t.bio && <p className="card__text">{t.bio}</p>}
               </div>
             </div>
           ))}
