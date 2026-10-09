@@ -143,6 +143,7 @@ export async function GET() {
       shopLede: tb.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
       shopCtaText: tb.shopCtaText || 'Visit the shop →',
       shopCtaLink: tb.shopCtaLink || '/shop',
+      shopProductCodes: Array.isArray(tb.shopProductCodes) ? tb.shopProductCodes.map(String).slice(0, 8) : [],
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });
@@ -252,6 +253,7 @@ export async function GET() {
         shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
         shopCtaText: 'Visit the shop →',
         shopCtaLink: '/shop',
+        shopProductCodes: [],
       };
       const response = NextResponse.json({
         success: true,

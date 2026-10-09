@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { removeRepeatedLead } from '@/lib/display-copy';
+import { selectFeaturedProducts } from '@/lib/featured-products';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -203,6 +204,7 @@ export default function HomePage() {
     shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
     shopCtaText: 'Visit the shop →',
     shopCtaLink: '/shop',
+    shopProductCodes: [] as string[],
     partnersList: CLIENT_VERBATIM.partners,
     homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER,
   });
@@ -370,13 +372,15 @@ export default function HomePage() {
   const displayedProducts = React.useMemo(() => {
     const pool = allProductsPool.length > 0 ? allProductsPool : products;
     if (pool.length === 0) return [];
+    const selection = selectFeaturedProducts(siteSettings.shopProductCodes, pool);
+    if (selection.manual) return selection.products;
     const count = Math.min(8, pool.length);
     const res = [];
     for (let i = 0; i < count; i++) {
       res.push(pool[(productOffset + i) % pool.length]);
     }
     return res;
-  }, [allProductsPool, productOffset, products]);
+  }, [allProductsPool, productOffset, products, siteSettings.shopProductCodes]);
 
   const displayedOutlets = React.useMemo(() => {
     const pool = allOutletsPool.length > 0 ? allOutletsPool : outlets;
@@ -610,6 +614,7 @@ export default function HomePage() {
               shopLede: d.setting.shopLede || prev.shopLede,
               shopCtaText: d.setting.shopCtaText || prev.shopCtaText,
               shopCtaLink: d.setting.shopCtaLink || prev.shopCtaLink,
+              shopProductCodes: Array.isArray(d.setting.shopProductCodes) ? d.setting.shopProductCodes.map(String).slice(0, 8) : [],
               partnersList: Array.isArray(d.setting.partnersList) && d.setting.partnersList.length > 0 ? d.setting.partnersList : prev.partnersList,
               homepageSectionOrder: Array.isArray(d.setting.homepageSectionOrder) && d.setting.homepageSectionOrder.length > 0 ? d.setting.homepageSectionOrder : prev.homepageSectionOrder,
             }));

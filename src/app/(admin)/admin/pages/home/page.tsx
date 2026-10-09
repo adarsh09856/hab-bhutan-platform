@@ -97,6 +97,8 @@ export default function HomePageStudio() {
 
   // Hero slides state
   const [slides, setSlides] = useState<HeroSlide[]>([]);
+  const [shopProductOptions, setShopProductOptions] = useState<any[]>([]);
+  const [shopProductSearch, setShopProductSearch] = useState('');
   const [slideFormOpen, setSlideFormOpen] = useState(false);
   const [editingSlideId, setEditingSlideId] = useState<string | null>(null);
   const [slideForm, setSlideForm] = useState({
@@ -129,6 +131,7 @@ export default function HomePageStudio() {
     shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
     shopCtaText: 'Visit the shop →',
     shopCtaLink: '/shop',
+    shopProductCodes: [] as string[],
     
     // 4 Key Statistics
     stat1Number: '2,500+',
@@ -210,16 +213,47 @@ export default function HomePageStudio() {
           setSettings((prev) => ({
             ...prev,
             ...d.setting,
+            shopProductCodes: Array.isArray(d.setting.shopProductCodes) ? d.setting.shopProductCodes.map(String).slice(0, 8) : [],
             partnersList: parsedPartners,
             homepageSectionOrder: order,
           }));
         }
+      }
+      const productsResponse = await fetch('/api/products?shuffle=false', { cache: 'no-store' });
+      if (productsResponse.ok) {
+        const productData = await productsResponse.json();
+        setShopProductOptions(!productData.fallback && Array.isArray(productData.products) ? productData.products : []);
       }
     } catch (e: any) {
       showToast('error', 'Failed to load homepage settings');
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleShopProduct = (code: string) => {
+    setSettings((current) => {
+      const selected = current.shopProductCodes || [];
+      if (selected.includes(code)) {
+        return { ...current, shopProductCodes: selected.filter((item) => item !== code) };
+      }
+      if (selected.length >= 8) {
+        showToast('error', 'Choose up to 8 products for the homepage arrivals grid.');
+        return current;
+      }
+      return { ...current, shopProductCodes: [...selected, code] };
+    });
+  };
+
+  const moveShopProduct = (code: string, direction: -1 | 1) => {
+    setSettings((current) => {
+      const selected = [...(current.shopProductCodes || [])];
+      const index = selected.indexOf(code);
+      const target = index + direction;
+      if (index < 0 || target < 0 || target >= selected.length) return current;
+      [selected[index], selected[target]] = [selected[target], selected[index]];
+      return { ...current, shopProductCodes: selected };
+    });
   };
 
   const openAddPartner = () => {
@@ -1175,6 +1209,36 @@ export default function HomePageStudio() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">Featured products and display order</label>
+                <p className="text-[11px] text-slate-500 mt-1">Choose up to 8 published products. Use the arrows to set their public order. Leave all unchecked to keep automatic latest-arrival rotation.</p>
+              </div>
+              <input type="search" value={shopProductSearch} onChange={(event) => setShopProductSearch(event.target.value)} placeholder="Search products by name or SKU" className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs text-slate-800 focus:outline-hidden focus:border-[#8B2E24]" />
+              <div className="max-h-80 overflow-y-auto rounded-xl border border-slate-200 divide-y divide-slate-100">
+                {shopProductOptions.length === 0 ? (
+                  <p className="p-4 text-xs text-slate-500">No published products are available to feature.</p>
+                ) : shopProductOptions.filter((product) => `${product.name} ${product.code} ${product.craftKey || ''}`.toLowerCase().includes(shopProductSearch.trim().toLowerCase())).map((product) => {
+                  const selected = (settings.shopProductCodes || []).includes(product.code);
+                  const orderIndex = (settings.shopProductCodes || []).indexOf(product.code);
+                  return (
+                    <div key={product.code} className="flex items-center gap-3 p-3">
+                      <input type="checkbox" checked={selected} onChange={() => toggleShopProduct(product.code)} aria-label={`Feature ${product.name}`} />
+                      {product.image_path && <img src={product.image_path} alt="" className="h-12 w-12 rounded-lg object-cover border border-slate-200" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-semibold text-slate-800">{product.name}</p>
+                        <p className="text-[11px] text-slate-500">{product.code} · {product.craftKey || product.craft?.name || 'Craft'}</p>
+                      </div>
+                      {selected && <span className="text-xs font-semibold text-slate-600">{orderIndex + 1}</span>}
+                      <button type="button" onClick={() => moveShopProduct(product.code, -1)} disabled={!selected || orderIndex <= 0} className="rounded border px-2 py-1 text-xs disabled:opacity-40" aria-label={`Move ${product.name} earlier`}>↑</button>
+                      <button type="button" onClick={() => moveShopProduct(product.code, 1)} disabled={!selected || orderIndex < 0 || orderIndex >= (settings.shopProductCodes || []).length - 1} className="rounded border px-2 py-1 text-xs disabled:opacity-40" aria-label={`Move ${product.name} later`}>↓</button>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-500">Product names, photos and prices remain managed in Products; this setting controls homepage selection and order only.</p>
+            </div>
+
             <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200 flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
                 <ShoppingBag className="w-4 h-4" />
@@ -1182,7 +1246,7 @@ export default function HomePageStudio() {
               <div className="text-xs text-amber-900 space-y-1">
                 <p className="font-bold">Product Catalog & Inventory Live Sync</p>
                 <p className="text-amber-800 leading-relaxed">
-                  Individual products, images, prices (Nu.), craft tags, and stock are managed in the Products CRUD studio. Homepage automatically features the top latest approved products.
+                  Individual product data and stock remain managed in Products. A saved featured selection appears in its chosen order; otherwise latest arrivals rotate automatically.
                 </p>
               </div>
             </div>

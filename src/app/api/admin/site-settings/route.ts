@@ -80,6 +80,7 @@ export async function GET(req: NextRequest) {
     shopLede: tb.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
     shopCtaText: tb.shopCtaText || 'Visit the shop →',
     shopCtaLink: tb.shopCtaLink || '/shop',
+    shopProductCodes: Array.isArray(tb.shopProductCodes) ? tb.shopProductCodes.map(String).slice(0, 8) : [],
     clustersHeroTitle: tb.clustersHeroTitle || 'Artisan clusters',
     clustersHeroLede: tb.clustersHeroLede || 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.',
     clustersCountText: tb.clustersCountText || '{count} clusters listed',
@@ -395,6 +396,21 @@ export async function PUT(req: NextRequest) {
     if (body.shopLede !== undefined) currentTrust.shopLede = body.shopLede;
     if (body.shopCtaText !== undefined) currentTrust.shopCtaText = body.shopCtaText;
     if (body.shopCtaLink !== undefined) currentTrust.shopCtaLink = body.shopCtaLink;
+    if (body.shopProductCodes !== undefined) {
+      if (!Array.isArray(body.shopProductCodes) || body.shopProductCodes.length > 8 || body.shopProductCodes.some((code: unknown) => typeof code !== 'string')) {
+        return NextResponse.json({ success: false, error: 'Select no more than 8 valid product codes.' }, { status: 400 });
+      }
+      const requestedCodes: string[] = [...new Set((body.shopProductCodes as string[]).map((code) => code.trim()).filter(Boolean))];
+      const published = await prisma.product.findMany({
+        where: { code: { in: requestedCodes }, status: 'PUBLISHED' },
+        select: { code: true },
+      });
+      const publishedCodes = new Set(published.map((product) => product.code));
+      if (requestedCodes.some((code) => !publishedCodes.has(code))) {
+        return NextResponse.json({ success: false, error: 'One or more selected products are no longer published.' }, { status: 400 });
+      }
+      currentTrust.shopProductCodes = requestedCodes;
+    }
     for (const key of ['clustersHeroTitle', 'clustersHeroLede', 'clustersCountText', 'clustersRegisterTitle', 'clustersRegisterBody', 'clustersRegisterButton', 'clustersCategoryButton', 'clustersVisitEyebrow', 'clustersVisitTitle', 'clustersVisitBody', 'clustersVisitButton', 'clustersShopEyebrow', 'clustersShopTitle', 'clustersShopBody', 'clustersShopButton'] as const) {
       if (typeof body[key] === 'string') currentTrust[key] = body[key];
     }
@@ -451,6 +467,12 @@ export async function PUT(req: NextRequest) {
       fxRate: updatedLoc.fxRate || 84.0,
       aboutBannerImage: updatedTb.aboutBannerImage || updated.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
       aboutBannerPosition: updatedTb.aboutBannerPosition || 'center 12%',
+      shopEyebrow: updatedTb.shopEyebrow || 'Latest arrivals',
+      shopHeading: updatedTb.shopHeading || 'New in the shop',
+      shopLede: updatedTb.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+      shopCtaText: updatedTb.shopCtaText || 'Visit the shop →',
+      shopCtaLink: updatedTb.shopCtaLink || '/shop',
+      shopProductCodes: Array.isArray(updatedTb.shopProductCodes) ? updatedTb.shopProductCodes.map(String).slice(0, 8) : [],
     } : updated;
 
     return NextResponse.json({ success: true, setting: enrichedUpdated });
