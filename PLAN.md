@@ -2,6 +2,8 @@
 
 ## Current live status and remaining checks — 9 October 2026
 
+Policy release verification: `63f2cc6` is deployed and healthy. Full optimized local and server builds passed (existing lint warnings). Parser plus actual React static-render regression passed heading/body/list separation and `collect`/`free` anchors. Read-only live Terms, Privacy and Shipping returned 200 with zero oversized body-containing headings. **Remaining content/parity issue:** saved policies contain fewer sections than the HTML reference (Terms 6, Privacy 3, Shipping 6 primary headings); static side navigation can still refer to sections not present in saved content. Do not claim full policy-reference parity. No live policy records were edited. Further work must reconcile saved-content navigation and list missing reference sections for HAB-approved content completion.
+
 Reference audit / policy rendering correction: the read-only 34-template heading audit found saved single-newline policy blocks rendered as oversized headings containing their body/list text. Shared policy parsing now separates heading lines, paragraphs and list runs, with Terms/Privacy/Shipping anchor aliases. Parser regression and typecheck passed; combined optimized build and production verification pending. `scripts/audit-reference-headings.mjs` covers all 34 HTML files but reports only SSR heading signals; client-rendered screens and full visual/content parity still need browser checks. No reference files or production policy wording changed.
 
 Release `cd28a14` deployed successfully with final server build and healthy HAB process; member-link/portrait fixes and responsive-image override correction are live. Browser upload/replacement remains UNVERIFIED; helper test alone is not end-to-end evidence.
