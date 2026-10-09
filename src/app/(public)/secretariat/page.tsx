@@ -24,11 +24,20 @@ async function getSecretariatData() {
         const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
           ? (r.chapterOrNote || '').split('||photo:')
           : [r.chapterOrNote || '', ''];
+        const note = cleanNote.trim();
+        const publicNote = confirmed
+          ? note
+          : note
+              .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '')
+              .replace(/\b(?:\+?\s*975[\s-]?)?[17]\d{7}\b/g, '')
+              .replace(/\s*[·,;|]\s*/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
         return {
           name: confirmed ? r.individualName : 'Name to be confirmed',
           confirmed,
           role: r.roleTitle,
-          note: cleanNote.trim(),
+          note: publicNote,
           photo: confirmed ? r.photoUrl || photo.trim() || '' : '',
           phone: confirmed ? r.phone || '' : '',
           email: confirmed ? r.email || '' : '',

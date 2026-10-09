@@ -17,7 +17,9 @@ try {
   }});
   unnamedSecretariatFixture = await prisma.governanceRecord.create({ data: {
     category: 'SECRETARIAT', roleTitle: `Unconfirmed staff role ${Date.now()}`,
-    individualName: 'Name to confirm', chapterOrNote: 'Staff role awaiting confirmation', sortOrder: 9997,
+    individualName: 'Name to confirm',
+    chapterOrNote: 'Staff role awaiting confirmation · +975-17777777 · unconfirmed.person@example.test',
+    sortOrder: 9997,
     phone: '+975-17654321', email: 'private.secretariat.fixture@example.test',
     photoUrl: '/uploads/private-secretariat-fixture.jpg', bio: 'SECRETARIAT_PRIVATE_BIO_FIXTURE',
   }});
@@ -40,7 +42,8 @@ try {
   const secretariatHtml = await (await fetch(`${base}/secretariat`)).text();
   assert(secretariatHtml.includes(unnamedSecretariatFixture.roleTitle), 'Unnamed saved Secretariat roles must remain visible.');
   assert(secretariatHtml.includes('Name to be confirmed'), 'Unconfirmed Secretariat staff must not be assigned invented names.');
-  for (const privateValue of [unnamedSecretariatFixture.phone, unnamedSecretariatFixture.email, unnamedSecretariatFixture.photoUrl, unnamedSecretariatFixture.bio]) {
+  assert(secretariatHtml.includes('Staff role awaiting confirmation'), 'Non-contact portfolio notes should remain visible.');
+  for (const privateValue of [unnamedSecretariatFixture.phone, unnamedSecretariatFixture.email, unnamedSecretariatFixture.photoUrl, unnamedSecretariatFixture.bio, '+975-17777777', 'unconfirmed.person@example.test']) {
     assert(!secretariatHtml.includes(privateValue), 'Unconfirmed Secretariat staff contact details, photos and bios must not render publicly.');
   }
   const members = await prisma.member.findMany({ where: { status: 'VERIFIED' }, select: { name: true, regNumber: true } });
