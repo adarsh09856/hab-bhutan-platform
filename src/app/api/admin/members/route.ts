@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { MemberStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requirePermission(req, 'members:create');
+    let session = await requirePermission(req, 'members:create');
     const body = await req.json();
     const {
       name,
@@ -59,6 +60,19 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Name, craft category, dzongkhag, and CID number are required.' },
         { status: 400 }
       );
+    }
+
+    const requestedStatus = String(status || 'PENDING').toUpperCase();
+    if (!['PENDING', 'VERIFIED', 'REJECTED', 'SUSPENDED'].includes(requestedStatus)) {
+      return NextResponse.json(
+        { success: false, error: 'Choose a valid member status.' },
+        { status: 400 }
+      );
+    }
+    // Creating a profile must not silently publish it. Explicit verification
+    // requires the separate review permission, even for a user who can create.
+    if (requestedStatus === 'VERIFIED') {
+      session = await requirePermission(req, 'members:verify');
     }
 
     const cleanCID = String(cidNumber).replace(/\D/g, '');
@@ -84,7 +98,7 @@ export async function POST(req: NextRequest) {
         joinYear: joinYear ? parseInt(joinYear, 10) : currentYear,
         regNumber: generatedReg,
         tier: tier || 'ACTIVE_SECTOR_MEMBER',
-        status: status || 'VERIFIED',
+        status: requestedStatus as MemberStatus,
         bio: bio || '',
         portraitUrl: portraitUrl || null,
         cidNumber: cleanCID,

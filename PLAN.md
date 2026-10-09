@@ -1094,3 +1094,9 @@ The larger project remains open. In particular, every reference page still needs
 - “Undo override” now reloads the current public page only after the delete request succeeds. This restores the server-rendered original content immediately, including edits applied directly to DOM nodes and global header/footer overrides; a failed request leaves the editor open with its error message.
 - Focused nested-text Quick Edit regression, typecheck, and `git diff --check` passed. Full optimized build is running; deploy and signed-in browser interaction have not yet been recorded.
 
+# Member registration review-safety follow-up — 9 Oct 2026
+
+- New member records now default to `PENDING` in both Admin and the public-page Quick Edit Records form. Admin API rejects invalid status values and requires the distinct `members:verify` permission when a creator explicitly requests `VERIFIED`; ordinary `members:create` alone cannot publish an unreviewed registration. Existing explicit verification flows are unchanged.
+- Admin create form resets to `PENDING` and confirms the status actually saved. Member Quick Edit now offers the four allowed statuses as a select control rather than unrestricted text.
+- `npm run typecheck`, nested-text Quick Edit checks, spreadsheet-validation checks, `git diff --check`, and the full optimized production build passed. The product/member integration verifier now creates a pending member by default, explicitly verifies it with the separate review permission, and checks the state transition. The local app was not running on its expected test ports and the local database port was unreachable, so the updated HTTP/DB integration verifier has not run; this code change has not been deployed.
+

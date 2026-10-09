@@ -51,7 +51,7 @@ export default function AdminMembersPage() {
     dzongkhag: 'Thimphu',
     joinYear: new Date().getFullYear().toString(),
     tier: 'ACTIVE_SECTOR_MEMBER',
-    status: 'VERIFIED',
+    status: 'PENDING',
     cidNumber: '',
     businessLicense: '',
     village: '',
@@ -128,7 +128,7 @@ export default function AdminMembersPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setActionSuccess(`✓ Member "${data.member.name}" successfully registered (${data.member.regNumber}).`);
+        setActionSuccess(`✓ Member "${data.member.name}" added as ${data.member.status} (${data.member.regNumber}).`);
         if (data.member) {
           setMembers((prev) => [data.member, ...prev]);
         }
@@ -139,7 +139,7 @@ export default function AdminMembersPage() {
           dzongkhag: 'Thimphu',
           joinYear: new Date().getFullYear().toString(),
           tier: 'ACTIVE_SECTOR_MEMBER',
-          status: 'VERIFIED',
+          status: 'PENDING',
           cidNumber: '',
           businessLicense: '',
           village: '',

@@ -137,7 +137,7 @@ const configs: Record<string, Config> = {
       { key: 'name', label: 'Name', required: true }, { key: 'craftKey', label: 'Craft key', required: true },
       { key: 'dzongkhag', label: 'Dzongkhag', required: true }, { key: 'cidNumber', label: 'CID (11 digits)', required: true },
       { key: 'regNumber', label: 'Registration number' }, { key: 'tier', label: 'Membership tier' },
-      { key: 'status', label: 'Status' }, { key: 'joinYear', label: 'Join year', kind: 'number' },
+      { key: 'status', label: 'Status', kind: 'select', options: ['PENDING', 'VERIFIED', 'REJECTED', 'SUSPENDED'] }, { key: 'joinYear', label: 'Join year', kind: 'number' },
       { key: 'bio', label: 'Biography', kind: 'long' }, { key: 'portraitUrl', label: 'Portrait', kind: 'image' },
       { key: 'businessLicense', label: 'Business licence' }, { key: 'duesExpiryDate', label: 'Dues expiry', kind: 'date' },
     ],
@@ -304,7 +304,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     if ('isPublished' in next) next.isPublished = true;
     if ('year' in next) next.year = new Date().getFullYear();
     if ('closingDate' in next) next.closingDate = new Date().toISOString().slice(0, 10);
-    if ('status' in next) next.status = sectionType === 'tenders' ? 'OPEN' : sectionType === 'members' ? 'VERIFIED' : sectionType === 'products' ? 'PUBLISHED' : 'current';
+    if ('status' in next) next.status = sectionType === 'tenders' ? 'OPEN' : sectionType === 'members' ? 'PENDING' : sectionType === 'products' ? 'PUBLISHED' : 'current';
     if (sectionType === 'wholesale') { next.status = 'PENDING'; next.country = 'Bhutan'; next.discountTier = 20; }
     if (sectionType === 'donate') { next.status = 'PENDING'; next.frequency = 'ONE_TIME'; }
     setDraft(next); setMessage('');
