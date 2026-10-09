@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { MemberStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const user = await getSessionUser(req);
-  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-  if (!user || !['super_admin', 'staff_operator'].includes(role)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    const user = await requirePermission(req, 'members:create');
     const { rows } = await req.json();
     if (!Array.isArray(rows) || rows.length === 0) {
       return NextResponse.json({ error: 'No rows provided for bulk member import' }, { status: 400 });
@@ -29,6 +24,7 @@ export async function POST(req: NextRequest) {
     const seenCids = new Set<string>();
     const existingMembers = await prisma.member.findMany({ select: { cidNumber: true } });
     const existingCids = new Set(existingMembers.map((member) => member.cidNumber.trim().toLowerCase()));
+    const crafts = new Set((await prisma.craft.findMany({ select: { key: true } })).map(craft => craft.key));
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
@@ -43,6 +39,21 @@ export async function POST(req: NextRequest) {
       const name = String(row.name || '').trim();
       if (!name || !row.craftKey || !row.dzongkhag || !cidNumber) {
         badRows.push({ rowNumber, reason: 'Name, craft, dzongkhag and CID/license are required.' });
+        continue;
+      }
+      const craftKey = String(row.craftKey).trim().toLowerCase();
+      const email = String(row.email || '').trim().toLowerCase();
+      const joinYear = Number(row.joinYear || new Date().getFullYear());
+      if (!crafts.has(craftKey)) {
+        badRows.push({ rowNumber, reason: 'Unknown craft key. Choose a configured HAB craft.' });
+        continue;
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        badRows.push({ rowNumber, reason: 'Contact email is invalid.' });
+        continue;
+      }
+      if (!Number.isInteger(joinYear) || joinYear < 1900 || joinYear > new Date().getFullYear()) {
+        badRows.push({ rowNumber, reason: 'Join year must be a whole year from 1900 to the current year.' });
         continue;
       }
       const normalizedCid = cidNumber.toLowerCase();
@@ -61,18 +72,18 @@ export async function POST(req: NextRequest) {
           data: {
             id: memberId,
             name,
-            craftKey: row.craftKey || 'thagzo',
+            craftKey,
             dzongkhag: row.dzongkhag || 'Thimphu',
             cidNumber,
             regNumber,
             businessLicense: row.businessLicense || null,
             village: String(row.village || '').trim() || null,
             phone: String(row.phone || '').trim() || null,
-            email: String(row.email || '').trim().toLowerCase() || null,
+            email: email || null,
             tier: row.tier || 'ACTIVE_SECTOR_MEMBER',
             status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(String(row.status || '').toUpperCase())
               ? String(row.status).toUpperCase() as MemberStatus : MemberStatus.PENDING,
-            joinYear: row.joinYear ? parseInt(String(row.joinYear), 10) : new Date().getFullYear(),
+            joinYear,
             bio: bioText,
             portraitUrl: null,
             duesExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
@@ -105,7 +116,7 @@ export async function POST(req: NextRequest) {
     console.error('Error during members bulk import:', err);
     return NextResponse.json(
       { error: err.message || 'Internal error during member bulk import' },
-      { status: 500 }
+      { status: err.statusCode || 500 }
     );
   }
 }

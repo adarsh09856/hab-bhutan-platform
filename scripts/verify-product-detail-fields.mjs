@@ -16,6 +16,7 @@ let role;
 let user;
 let productId;
 let memberId;
+const importCid = `LOCAL-IMPORT-${suffix}`;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -132,8 +133,23 @@ try {
   const memberPublic = await fetch(`${baseUrl}/api/members?slug=${encodeURIComponent(memberCreated.member.regNumber)}`).then(r => r.json());
   assert(memberPublic.member && !('phone' in memberPublic.member) && !('email' in memberPublic.member), 'Public directory exposed private contact details.');
   console.log('PASS: member contact create/update/admin read and public contact privacy.');
+  const importRows = [{ _sourceRowNumber: 2, name: `Temporary import verification ${suffix}`, cidNumber: importCid, craftKey: craft.key, dzongkhag: 'Thimphu', village: 'Import village', phone: 'Import contact', email: 'import@example.invalid' }, { _sourceRowNumber: 3, name: 'Invalid craft', cidNumber: `INVALID-${suffix}`, craftKey: 'unknown-craft', dzongkhag: 'Thimphu' }];
+  const imported = await request('/api/admin/members/import', token, { method: 'POST', body: JSON.stringify({ rows: importRows }) });
+  assert(imported.count === 1 && imported.badRows.some(row => row.rowNumber === 3 && /craft/.test(row.reason)), 'Import did not report the invalid craft against its original row.');
+  const importedMember = await prisma.member.findFirst({ where: { cidNumber: importCid } });
+  assert(importedMember?.status === 'PENDING' && importedMember.email === 'import@example.invalid' && importedMember.phone === 'Import contact' && importedMember.village === 'Import village', 'Imported member lost pending status or contacts.');
+  const repeated = await request('/api/admin/members/import', token, { method: 'POST', body: JSON.stringify({ rows: [importRows[0]] }) });
+  assert(repeated.count === 0 && repeated.skippedCount === 1, 'Repeat upload created duplicate members.');
+  assert(await prisma.member.count({ where: { cidNumber: importCid } }) === 1, 'Repeat upload changed the identity count.');
+  const anonymousImport = await fetch(`${baseUrl}/api/admin/members/import`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rows: importRows }) });
+  assert(anonymousImport.status === 401, 'Anonymous member import was not denied.');
+  await prisma.user.update({ where: { id: user.id }, data: { status: 'SUSPENDED' } });
+  const suspendedImport = await fetch(`${baseUrl}/api/admin/members/import`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: `hab_session=${token}` }, body: JSON.stringify({ rows: importRows }) });
+  assert(suspendedImport.status === 403, 'A suspended staff account could import using its old token.');
+  console.log('PASS: member import permissions, contacts, pending default, invalid-row reporting and duplicate re-upload.');
   console.log('PASS: authenticated product create, public read, update and admin list; all five detail fields round-tripped.');
 } finally {
+  await prisma.member.deleteMany({ where: { cidNumber: importCid } });
   if (memberId) await prisma.member.deleteMany({ where: { id: memberId } });
   if (productId) await prisma.product.deleteMany({ where: { id: productId } });
   if (user) {

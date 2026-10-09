@@ -401,7 +401,7 @@ export function validateMemberImport(
     const email = row[6]?.trim().toLowerCase();
     const tier = row[7]?.trim().toUpperCase() || 'ACTIVE_SECTOR_MEMBER';
     const status = row[8]?.trim().toUpperCase() || 'PENDING';
-    const joinYear = parseInt(row[9]?.trim() || new Date().getFullYear().toString(), 10);
+    const joinYear = Number(row[9]?.trim() || new Date().getFullYear().toString());
     const bio = row[10]?.trim();
 
     if (!name) {
@@ -418,6 +418,14 @@ export function validateMemberImport(
     }
     if (!dzongkhag) {
       badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required Dzongkhag.' });
+      continue;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Contact email is invalid.' });
+      continue;
+    }
+    if (!Number.isInteger(joinYear) || joinYear < 1900 || joinYear > new Date().getFullYear()) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: 'Join year must be a whole year from 1900 to the current year.' });
       continue;
     }
 
