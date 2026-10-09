@@ -1034,12 +1034,12 @@ export default function AdminOrdersPage() {
                         </div>
                       </div>
 
-                      {/* mBoB Journal Display */}
-                      {inspectingOrder.paymentMethod === 'MBOB' && (
+                      {/* Mobile-bank transfer reference */}
+                      {['MBOB', 'BNB'].includes(inspectingOrder.paymentMethod) && (
                         <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-lg text-[11px] space-y-1">
                           <div className="text-teal-900 font-semibold flex items-center gap-1">
                             <QrCode className="w-3.5 h-3.5 text-teal-700" />
-                            <span>Customer mBoB Transaction Journal:</span>
+                            <span>Customer {inspectingOrder.paymentMethod === 'BNB' ? 'BNB / mPay transfer' : 'mBoB transaction'} reference:</span>
                           </div>
                           <div className="font-mono font-bold text-teal-950 text-xs pl-5">
                             {inspectingOrder.mBOBTransactionRef || 'No reference entered yet'}

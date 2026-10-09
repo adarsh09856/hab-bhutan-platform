@@ -114,13 +114,13 @@ export async function POST(req: NextRequest) {
 
     // Strict normalization for PaymentMethod ('CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD')
     const rawPayment = String(paymentMethod || 'CARD').trim().toUpperCase();
-    let normalizedPaymentMethod: 'CARD' | 'MBOB' | 'BANK' | 'COD' = 'CARD';
+    let normalizedPaymentMethod: 'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD' = 'CARD';
     if (rawPayment === 'COD' || rawPayment.includes('CASH') || rawPayment.includes('DELIVERY')) {
       normalizedPaymentMethod = 'COD';
     } else if (rawPayment === 'MBOB' || rawPayment.includes('MBOB') || rawPayment.includes('MOBILE')) {
       normalizedPaymentMethod = 'MBOB';
     } else if (rawPayment === 'BNB' || rawPayment.includes('BNB')) {
-      normalizedPaymentMethod = 'MBOB'; // Map to mobile banking enum
+      normalizedPaymentMethod = 'BNB';
     } else if (rawPayment === 'BANK' || rawPayment.includes('BANK') || rawPayment.includes('WIRE') || rawPayment.includes('TRANSFER')) {
       normalizedPaymentMethod = 'BANK';
     } else {
@@ -150,6 +150,12 @@ export async function POST(req: NextRequest) {
       internalNotes = body.mBOBTransactionRef
         ? `[mBoB] Customer submitted Journal Ref: ${body.mBOBTransactionRef}. Verify with Bank of Bhutan before dispatch.`
         : '[mBoB] Awaiting mBoB journal confirmation.';
+    } else if (normalizedPaymentMethod === 'BNB') {
+      initialPaymentStatus = 'PENDING';
+      initialOrderStatus = 'PROCESSING';
+      internalNotes = body.mBOBTransactionRef
+        ? `[BNB / mPay] Customer submitted transfer Ref: ${body.mBOBTransactionRef}. Verify with Bhutan National Bank before dispatch.`
+        : '[BNB / mPay] Awaiting bank transfer confirmation.';
     } else if (normalizedPaymentMethod === 'BANK') {
       initialPaymentStatus = 'PENDING';
       initialOrderStatus = 'PENDING_PAYMENT';

@@ -308,3 +308,35 @@ export function updateFallbackOrder(
 
   return updated;
 }
+
+/** Remove one exact fallback order identifier (used by isolated local QA cleanup). */
+export function deleteFallbackOrder(orderNumberOrId: string): boolean {
+  const key = String(orderNumberOrId || '').trim();
+  if (!key) return false;
+  let removed = false;
+
+  for (let index = MEMORY_ORDERS.length - 1; index >= 0; index -= 1) {
+    if (MEMORY_ORDERS[index].orderNumber === key || MEMORY_ORDERS[index].id === key) {
+      MEMORY_ORDERS.splice(index, 1);
+      removed = true;
+    }
+  }
+
+  try {
+    const filePath = getStoreFilePath();
+    if (fs.existsSync(filePath)) {
+      const parsed = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      if (!Array.isArray(parsed)) throw new Error('Fallback order store is not an array.');
+      const retained = parsed.filter((order) => order?.orderNumber !== key && order?.id !== key);
+      if (retained.length !== parsed.length) {
+        fs.writeFileSync(filePath, JSON.stringify(retained, null, 2), 'utf-8');
+        removed = true;
+      }
+    }
+  } catch (error) {
+    console.warn('[order-store] Could not remove the specified fallback order:', error);
+    return false;
+  }
+
+  return removed;
+}

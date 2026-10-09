@@ -293,15 +293,16 @@ export default function OrderConfirmationPage() {
             </div>
           )}
 
-          {order?.paymentMethod === 'MBOB' && (
+          {['MBOB', 'BNB'].includes(order?.paymentMethod) && (
             <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-3">
               <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
                 <QrCode className="w-4 h-4 text-emerald-700" />
-                <span>Bhutan Mobile Pay (mBoB / BNB Pay)</span>
+                <span>{order.paymentMethod === 'BNB' ? 'Bhutan National Bank (BNB / mPay)' : 'Bank of Bhutan (mBoB)'}</span>
               </div>
               <p className="text-[#6B5A4C] leading-relaxed">
-                Thank you for your local order. If you have not already entered your transaction journal number, please send your payment screenshot with order reference <strong>{orderNumber}</strong> to our secretariat via WhatsApp at <strong>+975-2-338089</strong> or email <strong>officehab@gmail.com</strong>.
+                Thank you for your local order. Your transfer will remain pending until HAB verifies it. If you have not already entered your transaction reference, please send your payment screenshot with order reference <strong>{orderNumber}</strong> to our secretariat via WhatsApp at <strong>+975-2-338089</strong> or email <strong>officehab@gmail.com</strong>.
               </p>
+              {order.mBOBTransactionRef && <p className="font-mono text-emerald-950">Transfer reference: {order.mBOBTransactionRef}</p>}
             </div>
           )}
 
