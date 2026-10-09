@@ -136,6 +136,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (['MBOB', 'BNB'].includes(normalizedPaymentMethod) && !String(body.mBOBTransactionRef || '').trim()) {
+      const provider = normalizedPaymentMethod === 'BNB' ? 'BNB / mPay' : 'mBoB';
+      return NextResponse.json(
+        { success: false, error: `Enter the ${provider} transfer reference before placing your order.` },
+        { status: 400 }
+      );
+    }
+
     let initialPaymentStatus: 'PAID' | 'PENDING' = 'PENDING';
     let initialOrderStatus: 'PROCESSING' | 'PENDING_PAYMENT' = 'PENDING_PAYMENT';
     let internalNotes = '';
@@ -146,13 +154,13 @@ export async function POST(req: NextRequest) {
       internalNotes = '[CASH ON DELIVERY] Payment to be collected in cash or via mBoB upon courier arrival.';
     } else if (normalizedPaymentMethod === 'MBOB') {
       initialPaymentStatus = 'PENDING';
-      initialOrderStatus = 'PROCESSING';
+      initialOrderStatus = 'PENDING_PAYMENT';
       internalNotes = body.mBOBTransactionRef
         ? `[mBoB] Customer submitted Journal Ref: ${body.mBOBTransactionRef}. Verify with Bank of Bhutan before dispatch.`
         : '[mBoB] Awaiting mBoB journal confirmation.';
     } else if (normalizedPaymentMethod === 'BNB') {
       initialPaymentStatus = 'PENDING';
-      initialOrderStatus = 'PROCESSING';
+      initialOrderStatus = 'PENDING_PAYMENT';
       internalNotes = body.mBOBTransactionRef
         ? `[BNB / mPay] Customer submitted transfer Ref: ${body.mBOBTransactionRef}. Verify with Bhutan National Bank before dispatch.`
         : '[BNB / mPay] Awaiting bank transfer confirmation.';

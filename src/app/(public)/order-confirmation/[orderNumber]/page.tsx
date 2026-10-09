@@ -267,7 +267,7 @@ export default function OrderConfirmationPage() {
                 <span>Bank Wire Transfer Instructions</span>
               </div>
               <p className="text-[#6B5A4C] leading-relaxed">
-                Please wire or deposit the total amount to HAB&apos;s official CSO treasury account. Your order will be marked <strong>PAID</strong> and dispatched immediately upon receipt:
+                Please wire or deposit the total amount to HAB&apos;s official account. Your order remains <strong>pending payment</strong> until HAB verifies receipt; dispatch begins only after payment and order details are confirmed:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-white/80 rounded-xl border border-amber-500/20 font-mono text-[11px] text-[#33261F]">
                 <div>
@@ -300,7 +300,7 @@ export default function OrderConfirmationPage() {
                 <span>{order.paymentMethod === 'BNB' ? 'Bhutan National Bank (BNB / mPay)' : 'Bank of Bhutan (mBoB)'}</span>
               </div>
               <p className="text-[#6B5A4C] leading-relaxed">
-                Thank you for your local order. Your transfer will remain pending until HAB verifies it. If you have not already entered your transaction reference, please send your payment screenshot with order reference <strong>{orderNumber}</strong> to our secretariat via WhatsApp at <strong>+975-2-338089</strong> or email <strong>officehab@gmail.com</strong>.
+                Your order remains <strong>pending payment</strong> until HAB verifies this transfer. Dispatch begins only after payment and order details are confirmed. If you need to send a receipt, include order reference <strong>{orderNumber}</strong> and contact our secretariat via WhatsApp at <strong>+975-2-338089</strong> or email <strong>officehab@gmail.com</strong>.
               </p>
               {order.mBOBTransactionRef && <p className="font-mono text-emerald-950">Transfer reference: {order.mBOBTransactionRef}</p>}
             </div>

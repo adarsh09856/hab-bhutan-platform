@@ -22,6 +22,22 @@ try {
   const healthResponse = await fetch(`${baseUrl}/api/admin/health`);
   const health = await healthResponse.json();
   if (!healthResponse.ok || health?.database?.connected !== true) throw new Error('Local app database health check failed.');
+
+  for (const method of ['BNB', 'MBOB']) {
+    const missingReference = await fetch(`${baseUrl}/api/orders`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-bypass-rate-limit': 'true' },
+      body: JSON.stringify({
+        items: [{ code: `NO-REF-${method}-${suffix}`, name: 'Must not be created', quantity: 1, priceUsd: 1 }],
+        currency: 'BTN', paymentMethod: method, customerName: 'Local reference guard', email,
+      }),
+    });
+    const missingBody = await missingReference.json();
+    if (missingReference.status !== 400 || !/transfer reference/i.test(missingBody.error || '')) {
+      throw new Error(`${method} checkout without a transaction reference was not rejected.`);
+    }
+  }
+
   const craft = await prisma.craft.findFirst({ select: { key: true } });
   if (!craft) throw new Error('No local craft record exists for a temporary test product.');
   const product = await prisma.product.create({
@@ -51,11 +67,13 @@ try {
   orderNumber = result.order.orderNumber;
   const saved = await prisma.order.findUnique({ where: { id: orderId }, include: { orderItems: true } });
   if (saved?.paymentMethod !== 'BNB') throw new Error(`Expected BNB, saved method was ${saved?.paymentMethod}.`);
-  if (saved?.paymentStatus !== 'PENDING') throw new Error(`Unverified bank transfer must remain pending, got ${saved?.paymentStatus}.`);
+  if (saved?.paymentStatus !== 'PENDING' || saved?.orderStatus !== 'PENDING_PAYMENT') {
+    throw new Error(`Unverified bank transfer must remain PENDING/PENDING_PAYMENT, got ${saved?.paymentStatus}/${saved?.orderStatus}.`);
+  }
   if (saved?.mBOBTransactionRef !== `BNB-REF-${suffix}`) throw new Error('BNB transfer reference did not persist.');
   if (!saved?.internalNotes?.includes('BNB / mPay')) throw new Error('BNB verification instructions were not retained for staff.');
 
-  console.log('PASS: BNB stays distinct from mBoB, its transfer reference persists, and the new order remains pending verification.');
+  console.log('PASS: missing BNB/mBoB references are rejected; BNB stays distinct from mBoB; its reference persists; and the order remains pending payment verification.');
 } finally {
   if (orderId) {
     await prisma.orderItem.deleteMany({ where: { orderId } }).catch(() => {});
