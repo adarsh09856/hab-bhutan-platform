@@ -110,7 +110,11 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
         stock: Number(form.stock), craftKey: form.craftKey, region: form.region.trim(),
         makerMemberId: form.makerMemberId || null, status: form.status,
         size: form.size, weight: form.weight, materials: form.materials, care: form.care, lead: form.lead,
-        images: form.imageUrls.map((url, index) => ({ url, role: index === 0 ? 'primary' : 'gallery' })),
+        // Preserve any image captions, alt text, and other saved metadata when
+        // the editor changes only text or pricing.
+        ...((creating || JSON.stringify(form.imageUrls) !== JSON.stringify(originalForm.imageUrls))
+          ? { images: form.imageUrls.map((url, index) => ({ url, role: index === 0 ? 'primary' : 'gallery' })) }
+          : {}),
         ...(creating ? { code: form.code.trim().toUpperCase() } : {}),
       };
       const response = await fetch('/api/admin/products', {
