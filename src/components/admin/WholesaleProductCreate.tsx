@@ -25,6 +25,14 @@ export default function WholesaleProductCreate({ onCreated }: { onCreated?: () =
       setError('Enter a positive MOQ and distinct increasing quantity breaks at or above the MOQ.');
       return;
     }
+    if (form.enabled && !form.lead.trim()) {
+      setError('Add a production lead time before enabling this product in the wholesale catalogue.');
+      return;
+    }
+    if (tiers.length > 8) {
+      setError('A wholesale product can have at most 8 quantity price breaks.');
+      return;
+    }
     setSaving(true);
     let productCode = createdCode;
     try {
