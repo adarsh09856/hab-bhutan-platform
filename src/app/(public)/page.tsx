@@ -394,32 +394,7 @@ export default function HomePage() {
     return res;
   }, [allOutletsPool, outletOffset, outlets]);
 
-  const [masters, setMasters] = useState<any[]>([
-    {
-      name: 'Ap Sonam Dorji',
-      honour: 'Master Craftsperson',
-      meta: 'Thagzo · Lhuentse · Since 1974',
-      note: 'Fifty-one years at the backstrap loom, and teacher to eleven of the weavers now working in the Khoma cluster.',
-      image_path: '/assets/photos/hero-1-weaving.jpg',
-      slot: 'photo — Ap Sonam Dorji at the loom',
-    },
-    {
-      name: 'Aum Tshering Yangzom',
-      honour: 'Master Craftsperson',
-      meta: 'Lhazo · Paro · Since 1988',
-      note: 'Thangka painter working only in mineral pigment, to the proportions set out in the classical treatises.',
-      image_path: '/assets/photos/hero-4-textiles.jpg',
-      slot: 'photo — Aum Tshering Yangzom painting thangka',
-    },
-    {
-      name: 'Lopen Karma Wangdi',
-      honour: 'National Craft Award',
-      meta: 'Tshazo · Zhemgang · Since 2019',
-      note: 'Recognised for the grading standard now used across the Kheng bamboo cluster.',
-      image_path: '/assets/photos/hero-5-desho.jpg',
-      slot: 'photo — Lopen Karma Wangdi weaving bangchung',
-    },
-  ]);
+  const [masters, setMasters] = useState<any[]>([]);
 
   const [supportPillars, setSupportPillars] = useState<any[]>([
     { key: 'grassroots', letter: 'leaf', title: 'Grassroots Benefit', line: 'Keeps rural creators trading through the lean season.', body: 'Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.' },
@@ -670,25 +645,20 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((d) => {
         if (d?.masters && d.masters.length > 0) {
-          const sceneFallbacks = [
-            '/assets/photos/hero-1-weaving.jpg',
-            '/assets/photos/hero-4-textiles.jpg',
-            '/assets/photos/hero-5-desho.jpg',
-            '/assets/photos/hero-3-clay.jpg',
-            '/assets/photos/hero-2-punakha.jpg',
-            '/assets/photos/about-hab.jpg'
-          ];
-          const formattedMasters = d.masters.slice(0, 3).map((m: any, idx: number) => {
-            const craftTitle = m.craft ? m.craft.charAt(0).toUpperCase() + m.craft.slice(1) : 'Master';
+          const formattedMasters = d.masters
+            .filter((m: any) => typeof m?.name === 'string' && m.name.trim() && !/^(name to confirm|to be confirmed|undefined|null)$/i.test(m.name.trim()))
+            .slice(0, 3)
+            .map((m: any) => {
+            const details = [m.craft, m.dzongkhag, m.yearAwarded ? `Since ${m.yearAwarded}` : null].filter((value) => typeof value === 'string' && value.trim());
             const awardLabel = m.awardType === 'NationalMaster' 
               ? 'National Craft Award' 
               : (m.awardType === 'RoyalSeal' ? 'Master Craftsperson' : (m.honour || 'Master Craftsperson'));
             return {
-              name: m.name,
+              name: m.name.trim(),
               honour: awardLabel,
-              meta: `${craftTitle} · ${m.dzongkhag} · Since ${m.yearAwarded || 2020}`,
-              note: m.citation || m.note || 'Recognised for master craftsmanship and preservation of traditional techniques.',
-              image_path: m.portraitUrl || sceneFallbacks[idx % sceneFallbacks.length],
+              meta: details.join(' · '),
+              note: m.citation || m.note || '',
+              image_path: m.portraitUrl || '',
               slot: `photo — ${m.name}`,
             };
           });
@@ -1469,26 +1439,26 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid--3">
+        {masters.length > 0 ? <div className="grid grid--3">
           {masters.map((m, idx) => (
             <Link key={idx} className="card honour" href="/masters" style={{ color: 'inherit' }}>
-              <figure className="frame frame--square">
-                <img
-                  src={m.image_path || '/assets/photos/hero-1-weaving.jpg'}
-                  alt={m.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
-                />
+              <figure className="frame frame--square has-image" style={{ position: 'relative', overflow: 'hidden' }}>
+                {m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path)
+                  ? <img src={m.image_path} alt={`${m.name}, master craftsperson`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#e8dfd0] text-[#6d5949]" role="img" aria-label={`Portrait pending for ${m.name}`}>
+                    <span className="text-4xl font-semibold">{m.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}</span>
+                    <span className="text-xs">Portrait to be supplied</span>
+                  </div>}
               </figure>
               <div className="card__body">
                 <span className="honour__badge">{m.honour}</span>
                 <h3 className="card__title">{m.name}</h3>
-                <p className="card__meta">{m.meta}</p>
-                <p className="card__text clamp-3">{m.note}</p>
+                {m.meta && <p className="card__meta">{m.meta}</p>}
+                {m.note && <p className="card__text clamp-3">{m.note}</p>}
               </div>
             </Link>
           ))}
-        </div>
+        </div> : <p className="section__lede">{isDz ? 'ངོས་འཛིན་ཐོབ་པའི་མཁས་དབང་གི་གསལ་བཤད་ཚུ་གསར་བཅོས་འབད་དོ།' : 'Confirmed master-craftsperson profiles are being updated.'}</p>}
       </section>
     ),
     'programmes': (

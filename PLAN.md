@@ -1082,5 +1082,11 @@ The larger project remains open. In particular, every reference page still needs
 
 - Homepage hero eyebrow, tagline and introductory paragraph now have Dzongkha dictionary entries; impact-counter labels use translated labels when Dzongkha is selected.
 - “New in the shop” eyebrow, title, sourcing explanation and CTA now show their Dzongkha core-copy entries in Dzongkha mode. English mode continues to use the current Admin-managed shop values.
-- Verification: `npm run typecheck`, `git diff --check`, and full optimized `npm run build` passed. Existing unrelated ESLint warnings remain. No production data was changed. Fluent HAB review, browser language-switch visual check, and push/deployment are still **PENDING**; this does not complete whole-site translation coverage.
+- Verification: `npm run typecheck`, `git diff --check`, and full optimized `npm run build` passed. A local built-app browser check switched to Dzongkha and inspected the rendered document: the root `lang` became `dz`, and hero, four impact labels, and shop section appeared in Dzongkha. Existing unrelated ESLint warnings remain. Commit `9adf4b0` is pushed. Production deployment remains **PENDING** because the available key-only SSH attempt was rejected; no production data was changed. Fluent HAB review and whole-site translation coverage remain **UNVERIFIED**.
+
+# Homepage master-card data integrity follow-up — 9 Oct 2026
+
+- The homepage previously seeded three unverified named artisans when live data failed and then formatted incomplete honour records with fallback year/craft values, producing blank identities and literal `undefined` in the card metadata.
+- Removed those fabricated homepage people; public cards now use only records with a real, non-placeholder name, show only saved craft/district/year facts, and use an initials portrait placeholder instead of substituting unrelated craft photographs. With no confirmed named records, the page shows a neutral update message.
+- Verification: `npm run typecheck`, `git diff --check`, and full optimized production build passed. A local built-app browser check rendered the no-database fallback in Dzongkha; no invented master names or `undefined` cards appeared, and the explicit empty-state appeared. The local DB was unreachable, so this verifies fallback behavior only, not production honour records. Change is not yet deployed; production read-only confirmation remains **PENDING**.
 
