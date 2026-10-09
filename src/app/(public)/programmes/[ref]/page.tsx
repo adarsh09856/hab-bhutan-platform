@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,13 +52,20 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
     title: rawProg.title,
     ref: rawProg.ref,
     description: rawProg.description,
+    titleDz: rawProg.titleDz || null,
+    descriptionDz: rawProg.descriptionDz || null,
+    activitiesDz: Array.isArray(rawProg.activitiesDz) ? rawProg.activitiesDz : [],
     imageUrl: customImg,
     activities: Array.isArray(rawProg.activities)
       ? rawProg.activities
       : (rawProg.activities?.list || rawProg.activities?.items || []),
   };
 
-  const allProgrammes = CLIENT_DATA.programmes;
+  let dbProgrammes: any[] = [];
+  try {
+    dbProgrammes = await prisma.programmePillar.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
+  } catch {}
+  const allProgrammes = dbProgrammes.length ? dbProgrammes : CLIENT_DATA.programmes;
   const currentIndex = allProgrammes.findIndex((p) => p.ref === programme.ref);
   const prevProg = allProgrammes[(currentIndex - 1 + allProgrammes.length) % allProgrammes.length];
   const nextProg = allProgrammes[(currentIndex + 1) % allProgrammes.length];
@@ -82,26 +90,26 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
         {/* Blueprint Backbar */}
         <div className="backbar">
           <Link className="backbar__link" href="/programmes">
-            <span aria-hidden="true">←</span> Back to Programmes
+            <span aria-hidden="true">←</span> <LocalizedRecordField english="Back to Programmes" dzongkha="ལས་རིམ་ཚུ་ལུ་ལོག" />
           </Link>
         </div>
 
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/programmes">Programmes</Link> / {programme.title}
+          <Link href="/"><LocalizedRecordField english="Home" dzongkha="ཁྱིམ" /></Link> / <Link href="/programmes"><LocalizedRecordField english="Programmes" dzongkha="ལས་རིམ་ཚུ" /></Link> / <LocalizedRecordField english={programme.title} dzongkha={programme.titleDz} />
         </p>
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            Programme area · Article 3.2 ({programme.ref})
+            <LocalizedRecordField english={`Programme area · Article 3.2 (${programme.ref})`} dzongkha={`ལས་རིམ་ས་ཁོངས་ · དོན་ཚན་ ༣.༢ (${programme.ref})`} />
           </p>
-          <h1 className="display display--page">{programme.title}</h1>
-          <p className="lede lede--wide">{programme.description}</p>
+          <h1 className="display display--page"><LocalizedRecordField english={programme.title} dzongkha={programme.titleDz} /></h1>
+          <p className="lede lede--wide"><LocalizedRecordField english={programme.description} dzongkha={programme.descriptionDz} /></p>
         </div>
 
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
-            alt={programme.title}
+            alt={programme.titleDz || programme.title}
             fill
             priority
             sizes="100vw"
@@ -114,15 +122,15 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
       <section className="section">
         <div className="longread">
           <div>
-            <p className="eyebrow eyebrow--accent">How it is delivered</p>
-            <h2 className="display display--sub">In practice</h2>
+            <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="How it is delivered" dzongkha="ལག་ལེན་ག་དེ་སྦེ་འཐབ་ཨིན་ན" /></p>
+            <h2 className="display display--sub"><LocalizedRecordField english="In practice" dzongkha="ལག་ལེན་ནང" /></h2>
           </div>
           <div>
             <ol className="numlist">
               {programme.activities.map((item: string, idx: number) => (
                 <li key={idx} className="numlist__item">
                   <span className="numlist__n">{String(idx + 1).padStart(2, '0')}</span>
-                  <span className="numlist__t">{item}</span>
+                  <span className="numlist__t"><LocalizedRecordField english={item} dzongkha={programme.activitiesDz[idx]} /></span>
                 </li>
               ))}
             </ol>
@@ -135,11 +143,11 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
         <section className="section">
           <div className="section__head">
             <div>
-              <p className="eyebrow eyebrow--accent">Delivery</p>
-              <h2 className="display display--sub">Projects carrying this work</h2>
+              <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="Delivery" dzongkha="ལག་ལེན་འགྲུབ་ཐབས" /></p>
+              <h2 className="display display--sub"><LocalizedRecordField english="Projects carrying this work" dzongkha="ལས་དོན་འདི་འབག་མི་ལས་འགུལ་ཚུ" /></h2>
             </div>
             <Link className="btn btn--ink btn--sm" href="/projects">
-              All projects →
+              <LocalizedRecordField english="All projects →" dzongkha="ལས་འགུལ་ཆ་མཉམ →" />
             </Link>
           </div>
           <div className="grid grid--3">
@@ -176,12 +184,12 @@ export default async function ProgrammeDetailPage({ params }: ProgrammePageProps
       <section className="section section--last">
         <nav className="craftnav">
           <Link className="craftnav__link" href={`/programmes/${prevProg.ref}`}>
-            <span className="craftnav__hint">← Previous programme area</span>
-            <span>{prevProg.title}</span>
+            <span className="craftnav__hint"><LocalizedRecordField english="← Previous programme area" dzongkha="← ཧེ་མའི་ལས་རིམ་ས་ཁོངས" /></span>
+            <span><LocalizedRecordField english={prevProg.title} dzongkha={(prevProg as any).titleDz} /></span>
           </Link>
           <Link className="craftnav__link craftnav__link--next" href={`/programmes/${nextProg.ref}`}>
-            <span className="craftnav__hint">Next programme area →</span>
-            <span>{nextProg.title}</span>
+            <span className="craftnav__hint"><LocalizedRecordField english="Next programme area →" dzongkha="ཤུལ་མའི་ལས་རིམ་ས་ཁོངས →" /></span>
+            <span><LocalizedRecordField english={nextProg.title} dzongkha={(nextProg as any).titleDz} /></span>
           </Link>
         </nav>
       </section>

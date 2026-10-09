@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { ref, title, description, activities, imageUrl, sortOrder, isActive } = body;
+    const { ref, title, titleDz, description, descriptionDz, activities, activitiesDz, imageUrl, sortOrder, isActive } = body;
 
     if (!ref || !title || !description) {
       return NextResponse.json({ success: false, error: 'Ref, title, and description are required.' }, { status: 400 });
@@ -55,8 +55,11 @@ export async function POST(req: NextRequest) {
       data: {
         ref: ref.trim().toUpperCase(),
         title: title.trim(),
+        titleDz: String(titleDz || '').trim() || null,
         description: description.trim(),
+        descriptionDz: String(descriptionDz || '').trim() || null,
         activities: storedActivities,
+        activitiesDz: Array.isArray(activitiesDz) ? activitiesDz.map((item: unknown) => String(item).trim()).filter(Boolean) : [],
         sortOrder: typeof sortOrder === 'number' ? sortOrder : 0,
         isActive: isActive !== undefined ? isActive : true,
       },
@@ -80,7 +83,7 @@ export async function PUT(req: NextRequest) {
   try {
     const session = await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { id, ref, title, description, activities, imageUrl, sortOrder, isActive } = body;
+    const { id, ref, title, titleDz, description, descriptionDz, activities, activitiesDz, imageUrl, sortOrder, isActive } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'Pillar ID is required.' }, { status: 400 });
@@ -110,8 +113,11 @@ export async function PUT(req: NextRequest) {
       data: {
         ref: ref ? ref.trim().toUpperCase() : undefined,
         title: title ? title.trim() : undefined,
+        titleDz: titleDz !== undefined ? String(titleDz || '').trim() || null : undefined,
         description: description ? description.trim() : undefined,
+        descriptionDz: descriptionDz !== undefined ? String(descriptionDz || '').trim() || null : undefined,
         activities: storedActivities,
+        activitiesDz: Array.isArray(activitiesDz) ? activitiesDz.map((item: unknown) => String(item).trim()).filter(Boolean) : undefined,
         sortOrder: typeof sortOrder === 'number' ? sortOrder : undefined,
         isActive: isActive !== undefined ? isActive : undefined,
       },

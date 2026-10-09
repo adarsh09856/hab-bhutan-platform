@@ -1,0 +1,4 @@
+ALTER TABLE "ProgrammePillar"
+  ADD COLUMN IF NOT EXISTS "titleDz" TEXT,
+  ADD COLUMN IF NOT EXISTS "descriptionDz" TEXT,
+  ADD COLUMN IF NOT EXISTS "activitiesDz" JSONB;

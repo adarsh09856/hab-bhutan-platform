@@ -231,8 +231,11 @@ const configs: Record<string, Config> = {
     endpoint: '/api/admin/programmes', collection: 'pillars', title: 'Programme pillars', labelKey: 'title',
     fields: [
       { key: 'ref', label: 'Reference letter', required: true }, { key: 'title', label: 'Title', required: true },
+      { key: 'titleDz', label: 'Title (Dzongkha)' },
       { key: 'description', label: 'Description', kind: 'long', required: true },
+      { key: 'descriptionDz', label: 'Description (Dzongkha)', kind: 'long' },
       { key: 'activities', label: 'Activities (one per line)', kind: 'lines' },
+      { key: 'activitiesDz', label: 'Activities (Dzongkha, one per line)', kind: 'lines' },
       { key: 'imageUrl', label: 'Programme image', kind: 'image' },
       { key: 'sortOrder', label: 'Display order', kind: 'number' }, { key: 'isActive', label: 'Publicly visible', kind: 'check' },
     ],

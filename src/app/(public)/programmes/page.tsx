@@ -7,12 +7,16 @@ import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { fallbackHeroPhoto } from '@/lib/public-images';
 import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 interface ProgrammeItem {
   ref: string;
   title: string;
+  titleDz?: string | null;
   description: string;
+  descriptionDz?: string | null;
   activities?: string[];
+  activitiesDz?: string[];
   image_path?: string;
 }
 
@@ -42,8 +46,11 @@ export default function ProgrammesPage() {
           setProgrammes(data.pillars.map((p: any) => ({
             ref: p.ref || 'a',
             title: p.title,
+            titleDz: p.titleDz || null,
             description: p.description,
+            descriptionDz: p.descriptionDz || null,
             activities: p.activities || [],
+            activitiesDz: Array.isArray(p.activitiesDz) ? p.activitiesDz : [],
             image_path: p.imageUrl || p.image_path || '/assets/photos/hero-1-weaving.jpg',
           })));
         }
@@ -77,26 +84,26 @@ export default function ProgrammesPage() {
           onQuickEdit={() => setLiveEditOpen(true)}
         />
         <p className="crumbs">
-          <Link href="/">Home</Link> / Programmes
+          <Link href="/"><LocalizedRecordField english="Home" dzongkha="ཁྱིམ" /></Link> / <LocalizedRecordField english="Programmes" dzongkha="ལས་རིམ་ཚུ" />
         </p>
         <div className="pagehero">
           <div>
-            <p className="eyebrow eyebrow--accent">Programmes</p>
-            <h1 className="display display--page">Eleven objects, one mandate</h1>
+            <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="Programmes" dzongkha="ལས་རིམ་ཚུ" /></p>
+            <h1 className="display display--page"><LocalizedRecordField english="Eleven objects, one mandate" dzongkha="དམིགས་དོན་བཅུ་གཅིག་ ལས་འགན་གཅིག" /></h1>
             <p className="lede">
-              HAB operates as the national apex Public Benefit Organisation for Bhutan&apos;s handicrafts sector, advancing the productive, economic, cultural and social well-being of all actors across the handicrafts value chain.
+              <LocalizedRecordField english="HAB operates as the national apex Public Benefit Organisation for Bhutan&apos;s handicrafts sector, advancing the productive, economic, cultural and social well-being of all actors across the handicrafts value chain." dzongkha="HAB འདི་ འབྲུག་གི་ལག་བཟོའི་ལས་སྡེའི་རྒྱལ་ཡོངས་གཙོ་འཛིན་མི་མང་ཕན་བདེའི་ཚོགས་པ་ཨིན། ལག་བཟོའི་ཐོན་སྐྱེད་ དཔལ་འབྱོར་ རིག་གཞུང་ དང་མི་སྡེའི་ཕན་བདེ་ཡར་དྲག་གཏངམ་ཨིན།" />
             </p>
             <p className="section__lede">
-              Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association. Activity outside those objects is <em>ultra vires</em> and of no effect.
+              <LocalizedRecordField english="Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association. Activity outside those objects is ultra vires and of no effect." dzongkha="ལས་རིམ་རེ་རེ་ཡང་ མཐུན་གྲོས་ཡིག་ཆའི་དོན་ཚན་ ༣.༢ ནང་བཀོད་པའི་དམིགས་དོན་གཅིག་གམ་དེ་ལས་ལྷག་སྟེ་འབདཝ་ཨིན། དམིགས་དོན་དེ་ཚུ་ལས་ཕྱི་ཁར་གྱི་ལས་སྣ་ཚུ་ལུ་ཁྲིམས་མཐུན་གནས་ཚད་མེད།" />
             </p>
           </div>
           <div className="panel panel--accent">
-            <p className="eyebrow eyebrow--onaccent">Governing principles</p>
+            <p className="eyebrow eyebrow--onaccent"><LocalizedRecordField english="Governing principles" dzongkha="འཛིན་སྐྱོང་གི་གཞི་རྩ" /></p>
             <p className="panel__body panel__body--onaccent" style={{ fontSize: '17px', fontWeight: 600 }}>
-              Public Benefit · Integrity · Inclusivity · Cultural Stewardship · Compliance · Independence
+              <LocalizedRecordField english="Public Benefit · Integrity · Inclusivity · Cultural Stewardship · Compliance · Independence" dzongkha="མི་མང་ཕན་བདེ་ · དྲང་བདེན་ · ཚུད་སྒྲིག་ · རིག་གཞུང་སྲུང་སྐྱོབ་ · གནས་སྟངས་ལུ་གནས་པ་ · རང་དབང་" />
             </p>
             <p className="panel__body panel__body--onaccent" style={{ margin: 0, fontSize: '14.5px' }}>
-              Constituted under the Civil Society Organizations Act of Bhutan 2007, as amended 2022. National scope across all twenty dzongkhags. Non-political by constitution.
+              <LocalizedRecordField english="Constituted under the Civil Society Organizations Act of Bhutan 2007, as amended 2022. National scope across all twenty dzongkhags. Non-political by constitution." dzongkha="འབྲུག་གི་མི་སྡེའི་ཚོགས་པའི་བཅའ་ཁྲིམས་ ༢༠༠༧ དང་ ༢༠༢༢ ལོའི་བསྐྱར་བཅོས་འོག་ལུ་གཞི་བཙུགས་འབད་ཡོད། རྫོང་ཁག་ཉི་ཤུ་ཆ་མཉམ་ནང་ལས་སྣ་འཐབ་ཨིན། གཞི་རྩ་ལྟར་སྲིད་དོན་མེད་པའི་ཚོགས་པ་ཨིན།" />
             </p>
           </div>
         </div>
@@ -106,14 +113,14 @@ export default function ProgrammesPage() {
       <section className="section">
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">What we run</p>
-            <h2 className="display display--sub">Our Programmes</h2>
+            <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="What we run" dzongkha="ང་བཅས་ཀྱི་ལས་རིམ" /></p>
+            <h2 className="display display--sub"><LocalizedRecordField english="Our Programmes" dzongkha="ང་བཅས་ཀྱི་ལས་རིམ་ཚུ" /></h2>
             <p className="section__lede">
-              The objects are construed broadly: each is a standing programme area, not a fixed project.
+              <LocalizedRecordField english="The objects are construed broadly: each is a standing programme area, not a fixed project." dzongkha="དམིགས་དོན་རེ་རེ་ཡང་ ལས་འགུལ་གཅིག་ཙམ་མེན་པར་ ཡུན་བརྟན་ལས་རིམ་ས་ཁོངས་སྦེ་རྒྱ་ཆེཝ་སྦེ་བརྩི་དགོ།" />
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/projects">
-            See current projects →
+            <LocalizedRecordField english="See current projects →" dzongkha="ད་ལྟོའི་ལས་འགུལ་ཚུ་གཟིགས →" />
           </Link>
         </div>
 
@@ -131,11 +138,11 @@ export default function ProgrammesPage() {
               <div className="card__body">
                 <div className="programme__head">
                   <span className="badge badge--ref">{String(p.ref || '').toUpperCase()}</span>
-                  <h3 className="card__title clamp-2">{p.title}</h3>
+                  <h3 className="card__title clamp-2"><LocalizedRecordField english={p.title} dzongkha={p.titleDz} /></h3>
                 </div>
-                <p className="card__text programme__desc clamp-4">{p.description}</p>
+                <p className="card__text programme__desc clamp-4"><LocalizedRecordField english={p.description} dzongkha={p.descriptionDz} /></p>
                 <Link className="link-accent programme__toggle" href={`/programmes/${p.ref}`}>
-                  Read more &rarr;
+                  <LocalizedRecordField english="Read more →" dzongkha="ལྷག་པར་གཟིགས →" />
                 </Link>
               </div>
             </article>
@@ -147,17 +154,17 @@ export default function ProgrammesPage() {
       <section className="section section--last">
         <div className="ctaband">
           <div>
-            <h2 className="display display--panel">Access these programmes</h2>
+            <h2 className="display display--panel"><LocalizedRecordField english="Access these programmes" dzongkha="ལས་རིམ་འདི་ཚུ་ལས་ཕན་ཐོགས་ལེན" /></h2>
             <p className="ctaband__body">
-              Active Sector Members receive preferential access to training, trade fair participation and market linkage services. Affiliated Members receive general sector benefits.
+              <LocalizedRecordField english="Active Sector Members receive preferential access to training, trade fair participation and market linkage services. Affiliated Members receive general sector benefits." dzongkha="ལས་སྡེའི་འཐུས་མི་ཚུ་ལུ་ སྦྱོང་བརྡར་ ཚོང་འདུས་ནང་བཅའ་མར་ དང་ཚོང་ལམ་མཐུད་ལམ་གྱི་ཞབས་ཏོག་ཚུ་ནང་གཙོ་རིམ་ཐོབ། འབྲེལ་ཡོད་འཐུས་མི་ཚུ་ལུ་སྤྱིར་བཏང་ཁེ་ཕན་ཐོབ།" />
             </p>
           </div>
           <div className="actions">
             <Link className="btn btn--light" href="/membership/apply">
-              Become a member
+              <LocalizedRecordField english="Become a member" dzongkha="འཐུས་མི་འབད་འཛུལ" />
             </Link>
             <Link className="btn btn--ghost" href="/publications">
-              Reports &amp; downloads
+              <LocalizedRecordField english="Reports & downloads" dzongkha="སྙན་ཞུ་དང་ཕབ་ལེན" />
             </Link>
           </div>
         </div>

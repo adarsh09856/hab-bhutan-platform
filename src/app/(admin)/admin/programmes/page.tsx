@@ -28,8 +28,11 @@ interface PillarRecord {
   id: string;
   ref: string;
   title: string;
+  titleDz?: string | null;
   description: string;
+  descriptionDz?: string | null;
   activities: string[];
+  activitiesDz?: string[] | null;
   imageUrl?: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -42,6 +45,7 @@ export default function AdminProgrammesPage() {
   // Edit/Create Drawer
   const [editingPillar, setEditingPillar] = useState<Partial<PillarRecord> | null>(null);
   const [activitiesInput, setActivitiesInput] = useState('');
+  const [activitiesDzInput, setActivitiesDzInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -68,6 +72,7 @@ export default function AdminProgrammesPage() {
     if (pillar) {
       setEditingPillar(pillar);
       setActivitiesInput(Array.isArray(pillar.activities) ? pillar.activities.join('\n') : '');
+      setActivitiesDzInput(Array.isArray(pillar.activitiesDz) ? pillar.activitiesDz.join('\n') : '');
     } else {
       const nextLetter = String.fromCharCode(65 + Math.min(pillars.length, 25)); // A, B, C...
       setEditingPillar({
@@ -78,6 +83,7 @@ export default function AdminProgrammesPage() {
         isActive: true,
       });
       setActivitiesInput('');
+      setActivitiesDzInput('');
     }
     setError('');
   };
@@ -96,6 +102,10 @@ export default function AdminProgrammesPage() {
       .split('\n')
       .map((a) => a.trim())
       .filter(Boolean);
+    const actsDz = activitiesDzInput
+      .split('\n')
+      .map((activity) => activity.trim())
+      .filter(Boolean);
 
     try {
       const isNew = !editingPillar.id;
@@ -109,6 +119,7 @@ export default function AdminProgrammesPage() {
         body: JSON.stringify({
           ...editingPillar,
           activities: acts,
+          activitiesDz: actsDz,
         }),
       });
 
@@ -300,6 +311,14 @@ export default function AdminProgrammesPage() {
             className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all"
           />
 
+          <GlassInput
+            label="Title (Dzongkha)"
+            placeholder="Optional Dzongkha title"
+            value={editingPillar?.titleDz || ''}
+            onChange={(e) => setEditingPillar({ ...editingPillar, titleDz: e.target.value })}
+            className="admin-input w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-hidden transition-all"
+          />
+
           <div>
             <RichTextEditor
               label="Description / Mandate Narrative *"
@@ -310,12 +329,34 @@ export default function AdminProgrammesPage() {
           </div>
 
           <div>
+            <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">Description (Dzongkha)</label>
+            <textarea
+              rows={5}
+              value={editingPillar?.descriptionDz || ''}
+              onChange={(e) => setEditingPillar({ ...editingPillar, descriptionDz: e.target.value })}
+              placeholder="Optional Dzongkha mandate narrative"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input border text-sm focus:outline-hidden"
+            />
+          </div>
+
+          <div>
             <FileUploadInput
               label="Programme Banner / Cover Photograph"
               value={editingPillar?.imageUrl || ''}
               onChange={(url) => setEditingPillar({ ...editingPillar, imageUrl: url })}
               accept="image/*"
               hint="Upload high-quality photo representing this pillar (JPG, PNG, WebP)"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">Core Interventions (Dzongkha, one per line)</label>
+            <textarea
+              rows={4}
+              value={activitiesDzInput}
+              onChange={(e) => setActivitiesDzInput(e.target.value)}
+              placeholder="Optional translated interventions, one per line"
+              className="w-full px-3.5 py-2.5 rounded-xl admin-input border text-xs focus:outline-hidden"
             />
           </div>
 

@@ -630,15 +630,18 @@ model NavigationItem {
 
 // Dynamic Programme Pillars and Mandates
 model ProgrammePillar {
-  id          String   @id @default(uuid())
-  ref         String   @unique
-  title       String
-  description String   @db.Text
-  activities  Json
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(uuid())
+  ref           String   @unique
+  title         String
+  titleDz       String?
+  description   String   @db.Text
+  descriptionDz String?  @db.Text
+  activities    Json
+  activitiesDz  Json?
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([sortOrder])
 }
