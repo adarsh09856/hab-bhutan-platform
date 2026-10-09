@@ -1092,7 +1092,7 @@ The larger project remains open. In particular, every reference page still needs
 # Quick Edit restore behavior follow-up — 9 Oct 2026
 
 - “Undo override” now reloads the current public page only after the delete request succeeds. This restores the server-rendered original content immediately, including edits applied directly to DOM nodes and global header/footer overrides; a failed request leaves the editor open with its error message.
-- Focused nested-text Quick Edit regression, typecheck, and `git diff --check` passed. Full optimized build is running; deploy and signed-in browser interaction have not yet been recorded.
+- Focused nested-text Quick Edit regression, typecheck, `git diff --check`, and full optimized production build passed. Deployment and signed-in browser interaction have not yet been recorded.
 
 # Member registration review-safety follow-up — 9 Oct 2026
 
