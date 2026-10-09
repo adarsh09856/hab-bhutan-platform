@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
       || req.headers.get('x-real-ip')
       || '127.0.0.1';
 
-    // Durable sliding-window rate limit: 10 checkouts per min per IP (bypassed if explicit test header present)
-    if (req.headers.get('x-bypass-rate-limit') !== 'true') {
+    // All callers are subject to the same limit, including requests with test headers.
+    {
       try {
         const rl = await checkDurableRateLimit(`checkout:${ip}`, 10, 60);
         if (!rl.success) {

@@ -2,6 +2,8 @@
 
 ## Current outstanding work — 9 October 2026
 
+Rate-limit verification/fix (9 Oct 2026): source inspection confirmed that login, password-reset requests, and checkout accepted the unauthenticated `x-bypass-rate-limit: true` header and skipped throttling. Removed that bypass in all three handlers. Local HTTP regression sent only empty/invalid payloads with the header and a unique test identity: login returned five 401 responses then 429; password reset returned five 400 responses then 429; checkout returned ten 400 responses then 429. Exact temporary rate-limit/audit rows were cleaned; no accounts, orders, emails, or production submissions were created. Build and deployment status will be recorded after completion.
+
 The overall plan is still open; the rough implementation estimate remains **about 56%**, not a verified completion ratio. These are the remaining workstreams, not a declaration that each subtask in a workstream is wholly untouched:
 
 1. **Every-page parity:** compare all local public routes (including newer pages and detail variants) with the live site and read-only HTML reference for content, layout, data, responsive behavior, links, and images. Route availability checks alone do not prove parity.

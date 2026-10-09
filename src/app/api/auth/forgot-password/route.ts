@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    // Durable rate limit: 5 password reset requests per 15 minutes per IP (bypassed if explicit test header present)
-    if (req.headers.get('x-bypass-rate-limit') !== 'true') {
+    // All callers are subject to the same limit, including requests with test headers.
+    {
       const rl = await checkDurableRateLimit(`pwd-reset:${ip}`, 5, 15 * 60);
       if (!rl.success) {
         return NextResponse.json(
