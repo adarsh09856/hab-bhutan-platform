@@ -941,10 +941,12 @@ export default function HomePage() {
           {...getMoveProps('hero')}
         />
         <div className="hero__copy">
-          <p className="eyebrow eyebrow--accent">{siteSettings.heroEyebrow}</p>
-          <h1 className="display display--hero">{siteSettings.tagline}</h1>
+          <p className="eyebrow eyebrow--accent">{isDz ? t('home.hero_eyebrow', 'འབྲུག་གི་མི་སྡེ་ཚོགས་པ') : siteSettings.heroEyebrow}</p>
+          <h1 className="display display--hero">{isDz ? t('home.hero_tagline', 'འབྲུག་གི་ལག་བཟོ་སྡེ་ཚན་གྱི་གོང་འཕེལ་དང་ཡུན་བརྟན') : siteSettings.tagline}</h1>
           <p className="lede">
-            Handicrafts Association of Bhutan supports <Link href="/members">local artisans</Link> in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
+            {isDz ? t('home.hero_intro', 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་པ་ཚུ་ལུ་ རྒྱལ་ཁབ་ནང་དང་ཕྱི་རྒྱལ་གྱི་ཁྲོམ་ར་ནང་ ལག་བཟོ་ཚུ་ཁྱབ་སྤེལ་གཏང་ནི་ལུ་རྒྱབ་སྐྱོར་འབདཝ་ཨིན། དེ་མ་ཚད་ ལག་བཟོ་པ་ཚུའི་རིག་རྩལ་གོང་འཕེལ་དང་ནུས་ཤུགས་ཡར་སེང་ལུ་ཡང་རྒྱབ་སྐྱོར་འབདཝ་ཨིན།') : <>
+              Handicrafts Association of Bhutan supports <Link href="/members">local artisans</Link> in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
+            </>}
           </p>
           <div className="actions flex flex-wrap items-center gap-3">
             <Link className="btn btn--ink" href="/about">
@@ -1048,7 +1050,7 @@ export default function HomePage() {
           {siteSettings.stats.map((st, idx) => (
             <Link key={idx} href={st.url} className="stats__cell" style={{ color: 'inherit' }}>
               <span className="stats__num">{st.value}</span>
-              <span className="stats__label">{st.label}</span>
+              <span className="stats__label">{isDz ? t(`home.stat_${idx + 1}`, st.label) : st.label}</span>
             </Link>
           ))}
         </div>
@@ -1122,14 +1124,14 @@ export default function HomePage() {
         />
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">{siteSettings.shopEyebrow || t('home.latest_arrivals', 'Latest arrivals')}</p>
-            <h2 className="display display--band">{siteSettings.shopHeading || t('home.new_in_shop', 'New in the shop')}</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? t('home.latest_arrivals', 'Latest arrivals') : (siteSettings.shopEyebrow || t('home.latest_arrivals', 'Latest arrivals'))}</p>
+            <h2 className="display display--band">{isDz ? t('home.new_in_shop', 'New in the shop') : (siteSettings.shopHeading || t('home.new_in_shop', 'New in the shop'))}</h2>
             <p className="section__lede">
-              {siteSettings.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.'}
+              {isDz ? t('home.shop_intro', 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ལག་བཟོ་ཅ་ཆས་གསར་ཤོས་ཚུ་འདིར་གཟིགས། HAB གིས་འཐུས་མི་ལས་གོང་ཚད་གཏན་འཁེལ་ཐོག་ཉོ་སྟེ་ ཚོང་ཁང་བརྒྱུད་དེ་ཚོང་འབྲེལ་འཐབ་ཨིན།') : (siteSettings.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.')}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href={siteSettings.shopCtaLink || '/shop'}>
-            {siteSettings.shopCtaText || t('home.visit_shop', 'Visit the shop →')}
+            {isDz ? t('home.visit_shop', 'Visit the shop →') : (siteSettings.shopCtaText || t('home.visit_shop', 'Visit the shop →'))}
           </Link>
         </div>
         <div className="grid grid--4">

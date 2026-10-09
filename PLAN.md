@@ -1078,3 +1078,9 @@ The larger project remains open. In particular, every reference page still needs
 - Quick Edit close button now has an accessible label.
 - Verification: typecheck passed; optimized build passed before the final example-button addition. Local database-backed regression passed for unnamed trustee roles and all 15 local verified member records; temporary trustee fixtures removed. Final release build and production verification are pending, not DONE.
 
+# Homepage core Dzongkha coverage follow-up — 9 Oct 2026
+
+- Homepage hero eyebrow, tagline and introductory paragraph now have Dzongkha dictionary entries; impact-counter labels use translated labels when Dzongkha is selected.
+- “New in the shop” eyebrow, title, sourcing explanation and CTA now show their Dzongkha core-copy entries in Dzongkha mode. English mode continues to use the current Admin-managed shop values.
+- Verification: `npm run typecheck`, `git diff --check`, and full optimized `npm run build` passed. Existing unrelated ESLint warnings remain. No production data was changed. Fluent HAB review, browser language-switch visual check, and push/deployment are still **PENDING**; this does not complete whole-site translation coverage.
+

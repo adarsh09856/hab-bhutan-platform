@@ -124,6 +124,14 @@ export const TRANSLATIONS: Translations = {
   'craft.lugzo': { en: 'Lugzo (Bronze Casting)', dz: 'ལུགས་བཟོ (ལུགས་སྐུ)' },
 
   // Homepage Sections & UI Blocks
+  'home.hero_eyebrow': { en: 'Civil Society Organization · Bhutan', dz: 'འབྲུག་གི་མི་སྡེ་ཚོགས་པ' },
+  'home.hero_tagline': { en: 'Towards a vibrant & sustainable handicrafts sector', dz: 'འབྲུག་གི་ལག་བཟོ་སྡེ་ཚན་གྱི་གོང་འཕེལ་དང་ཡུན་བརྟན' },
+  'home.hero_intro': { en: 'Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports skills development and capacity building of the craftspeople.', dz: 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་པ་ཚུ་ལུ་ རྒྱལ་ཁབ་ནང་དང་ཕྱི་རྒྱལ་གྱི་ཁྲོམ་ར་ནང་ ལག་བཟོ་ཚུ་ཁྱབ་སྤེལ་གཏང་ནི་ལུ་རྒྱབ་སྐྱོར་འབདཝ་ཨིན། དེ་མ་ཚད་ ལག་བཟོ་པ་ཚུའི་རིག་རྩལ་གོང་འཕེལ་དང་ནུས་ཤུགས་ཡར་སེང་ལུ་ཡང་རྒྱབ་སྐྱོར་འབདཝ་ཨིན།' },
+  'home.shop_intro': { en: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.', dz: 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ལག་བཟོ་ཅ་ཆས་གསར་ཤོས་ཚུ་འདིར་གཟིགས། HAB གིས་འཐུས་མི་ལས་གོང་ཚད་གཏན་འཁེལ་ཐོག་ཉོ་སྟེ་ ཚོང་ཁང་བརྒྱུད་དེ་ཚོང་འབྲེལ་འཐབ་ཨིན།' },
+  'home.stat_1': { en: 'Micro & small enterprises in the network', dz: 'ཚོང་ལས་ཆུང་བ་དང་གཙོ་ཆུང་ཚུ་མཐུད་འབྲེལ་ནང་ཡོད' },
+  'home.stat_2': { en: 'Women-led enterprises', dz: 'ཨམ་སྲུ་གིས་འགོ་ཁྲིད་པའི་ཚོང་ལས' },
+  'home.stat_3': { en: 'Affiliated stores across Bhutan', dz: 'འབྲུག་ཡོངས་ཀྱི་འབྲེལ་ཡོད་ཚོང་ཁང' },
+  'home.stat_4': { en: 'Arts & crafts of Zorig Chusum', dz: 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ཟོ་རིག་དང་ལག་བཟོ' },
   'home.latest_arrivals': { en: 'Latest arrivals', dz: 'ཐོན་གསར' },
   'home.new_in_shop': { en: 'New in the shop', dz: 'ཚོང་ཁང་ནང་ཐོན་གསར' },
   'home.visit_shop': { en: 'Visit the shop →', dz: 'ཚོང་ཁང་ནང་གཟིགས →' },
