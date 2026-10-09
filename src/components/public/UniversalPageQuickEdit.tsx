@@ -231,7 +231,11 @@ export default function UniversalPageQuickEdit() {
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Reset failed.');
       delete overridesRef.current[key];
-      setMessage('Override removed. Reload to restore the original value.');
+      // Overrides are applied directly to DOM nodes, so simply deleting the
+      // saved value cannot reconstruct text split across inline children.
+      // Reload after the successful delete so the server-rendered source value
+      // is restored immediately (including for global header/footer edits).
+      window.location.reload();
     } catch (error: any) { setMessage(error?.message || 'Reset failed.'); }
     finally { setSaving(false); }
   };

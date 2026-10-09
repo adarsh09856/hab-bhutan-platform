@@ -1089,3 +1089,8 @@ The larger project remains open. In particular, every reference page still needs
 - Removed fabricated homepage artisan entries and fallback craft/year values that could create blank identities or literal `undefined` in card metadata. Public cards use named records and saved facts only, use initials when a real person lacks a portrait, and show a neutral message when no named records are available.
 - Typecheck, `git diff --check`, optimized build, and a local built-app browser check passed; the fallback rendered without invented names or malformed cards. The change is deployed at `fd912ec`. A read-only production homepage check returned HTTP 200 and confirmed the masters section displays the neutral update message, without a fabricated master card. No production business records were changed. The local database was unavailable during the fallback check, so populated local database rendering was not exercised.
 
+# Quick Edit restore behavior follow-up — 9 Oct 2026
+
+- “Undo override” now reloads the current public page only after the delete request succeeds. This restores the server-rendered original content immediately, including edits applied directly to DOM nodes and global header/footer overrides; a failed request leaves the editor open with its error message.
+- Focused nested-text Quick Edit regression, typecheck, and `git diff --check` passed. Full optimized build is running; deploy and signed-in browser interaction have not yet been recorded.
+
