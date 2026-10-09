@@ -144,7 +144,15 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, status, notes, ...editFields } = body;
+    const { id, status: requestedStatus, notes, ...editFields } = body;
+    const status = requestedStatus == null ? requestedStatus : String(requestedStatus).toUpperCase();
+
+    if (status && !['PENDING', 'VERIFIED', 'REJECTED', 'SUSPENDED'].includes(String(status).toUpperCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Choose a valid member status.' },
+        { status: 400 }
+      );
+    }
 
     if (!id) {
       return NextResponse.json(
@@ -177,6 +185,12 @@ export async function PATCH(req: NextRequest) {
       }
     } else {
       session = await requirePermission(req, 'members:edit');
+      if (status === 'VERIFIED' && previous.status !== 'VERIFIED') {
+        await requirePermission(req, 'members:verify');
+      }
+      if (status === 'SUSPENDED' && previous.status !== 'SUSPENDED') {
+        await requirePermission(req, 'members:suspend');
+      }
     }
 
     const updateData: any = {};

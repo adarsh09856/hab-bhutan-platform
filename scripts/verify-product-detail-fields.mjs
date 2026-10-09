@@ -14,6 +14,8 @@ const roleSlug = `codex_product_check_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
 const permissions = ['products:view', 'products:create', 'products:edit', 'members:view', 'members:create', 'members:edit', 'members:verify'];
 let role;
 let user;
+let creatorRole;
+let creatorUser;
 let productId;
 let memberId;
 const importCid = `LOCAL-IMPORT-${suffix}`;
@@ -50,19 +52,19 @@ try {
 
   const secret = process.env.JWT_SECRET;
   assert(secret && secret.length >= 32, 'Production JWT secret was not loaded for the local test.');
-  const token = await new SignJWT({
+  const createToken = (targetUser, targetRole, targetPermissions) => new SignJWT({
     user: {
-      id: user.id,
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      roleId: role.id,
-      role: role.slug,
-      roleSlug: role.slug,
-      roleVersion: role.version,
-      roleStatus: role.status,
-      permissions,
-      sessionVersion: user.sessionVersion,
+      id: targetUser.id,
+      userId: targetUser.id,
+      email: targetUser.email,
+      name: targetUser.name,
+      roleId: targetRole.id,
+      role: targetRole.slug,
+      roleSlug: targetRole.slug,
+      roleVersion: targetRole.version,
+      roleStatus: targetRole.status,
+      permissions: targetPermissions,
+      sessionVersion: targetUser.sessionVersion,
       mustChangePassword: false,
     },
   })
@@ -70,6 +72,15 @@ try {
     .setIssuedAt()
     .setExpirationTime('10m')
     .sign(new TextEncoder().encode(secret));
+  const token = await createToken(user, role, permissions);
+  const creatorPermissions = ['members:view', 'members:create', 'members:edit'];
+  creatorRole = await prisma.role.create({
+    data: { name: 'Temporary member creator without verifier', slug: `${roleSlug}_creator`, permissions: creatorPermissions },
+  });
+  creatorUser = await prisma.user.create({
+    data: { email: `codex-member-creator-${suffix}@example.invalid`, name: 'Temporary Member Creator', passwordHash: 'not-used', roleId: creatorRole.id },
+  });
+  const creatorToken = await createToken(creatorUser, creatorRole, creatorPermissions);
 
   const initial = {
     size: '25 × 18 cm (verification)',
@@ -123,9 +134,11 @@ try {
   const disabledTerms = await prisma.wholesaleProductTerms.findUnique({ where: { productId } });
   assert(disabledTerms?.isActive === false, 'Wholesale disable flag did not persist.');
   console.log('PASS: product creation followed by wholesale terms, quantity breaks, enable and disable persistence.');
-  const memberCreated = await request('/api/admin/members', token, { method: 'POST', body: JSON.stringify({ name: `Temporary contact verification ${suffix}`, craftKey: craft.key, dzongkhag: 'Thimphu', cidNumber: String(Date.now()).slice(-11), village: 'Test village', phone: 'Test contact', email: 'contact@example.invalid' }) });
+  const memberCreated = await request('/api/admin/members', creatorToken, { method: 'POST', body: JSON.stringify({ name: `Temporary contact verification ${suffix}`, craftKey: craft.key, dzongkhag: 'Thimphu', cidNumber: String(Date.now()).slice(-11), village: 'Test village', phone: 'Test contact', email: 'contact@example.invalid' }) });
   memberId = memberCreated.member.id;
   assert(memberCreated.member.status === 'PENDING', 'New admin-created member was published without an explicit verification decision.');
+  const unauthorizedVerification = await fetch(`${baseUrl}/api/admin/members`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Cookie: `hab_session=${creatorToken}` }, body: JSON.stringify({ id: memberId, status: 'VERIFIED', phone: 'Unauthorized composite edit' }) });
+  assert(unauthorizedVerification.status === 403, 'A member editor without members:verify published a member through a combined edit/status change.');
   const memberVerified = await request('/api/admin/members', token, { method: 'PATCH', body: JSON.stringify({ id: memberId, status: 'VERIFIED' }) });
   assert(memberVerified.member.status === 'VERIFIED', 'Authorized member verification did not persist.');
   assert(memberCreated.member.email === 'contact@example.invalid' && memberCreated.member.phone === 'Test contact' && memberCreated.member.village === 'Test village', 'Member creation lost contact fields.');
@@ -159,6 +172,11 @@ try {
     await prisma.auditLog.deleteMany({ where: { actorId: user.id } });
     await prisma.user.deleteMany({ where: { id: user.id } });
   }
+  if (creatorUser) {
+    await prisma.auditLog.deleteMany({ where: { actorId: creatorUser.id } });
+    await prisma.user.deleteMany({ where: { id: creatorUser.id } });
+  }
   if (role) await prisma.role.deleteMany({ where: { id: role.id } });
+  if (creatorRole) await prisma.role.deleteMany({ where: { id: creatorRole.id } });
   await prisma.$disconnect();
 }
