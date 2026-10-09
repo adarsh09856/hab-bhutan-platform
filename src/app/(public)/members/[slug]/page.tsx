@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { CLIENT_DATA, getCraftByKey } from '@/lib/client-data';
+import { getCraftByKey } from '@/lib/client-data';
 import { useCurrency } from '@/context/CurrencyContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { toMemberProfileView, toMemberProductViews } from '@/lib/member-profile-view';
 
 export default function MemberProfilePage() {
   const params = useParams();
@@ -14,67 +15,65 @@ export default function MemberProfilePage() {
   const decodedName = decodeURIComponent(rawSlug || '');
   const { fmt } = useCurrency();
 
-  const [member, setMember] = useState<any>(() => {
-    return (
-      (CLIENT_DATA.members || []).find(
-        (m: any) => m.name.toLowerCase() === decodedName.toLowerCase()
-      ) ||
-      (CLIENT_DATA.recognised || []).find(
-        (m: any) => m.name.toLowerCase() === decodedName.toLowerCase()
-      ) || {
-        name: decodedName || 'Karma Wangchuk',
-        craft_key: 'thagzo',
-        dzongkhag: 'Lhuentse',
-        member_since: 2018,
-        blurb:
-          'Practising traditional backstrap weaving in Khoma. Specialising in intricate Kishuthara silk-on-cotton patterning with natural plant dyes.',
-      }
-    );
-  });
-
-  const [products, setProducts] = useState<any[]>(() => {
-    return CLIENT_DATA.products.filter(
-      (p) => p.craft_key === (member?.craft_key || 'thagzo')
-    ).slice(0, 4);
-  });
+  const [member, setMember] = useState<any | null>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState<'not-found' | 'unavailable' | null>(null);
 
   useEffect(() => {
-    if (!decodedName) return;
-    fetch(`/api/members?slug=${encodeURIComponent(decodedName)}`, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.member) {
-          setMember({
-            name: d.member.name,
-            craft_key: d.member.craftKey,
-            dzongkhag: d.member.dzongkhag,
-            member_since: d.member.joinYear || 2020,
-            blurb: d.member.bio || member.blurb,
-            portraitUrl: d.member.portraitUrl || d.member.imageUrl || d.member.image_path || '',
-          });
+    if (!decodedName) {
+      setProfileError('not-found');
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    setProfileError(null);
+    fetch(`/api/members?slug=${encodeURIComponent(decodedName)}`, { cache: 'no-store', signal: controller.signal })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data?.member) {
+          setMember(null);
+          setProducts([]);
+          setProfileError(response.status === 404 ? 'not-found' : 'unavailable');
+          return;
+        }
+        const record = data.member;
+        setMember(toMemberProfileView(record));
+        setProducts(toMemberProductViews(record.products || [], record));
+      })
+      .catch((error) => {
+        if (error?.name !== 'AbortError') {
+          setMember(null);
+          setProducts([]);
+          setProfileError('unavailable');
         }
       })
-      .catch(() => {});
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [decodedName]);
 
-    fetch(`/api/products?craft=${encodeURIComponent(member?.craft_key || 'thagzo')}`, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.products && Array.isArray(d.products) && d.products.length > 0) {
-          setProducts(
-            d.products.slice(0, 4).map((p: any) => ({
-              code: p.code,
-              name: p.name,
-              craft_key: p.craftKey || p.craft_key,
-              region: p.region || member.dzongkhag,
-              maker: p.maker?.name || p.maker || member.name,
-              price_usd: p.priceUSD || p.price,
-              image_path: p.image_path || p.images?.[0]?.url || '/assets/photos/product-sad03.jpg',
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-  }, [decodedName, member?.craft_key]);
+  if (loading) {
+    return <main id="main"><section className="section"><p className="eyebrow eyebrow--muted">Loading member profile…</p></section></main>;
+  }
+
+  if (!member) {
+    const notFound = profileError === 'not-found';
+    return (
+      <main id="main">
+        <section className="section">
+          <p className="crumbs"><Link href="/">Home</Link> / <Link href="/members">Members</Link></p>
+          <div className="shopempty" style={{ display: 'block', margin: '40px auto', maxWidth: '600px', textAlign: 'center' }}>
+            <h1 className="shopempty__title">{notFound ? 'Member profile not found' : 'Member profile unavailable'}</h1>
+            <p className="shopempty__body">{notFound ? 'This profile is not in the public verified-member directory.' : 'The member directory could not be reached. Please try again shortly.'}</p>
+            <Link className="btn btn--accent" href="/members">Browse verified members</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   const craft = getCraftByKey(member.craft_key) || {
     name: 'Craft',
@@ -82,8 +81,7 @@ export default function MemberProfilePage() {
     key: member.craft_key || 'thagzo',
   };
 
-  const cluster = CLIENT_DATA.clusters.find((c) => c.craft_key === craft.key) || CLIENT_DATA.clusters[0];
-  const portraitImg = member.portraitUrl || member.imageUrl || member.image_path || '/assets/photos/hero-1-weaving.jpg';
+  const portraitImg = member.portraitUrl;
 
   return (
     <main id="main">
@@ -104,13 +102,13 @@ export default function MemberProfilePage() {
 
         <div className="memberhero">
           <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-            <Image
+            {portraitImg ? <Image
               src={portraitImg}
               alt={member.name}
               fill
               sizes="(max-width: 768px) 100vw, 380px"
               style={{ objectFit: 'cover' }}
-            />
+            /> : <span aria-label={`${member.name} portrait not provided`} className="flex h-full w-full items-center justify-center text-4xl font-semibold">{member.name.slice(0, 1)}</span>}
           </figure>
 
           <div>
@@ -119,10 +117,10 @@ export default function MemberProfilePage() {
               <span className="tag tag--verified">HAB verified</span>
             </div>
             <h1 className="display display--page">{member.name}</h1>
-            <p className="card__meta" style={{ fontSize: 16, margin: '0 0 24px' }}>
-              {member.dzongkhag} · Member since {member.member_since || 2021}
-            </p>
-            <p className="lede">{member.blurb || member.bio}</p>
+            {(member.dzongkhag || member.member_since) && <p className="card__meta" style={{ fontSize: 16, margin: '0 0 24px' }}>
+              {[member.dzongkhag, member.member_since && `Member since ${member.member_since}`].filter(Boolean).join(' · ')}
+            </p>}
+            {member.blurb && <p className="lede">{member.blurb}</p>}
 
             <div className="actions" style={{ marginTop: 24 }}>
               <Link className="btn btn--accent" href={`/shop?craft=${craft.key}`}>
@@ -154,13 +152,13 @@ export default function MemberProfilePage() {
               <article key={p.code} className="card product" data-cms-item data-code={p.code}>
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-                    <Image
+                    {p.image_path && <Image
                       src={p.image_path || '/assets/photos/product-sad03.jpg'}
                       alt={p.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 25vw"
                       style={{ objectFit: 'cover' }}
-                    />
+                    />}
                   </figure>
                   <span className="product__ref">{p.code}</span>
                 </Link>
@@ -185,19 +183,6 @@ export default function MemberProfilePage() {
         </section>
       )}
 
-      {/* 3. Associated Cluster */}
-      {cluster && (
-        <section className="section section--last" id="memberClusterSection">
-          <div className="panel">
-            <p className="eyebrow eyebrow--accent">Cluster</p>
-            <h2 className="display display--panel">{cluster.name}</h2>
-            <p className="panel__body">{cluster.summary}</p>
-            <Link className="btn btn--ink" href={`/clusters/${cluster.key}`}>
-              Read the cluster story →
-            </Link>
-          </div>
-        </section>
-      )}
     </main>
   );
 }
