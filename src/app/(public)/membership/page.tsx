@@ -134,7 +134,7 @@ export default function MembershipPage() {
               <li>Submit new products for the HAB shop</li>
               <li>Download training material and publications</li>
               <li>Apply to trade fairs and buyer meetings</li>
-              <li>Renew annual dues online</li>
+              <li>Request annual dues renewal from your member account</li>
             </ul>
           </div>
 

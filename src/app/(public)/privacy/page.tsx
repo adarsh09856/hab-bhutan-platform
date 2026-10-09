@@ -109,10 +109,9 @@ export default async function PrivacyPolicyPage() {
 
             <h2 id="payment">Payment data</h2>
             <p>
-              Card numbers are entered on the payment provider&apos;s form and are never stored on HAB
-              systems. We retain the transaction reference, the amount and the method, which is what
-              our auditors require. Bank transfer details are held only for the account they were paid
-              from.
+              Online card checkout is not currently configured. For mBoB and bank-transfer payments,
+              we retain the payment reference, amount and method so HAB can reconcile the payment.
+              Do not send a full card number or banking password to HAB.
             </p>
 
             <h2 id="cookies">Cookies &amp; local storage</h2>
@@ -127,7 +126,8 @@ export default async function PrivacyPolicyPage() {
             <h2 id="sharing">Who we share it with</h2>
             <p>
               Only where it is needed to do what you asked or what the law requires: the carrier and
-              customs authority for a shipment, the payment provider for a transaction, our auditors
+              customs authority for a shipment, the relevant bank or mobile-payment service to reconcile
+              a transfer, our auditors
               and the Civil Society Organizations Authority for statutory reporting, and the maker of
               a piece where a commission or a quality question concerns their work. Donor-funded
               programmes receive reporting in aggregate, never named participant data, unless a

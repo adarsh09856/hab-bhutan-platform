@@ -152,6 +152,10 @@ export default function AboutPageStudio() {
 
   useEffect(() => {
     loadData();
+    const params = new URLSearchParams(window.location.search);
+    const requestedTab = params.get('tab');
+    if (requestedTab === 'board' || window.location.hash === '#board') setActiveTab('board');
+    if (requestedTab === 'team' || window.location.hash === '#team') setActiveTab('team');
   }, []);
 
   const handleSaveSettings = async (e?: React.FormEvent) => {
@@ -870,7 +874,7 @@ export default function AboutPageStudio() {
 
       {/* TAB 2: BOARD OF TRUSTEES CRUD */}
       {activeTab === 'board' && (
-        <div className="space-y-6">
+        <div id="board" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200">
             <div>
               <h2 className="text-lg font-bold text-slate-900">Board of Trustees</h2>

@@ -46,7 +46,7 @@ export default async function BoardOfTrusteesPage() {
     <main id="main">
       {/* 1. Page Hero */}
       <section className="section relative" data-hab-section="board-hero">
-        <SectionEditBadge label="Board records" studioHref="/admin/pages/about#board" sectionType="board-records" />
+        <SectionEditBadge label="Board records" studioHref="/admin/pages/about?tab=board#board" sectionType="board-records" />
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/about">About Us</Link> / Board of Trustees
         </p>
@@ -70,7 +70,7 @@ export default async function BoardOfTrusteesPage() {
             </div>
             <div className="craftfacts__cell">
               <span className="craftfacts__key">Oversight Structure</span>
-              <span className="craftfacts__val">5 Non-Executive Trustees</span>
+              <span className="craftfacts__val">Published after HAB confirmation</span>
             </div>
             <div className="craftfacts__cell">
               <span className="craftfacts__key">Audit Mandate</span>

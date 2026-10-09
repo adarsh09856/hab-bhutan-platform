@@ -358,7 +358,7 @@ const PRODUCT_POOL = [
               <span className="assurance__initial">E</span>
               <span>ncrypted Escrow</span>
             </h3>
-            <p className="assurance__body">Bulletproof 3-D Secure, mBoB, and bank transfers.</p>
+            <p className="assurance__body">mBoB and bank transfers are reviewed by HAB. Online card processing is not configured.</p>
           </div>
         </div>
       </section>

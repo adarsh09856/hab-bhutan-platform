@@ -90,6 +90,19 @@ const CORE_WEBSITE_PAGES: WebPageItem[] = [
     isPublished: true,
   },
   {
+    id: 'board-of-trustees',
+    title: 'Board of Trustees',
+    publicPath: '/board-of-trustees',
+    adminHref: '/admin/pages/about?tab=board#board',
+    category: 'Governance',
+    icon: Users,
+    sectionsCount: 'Trustee Directory',
+    summary: 'Publish confirmed trustees and manage their roles, biographies, portraits, and display order.',
+    crudFeatures: ['Add Board Members', 'Edit Trustee Details', 'Remove Records', 'Public Directory'],
+    isCustom: false,
+    isPublished: true,
+  },
+  {
     id: 'programmes',
     title: 'Training Programmes (A–K)',
     publicPath: '/programmes',
@@ -151,6 +164,19 @@ const CORE_WEBSITE_PAGES: WebPageItem[] = [
     sectionsCount: 'Tiers & Applications',
     summary: 'Membership categories (Individual Artisan, Craft Enterprise, Cluster, Associate, Honorary), annual fees, criteria, and benefits.',
     crudFeatures: ['Membership Tiers CRUD', 'Application Review Queue', 'Dues Settings', 'Perks CMS'],
+    isCustom: false,
+    isPublished: true,
+  },
+  {
+    id: 'members-directory',
+    title: 'Members & Artisans',
+    publicPath: '/members',
+    adminHref: '/admin/members',
+    category: 'Artisans',
+    icon: Users,
+    sectionsCount: 'Member Registry',
+    summary: 'Register individual artisans or enterprises, manage their profiles, and review/import/export member records.',
+    crudFeatures: ['Register Members', 'Edit & Remove Records', 'Member Applications', 'Import & Export'],
     isCustom: false,
     isPublished: true,
   },
@@ -546,6 +572,10 @@ export default function AdminPagesHub() {
     e.preventDefault();
     if (!form.title.trim()) {
       showToast('error', 'Page title is required');
+      return;
+    }
+    if (form.isPublished && !form.content.trim()) {
+      showToast('error', 'Add page text before publishing. You can save an unfinished page as a draft.');
       return;
     }
 
@@ -1078,6 +1108,11 @@ export default function AdminPagesHub() {
 
             {/* Modal Form Body */}
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+              <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-950">
+                <p className="font-semibold">Build this page in order</p>
+                <p className="mt-1">Start with a title, URL and page content. Add images and search details only if needed, then choose whether it is published and where it appears in the menus.</p>
+                <p className="mt-2 font-mono text-[11px]">Public page address: /pages/{form.slug || 'your-page-name'}</p>
+              </div>
               <AdvancedEditorSuite
                 form={form}
                 onChange={(updated) => setForm((prev) => ({ ...prev, ...updated }))}

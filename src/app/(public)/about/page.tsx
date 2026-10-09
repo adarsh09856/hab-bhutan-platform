@@ -303,12 +303,12 @@ export default function AboutPage() {
       <section className="section relative" id="governance" data-hab-section="about-governance">
         <SectionEditBadge
           label="Governance Structure"
-          studioHref="/admin/pages/about#board"
+          studioHref="/admin/pages/about?tab=board#board"
           onQuickEdit={() => {
             setActiveSection({
               type: 'about-page',
               title: 'Governance & Board CMS',
-              studioHref: '/admin/pages/about#board',
+              studioHref: '/admin/pages/about?tab=board#board',
             });
             setLiveEditorOpen(true);
           }}
@@ -359,6 +359,9 @@ export default function AboutPage() {
         />
         <p className="eyebrow eyebrow--accent">Board of Trustees</p>
         <h2 className="display display--sub" style={{ marginBottom: '28px' }}>Oversight body</h2>
+        <p className="footnote" style={{ marginTop: '-16px', marginBottom: '24px' }}>
+          <Link href="/board-of-trustees">View the Board of Trustees page →</Link>
+        </p>
         {boardList.length > 0 ? <div className="grid grid--people">
           {boardList.map((b, idx) => (
             <article key={idx} className="card">

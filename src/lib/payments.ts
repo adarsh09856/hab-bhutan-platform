@@ -1,6 +1,6 @@
 export const DEFAULT_PAYMENT_CONFIG = {
   card: {
-    enabled: true,
+    enabled: false,
     mode: 'TEST' as 'TEST' | 'LIVE',
     provider: 'STRIPE',
     publishableKey: '',

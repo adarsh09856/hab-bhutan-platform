@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { DEFAULT_PAYMENT_CONFIG } from '@/lib/payments';
+import { CARD_CHECKOUT_AVAILABLE } from '@/lib/payment-display';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     const gateways = (setting?.paymentGateways as any) || {};
 
     // Merge stored config with defaults
-    const card = { ...DEFAULT_PAYMENT_CONFIG.card, ...(gateways.card || {}) };
+    const card = { ...DEFAULT_PAYMENT_CONFIG.card, ...(gateways.card || {}), enabled: CARD_CHECKOUT_AVAILABLE && Boolean(gateways.card?.enabled) };
     const cod = { ...DEFAULT_PAYMENT_CONFIG.cod, ...(gateways.cod || {}) };
     const mbob = { ...DEFAULT_PAYMENT_CONFIG.mbob, ...(gateways.mbob || {}) };
     const bank = {
@@ -70,6 +71,13 @@ export async function POST(req: NextRequest) {
     const session = await requirePermission(req, 'orders:edit');
     const body = await req.json();
     const { card, cod, mbob, bank } = body;
+
+    if (card?.enabled && !CARD_CHECKOUT_AVAILABLE) {
+      return NextResponse.json({
+        success: false,
+        error: 'Online card payments cannot be enabled until a live payment provider is integrated and verified.',
+      }, { status: 409 });
+    }
 
     const existing = await prisma.siteSetting.findUnique({
       where: { id: 'default' },

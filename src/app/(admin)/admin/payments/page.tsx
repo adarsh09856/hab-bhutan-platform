@@ -12,22 +12,17 @@ import {
   AlertTriangle, 
   Save, 
   RefreshCw,
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  Zap
 } from 'lucide-react';
+import { CARD_CHECKOUT_AVAILABLE } from '@/lib/payment-display';
 
 export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [showSecretKey, setShowSecretKey] = useState(false);
-
   const [config, setConfig] = useState({
     card: {
-      enabled: true,
+      enabled: false,
       mode: 'TEST',
       provider: 'STRIPE',
       publishableKey: '',
@@ -190,7 +185,7 @@ export default function AdminPaymentsPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">Credit / Debit Card Online</h3>
-                  <p className="text-xs text-slate-500">Stripe &amp; 3D-Secure International Gateway</p>
+                  <p className="text-xs text-slate-500">Online card processing is not configured</p>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -198,100 +193,25 @@ export default function AdminPaymentsPage() {
                   type="checkbox"
                   checked={config.card.enabled}
                   onChange={(e) => setConfig({ ...config, card: { ...config.card, enabled: e.target.checked } })}
+                  disabled={!CARD_CHECKOUT_AVAILABLE}
+                  aria-label="Online card payments unavailable"
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
               </label>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-              <span className="text-slate-700 font-semibold">Gateway Environment Mode:</span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setConfig({ ...config, card: { ...config.card, mode: 'TEST' } })}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition ${
-                    config.card.mode === 'TEST'
-                      ? 'bg-amber-100 text-slate-900 border border-slate-300 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  ⚡ Sandbox / Test Mode
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfig({ ...config, card: { ...config.card, mode: 'LIVE' } })}
-                  className={`px-3 py-1 rounded text-xs font-semibold transition ${
-                    config.card.mode === 'LIVE'
-                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  🔒 Live Production
-                </button>
-              </div>
-            </div>
-
-            {config.card.mode === 'TEST' ? (
-              <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-900 leading-relaxed">
-                <strong>Sandbox Active:</strong> Checkouts will be simulated. Customers can test card payments, and orders will be marked with a test tag so staff can distinguish demo orders from real bank settlements.
-              </div>
-            ) : (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 leading-relaxed">
-                <strong>Live Mode Active:</strong> Authentic 3D-Secure card charges will be authorized and settled to your merchant account.
+            {!CARD_CHECKOUT_AVAILABLE && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+                <strong>Unavailable for now.</strong> Card payments cannot be switched on or simulated here. A real payment-provider integration and successful verification are required first. Use the enabled transfer methods instead.
               </div>
             )}
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Publishable Key</label>
-                <input
-                  type="text"
-                  placeholder="pk_test_... or pk_live_..."
-                  value={config.card.publishableKey}
-                  onChange={(e) => setConfig({ ...config, card: { ...config.card, publishableKey: e.target.value } })}
-                  className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs outline-none focus:border-[#8b2e24] focus:ring-1 focus:ring-[#8b2e24]/20 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-slate-700 font-semibold">Secret Key (Encrypted)</label>
-                  <button
-                    type="button"
-                    onClick={() => setShowSecretKey(!showSecretKey)}
-                    className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium"
-                  >
-                    {showSecretKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    {showSecretKey ? 'Hide' : 'Reveal'}
-                  </button>
-                </div>
-                <input
-                  type={showSecretKey ? 'text' : 'password'}
-                  placeholder="sk_test_... or sk_live_..."
-                  value={config.card.secretKey}
-                  onChange={(e) => setConfig({ ...config, card: { ...config.card, secretKey: e.target.value } })}
-                  className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs outline-none focus:border-[#8b2e24] focus:ring-1 focus:ring-[#8b2e24]/20 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Webhook Secret (Optional)</label>
-                <input
-                  type="password"
-                  placeholder="whsec_..."
-                  value={config.card.webhookSecret}
-                  onChange={(e) => setConfig({ ...config, card: { ...config.card, webhookSecret: e.target.value } })}
-                  className="w-full bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-2 font-mono text-xs outline-none focus:border-[#8b2e24] focus:ring-1 focus:ring-[#8b2e24]/20 shadow-sm"
-                />
-              </div>
-            </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
             <span>Status:</span>
-            <span className={`font-bold ${config.card.enabled ? 'text-emerald-700' : 'text-slate-400'}`}>
-              {config.card.enabled ? (config.card.mode === 'LIVE' ? '● Live Online' : '● Sandbox Active') : '○ Disabled'}
+            <span className="font-bold text-slate-400">
+              {CARD_CHECKOUT_AVAILABLE && config.card.enabled ? '● Available' : '○ Not configured'}
             </span>
           </div>
         </div>

@@ -1657,7 +1657,7 @@
         "Complete the online application and choose Individual Artisan.",
         "Select your primary craft and dzongkhag.",
         "Upload your Citizenship Identity Card.",
-        "Pay the annual dues by card, mBoB or bank transfer.",
+        "Pay the annual dues by mBoB or bank transfer; online card checkout is not configured.",
         "The secretariat verifies your documents within five working days."
       ],
       "benefits": [
@@ -1688,7 +1688,7 @@
         "Complete the online application and choose Craft Enterprise.",
         "Select your primary craft and dzongkhag.",
         "Upload your business licence or group registration.",
-        "Pay the annual dues by card, mBoB or bank transfer.",
+        "Pay the annual dues by mBoB or bank transfer; online card checkout is not configured.",
         "The secretariat verifies your documents within five working days."
       ],
       "benefits": [
@@ -1751,7 +1751,7 @@
         "Complete the online application and choose Affiliated Member.",
         "Give your organisation’s registration details and a contact person.",
         "State your interest in the sector — buyer, educator, partner or funder.",
-        "Pay the annual dues by card, bank transfer or invoice.",
+        "Pay the annual dues by bank transfer or invoice; online card checkout is not configured.",
         "The Board considers affiliated-member applications at its next sitting."
       ],
       "benefits": [
@@ -1814,17 +1814,6 @@
     }
   },
   "payMethods": [
-    {
-      "key": "card",
-      "name": "Credit or debit card",
-      "note": "Visa, Mastercard, Amex — 3-D Secure",
-      "brands": [
-        "VISA",
-        "Mastercard",
-        "AMEX"
-      ],
-      "form": "card"
-    },
     {
       "key": "mbob",
       "name": "Bhutan mobile pay",
@@ -1984,8 +1973,8 @@
     },
     {
       "letter": "E",
-      "title": "Encrypted Escrow",
-      "body": "Bulletproof 3-D Secure, mBoB, and bank transfers."
+      "title": "Tracked Delivery",
+      "body": "EMS shipping with tracking; pay by mBoB or bank transfer."
     }
   ],
   "partners": [

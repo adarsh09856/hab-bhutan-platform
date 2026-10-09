@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { DEFAULT_PAYMENT_CONFIG } from '@/lib/payments';
+import { CARD_CHECKOUT_AVAILABLE } from '@/lib/payment-display';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,10 +38,11 @@ export async function GET() {
       success: true,
       methods: {
         card: {
-          enabled: card.enabled,
+          enabled: CARD_CHECKOUT_AVAILABLE && card.enabled,
           mode: card.mode, // 'TEST' | 'LIVE'
-          publishableKey: card.publishableKey || '',
-          isSandbox: card.mode === 'TEST' || !card.publishableKey,
+          publishableKey: CARD_CHECKOUT_AVAILABLE ? (card.publishableKey || '') : '',
+          isSandbox: true,
+          unavailableReason: CARD_CHECKOUT_AVAILABLE ? undefined : 'Online card payments are not configured.',
         },
         cod: {
           enabled: cod.enabled,

@@ -9,6 +9,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { removeRepeatedLead } from '@/lib/display-copy';
 import { selectFeaturedProducts } from '@/lib/featured-products';
+import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -180,8 +181,8 @@ export default function HomePage() {
     assurance2Text: 'Every artisan, supplier, and input is strictly verified.',
     assurance3Title: 'Upfront & Fair',
     assurance3Text: 'Pre-paid artisan pricing cuts out unethical markups.',
-    assurance4Title: 'Encrypted Escrow',
-    assurance4Text: 'Bulletproof 3-D Secure, mBoB, and bank transfers.',
+    assurance4Title: 'Tracked worldwide',
+    assurance4Text: 'EMS via Bhutan Post with commercial invoice and craft certificate.',
     stats: [
       { value: '7,500', label: 'Micro & small enterprises in the network', url: '/members' },
       { value: '5,250', label: 'Women-led enterprises', url: '/members' },
@@ -197,7 +198,7 @@ export default function HomePage() {
     membershipLeftTitle: 'Find a member',
     membershipLeftText: 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.',
     membershipRightTitle: 'Become a member',
-    membershipRightText: 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.',
+    membershipRightText: MEMBERSHIP_PAYMENT_COPY,
     membershipRightCtaText: 'Apply for membership',
     shopEyebrow: 'Latest arrivals',
     shopHeading: 'New in the shop',
@@ -589,9 +590,9 @@ export default function HomePage() {
               assurance2Title: d.setting.assurance2Title || prev.assurance2Title,
               assurance2Text: d.setting.assurance2Text || prev.assurance2Text,
               assurance3Title: d.setting.assurance3Title || prev.assurance3Title,
-              assurance3Text: d.setting.assurance3Text || prev.assurance3Text,
-              assurance4Title: d.setting.assurance4Title || prev.assurance4Title,
-              assurance4Text: d.setting.assurance4Text || prev.assurance4Text,
+              assurance3Text: removeUnavailableCardClaim(d.setting.assurance3Text, CARD_PAYMENT_UNAVAILABLE_COPY),
+              assurance4Title: /escrow|\bsecure\b|payment/i.test(d.setting.assurance4Title || '') ? prev.assurance4Title : (d.setting.assurance4Title || prev.assurance4Title),
+              assurance4Text: removeUnavailableCardClaim(d.setting.assurance4Text, prev.assurance4Text),
               stats: [
                 { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '/members' },
                 { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '/members' },
@@ -607,7 +608,7 @@ export default function HomePage() {
               membershipLeftTitle: d.setting.membershipLeftTitle || prev.membershipLeftTitle,
               membershipLeftText: d.setting.membershipLeftText || prev.membershipLeftText,
               membershipRightTitle: d.setting.membershipRightTitle || prev.membershipRightTitle,
-              membershipRightText: d.setting.membershipRightText || prev.membershipRightText,
+              membershipRightText: removeUnavailableCardClaim(d.setting.membershipRightText, MEMBERSHIP_PAYMENT_COPY),
               membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
               shopEyebrow: d.setting.shopEyebrow || prev.shopEyebrow,
               shopHeading: d.setting.shopHeading || prev.shopHeading,
@@ -1213,9 +1214,9 @@ export default function HomePage() {
           <div className="assurance__cell">
             <h3 className="assurance__title">
               <span className="assurance__initial">{isDz ? 'ཉ' : (siteSettings.assurance4Title?.charAt(0) || 'E')}</span>
-              <span>{isDz ? 'ེན་སྲུང་དངུལ་སྤྲོད' : (siteSettings.assurance4Title ? siteSettings.assurance4Title.slice(1) : 'ncrypted Escrow')}</span>
+              <span>{isDz ? 'འཛམ་གླིང་ཡོངས་ལུ་རྗེས་འདེད' : (siteSettings.assurance4Title ? siteSettings.assurance4Title.slice(1) : 'racked worldwide')}</span>
             </h3>
-            <p className="assurance__body">{isDz ? 'ཉེན་སྲུང་ལྡན་པའི་ 3-D Secure དང་ mBoB དངུལ་སྤྲོད།' : (siteSettings.assurance4Text || 'Bulletproof 3-D Secure, mBoB, and bank transfers.')}</p>
+            <p className="assurance__body">{isDz ? 'འབྲུག་གི་སྤྲིངས་འབྱོར་ EMS ཞབས་ཏོག་བརྒྱུད་ལམ་བཏངམ་ཨིན། ཚོང་འབྲེལ་ཡིག་ཆ་དང་ལག་ཁྱེར་མཉམ་དུ་གཏངམ་ཨིན།' : siteSettings.assurance4Text}</p>
           </div>
         </div>
       </section>
@@ -1610,8 +1611,8 @@ export default function HomePage() {
             <h3 className="display display--panel display--onaccent">{isDz ? 'འཐུས་མིའི་ཐོ་བཀོད' : (siteSettings.membershipRightTitle || 'Become a member')}</h3>
             <p className="panel__body panel__body--onaccent">
               {isDz
-                ? 'དྲ་ཐོག་ལས་ཞུ་བ་ཕུལ ལོ་བསྟར་འཐུས་མིའི་འཐུས་ ཀརཌི་ mBoB ཡང་ན་ དངུལ་ཁང་ཐོག་ལས་སྤྲོད་དེ་ ཐོ་བཀོད་འབད།'
-                : (siteSettings.membershipRightText || 'Apply online, pay your annual dues by card, mBoB or bank transfer, and get listed in the public directory once approved.')}
+                ? 'དྲ་ཐོག་ལས་ཞུ་བ་ཕུལ། ལོ་བསྟར་འཐུས་ mBoB ཡང་ན་དངུལ་ཁང་གི་སྤྲོད་ལམ་ཐོག་ལས་སྤྲོད། ད་ལྟོ་དྲ་ཐོག་ཀརཌི་སྤྲོད་ལམ་མི་འཐོབ།'
+              : removeUnavailableCardClaim(siteSettings.membershipRightText, MEMBERSHIP_PAYMENT_COPY)}
             </p>
             <div className="actions">
               <Link className="btn btn--light" href="/register">

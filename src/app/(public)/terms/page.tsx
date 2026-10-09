@@ -134,7 +134,7 @@ export default async function TermsOfServicePage() {
             </p>
             <p>
               Payment is by Bhutanese mobile payment or bank transfer against an
-              invoice. Card details are handled by the payment provider and are never stored by HAB.
+              invoice. Online card checkout is not currently configured; do not send card details to HAB.
               Where a price was manifestly wrong we will tell you before dispatch and you may cancel.
             </p>
 
