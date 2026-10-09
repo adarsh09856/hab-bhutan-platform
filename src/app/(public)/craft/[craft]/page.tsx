@@ -15,6 +15,7 @@ import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
+import { getCraftFacts } from '@/lib/craft-facts';
 
 export default function CraftProfilePage() {
   const params = useParams();
@@ -146,6 +147,7 @@ export default function CraftProfilePage() {
     .filter(Boolean).length;
 
   const badgeNum = ('0' + craft.sort_order).slice(-2) + '/13 · ZORIG CHUSUM';
+  const craftFacts = getCraftFacts(craft);
 
   return (
     <main id="main">
@@ -242,22 +244,12 @@ export default function CraftProfilePage() {
       {/* 2. Facts Strip */}
       <section className="section section--tight">
         <div className="craftfacts">
-          <div className="craftfacts__cell">
-            <span className="craftfacts__key">Craft</span>
-            <span className="craftfacts__val">{craft.name} · {craft.english}</span>
-          </div>
-          <div className="craftfacts__cell">
-            <span className="craftfacts__key">Technique</span>
-            <span className="craftfacts__val">{craft.technique || 'Traditional artisanal method'}</span>
-          </div>
-          <div className="craftfacts__cell">
-            <span className="craftfacts__key">Materials</span>
-            <span className="craftfacts__val">{craft.materials || 'Locally sourced Bhutanese materials'}</span>
-          </div>
-          <div className="craftfacts__cell">
-            <span className="craftfacts__key">Practised in</span>
-            <span className="craftfacts__val">{craft.practised_in || 'Across Bhutanese Dzongkhags'}</span>
-          </div>
+          {craftFacts.map((fact) => (
+            <div className="craftfacts__cell" key={fact.label}>
+              <span className="craftfacts__key">{fact.label}</span>
+              <span className="craftfacts__val">{fact.value}</span>
+            </div>
+          ))}
         </div>
       </section>
 
