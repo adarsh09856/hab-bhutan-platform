@@ -221,8 +221,7 @@ export default function AdminDashboardPage() {
           subtitle={`Nu. ${m?.sales?.today?.btn != null ? m.sales.today.btn.toLocaleString() : '0'} BTN`}
           icon={CreditCard}
           glow="amber"
-          trendLabel="Settled via Card / mBOB"
-          sparklineData={[15, 22, 35, 28, 45, 60, 75]}
+          trendLabel="Card checkout unavailable"
         />
 
         <GlassStatWidget
@@ -230,9 +229,8 @@ export default function AdminDashboardPage() {
           value={loading ? '...' : `$${m?.sales?.thisWeek?.usd != null ? m.sales.thisWeek.usd.toLocaleString() : '0'}`}
           subtitle={`Nu. ${m?.sales?.thisWeek?.btn != null ? m.sales.thisWeek.btn.toLocaleString() : '0'} BTN`}
           icon={TrendingUp}
-          trendPct={m?.sales?.thisWeek?.trendPct ?? 12.5}
+          trendPct={m?.sales?.thisWeek?.trendPct}
           glow="emerald"
-          sparklineData={[20, 25, 40, 35, 55, 65, 80]}
         />
 
         <GlassStatWidget
@@ -242,7 +240,6 @@ export default function AdminDashboardPage() {
           icon={Package}
           glow="rose"
           trendLabel="EMS & DHL queue"
-          sparklineData={[5, 12, 8, 14, 10, 18, 15]}
         />
 
         <GlassStatWidget
@@ -252,7 +249,6 @@ export default function AdminDashboardPage() {
           icon={Users}
           glow="indigo"
           trendLabel="Active members"
-          sparklineData={[50, 52, 55, 58, 62, 65, 70]}
         />
       </div>
 

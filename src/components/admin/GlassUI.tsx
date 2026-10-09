@@ -60,7 +60,7 @@ export function GlassStatWidget({
   trendPct,
   trendLabel = 'vs last period',
   glow = 'amber',
-  sparklineData = [30, 45, 38, 52, 60, 55, 70],
+  sparklineData,
   onClick,
 }: GlassStatWidgetProps) {
   const iconGlows = {
@@ -71,12 +71,14 @@ export function GlassStatWidget({
   };
 
   // Generate SVG sparkline path
-  const minVal = Math.min(...sparklineData);
-  const maxVal = Math.max(...sparklineData);
+  const hasSparkline = Boolean(sparklineData && sparklineData.length >= 2 && sparklineData.every(Number.isFinite));
+  const minVal = hasSparkline ? Math.min(...sparklineData!) : 0;
+  const maxVal = hasSparkline ? Math.max(...sparklineData!) : 0;
   const range = maxVal - minVal || 1;
-  const points = sparklineData
+  const series = hasSparkline ? sparklineData! : [];
+  const points = series
     .map((v, i) => {
-      const x = (i / (sparklineData.length - 1)) * 90;
+      const x = (i / (series.length - 1)) * 90;
       const y = 28 - ((v - minVal) / range) * 22;
       return `${x},${y}`;
     })
@@ -121,7 +123,7 @@ export function GlassStatWidget({
         )}
 
         {/* Miniature SVG Sparkline */}
-        <div className="w-[90px] h-[28px] opacity-80 group-hover:opacity-100 transition-opacity">
+        {hasSparkline && <div className="w-[90px] h-[28px] opacity-80 group-hover:opacity-100 transition-opacity">
           <svg viewBox="0 0 90 28" className="w-full h-full overflow-visible">
             <polyline
               fill="none"
@@ -132,7 +134,7 @@ export function GlassStatWidget({
               points={points}
             />
           </svg>
-        </div>
+        </div>}
       </div>
     </GlassCard>
   );
