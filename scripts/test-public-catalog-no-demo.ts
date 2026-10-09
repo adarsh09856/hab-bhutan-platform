@@ -28,6 +28,7 @@ async function main() {
 
     assert.equal(normalizeProductImages('UNLISTED-01', 'thagzo', []).imageUrl, '/assets/photos/image-unavailable.svg');
     assert.equal(normalizeProductImages('HHB10', 'thagzo', [{ url: '/placeholders/hhb10_1.jpg', role: 'primary' }]).imageUrl, '/assets/photos/product-hhb10.jpg');
+    assert.equal(normalizeProductImages('HHB10', 'thagzo', []).imageUrl, '/assets/photos/image-unavailable.svg');
 
     (prisma.product as any).findMany = async () => { throw new Error('Simulated database outage'); };
     const outage = await listProducts(new NextRequest('http://localhost/api/products'));

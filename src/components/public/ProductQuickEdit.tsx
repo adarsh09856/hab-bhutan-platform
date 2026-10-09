@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { CRAFTS } from '@/lib/data';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 
 type ProductForm = {
   code: string;
@@ -71,7 +72,10 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
           craftKey: product.craftKey || '', region: product.region || '',
           makerMemberId: product.makerMemberId || '', status: product.status || 'DRAFT',
           size: product.size || '', weight: product.weight || '', materials: product.materials || '',
-          care: product.care || '', lead: product.lead || '', imageUrls: imageUrls(product.images),
+          care: product.care || '', lead: product.lead || '',
+          imageUrls: Array.isArray(product.images) && product.images.length > 0
+            ? imageUrls(normalizeProductImages(product.code, product.craftKey || '', product.images).images)
+            : [],
         };
         setForm(savedForm);
         setOriginalForm(savedForm);

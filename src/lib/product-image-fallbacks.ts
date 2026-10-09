@@ -29,9 +29,12 @@ function isUnusableImageUrl(url: unknown): boolean {
 }
 
 export function normalizeProductImages(code: string, craftKey: string, rawImages: unknown) {
-  const fallbackUrl = KNOWN_PRODUCT_IMAGES[code.toLowerCase()]
-    || '/assets/photos/image-unavailable.svg';
   const source = Array.isArray(rawImages) ? rawImages : [];
+  // An intentionally empty image list must stay empty of product photography:
+  // deleting a photo in Admin should not resurrect a bundled legacy image.
+  const fallbackUrl = source.length > 0
+    ? KNOWN_PRODUCT_IMAGES[code.toLowerCase()] || '/assets/photos/image-unavailable.svg'
+    : '/assets/photos/image-unavailable.svg';
   const usable: ProductImage[] = source.flatMap((item: any) => {
     const record = typeof item === 'string' ? { url: item, role: 'primary' } : item;
     if (!record || isUnusableImageUrl(record.url)) return [];
