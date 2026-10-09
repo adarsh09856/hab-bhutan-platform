@@ -53,7 +53,7 @@ export default function MembershipPage() {
         <h1 className="display display--page">Apply for HAB membership</h1>
         <p className="lede">
           Three steps, about five minutes. Membership is Active or Associate under the Articles of
-          Association, and dues are annual — payable by card, mBoB or bank transfer.
+          Association, and dues are annual — currently paid by mBoB or bank transfer with proof for HAB review.
         </p>
 
         {/* Categories Section */}

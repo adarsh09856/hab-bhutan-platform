@@ -353,7 +353,7 @@ export default function Footer({ initialNavigation }: { initialNavigation?: Foot
           <span>
             {isDz
               ? `རིན་གོང་ ${currency === 'USD' ? 'ཨ་རིའི་ཌོ་ལར $' : 'དངུལ་ཀྲམ Nu.'} ནང་སྟོན་ཡོད · དངུལ་སྤྲོད་ ཀརཌི་ mBoB དང་ BNB ཐོག་ལས་བཏུབ`
-              : `Prices shown in ${currency === 'USD' ? 'USD $' : 'BTN Nu.'} · Payments by card, mBoB and bank transfer`}
+              : `Prices shown in ${currency === 'USD' ? 'USD $' : 'BTN Nu.'} · mBoB, BNB and bank transfer available; online card payments are not configured`}
           </span>
           <button
             type="button"

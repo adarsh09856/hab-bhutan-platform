@@ -265,6 +265,7 @@ export default function AdminPagesHub() {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [customPages, setCustomPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pageListError, setPageListError] = useState('');
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Modal State for Create / Edit Custom Page
@@ -328,12 +329,17 @@ export default function AdminPagesHub() {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/pages', { credentials: 'include', cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        setCustomPages(data.customPages || []);
+      const data = await res.json();
+      if (!res.ok || !data.success || !Array.isArray(data.customPages)) {
+        throw new Error(data.error || 'Created pages could not be loaded. Retry to refresh this list.');
       }
-    } catch (err) {
+      setCustomPages(data.customPages);
+      setPageListError('');
+      return true;
+    } catch (err: any) {
       console.error('Failed to load custom pages:', err);
+      setPageListError(err.message || 'Created pages could not be loaded.');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -566,9 +572,16 @@ export default function AdminPagesHub() {
 
       const data = await res.json();
       if (res.ok) {
-        showToast('success', editingPageId ? `Page "${form.title}" updated successfully!` : `New page "${form.title}" published!`);
+        if (data.page) {
+          setCustomPages((current) => [data.page, ...current.filter((page) => page.id !== data.page.id)]);
+        }
         setModalOpen(false);
-        loadCustomPages();
+        const refreshed = await loadCustomPages();
+        if (!refreshed) {
+          showToast('error', 'Page saved, but the directory could not refresh. The saved page is shown here; retry the list refresh.');
+        } else {
+          showToast('success', editingPageId ? `Page "${form.title}" updated and shown in Website Pages.` : `New page "${form.title}" created and shown in Website Pages.`);
+        }
       } else {
         showToast('error', data.error || 'Failed to save page');
       }
@@ -789,6 +802,15 @@ export default function AdminPagesHub() {
         </div>
       </div>
 
+      {pageListError && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+          <span>{pageListError}</span>
+          <button type="button" onClick={() => { void loadCustomPages(); }} disabled={loading} className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
+            {loading ? 'Refreshing…' : 'Retry refresh'}
+          </button>
+        </div>
+      )}
+
       {/* Filter & Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
@@ -861,6 +883,7 @@ export default function AdminPagesHub() {
 
       {/* Pages Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {loading && allPages.length === 0 && <div className="col-span-full rounded-xl border bg-white p-6 text-sm text-slate-600">Loading your pages…</div>}
         {filteredPages.map((page, pageIdx) => {
           const Icon = page.icon || FileText;
           return (

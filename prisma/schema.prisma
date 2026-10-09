@@ -870,7 +870,7 @@ model DonationRecord {
   paymentMethod String?        @default("MBOB")
   proofUrl      String?
   journalRef    String?
-  status        String         @default("COMPLETED") // PENDING | COMPLETED | FAILED
+  status        String         @default("PENDING") // PENDING | COMPLETED | FAILED — payment must be verified before completion
   receiptNumber String         @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

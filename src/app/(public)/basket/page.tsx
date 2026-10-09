@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
@@ -26,10 +25,7 @@ export default function BasketPage() {
     clearCart,
   } = useCart();
 
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'cod' | 'mbob' | 'bank'>('card');
-  const [orderConfirmed, setOrderConfirmed] = useState(false);
-  const [confirmedOrderNumber, setConfirmedOrderNumber] = useState('HAB-S-88214');
-  const [confirmedEmail, setConfirmedEmail] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'mbob' | 'bank'>('mbob');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [customer, setCustomer] = useState({
@@ -59,11 +55,9 @@ export default function BasketPage() {
     }
 
     setIsSubmitting(true);
-    let orderNum = `HAB-S-${Math.floor(10000 + Math.random() * 90000)}`;
-
     try {
       const selectedCurrency = (paymentMethod === 'mbob' || paymentMethod === 'cod') ? 'BTN' : (currency || 'USD');
-      const selectedPaymentMethod = paymentMethod === 'card' ? 'CARD' : paymentMethod === 'mbob' ? 'MBOB' : paymentMethod === 'cod' ? 'COD' : 'BANK';
+      const selectedPaymentMethod = paymentMethod === 'mbob' ? 'MBOB' : paymentMethod === 'cod' ? 'COD' : 'BANK';
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -93,33 +87,21 @@ export default function BasketPage() {
         }),
       });
       const data = await res.json();
-      if (data.success && data.order?.orderNumber) {
-        orderNum = data.order.orderNumber;
-        setConfirmedOrderNumber(orderNum);
-        setConfirmedEmail(customer.email.trim());
+      if (res.ok && data.success && data.order?.orderNumber) {
         clearCart();
         setIsSubmitting(false);
-        router.push(`/order-confirmation/${orderNum}`);
-        return;
-      } else if (!res.ok && data.error) {
-        setFormError(data.error);
-        setIsSubmitting(false);
+        router.push(`/order-confirmation/${data.order.orderNumber}`);
         return;
       }
+      throw new Error(data.error || 'The order could not be confirmed. Your basket is unchanged; please retry.');
     } catch (err: any) {
-      console.error('Error in checkout:', err);
+      setFormError(err.message || 'The order could not be confirmed. Your basket is unchanged; please retry.');
+      setIsSubmitting(false);
+      return;
     }
-
-    setConfirmedOrderNumber(orderNum);
-    setConfirmedEmail(customer.email.trim());
-    clearCart();
-    setOrderConfirmed(true);
-    setIsSubmitting(false);
-    window.scrollTo(0, 0);
   };
 
   const payOptions = [
-    { key: 'card', name: 'International card', note: 'Visa, Mastercard, Amex — 3-D Secure' },
     { key: 'cod', name: 'Cash on Delivery (COD)', note: 'Pay in cash or mBoB upon parcel arrival' },
     { key: 'mbob', name: 'Bhutan mobile pay', note: 'mBoB / RMA-approved wallets, in Nu.' },
     { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
@@ -134,29 +116,7 @@ export default function BasketPage() {
         </p>
         <h1 className="display display--page">Your basket</h1>
 
-        {/* State 1: Order confirmed */}
-        {orderConfirmed ? (
-          <div id="basketDone">
-            <div className="shopempty">
-              <span className="tick">✓</span>
-              <h2 className="shopempty__title">Order confirmed</h2>
-              <p className="shopempty__body">
-                Order <strong>{confirmedOrderNumber}</strong>. You will receive an EMS tracking number from Bhutan Post when the parcel leaves Thimphu, usually within two working days.
-              </p>
-              <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
-                <Link
-                  className="btn btn--accent"
-                  href={`/track-order?order=${encodeURIComponent(confirmedOrderNumber)}${confirmedEmail ? `&email=${encodeURIComponent(confirmedEmail)}` : ''}`}
-                >
-                  Track order status →
-                </Link>
-                <Link className="btn btn--outline" href="/shop">
-                  Continue shopping
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : cartCount === 0 ? (
+        {cartCount === 0 ? (
           /* State 2: Basket empty */
           <div id="basketEmpty">
             <div className="shopempty">
@@ -295,15 +255,8 @@ export default function BasketPage() {
                 </div>
 
                 <div className="paybar paybar--inset" style={{ margin: '20px 0 0' }}>
-                  <p className="paybar__label">Secure payment</p>
-                  <div className="paybar__brands" style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>VISA</span>
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>Mastercard</span>
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>AMEX</span>
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, background: '#fff', border: '1px solid var(--line-soft)', padding: '2px 6px', borderRadius: 4 }}>mBoB</span>
-                  </div>
                   <p className="paybar__note">
-                    3-D Secure verified. Cards are processed by our gateway; HAB never sees your card number.
+                    Online card processing is not configured. Orders are created only after the server confirms your submission; bank-transfer payment instructions are provided with the order.
                   </p>
                 </div>
               </div>
@@ -394,10 +347,10 @@ export default function BasketPage() {
               <div className="summary__row">
                 <span>Paying with</span>
                 <span id="sumPayLabel">
-                  {paymentMethod === 'card'
-                    ? 'International card'
-                    : paymentMethod === 'mbob'
+                  {paymentMethod === 'mbob'
                     ? 'Bhutan mobile pay'
+                    : paymentMethod === 'cod'
+                    ? 'Cash on delivery'
                     : 'Bank transfer'}
                 </span>
               </div>

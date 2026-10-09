@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { stat } from 'fs/promises';
+import path from 'path';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
-import { saveFallbackDonation } from '@/lib/donation-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { 
+    const {
       pillarKey, 
       donorName, 
       donorEmail, 
@@ -26,10 +27,21 @@ export async function POST(req: NextRequest) {
       amountBTN, 
       currency = 'USD', 
       frequency, 
-      paymentMethod = 'CARD', 
+      paymentMethod = 'MBOB',
       journalRef, 
       proofUrl 
     } = body;
+
+    const normalizedPaymentMethod = String(paymentMethod || '').trim().toUpperCase();
+    if (normalizedPaymentMethod === 'CARD') {
+      return NextResponse.json(
+        { success: false, error: 'Online card donations are not configured. Pay by mBoB, BNB, or bank transfer and submit your reference and proof.' },
+        { status: 503 }
+      );
+    }
+    if (!['MBOB', 'BNB', 'BANK'].includes(normalizedPaymentMethod)) {
+      return NextResponse.json({ success: false, error: 'Choose mBoB, BNB, or bank transfer.' }, { status: 400 });
+    }
 
     if (!pillarKey || !donorName || !donorEmail || (!amountUSD && !amountBTN)) {
       return NextResponse.json(
@@ -41,67 +53,58 @@ export async function POST(req: NextRequest) {
     const calculatedUSD = amountUSD ? Number(amountUSD) : Math.round((Number(amountBTN) / 84) * 100) / 100;
     const calculatedBTN = amountBTN ? Number(amountBTN) : Math.round(calculatedUSD * 84);
 
-    if (isNaN(calculatedUSD) || calculatedUSD <= 0) {
+    if (!Number.isFinite(calculatedUSD) || calculatedUSD <= 0 || !Number.isFinite(calculatedBTN) || calculatedBTN <= 0) {
       return NextResponse.json({ error: 'Valid positive amount is required' }, { status: 400 });
+    }
+
+    const paymentReference = String(journalRef || '').trim();
+    const uploadedProof = String(proofUrl || '').trim();
+    if (!paymentReference || paymentReference.length > 120) {
+      return NextResponse.json({ success: false, error: 'Enter the mBoB, BNB, or bank transfer reference (up to 120 characters).' }, { status: 400 });
+    }
+    if (!/^\/uploads\/hab-[a-z0-9-]+(?:\.[a-z0-9]+)?$/i.test(uploadedProof)) {
+      return NextResponse.json({ success: false, error: 'Upload your payment receipt or deposit slip before submitting.' }, { status: 400 });
+    }
+    try {
+      const proofFile = await stat(path.join(process.cwd(), 'public', uploadedProof.slice(1)));
+      if (!proofFile.isFile()) throw new Error('Payment proof is not a file.');
+    } catch {
+      return NextResponse.json({ success: false, error: 'The uploaded payment proof could not be found. Please upload it again.' }, { status: 400 });
+    }
+
+    const normalizedPillarKey = String(pillarKey).trim().toLowerCase();
+    const pillar = await prisma.supportPillar.findUnique({ where: { key: normalizedPillarKey }, select: { key: true } });
+    if (!pillar) {
+      return NextResponse.json({ success: false, error: 'Choose a valid HAB donation programme.' }, { status: 400 });
     }
 
     // Generate unique receipt number e.g. HAB-DON-2026-XXXXX
     const randomSuffix = Math.floor(10000 + Math.random() * 90000);
     const receiptNumber = `HAB-DON-${new Date().getFullYear()}-${randomSuffix}`;
-    const initialStatus = (paymentMethod === 'MBOB' || paymentMethod === 'BNB' || paymentMethod === 'BANK') && !proofUrl ? 'PENDING' : 'COMPLETED';
+    const initialStatus = 'PENDING';
 
-    let donation: any = null;
+    let donation: any;
     try {
       donation = await prisma.donationRecord.create({
         data: {
-          pillarKey: pillarKey.trim().toLowerCase(),
+          pillarKey: normalizedPillarKey,
           donorName: donorName.trim(),
           donorEmail: donorEmail.trim().toLowerCase(),
           amountUSD: calculatedUSD,
           amountBTN: calculatedBTN,
           currency: currency.toUpperCase(),
           frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
-          paymentMethod: paymentMethod.toUpperCase(),
-          journalRef: journalRef ? String(journalRef).trim() : null,
-          proofUrl: proofUrl ? String(proofUrl).trim() : null,
+          paymentMethod: normalizedPaymentMethod,
+          journalRef: paymentReference,
+          proofUrl: uploadedProof,
           status: initialStatus,
           receiptNumber,
         },
       });
-
-      // Update the raisedAmountUSD on the pillar if it exists
-      try {
-        await prisma.supportPillar.update({
-          where: { key: pillarKey.trim().toLowerCase() },
-          data: {
-            raisedAmountUSD: { increment: calculatedUSD },
-          },
-        });
-      } catch {
-        // Non-blocking if pillar record not yet seeded
-      }
     } catch (dbErr) {
-      console.warn('[api/donations] DB unavailable, creating fallback store record:', dbErr);
+      console.error('[api/donations] Database insert failed; donation was not accepted:', dbErr);
+      return NextResponse.json({ success: false, error: 'We could not securely save your donation evidence. Nothing was submitted; please try again later.' }, { status: 503 });
     }
-
-    // Always mirror to fallback store for guaranteed persistence
-    const savedFallback = saveFallbackDonation({
-      id: donation?.id || `don-${Date.now()}`,
-      pillarKey: pillarKey.trim().toLowerCase(),
-      donorName: donorName.trim(),
-      donorEmail: donorEmail.trim().toLowerCase(),
-      amountUSD: calculatedUSD,
-      amountBTN: calculatedBTN,
-      currency: currency.toUpperCase(),
-      frequency: frequency === 'MONTHLY' ? 'MONTHLY' : 'ONE_TIME',
-      paymentMethod: paymentMethod.toUpperCase(),
-      journalRef: journalRef ? String(journalRef).trim() : null,
-      proofUrl: proofUrl ? String(proofUrl).trim() : null,
-      status: initialStatus,
-      receiptNumber,
-      createdAt: donation?.createdAt?.toISOString?.() || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
 
     try {
       await logAudit({
@@ -109,7 +112,7 @@ export async function POST(req: NextRequest) {
         actorIdentifier: donorEmail.trim().toLowerCase(),
         action: 'DONATION_RECORDED',
         entityType: 'DonationRecord',
-        entityId: donation?.id || savedFallback.id,
+        entityId: donation.id,
         details: {
           receiptNumber,
           amountUSD: calculatedUSD,
@@ -124,12 +127,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       donation: {
-        id: donation?.id || savedFallback.id,
-        receiptNumber: donation?.receiptNumber || savedFallback.receiptNumber,
-        amountUSD: donation?.amountUSD ?? savedFallback.amountUSD,
-        donorName: donation?.donorName || savedFallback.donorName,
-        createdAt: donation?.createdAt || savedFallback.createdAt,
+        id: donation.id,
+        receiptNumber: donation.receiptNumber,
+        amountUSD: donation.amountUSD,
+        donorName: donation.donorName,
+        status: donation.status,
+        createdAt: donation.createdAt,
       },
+      message: 'Donation evidence received. HAB will confirm the gift after reviewing the payment proof.',
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Donation submission failed' }, { status: 500 });

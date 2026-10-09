@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { createPortal } from 'react-dom';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 
 type Block = { id: string; pathname: string; title: string; body: string; imageUrl: string | null; buttonLabel: string | null; buttonHref: string | null; sortOrder: number; isPublished: boolean };
@@ -63,24 +62,12 @@ export function PageBlockManager({ pathname, onChanged }: { pathname: string; on
 export default function PublicPageBlocks() {
   const pathname = usePathname() || '/';
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [staff, setStaff] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [open, setOpen] = useState(false);
   const load = useCallback(async () => {
     const response = await fetch(`/api/page-blocks?path=${encodeURIComponent(pathname)}`, { cache: 'no-store' });
     const data = await response.json();
     if (data.success) setBlocks(data.blocks || []);
   }, [pathname]);
   useEffect(() => { load().catch(() => {}); }, [load]);
-  useEffect(() => {
-    fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).then((data) => setStaff(['super_admin', 'staff_operator'].includes(String(data?.user?.roleSlug || '').toLowerCase()))).catch(() => setStaff(false));
-    const toggle = (event: Event) => setEditMode(Boolean((event as CustomEvent).detail?.active));
-    const openManager = () => setOpen(true);
-    window.addEventListener('hab:visual-edit-toggled', toggle);
-    window.addEventListener('hab:page-blocks-open', openManager);
-    setEditMode(document.body.classList.contains('hab-visual-edit-on'));
-    return () => { window.removeEventListener('hab:visual-edit-toggled', toggle); window.removeEventListener('hab:page-blocks-open', openManager); };
-  }, [pathname]);
   return <>
     {blocks.map((block) => <section key={block.id} className="section relative" data-hab-section={`page-block-${block.id}`}>
       <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm md:flex">
@@ -88,7 +75,5 @@ export default function PublicPageBlocks() {
         <div className="p-6 md:p-10"><h2 className="display display--sub">{block.title}</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-stone-700">{block.body}</p>{block.buttonLabel && block.buttonHref && <Link href={block.buttonHref} className="mt-5 inline-block rounded-lg bg-[#8B2E24] px-4 py-2 text-sm font-bold text-white">{block.buttonLabel}</Link>}</div>
       </div>
     </section>)}
-    {staff && editMode && <button type="button" data-hab-no-quick-edit onClick={() => setOpen(true)} className="fixed bottom-20 right-4 z-[90000] rounded-xl bg-[#8B2E24] px-4 py-2 text-xs font-bold text-white shadow-xl">Page sections · add / edit / delete</button>}
-    {open && staff && createPortal(<div data-hab-no-quick-edit role="dialog" aria-modal="true" className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/70 p-3"><div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-bold">Manage page sections</h2><button type="button" onClick={() => setOpen(false)} aria-label="Close page sections">✕</button></div><PageBlockManager pathname={pathname} onChanged={load} /></div></div>, document.body)}
   </>;
 }

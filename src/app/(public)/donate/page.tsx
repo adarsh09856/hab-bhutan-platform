@@ -34,11 +34,7 @@ function DonateContent() {
   const [country, setCountry] = useState<string>('Bhutan');
   const [message, setMessage] = useState<string>('');
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
-  const [payMethod, setPayMethod] = useState<string>('card');
-  const [cardNumber, setCardNumber] = useState<string>('');
-  const [cardExp, setCardExp] = useState<string>('');
-  const [cardCvc, setCardCvc] = useState<string>('');
-  const [cardName, setCardName] = useState<string>('');
+  const [payMethod, setPayMethod] = useState<string>('mbob');
   const [mobilePhone, setMobilePhone] = useState<string>('');
   const [bankRef, setBankRef] = useState<string>('');
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -162,7 +158,28 @@ function DonateContent() {
   const handleGive = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!donorName.trim() || !donorEmail.trim()) {
-      setErrorMsg('Please give your name and email so we can send a receipt.');
+      setErrorMsg('Please enter your name and email.');
+      return;
+    }
+    if (!['mbob', 'bnb', 'bank'].includes(payMethod)) {
+      setErrorMsg('Choose mBoB, BNB, or bank transfer. Online card donations are not available.');
+      return;
+    }
+    if (amount <= 0 || !Number.isFinite(amount)) {
+      setErrorMsg('Enter a valid donation amount.');
+      return;
+    }
+    if (uploadingFile) {
+      setErrorMsg('Please wait for the payment proof upload to finish.');
+      return;
+    }
+    if (!proofUrl) {
+      setErrorMsg('Upload your payment receipt or deposit slip before submitting.');
+      return;
+    }
+    const paymentReference = payMethod === 'mbob' ? mobilePhone.trim() : bankRef.trim();
+    if (!paymentReference) {
+      setErrorMsg('Enter the transaction or transfer reference for your selected payment method.');
       return;
     }
     setErrorMsg(null);
@@ -180,24 +197,22 @@ function DonateContent() {
           donorEmail: donorEmail.trim(),
           amountUSD,
           amountBTN: amount,
-          currency: (payMethod === 'mbob' || payMethod === 'bnb' || payMethod === 'bank') ? 'BTN' : 'USD',
+          currency: payMethod === 'bank' ? 'USD' : 'BTN',
           frequency: isMonthly ? 'MONTHLY' : 'ONE_TIME',
           paymentMethod: payMethod.toUpperCase(),
-          journalRef: bankRef.trim() || mobilePhone.trim() || null,
-          proofUrl: proofUrl || null,
+          journalRef: paymentReference,
+          proofUrl,
         }),
       });
 
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && data.success && data.donation?.status === 'PENDING') {
         setRefNumber(data.donation.receiptNumber);
       } else {
-        const generatedRef = `HAB-D-${Math.floor(10000 + Math.random() * 90000)}`;
-        setRefNumber(generatedRef);
+        throw new Error(data.error || data.message || 'Donation could not be submitted. Please try again.');
       }
-    } catch {
-      const generatedRef = `HAB-D-${Math.floor(10000 + Math.random() * 90000)}`;
-      setRefNumber(generatedRef);
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Donation could not be submitted. Please try again.');
     } finally {
       setSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -226,23 +241,9 @@ function DonateContent() {
               <span className="tick">✓</span>
               <h2 className="shopempty__title">Thank you</h2>
               <p className="shopempty__body">
-                Reference <strong>{refNumber}</strong>. A receipt is on its way to your email ({donorEmail}). Your gift of Nu. {amount.toLocaleString()} is recorded against{' '}
-                <span>{activePillar?.title}</span>, and its use will be reported in this year&apos;s annual report.
+                Your payment evidence was submitted for review. Reference <strong>{refNumber}</strong>. HAB will verify the transfer before marking your Nu. {amount.toLocaleString()} gift for{' '}
+                <span>{activePillar?.title}</span> as received. This is not a payment confirmation or tax receipt.
               </p>
-
-              {(payMethod === 'bank' || payMethod === 'mbob') && (
-                <div style={{ maxWidth: 480, margin: '20px auto', padding: '16px 20px', background: 'var(--surface, #f8f6f0)', border: '1px solid var(--border, #e5e0d8)', borderRadius: 8, textAlign: 'left', fontSize: 13, lineHeight: 1.6 }}>
-                  <p style={{ fontWeight: 700, color: 'var(--ink, #1f1d1a)', marginBottom: 8 }}>Bank Transfer / mBoB Payment Remittance:</p>
-                  <p style={{ margin: '3px 0' }}>• <strong>Bank:</strong> Bank of Bhutan Limited (Thimphu Main Branch)</p>
-                  <p style={{ margin: '3px 0' }}>• <strong>Account Name:</strong> Handicrafts Association of Bhutan</p>
-                  <p style={{ margin: '3px 0' }}>• <strong>Account No:</strong> 201104300189</p>
-                  <p style={{ margin: '3px 0' }}>• <strong>SWIFT Code:</strong> BOBTBLBT</p>
-                  <p style={{ margin: '3px 0' }}>• <strong>Transfer Reference:</strong> <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent, #9b1b30)' }}>{refNumber}</span></p>
-                  <p style={{ marginTop: 8, fontSize: 12, color: 'var(--muted, #666)' }}>
-                    Your donation will be reconciled upon receipt of funds. Official tax-deductible certificate (CSO/2011/043) is registered.
-                  </p>
-                </div>
-              )}
 
               <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
                 <Link className="btn btn--accent" href="/publications">
@@ -395,97 +396,12 @@ function DonateContent() {
                 <div className="panel">
                   <h2 className="newsaside__title">Payment method</h2>
                   <div className="paybar paybar--inset">
-                    <p className="paybar__label">Secure payment</p>
+                    <p className="paybar__label">Transfer and submit proof</p>
                     <p className="paybar__note">
-                      3-D Secure verified. Cards are processed by our gateway; HAB never sees your card number.
+                      Online card processing is not configured. HAB reviews transfer references and uploaded receipts before confirming donations.
                     </p>
                   </div>
                   <div className="paymethods" style={{ marginTop: 16 }}>
-                    {/* Method 1: International Card */}
-                    <div className={`paymethod ${payMethod === 'card' ? 'is-active' : ''}`}>
-                      <button
-                        type="button"
-                        className="paymethod__head"
-                        aria-expanded={payMethod === 'card'}
-                        onClick={() => setPayMethod('card')}
-                      >
-                        <span className="paymethod__radio"></span>
-                        <span className="paymethod__label">
-                          <span className="paymethod__name">International card</span>
-                          <span className="paymethod__note">Visa, Mastercard, Amex, 3-D Secure · charged in USD</span>
-                        </span>
-                        <span className="paymethod__brands">
-                          <span className="cardchip">VISA</span>
-                          <span className="cardchip">Mastercard</span>
-                          <span className="cardchip">AMEX</span>
-                        </span>
-                      </button>
-                      <div className="paymethod__body">
-                        <div className="payform">
-                          <label className="payfield payfield--full">
-                            <span className="payfield__label">Card number</span>
-                            <div className="payfield__wrap">
-                              <input
-                                className="payinput font-mono"
-                                type="text"
-                                placeholder="1234 1234 1234 1234"
-                                maxLength={19}
-                                value={cardNumber}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, '').slice(0, 16);
-                                  setCardNumber(val.replace(/(.{4})/g, '$1 ').trim());
-                                }}
-                              />
-                              <span className="payfield__mark is-known">
-                                {cardNumber.startsWith('4') ? 'VISA' : cardNumber.startsWith('5') ? 'MC' : cardNumber.startsWith('3') ? 'AMEX' : ''}
-                              </span>
-                            </div>
-                          </label>
-                          <label className="payfield">
-                            <span className="payfield__label">Expiry</span>
-                            <input
-                              className="payinput font-mono"
-                              type="text"
-                              placeholder="MM / YY"
-                              maxLength={7}
-                              value={cardExp}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                                setCardExp(val.length > 2 ? `${val.slice(0, 2)} / ${val.slice(2)}` : val);
-                              }}
-                            />
-                          </label>
-                          <label className="payfield">
-                            <span className="payfield__label">Security code</span>
-                            <div className="payfield__wrap">
-                              <input
-                                className="payinput font-mono"
-                                type="text"
-                                placeholder="CVC"
-                                maxLength={4}
-                                value={cardCvc}
-                                onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                              />
-                              <span className="payfield__mark">3 digits</span>
-                            </div>
-                          </label>
-                          <label className="payfield payfield--full">
-                            <span className="payfield__label">Name on card</span>
-                            <input
-                              className="payinput"
-                              type="text"
-                              placeholder="As printed on card"
-                              value={cardName}
-                              onChange={(e) => setCardName(e.target.value)}
-                            />
-                          </label>
-                          <p className="payform__note">
-                            Your gift is processed in USD by our accredited gateway with 3-D Secure. HAB never sees or stores card numbers.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Method 2: mBoB (Bank of Bhutan) */}
                     <div className={`paymethod ${payMethod === 'mbob' ? 'is-active' : ''}`}>
                       <button
@@ -497,7 +413,7 @@ function DonateContent() {
                         <span className="paymethod__radio"></span>
                         <span className="paymethod__label">
                           <span className="paymethod__name">Bank of Bhutan (mBoB)</span>
-                          <span className="paymethod__note">Transfer in Nu. via mBoB mobile banking app</span>
+                          <span className="paymethod__note">Transfer in Nu. via the mBoB mobile banking app</span>
                         </span>
                         <span className="paymethod__brands">
                           <span className="cardchip">mBoB</span>
@@ -524,7 +440,7 @@ function DonateContent() {
                         )}
                         <div className="payform">
                           <label className="payfield payfield--full">
-                            <span className="payfield__label">mBoB Journal / Transaction Reference</span>
+                            <span className="payfield__label">mBoB journal / transaction reference <strong>required</strong></span>
                             <input
                               className="payinput font-mono"
                               type="text"
@@ -575,7 +491,7 @@ function DonateContent() {
                         )}
                         <div className="payform">
                           <label className="payfield payfield--full">
-                            <span className="payfield__label">BNB Transaction / Journal Reference</span>
+                            <span className="payfield__label">BNB transaction / journal reference <strong>required</strong></span>
                             <input
                               className="payinput font-mono"
                               type="text"
@@ -613,6 +529,18 @@ function DonateContent() {
                           <p style={{ margin: '2px 0' }}>• <strong>Account Number:</strong> 201104300189</p>
                           <p style={{ margin: '2px 0' }}>• <strong>SWIFT Code:</strong> BOBTBLBT</p>
                         </div>
+                        <div className="payform">
+                          <label className="payfield payfield--full">
+                            <span className="payfield__label">Bank transfer reference <strong>required</strong></span>
+                            <input
+                              className="payinput font-mono"
+                              type="text"
+                              placeholder="Enter the reference shown by your bank"
+                              value={bankRef}
+                              onChange={(e) => setBankRef(e.target.value)}
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
 
@@ -620,7 +548,7 @@ function DonateContent() {
                     {(payMethod === 'mbob' || payMethod === 'bnb' || payMethod === 'bank') && (
                       <div style={{ marginTop: 18, padding: '16px', background: '#FBF9F5', border: '1px dashed #CDBEA8', borderRadius: 8 }}>
                         <p style={{ fontWeight: 600, fontSize: 13, color: '#33261F', marginBottom: 6 }}>
-                          📎 Upload Payment Proof / Slip (Optional / Recommended)
+                          📎 Upload Payment Proof / Slip (Required)
                         </p>
                         <p style={{ fontSize: 11.5, color: '#6B5A4C', marginBottom: 12 }}>
                           Upload screenshot or PDF of your mBoB, BNB, or bank remittance slip for immediate CSO verification.
@@ -671,7 +599,7 @@ function DonateContent() {
                   </div>
                   <div className="summary__row">
                     <span>Paying with</span>
-                    <span style={{ textTransform: 'capitalize' }}>{payMethod}</span>
+                  <span>{payMethod === 'mbob' ? 'mBoB' : payMethod === 'bnb' ? 'BNB' : 'Bank transfer'}</span>
                   </div>
                 </div>
                 <div className="summary__total">
@@ -685,8 +613,8 @@ function DonateContent() {
                     {errorMsg}
                   </p>
                 )}
-                <button className="btn btn--light btn--full" type="submit">
-                  Give securely
+                <button className="btn btn--light btn--full" type="submit" disabled={submitting || uploadingFile}>
+                  {submitting ? 'Submitting for review…' : 'Submit donation for review'}
                 </button>
                 <p className="summary__fine">
                   {taxNotice}

@@ -9,15 +9,9 @@ export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'content:view');
 
-    let customPages: any[] = [];
-    try {
-      customPages = await prisma.customPage.findMany({
-        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-      });
-    } catch (dbErr: any) {
-      console.warn('Could not query customPage table (may need db push):', dbErr.message);
-      customPages = [];
-    }
+    const customPages = await prisma.customPage.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+    });
 
     return NextResponse.json({
       success: true,

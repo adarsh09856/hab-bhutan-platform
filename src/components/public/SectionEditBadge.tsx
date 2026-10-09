@@ -127,15 +127,15 @@ export default function SectionEditBadge({
 
   const effectiveSectionType = sectionType || inferSectionType(studioHref, label);
   const effectiveEditHandler = onQuickEdit || onEdit;
-  const showQuickEdit = Boolean(effectiveEditHandler || effectiveSectionType);
+  const isExtraSectionsManager = studioHref.startsWith('/admin/pages/sections');
+  // Extra page blocks are optional additions, not the page's existing content.
+  // Keep their CRUD in the clearly-labeled Admin screen instead of opening a
+  // second, overlapping Quick Edit popup on the public page.
+  const showQuickEdit = !isExtraSectionsManager && Boolean(effectiveEditHandler || effectiveSectionType);
 
   const handleQuickEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (studioHref.startsWith('/admin/pages/sections')) {
-      window.dispatchEvent(new Event('hab:page-blocks-open'));
-      return;
-    }
     if (effectiveEditHandler) {
       effectiveEditHandler();
     } else if (effectiveSectionType) {
@@ -207,10 +207,10 @@ export default function SectionEditBadge({
           <Link
             href={studioHref}
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#8B2E24] hover:bg-[#a0362b] text-white font-bold transition-colors shadow-xs"
-            title={`Open full ${label} studio in Admin`}
+            title={isExtraSectionsManager ? 'Manage optional extra page sections in Admin' : `Open full ${label} studio in Admin`}
           >
             <Edit3 className="w-2.5 h-2.5" />
-            <span>Studio</span>
+            <span>{isExtraSectionsManager ? 'Extra sections' : 'Studio'}</span>
             <ExternalLink className="w-2.5 h-2.5" />
           </Link>
         </div>

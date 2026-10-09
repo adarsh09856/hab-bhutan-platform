@@ -133,7 +133,7 @@ export default async function TermsOfServicePage() {
               of charge is stated at checkout. Prices exclude shipping, duty and local taxes.
             </p>
             <p>
-              Payment is by international card, Bhutanese mobile payment, or bank transfer against an
+              Payment is by Bhutanese mobile payment or bank transfer against an
               invoice. Card details are handled by the payment provider and are never stored by HAB.
               Where a price was manifestly wrong we will tell you before dispatch and you may cancel.
             </p>
