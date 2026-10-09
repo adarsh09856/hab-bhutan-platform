@@ -117,19 +117,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const craftFallbacks: Record<string, string[]> = {
-    thagzo: ['/assets/photos/product-sad03.jpg', '/assets/photos/product-hhb01.jpg', '/assets/photos/hero-4-textiles.jpg'],
-    shagzo: ['/assets/photos/product-dap02.jpg', '/assets/photos/hero-3-clay.jpg', '/assets/photos/hero-2-punakha.jpg'],
-    troezo: ['/assets/photos/product-tro04.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/product-cam01.jpg'],
-    tshazo: ['/assets/photos/product-ftb04.jpg', '/assets/photos/product-lud01.jpg', '/assets/photos/hero-2-punakha.jpg'],
-    lhazo: ['/assets/photos/product-lha01.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/about-hab.jpg'],
-    parzo: ['/assets/photos/product-mas01.jpg', '/assets/photos/hero-3-clay.jpg', '/assets/photos/product-ftb04.jpg'],
-    dezo: ['/assets/photos/product-dez01.jpg', '/assets/photos/hero-5-desho.jpg', '/assets/photos/about-hab.jpg'],
-    tshemzo: ['/assets/photos/product-cus02.jpg', '/assets/photos/product-cam01.jpg', '/assets/photos/hero-4-textiles.jpg'],
-    garzo: ['/assets/photos/product-tro04.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/product-cam01.jpg'],
-    jinzo: ['/assets/photos/hero-3-clay.jpg', '/assets/photos/product-mas01.jpg', '/assets/photos/hero-2-punakha.jpg'],
-  };
-
   const primaryImg = product.image_path || (product.images && product.images[0]?.url) || `/assets/photos/product-${product.code.toLowerCase()}.jpg`;
 
   // Build authentic gallery images without cross-craft photo bleeding
@@ -391,13 +378,9 @@ export default function ProductDetailPage() {
           </Link>
         </div>
 
+        {related.length > 0 ? (
         <div className="grid grid--4" id="prodRelated">
-          {(related.length > 0 ? related : [
-            { code: 'SAD03', name: 'Yathra Wool Saddle Bag', craft_name: 'Thagzo · Weaving', maker: 'Chumey Yathra House', priceUSD: 120, image_path: '/assets/photos/product-sad03.jpg' },
-            { code: 'TRO04', name: 'Hand-Chased Silver Koma Clasp Pair', craft_name: 'Troezo · Silver & Gold', maker: 'Zorig Silversmiths', priceUSD: 92, image_path: '/assets/photos/product-cam01.jpg' },
-            { code: 'FTB04', name: 'Two-Tier Bangchung Basket', craft_name: 'Tshazo · Cane & Bamboo', maker: 'Kheng Bamboo Collective', priceUSD: 34, image_path: '/assets/photos/product-lud01.jpg' },
-            { code: 'LHA01', name: 'Guru Rinpoche Mineral-Pigment Thangka', craft_name: 'Lhazo · Painting', maker: 'Sonam Thangka Studio', priceUSD: 260, image_path: '/assets/photos/product-hhb01.jpg' },
-          ]).slice(0, 4).map((rp: any) => (
+          {related.slice(0, 4).map((rp: any) => (
             <article key={rp.code} className="card product">
               <Link className="product__shot" href={`/product/${rp.code}`}>
                 <figure className="frame frame--square">
@@ -430,6 +413,11 @@ export default function ProductDetailPage() {
             </article>
           ))}
         </div>
+        ) : (
+          <p className="section__lede" id="prodRelatedEmpty">
+            There are no other published products in this craft yet.
+          </p>
+        )}
       </section>
       
       <UniversalLiveSectionEditor
