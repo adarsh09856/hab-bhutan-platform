@@ -30,7 +30,7 @@ async function getSecretariatData() {
           : note
               .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '')
               .replace(/\b(?:\+?\s*975[\s-]?)?[17]\d{7}\b/g, '')
-              .replace(/\s*[·,;|]\s*/g, ' ')
+              .replace(/\s*[+·,;|]\s*/g, ' ')
               .replace(/\s+/g, ' ')
               .trim();
         return {
