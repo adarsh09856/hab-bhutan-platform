@@ -73,6 +73,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    if (wholesaleEnabled !== undefined && typeof wholesaleEnabled !== 'boolean') {
+      return NextResponse.json({ success: false, error: 'Enable wholesale must be true or false.' }, { status: 400 });
+    }
 
     // Check code uniqueness
     const existing = await prisma.product.findUnique({ where: { code } });
@@ -133,6 +136,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       product: newProduct,
+      requiresWholesaleTerms: wholesaleEnabled === true,
     });
   } catch (err: any) {
     console.error('Error creating product:', err);

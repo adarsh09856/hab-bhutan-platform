@@ -200,6 +200,7 @@ const configs: Record<string, Config> = {
       { key: 'weight', label: 'Weight' }, { key: 'materials', label: 'Materials', kind: 'long' },
       { key: 'care', label: 'Care instructions', kind: 'long' }, { key: 'lead', label: 'Lead time' },
       { key: 'imageUrl', label: 'Primary product image', kind: 'image' },
+      { key: 'wholesaleEnabled', label: 'Enable wholesale (set prices in Wholesale Trade Desk)', kind: 'check' },
     ],
   },
   clusters: {
@@ -365,6 +366,11 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Save failed.');
+      const productCode = data.product?.code || draft.code;
+      if (sectionType === 'products' && data.requiresWholesaleTerms && productCode) {
+        window.location.assign(`/admin/trade?product=${encodeURIComponent(productCode)}`);
+        return;
+      }
       setDraft(null); await load(); router.refresh(); setMessage('Saved to the live database.');
     } catch (error: any) { setMessage(error?.message || 'Save failed.'); }
     finally { setSaving(false); }
