@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+import { policyHeadings } from '@/lib/policy-blocks';
+import { policyLookupSlugs } from '@/lib/policy-slugs';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -63,8 +65,9 @@ async function getPolicy(slug: string) {
   const cleanSlug = slug.toLowerCase().trim();
 
   try {
-    const dbPolicy = await prisma.policyPage.findUnique({
-      where: { slug: cleanSlug },
+    const dbPolicy = await prisma.policyPage.findFirst({
+      where: { slug: { in: policyLookupSlugs(cleanSlug) } },
+      orderBy: { updatedAt: 'desc' },
     });
 
     if (dbPolicy) {
@@ -142,17 +145,7 @@ export default async function DynamicPolicyPage({ params }: PolicyRouteProps) {
     : 'September 2026';
 
   // Extract headings for sticky on-page nav if present
-  const lines = policy.content.split('\n');
-  const headings = lines
-    .filter((l) => l.trim().startsWith('## '))
-    .map((l) => {
-      const headingText = l.trim().replace(/^##\s+/, '');
-      const anchorId = headingText
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-      return { text: headingText, id: anchorId };
-    });
+  const headings = policyHeadings(policy.content);
 
   return (
     <main id="main">

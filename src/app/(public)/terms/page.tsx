@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+import { PolicyNavigation } from '@/components/policy/PolicyNavigation';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,7 @@ export default async function TermsOfServicePage() {
       <section className="section section--last">
         <div className="policy">
           {/* Sticky On-Page Nav */}
-          <nav className="policy__nav" aria-label="On this page">
+          {policy?.content ? <PolicyNavigation content={policy.content} /> : <nav className="policy__nav" aria-label="On this page">
             <a href="#who">Who we are</a>
             <a href="#use">Using this site</a>
             <a href="#accounts">Accounts</a>
@@ -56,7 +57,7 @@ export default async function TermsOfServicePage() {
             <a href="#ip">Intellectual property</a>
             <a href="#liability">Liability</a>
             <a href="#law">Governing law</a>
-          </nav>
+          </nav>}
 
           {/* Policy Body */}
           <div className="policy__body">

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+import { PolicyNavigation } from '@/components/policy/PolicyNavigation';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,7 @@ export default async function PrivacyPolicyPage() {
       <section className="section section--last">
         <div className="policy">
           {/* Sticky On-Page Nav */}
-          <nav className="policy__nav" aria-label="On this page">
+          {policy?.content ? <PolicyNavigation content={policy.content} /> : <nav className="policy__nav" aria-label="On this page">
             <a href="#collect">What we collect</a>
             <a href="#why">Why we hold it</a>
             <a href="#members">Member data</a>
@@ -55,7 +56,7 @@ export default async function PrivacyPolicyPage() {
             <a href="#retention">How long we keep it</a>
             <a href="#rights">Your rights</a>
             <a href="#security">Security</a>
-          </nav>
+          </nav>}
 
           {/* Policy Body */}
           <div className="policy__body">

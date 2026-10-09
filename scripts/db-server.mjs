@@ -2,8 +2,8 @@ import EmbeddedPostgres from 'embedded-postgres';
 import path from 'path';
 
 const pg = new EmbeddedPostgres({
-  databaseDir: path.join(process.cwd(), '.db_data'),
-  port: 5432,
+  databaseDir: process.env.HAB_TEST_DATABASE_DIR || path.join(process.cwd(), '.db_data'),
+  port: Number(process.env.HAB_TEST_DATABASE_PORT || 5432),
   user: 'postgres',
   password: 'postgres',
   persistent: true,
@@ -11,7 +11,7 @@ const pg = new EmbeddedPostgres({
 
 import fs from 'fs';
 
-const dbDir = path.join(process.cwd(), '.db_data');
+const dbDir = process.env.HAB_TEST_DATABASE_DIR || path.join(process.cwd(), '.db_data');
 const isInitialized = fs.existsSync(path.join(dbDir, 'PG_VERSION'));
 
 if (!isInitialized) {
@@ -34,7 +34,7 @@ try {
   console.log('Database hab_platform already exists or note:', e.message);
 }
 
-console.log('Postgres is ready on localhost:5432!');
+console.log(`Postgres is ready on localhost:${process.env.HAB_TEST_DATABASE_PORT || 5432}!`);
 
 // Stop the embedded server cleanly when its wrapper session is interrupted.
 let shuttingDown = false;

@@ -1,8 +1,13 @@
 import React from 'react';
-import { splitPolicyBlocks } from '@/lib/policy-blocks';
+import { splitPolicyBlocks, policyHeadings } from '@/lib/policy-blocks';
+import { isPolicyHtml, preparePolicyHtml } from '@/lib/policy-html';
 
 export function PolicyContentRenderer({ content }: { content: string }) {
+  if (isPolicyHtml(content)) {
+    return <div className="space-y-4 text-inherit [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline" dangerouslySetInnerHTML={{ __html: preparePolicyHtml(content).html }} />;
+  }
   const blocks = splitPolicyBlocks(content);
+  const headings = policyHeadings(content);
 
   return (
     <div className="space-y-4 text-inherit">
@@ -12,7 +17,7 @@ export function PolicyContentRenderer({ content }: { content: string }) {
 
         if (trimmed.startsWith('## ')) {
           const heading = trimmed.replace(/^##\s+/, '');
-          const id = heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          const id = headings.find(item => item.blockIndex === idx)!.id;
           const lower = heading.toLowerCase();
           const exactAliases: Record<string, string> = {
             'who we are': 'who', 'using this site': 'use', 'prices & payment': 'prices',
@@ -31,7 +36,7 @@ export function PolicyContentRenderer({ content }: { content: string }) {
             lower.includes('trade') || lower.includes('wholesale') ? 'trade' : null);
           return (
             <div key={idx} className="relative">
-              {alias && alias !== id && <span id={alias} className="absolute -top-24 block invisible" />}
+              {alias && alias !== id && !headings.some(item => item.id === alias) && !headings.some(item => item.blockIndex < idx && item.text === heading) && <span id={alias} className="absolute -top-24 block invisible" />}
               <h2 id={id} className="text-xl font-bold mt-6 mb-2">
                 {heading}
               </h2>
@@ -49,7 +54,7 @@ export function PolicyContentRenderer({ content }: { content: string }) {
         }
 
         const lines = trimmed.split('\n');
-        if (lines.length > 1 && lines.every((line) => line.trim().startsWith('- ') || line.trim().startsWith('* '))) {
+        if (lines.length > 0 && lines.every((line) => line.trim().startsWith('- ') || line.trim().startsWith('* '))) {
           const items = lines.map((line) => line.trim().replace(/^[-*]\s+/, ''));
           return (
             <ul key={idx} className="list-disc pl-5 space-y-1.5 my-2">

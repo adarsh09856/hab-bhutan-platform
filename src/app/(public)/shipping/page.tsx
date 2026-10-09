@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
+import { PolicyNavigation } from '@/components/policy/PolicyNavigation';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -13,8 +14,9 @@ export const metadata = {
 
 async function getShippingPolicy() {
   try {
-    return await prisma.policyPage.findUnique({
-      where: { slug: 'shipping' },
+    return await prisma.policyPage.findFirst({
+      where: { slug: { in: ['shipping', 'shipping-policy'] } },
+      orderBy: { updatedAt: 'desc' },
     });
   } catch {
     return null;
@@ -45,7 +47,7 @@ export default async function ShippingPolicyPage() {
       <section className="section section--last">
         <div className="policy">
           {/* Sticky On-Page Nav */}
-          <nav className="policy__nav" aria-label="On this page">
+          {policy?.content ? <PolicyNavigation content={policy.content} /> : <nav className="policy__nav" aria-label="On this page">
             <a href="#dispatch">Dispatch &amp; handling</a>
             <a href="#methods">Methods &amp; delivery times</a>
             <a href="#charges">Charges</a>
@@ -55,7 +57,7 @@ export default async function ShippingPolicyPage() {
             <a href="#returns">Returns &amp; refunds</a>
             <a href="#damage">Damage &amp; loss</a>
             <a href="#trade">Wholesale consignments</a>
-          </nav>
+          </nav>}
 
           {/* Policy Content Body */}
           <div className="policy__body">

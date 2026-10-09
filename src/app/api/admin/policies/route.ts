@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
+import { policyLookupSlugs } from '@/lib/policy-slugs';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,10 +14,7 @@ async function staff(request: NextRequest) {
 export async function GET(request: NextRequest) {
   if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
-    let dbPolicies: any[] = [];
-    try {
-      dbPolicies = await prisma.policyPage.findMany();
-    } catch {}
+    const dbPolicies = await prisma.policyPage.findMany({ orderBy: { updatedAt: 'desc' } });
 
     const defaultPolicies = [
       {
@@ -66,7 +64,7 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
     ];
 
     const merged: any[] = [...defaultPolicies.map((dp) => {
-      const found = dbPolicies.find((p) => p.slug === dp.slug);
+      const found = dbPolicies.find((p) => policyLookupSlugs(dp.slug).includes(p.slug));
       if (found) {
         return {
           ...dp,
@@ -80,7 +78,7 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
 
     // Include any custom policies added directly in database
     for (const p of dbPolicies) {
-      if (!defaultPolicies.some((dp) => dp.slug === p.slug)) {
+      if (!defaultPolicies.some((dp) => policyLookupSlugs(dp.slug).includes(p.slug))) {
         merged.push({
           id: p.id,
           slug: p.slug,
@@ -145,17 +143,15 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { slug, title, content } = body;
 
-    if (!slug) {
-      return NextResponse.json({ success: false, error: 'Slug is required' }, { status: 400 });
+    if (typeof slug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || typeof title !== 'string' || !title.trim() || typeof content !== 'string') {
+      return NextResponse.json({ success: false, error: 'Valid slug, title and policy content are required.' }, { status: 400 });
     }
 
-    try {
-      await prisma.policyPage.upsert({
+    await prisma.policyPage.upsert({
         where: { slug },
-        create: { slug, title, content, isActive: true },
-        update: { title, content, isActive: true },
+        create: { slug, title: title.trim(), content, isActive: true },
+        update: { title: title.trim(), content, isActive: true },
       });
-    } catch {}
 
     return NextResponse.json({ success: true, message: `Policy ${slug} saved.` });
   } catch (err: any) {
@@ -174,7 +170,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Protect core policies
-    const coreSlugs = ['terms', 'privacy', 'shipping-policy', 'conduct'];
+    const coreSlugs = ['terms', 'privacy', 'shipping', 'shipping-policy', 'conduct'];
     if (coreSlugs.includes(slug)) {
       return NextResponse.json({ success: false, error: 'Core statutory policies cannot be deleted' }, { status: 403 });
     }

@@ -1,3 +1,5 @@
+import { isPolicyHtml, preparePolicyHtml } from './policy-html';
+
 export function splitPolicyBlocks(content: string): string[] {
   const blocks: string[] = [];
   let lines: string[] = [];
@@ -14,4 +16,17 @@ export function splitPolicyBlocks(content: string): string[] {
   }
   flush();
   return blocks;
+}
+
+export function policyHeadings(content: string) {
+  if (isPolicyHtml(content)) return preparePolicyHtml(content).headings;
+  const used = new Map<string, number>();
+  return splitPolicyBlocks(content).flatMap((block, blockIndex) => {
+    if (!/^##\s/.test(block)) return [];
+    const text = block.replace(/^##\s+/, '');
+    const base = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/(^-|-$)/g, '') || 'section';
+    const count = (used.get(base) || 0) + 1;
+    used.set(base, count);
+    return [{ text, id: count === 1 ? base : `${base}-${count}`, blockIndex }];
+  });
 }
