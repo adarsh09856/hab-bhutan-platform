@@ -184,44 +184,9 @@ export const WHOLESALE_HEADERS = [
   'Notes / Purchasing Purpose',
 ];
 
-export const WHOLESALE_SAMPLE_ROWS = [
-  [
-    'Aman Kora Resorts',
-    'Tashi Wangchuk',
-    'procurement@amankora.bt',
-    '+975-2-321234',
-    'Bhutan',
-    'Thimphu',
-    'HAB-TL-48921',
-    '25',
-    'PENDING',
-    'Luxury resort group sourcing authentic Bhutanese textiles and bamboo ware for 5 lodges',
-  ],
-  [
-    'Himalayan Heritage Gallery Inc',
-    'Sarah Jenkins',
-    's.jenkins@himalayangallery.com',
-    '+1-415-555-0199',
-    'United States',
-    'San Francisco',
-    'US-EIN-94-382910',
-    '30',
-    'PENDING',
-    'Specialist Himalayan cultural craft retailer with quarterly wholesale purchase cycle',
-  ],
-  [
-    'Kyoto Silk & Wood Guild',
-    'Kenji Sato',
-    'orders@kyotocraftguild.jp',
-    '+81-75-746-2001',
-    'Japan',
-    'Kyoto',
-    'JP-CORP-0182-3819',
-    '20',
-    'PENDING',
-    'Artisanal cooperative seeking Yathra wool and handwoven Kira fabrics',
-  ],
-];
+// Templates are deliberately header-only: fictional people/businesses in an
+// import file can be mistaken for real applications if the template is uploaded.
+export const WHOLESALE_SAMPLE_ROWS: string[][] = [];
 
 export interface WholesaleImportValidationResult {
   validRows: any[];
@@ -329,47 +294,7 @@ export const MEMBER_HEADERS = [
   'Bio / Description',
 ];
 
-export const MEMBER_SAMPLE_ROWS = [
-  [
-    'Pema Choden Weaving Workshop',
-    'thagzo',
-    'Lhuentse',
-    'Khoma Village',
-    'CID-10802001924',
-    '+975-17123456',
-    'pema.khoma@hab.bt',
-    'ACTIVE_SECTOR_MEMBER',
-    'VERIFIED',
-    '2018',
-    'Master weaver specializing in supplementary-weft silk Kishuthara with 22 years on the backstrap loom.',
-  ],
-  [
-    'Kelzang Dorji Woodcrafts',
-    'shingzo',
-    'Trashi Yangtse',
-    'Dongdi',
-    'CID-11603004821',
-    '+975-17654321',
-    'kelzang.dorji@gmail.com',
-    'ACTIVE_SECTOR_MEMBER',
-    'VERIFIED',
-    '2015',
-    'Traditional carpentry and religious wood carving for temple restorations and altar cabinetry.',
-  ],
-  [
-    'Kheng Bamboo & Cane Collective',
-    'tshazo',
-    'Zhemgang',
-    'Buli',
-    'CID-12001000341',
-    '+975-77889900',
-    'kheng.bamboo@hab.bt',
-    'ACTIVE_SECTOR_MEMBER',
-    'VERIFIED',
-    '2019',
-    'Cooperative of 34 bamboo harvesters producing woven bangchung baskets and floor mats.',
-  ],
-];
+export const MEMBER_SAMPLE_ROWS: string[][] = [];
 
 export interface MemberImportValidationResult {
   validRows: any[];

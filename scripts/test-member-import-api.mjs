@@ -8,6 +8,8 @@ const baseUrl = process.env.MEMBER_IMPORT_TEST_URL || 'http://127.0.0.1:3033';
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const cidNumber = `CID-CODEX-${Date.now()}`;
 let user;
+let creatorRole;
+let creatorUser;
 const memberIds = [];
 
 function assert(condition, message) {
@@ -43,8 +45,32 @@ async function run() {
     }).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('5m')
       .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
+    const creatorPermissions = ['members:create'];
+    creatorRole = await prisma.role.create({
+      data: { name: 'Temporary import creator without verifier', slug: `member_import_creator_${suffix.replace(/[^a-z0-9]/gi, '_')}`, permissions: creatorPermissions },
+    });
+    creatorUser = await prisma.user.create({
+      data: { email: `member-import-creator-${suffix}@example.invalid`, name: 'Temporary Member Import Creator', passwordHash: 'not-used', roleId: creatorRole.id },
+    });
+    const creatorToken = await new SignJWT({
+      user: {
+        id: creatorUser.id, userId: creatorUser.id, email: creatorUser.email, name: creatorUser.name,
+        roleId: creatorRole.id, role: creatorRole.slug, roleSlug: creatorRole.slug,
+        roleVersion: creatorRole.version, roleStatus: creatorRole.status,
+        sessionVersion: creatorUser.sessionVersion, mustChangePassword: false,
+      },
+    }).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('5m')
+      .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+
+    const verifiedWithoutPermission = await fetch(`${baseUrl}/api/admin/members/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: `hab_session=${creatorToken}` },
+      body: JSON.stringify({ rows: [{ name: 'Must not be published', craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber: `CID-DENIED-${Date.now()}`, status: 'VERIFIED' }] }),
+    });
+    assert(verifiedWithoutPermission.status === 403, 'Member import allowed VERIFIED rows without the members:verify permission.');
+
     const rows = [
-      { name: `Temporary member ${suffix}`, craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber, joinYear: 2025, status: 'PENDING' },
+      { name: `Temporary member ${suffix}`, craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber, joinYear: 2025 },
       { name: `Duplicate member ${suffix}`, craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber: cidNumber.toLowerCase(), joinYear: 2025, status: 'PENDING' },
       { name: `Invalid member ${suffix}`, dzongkhag: 'Thimphu', cidNumber: `CID-INVALID-${Date.now()}` },
     ];
@@ -63,6 +89,7 @@ async function run() {
     let created = await prisma.member.findMany({ where: { cidNumber: { equals: cidNumber, mode: 'insensitive' } } });
     memberIds.push(...created.map((member) => member.id));
     assert(created.length === 1, 'Exactly one member should exist after first import.');
+    assert(created[0].status === 'PENDING', 'Import without an explicit status must create a pending record.');
 
     const second = await postImport([rows[0]]);
     assert(second.response.ok && second.body.count === 0 && second.body.skippedCount === 1, 'Re-import should skip the already saved member.');
@@ -77,6 +104,11 @@ async function run() {
       await prisma.auditLog.deleteMany({ where: { actorId: user.id } }).catch(() => {});
       await prisma.user.deleteMany({ where: { id: user.id } });
     }
+    if (creatorUser) {
+      await prisma.auditLog.deleteMany({ where: { actorId: creatorUser.id } }).catch(() => {});
+      await prisma.user.deleteMany({ where: { id: creatorUser.id } });
+    }
+    if (creatorRole) await prisma.role.deleteMany({ where: { id: creatorRole.id } });
     await prisma.$disconnect();
   }
 }

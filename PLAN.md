@@ -1100,3 +1100,9 @@ The larger project remains open. In particular, every reference page still needs
 - Admin create form resets to `PENDING` and confirms the status actually saved. Member Quick Edit now offers the four allowed statuses as a select control rather than unrestricted text.
 - `npm run typecheck`, nested-text Quick Edit checks, spreadsheet-validation checks, `git diff --check`, and the full optimized production build passed. The product/member integration verifier now creates a pending member by default, explicitly verifies it with the separate review permission, and confirms a creator/editor without `members:verify` receives 403 for a combined profile-edit/verification request. The local app was not running on its expected test ports and the local database port was unreachable, so the updated HTTP/DB integration verifier has not run; this code change has not been deployed.
 
+# Member-import review-safety and clean-template follow-up — 9 Oct 2026
+
+- Member bulk imports now require `members:verify` when any row requests VERIFIED, `members:suspend` for SUSPENDED, and `members:edit` for REJECTED. Invalid status strings are reported as row errors instead of silently changing status. Permission checks happen before inserting any rows.
+- Removed fictional member and wholesale-buyer names, contact details, and membership claims from downloaded import templates. Templates now contain headers only, so accidentally uploading a template cannot add fake people or companies.
+- Spreadsheet validation (including header-only downloadable workbooks), typecheck, `git diff --check`, and full optimized build passed. The local app/database are unavailable, so the protected-import API regression and live Admin upload flow have not run. No production records were changed.
+

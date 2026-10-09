@@ -24,19 +24,19 @@ async function main() {
   const parsed = await parseSpreadsheetFile(file);
   assert.equal(parsed[1][0], 'བུམ་ཐང་ལག་བཟོ', 'XLSX parser preserves Dzongkha cell values.');
 
-  for (const [sheetName, headers, samples, unicodeCell] of [
-    ['Members', MEMBER_HEADERS, MEMBER_SAMPLE_ROWS, 'བུམ་ཐང་ལག་བཟོ'],
-    ['Wholesalers', WHOLESALE_HEADERS, WHOLESALE_SAMPLE_ROWS, 'འབྲུག'],
+  for (const [sheetName, headers, samples] of [
+    ['Members', MEMBER_HEADERS, MEMBER_SAMPLE_ROWS],
+    ['Wholesalers', WHOLESALE_HEADERS, WHOLESALE_SAMPLE_ROWS],
   ] as const) {
-    const exportRows = [[...samples[0].slice(0, -1), unicodeCell]];
-    const exported = await createExcelWorkbookBuffer(sheetName, [...headers], exportRows);
+    assert.equal(samples.length, 0, `${sheetName} import template must not contain fabricated records.`);
+    const exported = await createExcelWorkbookBuffer(sheetName, [...headers], []);
     const exportedFile = {
       name: `${sheetName.toLowerCase()}.xlsx`,
       arrayBuffer: async () => exported,
     } as File;
     const reopened = await parseSpreadsheetFile(exportedFile);
     assert.deepEqual(reopened[0], [...headers], `${sheetName} XLSX download contains its complete template headers.`);
-    assert(reopened[1]?.some((cell) => cell === unicodeCell), `${sheetName} XLSX output preserves its Dzongkha sample cell.`);
+    assert.equal(reopened.length, 1, `${sheetName} import template contains headers only and cannot seed fake records.`);
   }
 
   const validMember = ['Pema Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'CID-100', '', '', '', '', '', ''];
