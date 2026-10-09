@@ -8,6 +8,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { CRAFTS } from '@/lib/data';
 import ProductCard from '@/components/public/ProductCard';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 
 function ShopGridContent() {
   const params = useParams();
@@ -21,6 +22,7 @@ function ShopGridContent() {
   const [productsList, setProductsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [catalogueError, setCatalogueError] = useState(false);
+  const [productEditorOpen, setProductEditorOpen] = useState(false);
   const collectionParam = searchParams.get('collection');
 
   React.useEffect(() => {
@@ -66,7 +68,8 @@ function ShopGridContent() {
 
   return (
     <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24 relative" data-hab-section="shop-craft">
-      <SectionEditBadge label="Products Studio" studioHref="/admin/products" />
+      <SectionEditBadge label="Craft products: add / edit / remove" studioHref="/admin/products" onQuickEdit={() => setProductEditorOpen(true)} />
+      <ProductQuickEdit isOpen={productEditorOpen} onClose={() => setProductEditorOpen(false)} />
       {/* Breadcrumbs */}
       <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
         <Link href="/" className="hover:underline">Home</Link> /{' '}

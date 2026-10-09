@@ -9,6 +9,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CRAFTS } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 
 interface ProductItem {
   code: string;
@@ -35,6 +36,7 @@ function ShopContent() {
   const [selectedCraft, setSelectedCraft] = useState<string>(initialCraft);
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
   const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || '');
+  const [productEditorOpen, setProductEditorOpen] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -139,7 +141,8 @@ function ShopContent() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="shop">
-        <SectionEditBadge label="Shop / Products Studio" studioHref="/admin/products" />
+        <SectionEditBadge label="Shop products: add / edit / remove" studioHref="/admin/products" onQuickEdit={() => setProductEditorOpen(true)} />
+        <ProductQuickEdit isOpen={productEditorOpen} onClose={() => setProductEditorOpen(false)} />
         {/* 1. Breadcrumbs */}
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/shop" onClick={() => setSelectedCraft('')}>E-shop</Link> / <span>{activeCraftMeta ? activeCraftMeta.name : 'All crafts'}</span>

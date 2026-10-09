@@ -35,7 +35,21 @@ function imageUrls(value: unknown): string[] {
   return value.map((item: any) => typeof item === 'string' ? item : item?.url).filter((url): url is string => typeof url === 'string' && url.length > 0);
 }
 
-export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: boolean; onClose: () => void; code: string }) {
+function toProductForm(product: any): ProductForm {
+  return {
+    code: product.code, name: product.name || '', description: product.description || '',
+    priceUSD: String(product.priceUSD ?? ''), stock: String(product.stock ?? 0),
+    craftKey: product.craftKey || '', region: product.region || '',
+    makerMemberId: product.makerMemberId || '', status: product.status || 'DRAFT',
+    size: product.size || '', weight: product.weight || '', materials: product.materials || '',
+    care: product.care || '', lead: product.lead || '',
+    imageUrls: Array.isArray(product.images) && product.images.length > 0
+      ? imageUrls(normalizeProductImages(product.code, product.craftKey || '', product.images).images)
+      : [],
+  };
+}
+
+export default function ProductQuickEdit({ isOpen, onClose, code = '' }: { isOpen: boolean; onClose: () => void; code?: string }) {
   const [form, setForm] = useState<ProductForm>(blankForm);
   const [originalForm, setOriginalForm] = useState<ProductForm>(blankForm);
   const [creating, setCreating] = useState(false);
@@ -45,6 +59,7 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
   const [success, setSuccess] = useState('');
   const [members, setMembers] = useState<Array<{ id: string; name: string; status: string }>>([]);
   const [galleryUpload, setGalleryUpload] = useState('');
+  const [catalogue, setCatalogue] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -59,24 +74,22 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
     setLoaded(false);
     setError('');
     setSuccess('');
-    setCreating(false);
+    setCreating(!code);
     fetch('/api/admin/products', { credentials: 'include', cache: 'no-store', signal: controller.signal })
       .then(async response => {
         const data = await response.json();
         if (!response.ok || !data.success) throw new Error(data.error || 'Could not load the saved product.');
-        const product = (data.products || []).find((item: any) => String(item.code).toUpperCase() === code.toUpperCase());
+        const products = Array.isArray(data.products) ? data.products : [];
+        setCatalogue(products);
+        if (!code) {
+          setForm(blankForm());
+          setOriginalForm(blankForm());
+          setLoaded(true);
+          return;
+        }
+        const product = products.find((item: any) => String(item.code).toUpperCase() === code.toUpperCase());
         if (!product) throw new Error('This product is no longer in the Admin catalogue.');
-        const savedForm: ProductForm = {
-          code: product.code, name: product.name || '', description: product.description || '',
-          priceUSD: String(product.priceUSD ?? ''), stock: String(product.stock ?? 0),
-          craftKey: product.craftKey || '', region: product.region || '',
-          makerMemberId: product.makerMemberId || '', status: product.status || 'DRAFT',
-          size: product.size || '', weight: product.weight || '', materials: product.materials || '',
-          care: product.care || '', lead: product.lead || '',
-          imageUrls: Array.isArray(product.images) && product.images.length > 0
-            ? imageUrls(normalizeProductImages(product.code, product.craftKey || '', product.images).images)
-            : [],
-        };
+        const savedForm = toProductForm(product);
         setForm(savedForm);
         setOriginalForm(savedForm);
         setLoaded(true);
@@ -109,7 +122,7 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
     setError('');
     try {
       const payload = {
-        ...(creating ? {} : { code }),
+        ...(creating ? {} : { code: form.code }),
         name: form.name.trim(), description: form.description.trim(), priceUSD: Number(form.priceUSD),
         stock: Number(form.stock), craftKey: form.craftKey, region: form.region.trim(),
         makerMemberId: form.makerMemberId || null, status: form.status,
@@ -130,8 +143,11 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
       if (creating) {
         if (form.status === 'PUBLISHED') window.location.assign(`/product/${encodeURIComponent(form.code.trim().toUpperCase())}`);
         else {
+          const savedForm = { ...form, code: form.code.trim().toUpperCase() };
+          setCatalogue(previous => [...previous, { ...savedForm, images: savedForm.imageUrls.map(url => ({ url })) }]);
           setCreating(false);
-          setForm(originalForm);
+          setForm(savedForm);
+          setOriginalForm(savedForm);
           setSuccess(`Saved ${form.code.trim().toUpperCase()} as ${form.status.toLowerCase().replace('_', ' ')}. It is not public until published.`);
         }
       } else {
@@ -145,11 +161,11 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
   };
 
   const remove = async () => {
-    if (!window.confirm(`Move ${code} to the Recycle Bin? It will disappear from the public shop.`)) return;
+    if (!window.confirm(`Move ${form.code} to the Recycle Bin? It will disappear from the public shop.`)) return;
     setSaving(true);
     setError('');
     try {
-      const response = await fetch(`/api/admin/products?code=${encodeURIComponent(code)}`, { method: 'DELETE', credentials: 'include' });
+      const response = await fetch(`/api/admin/products?code=${encodeURIComponent(form.code)}`, { method: 'DELETE', credentials: 'include' });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'The product could not be removed.');
       window.location.assign('/shop');
@@ -163,22 +179,33 @@ export default function ProductQuickEdit({ isOpen, onClose, code }: { isOpen: bo
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-3 sm:p-6" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget && !saving) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-label={creating ? 'Create product in Quick Edit' : `Edit ${code} in Quick Edit`} className="flex max-h-[94vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-[#FFFCF8] shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-label={creating ? 'Create product in Quick Edit' : `Edit ${form.code} in Quick Edit`} className="flex max-h-[94vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-[#FFFCF8] shadow-2xl">
         <header className="flex items-start justify-between gap-3 border-b border-stone-200 px-5 py-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#8B2E24]">Product Quick Edit</p>
-            <h2 className="font-serif text-2xl text-stone-900">{creating ? 'Create a product' : `Edit ${form.name || code}`}</h2>
+            <h2 className="font-serif text-2xl text-stone-900">{creating ? 'Create a product' : `Edit ${form.name || form.code}`}</h2>
             <p className="text-xs text-stone-600">Changes to a published product appear in the public shop after saving.</p>
           </div>
           <button type="button" onClick={onClose} disabled={saving} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm" aria-label="Close product Quick Edit">Close ✕</button>
         </header>
         <div className="flex gap-2 border-b border-stone-200 px-5 py-2">
-          <button type="button" onClick={() => { setCreating(false); setForm(originalForm); setLoaded(true); setError(''); setSuccess(''); }} className={!creating ? 'font-bold text-[#8B2E24]' : 'text-stone-600'}>Current product</button>
+          <button type="button" onClick={() => { setCreating(false); setForm(originalForm); setLoaded(true); setError(''); setSuccess(''); }} disabled={!originalForm.code} className={!creating ? 'font-bold text-[#8B2E24]' : 'text-stone-600 disabled:opacity-40'}>Current product</button>
           <span className="text-stone-300">|</span>
           <button type="button" onClick={() => { setCreating(true); setForm(blankForm()); setLoaded(true); setError(''); setSuccess(''); }} className={creating ? 'font-bold text-[#8B2E24]' : 'text-stone-600'}>+ Create another product</button>
           <Link href="/admin/products" target="_blank" className="ml-auto text-sm text-[#8B2E24] underline">Full Products Studio ↗</Link>
         </div>
         <form onSubmit={save} className="overflow-y-auto px-5 py-5">
+          {catalogue.length > 0 && <label className="mb-4 block text-sm font-medium">Edit an existing product
+            <select className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm" value={creating ? '' : form.code} onChange={event => {
+              const product = catalogue.find(item => item.code === event.target.value);
+              if (!product) { setCreating(true); setForm(blankForm()); }
+              else { const selected = toProductForm(product); setCreating(false); setForm(selected); setOriginalForm(selected); }
+              setError(''); setSuccess(''); setLoaded(true);
+            }}>
+              <option value="">+ Create a new product</option>
+              {catalogue.map(product => <option key={product.code} value={product.code}>{product.code} — {product.name}</option>)}
+            </select>
+          </label>}
           {!loaded && !error && <p role="status">Loading saved product…</p>}
           {loaded && <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
