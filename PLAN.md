@@ -1,5 +1,7 @@
 # Handicrafts Association of Bhutan (HAB) — Master Architecture, Deep File-by-File Audit, Universal Quick Edit & 2-Way Sync Plan (PLAN.md)
 
+Product-to-wholesale control (9 Oct 2026): Products add/edit now has a single "Enable wholesale" checkbox, without B2B pricing fields. Checking an unpriced product opens its Trade Desk pricing drawer. Existing valid terms can be enabled/disabled from Products; disabling persists an override so legacy prices cannot reappear. Trade Desk owns B2B pricing/terms CRUD. Local typecheck and optimized build passed. Browser end-to-end CRUD and live deployment remain UNVERIFIED until checked separately.
+
 **Project**: Handicrafts Association of Bhutan (HAB) National E-Commerce & Artisans Platform  
 **Target Next.js Platform (Execution Target)**: `E:\ai\bhutanprojects\newbend` (Next.js 15 App Router, Prisma ORM, PostgreSQL, Sharp image pipeline, TypeScript)  
 **Reference Static HTML Source**: `E:\Downloads\Final_webdesign\hab-site` (34 HTML templates, `data.js`, `pages.js`, `backend.js`, `style.css`)  
@@ -49,6 +51,11 @@
 - A signed-in production Trade Desk inspection confirmed the user's screenshot: `SKU-TEST-44899` had no saved wholesale terms, yet its card displayed a fabricated 5-unit MOQ and 4–6-week lead time; the pricing drawer opened with no price-break input and its enable checkbox unchecked. Source fixes now show “Set terms”/“Not set”/“No wholesale prices saved yet” and “Not configured” until terms exist. An unsaved product now opens with one editable MOQ-aligned price break and enable checked, while saved disabled products retain their disabled state. No production product was edited by this inspection. Post-release browser/save verification remains **PENDING**.
 - Admin logout previously attempted to clear the HttpOnly `hab_session` cookie in client JavaScript, which cannot work. A dedicated server POST logout clears that cookie with the same path/security settings used at login; the sidebar waits for a successful response before navigating to login. Post-release browser verification remains **PENDING**.
 - The `/members` page previously added hardcoded sector/dzongkhag baseline counts to real verified Member records and labeled the result “registered members.” It now counts only verified Member records, handles database unavailability and zero counts honestly, and derives dzongkhag rows from saved member locations. Local PostgreSQL contained 15 verified members; built local `/members` rendered “15 verified members recorded” with HTTP 200, rather than the fabricated baseline. Typecheck passed. Production page parity and editorial review remain **PENDING**.
+
+## Wholesale editor and admin browser verification (9 Oct 2026)
+
+- Release `fbbf569` was built and deployed through the guarded server flow. A signed-in live browser check found the existing `SKU-TEST-44899` card now says “Not configured,” “Set terms,” “Not set,” and “No wholesale prices saved yet.” Its pricing drawer has one MOQ-aligned quantity row and a checked enable box; no live terms were saved. A live browser logout returned to `/admin/login`, and revisiting `/admin/trade` redirected to the login page. Login then succeeded again with the user-provided staff account. This directly verifies the prior logout defect is fixed for that browser session.
+- Follow-up: empty tier prices in the new editor must be explicitly entered before saving, and enabled terms require a production lead time. The Wholesale Buyer Accounts toolbar now links directly to Trade Desk pricing for existing products, and Trade Desk explains create/edit/remove terms versus editing/archiving the retail product. These changes are pending build and deployment; no production product or application record was mutated.
 
 ## 1. Executive Alignment & Core Mandate
 

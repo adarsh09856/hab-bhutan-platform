@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   BadgePercent, 
@@ -42,6 +42,7 @@ import WholesaleProductCreate from '@/components/admin/WholesaleProductCreate';
 export default function AdminTradePage() {
   const [activeTab, setActiveTab] = useState<'pricing' | 'quotes' | 'buyers' | 'catalog' | 'content'>('pricing');
   const [products, setProducts] = useState<any[]>([]);
+  const openedProductFromLink = useRef(false);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [buyers, setBuyers] = useState<any[]>([]);
   const [catalogPdfUrl, setCatalogPdfUrl] = useState('');
@@ -87,7 +88,7 @@ export default function AdminTradePage() {
   const [termsForm, setTermsForm] = useState({
     moq: 5,
     lead_time: '4–6 weeks',
-    tiers: [{ quantity: 5, price: 0 }, { quantity: 15, price: 0 }, { quantity: 40, price: 0 }, { quantity: 100, price: 0 }],
+    tiers: [{ quantity: 5, price: '' as number | '' }],
     customisation: 'Available on request',
     is_active: true,
   });
@@ -249,14 +250,33 @@ export default function AdminTradePage() {
       lead_time: t.lead_time || '',
       tiers: tiers.length > 0
         ? tiers.map((tier: number[]) => ({ quantity: Number(tier[0]), price: Number(tier[1]) }))
-        : [{ quantity: moq, price: 0 }],
+        : [{ quantity: moq, price: '' }],
       customisation: t.customisation || '',
       is_active: p.hasSavedTerms ? t.is_active !== false : true,
     });
   };
 
+  useEffect(() => {
+    if (openedProductFromLink.current || products.length === 0) return;
+    const code = new URLSearchParams(window.location.search).get('product');
+    if (!code) return;
+    const product = products.find((item) => item.code === code);
+    if (!product) return;
+    openedProductFromLink.current = true;
+    setActiveTab('pricing');
+    handleOpenTermsDrawer(product);
+  }, [products]);
+
   const handleSaveTerms = async () => {
     if (!editingProduct) return;
+    if (termsForm.tiers.some((tier) => tier.price === '')) {
+      showToast('Enter a unit price for every wholesale quantity break.');
+      return;
+    }
+    if (termsForm.is_active && !termsForm.lead_time.trim()) {
+      showToast('Enter a production lead time before enabling this product for wholesale.');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -562,6 +582,9 @@ export default function AdminTradePage() {
       {/* TAB 1: TRADE PRICING TIERS */}
       {activeTab === 'pricing' && (
         <div className="space-y-4">
+          <p className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+            Existing catalog products appear below. Use <strong>Set prices</strong> to add wholesale MOQ, lead time and price breaks; use <strong>Edit terms</strong> to change them later. <strong>Remove terms</strong> in the editor removes B2B pricing while keeping the retail product. Use <strong>Manage Catalog Products</strong> above to edit or archive the product itself.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProducts.map((p) => {
               const t = p.terms || {};
@@ -1067,7 +1090,7 @@ export default function AdminTradePage() {
                 disabled={termsForm.tiers.length >= 8}
                 onClick={() => setTermsForm((current) => ({
                   ...current,
-                  tiers: [...current.tiers, { quantity: Math.max(current.moq, ...current.tiers.map((tier) => tier.quantity)) + 10, price: current.tiers[current.tiers.length - 1]?.price || 0 }],
+                  tiers: [...current.tiers, { quantity: Math.max(current.moq, ...current.tiers.map((tier) => tier.quantity)) + 10, price: '' }],
                 }))}
                 className="text-xs font-semibold text-[#8b2e24] hover:underline disabled:text-slate-400 disabled:no-underline"
               >+ Add price break</button>
@@ -1078,7 +1101,7 @@ export default function AdminTradePage() {
                   <label className="sr-only" htmlFor={`trade-tier-qty-${index}`}>Break {index + 1} minimum quantity</label>
                   <input id={`trade-tier-qty-${index}`} aria-label={`Break ${index + 1} minimum quantity`} type="number" min={termsForm.moq} placeholder="Minimum quantity" value={tier.quantity} onChange={(e) => setTermsForm((current) => ({ ...current, tiers: current.tiers.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(e.target.value) } : row) }))} className="min-w-0 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm" />
                   <label className="sr-only" htmlFor={`trade-tier-price-${index}`}>Break {index + 1} unit price in USD</label>
-                  <input id={`trade-tier-price-${index}`} aria-label={`Break ${index + 1} unit price in USD`} type="number" min="0" step="0.01" placeholder="Unit price USD" value={tier.price} onChange={(e) => setTermsForm((current) => ({ ...current, tiers: current.tiers.map((row, rowIndex) => rowIndex === index ? { ...row, price: Number(e.target.value) } : row) }))} className="min-w-0 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm" />
+                  <input id={`trade-tier-price-${index}`} aria-label={`Break ${index + 1} unit price in USD`} type="number" min="0" step="0.01" required placeholder="Unit price USD" value={tier.price} onChange={(e) => setTermsForm((current) => ({ ...current, tiers: current.tiers.map((row, rowIndex) => rowIndex === index ? { ...row, price: e.target.value === '' ? '' : Number(e.target.value) } : row) }))} className="min-w-0 px-3 py-2 bg-white border border-slate-300 rounded-xl text-slate-900 shadow-sm" />
                   <button type="button" aria-label={`Remove price break ${index + 1}`} disabled={termsForm.tiers.length <= 1} onClick={() => setTermsForm((current) => ({ ...current, tiers: current.tiers.filter((_, rowIndex) => rowIndex !== index) }))} className="px-2 py-2 text-rose-700 hover:bg-rose-50 rounded-lg disabled:text-slate-300">Remove</button>
                 </div>
               ))}

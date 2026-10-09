@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { moveToRecycleBin } from '@/lib/recycle-bin';
+import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
+import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +12,7 @@ export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'products:view');
 
-    const products = await prisma.product.findMany({
+    const [products, setting] = await Promise.all([prisma.product.findMany({
       include: {
         craft: true,
         wholesaleTerms: true,
@@ -22,11 +24,15 @@ export async function GET(req: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
-    });
+    }), prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { wholesaleTerms: true } })]);
+    const legacyTerms = { ...SERVER_WHOLESALE_TERMS, ...((setting?.wholesaleTerms as Record<string, any> | null) || {}) };
 
     return NextResponse.json({
       success: true,
-      products,
+      products: products.map((product) => ({
+        ...product,
+        wholesaleEnabled: Boolean(resolveWholesaleOffer(product.wholesaleTerms, legacyTerms[product.code])),
+      })),
     });
   } catch (err: any) {
     console.error('Error fetching admin products:', err);
@@ -58,6 +64,7 @@ export async function POST(req: NextRequest) {
       status,
       imageUrl,
       images,
+      wholesaleEnabled,
     } = body;
 
     if (!code || !name || priceUSD === undefined || !craftKey) {
@@ -159,6 +166,7 @@ export async function PATCH(req: NextRequest) {
       status,
       imageUrl,
       images,
+      wholesaleEnabled,
     } = body;
 
     const where = id ? { id } : code ? { code } : null;
@@ -169,12 +177,46 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const previous = await prisma.product.findUnique({ where });
+    const previous = await prisma.product.findUnique({ where, include: { wholesaleTerms: true } });
     if (!previous) {
       return NextResponse.json(
         { success: false, error: 'Product not found.' },
         { status: 404 }
       );
+    }
+    if (wholesaleEnabled !== undefined && typeof wholesaleEnabled !== 'boolean') {
+      return NextResponse.json({ success: false, error: 'Enable wholesale must be true or false.' }, { status: 400 });
+    }
+
+    let requiresWholesaleTerms = false;
+    if (wholesaleEnabled !== undefined) {
+      const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { wholesaleTerms: true } });
+      const legacyTerms = { ...SERVER_WHOLESALE_TERMS, ...((setting?.wholesaleTerms as Record<string, any> | null) || {}) };
+      const legacy = legacyTerms[previous.code];
+      const configured = resolveWholesaleOffer(previous.wholesaleTerms, legacy);
+      if (wholesaleEnabled && !configured) {
+        const candidate = previous.wholesaleTerms
+          ? resolveWholesaleOffer({ ...previous.wholesaleTerms, isActive: true }, null)
+          : resolveWholesaleOffer(null, legacy);
+        if (candidate) {
+          await prisma.wholesaleProductTerms.upsert({
+            where: { productId: previous.id },
+            create: { productId: previous.id, moq: candidate.moq, leadTime: candidate.lead_time, tiers: candidate.tiers, customisation: candidate.customisation || null, isActive: true },
+            update: { isActive: true },
+          });
+        } else {
+          requiresWholesaleTerms = true;
+        }
+      } else if (!wholesaleEnabled && configured) {
+        const terms = previous.wholesaleTerms || resolveWholesaleOffer(null, legacy);
+        if (terms) {
+          await prisma.wholesaleProductTerms.upsert({
+            where: { productId: previous.id },
+            create: { productId: previous.id, moq: terms.moq, leadTime: 'leadTime' in terms ? terms.leadTime : terms.lead_time, tiers: terms.tiers, customisation: terms.customisation || null, isActive: false },
+            update: { isActive: false },
+          });
+        }
+      }
     }
 
     const updateData: any = {};
@@ -232,6 +274,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({
       success: true,
       product: updated,
+      requiresWholesaleTerms,
     });
   } catch (err: any) {
     console.error('Error updating product:', err);

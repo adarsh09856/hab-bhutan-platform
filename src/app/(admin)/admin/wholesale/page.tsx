@@ -398,6 +398,12 @@ export default function AdminWholesalePage() {
           >
             Manage products
           </a>
+          <a
+            href="/admin/trade"
+            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition"
+          >
+            Existing products &amp; wholesale prices
+          </a>
           <button
             onClick={handleExportCsv}
             className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 shadow-xs transition"

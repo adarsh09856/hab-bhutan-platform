@@ -157,6 +157,10 @@ export async function PATCH(request: NextRequest) {
           tiers.some((tier: number[], index: number) => index > 0 && tier[0] <= tiers[index - 1][0])) {
         return NextResponse.json({ success: false, error: 'Enter a positive MOQ and 1–8 tiers with increasing quantities and valid non-negative prices.' }, { status: 400 });
       }
+      const leadTime = String(terms.lead_time || '').trim();
+      if (terms.is_active !== false && !leadTime) {
+        return NextResponse.json({ success: false, error: 'Enter a production lead time before enabling this product for wholesale.' }, { status: 400 });
+      }
       const product = await prisma.product.findUnique({ where: { code: String(productCode) }, select: { id: true } });
       if (!product) return NextResponse.json({ success: false, error: 'Product not found.' }, { status: 404 });
       await prisma.wholesaleProductTerms.upsert({
@@ -164,14 +168,14 @@ export async function PATCH(request: NextRequest) {
         create: {
           productId: product.id,
           moq,
-          leadTime: String(terms.lead_time || '').trim() || '4–6 weeks',
+          leadTime,
           tiers,
           customisation: String(terms.customisation || '').trim() || null,
           isActive: terms.is_active !== false,
         },
         update: {
           moq,
-          leadTime: String(terms.lead_time || '').trim() || '4–6 weeks',
+          leadTime,
           tiers,
           customisation: String(terms.customisation || '').trim() || null,
           isActive: terms.is_active !== false,

@@ -82,6 +82,7 @@ export default function AdminProductsPage() {
     imageUrl: '',
     additionalImages: [] as string[],
     images: [] as { url: string; role: string }[],
+    wholesaleEnabled: false,
   });
 
   const [importCsvText, setImportCsvText] = useState('');
@@ -158,6 +159,7 @@ export default function AdminProductsPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        const openWholesale = Boolean(addForm.wholesaleEnabled);
         setActionSuccess(`Product "${data.product.name}" (${data.product.code}) successfully added to catalog.`);
         setProducts((prev) => [data.product, ...prev]);
         setShowAddModal(false);
@@ -175,8 +177,10 @@ export default function AdminProductsPage() {
           imageUrl: '',
           additionalImages: [],
           images: [],
+          wholesaleEnabled: false,
         });
         await loadData();
+        if (openWholesale) window.location.assign(`/admin/trade?product=${encodeURIComponent(data.product.code)}`);
       } else {
         setActionError(data.error || 'Failed to create product.');
       }
@@ -229,6 +233,7 @@ export default function AdminProductsPage() {
       imageUrl: primaryImg,
       additionalImages: extraImages,
       images: existingImages,
+      wholesaleEnabled: Boolean(p.wholesaleEnabled),
     });
   };
 
@@ -264,10 +269,12 @@ export default function AdminProductsPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
+        const openWholesale = Boolean(data.requiresWholesaleTerms);
         setActionSuccess(`Product "${data.product.name}" (${data.product.code}) updated successfully.`);
         setProducts((prev) => prev.map((p) => (p.id === data.product.id ? { ...p, ...data.product } : p)));
         setEditingProduct(null);
         await loadData();
+        if (openWholesale) window.location.assign(`/admin/trade?product=${encodeURIComponent(data.product.code)}`);
       } else {
         setActionError(data.error || 'Failed to update product.');
       }
@@ -873,6 +880,11 @@ export default function AdminProductsPage() {
             />
           </div>
 
+          <label className="flex items-center gap-2 rounded-lg border admin-border p-3">
+            <input type="checkbox" checked={Boolean(addForm.wholesaleEnabled)} onChange={(e) => setAddForm({ ...addForm, wholesaleEnabled: e.target.checked })} />
+            <span>Enable wholesale <span className="font-normal opacity-70">— set prices and terms in Wholesale Trade Desk after creating.</span></span>
+          </label>
+
           <div className="flex justify-end gap-2 pt-3 border-t admin-border">
             <button
               type="button"
@@ -1068,6 +1080,11 @@ export default function AdminProductsPage() {
                 hint="Story, materials used, techniques, and cultural symbolism."
               />
             </div>
+
+            <label className="flex items-center gap-2 rounded-lg border admin-border p-3">
+              <input type="checkbox" checked={Boolean(editForm.wholesaleEnabled)} onChange={(e) => setEditForm({ ...editForm, wholesaleEnabled: e.target.checked })} />
+              <span>Enable wholesale <span className="font-normal opacity-70">— prices and terms are managed in Wholesale Trade Desk.</span></span>
+            </label>
 
             <div className="flex justify-end gap-2 border-t admin-border pt-3">
               <button
