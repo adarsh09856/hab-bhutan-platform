@@ -1123,5 +1123,5 @@ The larger project remains open. In particular, every reference page still needs
 
 - The public Secretariat directory previously discarded every saved staff-role record whose person name was not confirmed, so the page appeared empty even when roles existed in Admin. It now displays the saved role and a neutral “Name to be confirmed” label without inventing a person or portrait.
 - Extended the local governance display regression to cover unconfirmed Secretariat roles as well as trustee roles, including fixture cleanup.
-- `npm run typecheck` and `git diff --check` passed. Database-backed regression execution and the final build/release for this addition are not included in that check.
+- `npm run typecheck`, `git diff --check`, and the optimized production build passed. Commit `5641eb7` was deployed with the guarded release flow; the Prisma schema was already in sync, the named HAB PM2 process restarted, and its health check passed. Read-only live GETs returned 200 for Secretariat, Board of Trustees, product detail, and health. The live Secretariat HTML now shows the unconfirmed-role label and no longer shows the empty-directory message; no production records were changed. The database-backed fixture regression was not run against live data.
 
