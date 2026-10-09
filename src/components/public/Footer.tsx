@@ -352,7 +352,7 @@ export default function Footer({ initialNavigation }: { initialNavigation?: Foot
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span>
             {isDz
-              ? `རིན་གོང་ ${currency === 'USD' ? 'ཨ་རིའི་ཌོ་ལར $' : 'དངུལ་ཀྲམ Nu.'} ནང་སྟོན་ཡོད · དངུལ་སྤྲོད་ ཀརཌི་ mBoB དང་ BNB ཐོག་ལས་བཏུབ`
+              ? `རིན་གོང་ ${currency === 'USD' ? 'ཨ་རིའི་ཌོ་ལར $' : 'དངུལ་ཀྲམ Nu.'} ནང་སྟོན་ཡོད · mBoB, BNB དང་ དངུལ་ཁང་གི་སྤྲོད་ཐབས་སྤྱོད་ཆོག། ཨོན་ལཱའིན་ཀརཊ་དངུལ་སྤྲོད་ད་ལྟོ་བཙུགས་མི་འདུག།`
               : `Prices shown in ${currency === 'USD' ? 'USD $' : 'BTN Nu.'} · mBoB, BNB and bank transfer available; online card payments are not configured`}
           </span>
           <button
