@@ -43,16 +43,17 @@ async function main() {
   const repeatedMember = ['Another Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'cid-100', '', '', '', '', '', ''];
   const missingCraft = ['No Craft', '', 'Thimphu', '', 'CID-101', '', '', '', '', '', ''];
   const missingDzongkhag = ['No Region', 'shingzo', '', '', 'CID-102', '', '', '', '', '', ''];
+  const sameNameDifferentCid = ['Pema Workshop', 'shingzo', 'Lhuentse', 'Khoma', 'CID-103', '', '', '', '', '', ''];
   const memberResult = validateMemberImport(
-    [MEMBER_HEADERS, validMember, repeatedMember, missingCraft, missingDzongkhag],
-    new Set(),
+    [MEMBER_HEADERS, validMember, repeatedMember, sameNameDifferentCid, missingCraft, missingDzongkhag],
     new Set(),
   );
-  assert.equal(memberResult.validRows.length, 1, 'Only the complete unique member row is preview-valid.');
+  assert.equal(memberResult.validRows.length, 2, 'Complete rows with distinct CID/licence keys are accepted even where names match.');
   assert.equal(memberResult.duplicateCount, 1, 'Case-insensitive duplicate CID within file is detected.');
-  assert.equal(memberResult.badRows.length, 3, 'Duplicate and missing required fields appear as preview errors.');
+  assert.equal(memberResult.badRows.length, 3, 'Duplicate CID and missing required fields appear as preview errors.');
   assert.equal(memberResult.validRows[0]._sourceRowNumber, 2, 'Member preview retains the original spreadsheet row number for server-side results.');
   assert.equal(memberResult.badRows[0].rowNumber, 3, 'Member preview issues use one-based spreadsheet row numbers including the header.');
+  assert.equal(memberResult.validRows[0].status, 'PENDING', 'Member imports without a verification status remain pending.');
 
   const validBuyer = ['Bhutan Craft Store', 'Pema Dorji', 'BUYER@example.bt', '', 'Bhutan', '', '', '20', 'PENDING', ''];
   const duplicateBuyer = ['Second Store', 'Pema Dorji', 'buyer@example.bt', '', 'Bhutan', '', '', '20', 'PENDING', ''];

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { MemberStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,8 @@ export async function POST(req: NextRequest) {
     let skippedCount = 0;
     const badRows: { rowNumber: number; reason: string }[] = [];
     const seenCids = new Set<string>();
-    const seenNames = new Set<string>();
+    const existingMembers = await prisma.member.findMany({ select: { cidNumber: true } });
+    const existingCids = new Set(existingMembers.map((member) => member.cidNumber.trim().toLowerCase()));
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
@@ -44,27 +46,12 @@ export async function POST(req: NextRequest) {
         continue;
       }
       const normalizedCid = cidNumber.toLowerCase();
-      const normalizedName = name.toLowerCase();
-      if (seenCids.has(normalizedCid) || seenNames.has(normalizedName)) {
+      if (seenCids.has(normalizedCid) || existingCids.has(normalizedCid)) {
         skippedCount++;
-        badRows.push({ rowNumber, reason: 'Duplicate skipped: CID/license or name is repeated in this file.' });
+        badRows.push({ rowNumber, reason: 'Duplicate skipped: CID/license is repeated in this file or already exists.' });
         continue;
       }
       seenCids.add(normalizedCid);
-      seenNames.add(normalizedName);
-      const duplicate = await prisma.member.findFirst({
-        where: {
-          OR: [
-            { cidNumber: { equals: cidNumber, mode: 'insensitive' } },
-            { name: { equals: name, mode: 'insensitive' } },
-          ],
-        },
-      });
-      if (duplicate) {
-        skippedCount++;
-        badRows.push({ rowNumber, reason: 'Duplicate skipped: CID/license or name already exists.' });
-        continue;
-      }
       const memberId = crypto.randomUUID();
       const regNumber = row.regNumber || `HAB-M-${Math.floor(100000 + Math.random() * 900000)}`;
       const bioText = row.bio || (row.village ? `Village: ${row.village}. Registered artisan member of HAB.` : 'Registered artisan member of Handicrafts Association of Bhutan.');
@@ -80,10 +67,11 @@ export async function POST(req: NextRequest) {
             regNumber,
             businessLicense: row.businessLicense || null,
             tier: row.tier || 'ACTIVE_SECTOR_MEMBER',
-            status: row.status || 'PENDING',
+            status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(String(row.status || '').toUpperCase())
+              ? String(row.status).toUpperCase() as MemberStatus : MemberStatus.PENDING,
             joinYear: row.joinYear ? parseInt(String(row.joinYear), 10) : new Date().getFullYear(),
             bio: bioText,
-            portraitUrl: '/assets/photos/about-hab.jpg',
+            portraitUrl: null,
             duesExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           },
         });

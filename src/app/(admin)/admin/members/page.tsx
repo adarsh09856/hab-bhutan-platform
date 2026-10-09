@@ -304,9 +304,8 @@ export default function AdminMembersPage() {
     try {
       const rawRows = await parseSpreadsheetFile(file);
       const existingCids = new Set(members.map((m) => (m.cidNumber || '').trim()).filter(Boolean));
-      const existingNames = new Set(members.map((m) => (m.name || '').trim().toLowerCase()));
 
-      const validation = validateMemberImport(rawRows, existingCids, existingNames);
+      const validation = validateMemberImport(rawRows, existingCids);
       setImportValidation(validation);
     } catch (error: any) {
       setActionError(error?.message || 'Unable to read the spreadsheet.');
@@ -1055,6 +1054,9 @@ export default function AdminMembersPage() {
                   </div>}
                 </section>
               )}
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">
+                CID or business licence is the duplicate check key, so different artisans with the same name are allowed. Unspecified verification status defaults to PENDING; set VERIFIED only for confirmed current members. Missing portrait photos stay empty instead of using a shared placeholder.
+              </p>
               <div className="p-4 bg-sky-50 rounded-xl border border-sky-100 flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-sky-950">Download Member Excel Template</p>

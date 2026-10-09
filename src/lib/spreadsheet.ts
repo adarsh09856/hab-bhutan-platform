@@ -324,7 +324,7 @@ export const MEMBER_HEADERS = [
   'Contact Phone',
   'Email',
   'Membership Tier (ACTIVE_SECTOR_MEMBER/ASSOCIATE/INSTITUTIONAL)',
-  'Verification Status (VERIFIED/PENDING)',
+  'Verification Status (defaults PENDING; VERIFIED only if confirmed)',
   'Join Year',
   'Bio / Description',
 ];
@@ -379,14 +379,12 @@ export interface MemberImportValidationResult {
 
 export function validateMemberImport(
   rawRows: string[][],
-  existingCids: Set<string>,
-  existingNames: Set<string>
+  existingCids: Set<string>
 ): MemberImportValidationResult {
   const validRows: any[] = [];
   const badRows: { rowNumber: number; data: string[]; reason: string }[] = [];
   let duplicateCount = 0;
   const seenCids = new Set([...existingCids].map((cid) => cid.trim().toLowerCase()));
-  const seenNames = new Set([...existingNames].map((name) => name.trim().toLowerCase()));
 
   if (rawRows.length <= 1) {
     return { validRows: [], badRows: [{ rowNumber: 1, data: [], reason: 'File contains no data rows.' }], duplicateCount: 0 };
@@ -402,7 +400,7 @@ export function validateMemberImport(
     const phone = row[5]?.trim();
     const email = row[6]?.trim().toLowerCase();
     const tier = row[7]?.trim().toUpperCase() || 'ACTIVE_SECTOR_MEMBER';
-    const status = row[8]?.trim().toUpperCase() || 'VERIFIED';
+    const status = row[8]?.trim().toUpperCase() || 'PENDING';
     const joinYear = parseInt(row[9]?.trim() || new Date().getFullYear().toString(), 10);
     const bio = row[10]?.trim();
 
@@ -424,15 +422,13 @@ export function validateMemberImport(
     }
 
     const normalizedCid = cid.toLowerCase();
-    const normalizedName = name.toLowerCase();
-    if (seenCids.has(normalizedCid) || seenNames.has(normalizedName)) {
+    if (seenCids.has(normalizedCid)) {
       duplicateCount++;
-      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: CID "${cid}" or Name "${name}" already exists or is repeated in this file.` });
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Duplicate skipped: CID or business licence "${cid}" already exists or is repeated in this file.` });
       continue;
     }
 
     seenCids.add(normalizedCid);
-    seenNames.add(normalizedName);
 
     validRows.push({
       _sourceRowNumber: idx + 1,
@@ -447,7 +443,7 @@ export function validateMemberImport(
       tier: ['ACTIVE_SECTOR_MEMBER', 'ASSOCIATE_SECTOR_MEMBER', 'INSTITUTIONAL'].includes(tier)
         ? tier
         : 'ACTIVE_SECTOR_MEMBER',
-      status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(status) ? status : 'VERIFIED',
+      status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(status) ? status : 'PENDING',
       joinYear: isNaN(joinYear) ? new Date().getFullYear() : joinYear,
       bio: bio || null,
     });
