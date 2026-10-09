@@ -13,5 +13,6 @@ export async function POST() {
     path: '/',
     maxAge: 0,
   });
+  response.headers.set('Cache-Control', 'no-store, max-age=0');
   return response;
 }

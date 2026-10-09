@@ -93,6 +93,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickSearch, setQuickSearch] = useState('');
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
 
   useEffect(() => {
     document.body.classList.add('hab-admin-body');
@@ -608,6 +610,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="text-[10px] text-slate-400">v2.4 LTS</span>
             </div>
 
+            {logoutError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1.5 text-[11px] text-rose-800">{logoutError}</p>}
             <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
               <div className="truncate">
                 <div className="text-slate-800 font-semibold text-xs truncate">
@@ -618,19 +621,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
               </div>
               <button
+                type="button"
+                disabled={signingOut}
+                aria-label="Sign out of Admin"
                 onClick={async () => {
+                  if (signingOut) return;
+                  setSigningOut(true);
+                  setLogoutError('');
                   try {
-                    const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                    if (!response.ok) throw new Error('Sign out failed. Please try again.');
-                    window.location.assign('/admin/login');
-                  } catch {
-                    window.alert('Sign out failed. Please try again.');
+                    const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', cache: 'no-store' });
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || !data.success) throw new Error(data.error || 'Could not end your session. Please try again.');
+                    router.replace('/admin/login?logged_out=1');
+                    router.refresh();
+                  } catch (error: any) {
+                    setLogoutError(error.message || 'Could not end your session. Please try again.');
+                    setSigningOut(false);
                   }
                 }}
                 title="Sign out"
-                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-wait disabled:opacity-60"
               >
                 <LogOut className="w-4 h-4" />
+                <span>{signingOut ? 'Signing out…' : 'Sign out'}</span>
               </button>
             </div>
           </div>

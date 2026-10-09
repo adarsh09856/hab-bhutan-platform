@@ -12,10 +12,12 @@ function AdminLoginForm() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams?.get('redirect') || '/admin';
   const reasonParam = searchParams?.get('reason');
+  const loggedOutParam = searchParams?.get('logged_out');
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [statusMsg, setStatusMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
@@ -24,7 +26,8 @@ function AdminLoginForm() {
     } else if (reasonParam === 'unauthorized_staff') {
       setErrorMsg('Staff authorization required to access the Secretariat Suite.');
     }
-  }, [reasonParam]);
+    if (loggedOutParam === '1') setStatusMsg('You have been signed out.');
+  }, [reasonParam, loggedOutParam]);
 
   const perks = [
     'Catalog inventory & artisan maker accreditation',
@@ -116,6 +119,11 @@ function AdminLoginForm() {
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          {statusMsg && (
+            <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-[13px] text-emerald-700">
+              {statusMsg}
+            </p>
+          )}
           {errorMsg && (
             <div role="alert" className="p-3.5 rounded-[8px] bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[13px] font-figtree">
               {errorMsg}
