@@ -13,7 +13,8 @@
     "h2Count": 17,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 2,
@@ -29,7 +30,8 @@
     "h2Count": 12,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 3,
@@ -45,7 +47,8 @@
     "h2Count": 11,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 4,
@@ -61,7 +64,8 @@
     "h2Count": 7,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 5,
@@ -75,7 +79,8 @@
     "h2Count": 7,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 6,
@@ -91,7 +96,8 @@
     "h2Count": 10,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 7,
@@ -107,7 +113,8 @@
     "h2Count": 9,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 8,
@@ -121,7 +128,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 9,
@@ -135,7 +143,8 @@
     "h2Count": 8,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 10,
@@ -149,7 +158,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 11,
@@ -165,7 +175,8 @@
     "h2Count": 9,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 12,
@@ -181,7 +192,8 @@
     "h2Count": 11,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 13,
@@ -195,7 +207,8 @@
     "h2Count": 7,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 14,
@@ -211,7 +224,8 @@
     "h2Count": 9,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 15,
@@ -225,7 +239,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 16,
@@ -241,7 +256,8 @@
     "h2Count": 12,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 17,
@@ -257,7 +273,8 @@
     "h2Count": 11,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 18,
@@ -274,7 +291,8 @@
     "h2Count": 7,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 19,
@@ -290,7 +308,8 @@
     "h2Count": 9,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 20,
@@ -306,7 +325,8 @@
     "h2Count": 12,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 21,
@@ -322,7 +342,8 @@
     "h2Count": 8,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 22,
@@ -336,7 +357,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 23,
@@ -352,7 +374,8 @@
     "h2Count": 7,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 24,
@@ -366,7 +389,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 25,
@@ -382,7 +406,8 @@
     "h2Count": 8,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 26,
@@ -396,7 +421,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 27,
@@ -412,7 +438,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 28,
@@ -426,7 +453,8 @@
     "h2Count": 6,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 29,
@@ -442,7 +470,8 @@
     "h2Count": 8,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 30,
@@ -458,7 +487,8 @@
     "h2Count": 10,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 31,
@@ -474,7 +504,8 @@
     "h2Count": 7,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 32,
@@ -490,7 +521,8 @@
     "h2Count": 16,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 33,
@@ -506,7 +538,8 @@
     "h2Count": 16,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 34,
@@ -522,7 +555,8 @@
     "h2Count": 16,
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 35,
@@ -532,7 +566,8 @@
     "adminStudio": "/admin/policies",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 36,
@@ -542,7 +577,8 @@
     "adminStudio": "/admin/policies",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 37,
@@ -552,7 +588,8 @@
     "adminStudio": "/admin/pages",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 38,
@@ -562,7 +599,8 @@
     "adminStudio": "/admin/pages",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 39,
@@ -572,7 +610,8 @@
     "adminStudio": "/admin/publications",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 40,
@@ -582,7 +621,8 @@
     "adminStudio": "/admin/publications",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 41,
@@ -592,7 +632,8 @@
     "adminStudio": "/admin/publications",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 42,
@@ -602,7 +643,8 @@
     "adminStudio": "/admin/policies",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 43,
@@ -612,7 +654,8 @@
     "adminStudio": "/admin/pages",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   },
   {
     "index": 44,
@@ -622,6 +665,7 @@
     "adminStudio": "/admin/pages",
     "quickEditMounted": true,
     "sectionTagMounted": true,
-    "status": "VERIFIED_PASS"
+    "status": "SOURCE_SCAN_ONLY",
+    "evidenceLimit": "Does not compare rendered copy/layout/data or verify Quick Edit behavior."
   }
 ]

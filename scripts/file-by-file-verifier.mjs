@@ -5,7 +5,7 @@ const HAB_DIR = 'E:/Downloads/Final_webdesign/hab-site';
 const NEXT_DIR = 'E:/ai/bhutanprojects/newbend';
 
 console.log('========================================================================');
-console.log('  HAB BHUTAN — COMPREHENSIVE FILE-BY-FILE & TEXT-BY-TEXT AUDITOR        ');
+console.log('  HAB BHUTAN — ROUTE SOURCE INVENTORY (NOT VISUAL/FUNCTIONAL QA)        ');
 console.log('========================================================================\n');
 
 // 34 Static HTML Pages Mapping to Next.js routes
@@ -383,7 +383,7 @@ function parseNextFile(filePath) {
 }
 
 // 1. Process 34 HTML Mappings
-console.log('>>> SECTION 1: VERIFYING 34 STATIC HTML TEMPLATES AGAINST NEXT.JS ROUTES\n');
+console.log('>>> SECTION 1: CHECKING SOURCE FILE PRESENCE AND EDITOR MARKERS ONLY\n');
 
 for (let i = 0; i < PAGE_MAPPINGS.length; i++) {
   const item = PAGE_MAPPINGS[i];
@@ -412,7 +412,7 @@ for (let i = 0; i < PAGE_MAPPINGS.length; i++) {
   if (nextInfo.hasSectionTag) checks.push('data-hab-section: YES');
   if (nextInfo.hasSafePrice) checks.push('SafePrice: YES');
 
-  console.log(`✓ PASS ${idx} ${item.htmlFile.padEnd(24)} -> ${item.route.padEnd(24)} [${checks.join(' | ')}]`);
+  console.log(`SOURCE FOUND ${idx} ${item.htmlFile.padEnd(24)} -> ${item.route.padEnd(24)} [${checks.join(' | ')}]`);
   passCount++;
 
   results.push({
@@ -427,12 +427,13 @@ for (let i = 0; i < PAGE_MAPPINGS.length; i++) {
     h2Count: htmlInfo.h2.length,
     quickEditMounted: nextInfo.hasQuickEdit,
     sectionTagMounted: nextInfo.hasSectionTag,
-    status: 'VERIFIED_PASS'
+    status: 'SOURCE_SCAN_ONLY',
+    evidenceLimit: 'Does not compare rendered copy/layout/data or verify Quick Edit behavior.'
   });
 }
 
 // 2. Process 10 Specialized Pages
-console.log('\n>>> SECTION 2: VERIFYING 10 SPECIALIZED GOVERNANCE SUB-PAGES\n');
+console.log('\n>>> SECTION 2: CHECKING SPECIALIZED ROUTE SOURCE FILES ONLY\n');
 
 for (let i = 0; i < SPECIALIZED_PAGES.length; i++) {
   const item = SPECIALIZED_PAGES[i];
@@ -450,7 +451,7 @@ for (let i = 0; i < SPECIALIZED_PAGES.length; i++) {
   if (nextInfo.hasQuickEdit) checks.push('QuickEdit: YES');
   if (nextInfo.hasSectionTag) checks.push('data-hab-section: YES');
 
-  console.log(`✓ PASS ${idx} ${item.route.padEnd(24)} -> ${item.name.padEnd(30)} [${checks.join(' | ')}]`);
+  console.log(`SOURCE FOUND ${idx} ${item.route.padEnd(24)} -> ${item.name.padEnd(30)} [${checks.join(' | ')}]`);
   passCount++;
 
   results.push({
@@ -461,12 +462,13 @@ for (let i = 0; i < SPECIALIZED_PAGES.length; i++) {
     adminStudio: item.adminStudio,
     quickEditMounted: nextInfo.hasQuickEdit,
     sectionTagMounted: nextInfo.hasSectionTag,
-    status: 'VERIFIED_PASS'
+    status: 'SOURCE_SCAN_ONLY',
+    evidenceLimit: 'Does not compare rendered copy/layout/data or verify Quick Edit behavior.'
   });
 }
 
 // 3. Verify Global Components: Footer & Utility Bar
-console.log('\n>>> SECTION 3: VERIFYING GLOBAL FOOTER PARITY & ANNOUNCEMENT BAR\n');
+console.log('\n>>> SECTION 3: CHECKING GLOBAL COMPONENT SOURCE MARKERS ONLY\n');
 
 const footerPath = path.join(NEXT_DIR, 'src/components/public/Footer.tsx');
 const footerContent = fs.readFileSync(footerPath, 'utf8');
@@ -509,7 +511,8 @@ if (counterRemoved && tickerControlsPreserved) {
 }
 
 console.log('\n========================================================================');
-console.log(`TOTAL FILE-BY-FILE VERIFICATION: ${passCount} PASSED, ${failCount} FAILED`);
+console.log(`TOTAL SOURCE INVENTORY: ${passCount} marker groups found, ${failCount} missing marker groups`);
+console.log('No item in this report proves visual parity, complete content, or working CRUD.');
 console.log('========================================================================\n');
 
 fs.writeFileSync(path.join(NEXT_DIR, 'scripts/file-by-file-results.json'), JSON.stringify(results, null, 2), 'utf8');

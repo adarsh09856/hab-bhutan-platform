@@ -4,6 +4,8 @@ Product-to-wholesale control (9 Oct 2026): Products add/edit and public product 
 
 Full public route/image availability refresh (9 Oct 2026): restored the optimized local build after the development server replaced its `.next` manifest; the first audit invocation correctly yielded zero routes and was discarded. Rerun against the production route manifest fetched 76 live public route variants: all 76 returned HTTP 200. It discovered and checked 38 same-origin rendered/CSS image URLs, all successful, across two linked stylesheets. This is availability evidence only; browser-only/lazy images, external-host images, quality, text/data parity, and visual parity remain **UNVERIFIED**.
 
+File inventory evidence correction (9 Oct 2026): `scripts/file-by-file-verifier.mjs` previously labeled source-presence/editor-marker checks `VERIFIED_PASS`, which overstated its evidence. It now reports `SOURCE_SCAN_ONLY` and explicitly states it does not prove rendered parity, content completeness, or working CRUD. Regenerated `scripts/file-by-file-results.json` now preserves that limited status for all 44 route templates. `node --check` and the inventory run passed; no application code or site data changed.
+
 **Project**: Handicrafts Association of Bhutan (HAB) National E-Commerce & Artisans Platform  
 **Target Next.js Platform (Execution Target)**: `E:\ai\bhutanprojects\newbend` (Next.js 15 App Router, Prisma ORM, PostgreSQL, Sharp image pipeline, TypeScript)  
 **Reference Static HTML Source**: `E:\Downloads\Final_webdesign\hab-site` (34 HTML templates, `data.js`, `pages.js`, `backend.js`, `style.css`)  
