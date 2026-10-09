@@ -255,7 +255,9 @@ export default async function MembersPage() {
                 <div className="card__body">
                   <span className="honour__badge">{m.honour}</span>
                   <h3 className="card__title">
-                    <Link href={`/members/${encodeURIComponent(m.name)}`}>{m.name}</Link>
+                    {registeredMembers.some((member) => member.name.trim().toLowerCase() === m.name.trim().toLowerCase()) ? (
+                      <Link href={`/members/${encodeURIComponent(registeredMembers.find((member) => member.name.trim().toLowerCase() === m.name.trim().toLowerCase())!.regNumber)}`}>{m.name}</Link>
+                    ) : m.name}
                   </h3>
                   <p className="card__meta">
                     {craft.name} · {m.dzongkhag} · since {m.since}

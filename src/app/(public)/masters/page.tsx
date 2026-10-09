@@ -25,7 +25,7 @@ export default function MastersPage() {
             honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
             since: h.yearAwarded,
             note: h.citation,
-            image_path: h.portraitUrl || '/assets/photos/hero-1-weaving.jpg',
+            image_path: h.portraitUrl || '',
             image_alt: h.name,
           }));
           setAllRecognised(mapped);
@@ -299,25 +299,22 @@ export default function MastersPage() {
               name: m.craft_key || 'Craft',
               english: '',
             };
-            const photoPool = [
-              '/assets/photos/hero-1-weaving.jpg',
-              '/assets/photos/hero-4-textiles.jpg',
-              '/assets/photos/hero-5-desho.jpg',
-              '/assets/photos/hero-3-clay.jpg',
-              '/assets/photos/hero-2-punakha.jpg',
-            ];
-            const imgSrc = m.image_path || photoPool[i % photoPool.length];
+            const imgSrc = m.image_path || '';
+            const hasPortrait = Boolean(imgSrc) && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(imgSrc);
 
             return (
               <article key={i} className="card honour">
                 <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-                  <Image
+                  {hasPortrait ? <Image
                     src={imgSrc}
                     alt={`${m.name}, ${craft.name}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     style={{ objectFit: 'cover' }}
-                  />
+                  /> : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#e8dfd0] text-[#6d5949]" role="img" aria-label={`Portrait pending for ${m.name}`}>
+                    <span className="text-4xl font-semibold">{m.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}</span>
+                    <span className="text-xs">Portrait to be supplied</span>
+                  </div>}
                 </figure>
                 <div className="card__body">
                   <span className="honour__badge">{m.honour}</span>

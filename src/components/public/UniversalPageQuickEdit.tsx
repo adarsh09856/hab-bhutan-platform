@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isEditableInlineTextPath, joinEditableText } from '@/lib/quick-edit-text';
+import { applyQuickEditImage } from '@/lib/quick-edit-image';
 
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
@@ -110,7 +111,7 @@ export default function UniversalPageQuickEdit() {
       const value = overrides[key];
       if (!value) continue;
       if (element instanceof HTMLImageElement) {
-        if (value.src && element.getAttribute('src') !== value.src) element.src = value.src;
+        if (value.src) applyQuickEditImage(element, value.src);
         if (value.alt !== undefined && element.alt !== value.alt) element.alt = value.alt;
       } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
         if (value.placeholder !== undefined && element.placeholder !== value.placeholder) element.placeholder = value.placeholder;
