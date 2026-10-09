@@ -66,6 +66,7 @@ async function main() {
   assert.equal(wholesaleResult.duplicateCount, 1, 'Case-insensitive duplicate email within file is detected.');
   assert.equal(wholesaleResult.badRows.length, 2, 'Duplicate and invalid email are listed with reasons.');
   assert.equal(wholesaleResult.validRows[0]._sourceRowNumber, 2, 'Wholesale preview retains original spreadsheet row numbers.');
+  assert.equal(wholesaleResult.validRows[0].status, 'PENDING', 'Bulk-imported wholesale buyers remain pending until staff approval issues login credentials.');
   assert.equal(wholesaleResult.badRows[0].rowNumber, 3, 'Wholesale preview issues use one-based spreadsheet row numbers including the header.');
 
   console.log('Spreadsheet validation passed: XLSX Unicode round-trip, required member fields, within-file duplicate CID/email, and invalid wholesaler email.');

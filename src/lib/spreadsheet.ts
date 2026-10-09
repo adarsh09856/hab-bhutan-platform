@@ -180,7 +180,7 @@ export const WHOLESALE_HEADERS = [
   'City',
   'Tax or License ID',
   'Discount Tier (%)',
-  'Status (ACTIVE/PENDING/INACTIVE)',
+  'Requested Status (all imported buyers start PENDING)',
   'Notes / Purchasing Purpose',
 ];
 
@@ -194,7 +194,7 @@ export const WHOLESALE_SAMPLE_ROWS = [
     'Thimphu',
     'HAB-TL-48921',
     '25',
-    'ACTIVE',
+    'PENDING',
     'Luxury resort group sourcing authentic Bhutanese textiles and bamboo ware for 5 lodges',
   ],
   [
@@ -206,7 +206,7 @@ export const WHOLESALE_SAMPLE_ROWS = [
     'San Francisco',
     'US-EIN-94-382910',
     '30',
-    'ACTIVE',
+    'PENDING',
     'Specialist Himalayan cultural craft retailer with quarterly wholesale purchase cycle',
   ],
   [
@@ -255,7 +255,6 @@ export function validateWholesaleImport(
     const city = row[5]?.trim();
     const taxId = row[6]?.trim();
     const discount = parseInt(row[7]?.trim() || '20', 10);
-    const status = (row[8]?.trim().toUpperCase() || 'ACTIVE');
     const notes = row[9]?.trim();
 
     if (!company) {
@@ -301,7 +300,9 @@ export function validateWholesaleImport(
       city: city || null,
       taxId: taxId || null,
       discountTier: isNaN(discount) ? 20 : Math.min(50, Math.max(5, discount)),
-      status: ['ACTIVE', 'PENDING', 'INACTIVE', 'SUSPENDED'].includes(status) ? status : 'ACTIVE',
+      // Imported buyers receive no plaintext credential. They must stay pending
+      // until staff approval generates and delivers a usable login credential.
+      status: 'PENDING',
       notes: notes || null,
       username,
     });

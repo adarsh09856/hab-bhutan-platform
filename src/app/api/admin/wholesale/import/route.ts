@@ -28,6 +28,17 @@ export async function POST(req: NextRequest) {
     let skippedCount = 0;
     const badRows: { rowNumber: number; reason: string }[] = [];
     const seenEmails = new Set<string>();
+    const seenUsernames = new Set<string>();
+    const [dbBuyers, fallbackBuyers] = await Promise.all([
+      prisma.wholesaleBuyer.findMany({ select: { email: true, username: true } }),
+      Promise.resolve(getAllFallbackWholesaleBuyers()),
+    ]);
+    const existingEmails = new Set(dbBuyers.map((buyer) => buyer.email.toLowerCase()));
+    const existingUsernames = new Set(dbBuyers.map((buyer) => buyer.username.toLowerCase()));
+    for (const buyer of fallbackBuyers) {
+      existingEmails.add(buyer.email.toLowerCase());
+      existingUsernames.add(buyer.username.toLowerCase());
+    }
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
@@ -48,16 +59,28 @@ export async function POST(req: NextRequest) {
         badRows.push({ rowNumber, reason: `Duplicate skipped: email "${email}" is repeated in this file.` });
         continue;
       }
-      seenEmails.add(email);
-      const duplicate = await prisma.wholesaleBuyer.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
-      const fallbackDuplicate = getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.toLowerCase() === email);
-      if (duplicate || fallbackDuplicate) {
-        skippedCount++;
-        badRows.push({ rowNumber, reason: `Duplicate skipped: email "${email}" already exists.` });
+      const username = String(row.username || '').trim().toLowerCase();
+      if (!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(username)) {
+        badRows.push({ rowNumber, reason: 'A valid username (3–32 letters, numbers, dots, underscores or hyphens) is required.' });
         continue;
       }
+      if (seenEmails.has(email) || seenUsernames.has(username)) {
+        skippedCount++;
+        badRows.push({ rowNumber, reason: seenEmails.has(email)
+          ? `Duplicate skipped: email "${email}" is repeated in this file.`
+          : `Duplicate skipped: username "${username}" is repeated in this file.` });
+        continue;
+      }
+      if (existingEmails.has(email) || existingUsernames.has(username)) {
+        skippedCount++;
+        badRows.push({ rowNumber, reason: existingEmails.has(email)
+          ? `Duplicate skipped: email "${email}" already exists.`
+          : `Duplicate skipped: username "${username}" already exists.` });
+        continue;
+      }
+      seenEmails.add(email);
+      seenUsernames.add(username);
       const buyerId = crypto.randomUUID();
-      const username = row.username || `buyer_${Math.floor(1000 + Math.random() * 9000)}`;
       const passwordHash = await bcrypt.hash(crypto.randomBytes(18).toString('base64url'), 12);
 
       try {
@@ -74,14 +97,14 @@ export async function POST(req: NextRequest) {
             city: row.city || null,
             taxId: row.taxId || null,
             discountTier: row.discountTier || 20,
-            status: row.status || 'ACTIVE',
+            status: 'PENDING',
             notes: row.notes || 'Imported via Bulk Excel/CSV Studio',
           },
         });
         saveFallbackWholesaleBuyer({
-          id: buyerId, username, companyName: row.companyName, contactName: row.contactName,
+          id: buyerId, username, passwordHash, companyName: row.companyName, contactName: row.contactName,
           email, phone: row.phone || null, country: row.country || 'Bhutan', city: row.city || null,
-          taxId: row.taxId || null, discountTier: row.discountTier || 20, status: row.status || 'ACTIVE',
+          taxId: row.taxId || null, discountTier: row.discountTier || 20, status: 'PENDING',
           notes: row.notes || 'Imported via Bulk Excel Studio', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         });
         importedCount++;

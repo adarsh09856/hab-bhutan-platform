@@ -804,6 +804,9 @@ export default function AdminWholesalePage() {
                   <span>Download Template</span>
                 </button>
               </div>
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">
+                Imported buyers are created as PENDING and cannot sign in yet. Review the application and approve it to generate and send their login credentials. Importing the same email or username again is skipped.
+              </p>
 
               {/* Upload Input */}
               <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-[#8B2E24] transition">

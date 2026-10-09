@@ -22,6 +22,12 @@
 - Follow-up reliability fix: Trade Desk quote/registration status actions no longer swallow database errors and return false success; they report success only after the PostgreSQL update resolves. Typecheck and full optimized build passed. Authenticated UI mutation remains **UNVERIFIED**.
 - B2B session security follow-up: removed hard-coded fallback JWT secrets from the wholesale catalogue and quote endpoints. Login, session inspection, catalogue access and quote requests now share one validator requiring a configured 32+ character `JWT_SECRET`; missing configuration returns a service error rather than authenticating with a known secret. The local verifier checks absent/short/valid secret behavior; typecheck passed. Full build and authenticated forged-token/runtime checks remain **UNVERIFIED** at this checkpoint.
 
+## Recent progress — Wholesale spreadsheet import safety (9 Oct 2026)
+
+- Excel/CSV wholesale import now forces all newly imported buyers to `PENDING`; rows can no longer activate accounts whose randomly generated password is unknown to the buyer. The preview template and import modal explain that staff approval sends credentials.
+- Server-side import checks normalized email and username duplicates against a single prefetched set from PostgreSQL/fallback storage and against earlier valid rows in the same upload; this avoids repeated database/file lookups for large files. Invalid usernames are reported against their spreadsheet row, and fallback buyer records retain the generated password hash for reliable local fallback authentication after approval.
+- Extended `scripts/test-spreadsheet-validation.ts` to assert a supplied `ACTIVE` status previews as `PENDING`. Typecheck, the ExcelJS spreadsheet validation suite (including XLSX/Dzongkha round-trip and duplicate detection), and `git diff --check` passed. The authenticated multi-row API import, repeat-upload DB behavior, and browser preview remain **UNVERIFIED**; no real member/buyer data or `.data` files were touched.
+
 ---
 
 ## 1. Executive Alignment & Core Mandate
