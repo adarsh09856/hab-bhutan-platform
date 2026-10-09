@@ -24,27 +24,13 @@ const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
   gaki01: '/assets/photos/product-gaki.jpg',
 };
 
-const CRAFT_FALLBACKS: Record<string, string> = {
-  thagzo: '/assets/photos/product-sad03.jpg',
-  shagzo: '/assets/photos/product-dap02.jpg',
-  troezo: '/assets/photos/product-tro04.jpg',
-  tshazo: '/assets/photos/product-ftb04.jpg',
-  lhazo: '/assets/photos/product-lha01.jpg',
-  parzo: '/assets/photos/product-mas01.jpg',
-  dezo: '/assets/photos/product-dez01.jpg',
-  tshemzo: '/assets/photos/product-cus02.jpg',
-  garzo: '/assets/photos/product-tro04.jpg',
-  jinzo: '/assets/photos/hero-3-clay.jpg',
-};
-
 function isUnusableImageUrl(url: unknown): boolean {
   return typeof url !== 'string' || !url.trim() || /placeholder|parotaktshang/i.test(url);
 }
 
 export function normalizeProductImages(code: string, craftKey: string, rawImages: unknown) {
   const fallbackUrl = KNOWN_PRODUCT_IMAGES[code.toLowerCase()]
-    || CRAFT_FALLBACKS[craftKey.toLowerCase()]
-    || '/assets/photos/product-hhb01.jpg';
+    || '/assets/photos/image-unavailable.svg';
   const source = Array.isArray(rawImages) ? rawImages : [];
   const usable: ProductImage[] = source.flatMap((item: any) => {
     const record = typeof item === 'string' ? { url: item, role: 'primary' } : item;

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import prisma from '../src/lib/prisma';
 import { GET as listProducts } from '../src/app/api/products/route';
 import { GET as getProduct } from '../src/app/api/products/[code]/route';
+import { normalizeProductImages } from '../src/lib/product-image-fallbacks';
 
 async function main() {
   const originalFindMany = prisma.product.findMany;
@@ -24,6 +25,9 @@ async function main() {
     (prisma.product as any).findFirst = async () => ({ code: 'SKU-TEST-123', name: 'Automated Test Product', status: 'PUBLISHED' });
     const hidden = await getProduct(new NextRequest('http://localhost/api/products/SKU-TEST-123'), { params: Promise.resolve({ code: 'SKU-TEST-123' }) });
     assert.equal(hidden.status, 404);
+
+    assert.equal(normalizeProductImages('UNLISTED-01', 'thagzo', []).imageUrl, '/assets/photos/image-unavailable.svg');
+    assert.equal(normalizeProductImages('HHB10', 'thagzo', [{ url: '/placeholders/hhb10_1.jpg', role: 'primary' }]).imageUrl, '/assets/photos/product-hhb10.jpg');
 
     (prisma.product as any).findMany = async () => { throw new Error('Simulated database outage'); };
     const outage = await listProducts(new NextRequest('http://localhost/api/products'));
