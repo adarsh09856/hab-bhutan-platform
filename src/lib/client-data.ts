@@ -67,6 +67,7 @@ export interface OutletData {
   payment: string;
   getting_there: string;
   facilities: string;
+  imageUrl?: string;
 }
 
 export interface EventData {

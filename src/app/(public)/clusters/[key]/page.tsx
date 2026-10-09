@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA, getClusterByKey, getCraftByKey, getProductsForCraft } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -64,8 +65,56 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
   }
 
   const craft = getCraftByKey(cluster.craft_key) || { name: 'Craft', english: 'Artisanal craft' };
-  const products = getProductsForCraft(cluster.craft_key).slice(0, 4);
-  const members = (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === cluster.craft_key);
+  let products: any[] = [];
+  let members: any[] = [];
+  try {
+    const dbProducts = await prisma.product.findMany({
+      where: {
+        craftKey: cluster.craft_key,
+        status: 'PUBLISHED',
+        NOT: [
+          { code: { startsWith: 'SKU-TEST-', mode: 'insensitive' } },
+          { name: { contains: 'Automated Test', mode: 'insensitive' } },
+        ],
+      },
+      include: { maker: { select: { name: true, dzongkhag: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 4,
+    });
+    products = dbProducts.map((product) => {
+      const normalized = normalizeProductImages(product.code, product.craftKey, product.images);
+      return {
+        code: product.code,
+        name: product.name,
+        craft_key: product.craftKey,
+        maker: product.maker?.name || '',
+        region: product.maker?.dzongkhag || product.region,
+        price_usd: product.priceUSD,
+        image_path: normalized.imageUrl,
+      };
+    });
+  } catch {
+    products = getProductsForCraft(cluster.craft_key).slice(0, 4).map((product) => ({
+      code: product.code,
+      name: product.name,
+      craft_key: product.craft_key,
+      maker: product.maker,
+      region: product.region,
+      price_usd: product.price_usd,
+      image_path: product.image_path,
+    }));
+  }
+  try {
+    const dbMembers = await prisma.member.findMany({
+      where: { craftKey: cluster.craft_key, status: 'VERIFIED' },
+      select: { id: true, name: true, dzongkhag: true, bio: true },
+      orderBy: { name: 'asc' },
+      take: 6,
+    });
+    members = dbMembers.map((member) => ({ id: member.id, name: member.name, dzongkhag: member.dzongkhag, blurb: member.bio }));
+  } catch {
+    members = (CLIENT_DATA.members || []).filter((member: any) => member.craft_key === cluster.craft_key);
+  }
 
   // Compute prev/next cluster
   let allClusters: any[] = [];
@@ -245,7 +294,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
 
           <div className="grid grid--3">
             {members.map((m: any, i: number) => (
-              <Link key={i} className="card" href={`/members/${encodeURIComponent(m.name)}`}>
+              <Link key={m.id || i} className="card" href={`/members/${encodeURIComponent(m.name)}`}>
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{m.dzongkhag}</p>
                   <h3 className="card__title">{m.name}</h3>

@@ -214,7 +214,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
               <Link key={row.key} className="card outlet" href={`/outlets/${row.key}`}>
                 <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                   <Image
-                    src="/assets/photos/hero-4-textiles.jpg"
+                    src={row.imageUrl || '/assets/photos/hero-4-textiles.jpg'}
                     alt={row.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
