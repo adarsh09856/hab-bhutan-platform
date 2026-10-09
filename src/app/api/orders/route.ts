@@ -127,6 +127,15 @@ export async function POST(req: NextRequest) {
       normalizedPaymentMethod = 'CARD';
     }
 
+    // The previous card path simulated an authorization but never contacted a
+    // processor. Never create an order or mark it paid without real approval.
+    if (normalizedPaymentMethod === 'CARD') {
+      return NextResponse.json(
+        { success: false, error: 'Online card payments are temporarily unavailable because a secure card processor is not configured. Choose mBoB, BNB, bank transfer, or cash on delivery.' },
+        { status: 503 }
+      );
+    }
+
     let initialPaymentStatus: 'PAID' | 'PENDING' = 'PENDING';
     let initialOrderStatus: 'PROCESSING' | 'PENDING_PAYMENT' = 'PENDING_PAYMENT';
     let internalNotes = '';
@@ -135,10 +144,6 @@ export async function POST(req: NextRequest) {
       initialPaymentStatus = 'PENDING';
       initialOrderStatus = 'PROCESSING';
       internalNotes = '[CASH ON DELIVERY] Payment to be collected in cash or via mBoB upon courier arrival.';
-    } else if (normalizedPaymentMethod === 'CARD') {
-      initialPaymentStatus = 'PAID';
-      initialOrderStatus = 'PROCESSING';
-      internalNotes = '[GATEWAY SANDBOX / TEST SIMULATION] Simulated 3D-Secure card authorization in Sandbox Mode.';
     } else if (normalizedPaymentMethod === 'MBOB') {
       initialPaymentStatus = 'PENDING';
       initialOrderStatus = 'PROCESSING';

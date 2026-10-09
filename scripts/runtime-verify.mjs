@@ -802,6 +802,7 @@ await runTest('Live DB Fix 3: Cancelling SHIPPED/DELIVERED order is blocked with
       status: 'PUBLISHED',
     },
   });
+  const cardGuardEmail = `card-guard-${testProduct.code.toLowerCase()}@example.invalid`;
 
   const shippedOrder = await prisma.order.create({
     data: {
@@ -1928,14 +1929,15 @@ await runTest('Phase 5: End-to-end Online Checkout (USD) with EMS shipping & ord
     },
   });
 
-  // 1. Submit checkout payload (subtotal $240 >= $200 free EMS shipping threshold)
+  // The secure card processor is not configured. Reject without creating an
+  // order or decrementing stock (the previous path merely simulated payment).
   const checkoutPayload = {
     items: [{ code: testProduct.code, name: testProduct.name, quantity: 2, priceUsd: 120.0 }],
     currency: 'USD',
     paymentMethod: 'CARD',
     shippingMethod: 'EMS',
     customerName: 'Dorji Tshering',
-    email: 'dorji.collector@example.bt',
+    email: cardGuardEmail,
     phone: '17112233',
     shippingAddress: {
       fullName: 'Dorji Tshering',
@@ -1957,26 +1959,16 @@ await runTest('Phase 5: End-to-end Online Checkout (USD) with EMS shipping & ord
     body: JSON.stringify(checkoutPayload),
   });
 
-  assert.equal(res.status, 200, 'Checkout must succeed with HTTP 200');
+  assert.equal(res.status, 503, 'Unconfigured card payment must be rejected');
   const data = await res.json();
-  assert.equal(data.success, true);
-  assert.ok(data.order.orderNumber.startsWith('HAB-S-'));
-  assert.equal(data.order.paymentMethod, 'CARD');
-  assert.equal(data.order.totalUSD, 240);
-  assert.equal(data.order.shippingFeeUSD, 0, 'Orders >= $200 receive free EMS shipping');
+  assert.equal(data.success, false);
+  assert.match(data.error, /secure card processor is not configured/i);
 
-  // 2. Verify stock atomically decremented from 10 to 8
+  // Failed card checkout must not reserve inventory.
   const productInDb = await prisma.product.findUnique({ where: { id: testProduct.id } });
-  assert.equal(productInDb.stock, 8, 'Product stock must be atomically decremented');
-
-  // 3. Verify order tracking lookup with matching customer email
-  const trackRes = await fetch(
-    `http://localhost:3000/api/orders/track?order=${encodeURIComponent(data.order.orderNumber)}&email=${encodeURIComponent('dorji.collector@example.bt')}`
-  );
-  assert.equal(trackRes.status, 200);
-  const trackData = await trackRes.json();
-  assert.equal(trackData.success, true);
-  assert.equal(trackData.order.orderStatus, 'PROCESSING');
+  assert.equal(productInDb.stock, 10, 'Rejected payment must not decrement inventory');
+  const createdOrder = await prisma.order.findFirst({ where: { customerEmail: cardGuardEmail } });
+  assert.equal(createdOrder, null, 'Rejected payment must not create an order');
 
   // Clean up
   await prisma.orderItem.deleteMany({ where: { orderId: data.order.id } });

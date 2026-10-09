@@ -10,7 +10,7 @@ function assert(condition, message) {
 async function post(path, body) {
   const response = await fetch(`${baseUrl}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-bypass-rate-limit': 'true' },
     body: JSON.stringify(body),
   });
   return { status: response.status, body: await response.json().catch(() => ({})) };
@@ -40,7 +40,15 @@ async function run() {
   const wholesaleMissingProof = await post('/api/wholesale/register', { businessName: 'Local test only', contactPerson: 'Local test only', email: 'gateway-test@example.invalid', paymentMethod: 'bank' });
   assert(wholesaleMissingProof.status === 400 && /reference and deposit proof/i.test(wholesaleMissingProof.body.error || ''), 'Wholesale bank submission without reference/proof should be rejected.');
 
-  console.log('PASS: membership/wholesale card requests are rejected without a configured application checkout; unpaid bank/mBoB requests without a reference and proof are rejected before any record is created.');
+  const cardOrder = await post('/api/orders', {
+    items: [{ code: 'UNCONFIGURED-CARD-GUARD', name: 'Guard test only', quantity: 1, priceUsd: 1 }],
+    currency: 'USD', paymentMethod: 'CARD', customerName: 'Guard test only',
+    email: 'unconfigured-card@example.invalid',
+    shippingAddress: { fullName: 'Guard test only', email: 'unconfigured-card@example.invalid', street: 'Local test only', city: 'Thimphu', country: 'Bhutan' },
+  });
+  assert(cardOrder.status === 503 && /secure card processor is not configured/i.test(cardOrder.body.error || ''), 'Card order must be rejected until a real server-side payment processor is configured.');
+
+  console.log('PASS: card checkout and membership/wholesale card applications are rejected without a configured payment processor; unpaid bank/mBoB submissions without proof are rejected before records are created.');
 }
 
 run().catch((error) => {

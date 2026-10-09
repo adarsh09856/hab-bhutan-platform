@@ -10,11 +10,9 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { 
   ShieldCheck, 
   Truck, 
-  CreditCard, 
   QrCode, 
   Building2, 
   Banknote,
-  Lock, 
   ArrowRight, 
   AlertCircle, 
   CheckCircle2, 
@@ -38,19 +36,12 @@ export default function CheckoutPage() {
   } = useCart();
   const { currency, fmt, alt } = useCurrency();
 
-  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD'>('CARD');
+  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD'>('MBOB');
   const [gatewayMethods, setGatewayMethods] = useState<any>(null);
   const [mbobRef, setMbobRef] = useState('');
   const [bnbRef, setBnbRef] = useState('');
   const [proofUrl, setProofUrl] = useState('');
   const [uploadingSlip, setUploadingSlip] = useState(false);
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    expiry: '',
-    cvc: '',
-    nameOnCard: '',
-  });
-
   const handleUploadSlip = async (file: File) => {
     setUploadingSlip(true);
     setError('');
@@ -433,19 +424,7 @@ export default function CheckoutPage() {
                 Payment Method
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('CARD')}
-                  className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
-                    paymentMethod === 'CARD'
-                      ? 'border-[#8B2E24] bg-[#8B2E24]/5 text-[#8B2E24] ring-1 ring-[#8B2E24]'
-                      : 'border-[#E4DDD1] text-[#6B5A4C] hover:border-slate-300'
-                  }`}
-                >
-                  <CreditCard className="w-5 h-5" />
-                  <span>Card Online</span>
-                </button>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
 
                 <button
                   type="button"
@@ -500,61 +479,10 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              {/* Payment Details Container */}
+              {/* Card is intentionally unavailable until a server-side payment processor is configured. */}
               {paymentMethod === 'CARD' && (
-                <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] space-y-3">
-                  {gatewayMethods?.card?.isSandbox !== false && (
-                    <div className="p-3 bg-amber-500/10 border border-amber-400/25 rounded-lg text-xs text-amber-900 space-y-1">
-                      <div className="font-semibold flex items-center gap-1.5 text-amber-800">
-                        <span>⚡</span> Gateway Sandbox / Test Mode
-                      </div>
-                      <p className="text-[11px] text-amber-700 leading-relaxed">
-                        This store is currently in Gateway Sandbox Mode. Card payments are authorized in test mode. In production, payments route directly through 3D-Secure Stripe.
-                      </p>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <Lock className="w-4 h-4 text-emerald-600" />
-                    <span>256-Bit SSL Encrypted Card Processing</span>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                      Card Number
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="4000 1234 5678 9010"
-                      value={cardDetails.number}
-                      onChange={(e) => setCardDetails({ ...cardDetails, number: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-lg border border-[#E4DDD1] bg-white text-sm focus:outline-hidden"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                        Expiry (MM/YY)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="08/28"
-                        value={cardDetails.expiry}
-                        onChange={(e) => setCardDetails({ ...cardDetails, expiry: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-lg border border-[#E4DDD1] bg-white text-sm focus:outline-hidden"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                        CVC / CVV
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        value={cardDetails.cvc}
-                        onChange={(e) => setCardDetails({ ...cardDetails, cvc: e.target.value })}
-                        className="w-full px-3.5 py-2 rounded-lg border border-[#E4DDD1] bg-white text-sm focus:outline-hidden"
-                      />
-                    </div>
-                  </div>
+                <div role="status" className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-900">
+                  Online card payment is not available yet. Choose mBoB, BNB, bank transfer, or cash on delivery. No card details are collected here.
                 </div>
               )}
 
