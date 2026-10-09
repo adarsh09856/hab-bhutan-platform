@@ -12,35 +12,6 @@ export const metadata: Metadata = {
   description: 'The sector by the numbers. Artisans, master craftspeople and craft enterprises across Bhutan.',
 };
 
-const memberCounts: Record<string, number> = {
-  shingzo: 412,
-  dozo: 305,
-  parzo: 486,
-  lhazo: 371,
-  jinzo: 168,
-  lugzo: 143,
-  garzo: 214,
-  troezo: 397,
-  tshazo: 892,
-  thagzo: 3140,
-  tshemzo: 648,
-  shagzo: 176,
-  dezo: 148,
-};
-
-const regionCounts = [
-  { name: 'Lhuentse', n: 940 },
-  { name: 'Zhemgang', n: 720 },
-  { name: 'Trashigang', n: 690 },
-  { name: 'Bumthang', n: 615 },
-  { name: 'Thimphu', n: 580 },
-  { name: 'Trashiyangtse', n: 520 },
-  { name: 'Mongar', n: 470 },
-  { name: 'Paro', n: 405 },
-  { name: 'Punakha', n: 360 },
-  { name: 'Other dzongkhags', n: 2200, aggregate: true },
-];
-
 async function getRecognisedMembers() {
   try {
     const dbHonours = await prisma.honourRecord.findMany({
@@ -70,9 +41,9 @@ function isPlaceholderPortrait(src: string) {
 export default async function MembersPage() {
   const recognised = await getRecognisedMembers();
 
-  // Dynamically query registered members to increment sector baseline census
-  const dynamicMemberCounts: Record<string, number> = { ...memberCounts };
-  const dynamicRegionCounts = regionCounts.map((r) => ({ ...r }));
+  const dynamicMemberCounts: Record<string, number> = Object.fromEntries(CLIENT_DATA.crafts.map((craft) => [craft.key, 0]));
+  const dynamicRegionCounts = new Map<string, number>();
+  let countsAvailable = true;
 
   try {
     const dbMembers = await prisma.member.findMany({
@@ -83,19 +54,9 @@ export default async function MembersPage() {
       if (m.craftKey && dynamicMemberCounts[m.craftKey] !== undefined) {
         dynamicMemberCounts[m.craftKey] += 1;
       }
-      if (m.dzongkhag) {
-        const match = dynamicRegionCounts.find(
-          (r) => r.name.toLowerCase() === m.dzongkhag.toLowerCase()
-        );
-        if (match) {
-          match.n += 1;
-        } else {
-          const other = dynamicRegionCounts.find((r) => r.aggregate);
-          if (other) other.n += 1;
-        }
-      }
+      if (m.dzongkhag) dynamicRegionCounts.set(m.dzongkhag, (dynamicRegionCounts.get(m.dzongkhag) || 0) + 1);
     });
-  } catch {}
+  } catch { countsAvailable = false; }
 
   const total = Object.values(dynamicMemberCounts).reduce((t, n) => t + n, 0);
 
@@ -103,8 +64,7 @@ export default async function MembersPage() {
     return (dynamicMemberCounts[b.key] || 0) - (dynamicMemberCounts[a.key] || 0);
   });
 
-  const regions = dynamicRegionCounts.filter((r) => !r.aggregate);
-  const aggregate = dynamicRegionCounts.find((r) => r.aggregate);
+  const regions = [...dynamicRegionCounts].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
   const maxRegion = Math.max(...regions.map((r) => r.n), 1);
 
   return (
@@ -120,10 +80,10 @@ export default async function MembersPage() {
             <p className="eyebrow eyebrow--accent">Membership</p>
             <h1 className="display display--page">The sector, by the numbers</h1>
             <p className="lede">
-              HAB represents artisans and craft enterprises in every dzongkhag of Bhutan. Rather than list every member, this page shows the shape of the sector — how many people work in each of the thirteen crafts, and where they are.
+              Explore verified HAB members by craft and dzongkhag. The figures below reflect member records currently held in the directory.
             </p>
             <p className="craft__count" id="memberTotal" style={{ margin: 0 }}>
-              {total.toLocaleString('en-US')} registered members
+              {countsAvailable ? `${total.toLocaleString('en-US')} verified members recorded` : 'Member counts are temporarily unavailable'}
             </p>
           </div>
           <div className="panel panel--accent">
@@ -151,7 +111,7 @@ export default async function MembersPage() {
             <p className="eyebrow eyebrow--accent">By craft category</p>
             <h2 className="display display--sub">Members in each of the thirteen crafts</h2>
             <p className="section__lede">
-              Weaving is by far the largest, and the five smallest are the crafts HAB&apos;s skills transmission work is aimed at.
+              These counts update when member records are verified by the secretariat.
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/#crafts">
@@ -162,7 +122,7 @@ export default async function MembersPage() {
         <div className="countgrid" id="countGrid" data-cms-repeat>
           {sortedCrafts.map((c) => {
             const n = dynamicMemberCounts[c.key] || 0;
-            const share = Math.round((n / total) * 100);
+            const share = total > 0 ? Math.round((n / total) * 100) : 0;
 
             return (
               <article key={c.key} className="countcard">
@@ -175,7 +135,7 @@ export default async function MembersPage() {
                   <div className="countcard__bar">
                     <div
                       className="countcard__fill"
-                      style={{ width: `${Math.max(share, 2)}%` }}
+                      style={{ width: `${share}%` }}
                     />
                   </div>
                   <span className="countcard__share">{share}% of members</span>
@@ -204,10 +164,11 @@ export default async function MembersPage() {
             <p className="eyebrow eyebrow--accent">By dzongkhag</p>
             <h2 className="display display--sub">Where the members are</h2>
             <p className="section__lede">
-              Craft is a rural livelihood: the largest concentrations are in the eastern and central dzongkhags, not in Thimphu.
+              Dzongkhag totals show the locations recorded for verified members.
             </p>
           </div>
           <div className="regionlist" id="regionList" data-cms-repeat>
+            {regions.length === 0 && <p>{countsAvailable ? 'No verified member locations have been recorded yet.' : 'Member locations are temporarily unavailable.'}</p>}
             {regions.map((r) => {
               const widthPct = Math.round((r.n / maxRegion) * 100);
               return (
@@ -220,13 +181,6 @@ export default async function MembersPage() {
                 </div>
               );
             })}
-            {aggregate && (
-              <div className="regionrow regionrow--total">
-                <span className="regionrow__name">{aggregate.name}</span>
-                <span className="regionrow__note">across the remaining eleven dzongkhags</span>
-                <span className="regionrow__n">{aggregate.n.toLocaleString('en-US')}</span>
-              </div>
-            )}
           </div>
         </div>
       </section>

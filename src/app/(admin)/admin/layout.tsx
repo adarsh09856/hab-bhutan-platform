@@ -618,9 +618,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
               </div>
               <button
-                onClick={() => {
-                  document.cookie = 'hab_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                  router.push('/admin/login');
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    if (!response.ok) throw new Error('Sign out failed. Please try again.');
+                    window.location.assign('/admin/login');
+                  } catch {
+                    window.alert('Sign out failed. Please try again.');
+                  }
                 }}
                 title="Sign out"
                 className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"

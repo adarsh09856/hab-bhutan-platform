@@ -44,6 +44,12 @@
 
 - Release follow-up: `16b9a5f` deployed through the guarded script; schema was already synced, production build and targeted restart/health recovery passed. Public health returned 200. A fresh read-only production audit fetched 76 public routes (all 200) and checked 38 rendered HTML/CSS same-origin image URLs (none broken). Client-only images, image quality, HTML-reference visual parity, approved translations, and signed-in browser CRUD remain **UNVERIFIED**. No production record or form was mutated by the audit.
 
+## Wholesale pricing, logout and member-count correction (9 Oct 2026)
+
+- A signed-in production Trade Desk inspection confirmed the user's screenshot: `SKU-TEST-44899` had no saved wholesale terms, yet its card displayed a fabricated 5-unit MOQ and 4–6-week lead time; the pricing drawer opened with no price-break input and its enable checkbox unchecked. Source fixes now show “Set terms”/“Not set”/“No wholesale prices saved yet” and “Not configured” until terms exist. An unsaved product now opens with one editable MOQ-aligned price break and enable checked, while saved disabled products retain their disabled state. No production product was edited by this inspection. Post-release browser/save verification remains **PENDING**.
+- Admin logout previously attempted to clear the HttpOnly `hab_session` cookie in client JavaScript, which cannot work. A dedicated server POST logout clears that cookie with the same path/security settings used at login; the sidebar waits for a successful response before navigating to login. Post-release browser verification remains **PENDING**.
+- The `/members` page previously added hardcoded sector/dzongkhag baseline counts to real verified Member records and labeled the result “registered members.” It now counts only verified Member records, handles database unavailability and zero counts honestly, and derives dzongkhag rows from saved member locations. Local PostgreSQL contained 15 verified members; built local `/members` rendered “15 verified members recorded” with HTTP 200, rather than the fabricated baseline. Typecheck passed. Production page parity and editorial review remain **PENDING**.
+
 ## 1. Executive Alignment & Core Mandate
 
 ### The Strict Development Rules

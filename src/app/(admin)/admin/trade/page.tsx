@@ -243,12 +243,15 @@ export default function AdminTradePage() {
     setEditingProduct(p);
     const t = p.terms || {};
     const tiers = Array.isArray(t.tiers) ? t.tiers : [];
+    const moq = Number(t.moq) > 0 ? Number(t.moq) : 5;
     setTermsForm({
-      moq: t.moq || 5,
+      moq,
       lead_time: t.lead_time || '',
-      tiers: tiers.map((tier: number[]) => ({ quantity: Number(tier[0]), price: Number(tier[1]) })),
+      tiers: tiers.length > 0
+        ? tiers.map((tier: number[]) => ({ quantity: Number(tier[0]), price: Number(tier[1]) }))
+        : [{ quantity: moq, price: 0 }],
       customisation: t.customisation || '',
-      is_active: t.is_active !== false,
+      is_active: p.hasSavedTerms ? t.is_active !== false : true,
     });
   };
 
@@ -576,8 +579,8 @@ export default function AdminTradePage() {
                         </div>
                         <h3 className="font-bold text-slate-900 mt-1 text-base leading-snug">{p.name}</h3>
                       </div>
-                      <GlassBadge variant={t.is_active !== false ? 'emerald' : 'secondary'}>
-                          {t.is_active !== false ? (p.hasSavedTerms ? 'Custom terms' : 'Default terms') : 'Disabled'}
+                      <GlassBadge variant={p.hasSavedTerms && t.is_active !== false ? 'emerald' : 'secondary'}>
+                          {p.hasSavedTerms ? (t.is_active !== false ? 'Custom terms' : 'Disabled') : 'Not configured'}
                       </GlassBadge>
                     </div>
 
@@ -589,12 +592,12 @@ export default function AdminTradePage() {
                       <div className="h-6 w-px bg-slate-200" />
                       <div>
                         <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-medium">B2B MOQ</span>
-                        <span className="text-slate-800 font-bold">{t.moq || 5} units</span>
+                        <span className="text-slate-800 font-bold">{p.hasSavedTerms ? `${t.moq} units` : 'Set terms'}</span>
                       </div>
                       <div className="h-6 w-px bg-slate-200" />
                       <div>
                         <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-medium">Lead Time</span>
-                        <span className="text-slate-700 font-semibold">{t.lead_time || '4–6 wks'}</span>
+                        <span className="text-slate-700 font-semibold">{t.lead_time || 'Not set'}</span>
                       </div>
                     </div>
 
@@ -614,6 +617,7 @@ export default function AdminTradePage() {
                           </div>
                         ))}
                       </div>
+                      {tiers.length === 0 && <p className="text-slate-500 text-xs">No wholesale prices saved yet.</p>}
                     </div>
                   </div>
 
