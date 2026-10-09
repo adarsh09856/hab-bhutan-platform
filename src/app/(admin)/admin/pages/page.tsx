@@ -580,7 +580,9 @@ export default function AdminPagesHub() {
         if (!refreshed) {
           showToast('error', 'Page saved, but the directory could not refresh. The saved page is shown here; retry the list refresh.');
         } else {
-          showToast('success', editingPageId ? `Page "${form.title}" updated and shown in Website Pages.` : `New page "${form.title}" created and shown in Website Pages.`);
+          setSearch('');
+          setSelectedCategory('Created pages');
+          showToast('success', editingPageId ? `Page "${form.title}" updated in Created pages.` : `New page "${form.title}" added to Created pages.`);
         }
       } else {
         showToast('error', data.error || 'Failed to save page');
@@ -627,12 +629,12 @@ export default function AdminPagesHub() {
     title: cp.title,
     slug: cp.slug,
     publicPath: `/pages/${cp.slug}`,
-    category: cp.category || 'Custom CMS',
+    category: cp.category || 'Created pages',
     subCategory: cp.subCategory || null,
     icon: FileText,
     sectionsCount: 'Custom Dynamic Page',
     summary: cp.excerpt || 'Custom created page managed directly via CMS editor.',
-    crudFeatures: ['Full Rich Text CRUD', 'Public View /pages/[slug]', 'Live Quick-Edit Badge', cp.showInHeaderNav ? 'Header Nav Linked' : 'Standalone Page'],
+    crudFeatures: ['Page content', 'Banner and gallery', cp.showInHeaderNav ? 'Shown in header menu' : 'Not in header menu', cp.showInFooterNav ? 'Shown in footer menu' : 'Not in footer menu'],
     isCustom: true,
     isPublished: cp.isPublished,
     bannerUrl: cp.bannerUrl,
@@ -697,9 +699,9 @@ export default function AdminPagesHub() {
 
   const categories = [
     'ALL',
-    'Custom CMS',
+    'Created pages',
     'Core Pages',
-    ...dynamicCustomCategories.filter((c) => !['Core Pages', 'Custom CMS'].includes(c)),
+    ...dynamicCustomCategories.filter((c) => !['Core Pages', 'Created pages'].includes(c)),
     'Impact & Programmes',
     'Field & Retail',
     'Artisans',
@@ -731,7 +733,7 @@ export default function AdminPagesHub() {
       p.crudFeatures.some((f) => f.toLowerCase().includes(search.toLowerCase()));
 
     if (selectedCategory === 'ALL') return matchesSearch;
-    if (selectedCategory === 'Custom CMS') return matchesSearch && p.isCustom;
+    if (selectedCategory === 'Created pages') return matchesSearch && p.isCustom;
     return matchesSearch && p.category === selectedCategory;
   });
 
@@ -756,17 +758,17 @@ export default function AdminPagesHub() {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded-md bg-amber-100 text-slate-900 font-mono font-bold text-[10px] uppercase tracking-wider">
-              Unified CMS Architecture
+              Manage your website
             </span>
             <span className="text-xs text-slate-500 font-medium">
-              {allPages.length} Pages Managed ({customPages.length} Custom · {CORE_WEBSITE_PAGES.length} Core Studios)
+              {allPages.length} pages · {customPages.length} created pages
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mt-1">
             Website Pages Directory
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Full end-to-end control of every page. Create new custom dynamic pages, manage sections, upload photos, format text, and perform full CRUD without developer assistance.
+            Find pages already on your site or create a new page. Open a page to edit its content, preview it, or manage its menu settings.
           </p>
         </div>
 
@@ -837,7 +839,7 @@ export default function AdminPagesHub() {
               }`}
             >
               {cat}
-              {cat === 'Custom CMS' && (
+              {cat === 'Created pages' && (
                 <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-amber-400/30 text-amber-800 font-mono text-[10px] font-bold">
                   {customPages.length}
                 </span>
@@ -862,7 +864,7 @@ export default function AdminPagesHub() {
             <option value="title-desc">Title: Z to A</option>
             <option value="category">Category</option>
             <option value="status">Live Pages First</option>
-            <option value="custom-first">Custom CMS Pages First</option>
+            <option value="custom-first">Created Pages First</option>
           </select>
           {customPagesOrder.length > 0 && (
             <button
@@ -927,7 +929,7 @@ export default function AdminPagesHub() {
                   <div className="flex items-center gap-1.5">
                     {page.isCustom ? (
                       <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-mono font-bold border border-amber-300">
-                        Custom CMS
+                        Created page
                       </span>
                     ) : (
                       <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-mono font-medium border border-slate-200">
@@ -997,19 +999,17 @@ export default function AdminPagesHub() {
                 </Link>
 
                 <div className="flex items-center gap-1.5">
-                  {/* Quick Edit button available on all pages */}
-                  <button
-                    type="button"
-                    onClick={() => openQuickEditModal(page)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition-colors shadow-xs"
-                    title="Instant Quick Edit (title, status, category, navigation)"
-                  >
-                    <Zap className="w-3 h-3" />
-                    <span>Quick Edit</span>
-                  </button>
-
                   {page.isCustom ? (
                     <>
+                      <button
+                        type="button"
+                        onClick={() => openQuickEditModal(page)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition-colors shadow-xs"
+                        title="Edit page details and menu visibility"
+                      >
+                        <Zap className="w-3 h-3" />
+                        <span>Page settings</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => openEditModal(customPages.find((c) => c.id === page.id))}
@@ -1017,13 +1017,14 @@ export default function AdminPagesHub() {
                         title="Edit custom page content and media"
                       >
                         <Edit3 className="w-3 h-3" />
-                        <span>Edit</span>
+                        <span>Edit content</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => confirmDeletePage(page.id, page.title)}
                         className="p-1.5 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 transition-colors"
                         title="Delete page"
+                        aria-label={`Delete ${page.title}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1034,7 +1035,7 @@ export default function AdminPagesHub() {
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-[#8B2E24] text-white text-xs font-semibold transition-colors shadow-xs"
                     >
                       <Edit3 className="w-3 h-3" />
-                      <span>Studio →</span>
+                      <span>Open page editor</span>
                     </Link>
                   )}
                 </div>
