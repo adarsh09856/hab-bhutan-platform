@@ -1119,3 +1119,9 @@ The larger project remains open. In particular, every reference page still needs
 - Product detail pages previously substituted four hardcoded products from unrelated crafts whenever the same-craft related-products API returned an empty list. Removed that fallback and its unused cross-craft photo map. The page now renders only the returned same-craft catalogue products, or a clear empty-state message, preventing misleading product/image associations.
 - `npm run typecheck`, `git diff --check`, and the optimized production build passed. The build reports existing unrelated lint warnings. Database-populated browser rendering and production deployment are not covered by this change.
 
+# Secretariat directory visibility follow-up — 9 Oct 2026
+
+- The public Secretariat directory previously discarded every saved staff-role record whose person name was not confirmed, so the page appeared empty even when roles existed in Admin. It now displays the saved role and a neutral “Name to be confirmed” label without inventing a person or portrait.
+- Extended the local governance display regression to cover unconfirmed Secretariat roles as well as trustee roles, including fixture cleanup.
+- `npm run typecheck` and `git diff --check` passed. Database-backed regression execution and the final build/release for this addition are not included in that check.
+

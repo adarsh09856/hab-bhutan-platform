@@ -9,10 +9,15 @@ assert(['localhost', '127.0.0.1'].includes(new URL(process.env.DATABASE_URL).hos
 const prisma = new PrismaClient();
 let fixture;
 let unnamedFixture;
+let unnamedSecretariatFixture;
 try {
   unnamedFixture = await prisma.governanceRecord.create({ data: {
     category: 'BOARD_OF_TRUSTEES', roleTitle: `Unconfirmed role ${Date.now()}`,
     individualName: 'Name to confirm', chapterOrNote: 'Role awaiting confirmation', sortOrder: 9998,
+  }});
+  unnamedSecretariatFixture = await prisma.governanceRecord.create({ data: {
+    category: 'SECRETARIAT', roleTitle: `Unconfirmed staff role ${Date.now()}`,
+    individualName: 'Name to confirm', chapterOrNote: 'Staff role awaiting confirmation', sortOrder: 9997,
   }});
   fixture = await prisma.governanceRecord.create({ data: {
     category: 'BOARD_OF_TRUSTEES', roleTitle: 'Local display verification',
@@ -30,6 +35,9 @@ try {
   const html = await (await fetch(`${base}/board-of-trustees`)).text();
   assert(html.includes(fixture.individualName) && html.includes(fixture.bio), 'Saved board member must render publicly.');
   assert(html.includes(unnamedFixture.roleTitle) && html.includes('Name to be confirmed'), 'Unnamed saved trustee roles must remain visible.');
+  const secretariatHtml = await (await fetch(`${base}/secretariat`)).text();
+  assert(secretariatHtml.includes(unnamedSecretariatFixture.roleTitle), 'Unnamed saved Secretariat roles must remain visible.');
+  assert(secretariatHtml.includes('Name to be confirmed'), 'Unconfirmed Secretariat staff must not be assigned invented names.');
   const members = await prisma.member.findMany({ where: { status: 'VERIFIED' }, select: { name: true, regNumber: true } });
   const memberHtml = await (await fetch(`${base}/members`)).text();
   for (const member of members) {
@@ -37,9 +45,11 @@ try {
     assert(memberHtml.includes(encodeURIComponent(member.regNumber)), 'Member profile link must use registered number.');
   }
   console.log(`PASS: unnamed trustee roles and ${members.length} verified registry members render publicly.`);
+  console.log('PASS: unnamed saved Secretariat roles render without inventing staff names.');
   console.log('PASS: saved board name, portrait, biography and clean note reach public API/page.');
 } finally {
   if (fixture) await prisma.governanceRecord.delete({ where: { id: fixture.id } });
   if (unnamedFixture) await prisma.governanceRecord.delete({ where: { id: unnamedFixture.id } });
+  if (unnamedSecretariatFixture) await prisma.governanceRecord.delete({ where: { id: unnamedSecretariatFixture.id } });
   await prisma.$disconnect();
 }

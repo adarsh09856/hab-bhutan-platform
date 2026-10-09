@@ -19,14 +19,14 @@ async function getSecretariatData() {
       where: { category: 'SECRETARIAT' },
       orderBy: { sortOrder: 'asc' },
     });
-    return records
-      .filter((record) => isConfirmedPublicPersonName(record.individualName))
-      .map((r, i) => {
+    return records.map((r) => {
+        const confirmed = isConfirmedPublicPersonName(r.individualName);
         const [cleanNote, photo] = (r.chapterOrNote || '').includes('||photo:')
           ? (r.chapterOrNote || '').split('||photo:')
           : [r.chapterOrNote || '', ''];
         return {
-          name: r.individualName,
+          name: confirmed ? r.individualName : 'Name to be confirmed',
+          confirmed,
           role: r.roleTitle,
           note: cleanNote.trim(),
           photo: r.photoUrl || photo.trim() || '',
@@ -106,8 +106,12 @@ export default async function SecretariatPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
                       {(staff as any).photo ? <img src={(staff as any).photo} alt={staff.name} className="w-full h-full object-cover" /> : (
-                        <span className="w-full h-full flex items-center justify-center text-sm font-semibold text-stone-500" role="img" aria-label="Portrait not supplied">
-                          {staff.name.split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase()}
+                        <span
+                          className="w-full h-full flex items-center justify-center text-sm font-semibold text-stone-500"
+                          role="img"
+                          aria-label={staff.confirmed ? 'Portrait not supplied' : 'Staff name to be confirmed'}
+                        >
+                          {staff.confirmed ? staff.name.split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </span>
                       )}
                     </div>
