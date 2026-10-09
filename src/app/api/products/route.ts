@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { SAMPLE_PRODUCTS } from '@/lib/data';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
+import { PUBLIC_PRODUCT_CARD_MAKER_SELECT } from '@/lib/public-product-maker';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,13 +53,7 @@ export async function GET(req: NextRequest) {
       include: {
         craft: true,
         maker: {
-          select: {
-            id: true,
-            name: true,
-            dzongkhag: true,
-            regNumber: true,
-            tier: true,
-          },
+          select: PUBLIC_PRODUCT_CARD_MAKER_SELECT,
         },
       },
       orderBy,
@@ -125,7 +120,7 @@ export async function GET(req: NextRequest) {
       description: (sp as any).material || (sp as any).desc || 'Authentic Bhutanese handcrafted object.',
       images: [{ url: `/images/products/${sp.code.toLowerCase()}.jpg`, role: 'primary' }],
       craft: { key: sp.craftKey, name: sp.craftKey, english: sp.craftKey },
-      maker: { name: sp.maker, dzongkhag: sp.region, regNumber: 'HAB-M-01', tier: 'ACTIVE_SECTOR_MEMBER' },
+      maker: { name: sp.maker, dzongkhag: sp.region },
     }));
 
     if (craft && craft !== 'all') {

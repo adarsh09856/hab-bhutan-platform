@@ -42,7 +42,8 @@ export default function ProductDetailPage() {
             priceUSD: p.priceUSD || p.price || 0,
             craftKey: p.craftKey || 'thagzo',
             craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
-            maker: typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Verified Member'),
+            maker: typeof p.maker === 'object' ? (p.maker?.name || '') : (p.maker || ''),
+            maker_avatar: typeof p.maker === 'object' ? (p.maker?.portraitUrl || '') : '',
             region: p.region || p.dzongkhag || 'Bhutan',
             description: p.description || p.desc || 'Handcrafted by registered members of the Handicrafts Association of Bhutan using traditional techniques and locally sourced materials.',
             size: p.size || '',
@@ -53,8 +54,8 @@ export default function ProductDetailPage() {
             image_path: p.image_path || p.imageUrl || `/assets/photos/product-${p.code.toLowerCase()}.jpg`,
             gallery: p.gallery,
             images: p.images,
-            maker_blurb: p.maker?.bio || 'Registered artisan practicing traditional craft heritage under the Handicrafts Association of Bhutan.',
-            maker_since: p.maker?.memberSince || '2015',
+            maker_blurb: p.maker?.bio || '',
+            maker_since: p.maker?.joinYear ? String(p.maker.joinYear) : '',
           });
 
           const foundCraft = CRAFTS.find((c) => c.key === p.craftKey);
@@ -328,23 +329,20 @@ export default function ProductDetailPage() {
             )}
 
             {/* Maker Accreditation Card */}
-            <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
+            {product.maker && <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
               <span className="makerpanel__avatar" style={{ overflow: 'hidden' }}>
-                <img
-                  src="/assets/photos/hero-1-weaving.jpg"
-                  alt={product.maker}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
-                />
+                {product.maker_avatar
+                  ? <img src={product.maker_avatar} alt={product.maker} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : product.maker.slice(0, 1)}
               </span>
               <span className="makerpanel__body">
                 <span className="eyebrow eyebrow--muted eyebrow--sm">Made by</span>
                 <span className="makerpanel__name" id="prodMaker">{product.maker}</span>
-                <span className="makerpanel__meta" id="prodMakerMeta">{product.region} · Member since {product.maker_since}</span>
-                <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>
+                {(product.region || product.maker_since) && <span className="makerpanel__meta" id="prodMakerMeta">{[product.region, product.maker_since && `Member since ${product.maker_since}`].filter(Boolean).join(' · ')}</span>}
+                {product.maker_blurb && <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>}
               </span>
               <span className="makerpanel__go" id="prodMakerLink">✓</span>
-            </div>
+            </div>}
 
           </div>
         </div>

@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { PUBLIC_MEMBER_PROFILE_SELECT, toPublicMemberProfile } from '@/lib/public-member-profile';
 
 export const dynamic = 'force-dynamic';
-
-function publicProfile<T extends { phone: string | null; email: string | null }>(member: T) {
-  const { phone, email, ...profile } = member;
-  return profile;
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,22 +23,7 @@ export async function GET(req: NextRequest) {
             { regNumber: { equals: decodedSlug, mode: 'insensitive' } },
           ],
         },
-        include: {
-          craft: true,
-          products: {
-            where: { status: 'PUBLISHED' },
-            select: {
-              id: true,
-              code: true,
-              name: true,
-              priceUSD: true,
-              images: true,
-              stock: true,
-              craftKey: true,
-              region: true,
-            },
-          },
-        },
+        select: PUBLIC_MEMBER_PROFILE_SELECT,
       });
 
       if (!member) {
@@ -54,7 +35,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        member: publicProfile(member),
+        member: toPublicMemberProfile(member),
       });
     }
 
@@ -82,20 +63,14 @@ export async function GET(req: NextRequest) {
 
     const members = await prisma.member.findMany({
       where: whereClause,
-      include: {
-        craft: true,
-        products: {
-          where: { status: 'PUBLISHED' },
-          select: { id: true, code: true, name: true, priceUSD: true },
-        },
-      },
+      select: PUBLIC_MEMBER_PROFILE_SELECT,
       orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({
       success: true,
       count: members.length,
-      members: members.map(publicProfile),
+      members: members.map(toPublicMemberProfile),
     });
   } catch (err: any) {
     console.error('Error fetching public members:', err);

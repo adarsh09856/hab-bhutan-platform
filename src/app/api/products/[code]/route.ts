@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { SAMPLE_PRODUCTS, SAMPLE_MEMBERS, CRAFTS } from '@/lib/data';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import { isPublicCatalogProduct } from '@/lib/public-catalog-visibility';
+import { PUBLIC_PRODUCT_MAKER_SELECT, toPublicProductMaker } from '@/lib/public-product-maker';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,9 +22,7 @@ export async function GET(
       include: {
         craft: true,
         maker: {
-          include: {
-            craft: true,
-          },
+          select: PUBLIC_PRODUCT_MAKER_SELECT,
         },
       },
     });
@@ -52,6 +51,7 @@ export async function GET(
         success: true,
         product: {
           ...product,
+          maker: toPublicProductMaker(product.maker),
           image_path: img,
           imageUrl: img,
           images: normalizedImages.images,
