@@ -29,10 +29,10 @@ async function getSecretariatData() {
           confirmed,
           role: r.roleTitle,
           note: cleanNote.trim(),
-          photo: r.photoUrl || photo.trim() || '',
-          phone: r.phone || '',
-          email: r.email || '',
-          bio: r.bio || '',
+          photo: confirmed ? r.photoUrl || photo.trim() || '' : '',
+          phone: confirmed ? r.phone || '' : '',
+          email: confirmed ? r.email || '' : '',
+          bio: confirmed ? r.bio || '' : '',
         };
       });
   } catch {

@@ -18,6 +18,8 @@ try {
   unnamedSecretariatFixture = await prisma.governanceRecord.create({ data: {
     category: 'SECRETARIAT', roleTitle: `Unconfirmed staff role ${Date.now()}`,
     individualName: 'Name to confirm', chapterOrNote: 'Staff role awaiting confirmation', sortOrder: 9997,
+    phone: '+975-17654321', email: 'private.secretariat.fixture@example.test',
+    photoUrl: '/uploads/private-secretariat-fixture.jpg', bio: 'SECRETARIAT_PRIVATE_BIO_FIXTURE',
   }});
   fixture = await prisma.governanceRecord.create({ data: {
     category: 'BOARD_OF_TRUSTEES', roleTitle: 'Local display verification',
@@ -38,6 +40,9 @@ try {
   const secretariatHtml = await (await fetch(`${base}/secretariat`)).text();
   assert(secretariatHtml.includes(unnamedSecretariatFixture.roleTitle), 'Unnamed saved Secretariat roles must remain visible.');
   assert(secretariatHtml.includes('Name to be confirmed'), 'Unconfirmed Secretariat staff must not be assigned invented names.');
+  for (const privateValue of [unnamedSecretariatFixture.phone, unnamedSecretariatFixture.email, unnamedSecretariatFixture.photoUrl, unnamedSecretariatFixture.bio]) {
+    assert(!secretariatHtml.includes(privateValue), 'Unconfirmed Secretariat staff contact details, photos and bios must not render publicly.');
+  }
   const members = await prisma.member.findMany({ where: { status: 'VERIFIED' }, select: { name: true, regNumber: true } });
   const memberHtml = await (await fetch(`${base}/members`)).text();
   for (const member of members) {
@@ -45,7 +50,7 @@ try {
     assert(memberHtml.includes(encodeURIComponent(member.regNumber)), 'Member profile link must use registered number.');
   }
   console.log(`PASS: unnamed trustee roles and ${members.length} verified registry members render publicly.`);
-  console.log('PASS: unnamed saved Secretariat roles render without inventing staff names.');
+  console.log('PASS: unnamed saved Secretariat roles render without names or private staff details.');
   console.log('PASS: saved board name, portrait, biography and clean note reach public API/page.');
 } finally {
   if (fixture) await prisma.governanceRecord.delete({ where: { id: fixture.id } });
