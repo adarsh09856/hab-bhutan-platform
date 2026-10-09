@@ -117,9 +117,9 @@ export default function UniversalPageQuickEdit() {
       } else {
         const localizedText = language === 'dz' ? value.textDz : value.text;
         if (localizedText !== undefined && joinEditableText(editableTextNodes(element)) !== localizedText) setVisibleText(element, localizedText);
-        const anchor = element instanceof HTMLAnchorElement ? element : element.closest('a');
-        if (anchor && value.href !== undefined && anchor.getAttribute('href') !== value.href) anchor.setAttribute('href', value.href);
       }
+      const anchor = element instanceof HTMLAnchorElement ? element : element.closest('a');
+      if (anchor && value.href !== undefined && anchor.getAttribute('href') !== value.href) anchor.setAttribute('href', value.href);
     }
   }, [language]);
 
@@ -177,7 +177,7 @@ export default function UniversalPageQuickEdit() {
       setMessage('');
       const saved = overridesRef.current[elementKey(target, shell)];
       setDraft(target instanceof HTMLImageElement
-        ? { ...(saved || {}), src: saved?.src || target.currentSrc || target.src, alt: saved?.alt ?? target.alt }
+        ? { ...(saved || {}), src: saved?.src || target.currentSrc || target.src, alt: saved?.alt ?? target.alt, href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) }
         : target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
           ? { ...(saved || {}), placeholder: saved?.placeholder ?? target.placeholder }
           : { ...(saved || {}), text: saved?.text ?? joinEditableText(editableTextNodes(target)), href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) });
@@ -264,6 +264,7 @@ export default function UniversalPageQuickEdit() {
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.src || ''} onChange={(e) => setDraft({ ...draft, src: e.target.value })} />
         <label className="block text-xs font-semibold mb-1">Alternative text</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
+        {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
       </> : field ? <>
