@@ -16,8 +16,8 @@ export const DEFAULT_PAYMENT_CONFIG = {
   mbob: {
     enabled: true,
     accountTitle: 'Handicrafts Association of Bhutan',
-    accountNumber: '200847291 - Bank of Bhutan',
-    phone: '+975 17462636',
+    accountNumber: '',
+    phone: '',
     qrImageUrl: '',
     requireJournalRef: true,
     instructions: 'Transfer via mBoB / B-Wallet or scan QR. Enter your Bank Journal / Reference Number during checkout.',
@@ -26,9 +26,24 @@ export const DEFAULT_PAYMENT_CONFIG = {
     enabled: true,
     bankName: 'Bank of Bhutan Ltd',
     accountTitle: 'Handicrafts Association of Bhutan',
-    accountNumber: '1009234810293',
-    swiftCode: 'BOBBBT22',
-    branch: 'Corporate Branch, Norzin Lam, Thimphu, Bhutan',
-    instructions: 'Transfer order amount in USD or BTN to our official CSO account. Reference your order number on the wire advice.',
+    accountNumber: '',
+    swiftCode: '',
+    branch: '',
+    instructions: 'Transfer the order total to the account shown, then submit your bank reference and deposit slip for HAB to verify.',
   },
 };
+
+export function resolveBankTransferConfig(setting: any) {
+  const saved = setting?.paymentGateways?.bank || {};
+  const bank = {
+    ...DEFAULT_PAYMENT_CONFIG.bank,
+    ...saved,
+    bankName: setting?.checkoutBankName || saved.bankName || '',
+    accountTitle: setting?.checkoutAccountTitle || saved.accountTitle || '',
+    accountNumber: setting?.checkoutAccountNumber || saved.accountNumber || '',
+    swiftCode: setting?.checkoutSwiftCode || saved.swiftCode || '',
+    branch: setting?.checkoutBankAddress || saved.branch || '',
+  };
+  bank.enabled = saved.enabled !== false && [bank.bankName, bank.accountTitle, bank.accountNumber].every(value => typeof value === 'string' && value.trim().length > 0);
+  return bank;
+}

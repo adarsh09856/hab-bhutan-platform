@@ -4,7 +4,8 @@ import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { calculateShipping } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
-import { sendOrderShippedEmail } from '@/lib/email-service';
+import { sendOrderShippedEmail, sendOrderConfirmationEmail } from '@/lib/email-service';
+import { notifyOrderUpdate } from '@/lib/transaction-notifications';
 
 import { getFallbackOrders, saveFallbackOrder } from '@/lib/order-store';
 
@@ -338,6 +339,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!isWalkIn && result.customerEmail) {
+      await sendOrderConfirmationEmail({ order: result, customerEmail: result.customerEmail, customerName: result.customerName, siteUrl: req.nextUrl.origin });
+    }
     return NextResponse.json({
       success: true,
       order: result,
@@ -498,6 +502,8 @@ export async function PATCH(req: NextRequest) {
       const updateData: any = {};
       if (orderStatus) updateData.orderStatus = orderStatus;
       if (paymentStatus) updateData.paymentStatus = paymentStatus;
+      if (orderStatus === 'PAID') updateData.paymentStatus = 'PAID';
+      if (paymentStatus === 'PAID' && !orderStatus && previous.orderStatus === 'PENDING_PAYMENT') updateData.orderStatus = 'PAID';
       if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
       if (customerName !== undefined) updateData.customerName = customerName;
       if (customerEmail !== undefined) updateData.customerEmail = customerEmail;
@@ -534,20 +540,21 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    if (updated.orderStatus === 'SHIPPED' && updated.customerEmail) {
-      sendOrderShippedEmail({
+    let emailDelivery = await notifyOrderUpdate(previous, updated);
+    if (updated.orderStatus === 'SHIPPED' && (previous.orderStatus !== 'SHIPPED' || previous.trackingNumber !== updated.trackingNumber) && updated.customerEmail) {
+      emailDelivery = await sendOrderShippedEmail({
         order: updated,
         trackingNumber: updated.trackingNumber || 'Pending Dispatch Barcode',
         customerEmail: updated.customerEmail,
         customerName: updated.customerName,
-      }).catch((err) => {
-        console.warn('[admin/orders] Failed to send order shipped notification:', err.message);
+        siteUrl: req.nextUrl.origin,
       });
     }
 
     return NextResponse.json({
       success: true,
       order: updated,
+      emailDelivery,
       ...(refundNote ? { note: refundNote } : {}),
     });
   } catch (err: any) {

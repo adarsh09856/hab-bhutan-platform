@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stat } from 'fs/promises';
 import path from 'path';
 import prisma from '@/lib/prisma';
+import { notifySubmission } from '@/lib/transaction-notifications';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
 
@@ -124,8 +125,10 @@ export async function POST(req: NextRequest) {
       // Non-blocking
     }
 
+    const emailDelivery = await notifySubmission({ kind: 'donation', email: donation.donorEmail, name: donation.donorName, id: donation.id, reference: donation.receiptNumber, siteUrl: req.nextUrl.origin });
     return NextResponse.json({
       success: true,
+      emailDelivery,
       donation: {
         id: donation.id,
         receiptNumber: donation.receiptNumber,

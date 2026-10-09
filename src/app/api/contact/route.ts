@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { notifySubmission } from '@/lib/transaction-notifications';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
 
@@ -56,8 +57,10 @@ export async function POST(req: NextRequest) {
       details: { subject: inquiry.subject },
     });
 
+    const emailDelivery = await notifySubmission({ kind: 'contact', email: inquiry.email, name: inquiry.name, id: inquiry.id, reference: inquiry.id, siteUrl: req.nextUrl.origin });
     return NextResponse.json({
       success: true,
+      emailDelivery,
       message: 'Your inquiry has been submitted successfully to the HAB Secretariat.',
       inquiryId: inquiry.id,
     });

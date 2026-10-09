@@ -1195,10 +1195,10 @@ function AdminSettingsContent() {
                 <div>
                   <h3 className="font-bold admin-title text-sm flex items-center gap-2">
                     <Mail className="w-4 h-4 text-emerald-600" />
-                    Outbound SMTP Server Configuration (Production / Simulated Relay)
+                    Outgoing email server
                   </h3>
                   <p className="text-xs admin-muted mt-0.5">
-                    Configure your live mail transport (e.g. Gmail SMTP, SendGrid, Amazon SES, or custom Bhutanese mail server). Fallback to zero-crash simulation mode if unconfigured.
+                    Configure the mail server for customer confirmations and staff notifications. Emails are not sent until a working server is configured. Send a test and check the recipient inbox before relying on delivery.
                   </p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">

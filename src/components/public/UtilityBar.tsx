@@ -195,19 +195,12 @@ export default function UtilityBar() {
             alignItems: 'center',
           }}
         >
-          <span
-            className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-white/15 text-[#e6ca65] flex-shrink-0 uppercase select-none"
-            style={{ letterSpacing: '0.06em' }}
-          >
-            {isDz ? 'གསལ་བསྒྲགས' : 'Notice'}
-          </span>
-
           {tickerMessages.length > 1 && (
             <div className="flex items-center gap-0.5 mr-1 text-[11px] text-white/60 select-none flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setCurrentTickerIdx((prev) => (prev === 0 ? tickerMessages.length - 1 : prev - 1))}
-                aria-label="Previous announcement"
+                aria-label={isDz ? 'ཧེ་མའི་གསལ་བསྒྲགས' : 'Previous announcement'}
                 className="hover:text-white transition-colors cursor-pointer px-1 py-0.5"
               >
                 ‹
@@ -215,7 +208,7 @@ export default function UtilityBar() {
               <button
                 type="button"
                 onClick={() => setCurrentTickerIdx((prev) => (prev + 1) % tickerMessages.length)}
-                aria-label="Next announcement"
+                aria-label={isDz ? 'ཤུལ་མའི་གསལ་བསྒྲགས' : 'Next announcement'}
                 className="hover:text-white transition-colors cursor-pointer px-1 py-0.5"
               >
                 ›

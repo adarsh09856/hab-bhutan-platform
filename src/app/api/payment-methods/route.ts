@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { DEFAULT_PAYMENT_CONFIG } from '@/lib/payments';
+import { DEFAULT_PAYMENT_CONFIG, resolveBankTransferConfig } from '@/lib/payments';
 import { CARD_CHECKOUT_AVAILABLE } from '@/lib/payment-display';
 
 export const dynamic = 'force-dynamic';
@@ -24,15 +24,7 @@ export async function GET() {
     const card = { ...DEFAULT_PAYMENT_CONFIG.card, ...(gateways.card || {}) };
     const cod = { ...DEFAULT_PAYMENT_CONFIG.cod, ...(gateways.cod || {}) };
     const mbob = { ...DEFAULT_PAYMENT_CONFIG.mbob, ...(gateways.mbob || {}) };
-    const bank = {
-      ...DEFAULT_PAYMENT_CONFIG.bank,
-      bankName: setting?.checkoutBankName || gateways.bank?.bankName || DEFAULT_PAYMENT_CONFIG.bank.bankName,
-      accountTitle: setting?.checkoutAccountTitle || gateways.bank?.accountTitle || DEFAULT_PAYMENT_CONFIG.bank.accountTitle,
-      accountNumber: setting?.checkoutAccountNumber || gateways.bank?.accountNumber || DEFAULT_PAYMENT_CONFIG.bank.accountNumber,
-      swiftCode: setting?.checkoutSwiftCode || gateways.bank?.swiftCode || DEFAULT_PAYMENT_CONFIG.bank.swiftCode,
-      branch: setting?.checkoutBankAddress || gateways.bank?.branch || DEFAULT_PAYMENT_CONFIG.bank.branch,
-      ...(gateways.bank || {}),
-    };
+    const bank = resolveBankTransferConfig(setting);
 
     return NextResponse.json({
       success: true,
@@ -51,9 +43,9 @@ export async function GET() {
           instructions: cod.instructions,
         },
         mbob: {
-          enabled: mbob.enabled,
+          enabled: mbob.enabled && Boolean(mbob.accountNumber || gateways.bob?.accountNumber || setting?.checkoutAccountNumber),
           accountTitle: mbob.accountTitle,
-          accountNumber: mbob.accountNumber,
+          accountNumber: mbob.accountNumber || gateways.bob?.accountNumber || setting?.checkoutAccountNumber || '',
           phone: mbob.phone,
           qrImageUrl: mbob.qrImageUrl || '',
           requireJournalRef: mbob.requireJournalRef,

@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { SAMPLE_PRODUCTS } from '@/lib/data';
 import { calculateShipping, ShippingOption } from '@/lib/shipping';
 
 export interface CartItem {
@@ -24,6 +23,7 @@ interface ToastState {
 
 interface CartContextType {
   cart: Record<string, number>;
+  catalogueLoaded: boolean;
   items: CartItem[];
   cartCount: number;
   subtotalUSD: number;
@@ -42,10 +42,9 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<Record<string, number>>({
-    HHB01: 1,
-    DAP02: 1,
-  });
+  const [cart, setCart] = useState<Record<string, number>>({});
+  const [catalogue, setCatalogue] = useState<Record<string, { code: string; name: string; priceUSD: number; craftKey: string; region: string; maker?: { name?: string }; imageUrl?: string; stock: number }>>({});
+  const [catalogueLoaded, setCatalogueLoaded] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<'ems' | 'express'>('ems');
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -60,6 +59,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Ignore
     }
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/products?shuffle=false', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('Catalogue unavailable')))
+      .then(data => {
+        if (!data.success || data.fallback) throw new Error('Saved catalogue unavailable');
+        const byCode: typeof catalogue = {};
+        for (const product of data.products || []) {
+          if (product.status === 'PUBLISHED') byCode[product.code] = product;
+        }
+        setCatalogue(byCode);
+        setCatalogueLoaded(true);
+      })
+      .catch(() => setCatalogueLoaded(false));
   }, []);
 
   const saveCart = (newCart: Record<string, number>) => {
@@ -101,8 +115,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     saveCart(next);
 
     if (!silent) {
-      const product = SAMPLE_PRODUCTS.find((p) => p.code.toUpperCase() === code.toUpperCase());
-      const productName = product ? product.name : code;
+      const productName = catalogue[code]?.name || code;
       const msg = qty > 1
         ? `${qty}× “${productName}” added to basket.`
         : `“${productName}” added to basket.`;
@@ -134,29 +147,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Compute items
   const items: CartItem[] = Object.keys(cart)
-    .filter((code) => cart[code] > 0)
+    .filter((code) => cart[code] > 0 && catalogue[code])
     .map((code) => {
       const cleanCode = code.trim();
-      const product = SAMPLE_PRODUCTS.find((p) => p.code.toUpperCase() === cleanCode.toUpperCase()) || {
-        code: cleanCode,
-        name: 'Handcrafted Piece',
-        craftKey: 'thagzo',
-        region: 'Bhutan',
-        maker: 'Registered Member',
-        price: 50,
-      };
+      const product = catalogue[cleanCode];
       const qty = cart[code];
-      const imageUrl = `/images/products/${cleanCode.toLowerCase()}.jpg`;
+      const imageUrl = product.imageUrl || `/images/products/${cleanCode.toLowerCase()}.jpg`;
       return {
         code: cleanCode,
         name: product.name,
         craftKey: product.craftKey,
         region: product.region,
-        maker: product.maker,
-        priceUSD: product.price,
+        maker: product.maker?.name || '',
+        priceUSD: product.priceUSD,
         imageUrl,
         quantity: qty,
-        lineTotalUSD: product.price * qty,
+        lineTotalUSD: product.priceUSD * qty,
       };
     });
 
@@ -172,6 +178,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider
       value={{
         cart,
+        catalogueLoaded,
         items,
         cartCount,
         subtotalUSD,

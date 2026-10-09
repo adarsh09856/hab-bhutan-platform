@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { notifySubmission } from '@/lib/transaction-notifications';
 import prisma from '@/lib/prisma';
 import { getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
@@ -185,8 +186,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const emailDelivery = await notifySubmission({ kind: 'membership', email, name: applicantName, id: appId, reference, siteUrl: req.nextUrl.origin });
     return NextResponse.json({
       success: true,
+      emailDelivery,
       reference,
       applicationId: dbApp ? dbApp.id : appId,
       message: 'Application received and registered successfully.',

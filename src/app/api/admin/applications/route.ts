@@ -248,7 +248,8 @@ export async function PATCH(req: NextRequest) {
     if (!application && fallbackApp && status === 'UNDER_REVIEW') {
       const updatedFallback = updateFallbackApplicationStatus(id, status, reviewerNotes, rejectionReason);
       await logAudit({ actorType: 'STAFF', actorId: session.id, actorIdentifier: session.email, actorIp: ip, action: 'MEMBERSHIP_APPLICATION_REVIEWED', entityType: 'MembershipApplication', entityId: id, details: { status, storage: 'fallback' } });
-      return NextResponse.json({ success: true, application: updatedFallback });
+      const emailDelivery = fallbackApp.status !== status && updatedFallback ? await sendMembershipStatusEmail({ application: updatedFallback, status: 'UNDER_REVIEW' }) : null;
+      return NextResponse.json({ success: true, application: updatedFallback, emailDelivery });
     }
 
     // Promote fallback submissions before final decisions so approvals still
@@ -462,10 +463,10 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    if (status === 'REJECTED') {
+    if (['REJECTED', 'UNDER_REVIEW'].includes(status) && application.status !== status) {
       const emailResult = await sendMembershipStatusEmail({
         application: updatedApp,
-        status: 'REJECTED',
+        status,
         rejectionReason: rejectionReason || 'Documentation could not be verified at this time.',
       });
       return NextResponse.json({ success: true, application: updatedApp, emailDelivery: emailResult });

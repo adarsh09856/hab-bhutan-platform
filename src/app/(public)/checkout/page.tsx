@@ -20,11 +20,17 @@ import {
   Info
 } from 'lucide-react';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { useLanguage } from '@/context/LanguageContext';
+import { checkoutCopy } from '@/lib/checkout-copy';
 
 export default function CheckoutPage() {
+  const { language } = useLanguage();
+  const tr = (text: string) => checkoutCopy(text, language);
   const router = useRouter();
   const { 
     items, 
+    cart,
+    catalogueLoaded,
     cartCount, 
     subtotalUSD, 
     shippingMethod, 
@@ -40,6 +46,7 @@ export default function CheckoutPage() {
   const [gatewayMethods, setGatewayMethods] = useState<any>(null);
   const [mbobRef, setMbobRef] = useState('');
   const [bnbRef, setBnbRef] = useState('');
+  const [bankRef, setBankRef] = useState('');
   const [proofUrl, setProofUrl] = useState('');
   const [uploadingSlip, setUploadingSlip] = useState(false);
   const handleUploadSlip = async (file: File) => {
@@ -86,6 +93,17 @@ export default function CheckoutPage() {
     postalCode: '',
   });
 
+  useEffect(() => {
+    try {
+      const draft = sessionStorage.getItem('hab_checkout_draft');
+      if (!draft) return;
+      const parsed = JSON.parse(draft);
+      if (parsed?.customer && typeof parsed.customer === 'object') setCustomer(previous => ({ ...previous, ...parsed.customer }));
+      if (['MBOB', 'BNB', 'BANK', 'COD'].includes(parsed?.paymentMethod)) setPaymentMethod(parsed.paymentMethod);
+      sessionStorage.removeItem('hab_checkout_draft');
+    } catch { /* Checkout remains usable without a saved basket draft. */ }
+  }, []);
+
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -127,6 +145,14 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, []);
 
+  if (!catalogueLoaded) {
+    return <main className="min-h-[70vh] flex items-center justify-center px-4 text-center" role="status">The product catalogue is loading. If it does not appear, please refresh or contact HAB before paying.</main>;
+  }
+
+  if (Object.keys(cart).length > items.length) {
+    return <main className="min-h-[70vh] flex items-center justify-center px-4 text-center" role="alert">A product in your basket is no longer available. Remove it from the basket before paying.</main>;
+  }
+
   if (items.length === 0) {
     return (
       <main className="min-h-[70vh] flex items-center justify-center py-12 px-4 bg-[#FBF9F5] font-figtree">
@@ -134,16 +160,16 @@ export default function CheckoutPage() {
           <div className="w-12 h-12 rounded-full bg-[#EDE5D6]/60 text-[#8B2E24] flex items-center justify-center mx-auto">
             <ShoppingBag className="w-6 h-6" />
           </div>
-          <h2 className="font-marcellus text-xl text-[#33261F]">Your Basket is Empty</h2>
+          <h2 className="font-marcellus text-xl text-[#33261F]">{tr('Your Basket is Empty')}</h2>
           <p className="text-xs text-[#6B5A4C]">
-            You have not selected any handcrafted items for checkout yet.
+            {tr('You have not selected any handcrafted items for checkout yet.')}
           </p>
           <div className="pt-2">
             <Link
               href="/shop"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#8B2E24] hover:bg-[#72251D] text-white text-xs font-semibold shadow-xs"
             >
-              <span>Explore Authentic Crafts</span>
+              <span>{tr('Explore Authentic Crafts')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -176,6 +202,26 @@ export default function CheckoutPage() {
       setError('Please enter your Bhutan National Bank (BNB) Journal / Transfer Reference number.');
       return;
     }
+    if (paymentMethod === 'MBOB' && !siteSettings?.bobAccountNumber) {
+      setError('mBoB account details are unavailable. Contact HAB before transferring payment.');
+      return;
+    }
+    if (paymentMethod === 'BNB' && !siteSettings?.bnbAccountNumber) {
+      setError('BNB account details are unavailable. Contact HAB before transferring payment.');
+      return;
+    }
+    if (paymentMethod === 'BANK' && !gatewayMethods?.bank?.enabled) {
+      setError('Bank transfer details are unavailable. Please contact HAB before paying.');
+      return;
+    }
+    if (paymentMethod === 'BANK' && (!bankRef.trim() || !proofUrl)) {
+      setError('Enter the bank transfer reference and upload your deposit slip. HAB will verify it before confirming payment.');
+      return;
+    }
+    if (uploadingSlip) {
+      setError('Please wait until your payment slip finishes uploading.');
+      return;
+    }
     if (!agreeTerms) {
       setError('Please accept the Terms & Conditions and Export Standards to proceed.');
       return;
@@ -202,7 +248,7 @@ export default function CheckoutPage() {
           customerName: customer.fullName.trim(),
           email: customer.email.trim(),
           phone: customer.phone.trim() || null,
-          mBOBTransactionRef: paymentMethod === 'MBOB' ? mbobRef.trim() : paymentMethod === 'BNB' ? bnbRef.trim() : null,
+          mBOBTransactionRef: paymentMethod === 'MBOB' ? mbobRef.trim() : paymentMethod === 'BNB' ? bnbRef.trim() : paymentMethod === 'BANK' ? bankRef.trim() : null,
           proofUrl: proofUrl || null,
           shippingAddress: {
             fullName: customer.fullName.trim(),
@@ -239,23 +285,23 @@ export default function CheckoutPage() {
         {/* Breadcrumb & Step Tracker */}
         <div>
           <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-2">
-            <Link href="/" className="hover:underline">Home</Link> /{' '}
-            <Link href="/shop" className="hover:underline">Shop</Link> /{' '}
-            <Link href="/basket" className="hover:underline">Basket</Link> /{' '}
-            <span className="text-[#33261F]">Secure Checkout</span>
+            <Link href="/" className="hover:underline">{tr("Home")}</Link> /{' '}
+            <Link href="/shop" className="hover:underline">{tr('Shop')}</Link> /{' '}
+            <Link href="/basket" className="hover:underline">{tr('Basket')}</Link> /{' '}
+            <span className="text-[#33261F]">{tr('Secure Checkout')}</span>
           </div>
           <h1 className="font-marcellus text-2xl sm:text-3xl text-[#33261F]">
-            Checkout &amp; Order Placement
+            {tr('Checkout & Order Placement')}
           </h1>
           <p className="font-lora text-xs sm:text-sm text-[#6B5A4C] mt-1">
-            Certified authentic Bhutanese handicrafts dispatched directly from master guilds.
+            {tr("Certified authentic Bhutanese handicrafts dispatched directly from master guilds.")}
           </p>
         </div>
 
         {error && (
           <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
             <AlertCircle className="w-5 h-5 flex-none" />
-            <span>{error}</span>
+            <span>{tr(error)}</span>
           </div>
         )}
 
@@ -268,11 +314,11 @@ export default function CheckoutPage() {
               <div className="flex items-center justify-between pb-3 border-b border-[#E4DDD1]">
                 <h2 className="font-marcellus text-lg text-[#33261F] flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center text-xs font-mono font-bold">1</span>
-                  Delivery Information
+                  {tr('Delivery Information')}
                 </h2>
                 {!isUserLoggedIn && (
                   <Link href="/login" className="text-xs text-[#8B2E24] hover:underline font-semibold">
-                    Sign in for faster checkout
+                    {tr('Sign in for faster checkout')}
                   </Link>
                 )}
               </div>
@@ -280,7 +326,7 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    Recipient Full Name *
+                    {tr('Recipient Full Name *')}
                   </label>
                   <input
                     type="text"
@@ -294,7 +340,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    Email Address *
+                    {tr('Email Address *')}
                   </label>
                   <input
                     type="email"
@@ -308,7 +354,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    Mobile Phone Number
+                    {tr('Mobile Phone Number')}
                   </label>
                   <input
                     type="tel"
@@ -321,7 +367,7 @@ export default function CheckoutPage() {
 
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    Street Address / Building / House *
+                    {tr('Street Address / Building / House *')}
                   </label>
                   <input
                     type="text"
@@ -335,7 +381,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    City / Dzongkhag *
+                    {tr('City / Dzongkhag *')}
                   </label>
                   <input
                     type="text"
@@ -348,7 +394,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    Country *
+                    {tr('Country *')}
                   </label>
                   <input
                     type="text"
@@ -365,7 +411,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-4">
               <h2 className="font-marcellus text-lg text-[#33261F] flex items-center gap-2 pb-3 border-b border-[#E4DDD1]">
                 <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center text-xs font-mono font-bold">2</span>
-                Shipping Carrier
+                {tr('Shipping Carrier')}
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -384,11 +430,11 @@ export default function CheckoutPage() {
                       <span>Bhutan Post EMS</span>
                     </div>
                     <p className="text-[11px] text-[#6B5A4C]">
-                      Standard airmail with tracking (10–18 days)
+                      {tr("Standard airmail with tracking (10–18 days)")}
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[#8B2E24] font-mono">
-                    {subtotalUSD >= 150 ? 'FREE' : '$25.00'}
+                    {subtotalUSD >= 150 ? tr('FREE') : '$25.00'}
                   </span>
                 </label>
 
@@ -407,7 +453,7 @@ export default function CheckoutPage() {
                       <span>DHL Express Air</span>
                     </div>
                     <p className="text-[11px] text-[#6B5A4C]">
-                      Priority air courier (4–7 business days)
+                      {tr("Priority air courier (4–7 business days)")}
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[#8B2E24] font-mono">
@@ -421,7 +467,7 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-4">
               <h2 className="font-marcellus text-lg text-[#33261F] flex items-center gap-2 pb-3 border-b border-[#E4DDD1]">
                 <span className="w-6 h-6 rounded-full bg-[#8B2E24] text-white flex items-center justify-center text-xs font-mono font-bold">3</span>
-                Payment Method
+                {tr('Payment Method')}
               </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -462,7 +508,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <Building2 className="w-5 h-5" />
-                  <span>SWIFT Wire</span>
+                  <span>{tr('SWIFT Wire')}</span>
                 </button>
 
                 <button
@@ -475,14 +521,14 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <Banknote className="w-5 h-5" />
-                  <span>Cash on Delivery</span>
+                  <span>{tr('Cash on Delivery')}</span>
                 </button>
               </div>
 
               {/* Card is intentionally unavailable until a server-side payment processor is configured. */}
               {paymentMethod === 'CARD' && (
                 <div role="status" className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-900">
-                  Online card payment is not available yet. Choose mBoB, BNB, bank transfer, or cash on delivery. No card details are collected here.
+                  {tr("Online card payment is not available yet. Choose mBoB, BNB, bank transfer, or cash on delivery. No card details are collected here.")}
                 </div>
               )}
 
@@ -491,21 +537,21 @@ export default function CheckoutPage() {
                   <div className="text-xs text-amber-900 font-semibold flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <QrCode className="w-4 h-4 text-amber-700" />
-                      <span>Bank of Bhutan (mBoB) Official Account</span>
+                      <span>{tr("Bank of Bhutan (mBoB) Official Account")}</span>
                     </span>
                     <span className="text-[11px] font-mono text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded">
-                      Local Currency: Nu.
+                      {tr("Local Currency: Nu.")}
                     </span>
                   </div>
                   <div className="bg-white p-3 rounded-lg border border-amber-200 text-xs space-y-1.5 font-mono text-slate-800">
-                    <div><strong>Account Title:</strong> {siteSettings?.bobAccountTitle || siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
-                    <div><strong>Account Number:</strong> {siteSettings?.bobAccountNumber || siteSettings?.checkoutAccountNumber || '200847291038'}</div>
-                    <div><strong>Bank:</strong> {siteSettings?.bobBankName || siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'}</div>
-                    {siteSettings?.bobPhone && <div><strong>Mobile / Contact:</strong> {siteSettings.bobPhone}</div>}
+                    <div><strong>{tr("Account Title:")}</strong> {siteSettings?.bobAccountTitle || siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
+                    <div><strong>{tr("Account Number:")}</strong> {siteSettings?.bobAccountNumber || tr('Payment details unavailable')}</div>
+                    <div><strong>{tr("Bank:")}</strong> {siteSettings?.bobBankName || siteSettings?.checkoutBankName || 'Bank of Bhutan (BoB)'}</div>
+                    {siteSettings?.bobPhone && <div><strong>{tr("Mobile / Contact:")}</strong> {siteSettings.bobPhone}</div>}
                   </div>
                   {siteSettings?.bobQrUrl && (
                     <div className="bg-white p-3 rounded-lg border border-amber-200 flex flex-col items-center gap-1.5">
-                      <span className="text-[11px] font-semibold text-slate-700">Scan mBoB QR Code to Pay</span>
+                      <span className="text-[11px] font-semibold text-slate-700">{tr("Scan mBoB QR Code to Pay")}</span>
                       <img
                         src={siteSettings.bobQrUrl}
                         alt="mBoB Payment QR"
@@ -515,7 +561,7 @@ export default function CheckoutPage() {
                   )}
                   <div>
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                      mBOB Journal / Reference Number *
+                      {tr("mBOB Journal / Reference Number *")}
                     </label>
                     <input
                       type="text"
@@ -526,12 +572,12 @@ export default function CheckoutPage() {
                       className="w-full px-3.5 py-2 rounded-lg border border-amber-300 bg-white text-sm focus:outline-hidden"
                     />
                     <p className="text-[11px] text-amber-800 mt-1">
-                      Transfer in Nu. via mBOB and enter the transaction reference number from your receipt.
+                      {tr("Transfer in Nu. via mBOB and enter the transaction reference number from your receipt.")}
                     </p>
                   </div>
                   <div className="pt-2 border-t border-amber-200/80">
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                      Upload Payment Slip / Screenshot (Optional)
+                      {tr("Upload Payment Slip / Screenshot (Optional)")}
                     </label>
                     <div className="flex items-center gap-3">
                       <input
@@ -544,8 +590,8 @@ export default function CheckoutPage() {
                         disabled={uploadingSlip}
                         className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 cursor-pointer"
                       />
-                      {uploadingSlip && <span className="text-xs text-amber-800 animate-pulse">Uploading...</span>}
-                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">✓ Slip Attached</span>}
+                      {uploadingSlip && <span className="text-xs text-amber-800 animate-pulse">{tr("Uploading...")}</span>}
+                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">{tr("✓ Slip Attached")}</span>}
                     </div>
                   </div>
                 </div>
@@ -556,21 +602,21 @@ export default function CheckoutPage() {
                   <div className="text-xs text-orange-950 font-semibold flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <Building2 className="w-4 h-4 text-orange-700" />
-                      <span>Bhutan National Bank (BNB) Official Account</span>
+                      <span>{tr("Bhutan National Bank (BNB) Official Account")}</span>
                     </span>
                     <span className="text-[11px] font-mono text-orange-800 bg-orange-100/70 px-2 py-0.5 rounded">
-                      Local Currency: Nu.
+                      {tr("Local Currency: Nu.")}
                     </span>
                   </div>
                   <div className="bg-white p-3 rounded-lg border border-orange-200 text-xs space-y-1.5 font-mono text-slate-800">
-                    <div><strong>Account Title:</strong> {siteSettings?.bnbAccountTitle || 'Handicrafts Association of Bhutan'}</div>
-                    <div><strong>Account Number:</strong> {siteSettings?.bnbAccountNumber || '0000028471019'}</div>
-                    <div><strong>Bank:</strong> {siteSettings?.bnbBankName || 'Bhutan National Bank Limited (BNB), Thimphu Corporate Branch'}</div>
-                    {siteSettings?.bnbPhone && <div><strong>Mobile / Contact:</strong> {siteSettings.bnbPhone}</div>}
+                    <div><strong>{tr("Account Title:")}</strong> {siteSettings?.bnbAccountTitle || 'Handicrafts Association of Bhutan'}</div>
+                    <div><strong>{tr("Account Number:")}</strong> {siteSettings?.bnbAccountNumber || tr('Payment details unavailable')}</div>
+                    <div><strong>{tr("Bank:")}</strong> {siteSettings?.bnbBankName || 'Bhutan National Bank Limited (BNB), Thimphu Corporate Branch'}</div>
+                    {siteSettings?.bnbPhone && <div><strong>{tr("Mobile / Contact:")}</strong> {siteSettings.bnbPhone}</div>}
                   </div>
                   {siteSettings?.bnbQrUrl && (
                     <div className="bg-white p-3 rounded-lg border border-orange-200 flex flex-col items-center gap-1.5">
-                      <span className="text-[11px] font-semibold text-slate-700">Scan BNB mPay QR Code to Pay</span>
+                      <span className="text-[11px] font-semibold text-slate-700">{tr("Scan BNB mPay QR Code to Pay")}</span>
                       <img
                         src={siteSettings.bnbQrUrl}
                         alt="BNB mPay Payment QR"
@@ -580,7 +626,7 @@ export default function CheckoutPage() {
                   )}
                   <div>
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                      BNB Journal / Reference Number *
+                      {tr("BNB Journal / Reference Number *")}
                     </label>
                     <input
                       type="text"
@@ -591,12 +637,12 @@ export default function CheckoutPage() {
                       className="w-full px-3.5 py-2 rounded-lg border border-orange-300 bg-white text-sm focus:outline-hidden"
                     />
                     <p className="text-[11px] text-orange-900 mt-1">
-                      Transfer in Nu. via BNB / mPay and enter the transaction reference number from your receipt.
+                      {tr("Transfer in Nu. via BNB / mPay and enter the transaction reference number from your receipt.")}
                     </p>
                   </div>
                   <div className="pt-2 border-t border-orange-200/80">
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                      Upload Payment Slip / Screenshot (Optional)
+                      {tr("Upload Payment Slip / Screenshot (Optional)")}
                     </label>
                     <div className="flex items-center gap-3">
                       <input
@@ -609,8 +655,8 @@ export default function CheckoutPage() {
                         disabled={uploadingSlip}
                         className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-100 file:text-orange-900 hover:file:bg-orange-200 cursor-pointer"
                       />
-                      {uploadingSlip && <span className="text-xs text-orange-800 animate-pulse">Uploading...</span>}
-                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">✓ Slip Attached</span>}
+                      {uploadingSlip && <span className="text-xs text-orange-800 animate-pulse">{tr("Uploading...")}</span>}
+                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">{tr("✓ Slip Attached")}</span>}
                     </div>
                   </div>
                 </div>
@@ -620,21 +666,27 @@ export default function CheckoutPage() {
                 <div className="p-4 rounded-xl bg-[#FBF9F5] border border-[#E4DDD1] space-y-3 text-xs">
                   <div className="font-semibold text-[#33261F] flex items-center gap-1.5">
                     <Building2 className="w-4 h-4 text-[#8B2E24]" />
-                    <span>International Wire Transfer (SWIFT)</span>
+                    <span>{tr('Bank transfer — confirmed by HAB after review')}</span>
                   </div>
                   <div className="bg-white p-3 rounded-lg border border-[#E4DDD1] space-y-1 font-mono text-slate-700 text-[11px]">
-                    <div><strong>SWIFT Code:</strong> {siteSettings?.checkoutSwiftCode || 'BHUBBTBT'}</div>
-                    <div><strong>Beneficiary:</strong> {siteSettings?.checkoutAccountTitle || 'Handicrafts Association of Bhutan'}</div>
-                    <div><strong>Bank:</strong> {siteSettings?.checkoutBankName || 'Bank of Bhutan Limited'}</div>
-                    <div><strong>Account:</strong> {siteSettings?.checkoutAccountNumber || '200847291038'}</div>
-                    {siteSettings?.checkoutBankAddress && <div><strong>Branch:</strong> {siteSettings.checkoutBankAddress}</div>}
+                    {!gatewayMethods?.bank?.enabled ? <p role="alert">{tr('Bank details are unavailable. Contact HAB before transferring money.')}</p> : <>
+                      {gatewayMethods.bank.swiftCode && <div><strong>{tr('SWIFT Code:')}</strong> {gatewayMethods.bank.swiftCode}</div>}
+                      <div><strong>{tr('Beneficiary:')}</strong> {gatewayMethods.bank.accountTitle}</div>
+                      <div><strong>{tr('Bank:')}</strong> {gatewayMethods.bank.bankName}</div>
+                      <div><strong>{tr('Account:')}</strong> {gatewayMethods.bank.accountNumber}</div>
+                      {gatewayMethods.bank.branch && <div><strong>{tr('Branch:')}</strong> {gatewayMethods.bank.branch}</div>}
+                    </>}
                   </div>
                   <p className="text-[11px] text-[#6B5A4C]">
-                    Please quote your Order Number in the wire transfer reference. Orders ship once transfer settles.
+                    {tr('Transfer the order total using your name as the payment description. Enter the bank-issued reference below and upload the slip. HAB will check the deposit and confirm payment before dispatch.')}
                   </p>
                   <div className="pt-2 border-t border-[#E4DDD1]">
                     <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1">
-                      Upload Bank Transfer Slip / Swift Copy (Optional)
+                      {tr('Bank transfer reference (required)')}
+                      <input value={bankRef} onChange={e => setBankRef(e.target.value)} maxLength={120} required className="mt-2 w-full rounded-lg border border-[#E4DDD1] p-3" />
+                    </label>
+                    <label className="block text-xs font-semibold text-[#33261F] mb-1">
+                      {tr('Upload bank transfer slip / SWIFT copy (required)')}
                     </label>
                     <div className="flex items-center gap-3">
                       <input
@@ -647,8 +699,8 @@ export default function CheckoutPage() {
                         disabled={uploadingSlip}
                         className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-900 hover:file:bg-slate-200 cursor-pointer"
                       />
-                      {uploadingSlip && <span className="text-xs text-slate-600 animate-pulse">Uploading...</span>}
-                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">✓ Slip Attached</span>}
+                      {uploadingSlip && <span className="text-xs text-slate-600 animate-pulse">{tr("Uploading...")}</span>}
+                      {proofUrl && <span className="text-xs text-emerald-700 font-medium">{tr("✓ Slip Attached")}</span>}
                     </div>
                   </div>
                 </div>
@@ -658,14 +710,14 @@ export default function CheckoutPage() {
                 <div className="p-4 rounded-xl bg-[#FBF9F5] border border-amber-300/60 space-y-2.5 text-xs">
                   <div className="font-semibold text-[#33261F] flex items-center gap-2">
                     <Banknote className="w-4 h-4 text-amber-700" />
-                    <span>Cash on Delivery (COD) / Pay upon Arrival</span>
+                    <span>{tr("Cash on Delivery (COD) / Pay upon Arrival")}</span>
                   </div>
                   <p className="text-slate-600 leading-relaxed">
                     {gatewayMethods?.cod?.instructions || 'Please keep the exact order amount ready in Cash (Nu.) or via mBoB when your courier delivers your package.'}
                   </p>
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-[11px] flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Your order will be packed and dispatched directly by the HAB Secretariat. Payment is collected upon parcel delivery.</span>
+                    <span>{tr("Your order will be packed and dispatched directly by the HAB Secretariat. Payment is collected upon parcel delivery.")}</span>
                   </div>
                 </div>
               )}
@@ -676,7 +728,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-white rounded-2xl border border-[#E4DDD1] p-6 shadow-xs space-y-4 sticky top-24">
               <h2 className="font-marcellus text-lg text-[#33261F] pb-3 border-b border-[#E4DDD1]">
-                Order Summary ({cartCount} {cartCount === 1 ? 'item' : 'items'})
+                {tr('Order Summary')} ({cartCount} {tr(cartCount === 1 ? 'item' : 'items')})
               </h2>
 
               {/* Items Scroll Area */}
@@ -702,19 +754,19 @@ export default function CheckoutPage() {
               {/* Price Breakdown */}
               <div className="pt-3 border-t border-[#E4DDD1] space-y-2 text-xs">
                 <div className="flex items-center justify-between text-[#6B5A4C]">
-                  <span>Subtotal</span>
+                  <span>{tr('Subtotal')}</span>
                   <span className="font-mono font-semibold text-[#33261F]">{fmt(subtotalUSD)}</span>
                 </div>
                 <div className="flex items-center justify-between text-[#6B5A4C]">
-                  <span>Shipping ({shippingOption.name})</span>
+                  <span>{tr('Shipping')} ({shippingOption.name})</span>
                   <span className="font-mono font-semibold text-[#33261F]">
-                    {shippingFeeUSD === 0 ? 'FREE' : fmt(shippingFeeUSD)}
+                    {shippingFeeUSD === 0 ? tr('FREE') : fmt(shippingFeeUSD)}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-[#E4DDD1] flex items-baseline justify-between">
                   <div>
-                    <span className="font-bold text-sm text-[#33261F]">Total Amount</span>
-                    <div className="text-[10.5px] text-[#6B5A4C]">All export permits included</div>
+                    <span className="font-bold text-sm text-[#33261F]">{tr('Total Amount')}</span>
+                    <div className="text-[10.5px] text-[#6B5A4C]">{tr("All export permits included")}</div>
                   </div>
                   <div className="text-right">
                     <span className="font-mono font-extrabold text-lg text-[#8B2E24]">
@@ -737,25 +789,25 @@ export default function CheckoutPage() {
                   className="mt-0.5 w-4 h-4 text-[#8B2E24] rounded border-[#E4DDD1] focus:ring-[#8B2E24]"
                 />
                 <label htmlFor="checkoutTerms" className="leading-relaxed">
-                  I accept the{' '}
+                  {tr('I accept the')}{' '}
                   <Link href="/terms" target="_blank" className="text-[#8B2E24] underline">
-                    Terms
+                    {tr('Terms')}
                   </Link>{' '}
-                  and understand organic variations are intrinsic to handcrafted Bhutanese crafts.
+                  {tr("and understand organic variations are intrinsic to handcrafted Bhutanese crafts.")}
                 </label>
               </div>
 
               {/* Place Order CTA */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploadingSlip}
                 className="w-full py-3.5 px-4 rounded-xl bg-[#8B2E24] hover:bg-[#72251D] text-white text-sm font-semibold shadow-sm transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <span>Securing your order...</span>
+                  <span>{tr('Securing your order...')}</span>
                 ) : (
                   <>
-                    <span>Place Certified Order</span>
+                    <span>{tr('Place Certified Order')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -763,7 +815,7 @@ export default function CheckoutPage() {
 
               <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-[#6B5A4C]">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>CSO Authenticity Certificate Guaranteed</span>
+                <span>{tr("CSO Authenticity Certificate Guaranteed")}</span>
               </div>
             </div>
           </div>

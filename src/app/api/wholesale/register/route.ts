@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { notifySubmission } from '@/lib/transaction-notifications';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
@@ -170,8 +171,10 @@ export async function POST(req: NextRequest) {
       console.warn('[wholesale/register] Audit logging skipped:', dbErr.message);
     }
 
+    const emailDelivery = await notifySubmission({ kind: 'wholesale', email: cleanEmail, name: cleanContact, id: buyerId, reference, siteUrl: req.nextUrl.origin });
     return NextResponse.json({
       success: true,
+      emailDelivery,
       reference,
       buyerId: dbBuyer ? dbBuyer.id : buyerId,
       message: 'Wholesale buyer registration received successfully. The secretariat will review your credentials within three working days.',

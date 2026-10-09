@@ -10,8 +10,10 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function BasketPage() {
   const router = useRouter();
-  const { fmt, currency } = useCurrency();
+  const { fmt } = useCurrency();
   const {
+    cart,
+    catalogueLoaded,
     items,
     cartCount,
     subtotalUSD,
@@ -22,11 +24,9 @@ export default function BasketPage() {
     addToCart,
     decrementCart,
     removeFromCart,
-    clearCart,
   } = useCart();
 
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'mbob' | 'bank'>('mbob');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [customer, setCustomer] = useState({
     fullName: '',
@@ -54,49 +54,11 @@ export default function BasketPage() {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const selectedCurrency = (paymentMethod === 'mbob' || paymentMethod === 'cod') ? 'BTN' : (currency || 'USD');
-      const selectedPaymentMethod = paymentMethod === 'mbob' ? 'MBOB' : paymentMethod === 'cod' ? 'COD' : 'BANK';
-
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            code: i.code,
-            name: i.name,
-            quantity: i.quantity,
-            priceUsd: i.priceUSD,
-          })),
-          currency: selectedCurrency,
-          paymentMethod: selectedPaymentMethod,
-          shippingMethod: shippingMethod === 'express' ? 'EXPRESS' : 'EMS',
-          customerName: customer.fullName.trim(),
-          email: customer.email.trim(),
-          phone: customer.phone.trim() || null,
-          shippingAddress: {
-            fullName: customer.fullName.trim(),
-            email: customer.email.trim(),
-            phone: customer.phone.trim(),
-            street: customer.street.trim(),
-            city: customer.city.trim(),
-            country: customer.country.trim(),
-            postalCode: customer.postalCode.trim(),
-          },
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success && data.order?.orderNumber) {
-        clearCart();
-        setIsSubmitting(false);
-        router.push(`/order-confirmation/${data.order.orderNumber}`);
-        return;
-      }
-      throw new Error(data.error || 'The order could not be confirmed. Your basket is unchanged; please retry.');
+      sessionStorage.setItem('hab_checkout_draft', JSON.stringify({ customer, paymentMethod: paymentMethod.toUpperCase() }));
+      router.push('/checkout');
     } catch (err: any) {
-      setFormError(err.message || 'The order could not be confirmed. Your basket is unchanged; please retry.');
-      setIsSubmitting(false);
+      setFormError(err.message || 'Could not continue to payment. Your basket is unchanged.');
       return;
     }
   };
@@ -116,7 +78,14 @@ export default function BasketPage() {
         </p>
         <h1 className="display display--page">Your basket</h1>
 
-        {cartCount === 0 ? (
+        {!catalogueLoaded ? <p role="status">Loading current product prices and availability…</p> : Object.keys(cart).some(code => !items.some(item => item.code === code)) ? (
+          <div className="panel" role="alert">
+            <p>Some products in this basket are no longer in the catalogue. Remove them to continue.</p>
+            {Object.keys(cart).filter(code => !items.some(item => item.code === code)).map(code => (
+              <button key={code} type="button" className="btn btn--ghost" onClick={() => removeFromCart(code)}>Remove unavailable product {code}</button>
+            ))}
+          </div>
+        ) : cartCount === 0 ? (
           /* State 2: Basket empty */
           <div id="basketEmpty">
             <div className="shopempty">
@@ -256,7 +225,7 @@ export default function BasketPage() {
 
                 <div className="paybar paybar--inset" style={{ margin: '20px 0 0' }}>
                   <p className="paybar__note">
-                    Online card processing is not configured. Orders are created only after the server confirms your submission; bank-transfer payment instructions are provided with the order.
+                    Continue to payment to see the saved bank details, enter your transfer reference and upload proof. HAB confirms payment after review.
                   </p>
                 </div>
               </div>
@@ -363,9 +332,9 @@ export default function BasketPage() {
                 type="button"
                 id="placeOrder"
                 onClick={handlePlaceOrder}
-                disabled={isSubmitting}
+                disabled={!catalogueLoaded}
               >
-                {isSubmitting ? 'Processing...' : 'Place order'}
+                Continue to payment
               </button>
               <Link className="btn btn--ghost btn--full" href="/shop" style={{ marginTop: 12 }}>
                 ← Keep shopping

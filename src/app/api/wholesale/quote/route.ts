@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import prisma from '@/lib/prisma';
+import { notifySubmission } from '@/lib/transaction-notifications';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 import { getWholesaleJwtSecret } from '@/lib/wholesale-auth-secret';
@@ -86,7 +87,8 @@ export async function POST(request: NextRequest) {
       message,
       status: 'NEW',
     } });
-    return NextResponse.json({ success: true, inquiryId: inquiry.id }, { status: 201 });
+    const emailDelivery = await notifySubmission({ kind: 'quote', email: buyer.email, name: buyer.contactName, id: inquiry.id, reference: inquiry.id, siteUrl: request.nextUrl.origin });
+    return NextResponse.json({ success: true, inquiryId: inquiry.id, emailDelivery }, { status: 201 });
   } catch (error: any) {
     const message = error?.message || '';
     if (message.includes('minimum wholesale quantity') || message.includes('no longer available') || message.includes('not currently available') || message.includes('listed once')) {

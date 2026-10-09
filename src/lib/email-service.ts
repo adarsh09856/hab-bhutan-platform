@@ -176,7 +176,7 @@ export interface SendEmailOptions {
 }
 
 /**
- * Core sendEmail dispatcher with live SMTP sending and resilient simulation mode
+ * Send through configured SMTP and audit the actual transport outcome.
  */
 export async function sendEmail(opts: SendEmailOptions): Promise<{
   success: boolean;
@@ -188,29 +188,29 @@ export async function sendEmail(opts: SendEmailOptions): Promise<{
 
   const hasCredentials = Boolean(config.host && config.host.trim().length > 0);
 
-  // If no SMTP host is configured, simulate cleanly and log to audit trail
+  // A missing transport is a delivery failure, never a successful confirmation.
   if (!hasCredentials) {
-    console.log(`[EMAIL_SERVICE:SIMULATED] Dispatched email to ${opts.to} | Subject: "${opts.subject}"`);
+    console.warn('[EMAIL_SERVICE:NOT_SENT] Outgoing mail server is not configured.');
 
     await logAudit({
       actorType: 'SYSTEM',
       actorId: 'system',
-      actorIdentifier: 'Automated Email Engine (Simulated)',
-      action: 'EMAIL_DISPATCH_SIMULATED',
+      actorIdentifier: 'Automated Email Engine',
+      action: 'EMAIL_DISPATCH_FAILED',
       entityType: opts.auditEntityType || 'Email',
       entityId: opts.auditEntityId || opts.to,
       details: {
         to: opts.to,
         subject: opts.subject,
         templateKey: opts.templateKey || 'custom',
-        reason: 'SMTP host not configured. Live dispatch simulated successfully.',
+        reason: 'SMTP host not configured. Email was not sent.',
       },
     });
 
     return {
-      success: true,
+      success: false,
+      error: 'Email was not sent: configure the outgoing mail server in Admin Settings.',
       simulated: true,
-      messageId: `sim_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     };
   }
 
@@ -225,9 +225,9 @@ export async function sendEmail(opts: SendEmailOptions): Promise<{
             pass: config.password || '',
           }
         : undefined,
-      tls: {
-        rejectUnauthorized: false, // Prevents self-signed cert blocks on custom VPS mail relays
-      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
 
     const fromAddress = `"${config.fromName}" <${config.fromEmail}>`;
@@ -240,13 +240,14 @@ export async function sendEmail(opts: SendEmailOptions): Promise<{
       html: opts.html || `<div style="font-family: sans-serif; white-space: pre-line; line-height: 1.6; color: #1e293b;">${escapeEmailHtml(opts.body)}</div>`,
     });
 
-    console.log(`[EMAIL_SERVICE:LIVE] Email delivered to ${opts.to}. MessageID: ${info.messageId}`);
+    if (!info.accepted?.length) throw new Error('The mail server did not accept the recipient.');
+    console.log(`[EMAIL_SERVICE:LIVE] Mail server accepted message ${info.messageId}`);
 
     await logAudit({
       actorType: 'SYSTEM',
       actorId: 'system',
       actorIdentifier: 'Automated Email Engine',
-      action: 'EMAIL_DISPATCH_DELIVERED',
+      action: 'EMAIL_DISPATCH_ACCEPTED',
       entityType: opts.auditEntityType || 'Email',
       entityId: opts.auditEntityId || opts.to,
       details: {
@@ -295,7 +296,7 @@ export async function sendOrderConfirmationEmail(params: {
   customerEmail: string;
   customerName: string;
   siteUrl?: string;
-}): Promise<void> {
+}) {
   try {
     const template = await getEmailTemplate('order_confirmation');
     const baseUrl = params.siteUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://hab.org.bt';
@@ -315,9 +316,9 @@ export async function sendOrderConfirmationEmail(params: {
     };
 
     const subject = replacePlaceholders(template.subject, variables);
-    const body = replacePlaceholders(template.body, variables);
+    const body = `${replacePlaceholders(template.body, variables)}\n\nPayment status: ${params.order.paymentStatus === 'PAID' ? 'Confirmed by HAB.' : 'Awaiting payment verification. This order acknowledgement is not a payment receipt.'}`;
 
-    await sendEmail({
+    return await sendEmail({
       to: params.customerEmail,
       subject,
       body,
@@ -327,6 +328,7 @@ export async function sendOrderConfirmationEmail(params: {
     });
   } catch (err) {
     console.error('[email-service] Error sending order confirmation email:', err);
+    return { success: false, error: 'Order acknowledgement email could not be sent.' };
   }
 }
 
@@ -340,7 +342,7 @@ export async function sendOrderShippedEmail(params: {
   customerEmail: string;
   customerName?: string;
   siteUrl?: string;
-}): Promise<void> {
+}) {
   try {
     const template = await getEmailTemplate('order_shipped');
     const baseUrl = params.siteUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://hab.org.bt';
@@ -357,7 +359,7 @@ export async function sendOrderShippedEmail(params: {
     const subject = replacePlaceholders(template.subject, variables);
     const body = replacePlaceholders(template.body, variables);
 
-    await sendEmail({
+    return await sendEmail({
       to: params.customerEmail,
       subject,
       body,
@@ -367,6 +369,7 @@ export async function sendOrderShippedEmail(params: {
     });
   } catch (err) {
     console.error('[email-service] Error sending order shipped email:', err);
+    return { success: false, error: 'Shipping email could not be sent.' };
   }
 }
 
@@ -375,7 +378,7 @@ export async function sendOrderShippedEmail(params: {
  */
 export async function sendMembershipStatusEmail(params: {
   application: any;
-  status: 'APPROVED' | 'REJECTED';
+  status: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW';
   rejectionReason?: string;
   regNumber?: string;
   activationUrl?: string;
@@ -383,13 +386,16 @@ export async function sendMembershipStatusEmail(params: {
   try {
     const isApproved = params.status === 'APPROVED';
     const templateKey = isApproved ? 'application_approved' : 'application_rejected';
-    const template = await getEmailTemplate(templateKey);
+    const template = params.status === 'UNDER_REVIEW' ? {
+      subject: 'HAB membership application under review',
+      body: 'Kuzuzangpo la {{applicantName}},\n\nThe Secretariat is reviewing your membership application and supporting documents. We will notify you when a decision is made.\n\nHandicrafts Association of Bhutan',
+    } : await getEmailTemplate(templateKey);
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://hab.org.bt';
     const activationUrl = params.activationUrl || `${baseUrl}/portal/activate?id=${params.application.id}`;
 
     const variables = {
-      applicantName: params.application.fullName || params.application.name || 'Artisan Applicant',
+      applicantName: params.application.applicantName || params.application.fullName || params.application.name || 'Artisan Applicant',
       regNumber: params.regNumber || params.application.regNumber || 'HAB-MEM-PENDING',
       activationUrl,
       rejectionReason: params.rejectionReason || 'Incomplete verification documentation or non-compliant craft credentials.',
@@ -402,7 +408,7 @@ export async function sendMembershipStatusEmail(params: {
       to: params.application.email,
       subject,
       body,
-      templateKey,
+      templateKey: params.status === 'UNDER_REVIEW' ? 'application_under_review' : templateKey,
       auditEntityType: 'MembershipApplication',
       auditEntityId: params.application.id,
     });

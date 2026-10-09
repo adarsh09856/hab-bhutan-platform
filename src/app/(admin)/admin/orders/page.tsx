@@ -224,9 +224,10 @@ export default function AdminOrdersPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setSuccessMsg('✓ Payment status verified and marked as PAID.');
+        setSuccessMsg('✓ Payment confirmed and marked as PAID.');
+        if (data.emailDelivery && !data.emailDelivery.success) setErrorMsg('Payment saved, but the confirmation email was not sent. Check outgoing mail settings and the audit log.');
         if (inspectingOrder && inspectingOrder.id === orderId) {
-          setInspectingOrder((prev: any) => ({ ...prev, paymentStatus: 'PAID' }));
+          setInspectingOrder((prev: any) => ({ ...prev, ...data.order }));
         }
         await loadData();
         setTimeout(() => setSuccessMsg(''), 4000);
@@ -255,6 +256,7 @@ export default function AdminOrdersPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setSuccessMsg(`✓ Order tracking saved (${trackingNum || 'Cleared'})${markShipped ? ' and status changed to SHIPPED' : ''}.`);
+        if (data.emailDelivery && !data.emailDelivery.success) setErrorMsg('Tracking saved, but the shipping email was not sent. Check outgoing mail settings and the audit log.');
         if (inspectingOrder && inspectingOrder.id === orderId) {
           setInspectingOrder((prev: any) => ({ 
             ...prev, 
@@ -500,6 +502,7 @@ export default function AdminOrdersPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setSuccessMsg(`✓ Order ${editingOrder.orderNumber} details updated.`);
+        if (data.emailDelivery && !data.emailDelivery.success) setErrorMsg('Order saved, but the notification email was not sent. Check outgoing mail settings and the audit log.');
         setEditingOrder(null);
         await loadData();
         setTimeout(() => setSuccessMsg(''), 4000);
@@ -1035,11 +1038,11 @@ export default function AdminOrdersPage() {
                       </div>
 
                       {/* Mobile-bank transfer reference */}
-                      {['MBOB', 'BNB'].includes(inspectingOrder.paymentMethod) && (
+                      {['MBOB', 'BNB', 'BANK'].includes(inspectingOrder.paymentMethod) && (
                         <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-lg text-[11px] space-y-1">
                           <div className="text-teal-900 font-semibold flex items-center gap-1">
                             <QrCode className="w-3.5 h-3.5 text-teal-700" />
-                            <span>Customer {inspectingOrder.paymentMethod === 'BNB' ? 'BNB / mPay transfer' : 'mBoB transaction'} reference:</span>
+                            <span>Customer {inspectingOrder.paymentMethod === 'BANK' ? 'bank transfer' : inspectingOrder.paymentMethod === 'BNB' ? 'BNB / mPay transfer' : 'mBoB transaction'} reference:</span>
                           </div>
                           <div className="font-mono font-bold text-teal-950 text-xs pl-5">
                             {inspectingOrder.mBOBTransactionRef || 'No reference entered yet'}

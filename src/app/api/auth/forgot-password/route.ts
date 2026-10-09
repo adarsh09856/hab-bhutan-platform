@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
+import { sendEmail } from '@/lib/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,12 +61,21 @@ export async function POST(req: NextRequest) {
         entityId: user.id,
         details: { expiryMinutes: 60 },
       });
+      const siteUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+      const resetUrl = new URL('/auth/reset-password', siteUrl);
+      resetUrl.searchParams.set('token', rawToken);
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset your HAB password',
+        body: `Use this link to choose a new password: ${resetUrl.href}\n\nThe link expires in one hour. If you did not request a password reset, you can ignore this email.`,
+        templateKey: 'password_reset', auditEntityType: 'User', auditEntityId: user.id,
+      }).catch(() => {});
     }
 
     // Always return success message to prevent user/email enumeration
     return NextResponse.json({
       success: true,
-      message: 'If the provided email is registered in the system, a secure password reset link has been dispatched.',
+      message: 'If this email belongs to an active account, you will receive a password reset link. If it does not arrive, contact HAB.',
       // Expose resetToken for automated test suite when running in development/test
       ...(process.env.NODE_ENV !== 'production' || process.env.ENABLE_TEST_TOKENS === 'true'
         ? { testToken: rawToken }

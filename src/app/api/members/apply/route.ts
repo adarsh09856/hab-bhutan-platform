@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import { notifySubmission } from '@/lib/transaction-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,10 +89,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const emailDelivery = email?.trim() ? await notifySubmission({ kind: 'membership', email: email.trim(), name, id: application.id, reference: application.id, siteUrl: req.nextUrl.origin }) : null;
     return NextResponse.json({
       success: true,
+      emailDelivery,
       applicationId: application.id,
-      message: 'Your membership application has been submitted to the Secretariat. You will receive an SMS and email notification upon DCRC and craft committee review.',
+      message: 'Your membership application has been submitted to the Secretariat for review. Keep your application reference for follow-up.',
       submittedAt: application.submittedAt.toISOString(),
     });
   } catch (err: any) {

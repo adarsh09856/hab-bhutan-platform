@@ -78,9 +78,7 @@ CSO Registration No: CSO/2011/043 · Thimphu, Kingdom of Bhutan`;
 
       return NextResponse.json({
         success: true,
-        message: result.simulated
-          ? `✓ Test email dispatch simulated successfully. (No SMTP host was entered, so it ran in zero-crash test mode).`
-          : `✓ Live test email delivered successfully via ${testConfig.host}! Message ID: ${result.messageId}`,
+        message: `The mail server accepted the test email. Check the recipient inbox and spam folder to confirm delivery. Message ID: ${result.messageId}`,
         simulated: result.simulated,
         messageId: result.messageId,
       });

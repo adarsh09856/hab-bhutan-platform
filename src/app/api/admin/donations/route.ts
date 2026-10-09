@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { notifyDonationStatus } from '@/lib/transaction-notifications';
 import {
   getAllFallbackDonations,
   saveFallbackDonation,
@@ -206,7 +207,8 @@ export async function POST(req: NextRequest) {
       // Non-blocking
     }
 
-    return NextResponse.json({ success: true, donation: donation || savedFallback });
+    const emailDelivery = await notifyDonationStatus(undefined, donation || savedFallback);
+    return NextResponse.json({ success: true, donation: donation || savedFallback, emailDelivery });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to record donation' }, { status: 500 });
   }
@@ -270,6 +272,7 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
+    const previousFallback = existing ? null : getAllFallbackDonations().find(record => record.id === id);
     const updatedFallback = existing ? null : updateFallbackDonationStatus(id, newStatus as any, {
       ...(donorName !== undefined && { donorName: donorName.trim() }),
       ...(donorEmail !== undefined && { donorEmail: donorEmail.trim().toLowerCase() }),
@@ -298,7 +301,8 @@ export async function PATCH(req: NextRequest) {
       // Non-blocking
     }
 
-    return NextResponse.json({ success: true, donation: updated || updatedFallback });
+    const emailDelivery = await notifyDonationStatus(existing?.status || previousFallback?.status, updated || updatedFallback!);
+    return NextResponse.json({ success: true, donation: updated || updatedFallback, emailDelivery });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update donation' }, { status: 500 });
   }
