@@ -118,19 +118,19 @@ export default async function SecretariatPage() {
                           role="img"
                             aria-label={staff.confirmed ? 'Portrait not supplied' : 'Staff name to be confirmed'}
                         >
-                          {staff.confirmed ? staff.name.split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase() : '?'}
+                        {staff.confirmed ? staff.name.split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase() : '?'}
                         </span>
                       )}
                     </div>
                     <div>
                       <span className="inline-block bg-[#8B2E24]/10 text-[#8B2E24] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                        {staff.role}
+                        <SecretariatCopy>{staff.role}</SecretariatCopy>
                       </span>
-                      <h3 className="font-serif text-base font-bold text-stone-900 mt-0.5">{staff.name}</h3>
+                      <SecretariatCopy as="h3" className="font-serif text-base font-bold text-stone-900 mt-0.5">{staff.name}</SecretariatCopy>
                     </div>
                   </div>
 
-                  <p className="text-xs font-medium text-stone-500 mb-2">{staff.note}</p>
+                  <SecretariatCopy as="p" className="text-xs font-medium text-stone-500 mb-2">{staff.note}</SecretariatCopy>
                   {staff.bio && <p className="text-xs text-stone-600 leading-relaxed">{staff.bio}</p>}
                 </div>
 
