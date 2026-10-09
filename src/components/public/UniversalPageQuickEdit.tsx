@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { isEditableInlineTextPath, joinEditableText } from '@/lib/quick-edit-text';
 
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
@@ -48,8 +49,15 @@ function editableElements(): HTMLElement[] {
 function editableTextNodes(element: HTMLElement): Text[] {
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
-      return node.parentElement?.closest('svg,[aria-hidden="true"],script,style')
-        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      if (node.parentElement?.closest('svg,[aria-hidden="true"],script,style,noscript')) return NodeFilter.FILTER_REJECT;
+      const ancestorTags: string[] = [];
+      let current = node.parentElement;
+      while (current && current !== element) {
+        ancestorTags.push(current.tagName);
+        current = current.parentElement;
+      }
+      return current === element && isEditableInlineTextPath(element.tagName, ancestorTags)
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
     },
   });
   const nodes: Text[] = [];
@@ -65,7 +73,7 @@ function setVisibleText(element: HTMLElement, text: string) {
   }
   if (first.textContent !== text) first.textContent = text;
   for (const node of nodes) {
-    if (node !== first && node.textContent?.trim()) node.textContent = '';
+      if (node !== first && node.textContent?.trim()) node.textContent = '';
   }
 }
 
@@ -108,7 +116,7 @@ export default function UniversalPageQuickEdit() {
         if (value.placeholder !== undefined && element.placeholder !== value.placeholder) element.placeholder = value.placeholder;
       } else {
         const localizedText = language === 'dz' ? value.textDz : value.text;
-        if (localizedText !== undefined && editableTextNodes(element).map((node) => node.textContent).join(' ').trim() !== localizedText) setVisibleText(element, localizedText);
+        if (localizedText !== undefined && joinEditableText(editableTextNodes(element)) !== localizedText) setVisibleText(element, localizedText);
         const anchor = element instanceof HTMLAnchorElement ? element : element.closest('a');
         if (anchor && value.href !== undefined && anchor.getAttribute('href') !== value.href) anchor.setAttribute('href', value.href);
       }
@@ -172,7 +180,7 @@ export default function UniversalPageQuickEdit() {
         ? { ...(saved || {}), src: saved?.src || target.currentSrc || target.src, alt: saved?.alt ?? target.alt }
         : target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
           ? { ...(saved || {}), placeholder: saved?.placeholder ?? target.placeholder }
-          : { ...(saved || {}), text: saved?.text ?? editableTextNodes(target).map((node) => node.textContent).join(' ').trim(), href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) });
+          : { ...(saved || {}), text: saved?.text ?? joinEditableText(editableTextNodes(target)), href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) });
     };
     shell.addEventListener('click', onClick, true);
     return () => {
