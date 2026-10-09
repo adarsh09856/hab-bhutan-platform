@@ -6,6 +6,7 @@ import { getAllFallbackWholesaleBuyers, saveFallbackWholesaleBuyer } from '@/lib
 import { sendEmail } from '@/lib/email-service';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { escapeEmailHtml } from '@/lib/email-html';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,13 +98,13 @@ export async function POST(req: NextRequest) {
     const htmlBody = action === 'APPROVE'
       ? `
         <div style="font-family: serif; color: #222; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e5e5; border-radius: 8px;">
-          <h2 style="color: #8B2E24; margin-top: 0;">Congratulations, ${buyer.contactName}!</h2>
-          <p>Your wholesale trade application on behalf of <strong>${buyer.companyName}</strong> has been officially approved by the Handicrafts Association of Bhutan Secretariat.</p>
+          <h2 style="color: #8B2E24; margin-top: 0;">Congratulations, ${escapeEmailHtml(buyer.contactName)}!</h2>
+          <p>Your wholesale trade application on behalf of <strong>${escapeEmailHtml(buyer.companyName)}</strong> has been officially approved by the Handicrafts Association of Bhutan Secretariat.</p>
           <p>Your account details:</p>
           <ul>
-            <li><strong>Username:</strong> @${buyer.username}</li>
-            <li><strong>Temporary password:</strong> ${temporaryPassword}</li>
-            <li><strong>Discount Tier:</strong> ${buyer.discountTier || 20}% OFF Catalogue Pricing</li>
+            <li><strong>Username:</strong> @${escapeEmailHtml(buyer.username)}</li>
+            <li><strong>Temporary password:</strong> ${escapeEmailHtml(temporaryPassword)}</li>
+            <li><strong>Discount Tier:</strong> ${escapeEmailHtml(buyer.discountTier || 20)}% OFF Catalogue Pricing</li>
             <li><strong>Catalogue Access:</strong> <a href="https://hab.touratbhutan.info/wholesale/shop" style="color: #8B2E24;">Visit Wholesale Shop</a></li>
           </ul>
           <p>You can now sign in at the Trade Desk to place bulk purchase orders, request custom specifications, and download commercial invoices.</p>
@@ -114,10 +115,10 @@ export async function POST(req: NextRequest) {
       : `
         <div style="font-family: serif; color: #222; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e5e5; border-radius: 8px;">
           <h2 style="color: #8B2E24; margin-top: 0;">Wholesale Application Status Update</h2>
-          <p>Dear ${buyer.contactName},</p>
+          <p>Dear ${escapeEmailHtml(buyer.contactName)},</p>
           <p>Thank you for your interest in partnering with the Handicrafts Association of Bhutan for wholesale sourcing.</p>
-          <p>Following review of your application for <strong>${buyer.companyName}</strong>, the Secretariat is unable to approve your wholesale account at this time.</p>
-          ${reason ? `<p><strong>Reason provided:</strong> ${reason}</p>` : ''}
+          <p>Following review of your application for <strong>${escapeEmailHtml(buyer.companyName)}</strong>, the Secretariat is unable to approve your wholesale account at this time.</p>
+          ${reason ? `<p><strong>Reason provided:</strong> ${escapeEmailHtml(reason)}</p>` : ''}
           <p>If you believe this is in error or would like to provide updated documentation (such as tax licenses or resale certificates), please contact our trade desk directly at <a href="mailto:trade@hab.org.bt" style="color: #8B2E24;">trade@hab.org.bt</a>.</p>
           <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;" />
           <p style="font-size: 12px; color: #666;">Handicrafts Association of Bhutan (HAB) · Metog Lam, Thimphu</p>

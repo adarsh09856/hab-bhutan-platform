@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import prisma from '@/lib/prisma';
+import { escapeEmailHtml } from '@/lib/email-html';
 import { logAudit } from '@/lib/audit';
 
 export interface SmtpConfig {
@@ -236,7 +237,7 @@ export async function sendEmail(opts: SendEmailOptions): Promise<{
       to: opts.to,
       subject: opts.subject,
       text: opts.body,
-      html: opts.html || `<div style="font-family: sans-serif; white-space: pre-line; line-height: 1.6; color: #1e293b;">${opts.body}</div>`,
+      html: opts.html || `<div style="font-family: sans-serif; white-space: pre-line; line-height: 1.6; color: #1e293b;">${escapeEmailHtml(opts.body)}</div>`,
     });
 
     console.log(`[EMAIL_SERVICE:LIVE] Email delivered to ${opts.to}. MessageID: ${info.messageId}`);
