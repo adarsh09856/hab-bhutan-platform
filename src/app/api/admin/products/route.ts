@@ -5,6 +5,7 @@ import { logAudit } from '@/lib/audit';
 import { moveToRecycleBin } from '@/lib/recycle-bin';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
+import { normalizeWholesaleTiers } from '@/lib/wholesale-terms-normalize';
 
 export const dynamic = 'force-dynamic';
 
@@ -216,7 +217,7 @@ export async function PATCH(req: NextRequest) {
         if (terms) {
           await prisma.wholesaleProductTerms.upsert({
             where: { productId: previous.id },
-            create: { productId: previous.id, moq: terms.moq, leadTime: 'leadTime' in terms ? terms.leadTime : terms.lead_time, tiers: terms.tiers, customisation: terms.customisation || null, isActive: false },
+            create: { productId: previous.id, moq: terms.moq, leadTime: 'leadTime' in terms ? terms.leadTime : terms.lead_time, tiers: normalizeWholesaleTiers(terms.tiers), customisation: terms.customisation || null, isActive: false },
             update: { isActive: false },
           });
         }

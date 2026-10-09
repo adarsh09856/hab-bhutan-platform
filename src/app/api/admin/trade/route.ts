@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requirePermission } from '@/lib/rbac';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
+import { normalizeWholesaleTiers } from '@/lib/wholesale-terms-normalize';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,13 +39,13 @@ export async function GET(request: NextRequest) {
           const t = savedTerms ? {
             moq: savedTerms.moq,
             lead_time: savedTerms.leadTime,
-            tiers: savedTerms.tiers,
+            tiers: normalizeWholesaleTiers(savedTerms.tiers),
             customisation: savedTerms.customisation || '',
             is_active: savedTerms.isActive,
           } : legacyTerms ? {
             moq: legacyTerms.moq,
             lead_time: legacyTerms.lead_time || legacyTerms.lead || '',
-            tiers: legacyTerms.tiers,
+            tiers: normalizeWholesaleTiers(legacyTerms.tiers),
             customisation: legacyTerms.customisation || legacyTerms.custom || '',
             is_active: legacyTerms.is_active !== false,
           } : { moq: 0, lead_time: '', tiers: [], customisation: '', is_active: false };
@@ -149,9 +150,7 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Product and wholesale terms are required.' }, { status: 400 });
       }
       const moq = Number(terms.moq);
-      const tiers = Array.isArray(terms.tiers)
-        ? terms.tiers.map((tier: unknown) => Array.isArray(tier) ? [Number(tier[0]), Number(tier[1])] : [NaN, NaN])
-        : [];
+      const tiers = normalizeWholesaleTiers(terms.tiers);
       if (!Number.isInteger(moq) || moq < 1 || tiers.length < 1 || tiers.length > 8 ||
           tiers.some((tier: number[]) => !Number.isInteger(tier[0]) || tier[0] < moq || !Number.isFinite(tier[1]) || tier[1] < 0) ||
           tiers.some((tier: number[], index: number) => index > 0 && tier[0] <= tiers[index - 1][0])) {

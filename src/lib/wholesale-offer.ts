@@ -1,3 +1,5 @@
+import { normalizeWholesaleTiers } from '@/lib/wholesale-terms-normalize';
+
 type SavedTerms = {
   moq: number;
   leadTime?: string | null;
@@ -17,9 +19,7 @@ export function resolveWholesaleOffer(saved: SavedTerms | null | undefined, lega
   } : legacy;
   if (!raw || raw.is_active === false || !Array.isArray(raw.tiers) || raw.tiers.length === 0) return null;
   const moq = Number(raw.moq);
-  const tiers = raw.tiers.map((entry: unknown) => Array.isArray(entry)
-    ? [Number(entry[0]), Number(entry[1])]
-    : [Number.NaN, Number.NaN]);
+  const tiers = normalizeWholesaleTiers(raw.tiers);
   if (!Number.isSafeInteger(moq) || moq < 1 || tiers.some(([minimum, price]: number[]) =>
     !Number.isSafeInteger(minimum) || minimum < moq || !Number.isFinite(price) || price < 0
   )) return null;
