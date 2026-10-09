@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import WholesaleProductCreate from '@/components/admin/WholesaleProductCreate';
 import { 
   Building2, 
   Plus, 
@@ -384,6 +385,7 @@ export default function AdminWholesalePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <WholesaleProductCreate />
           <a
             href="/admin/orders?createWholesale=1"
             className="px-3 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white text-xs font-semibold rounded-xl transition"

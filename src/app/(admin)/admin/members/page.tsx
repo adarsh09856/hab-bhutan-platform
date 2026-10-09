@@ -54,6 +54,9 @@ export default function AdminMembersPage() {
     status: 'VERIFIED',
     cidNumber: '',
     businessLicense: '',
+    village: '',
+    phone: '',
+    email: '',
     bio: '',
     portraitUrl: '',
     duesExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
@@ -139,6 +142,9 @@ export default function AdminMembersPage() {
           status: 'VERIFIED',
           cidNumber: '',
           businessLicense: '',
+          village: '',
+          phone: '',
+          email: '',
           bio: '',
           portraitUrl: '',
           duesExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
@@ -175,6 +181,9 @@ export default function AdminMembersPage() {
           status: editingMember.status,
           cidNumber: editingMember.cidNumber,
           businessLicense: editingMember.businessLicense,
+          village: editingMember.village,
+          phone: editingMember.phone,
+          email: editingMember.email,
           bio: editingMember.bio,
           portraitUrl: editingMember.portraitUrl,
           duesExpiryDate: editingMember.duesExpiryDate,
@@ -545,6 +554,9 @@ export default function AdminMembersPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(['village', 'phone', 'email'] as const).map(field => <label key={field} className="space-y-1 block"><span className="font-semibold">{field === 'village' ? 'Village / Gewog' : field === 'phone' ? 'Contact phone' : 'Contact email'}</span><input type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} value={createForm[field]} onChange={e => setCreateForm({ ...createForm, [field]: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white" /></label>)}
+                </div>
                 {actionError && (
                   <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
@@ -736,6 +748,9 @@ export default function AdminMembersPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(['village', 'phone', 'email'] as const).map(field => <label key={field} className="space-y-1 block"><span className="font-semibold">{field === 'village' ? 'Village / Gewog' : field === 'phone' ? 'Contact phone' : 'Contact email'}</span><input type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} value={editingMember[field] || ''} onChange={e => setEditingMember({ ...editingMember, [field]: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white" /></label>)}
+                </div>
                 {actionError && (
                   <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />

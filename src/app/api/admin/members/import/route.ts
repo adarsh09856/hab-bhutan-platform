@@ -66,6 +66,9 @@ export async function POST(req: NextRequest) {
             cidNumber,
             regNumber,
             businessLicense: row.businessLicense || null,
+            village: String(row.village || '').trim() || null,
+            phone: String(row.phone || '').trim() || null,
+            email: String(row.email || '').trim().toLowerCase() || null,
             tier: row.tier || 'ACTIVE_SECTOR_MEMBER',
             status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(String(row.status || '').toUpperCase())
               ? String(row.status).toUpperCase() as MemberStatus : MemberStatus.PENDING,

@@ -11,10 +11,11 @@ const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const code = `QET${Date.now().toString().slice(-9)}`;
 const email = `codex-product-check-${suffix}@example.invalid`;
 const roleSlug = `codex_product_check_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
-const permissions = ['products:view', 'products:create', 'products:edit'];
+const permissions = ['products:view', 'products:create', 'products:edit', 'members:view', 'members:create', 'members:edit'];
 let role;
 let user;
 let productId;
+let memberId;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -113,8 +114,27 @@ try {
   const listed = await request('/api/admin/products', token);
   const item = listed.products.find((product) => product.id === productId);
   assert(item?.care === changed.care && item?.lead === changed.lead, 'Admin read did not include updated fields.');
+  const terms = { moq: 10, lead_time: '3 weeks', tiers: [[10, 9], [50, 7]], customisation: 'Local test only', is_active: true };
+  await request('/api/admin/trade', token, { method: 'PATCH', body: JSON.stringify({ action: 'save_terms', payload: { productCode: code, terms } }) });
+  const savedTerms = await prisma.wholesaleProductTerms.findUnique({ where: { productId } });
+  assert(savedTerms?.isActive && savedTerms.moq === 10 && JSON.stringify(savedTerms.tiers) === JSON.stringify(terms.tiers), 'New wholesale product did not retain enabled MOQ and prices.');
+  await request('/api/admin/trade', token, { method: 'PATCH', body: JSON.stringify({ action: 'save_terms', payload: { productCode: code, terms: { ...terms, is_active: false } } }) });
+  const disabledTerms = await prisma.wholesaleProductTerms.findUnique({ where: { productId } });
+  assert(disabledTerms?.isActive === false, 'Wholesale disable flag did not persist.');
+  console.log('PASS: product creation followed by wholesale terms, quantity breaks, enable and disable persistence.');
+  const memberCreated = await request('/api/admin/members', token, { method: 'POST', body: JSON.stringify({ name: `Temporary contact verification ${suffix}`, craftKey: craft.key, dzongkhag: 'Thimphu', cidNumber: String(Date.now()).slice(-11), status: 'VERIFIED', village: 'Test village', phone: 'Test contact', email: 'contact@example.invalid' }) });
+  memberId = memberCreated.member.id;
+  assert(memberCreated.member.email === 'contact@example.invalid' && memberCreated.member.phone === 'Test contact' && memberCreated.member.village === 'Test village', 'Member creation lost contact fields.');
+  const memberUpdated = await request('/api/admin/members', token, { method: 'PATCH', body: JSON.stringify({ id: memberId, phone: 'Updated contact', village: 'Updated village', email: 'UPDATED@example.invalid' }) });
+  assert(memberUpdated.member.email === 'updated@example.invalid' && memberUpdated.member.phone === 'Updated contact', 'Member edit lost contact fields.');
+  const memberList = await request('/api/admin/members', token);
+  assert(memberList.members.find(m => m.id === memberId)?.village === 'Updated village', 'Admin member list lost village.');
+  const memberPublic = await fetch(`${baseUrl}/api/members?slug=${encodeURIComponent(memberCreated.member.regNumber)}`).then(r => r.json());
+  assert(memberPublic.member && !('phone' in memberPublic.member) && !('email' in memberPublic.member), 'Public directory exposed private contact details.');
+  console.log('PASS: member contact create/update/admin read and public contact privacy.');
   console.log('PASS: authenticated product create, public read, update and admin list; all five detail fields round-tripped.');
 } finally {
+  if (memberId) await prisma.member.deleteMany({ where: { id: memberId } });
   if (productId) await prisma.product.deleteMany({ where: { id: productId } });
   if (user) {
     await prisma.auditLog.deleteMany({ where: { actorId: user.id } });

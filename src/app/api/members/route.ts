@@ -3,6 +3,11 @@ import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+function publicProfile<T extends { phone: string | null; email: string | null }>(member: T) {
+  const { phone, email, ...profile } = member;
+  return profile;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -49,7 +54,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        member,
+        member: publicProfile(member),
       });
     }
 
@@ -90,7 +95,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       count: members.length,
-      members,
+      members: members.map(publicProfile),
     });
   } catch (err: any) {
     console.error('Error fetching public members:', err);

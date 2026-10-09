@@ -122,6 +122,9 @@ model Member {
   portraitUrl     String?
   cidNumber       String
   businessLicense String?
+  village         String?
+  phone           String?
+  email           String?
   duesExpiryDate  DateTime
   products        Product[]
   orders          Order[]

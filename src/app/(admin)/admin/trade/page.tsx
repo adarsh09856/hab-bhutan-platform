@@ -37,6 +37,7 @@ import {
   GlassSelect 
 } from '@/components/admin/GlassUI';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import WholesaleProductCreate from '@/components/admin/WholesaleProductCreate';
 
 export default function AdminTradePage() {
   const [activeTab, setActiveTab] = useState<'pricing' | 'quotes' | 'buyers' | 'catalog' | 'content'>('pricing');
@@ -407,7 +408,8 @@ export default function AdminTradePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <WholesaleProductCreate onCreated={loadData} />
           <Link
             href="/wholesale-shop"
             target="_blank"

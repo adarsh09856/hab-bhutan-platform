@@ -31,6 +31,12 @@
 
 ---
 
+## Recent progress — Wholesale product creation and member contacts (9 Oct 2026)
+
+- Added an in-place **Add wholesale product** drawer to Wholesale Buyer Accounts and Trade Desk. It creates the shared catalog product, uploads its photo through the existing media uploader, and saves explicitly entered MOQ, lead time, customisation, up to eight quantity-price breaks, and the B2B enable checkbox. It stays on the wholesale page. If product creation succeeds but terms saving fails, retry reuses the saved SKU and does not create a second product. Signed-in visual interaction, upload and retry behavior remain **UNVERIFIED**.
+- Added nullable village, phone and email columns to Member with an additive SQL migration. Admin create/edit, spreadsheet import and existing export now retain these fields; public member API responses omit private phone/email. The local schema sync succeeded without destructive flags. Production schema sync and deployment remain **PENDING**.
+- Local optimized build and typecheck passed, with existing repository lint warnings. Extended `scripts/verify-product-detail-fields.mjs` passed authenticated product creation, wholesale MOQ/tier persistence, enable/disable persistence, member contact create/update/admin read and anonymous public contact privacy. Temporary local fixtures and their audit records were cleaned. The initial run against the Next CLI server failed session authentication; the successful run used the repository's production `server.js` with its normal environment loading. No production data/forms were written. Production deployment remains blocked by the previously recorded SSH authentication failure; full-site parity and authenticated visual workflows remain open.
+
 ## 1. Executive Alignment & Core Mandate
 
 ### The Strict Development Rules

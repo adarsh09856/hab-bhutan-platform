@@ -89,6 +89,9 @@ export async function POST(req: NextRequest) {
         portraitUrl: portraitUrl || null,
         cidNumber: cleanCID,
         businessLicense: businessLicense || null,
+        village: String(body.village || '').trim() || null,
+        phone: String(body.phone || '').trim() || null,
+        email: String(body.email || '').trim().toLowerCase() || null,
         duesExpiryDate: expiry,
       },
       include: { craft: true, products: true },
@@ -172,6 +175,9 @@ export async function PATCH(req: NextRequest) {
     if (editFields.bio !== undefined) updateData.bio = editFields.bio;
     if (editFields.portraitUrl !== undefined) updateData.portraitUrl = editFields.portraitUrl;
     if (editFields.businessLicense !== undefined) updateData.businessLicense = editFields.businessLicense;
+    if (editFields.village !== undefined) updateData.village = String(editFields.village || '').trim() || null;
+    if (editFields.phone !== undefined) updateData.phone = String(editFields.phone || '').trim() || null;
+    if (editFields.email !== undefined) updateData.email = String(editFields.email || '').trim().toLowerCase() || null;
     if (editFields.duesExpiryDate !== undefined) updateData.duesExpiryDate = new Date(editFields.duesExpiryDate);
     if (editFields.cidNumber !== undefined) {
       const cleanCID = String(editFields.cidNumber).replace(/\D/g, '');
