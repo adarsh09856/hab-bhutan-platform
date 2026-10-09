@@ -212,7 +212,9 @@ export default function AdminProductsPage() {
   const handleOpenEdit = (p: any) => {
     setEditingProduct(p);
     const existingImages = Array.isArray(p.images) ? p.images : [];
-    const primaryImg = existingImages[0]?.url || p.images?.url || p.imageUrl || p.image_path || (p.code ? `/assets/photos/product-${p.code.toLowerCase()}.jpg` : '');
+    // Do not fabricate a file path from the SKU: products without a saved image
+    // must open with an empty upload field, not a broken preview URL.
+    const primaryImg = existingImages[0]?.url || p.images?.url || p.imageUrl || p.image_path || '';
     const extraImages = existingImages.slice(1).map((im: any) => typeof im === 'string' ? im : im?.url).filter(Boolean);
     setEditForm({
       id: p.id,
