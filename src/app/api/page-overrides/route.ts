@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +39,21 @@ function safeEditableUrl(value: string, allowContact: boolean) {
 
 export async function GET(req: NextRequest) {
   const pathname = normalizePath(req.nextUrl.searchParams.get('path'));
+  const allPages = req.nextUrl.searchParams.get('all') === '1';
+  let staffUser = null;
+  if (allPages) {
+    try {
+      staffUser = await requirePermission(req, 'content:edit');
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, error: error?.message || 'Staff login required.' },
+        { status: error?.statusCode || 500 }
+      );
+    }
+    if (!['super_admin', 'staff_operator'].includes(String(staffUser.roleSlug || '').toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
+    }
+  }
   try {
     const setting = await prisma.siteSetting.findUnique({
       where: { id: 'default' },
@@ -46,12 +61,7 @@ export async function GET(req: NextRequest) {
     });
     const trustBadges = (setting?.trustBadges as Record<string, unknown> | null) || {};
     const pages = (trustBadges.pageOverrides as Record<string, unknown> | null) || {};
-    if (req.nextUrl.searchParams.get('all') === '1') {
-      const user = await getSessionUser(req);
-      const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-      if (!user || !['super_admin', 'staff_operator'].includes(role)) {
-        return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
-      }
+    if (allPages) {
       return NextResponse.json({ success: true, pages }, {
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
       });
@@ -76,10 +86,9 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const user = await getSessionUser(req);
-    const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-    if (!user || !['super_admin', 'staff_operator'].includes(role)) {
-      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+    const user = await requirePermission(req, 'content:edit');
+    if (!['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -129,6 +138,6 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ success: true, pathname, key, override });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error?.message || 'Unable to save page content.' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error?.message || 'Unable to save page content.' }, { status: error?.statusCode || 500 });
   }
 }
