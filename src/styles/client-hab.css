@@ -752,8 +752,9 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 
 .outlet-lead{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-xl);
-  overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr;margin-bottom:20px;
+  overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);margin-bottom:20px;
 }
+.outlet-lead > *{min-width:0}
 .outlet-lead .frame{border:0;border-radius:0}
 .outlet-lead__body{padding:38px 40px}
 .outlet-lead__place{font-size:15px;color:var(--accent);margin:0 0 16px}
@@ -1984,7 +1985,7 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 }
 /* wider ratios where the slider stands in for a banner frame */
 .carousel--banner{aspect-ratio:24/9;border-radius:16px}
-.carousel--outlet{aspect-ratio:16/11;min-height:340px;border:0;border-radius:0}
+.carousel--outlet{width:100%;height:100%;aspect-ratio:auto;min-height:340px;border:0;border-radius:0}
 
 .carousel__track{position:absolute;inset:0}
 .carousel__slide{
@@ -2581,7 +2582,8 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
 }
 .outlet__hours:empty{display:none}
 
-.outlet-lead{grid-template-columns:1fr}
+.outlet-lead{grid-template-columns:minmax(0,1fr)}
+.outlet-lead .carousel--outlet{height:auto;aspect-ratio:16/11}
   .frame--wide{min-height:260px}
   .assurance{grid-template-columns:repeat(2,1fr)}
   .assurance__cell:nth-child(2n){border-right:0}

@@ -25,7 +25,7 @@ export default function OutletGallery({ image, galleryImages = [], name }: { ima
   }, [paused, slides.length]);
 
   return <div className="carousel carousel--outlet" role="region" aria-label={`${name} photographs`}
-    style={{ minHeight: 280, height: '100%' }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+    style={{ minHeight: 280 }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
     onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}>
     <div className="carousel__track">
       {slides.map((src, i) => <div key={src} className={`carousel__slide ${i === index % slides.length ? 'is-on' : ''}`} aria-hidden={i !== index % slides.length}>
