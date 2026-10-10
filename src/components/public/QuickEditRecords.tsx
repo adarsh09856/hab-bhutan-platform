@@ -181,8 +181,9 @@ const configs: Record<string, Config> = {
     fields: [
       { key: 'key', label: 'Craft key', required: true }, { key: 'english', label: 'English name', required: true },
       { key: 'name', label: 'Display name', required: true }, { key: 'dzongkha', label: 'Dzongkha name' },
-      { key: 'description', label: 'Short description', kind: 'long' }, { key: 'longDescription', label: 'Full description', kind: 'long' },
-      { key: 'history', label: 'History', kind: 'long' }, { key: 'technique', label: 'Technique', kind: 'long' },
+      { key: 'description', label: 'Short description', kind: 'long' }, { key: 'descriptionDz', label: 'Short description · Dzongkha', kind: 'long' },
+      { key: 'longDescription', label: 'Full description', kind: 'long' }, { key: 'longDescriptionDz', label: 'Full description · Dzongkha', kind: 'long' },
+      { key: 'history', label: 'History', kind: 'long' }, { key: 'historyDz', label: 'History · Dzongkha', kind: 'long' }, { key: 'technique', label: 'Technique', kind: 'long' },
       { key: 'materials', label: 'Materials' }, { key: 'practisedIn', label: 'Practised in' },
       { key: 'typicalProducts', label: 'Typical products', kind: 'long' }, { key: 'shopNote', label: 'Shop note', kind: 'long' },
       { key: 'bannerUrl', label: 'Craft image', kind: 'image' }, { key: 'sortOrder', label: 'Display order', kind: 'number' },

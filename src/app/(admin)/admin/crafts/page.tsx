@@ -13,12 +13,15 @@ interface Craft {
   english: string;
   dzongkha?: string | null;
   description: string;
+  descriptionDz?: string | null;
   longDescription?: string | null;
+  longDescriptionDz?: string | null;
   typicalProducts?: string | null;
   technique?: string | null;
   materials?: string | null;
   practisedIn?: string | null;
   history?: string | null;
+  historyDz?: string | null;
   shopNote?: string | null;
   bannerUrl?: string | null;
   sortOrder: number;
@@ -200,11 +203,33 @@ export default function AdminCraftsPage() {
               </div>
 
               <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Short description · Dzongkha</label>
+                <textarea
+                  rows={3}
+                  lang="dz"
+                  value={editing.descriptionDz || ''}
+                  onChange={(e) => setEditing({ ...editing, descriptionDz: e.target.value })}
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24]"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">How it is made — full description</label>
                 <textarea
                   rows={6}
                   value={editing.longDescription || ''}
                   onChange={(e) => setEditing({ ...editing, longDescription: e.target.value })}
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">How it is made · Dzongkha</label>
+                <textarea
+                  rows={6}
+                  lang="dz"
+                  value={editing.longDescriptionDz || ''}
+                  onChange={(e) => setEditing({ ...editing, longDescriptionDz: e.target.value })}
                   className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24]"
                 />
               </div>
@@ -260,6 +285,17 @@ export default function AdminCraftsPage() {
                   onChange={(e) => setEditing({ ...editing, history: e.target.value })}
                   placeholder="Historical background of this craft in Bhutan..."
                   className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24] shadow-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">History · Dzongkha</label>
+                <textarea
+                  rows={3}
+                  lang="dz"
+                  value={editing.historyDz || ''}
+                  onChange={(e) => setEditing({ ...editing, historyDz: e.target.value })}
+                  className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg text-xs outline-none focus:border-[#8b2e24]"
                 />
               </div>
 

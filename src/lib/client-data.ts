@@ -6,8 +6,12 @@ export interface CraftData {
   english: string;
   sort_order: number;
   description: string;
+  descriptionDz?: string | null;
   history?: string;
+  historyDz?: string | null;
   long_description?: string;
+  longDescriptionDz?: string | null;
+  dzongkha?: string | null;
   technique?: string;
   materials?: string;
   practised_in?: string;

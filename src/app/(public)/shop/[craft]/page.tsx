@@ -16,6 +16,7 @@ interface ShopCraft {
   english: string;
   dzongkha?: string;
   description?: string;
+  descriptionDz?: string | null;
   bannerUrl?: string;
 }
 
@@ -185,7 +186,7 @@ function ShopGridContent() {
             <p className="font-lora text-sm sm:text-base lg:text-[16.5px] text-[#6B5A4C] max-w-[70ch] leading-[1.55]">
               {isAll
                 ? t('shop.intro')
-                : currentCraft?.description || ''}
+                : language === 'dz' && currentCraft?.descriptionDz ? currentCraft.descriptionDz : currentCraft?.description || ''}
             </p>
           </div>
 

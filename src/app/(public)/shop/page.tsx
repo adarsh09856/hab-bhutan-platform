@@ -17,6 +17,7 @@ interface ShopCraft {
   english: string;
   dzongkha?: string;
   description?: string;
+  descriptionDz?: string | null;
 }
 
 interface ProductItem {
@@ -232,7 +233,7 @@ function ShopContent() {
 
             <p className="section__lede" id="shopLede" style={{ marginBottom: '18px' }}>
               {selectedCraft
-                ? activeCraftMeta?.description || ''
+                ? language === 'dz' && activeCraftMeta?.descriptionDz ? activeCraftMeta.descriptionDz : activeCraftMeta?.description || ''
                 : t('shop.intro')}
             </p>
 

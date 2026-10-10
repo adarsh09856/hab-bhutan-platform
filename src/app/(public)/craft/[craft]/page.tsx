@@ -16,8 +16,10 @@ import { useCurrency } from '@/context/CurrencyContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 import { getCraftFacts } from '@/lib/craft-facts';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function CraftProfilePage() {
+  const { language } = useLanguage();
   const params = useParams();
   const craftKey = (params.craft as string) || 'thagzo';
 
@@ -131,17 +133,23 @@ export default function CraftProfilePage() {
     'photo — the maker at work',
   ];
 
-  const historyParas = (craft.history || '')
+  const historyText = language === 'dz' && craft.historyDz ? craft.historyDz : craft.history || '';
+  const descriptionText = language === 'dz' && craft.descriptionDz ? craft.descriptionDz : craft.description;
+  const longDescriptionText = language === 'dz' && craft.longDescriptionDz
+    ? craft.longDescriptionDz
+    : craft.long_description || craft.description || '';
+
+  const historyParas = historyText
     .trim()
     .split(/\n\s*\n/)
     .filter(Boolean);
 
-  const longDescParas = (craft.long_description || craft.description || '')
+  const longDescParas = longDescriptionText
     .trim()
     .split(/\n\s*\n/)
     .filter(Boolean);
 
-  const historyWordCount = (craft.history || '')
+  const historyWordCount = historyText
     .trim()
     .split(/\s+/)
     .filter(Boolean).length;
@@ -174,9 +182,9 @@ export default function CraftProfilePage() {
         <div className="craftpage-hero">
           <div>
             <span className="craftpage-hero__badge">{badgeNum}</span>
-            <h1 className="display display--hero">{craft.name}</h1>
+            <h1 className="display display--hero">{language === 'dz' && craft.dzongkha ? craft.dzongkha : craft.name}</h1>
             <p className="craftpage-hero__en">{craft.english}</p>
-            <p className="craftpage-hero__lede">{craft.description}</p>
+            <p className="craftpage-hero__lede">{descriptionText}</p>
             <div className="actions">
               <Link className="btn btn--accent" href={`/shop/${craft.key}`}>
                 Shop {craft.name} →

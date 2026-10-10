@@ -1,0 +1,4 @@
+ALTER TABLE "Craft"
+  ADD COLUMN IF NOT EXISTS "descriptionDz" TEXT,
+  ADD COLUMN IF NOT EXISTS "longDescriptionDz" TEXT,
+  ADD COLUMN IF NOT EXISTS "historyDz" TEXT;

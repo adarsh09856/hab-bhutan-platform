@@ -20,14 +20,18 @@ async function main() {
 
     (prisma.craft as any).findMany = async () => [{
       key: 'thagzo', name: 'Saved craft', english: 'Saved weaving', dzongkha: '',
-      description: 'Saved description', longDescription: null, typicalProducts: null,
-      history: null, bannerUrl: null, isActive: true, sortOrder: 1,
+      description: 'Saved description', descriptionDz: 'ལག་བཟོའི་གསལ་བཤད།',
+      longDescription: 'Saved long description', longDescriptionDz: 'ལག་བཟོའི་རྒྱས་བཤད།',
+      typicalProducts: null, history: 'Saved history', historyDz: 'ལོ་རྒྱུས།',
+      bannerUrl: null, isActive: true, sortOrder: 1,
     }];
     const saved = await GET(new NextRequest('http://localhost/api/crafts'));
     const body = await saved.json();
     assert.equal(body.crafts[0].name, 'Saved craft');
     assert.equal(body.crafts[0].description, 'Saved description');
-    assert.equal(body.crafts[0].history, null);
+    assert.equal(body.crafts[0].descriptionDz, 'ལག་བཟོའི་གསལ་བཤད།');
+    assert.equal(body.crafts[0].longDescriptionDz, 'ལག་བཟོའི་རྒྱས་བཤད།');
+    assert.equal(body.crafts[0].historyDz, 'ལོ་རྒྱུས།');
     assert.equal(body.crafts[0].bannerUrl, '/images/crafts/thagzo.jpg');
 
     (prisma.craft as any).findMany = async () => { throw new Error('Simulated database outage'); };

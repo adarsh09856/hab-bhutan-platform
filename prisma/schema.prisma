@@ -92,13 +92,16 @@ model Craft {
   english     String
   dzongkha    String?
   description String    @db.Text
+  descriptionDz String? @db.Text
   longDescription String? @db.Text
+  longDescriptionDz String? @db.Text
   typicalProducts String? @db.Text
   bannerUrl   String?
   technique   String?   @db.Text
   materials   String?   @db.Text
   practisedIn String?   @db.Text
   history     String?   @db.Text
+  historyDz   String?   @db.Text
   shopNote    String?   @db.Text
   sortOrder   Int       @default(0)
   isActive    Boolean   @default(true)
