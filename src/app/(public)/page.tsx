@@ -1442,14 +1442,11 @@ export default function HomePage() {
         {masters.length > 0 ? <div className="grid grid--3">
           {masters.map((m, idx) => (
             <Link key={idx} className="card honour" href="/masters" style={{ color: 'inherit' }}>
-              <figure className="frame frame--square has-image" style={{ position: 'relative', overflow: 'hidden' }}>
-                {m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path)
-                  ? <img src={m.image_path} alt={`${m.name}, master craftsperson`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#e8dfd0] text-[#6d5949]" role="img" aria-label={`Portrait pending for ${m.name}`}>
-                    <span className="text-4xl font-semibold">{m.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}</span>
-                    <span className="text-xs">Portrait to be supplied</span>
-                  </div>}
-              </figure>
+              {m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path) && (
+                <figure className="frame frame--square has-image" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <img src={m.image_path} alt={`${m.name}, master craftsperson`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </figure>
+              )}
               <div className="card__body">
                 <span className="honour__badge">{m.honour}</span>
                 <h3 className="card__title">{m.name}</h3>
@@ -1603,21 +1600,8 @@ export default function HomePage() {
         <SectionEditBadge label="News & Events" studioHref="/admin/content" {...getMoveProps('news')} />
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Newsroom</p>
-            <h2 className="display display--band">News, events &amp; reports</h2>
-            <p className="section__lede">
-              The three most recent updates, newest first. Stay informed, stay empowered.
-            </p>
-          </div>
-          <Link className="btn btn--ink btn--sm" href="/news">
-            All updates →
-          </Link>
-        </div>
-
-        <div className="section__head">
-          <div>
-            <p className="eyebrow eyebrow--accent">{isDz ? 'གནས་ཚུལ་དང་བྱུང་རིམ' : 'Dispatches & updates'}</p>
-            <h2 className="display display--band">{isDz ? 'གསར་ཤོས་དང་བྱུང་རིམ' : 'Stay informed, stay empowered.'}</h2>
+            <p className="eyebrow eyebrow--accent">{isDz ? 'གནས་ཚུལ་ཁང' : 'Newsroom'}</p>
+            <h2 className="display display--band">{isDz ? 'གནས་ཚུལ་དང་བྱུང་རིམ' : 'News, events & reports'}</h2>
             <p className="section__lede">
               {isDz
                 ? 'འབྲུག་ལག་བཟོ་ཚོགས་པའི་ ལས་རིམ་དང་ སྦྱོང་བརྡར་ དེ་ལས་ བྱུང་རིམ་གྱི་གནས་ཚུལ་ཚུ།'
