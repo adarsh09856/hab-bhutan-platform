@@ -9,11 +9,13 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ShopCraft {
   key: string;
   name: string;
   english: string;
+  dzongkha?: string;
   description?: string;
 }
 
@@ -31,6 +33,7 @@ interface ProductItem {
 }
 
 function ShopContent() {
+  const { language, t } = useLanguage();
   const searchParams = useSearchParams();
   const initialCraft = searchParams.get('craft') || '';
 
@@ -164,14 +167,14 @@ function ShopContent() {
         <ProductQuickEdit isOpen={productEditorOpen} onClose={() => setProductEditorOpen(false)} />
         {/* 1. Breadcrumbs */}
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/shop" onClick={() => setSelectedCraft('')}>E-shop</Link> / <span>{activeCraftMeta ? activeCraftMeta.name : 'All crafts'}</span>
+          <Link href="/">{t('nav.home')}</Link> / <Link href="/shop" onClick={() => setSelectedCraft('')}>{t('shop.title')}</Link> / <span>{activeCraftMeta ? language === 'dz' && activeCraftMeta.dzongkha ? activeCraftMeta.dzongkha : activeCraftMeta.name : t('shop.all_crafts')}</span>
         </p>
 
         <div className="shopgrid">
 
           {/* 2. Left Rail: Categories & Sort */}
           <aside>
-            <h2 className="railtitle">Craft category</h2>
+            <h2 className="railtitle">{t('shop.filter_by_craft')}</h2>
             <div className="rail" id="shopRail">
               <button
                 type="button"
@@ -179,7 +182,7 @@ function ShopContent() {
                 onClick={() => setSelectedCraft('')}
                 style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, cursor: 'pointer' }}
               >
-                <span className="rail__name">All crafts</span>
+                <span className="rail__name">{t('shop.all_crafts')}</span>
                 <span className="rail__n">{products.length}</span>
               </button>
 
@@ -192,27 +195,27 @@ function ShopContent() {
                   style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, cursor: 'pointer' }}
                 >
                   <span>
-                    <span className="rail__name">{c.name}</span>
+                    <span className="rail__name">{language === 'dz' && c.dzongkha ? c.dzongkha : c.name}</span>
                     <span className="rail__en">{c.english}</span>
                   </span>
                   <span className="rail__n">{craftCounts[c.key] || 0}</span>
                 </button>
               ))}
-              {craftsState !== 'ready' && <p className="px-3 py-2 text-sm" role="status">{craftsState === 'loading' ? 'Loading craft categories…' : 'Craft categories are temporarily unavailable.'}</p>}
-              {craftsState === 'ready' && crafts.length === 0 && <p className="px-3 py-2 text-sm">No craft categories are published yet.</p>}
+              {craftsState !== 'ready' && <p className="px-3 py-2 text-sm" role="status">{craftsState === 'loading' ? t('shop.loading_craft') : t('shop.craft_error')}</p>}
+              {craftsState === 'ready' && crafts.length === 0 && <p className="px-3 py-2 text-sm">{t('shop.no_crafts')}</p>}
             </div>
 
             <div className="railtitle" id="shopSortWrap" style={{ marginTop: '22px' }}>
-              <label className="field__label" htmlFor="shopSort">Sort</label>
+              <label className="field__label" htmlFor="shopSort">{t('shop.sort_by')}</label>
               <select
                 className="input"
                 id="shopSort"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as any)}
               >
-                <option value="new">Newest</option>
-                <option value="low">Price: low to high</option>
-                <option value="high">Price: high to low</option>
+                <option value="new">{t('shop.sort_new')}</option>
+                <option value="low">{t('shop.sort_low')}</option>
+                <option value="high">{t('shop.sort_high')}</option>
               </select>
             </div>
           </aside>
@@ -220,17 +223,17 @@ function ShopContent() {
           {/* 3. Main Products Area */}
           <div>
             <p className="shopswitch">
-              Buying for a shop, hotel or distributor? <Link href="/wholesale">See trade pricing and MOQs →</Link>
+              {t('shop.trade_prompt')} <Link href="/wholesale">{t('shop.trade_link')}</Link>
             </p>
 
             <h1 className="display display--band" id="shopTitle">
-              {selectedCraft ? activeCraftMeta ? `${activeCraftMeta.name} — ${activeCraftMeta.english}` : craftsState === 'loading' ? 'Loading craft…' : 'Craft information unavailable' : 'The HAB e-shop'}
+              {selectedCraft ? activeCraftMeta ? language === 'dz' && activeCraftMeta.dzongkha ? activeCraftMeta.dzongkha : `${activeCraftMeta.name} — ${activeCraftMeta.english}` : craftsState === 'loading' ? t('shop.loading_craft') : t('shop.craft_unavailable') : t('shop.title')}
             </h1>
 
             <p className="section__lede" id="shopLede" style={{ marginBottom: '18px' }}>
               {selectedCraft
                 ? activeCraftMeta?.description || ''
-                : 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category on the left.'}
+                : t('shop.intro')}
             </p>
 
             <div className="actions" style={{ marginBottom: '22px' }}>
@@ -240,16 +243,16 @@ function ShopContent() {
                   className="btn btn--accent btn--sm"
                   onClick={() => setSelectedCraft('')}
                 >
-                  View all products
+                  {t('menu.all_products')}
                 </button>
               )}
               {selectedCraft && (
                 <Link className="btn btn--outline btn--sm" href={`/craft/${selectedCraft}`}>
-                  About this craft →
+                  {t('shop.about_craft')}
                 </Link>
               )}
               <span className="craft__count" id="shopCount" style={{ margin: 0, alignSelf: 'center' }}>
-                {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'product' : 'products'}
+                {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? t('shop.product_one') : t('shop.product_many')}
               </span>
               <button
                 type="button"
@@ -258,14 +261,14 @@ function ShopContent() {
                 title="Shuffle products catalog"
                 style={{ cursor: 'pointer', marginLeft: 'auto' }}
               >
-                🔀 Shuffle Catalog
+                🔀 {t('shop.shuffle')}
               </button>
             </div>
 
             {catalogueState === 'loading' ? (
-              <div className="shopempty" role="status">Loading current products…</div>
+              <div className="shopempty" role="status">{t('shop.loading_products')}</div>
             ) : catalogueState === 'error' ? (
-              <div className="shopempty" role="alert">The product catalogue is temporarily unavailable. Please refresh this page shortly.</div>
+              <div className="shopempty" role="alert">{t('shop.catalogue_error')}</div>
             ) : filteredAndSortedProducts.length > 0 ? (
               <div className="grid grid--3" id="shopProducts">
                 {filteredAndSortedProducts.map((p) => (
@@ -298,7 +301,7 @@ function ShopContent() {
                           type="button"
                           onClick={() => addToCart(p.code)}
                         >
-                          Add
+                          {t('shop.add_to_cart')}
                         </button>
                       </div>
                     </div>
@@ -308,26 +311,26 @@ function ShopContent() {
             ) : (
               <div className="shopempty" id="shopEmpty">
                 <h2 className="shopempty__title">
-                  Nothing online in {activeCraftMeta ? activeCraftMeta.name : 'the shop'} yet
+                  {t('shop.empty_online')} {activeCraftMeta ? language === 'dz' && activeCraftMeta.dzongkha ? activeCraftMeta.dzongkha : activeCraftMeta.name : t('shop.the_shop')}
                 </h2>
                 <p className="shopempty__body">
                   {searchQuery.trim()
-                    ? 'No saved products match this search. Try another term or browse all crafts.'
-                    : 'No saved products are available in this view right now. Contact the Secretariat for craft enquiries.'}
+                    ? t('shop.no_search_results')
+                    : t('shop.no_products')}
                 </p>
                 <div className="actions" style={{ justifyContent: 'center' }}>
                   <Link
                     className="btn btn--accent"
                     href={`/contact?topic=commission${activeCraftMeta ? `&craft=${encodeURIComponent(activeCraftMeta.name)}` : ''}`}
                   >
-                    Enquire about a commission
+                    {t('shop.enquire_commission')}
                   </Link>
                   <button
                     type="button"
                     className="btn btn--outline"
                     onClick={() => { setSelectedCraft(''); setSearchQuery(''); }}
                   >
-                    Browse all crafts
+                    {t('shop.all_crafts')}
                   </button>
                 </div>
               </div>
@@ -342,31 +345,31 @@ function ShopContent() {
         <div className="assurance">
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">T</span>
-              <span>racked Origin</span>
+              {language === 'en' && <span className="assurance__initial">T</span>}
+              <span>{language === 'en' ? 'racked Origin' : t('shop.origin_title')}</span>
             </h3>
-            <p className="assurance__body">Materials, makers, and worldwide shipping are 100% traceable.</p>
+            <p className="assurance__body">{t('shop.origin_body')}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">R</span>
-              <span>egistered Chain</span>
+              {language === 'en' && <span className="assurance__initial">R</span>}
+              <span>{language === 'en' ? 'egistered Chain' : t('shop.registered_title')}</span>
             </h3>
-            <p className="assurance__body">Every artisan, supplier, and input is strictly verified.</p>
+            <p className="assurance__body">{t('shop.registered_body')}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">U</span>
-              <span>pfront &amp; Fair</span>
+              {language === 'en' && <span className="assurance__initial">U</span>}
+              <span>{language === 'en' ? 'pfront & Fair' : t('shop.fair_title')}</span>
             </h3>
-            <p className="assurance__body">Pre-paid artisan pricing cuts out unethical markups.</p>
+            <p className="assurance__body">{t('shop.fair_body')}</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">E</span>
-              <span>ncrypted Escrow</span>
+              {language === 'en' && <span className="assurance__initial">E</span>}
+              <span>{language === 'en' ? 'vidence-Based Payment' : t('shop.escrow_title')}</span>
             </h3>
-            <p className="assurance__body">mBoB and bank transfers are reviewed by HAB. Online card processing is not configured.</p>
+            <p className="assurance__body">{t('shop.escrow_body')}</p>
           </div>
         </div>
       </section>
@@ -376,8 +379,9 @@ function ShopContent() {
 }
 
 export default function ShopPage() {
+  const { t } = useLanguage();
   return (
-    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">The HAB e-shop</h1><p>Loading shop…</p></section></main>}>
+    <Suspense fallback={<main id="main"><section className="section"><h1 className="display display--page">{t('shop.title')}</h1><p>{t('shop.loading_products')}</p></section></main>}>
       <ShopContent />
     </Suspense>
   );

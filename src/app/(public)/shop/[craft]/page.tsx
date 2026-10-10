@@ -8,6 +8,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/public/ProductCard';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ShopCraft {
   key: string;
@@ -19,6 +20,7 @@ interface ShopCraft {
 }
 
 function ShopGridContent() {
+  const { language, t } = useLanguage();
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -94,9 +96,9 @@ function ShopGridContent() {
       <ProductQuickEdit isOpen={productEditorOpen} onClose={() => setProductEditorOpen(false)} />
       {/* Breadcrumbs */}
       <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">
-        <Link href="/" className="hover:underline">Home</Link> /{' '}
-        <Link href="/shop" className="hover:underline">E-shop</Link> /{' '}
-        <span>{isAll ? 'All crafts' : currentCraft?.name}</span>
+        <Link href="/" className="hover:underline">{t('nav.home')}</Link> /{' '}
+        <Link href="/shop" className="hover:underline">{t('shop.title')}</Link> /{' '}
+        <span>{isAll ? t('shop.all_crafts') : language === 'dz' ? currentCraft?.dzongkha || currentCraft?.name : currentCraft?.name}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[246px_1fr] gap-8 lg:gap-11 items-start">
@@ -104,7 +106,7 @@ function ShopGridContent() {
         <aside className="lg:sticky lg:top-[100px] flex flex-col gap-4 sm:gap-6">
           <div>
             <div className="font-figtree font-bold text-xs sm:text-[13.5px] text-[#33261F] uppercase tracking-[0.05em] mb-2 sm:mb-3">
-              Craft category
+              {t('shop.filter_by_craft')}
             </div>
             <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 gap-1.5 lg:gap-0 bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-2 lg:p-0 lg:divide-y lg:divide-[#EFE9DE] no-scrollbar">
               <Link
@@ -115,7 +117,7 @@ function ShopGridContent() {
                     : 'text-[#33261F] hover:bg-[#F4F0E7]'
                 }`}
               >
-                <span>All crafts</span>
+                <span>{t('shop.all_crafts')}</span>
                 <span className="font-mono text-[10px] sm:text-[11px] text-[#6B5A4C] bg-white/70 px-1.5 py-0.5 rounded">
                   {productsList.length}
                 </span>
@@ -136,7 +138,7 @@ function ShopGridContent() {
                   >
                     <div>
                       <div className={`font-figtree text-xs sm:text-[13.5px] whitespace-nowrap lg:whitespace-normal ${isActive ? 'font-bold' : 'font-medium'}`}>
-                        {c.name}
+                        {language === 'dz' ? c.dzongkha || c.name : c.name}
                       </div>
                       <div className="hidden lg:block font-lora text-[11.5px] text-[#6B5A4C]">
                         {c.english}
@@ -148,29 +150,29 @@ function ShopGridContent() {
                   </Link>
                 );
               })}
-              {craftsError && <p className="p-3 text-sm" role="alert">Craft categories are temporarily unavailable.</p>}
+              {craftsError && <p className="p-3 text-sm" role="alert">{t('shop.craft_error')}</p>}
             </div>
           </div>
 
           {/* Sort Select */}
           <div className="flex sm:flex-col items-center sm:items-start justify-between gap-2">
             <label className="font-figtree font-bold text-xs sm:text-[13.5px] text-[#33261F] uppercase tracking-[0.05em] block mb-0 sm:mb-2 flex-none">
-              Sort by
+              {t('shop.sort_by')}
             </label>
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value as any)}
               className="w-full sm:w-full max-w-[200px] sm:max-w-none bg-[#FFFCF8] border border-[#CDBEA8] rounded-[8px] p-2 sm:p-2.5 font-figtree text-xs sm:text-[13.5px] text-[#33261F] outline-none"
             >
-              <option value="new">Newest additions</option>
-              <option value="low">Price: low to high</option>
-              <option value="high">Price: high to low</option>
+              <option value="new">{t('shop.sort_new')}</option>
+              <option value="low">{t('shop.sort_low')}</option>
+              <option value="high">{t('shop.sort_high')}</option>
             </select>
           </div>
 
           {/* Shipping Policy Note */}
           <div className="hidden lg:block bg-[#FFFCF8] border border-[#E4DDD1] rounded-[10px] p-4 text-[13px] font-lora text-[#6B5A4C] leading-[1.5]">
-            EMS / Bhutan Post worldwide, 7–14 days. Duties and customs are payable on arrival — see the notes at checkout.
+            {t('shop.shipping_note')}
           </div>
         </aside>
 
@@ -178,11 +180,11 @@ function ShopGridContent() {
         <div className="flex flex-col gap-6">
           <div>
             <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[42px] font-normal leading-[1.1] text-[#33261F] mb-2">
-              {isAll ? 'The HAB e-shop' : currentCraft ? `${currentCraft.name} — ${currentCraft.english}` : craftsLoading ? 'Loading craft…' : 'Craft information unavailable'}
+              {isAll ? t('shop.title') : currentCraft ? language === 'dz' && currentCraft.dzongkha ? currentCraft.dzongkha : `${currentCraft.name} — ${currentCraft.english}` : craftsLoading ? t('shop.loading_craft') : t('shop.craft_unavailable')}
             </h1>
             <p className="font-lora text-sm sm:text-base lg:text-[16.5px] text-[#6B5A4C] max-w-[70ch] leading-[1.55]">
               {isAll
-                ? 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category.'
+                ? t('shop.intro')
                 : currentCraft?.description || ''}
             </p>
           </div>
@@ -198,10 +200,10 @@ function ShopGridContent() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-3 left-3 sm:left-4 z-10 flex flex-wrap items-center gap-2 sm:gap-3 max-w-[90%]">
                 <span className="font-figtree font-bold text-sm sm:text-[17px] text-white">
-                  {currentCraft.name} ({currentCraft.dzongkha})
+                  {currentCraft.name}{currentCraft.dzongkha?.trim() ? ` (${currentCraft.dzongkha})` : ''}
                 </span>
                 <span className="font-mono text-[10px] sm:text-[11px] text-[#F4F0E7]/90 bg-[#33261F]/80 backdrop-blur-sm px-2 sm:px-2.5 py-0.5 sm:py-1 rounded truncate">
-                  {currentCraft.english} · Living Zorig Chusum
+                  {currentCraft.english} · {t('shop.living_zorig')}
                 </span>
               </div>
             </div>
@@ -216,7 +218,7 @@ function ShopGridContent() {
             </div>
           ) : catalogueError ? (
             <div className="border border-[#CDBEA8] rounded-[14px] p-6 sm:p-12 text-center my-6" role="alert">
-              The product catalogue is temporarily unavailable. Please refresh this page shortly.
+              {t('shop.catalogue_error')}
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-[22px]">
@@ -239,23 +241,23 @@ function ShopGridContent() {
             /* Empty State Contract: Section 2.6.3 */
             <div className="border-2 border-dashed border-[#CDBEA8] rounded-[14px] p-6 sm:p-12 text-center flex flex-col items-center justify-center my-6">
               <h3 className="font-marcellus text-xl sm:text-[28px] font-normal text-[#33261F] mb-3">
-                Nothing listed in {currentCraft?.name || 'this craft'} right now
+                {t('shop.empty_title')} {language === 'dz' ? currentCraft?.dzongkha || currentCraft?.name : currentCraft?.name || t('shop.this_craft')}
               </h3>
               <p className="font-lora text-xs sm:text-[16px] text-[#6B5A4C] max-w-[58ch] mb-6 sm:mb-8 leading-[1.6]">
-                No saved products are available in this craft right now. Contact the Secretariat to ask about a custom piece.
+                {t('shop.empty_body')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link
-                  href="/about#contact"
+                  href={`/contact?topic=commission${currentCraft ? `&craft=${encodeURIComponent(currentCraft.name)}` : ''}`}
                   className="font-figtree font-semibold text-xs sm:text-[14.5px] bg-[#33261F] text-[#F4F0E7] px-6 py-3.5 rounded-[7px] hover:bg-[#8B2E24] transition-colors"
                 >
-                  Commission a piece
+                  {t('shop.commission')}
                 </Link>
                 <Link
                   href="/shop/all"
                   className="font-figtree font-semibold text-xs sm:text-[14.5px] border border-[#CDBEA8] text-[#33261F] px-6 py-3.5 rounded-[7px] hover:border-[#33261F] transition-colors"
                 >
-                  Browse all crafts →
+                  {t('shop.browse_all')}
                 </Link>
               </div>
             </div>
@@ -267,8 +269,9 @@ function ShopGridContent() {
 }
 
 export default function ShopGridPage() {
+  const { t } = useLanguage();
   return (
-    <React.Suspense fallback={<div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-sm font-mono text-[#6B5A4C]">Loading craft collection...</div>}>
+    <React.Suspense fallback={<div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-sm font-mono text-[#6B5A4C]">{t('shop.loading_craft')}</div>}>
       <ShopGridContent />
     </React.Suspense>
   );
