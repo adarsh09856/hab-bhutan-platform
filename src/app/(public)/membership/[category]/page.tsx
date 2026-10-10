@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { CLIENT_DATA, getMembershipCategoryByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -16,9 +15,11 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const { category } = await params;
   let dbCat: any = null;
   try {
-    dbCat = await prisma.membershipCategory.findUnique({ where: { key: category } });
-  } catch {}
-  const cat = dbCat || getMembershipCategoryByKey(category);
+    dbCat = await prisma.membershipCategory.findFirst({ where: { key: category, isActive: true } });
+  } catch {
+    return { title: 'Membership categories temporarily unavailable · HAB' };
+  }
+  const cat = dbCat;
   if (!cat) return { title: 'Category Not Found' };
 
   return {
@@ -31,48 +32,44 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
   const { category } = await params;
   let dbCat: any = null;
   try {
-    dbCat = await prisma.membershipCategory.findUnique({ where: { key: category } });
-  } catch {}
+    dbCat = await prisma.membershipCategory.findFirst({ where: { key: category, isActive: true } });
+  } catch {
+    return (
+      <main id="main">
+        <section className="section section--narrow">
+          <h1 className="display display--page">Membership category</h1>
+          <p className="lede" role="alert">Membership categories are temporarily unavailable.</p>
+        </section>
+      </main>
+    );
+  }
 
-  const fallback = getMembershipCategoryByKey(category);
-  const rawCat = dbCat || fallback;
+  const rawCat = dbCat;
 
   if (!rawCat) {
     notFound();
   }
 
+  const docs = rawCat.documents && typeof rawCat.documents === 'object' ? (rawCat.documents as any) : {};
   const cat = {
     ...rawCat,
-    status: rawCat.shortName || rawCat.status || 'Active Sector Member',
-    tagline: rawCat.tagline || rawCat.description?.slice(0, 100) || '',
-    meaning: rawCat.meaning || rawCat.description || '',
-    fee: rawCat.fee || `Nu. ${rawCat.duesBTN?.toLocaleString()}`,
-    fee_note: rawCat.fee_note || 'per year, renewable each July',
-    criteria: Array.isArray(rawCat.criteria) ? rawCat.criteria : (rawCat.eligibility || []),
-    how: Array.isArray(rawCat.how) ? rawCat.how : (rawCat.documents || ['Complete the online application.', 'Submit verification documents.', 'Pay annual dues.']),
-    benefits: Array.isArray(rawCat.benefits) ? rawCat.benefits : (rawCat.benefits || []),
+    status: rawCat.shortName || '',
+    tagline: rawCat.description?.slice(0, 100) || '',
+    meaning: rawCat.description || '',
+    fee: Number.isFinite(Number(rawCat.duesBTN)) ? `Nu. ${Number(rawCat.duesBTN).toLocaleString()}` : '',
+    fee_note: typeof docs.feeNote === 'string' ? docs.feeNote : '',
+    criteria: Array.isArray(rawCat.eligibility) ? rawCat.eligibility : [],
+    how: Array.isArray(docs.process) ? docs.process : [],
+    benefits: Array.isArray(rawCat.benefits) ? rawCat.benefits : [],
+    note: typeof docs.note === 'string' ? docs.note : '',
   };
 
-  const otherCategories = CLIENT_DATA.membershipCategories.filter((c) => c.key !== cat.key);
+  const otherCategories = await prisma.membershipCategory.findMany({
+    where: { isActive: true, key: { not: cat.key } },
+    orderBy: [{ sortOrder: 'asc' }, { duesBTN: 'asc' }],
+  }).catch(() => []);
 
-  const CATEGORY_PHOTO_MAP: Record<string, string> = {
-    'individual-artisan': '/assets/photos/hero-1-weaving.jpg',
-    'craft-enterprise': '/assets/photos/hero-4-textiles.jpg',
-    'cluster': '/assets/photos/hero-2-punakha.jpg',
-    'associate': '/assets/photos/about-hab.jpg',
-    'honorary': '/assets/photos/hero-3-clay.jpg',
-  };
-
-  const photoPool = [
-    '/assets/photos/hero-1-weaving.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/assets/photos/hero-2-punakha.jpg',
-  ];
-  const docs = rawCat.documents && typeof rawCat.documents === 'object' ? (rawCat.documents as any) : {};
-  const catIndex = CLIENT_DATA.membershipCategories.findIndex((c) => c.key === cat.key);
-  const bannerImg = rawCat.bannerImageUrl || docs.bannerImageUrl || rawCat.imageUrl || rawCat.bannerUrl || rawCat.image_path || CATEGORY_PHOTO_MAP[cat.key] || photoPool[catIndex >= 0 ? catIndex % photoPool.length : 0];
+  const bannerImg = docs.bannerImageUrl || '';
 
   const applyTierMapping: Record<string, string> = {
     'individual-artisan': 'individual',
@@ -100,14 +97,12 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
         </p>
 
         <div className="detailhero">
-          <p className="eyebrow eyebrow--accent">
-            Membership category · {cat.status}
-          </p>
+          {cat.status && <p className="eyebrow eyebrow--accent">Membership category · {cat.status}</p>}
           <h1 className="display display--page">{cat.name}</h1>
           <p className="lede lede--wide">{cat.tagline}</p>
         </div>
 
-        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+        {bannerImg && <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={cat.name}
@@ -116,33 +111,29 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-        </figure>
+        </figure>}
       </section>
 
       {/* Facts */}
       <section className="section section--tight">
         <div className="craftfacts">
-          <div className="craftfacts__cell">
+          {cat.status && <div className="craftfacts__cell">
             <span className="craftfacts__key">Status</span>
             <span className="craftfacts__val">{cat.status}</span>
-          </div>
-          <div className="craftfacts__cell">
+          </div>}
+          {cat.fee && <div className="craftfacts__cell">
             <span className="craftfacts__key">Annual dues</span>
             <span className="craftfacts__val">{cat.fee}</span>
-          </div>
-          <div className="craftfacts__cell">
+          </div>}
+          {cat.fee_note && <div className="craftfacts__cell">
             <span className="craftfacts__key">Renewal</span>
             <span className="craftfacts__val">{cat.fee_note}</span>
-          </div>
-          <div className="craftfacts__cell">
-            <span className="craftfacts__key">Vote at Sector Forum</span>
-            <span className="craftfacts__val">{cat.status === 'Affiliated Member' ? 'No' : 'Yes'}</span>
-          </div>
+          </div>}
         </div>
       </section>
 
       {/* What it means */}
-      <section className="section">
+      {cat.meaning && <section className="section">
         <div className="longread">
           <div>
             <p className="eyebrow eyebrow--accent">What it means</p>
@@ -151,13 +142,13 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             <p className="longread__body">{cat.meaning}</p>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Criteria / How to register / Benefits */}
-      <section className="section">
+      {(cat.criteria.length > 0 || cat.how.length > 0 || cat.benefits.length > 0) && <section className="section">
         <div className="catgrid">
           {/* Criteria */}
-          <div className="catblock">
+          {cat.criteria.length > 0 && <div className="catblock">
             <p className="eyebrow eyebrow--accent">Eligibility</p>
             <h2 className="catblock__title">Criteria</h2>
             <ul className="bullets">
@@ -165,10 +156,10 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
                 <li key={idx}>{cr}</li>
               ))}
             </ul>
-          </div>
+          </div>}
 
           {/* Process */}
-          <div className="catblock catblock--steps">
+          {cat.how.length > 0 && <div className="catblock catblock--steps">
             <p className="eyebrow eyebrow--accent">Process</p>
             <h2 className="catblock__title">How to register</h2>
             <ol className="numlist numlist--tight">
@@ -179,10 +170,10 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
                 </li>
               ))}
             </ol>
-          </div>
+          </div>}
 
           {/* Benefits */}
-          <div className="catblock catblock--accent">
+          {cat.benefits.length > 0 && <div className="catblock catblock--accent">
             <p className="eyebrow eyebrow--onaccent">What you get</p>
             <h2 className="catblock__title catblock__title--light">Benefits</h2>
             <ul className="bullets bullets--light">
@@ -190,17 +181,16 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
                 <li key={idx}>{ben}</li>
               ))}
             </ul>
-          </div>
+          </div>}
         </div>
-      </section>
+      </section>}
 
-      {/* Fee Panel */}
-      <section className="section">
+      {cat.fee && <section className="section">
         <div className="feepanel">
           <div>
             <p className="eyebrow eyebrow--accent">Membership fee</p>
             <p className="feepanel__amount">{cat.fee}</p>
-            <p className="feepanel__note">{cat.fee_note}</p>
+            {cat.fee_note && <p className="feepanel__note">{cat.fee_note}</p>}
           </div>
           <div>
             <p className="feepanel__body">{cat.note}</p>
@@ -225,7 +215,7 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Other Categories */}
       {otherCategories.length > 0 && (
@@ -233,27 +223,20 @@ export default async function MembershipCategoryPage({ params }: CategoryPagePro
           <p className="eyebrow eyebrow--accent">Other categories</p>
           <h2 className="display display--sub">Not the right fit?</h2>
           <div className="grid grid--3" style={{ marginTop: 22 }}>
-            {otherCategories.map((oc, idx) => {
-              const catImg = (oc as any).imageUrl || (oc as any).bannerUrl || (oc as any).image_path || CATEGORY_PHOTO_MAP[oc.key] || photoPool[idx % photoPool.length];
-
+            {otherCategories.map((oc) => {
+              const ocDocs = oc.documents && typeof oc.documents === 'object' ? (oc.documents as any) : {};
               return (
                 <Link key={oc.key} className="card" href={`/membership/${oc.key}`}>
-                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
-                    <Image
-                      src={catImg}
-                      alt={oc.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </figure>
+                  {typeof ocDocs.bannerImageUrl === 'string' && ocDocs.bannerImageUrl && <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                    <Image src={ocDocs.bannerImageUrl} alt={oc.name} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
+                  </figure>}
                   <div className="card__body">
-                    <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>{oc.status}</p>
+                    {oc.shortName && <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>{oc.shortName}</p>}
                     <h3 className="card__title" style={{ marginBottom: 4 }}>
                       {oc.name}
                     </h3>
-                    <p className="card__text clamp-3">{oc.tagline}</p>
-                    <p className="catcard__fee" style={{ marginTop: 'auto', paddingTop: 8 }}>{oc.fee} / year</p>
+                    {oc.description && <p className="card__text clamp-3">{oc.description.slice(0, 180)}</p>}
+                    {Number.isFinite(Number(oc.duesBTN)) && <p className="catcard__fee" style={{ marginTop: 'auto', paddingTop: 8 }}>Nu. {Number(oc.duesBTN).toLocaleString()}</p>}
                   </div>
                 </Link>
               );

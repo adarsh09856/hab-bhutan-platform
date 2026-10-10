@@ -8,8 +8,8 @@ function RedirectContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const val = searchParams.get('category') || 'individual-artisan';
-    router.replace(`/membership/${encodeURIComponent(val)}`);
+    const val = searchParams.get('category');
+    router.replace(val ? `/membership/${encodeURIComponent(val)}` : '/membership');
   }, [router, searchParams]);
 
   return (

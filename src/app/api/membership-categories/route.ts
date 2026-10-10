@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,14 +18,10 @@ export async function GET(req: NextRequest) {
     const key = searchParams.get('key');
 
     if (key) {
-      const category = await prisma.membershipCategory.findUnique({
-        where: { key },
+      const category = await prisma.membershipCategory.findFirst({
+        where: { key, isActive: true },
       });
-      if (category) {
-        return NextResponse.json({ success: true, category: unpackCategory(category) });
-      }
-      const fallback = CLIENT_DATA.membershipCategories?.find((c: any) => c.key === key);
-      return NextResponse.json({ success: true, category: fallback ? unpackCategory(fallback) : null });
+      return NextResponse.json({ success: true, category: category ? unpackCategory(category) : null });
     }
 
     const categories = await prisma.membershipCategory.findMany({
@@ -34,12 +29,12 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { duesBTN: 'asc' }],
     });
 
-    if (categories.length > 0) {
-      return NextResponse.json({ success: true, categories: categories.map(unpackCategory) });
-    }
-
-    return NextResponse.json({ success: true, categories: (CLIENT_DATA.membershipCategories || []).map(unpackCategory) });
-  } catch {
-    return NextResponse.json({ success: true, categories: (CLIENT_DATA.membershipCategories || []).map(unpackCategory) });
+    return NextResponse.json({ success: true, categories: categories.map(unpackCategory) });
+  } catch (error) {
+    console.error('Failed to load membership categories:', error);
+    return NextResponse.json(
+      { success: false, error: 'Membership categories are temporarily unavailable.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 }

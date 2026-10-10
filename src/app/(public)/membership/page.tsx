@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CLIENT_DATA } from '@/lib/client-data';
 import { useRouter } from 'next/navigation';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -22,25 +21,29 @@ export default function MembershipPage() {
     router.push(`/login?email=${encodeURIComponent(memberId)}`);
   };
 
-  const [categories, setCategories] = useState<any[]>(() => CLIENT_DATA.membershipCategories || []);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoryState, setCategoryState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
     fetch('/api/membership-categories', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Membership categories unavailable');
+        return r.json();
+      })
       .then((d) => {
-        if (d?.categories && Array.isArray(d.categories) && d.categories.length > 0) {
-          const mapped = d.categories.map((c: any) => ({
+        if (!d?.success || !Array.isArray(d.categories)) throw new Error('Membership categories unavailable');
+        const mapped = d.categories.map((c: any) => ({
             key: c.key,
             name: c.name,
-            status: c.shortName || 'Active Sector Member',
-            fee: `Nu. ${c.duesBTN?.toLocaleString()}`,
+            status: c.shortName || '',
+            fee: Number.isFinite(Number(c.duesBTN)) ? `Nu. ${Number(c.duesBTN).toLocaleString()}` : '',
             tagline: c.description?.slice(0, 80) || '',
             meaning: c.description || '',
           }));
-          setCategories(mapped);
-        }
+        setCategories(mapped);
+        setCategoryState('ready');
       })
-      .catch(() => {});
+      .catch(() => { setCategories([]); setCategoryState('error'); });
   }, []);
 
   return (
@@ -61,7 +64,7 @@ export default function MembershipPage() {
           <div className="section__head" style={{ marginBottom: '22px' }}>
             <div>
               <p className="eyebrow eyebrow--accent">Categories, roles &amp; status</p>
-              <h2 className="display display--sub">Five ways to belong</h2>
+              <h2 className="display display--sub">Membership categories</h2>
               <p className="section__lede">
                 Active Sector Members hold a vote and receive preferential access to services — as an
                 individual artisan, a craft enterprise, or an{' '}
@@ -99,6 +102,11 @@ export default function MembershipPage() {
                 </span>
               </Link>
             ))}
+            {categoryState !== 'ready' || categories.length === 0 ? (
+              <p className="section__lede" role={categoryState === 'error' ? 'alert' : 'status'}>
+                {categoryState === 'loading' ? 'Loading membership categories…' : categoryState === 'error' ? 'Membership categories are temporarily unavailable.' : 'No active membership categories are listed.'}
+              </p>
+            ) : null}
           </div>
         </section>
 

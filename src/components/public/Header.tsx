@@ -13,14 +13,6 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import HeaderLiveEditor from '@/components/public/HeaderLiveEditor';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
-const CATEGORY_THUMBNAIL_MAP: Record<string, string> = {
-  'individual-artisan': '/assets/photos/hero-1-weaving.jpg',
-  'craft-enterprise': '/assets/photos/hero-4-textiles.jpg',
-  'cluster': '/assets/photos/hero-2-punakha.jpg',
-  'associate': '/assets/photos/about-hab.jpg',
-  'honorary': '/assets/photos/hero-3-clay.jpg',
-};
-
 const CRAFT_THUMBNAIL_MAP: Record<string, string> = {
   thagzo: '/images/crafts/thagzo.jpg',
   weaving: '/images/crafts/thagzo.jpg',
@@ -215,13 +207,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
   };
 
   const [crafts, setCrafts] = useState<any[]>(() => CLIENT_DATA.crafts || []);
-  const [categories, setCategories] = useState<any[]>([
-    { key: 'individual-artisan', name: 'Individual Artisan', meta: 'Active · Nu. 500 / year' },
-    { key: 'craft-enterprise', name: 'Craft Enterprise', meta: 'Active · Nu. 2,000 / year' },
-    { key: 'cluster', name: 'Artisan Cluster', meta: 'Active · Nu. 3,000 / year' },
-    { key: 'associate', name: 'Affiliated Member', meta: 'Affiliated · Nu. 5,000 / year' },
-    { key: 'honorary', name: 'Honorary Member', meta: 'By Board resolution · no fee' },
-  ]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [navItems, setNavItems] = useState<any[]>(initialNavigation ?? [
     { label: 'Home', href: '/' },
     { label: 'About Us', href: '/about' },
@@ -284,12 +270,12 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
     fetch('/api/membership-categories', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
-        if (d?.categories && Array.isArray(d.categories) && d.categories.length > 0) {
+        if (d?.success && Array.isArray(d.categories)) {
           setCategories(
             d.categories.map((c: any) => ({
               key: c.key,
               name: c.name,
-              meta: c.duesBTN > 0 ? `Active · Nu. ${Number(c.duesBTN).toLocaleString()} / year` : (c.shortName || 'By Board resolution · no fee'),
+              meta: c.duesBTN > 0 ? `Nu. ${Number(c.duesBTN).toLocaleString()} / year` : (c.shortName || ''),
             }))
           );
         }
@@ -473,15 +459,6 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                       href={`/membership-category?category=${cat.key}`}
                       onClick={() => setMembersOpen(false)}
                     >
-                      <div className="w-8 h-8 rounded-full overflow-hidden relative flex-shrink-0 bg-stone-100 border border-[#E4DDD1] shadow-2xs group-hover:scale-105 transition-transform">
-                        <Image
-                          src={CATEGORY_THUMBNAIL_MAP[cat.key] || '/assets/photos/hero-1-weaving.jpg'}
-                          alt={cat.name}
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                        />
-                      </div>
                       <div className="min-w-0">
                         <span className="menu__cat-name group-hover:text-[#8B2E24] transition-colors">{cat.name}</span>
                         <span className="menu__cat-meta">{cat.meta}</span>
@@ -893,17 +870,8 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                         key={cat.key}
                         href={`/membership-category?category=${cat.key}`}
                         onClick={() => setMobileNavOpen(false)}
-                        className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-stone-100 transition-colors"
+                      className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-stone-100 transition-colors"
                       >
-                        <div className="w-6 h-6 rounded-full overflow-hidden relative flex-shrink-0 bg-stone-200 border border-[#E4DDD1]">
-                          <Image
-                            src={CATEGORY_THUMBNAIL_MAP[cat.key] || '/assets/photos/hero-1-weaving.jpg'}
-                            alt={cat.name}
-                            fill
-                            sizes="24px"
-                            className="object-cover"
-                          />
-                        </div>
                         <div className="min-w-0">
                           <span className="block text-xs font-medium text-stone-800 truncate leading-tight">{cat.name}</span>
                           <span className="block text-[10px] text-stone-500 truncate leading-tight">{cat.meta}</span>
