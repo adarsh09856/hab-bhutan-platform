@@ -2603,7 +2603,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
     height:var(--header-h);
   }
   .header .search{display:none}
-  .header__actions{margin-left:0}
+  .header__actions{margin-left:auto}
   .nav{display:none !important}
   .utility__trade-long{display:none}
   .utility__trade-short{display:inline}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CLIENT_DATA, getTierPrice } from '@/lib/client-data';
+import { getTierPrice } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function WholesaleCartPage() {
@@ -21,6 +21,7 @@ export default function WholesaleCartPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [buyer, setBuyer] = useState<any>(null);
   const [catalogue, setCatalogue] = useState<any[]>([]);
+  const [catalogueError, setCatalogueError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -46,7 +47,7 @@ export default function WholesaleCartPage() {
         if (!response.ok || !data?.success) throw new Error(data?.error || 'Wholesale catalogue could not be loaded.');
         if (active) setCatalogue(Array.isArray(data.products) ? data.products : []);
       })
-      .catch((error) => { if (active) setErrorMsg(error?.message || 'Could not check your wholesale account.'); })
+      .catch((error) => { if (active) { setErrorMsg(error?.message || 'Could not check your wholesale account.'); setCatalogueError(true); } })
       .finally(() => { if (active) { setAuthChecked(true); setIsLoaded(true); } });
     return () => { active = false; };
   }, []);
@@ -78,7 +79,7 @@ export default function WholesaleCartPage() {
       .map((code) => {
         const product = catalogue.find((p) => p.code === code);
         const terms = product?.terms;
-        const craft = product ? CLIENT_DATA.crafts.find((c) => c.key === (product.craftKey || product.craft_key)) : null;
+        const craft = product?.craft || null;
         if (!product || !terms) return null;
         const qty = basket[code];
         const unitPrice = getTierPrice(terms, qty);
@@ -135,7 +136,7 @@ export default function WholesaleCartPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        const ref = data.inquiryId ? `HAB-Q-${data.inquiryId.slice(0, 6).toUpperCase()}` : `HAB-Q-${Math.floor(1000 + Math.random() * 9000)}`;
+        const ref = data.inquiryId ? `HAB-Q-${data.inquiryId.slice(0, 6).toUpperCase()}` : 'submitted';
         setQuoteRef(ref);
         saveBasket({});
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -198,13 +199,13 @@ export default function WholesaleCartPage() {
           Set quantities and send the basket to the trade desk. You will receive a formal quotation with freight, lead time and payment terms — no card is charged here.
         </p>
 
-        {quoteRef ? (
+        {catalogueError ? <p role="alert">{errorMsg || 'The wholesale catalogue is temporarily unavailable. Please try again shortly.'}</p> : quoteRef ? (
           <div id="wsQuoteDone">
             <div className="shopempty">
               <span className="tick">✓</span>
               <h2 className="shopempty__title">Quotation requested</h2>
               <p className="shopempty__body">
-                Reference <strong>{quoteRef}</strong>. The trade desk will confirm availability with the producing members and send a formal quotation with freight and lead times, usually within two working days.
+                {quoteRef !== 'submitted' && <>Reference <strong>{quoteRef}</strong>. </>}The trade desk will confirm availability and contact you with a formal quotation, including freight and lead times.
               </p>
               <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
                 <Link className="btn btn--accent" href="/wholesale/shop">
@@ -236,7 +237,7 @@ export default function WholesaleCartPage() {
                   {items.map((item) => {
                     const imgSrc = item.product?.image_path
                             ? (/^(https?:)?\/\//i.test(item.product.image_path) ? item.product.image_path : `/${item.product.image_path.replace(/^\/+/, '')}`)
-                      : '/assets/photos/product-sad03.jpg';
+                      : '/assets/photos/image-unavailable.svg';
 
                     return (
                       <div key={item.code} className="basketline">
@@ -250,7 +251,7 @@ export default function WholesaleCartPage() {
                           />
                         </span>
                         <div className="basketline__body">
-                          <p className="eyebrow eyebrow--accent eyebrow--sm">{item.craft?.name || 'Zorig Chusum'}</p>
+                          <p className="eyebrow eyebrow--accent eyebrow--sm">{item.craft?.name || item.product.craftKey}</p>
                           <p className="basketline__name">
                             {item.product?.name} · {item.code}
                           </p>
