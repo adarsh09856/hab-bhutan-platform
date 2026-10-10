@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import { parseProjectResultLine, projectResultLine } from '@/lib/project-results';
 
 type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password' | 'select'; options?: string[]; required?: boolean; createOnly?: boolean };
 type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; canCreate?: boolean; canDelete?: boolean; governanceCategory?: string; governanceCardSection?: 'strategic' | 'mandate' | 'ethics' };
@@ -320,14 +321,14 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       ...(sectionType === 'order-records' ? { notes: row.internalNotes || '' } : {}),
       ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: row.photoUrl || (governancePhoto || '').trim() } : {}),
       activities: Array.isArray(row.activities) ? row.activities.join('\n') : row.activities || '',
-      results: Array.isArray(row.results) ? row.results.join('\n') : row.results || '' });
+      results: Array.isArray(row.results) ? row.results.map(projectResultLine).join('\n') : row.results || '' });
     setMessage('');
   };
   const payload = () => {
     const result = Object.fromEntries(config.fields.filter((field) => field.kind !== 'date' || draft?.[field.key]).map((field) => [field.key,
       field.kind === 'number' ? Number(draft?.[field.key] || 0)
         : field.kind === 'check' ? Boolean(draft?.[field.key])
-          : field.kind === 'lines' ? String(draft?.[field.key] || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+          : field.kind === 'lines' ? String(draft?.[field.key] || '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => sectionType === 'projects' && field.key === 'results' ? parseProjectResultLine(line) : line)
             : String(draft?.[field.key] || '').trim()]));
     if (draft?.id && sectionType !== 'policies') result.id = draft.id;
     if (config.contentType) result.type = config.contentType;
@@ -375,7 +376,9 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
         window.location.assign(`/admin/trade?product=${encodeURIComponent(productCode)}`);
         return;
       }
-      setDraft(null); await load(); router.refresh(); setMessage('Saved to the live database.');
+      setDraft(null); await load();
+      window.dispatchEvent(new CustomEvent('hab:records-updated', { detail: { sectionType } }));
+      router.refresh(); setMessage('Saved to the live database.');
     } catch (error: any) { setMessage(error?.message || 'Save failed.'); }
     finally { setSaving(false); }
   };
@@ -397,7 +400,9 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Delete failed.');
       if (draft?.id === row.id || (sectionType === 'policies' && draft?.slug === row.slug)) setDraft(null);
-      await load(); router.refresh(); setMessage(voidDonation ? 'Donation voided; the receipt and audit record were retained.' : archiveCraft || archiveGovernance ? 'Record hidden. Edit it to make it visible again.' : 'Record deleted.');
+      await load();
+      window.dispatchEvent(new CustomEvent('hab:records-updated', { detail: { sectionType } }));
+      router.refresh(); setMessage(voidDonation ? 'Donation voided; the receipt and audit record were retained.' : archiveCraft || archiveGovernance ? 'Record hidden. Edit it to make it visible again.' : 'Record deleted.');
     } catch (error: any) { setMessage(error?.message || 'Delete failed.'); }
     finally { setSaving(false); }
   };

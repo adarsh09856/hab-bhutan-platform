@@ -16,11 +16,12 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   const { key } = await params;
   let dbProj: any = null;
   try {
+    const legacyName = CLIENT_DATA.projects.find((p) => p.key === key)?.name;
     dbProj = await prisma.projectRecord.findFirst({
-      where: { OR: [{ id: key }, { name: { contains: key, mode: 'insensitive' } }] },
+      where: { OR: [{ id: key }, ...(legacyName ? [{ name: legacyName }] : []), { name: { contains: key, mode: 'insensitive' } }] },
     });
   } catch {}
-  const project = dbProj || CLIENT_DATA.projects.find((p) => p.key === key);
+  const project = dbProj;
   if (!project) return { title: 'Project Not Found' };
 
   return {
@@ -32,56 +33,43 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const { key } = await params;
   let dbProj: any = null;
+  let allProjects: any[] = [];
   try {
+    const legacyName = CLIENT_DATA.projects.find((p) => p.key === key)?.name;
     dbProj = await prisma.projectRecord.findFirst({
-      where: { OR: [{ id: key }, { name: { contains: key, mode: 'insensitive' } }] },
+      where: { OR: [{ id: key }, ...(legacyName ? [{ name: legacyName }] : []), { name: { contains: key, mode: 'insensitive' } }] },
     });
+    allProjects = await prisma.projectRecord.findMany({ orderBy: { createdAt: 'desc' } });
   } catch {}
-
-  const fallback = CLIENT_DATA.projects.find((p) => p.key === key);
-  const rawProj = dbProj || fallback;
-
-  if (!rawProj) {
+  if (!dbProj) {
     notFound();
   }
 
+  const storedMedia = dbProj.activities && !Array.isArray(dbProj.activities) && typeof dbProj.activities === 'object' ? dbProj.activities : {};
+  const savedActivities = Array.isArray(dbProj.activities) ? dbProj.activities : Array.isArray(storedMedia.list) ? storedMedia.list : [];
+  const coverPhotoUrl = typeof storedMedia.coverPhotoUrl === 'string' ? storedMedia.coverPhotoUrl : '';
+
   const project = {
-    ...rawProj,
-    key: fallback?.key || rawProj.key || key || rawProj.id,
-    name: rawProj.name || rawProj.title || 'Project',
-    title: rawProj.name || rawProj.title || 'Project',
-    status: rawProj.status || 'Current',
-    partner: rawProj.partner || rawProj.funder || 'HAB',
-    summary: rawProj.summary || '',
-    period: rawProj.period || '2024 – 2027',
-    budget: rawProj.budget || '',
-    progressPercent: rawProj.progressPercent || 50,
-    activities: Array.isArray(rawProj.activities) ? rawProj.activities : [],
-    results: Array.isArray(rawProj.results) ? rawProj.results : [],
+    ...dbProj,
+    key: dbProj.id,
+    title: dbProj.name,
+    activities: savedActivities,
+    outputs: savedActivities,
+    coverPhotoUrl,
+    results: Array.isArray(dbProj.results) ? dbProj.results : [],
   };
 
-  const projectTitle = project.name || project.title || 'Project';
-  const partnerName = project.partner || project.funder || 'HAB';
+  const projectTitle = project.name;
+  const partnerName = project.partner;
 
-  const allProjects = CLIENT_DATA.projects;
-  const currentIndex = allProjects.findIndex((p) => p.key === project.key || p.name === project.name);
-  const safeProjectIndex = currentIndex >= 0 ? currentIndex : 0;
-  const prevProj = allProjects[(safeProjectIndex - 1 + allProjects.length) % allProjects.length];
-  const nextProj = allProjects[(safeProjectIndex + 1) % allProjects.length];
-  const otherProjects = allProjects.filter((p) => p.key !== project.key && p.name !== project.name).slice(0, 3);
+  const currentIndex = allProjects.findIndex((p) => p.id === project.id);
+  const prevProj = allProjects.length > 1 ? allProjects[(currentIndex - 1 + allProjects.length) % allProjects.length] : null;
+  const nextProj = allProjects.length > 1 ? allProjects[(currentIndex + 1) % allProjects.length] : null;
+  const otherProjects = allProjects.filter((p) => p.id !== project.id).slice(0, 3);
 
   const isCurrent = project.status.toLowerCase().includes('current') || project.status.toLowerCase().includes('progress');
 
-  const photoPool = [
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-1-weaving.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/assets/photos/hero-2-punakha.jpg',
-    '/assets/photos/about-hab.jpg',
-  ];
-  const bannerImg = project.coverPhotoUrl || project.bannerUrl || project.imageUrl || project.image_url || project.image_path
-    || photoPool[safeProjectIndex % photoPool.length] || photoPool[0];
+  const bannerImg = project.coverPhotoUrl;
 
   return (
     <main id="main">
@@ -107,7 +95,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           <p className="lede lede--wide">{project.summary}</p>
         </div>
 
-        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+        {bannerImg && <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={projectTitle}
@@ -116,7 +104,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-        </figure>
+        </figure>}
       </section>
 
       {/* Facts */}
@@ -193,13 +181,14 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             </Link>
           </div>
           <div className="grid grid--3">
-            {otherProjects.map((r, idx) => {
-              const rImg = (r as any).bannerUrl || (r as any).imageUrl || (r as any).image_url || photoPool[idx % photoPool.length] || '/assets/photos/about-hab.jpg';
-              const rTitle = r.title || (r as any).name || 'Project';
+            {otherProjects.map((r) => {
+              const rMedia = r.activities && !Array.isArray(r.activities) && typeof r.activities === 'object' ? r.activities : {};
+              const rImg = typeof rMedia.coverPhotoUrl === 'string' ? rMedia.coverPhotoUrl : '';
+              const rTitle = r.name;
 
               return (
-                <Link key={r.key} className="card" href={`/projects/${r.key}`}>
-                  <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
+                <Link key={r.id} className="card" href={`/projects/${r.id}`}>
+                  {rImg && <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <Image
                       src={rImg}
                       alt={rTitle}
@@ -207,7 +196,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}
                     />
-                  </figure>
+                  </figure>}
                   <div className="card__body">
                     <span className={`tag ${r.status.toLowerCase().includes('completed') ? 'tag--done' : ''}`} style={{ marginBottom: 4 }}>
                       {r.status}
@@ -215,7 +204,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
                     <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
                       {rTitle}
                     </h3>
-                    <p className="card__meta" style={{ marginBottom: 4 }}>{r.period} · {r.funder}</p>
+                    <p className="card__meta" style={{ marginBottom: 4 }}>{r.period} · {r.partner}</p>
                     <p className="card__text clamp-3">{r.summary}</p>
                   </div>
                 </Link>
@@ -228,14 +217,14 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
       {/* Navigation */}
       <section className="section section--last">
         <nav className="craftnav">
-          <Link className="craftnav__link" href={`/projects/${prevProj.key}`}>
+          {prevProj && <Link className="craftnav__link" href={`/projects/${prevProj.id}`}>
             <span className="craftnav__hint">← Previous project</span>
-            <span>{prevProj.title}</span>
-          </Link>
-          <Link className="craftnav__link craftnav__link--next" href={`/projects/${nextProj.key}`}>
+            <span>{prevProj.name}</span>
+          </Link>}
+          {nextProj && <Link className="craftnav__link craftnav__link--next" href={`/projects/${nextProj.id}`}>
             <span className="craftnav__hint">Next project →</span>
-            <span>{nextProj.title}</span>
-          </Link>
+            <span>{nextProj.name}</span>
+          </Link>}
         </nav>
       </section>
     </main>

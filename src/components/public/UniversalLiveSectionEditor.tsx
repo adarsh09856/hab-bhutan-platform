@@ -187,7 +187,7 @@ export default function UniversalLiveSectionEditor({
       setActiveTab('COLUMNS');
       setSelectedFooterCol('Association');
       setNewLinkCol('Association');
-    } else if (sectionType === 'board-records' || sectionType === 'secretariat-records' || sectionType === 'strategic-cards' || sectionType === 'mandate-cards' || sectionType === 'ethics-cards' || sectionType === 'order-records' || sectionType === 'membership-applications' || sectionType === 'policies') {
+    } else if (hasNativeRecordEditor(sectionType)) {
       setActiveTab('RECORDS');
     } else {
       setActiveTab('CONTENT');

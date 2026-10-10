@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Briefcase, Calendar, Building, DollarSign } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import { parseProjectResultLine, projectResultLine } from '@/lib/project-results';
 
 interface ProjectRecord {
   id: string;
@@ -104,7 +105,7 @@ export default function AdminProjectsPage() {
       progressPercent: p.progressPercent,
       summary: p.summary,
       activities: Array.isArray(p.activities) ? p.activities : [],
-      results: Array.isArray(p.results) ? p.results : [],
+      results: Array.isArray(p.results) ? p.results.map(projectResultLine) : [],
       coverPhotoUrl: (p as any).coverPhotoUrl || '',
       reportPdfUrl: (p as any).reportPdfUrl || '',
     });
@@ -141,7 +142,8 @@ export default function AdminProjectsPage() {
     try {
       const url = '/api/admin/projects';
       const method = editingProject ? 'PUT' : 'POST';
-      const body = editingProject ? { id: editingProject.id, ...form } : form;
+      const projectForm = { ...form, results: form.results.map(parseProjectResultLine) };
+      const body = editingProject ? { id: editingProject.id, ...projectForm } : projectForm;
 
       const res = await fetch(url, {
         method,

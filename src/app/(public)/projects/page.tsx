@@ -28,7 +28,7 @@ export default function ProjectsPage() {
   const [statusTab, setStatusTab] = useState<'current' | 'past'>('current');
 
   useEffect(() => {
-    fetch('/api/projects', { cache: 'no-store' })
+    const loadProjects = () => fetch('/api/projects', { cache: 'no-store' })
       .then((r) => {
         if (!r.ok) throw new Error('Projects unavailable');
         return r.json();
@@ -54,6 +54,12 @@ export default function ProjectsPage() {
         setLoadState('ready');
       })
       .catch(() => { setProjects([]); setLoadState('error'); });
+    loadProjects();
+    const onRecordsUpdated = (event: Event) => {
+      if ((event as CustomEvent<{ sectionType: string }>).detail?.sectionType === 'projects') loadProjects();
+    };
+    window.addEventListener('hab:records-updated', onRecordsUpdated);
+    return () => window.removeEventListener('hab:records-updated', onRecordsUpdated);
   }, []);
 
   const currentProjects = projects.filter((p) => p.status === 'current');

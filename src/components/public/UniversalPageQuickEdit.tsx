@@ -7,12 +7,47 @@ import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isEditableInlineTextPath, joinEditableText } from '@/lib/quick-edit-text';
 import { applyQuickEditImage } from '@/lib/quick-edit-image';
+import UniversalLiveSectionEditor, { type SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
 
 const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,option,div,input[placeholder],textarea[placeholder],[data-hab-editable]';
 const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],[role="dialog"],script,style,noscript';
+
+function editorForSection(section: string): SectionType | null {
+  // Keep home-page section names distinct from their similarly named CMS pages.
+  // e.g. the home membership feature is not the members directory.
+  if (section === 'about') return 'about';
+  if (section === 'membership') return 'membership';
+  if (section === 'header' || section === 'utility-bar') return 'utility-bar';
+  if (section === 'footer') return 'footer';
+  if (/^about-/.test(section) || /^mandate|^ethics|^strategic/.test(section)) return 'about-page';
+  if (/^board/.test(section)) return 'board-records';
+  if (/^secretariat/.test(section)) return 'secretariat-records';
+  if (/^project/.test(section)) return 'projects';
+  if (/^programme/.test(section)) return 'programmes';
+  if (/^outlet/.test(section)) return 'outlets';
+  if (/^cluster/.test(section)) return 'clusters';
+  if (/^membership-/.test(section)) return 'membership';
+  if (/^member|^registered-member/.test(section)) return 'members';
+  if (/^product|^shop/.test(section)) return 'products';
+  if (/^craft/.test(section)) return 'crafts';
+  if (/^news/.test(section)) return 'news';
+  if (/^event/.test(section)) return 'events';
+  if (/^publication|^annual-report|^audit/.test(section)) return 'publications';
+  if (/^tender/.test(section)) return 'tenders';
+  if (/^wholesale/.test(section)) return 'wholesale';
+  if (/^donate|^support/.test(section)) return 'donate';
+  if (/^contact/.test(section)) return 'contact';
+  if (/^policy|^privacy|^terms|^shipping|^returns|^customs/.test(section)) return 'policies';
+  if (/^basket|^checkout|^order-confirmation|^track-order/.test(section)) return 'order-records';
+  if (section === 'hero') return 'hero';
+  if (section === 'stats') return 'stats';
+  if (section === 'buy') return 'buy';
+  if (section === 'assurance') return 'assurances';
+  return null;
+}
 
 function elementKey(element: Element, root: Element): string {
   const explicit = element.getAttribute('data-hab-edit-key');
@@ -84,6 +119,7 @@ export default function UniversalPageQuickEdit() {
   const [active, setActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
+  const [sectionEditor, setSectionEditor] = useState<{ type: SectionType; title: string } | null>(null);
   const [draft, setDraft] = useState<Override>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -139,7 +175,7 @@ export default function UniversalPageQuickEdit() {
     const handleToggle = (event: Event) => {
       const enabled = Boolean((event as CustomEvent).detail?.active);
       setActive(enabled);
-      if (!enabled) setSelected(null);
+      if (!enabled) { setSelected(null); setSectionEditor(null); }
     };
     window.addEventListener('hab:visual-edit-toggled', handleToggle);
     setActive(document.body.classList.contains('hab-visual-edit-on'));
@@ -172,8 +208,27 @@ export default function UniversalPageQuickEdit() {
         setSelected(null);
         return;
       }
+      const isTextOrMedia = target instanceof HTMLImageElement || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || editableTextNodes(target).length > 0;
+      if (!isTextOrMedia) {
+        const section = clicked?.closest<HTMLElement>('[data-hab-section]');
+        if (section) {
+          const badgeButton = section.querySelector<HTMLButtonElement>('.hab-section-edit-badge button[title="Quick edit this section in a live modal"]');
+          if (badgeButton) {
+            event.preventDefault(); event.stopPropagation(); setSelected(null); badgeButton.click(); return;
+          }
+          const type = editorForSection(section.dataset.habSection || '');
+          if (type) {
+            event.preventDefault(); event.stopPropagation(); setSelected(null);
+            setSectionEditor({ type, title: section.dataset.habSection?.replace(/-/g, ' ') || 'Section' });
+            return;
+          }
+        }
+        setSelected(null);
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
+      setSectionEditor(null);
       setSelected(target);
       setMessage('');
       const saved = overridesRef.current[elementKey(target, shell)];
@@ -259,12 +314,14 @@ export default function UniversalPageQuickEdit() {
     finally { setSaving(false); }
   };
 
-  if (!active || !isStaff || !selected) return null;
+  if (!active || !isStaff) return null;
   const image = selected instanceof HTMLImageElement;
   const field = selected instanceof HTMLInputElement || selected instanceof HTMLTextAreaElement;
-  const link = Boolean(selected.closest('a'));
+  const link = Boolean(selected?.closest('a'));
 
-  return createPortal(
+  return <>
+    {sectionEditor && <UniversalLiveSectionEditor isOpen sectionType={sectionEditor.type} sectionTitle={sectionEditor.title} onClose={() => setSectionEditor(null)} />}
+    {selected && createPortal(
     <aside role="dialog" aria-modal="false" aria-label="Quick edit selected page content" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
       <div className="flex items-center justify-between gap-3 mb-3">
         <strong className="text-sm">Quick edit {image ? 'image' : selected.tagName.toLowerCase()}</strong>
@@ -295,5 +352,6 @@ export default function UniversalPageQuickEdit() {
       </div>
     </aside>,
     document.body
-  );
+  )}
+  </>;
 }
