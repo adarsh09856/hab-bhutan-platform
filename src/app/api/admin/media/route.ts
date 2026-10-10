@@ -1,167 +1,133 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function requireStaff(request: NextRequest) {
-  const user = await getSessionUser(request);
-  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-  return user && ['super_admin', 'staff_operator'].includes(role) ? user : null;
+function safeImageUrl(value: string) {
+  const url = value.trim();
+  if (/\.pdf(?:[?#]|$)/i.test(url)) return false;
+  return (url.startsWith('/') && !url.startsWith('//') && !url.includes('\\')) || /^https:\/\/[^\s]+$/i.test(url);
+}
+
+function outletImage(note: string | null) {
+  return note?.match(/<!--\s*HAB_IMAGE:\s*(.*?)\s*-->/)?.[1]?.trim() || null;
 }
 
 export async function GET(request: NextRequest) {
-  if (!(await requireStaff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
-    let siteSetting: any = null;
-    let heroSlides: any[] = [];
-    let crafts: any[] = [];
-    let outlets: any[] = [];
-
-    try {
-      siteSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
-      heroSlides = await prisma.heroSlide.findMany({ orderBy: { sortOrder: 'asc' } });
-      crafts = await prisma.craft.findMany({ orderBy: { sortOrder: 'asc' } });
-      outlets = await prisma.outletRecord.findMany({ orderBy: { sortOrder: 'asc' } });
-    } catch {
-      // offline fallback
+    const user = await requirePermission(request, 'content:view');
+    if (!['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
     }
+    const [siteSetting, heroSlides, crafts, outlets] = await Promise.all([
+      prisma.siteSetting.findUnique({ where: { id: 'default' } }),
+      prisma.heroSlide.findMany({ orderBy: { sortOrder: 'asc' } }),
+      prisma.craft.findMany({ orderBy: { sortOrder: 'asc' } }),
+      prisma.outletRecord.findMany({ orderBy: { sortOrder: 'asc' } }),
+    ]);
 
+    const heroSlots = heroSlides.map((slide, index) => ({
+      key: `hero.${slide.id}`,
+      category: 'Hero Carousel',
+      label: `Hero Slide ${index + 1}`,
+      url: slide.imageUrl,
+      caption: slide.altText,
+      aspect: '16:9 / Landscape',
+      description: slide.caption || slide.altText || 'Homepage hero slide.',
+    }));
     const defaultSlots = [
-      {
-        key: 'hero.slide1',
-        category: 'Hero Carousel',
-        label: 'Hero Slide 1 — Thagzo Master Weaving',
-        url: heroSlides[0]?.imageUrl || '/assets/photos/hero-1-weaving.jpg',
-        aspect: '16:9 / Landscape',
-        description: 'Primary banner on homepage hero showing master weaver working on backstrap loom.',
-      },
-      {
-        key: 'hero.slide2',
-        category: 'Hero Carousel',
-        label: 'Hero Slide 2 — Punakha Crafts Market',
-        url: heroSlides[1]?.imageUrl || '/assets/photos/hero-2-punakha.jpg',
-        aspect: '16:9 / Landscape',
-        description: 'Homepage banner featuring the Punakha market and riverside artisan stalls.',
-      },
-      {
-        key: 'hero.slide3',
-        category: 'Hero Carousel',
-        label: 'Hero Slide 3 — Jimzo Clay Sculpting',
-        url: heroSlides[2]?.imageUrl || '/assets/photos/hero-3-clay.jpg',
-        aspect: '16:9 / Landscape',
-        description: 'Banner depicting traditional clay figurine sculpture in Thimphu.',
-      },
       {
         key: 'about.band',
         category: 'Site Bands',
         label: 'About Mission & Network Band',
         url: siteSetting?.aboutBandImageUrl || '/assets/photos/about-hab.jpg',
+        caption: siteSetting?.aboutBandImageCaption || '',
         aspect: '4:3 / Landscape',
         description: 'Featured photography on homepage About Band and main About page.',
-      },
-      {
-        key: 'outlet.punakha',
-        category: 'Outlets & Markets',
-        label: 'Punakha Crafts Market Hero',
-        url: '/assets/photos/hero-2-punakha.jpg',
-        aspect: '16:9 / Landscape',
-        description: 'Main photographic banner on /outlets and /outlet?outlet=punakha-market.',
-      },
-      {
-        key: 'seal.authenticity',
-        category: 'Brand & Certification',
-        label: 'Seal of Bhutan Authentic Craft',
-        url: '/assets/hab-logo.png',
-        aspect: 'Logo / Vector',
-        description: 'Official seal applied to certified handicraft documentation and packaging.',
-      },
-      {
-        key: 'publication.annual2026',
-        category: 'Publications',
-        label: 'Annual Sector Review 2026 Cover',
-        url: '/assets/photos/about-hab.jpg',
-        aspect: '3:4 / Portrait',
-        description: 'Document cover thumbnail shown on /publications.',
       },
     ];
 
     // Add 13 crafts slots
-    const craftSlots = (crafts.length > 0 ? crafts : CLIENT_DATA.crafts).map((c: any) => ({
+    const craftSlots = crafts.map((c) => ({
       key: `craft.${c.key}`,
       category: '13 Crafts Heritage',
-      label: `${c.name} (${c.english || c.craft_name}) Banner`,
+      label: `${c.name} (${c.english}) Banner`,
       url: c.bannerUrl || `/images/crafts/${c.key}.jpg`,
       aspect: '16:9 / Landscape',
       description: `Official header image on /craft/${c.key}.`,
     }));
 
-    const allSlots = [...defaultSlots, ...craftSlots];
+    const outletSlots = outlets.map((outlet) => ({
+      key: `outlet.${outlet.key}`,
+      category: 'Outlets & Markets',
+      label: `${outlet.name} image`,
+      url: outletImage(outlet.note) || '/assets/photos/image-unavailable.svg',
+      aspect: '16:9 / Landscape',
+      description: `Saved photo for /outlets/${outlet.key}.`,
+    }));
+    const allSlots = [...heroSlots, ...defaultSlots, ...craftSlots, ...outletSlots];
 
     return NextResponse.json({
       success: true,
       slots: allSlots,
     });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err?.statusCode ? err.message : 'Media slots temporarily unavailable.' }, { status: err?.statusCode || 503 });
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await requireStaff(request);
-    if (!user) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+    const user = await requirePermission(request, 'content:edit');
+    if (!['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
+    }
     const body = await request.json();
     const { key, url, caption } = body;
 
-    if (!key || !url) {
+    if (typeof key !== 'string' || typeof url !== 'string' || !key.trim() || !url.trim()) {
       return NextResponse.json({ success: false, error: 'Key and URL are required' }, { status: 400 });
     }
+    const cleanKey = key.trim();
+    const cleanUrl = url.trim();
+    if (!safeImageUrl(cleanUrl)) return NextResponse.json({ success: false, error: 'Use an internal path or HTTPS image URL.' }, { status: 400 });
 
-    try {
-      if (key === 'about.band') {
-        await (prisma.siteSetting as any).upsert({
-          where: { id: 'default' },
-          create: {
-            id: 'default',
-            aboutBandImageUrl: url,
-            aboutBandImageCaption: caption || 'HAB artisan workshop',
-            heroParagraph: 'Handicrafts Association of Bhutan promotes living craft heritage across all dzongkhags.',
-            footerAbout: 'Apex Civil Society Organization established under the CSO Act of Bhutan 2007.',
-            partnersList: [],
-          },
-          update: { aboutBandImageUrl: url, aboutBandImageCaption: caption || 'HAB artisan workshop' },
-        });
-
-      } else if (key.startsWith('craft.')) {
-        const craftKey = key.replace('craft.', '');
-        await prisma.craft.updateMany({
-          where: { key: craftKey },
-          data: { bannerUrl: url },
-        });
-      } else if (key.startsWith('hero.')) {
-        const slideIdx = key === 'hero.slide1' ? 0 : key === 'hero.slide2' ? 1 : 2;
-        const slides = await prisma.heroSlide.findMany({ orderBy: { sortOrder: 'asc' } });
-        if (slides[slideIdx]) {
-          await prisma.heroSlide.update({
-            where: { id: slides[slideIdx].id },
-            data: { imageUrl: url },
-          });
-        }
-      }
-    } catch {
-      // In-memory fallback
+    if (cleanKey === 'about.band') {
+      const update = await prisma.siteSetting.updateMany({
+        where: { id: 'default' },
+        data: { aboutBandImageUrl: cleanUrl, ...(typeof caption === 'string' && caption.trim() ? { aboutBandImageCaption: caption.trim() } : {}) },
+      });
+      if (!update.count) return NextResponse.json({ success: false, error: 'Site settings not found.' }, { status: 404 });
+    } else if (cleanKey.startsWith('craft.')) {
+      const update = await prisma.craft.updateMany({ where: { key: cleanKey.slice(6) }, data: { bannerUrl: cleanUrl } });
+      if (!update.count) return NextResponse.json({ success: false, error: 'Craft not found.' }, { status: 404 });
+    } else if (cleanKey.startsWith('hero.')) {
+      const update = await prisma.heroSlide.updateMany({
+        where: { id: cleanKey.slice(5) },
+        data: { imageUrl: cleanUrl, ...(typeof caption === 'string' && caption.trim() ? { altText: caption.trim() } : {}) },
+      });
+      if (!update.count) return NextResponse.json({ success: false, error: 'Hero slide not found.' }, { status: 404 });
+    } else if (cleanKey.startsWith('outlet.')) {
+      const outlet = await prisma.outletRecord.findUnique({ where: { key: cleanKey.slice(7) }, select: { id: true, note: true } });
+      if (!outlet) return NextResponse.json({ success: false, error: 'Outlet not found.' }, { status: 404 });
+      const note = (outlet.note || '').replace(/<!--\s*HAB_IMAGE:\s*[\s\S]*?-->/g, '').trim();
+      await prisma.outletRecord.update({
+        where: { id: outlet.id },
+        data: { note: `${note}${note ? '\n' : ''}<!-- HAB_IMAGE: ${cleanUrl} -->` },
+      });
+    } else {
+      return NextResponse.json({ success: false, error: 'This media slot is not editable here.' }, { status: 404 });
     }
 
     await logAudit({
       actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email,
-      action: 'MEDIA_SLOT_UPDATED', entityType: 'MediaSlot', entityId: key,
-      details: { url, caption: caption || null },
+      action: 'MEDIA_SLOT_UPDATED', entityType: 'MediaSlot', entityId: cleanKey,
+      details: { url: cleanUrl, caption: caption || null },
     }).catch(() => {});
-    return NextResponse.json({ success: true, message: `Media slot ${key} updated successfully.` });
+    return NextResponse.json({ success: true, message: `Media slot ${cleanKey} updated successfully.` });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err?.statusCode ? err.message : 'Media slot could not be saved.' }, { status: err?.statusCode || 500 });
   }
 }

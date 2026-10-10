@@ -34,6 +34,7 @@ export default function AdminMediaPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState('');
 
   // Edit Drawer
   const [editingSlot, setEditingSlot] = useState<any | null>(null);
@@ -49,15 +50,14 @@ export default function AdminMediaPage() {
   const loadMedia = async () => {
     try {
       setLoading(true);
+      setLoadError('');
       const res = await fetch('/api/admin/media', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setSlots(data.slots || []);
-        }
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load media slots.');
+      setSlots(data.slots || []);
     } catch (err) {
-      console.error('Failed to load media slots:', err);
+      setSlots([]);
+      setLoadError(err instanceof Error ? err.message : 'Could not load media slots.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ export default function AdminMediaPage() {
   const handleOpenEdit = (slot: any) => {
     setEditingSlot(slot);
     setEditUrl(slot.url || '');
-    setEditCaption('');
+    setEditCaption(slot.caption || '');
   };
 
   const handleSaveSlot = async () => {
@@ -96,12 +96,13 @@ export default function AdminMediaPage() {
         }),
       });
 
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
         showToast(`Media slot ${editingSlot.key} updated`);
         setEditingSlot(null);
         loadMedia();
       } else {
-        showToast('Error saving media slot');
+        showToast(data.error || 'Error saving media slot');
       }
     } catch {
       showToast('Network error saving media slot');
@@ -131,7 +132,7 @@ export default function AdminMediaPage() {
             <GlassBadge variant="amber">Live Imagery</GlassBadge>
           </div>
           <p className="text-sm text-slate-600 mt-1">
-            Browse, inspect, and replace imagery across hero slides, the 13 craft heritage banners, outlets, and publications.
+            Browse and replace saved hero, craft, outlet, and About-band images. Create or remove records in their own Admin sections.
           </p>
         </div>
 
@@ -154,26 +155,28 @@ export default function AdminMediaPage() {
         />
         <GlassStatWidget
           title="13 Crafts Banners"
-          value="13"
+          value={slots.filter(slot => slot.category === '13 Crafts Heritage').length}
           subtitle="Traditional Arts of Bhutan"
           icon={Sparkles}
           glow="emerald"
         />
         <GlassStatWidget
           title="Hero Carousel"
-          value="3 slides"
+          value={slots.filter(slot => slot.category === 'Hero Carousel').length}
           subtitle="Homepage feature banner"
           icon={ImageIcon}
           glow="indigo"
         />
         <GlassStatWidget
           title="Outlets &amp; Markets"
-          value="Punakha + Hub"
-          subtitle="Craft marketplaces"
+          value={slots.filter(slot => slot.category === 'Outlets & Markets').length}
+          subtitle="Saved outlet records"
           icon={ExternalLink}
           glow="rose"
         />
       </div>
+
+      {loadError && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">{loadError}</p>}
 
       {/* Search & Category Filter */}
       <GlassCard className="p-4">
@@ -219,7 +222,8 @@ export default function AdminMediaPage() {
                   alt={slot.label}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   onError={(e: any) => {
-                    e.currentTarget.src = '/assets/photos/product-hhb01.jpg';
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = '/assets/photos/image-unavailable.svg';
                   }}
                 />
                 <div className="absolute top-2.5 left-2.5">
@@ -286,13 +290,13 @@ export default function AdminMediaPage() {
               label="Image Photograph / File"
               value={editUrl}
               onChange={(url) => setEditUrl(url)}
-              accept="image/*,application/pdf"
-              hint="Supports JPG, PNG, WEBP, SVG, and documents up to 30MB"
+              accept="image/*"
+              hint="Upload a JPG, PNG, WEBP, or SVG image. Documents cannot be used as photographs."
             />
           </div>
 
           <div>
-            <label className="block text-slate-700 mb-1 font-semibold">Accessibility Caption (Alt Text)</label>
+            <label className="block text-slate-700 mb-1 font-semibold">Image description / alternative text</label>
             <input
               type="text"
               value={editCaption}
