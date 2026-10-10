@@ -11,7 +11,7 @@ import { removeRepeatedLead } from '@/lib/display-copy';
 import { selectFeaturedProducts } from '@/lib/featured-products';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
 import { useCart } from '@/context/CartContext';
-import { CRAFTS, CLIENT_VERBATIM } from '@/lib/data';
+import { CLIENT_VERBATIM } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
@@ -23,72 +23,6 @@ interface HeroSlide {
   altText?: string;
   linkUrl?: string | null;
 }
-
-const SCENE_POOL = [
-  '/assets/photos/hero-1-weaving.jpg',
-  '/assets/photos/hero-4-textiles.jpg',
-  '/assets/photos/hero-5-desho.jpg',
-  '/assets/photos/hero-3-clay.jpg',
-  '/assets/photos/hero-2-punakha.jpg',
-  '/assets/photos/about-hab.jpg',
-];
-
-const CRAFT_IMAGE_MAP: Record<string, string> = {
-  thagzo: '/images/crafts/thagzo.jpg',
-  weaving: '/images/crafts/thagzo.jpg',
-  tshazo: '/images/crafts/tshazo.jpg',
-  'cane-bamboo': '/images/crafts/tshazo.jpg',
-  shagzo: '/images/crafts/shagzo.jpg',
-  'wood-turning': '/images/crafts/shagzo.jpg',
-  lhadri: '/images/crafts/lhazo.jpg',
-  lhazo: '/images/crafts/lhazo.jpg',
-  painting: '/images/crafts/lhazo.jpg',
-  jimzo: '/images/crafts/jinzo.jpg',
-  jinzo: '/images/crafts/jinzo.jpg',
-  sculpture: '/images/crafts/jinzo.jpg',
-  dezo: '/images/crafts/dezo.jpg',
-  papermaking: '/images/crafts/dezo.jpg',
-  troezo: '/images/crafts/troezo.jpg',
-  trokzo: '/images/crafts/troezo.jpg',
-  'gold-silver': '/images/crafts/troezo.jpg',
-  garzo: '/images/crafts/garzo.jpg',
-  blacksmithing: '/images/crafts/garzo.jpg',
-  chezo: '/images/crafts/tshemzo.jpg',
-  tshemzo: '/images/crafts/tshemzo.jpg',
-  tailoring: '/images/crafts/tshemzo.jpg',
-  parzo: '/images/crafts/parzo.jpg',
-  carving: '/images/crafts/parzo.jpg',
-  lugzo: '/images/crafts/lugzo.jpg',
-  'bronze-casting': '/images/crafts/lugzo.jpg',
-  shingzo: '/images/crafts/shingzo.jpg',
-  carpentry: '/images/crafts/shingzo.jpg',
-  dzozo: '/images/crafts/dozo.jpg',
-  dozo: '/images/crafts/dozo.jpg',
-  masonry: '/images/crafts/dozo.jpg',
-};
-
-const CLUSTER_IMAGE_MAP: Record<string, string> = {
-  khoma: '/assets/photos/hero-1-weaving.jpg',
-  kheng: '/assets/photos/hero-4-textiles.jpg',
-  trashiyangtse: '/assets/photos/hero-5-desho.jpg',
-  chumey: '/assets/photos/hero-3-clay.jpg',
-  jungshi: '/assets/photos/hero-2-punakha.jpg',
-  'zorig-thimphu': '/assets/photos/about-hab.jpg',
-};
-
-const OUTLET_IMAGE_MAP: Record<string, string> = {
-  'punakha-market': '/assets/photos/hero-2-punakha.jpg',
-  'thimphu-outlet': '/assets/photos/hero-4-textiles.jpg',
-  'paro-airport': '/assets/photos/hero-5-desho.jpg',
-  'bumthang-outlet': '/assets/photos/hero-3-clay.jpg',
-};
-
-const PRODUCT_POOL = [
-  '/assets/photos/product-sad03.jpg',
-  '/assets/photos/product-hhb01.jpg',
-  '/assets/photos/product-lud01.jpg',
-  '/assets/photos/product-cam01.jpg',
-];
 
 const DEFAULT_HERO_SLIDES: HeroSlide[] = [
   {
@@ -123,13 +57,6 @@ const DEFAULT_HERO_SLIDES: HeroSlide[] = [
   },
 ];
 
-const PUNAKHA_SLIDES = [
-  { img: '/assets/photos/hero-2-punakha.jpg', cap: 'photo 1 — Punakha Crafts Market, stalls and river' },
-  { img: '/assets/photos/hero-1-weaving.jpg', cap: 'photo 2 — a stallholder with her own work' },
-  { img: '/assets/photos/hero-4-textiles.jpg', cap: 'photo 3 — a weaving demonstration' },
-  { img: '/assets/photos/hero-3-clay.jpg', cap: 'photo 4 — the market from the Khuruthang road' },
-];
-
 const DEFAULT_HOMEPAGE_SECTION_ORDER: string[] = [
   'hero',
   'stats',
@@ -158,8 +85,6 @@ export default function HomePage() {
   // Dynamic States initialized with exact client reference fallbacks
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
   const [currentHero, setCurrentHero] = useState(0);
-
-  const [currentPunakha, setCurrentPunakha] = useState(0);
 
   const [siteSettings, setSiteSettings] = useState({
     tagline: CLIENT_VERBATIM.tagline,
@@ -202,96 +127,8 @@ export default function HomePage() {
     homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER,
   });
 
-  const [products, setProducts] = useState<any[]>([
-    {
-      code: 'LHA01',
-      name: 'Thangka Scroll',
-      craftKey: 'lhazo',
-      craft_name: 'LHAZO',
-      maker: 'Sonam Thangka Studio',
-      price: 340,
-      priceUSD: 340,
-      image_path: '/assets/photos/product-lha01.jpg',
-      slot: 'photo 1 — thangka, full view',
-    },
-    {
-      code: 'SAD03',
-      name: 'Yathra Saddle Bag',
-      craftKey: 'thagzo',
-      craft_name: 'THAGZO',
-      maker: 'Chumey Yathra House',
-      price: 158,
-      priceUSD: 158,
-      image_path: '/assets/photos/product-sad03.jpg',
-      slot: 'photo 1 — saddle bag, full view',
-    },
-    {
-      code: 'TRO04',
-      name: 'Silver Brooch (Koma)',
-      craftKey: 'troezo',
-      craft_name: 'TROEZO',
-      maker: 'Zorig Silversmiths',
-      price: 120,
-      priceUSD: 120,
-      image_path: '/assets/photos/product-tro04.jpg',
-      slot: 'photo 1 — koma pair, full view',
-    },
-    {
-      code: 'FTB04',
-      name: 'Bangchung Fruit Basket',
-      craftKey: 'tshazo',
-      craft_name: 'TSHAZO',
-      maker: 'Kheng Bamboo Collective',
-      price: 43,
-      priceUSD: 43,
-      image_path: '/assets/photos/product-ftb04.jpg',
-      slot: 'photo 1 — bangchung basket, full view',
-    },
-    {
-      code: 'DAP02',
-      name: 'Lacquered Bowl (Dapa)',
-      craftKey: 'shagzo',
-      craft_name: 'SHAGZO',
-      maker: 'Yangtse Turning Works',
-      price: 65,
-      priceUSD: 65,
-      image_path: '/assets/photos/product-dap02.jpg',
-      slot: 'photo 1 — dapa bowl, full view',
-    },
-    {
-      code: 'MAS01',
-      name: 'Carved Ritual Mask',
-      craftKey: 'parzo',
-      craft_name: 'PARZO',
-      maker: 'Kelzang Dorji Woodworks',
-      price: 87,
-      priceUSD: 87,
-      image_path: '/assets/photos/product-mas01.jpg',
-      slot: 'photo 1 — carved mask, full view',
-    },
-    {
-      code: 'DEZ01',
-      name: 'Desho Paper Set',
-      craftKey: 'dezo',
-      craft_name: 'DEZO',
-      maker: 'Jungshi Paper Works',
-      price: 22,
-      priceUSD: 22,
-      image_path: '/assets/photos/product-dez01.jpg',
-      slot: 'photo 1 — desho paper, full view',
-    },
-    {
-      code: 'CUS02',
-      name: 'Appliqué Cushion Cover',
-      craftKey: 'tshemzo',
-      craft_name: 'TSHEMZO',
-      maker: 'Norzin Tailoring',
-      price: 68,
-      priceUSD: 68,
-      image_path: '/assets/photos/product-cus02.jpg',
-      slot: 'photo 1 — cushion cover, full view',
-    },
-  ]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [productsState, setProductsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [allProductsPool, setAllProductsPool] = useState<any[]>([]);
   const [productOffset, setProductOffset] = useState(0);
@@ -299,71 +136,13 @@ export default function HomePage() {
   const [allOutletsPool, setAllOutletsPool] = useState<any[]>([]);
   const [outletOffset, setOutletOffset] = useState(0);
 
-  const [outlets, setOutlets] = useState<any[]>([
-    {
-      key: 'thimphu-outlet',
-      type: 'Outlet',
-      name: 'HAB Craft Outlet, Thimphu',
-      place: 'Metog Lam, Thimphu',
-      note: 'The association’s own shop at the secretariat, carrying work from all thirteen crafts.',
-      hours: 'Mon–Sat, 09:00 – 17:00',
-      image_path: '/assets/photos/hero-4-textiles.jpg',
-    },
-    {
-      key: 'paro-airport',
-      type: 'Outlet',
-      name: 'Paro Departures Counter',
-      place: 'Paro International Airport',
-      note: 'Last-minute purchases with export paperwork issued at the counter.',
-      hours: 'Aligned to departures',
-      image_path: '/assets/photos/hero-5-desho.jpg',
-    },
-    {
-      key: 'bumthang-outlet',
-      type: 'Outlet',
-      name: 'Chumey Yathra Outlet',
-      place: 'Chumey, Bumthang',
-      note: 'Yathra wool sold at the loom, alongside the weaving shed.',
-      hours: 'Daily, 08:00 – 17:00',
-      image_path: '/assets/photos/hero-3-clay.jpg',
-    },
-  ]);
-
-  const [clusters, setClusters] = useState<any[]>([
-    {
-      key: 'khoma',
-      name: 'Khoma Weaving Cluster',
-      craft_name: 'Thagzo · Weaving',
-      dzongkhag: 'Lhuentse',
-      meta: '42 member weavers',
-      summary: 'Forty-two women weaving kisuthara silk on backstrap looms, in the village the textile is named for.',
-      image_path: '/assets/photos/hero-1-weaving.jpg',
-      slot: 'photo — Khoma weavers at work',
-    },
-    {
-      key: 'kheng',
-      name: 'Kheng Bamboo Cluster',
-      craft_name: 'Tshazo · Bamboo & Cane',
-      dzongkhag: 'Zhemgang',
-      meta: '36 member artisans',
-      summary: 'Bamboo and cane workers across the Kheng villages, making bangchung baskets to a technique held locally.',
-      image_path: '/assets/photos/hero-4-textiles.jpg',
-      slot: 'photo — Kheng bamboo splitting',
-    },
-    {
-      key: 'trashiyangtse',
-      name: 'Trashiyangtse Turning Cluster',
-      craft_name: 'Shagzo · Woodturning',
-      dzongkhag: 'Trashiyangtse',
-      meta: '24 member turners',
-      summary: 'The country’s wood-turning centre — dapa bowls and phob cups turned from burl and lacquered.',
-      image_path: '/assets/photos/hero-5-desho.jpg',
-      slot: 'photo — Trashiyangtse lathe turning',
-    },
-  ]);
+  const [outlets, setOutlets] = useState<any[]>([]);
+  const [outletsState, setOutletsState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [clusters, setClusters] = useState<any[]>([]);
+  const [clustersState, setClustersState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const displayedProducts = React.useMemo(() => {
-    const pool = allProductsPool.length > 0 ? allProductsPool : products;
+    const pool = allProductsPool;
     if (pool.length === 0) return [];
     const selection = selectFeaturedProducts(siteSettings.shopProductCodes, pool);
     if (selection.manual) return selection.products;
@@ -376,7 +155,7 @@ export default function HomePage() {
   }, [allProductsPool, productOffset, products, siteSettings.shopProductCodes]);
 
   const displayedOutlets = React.useMemo(() => {
-    const pool = allOutletsPool.length > 0 ? allOutletsPool : outlets;
+    const pool = allOutletsPool;
     if (pool.length === 0) return [];
     const count = Math.min(3, pool.length);
     const res = [];
@@ -395,7 +174,8 @@ export default function HomePage() {
     { key: 'environment', letter: '', title: 'Environmental & Landscape Conservation', line: 'Replants the natural materials our crafts grow from.', body: 'Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.' },
   ]);
 
-  const [craftsList, setCraftsList] = useState<any[]>(CRAFTS);
+  const [craftsList, setCraftsList] = useState<any[]>([]);
+  const [craftsState, setCraftsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [punakhaOutlet, setPunakhaOutlet] = useState<any>(null);
 
   const [programmes, setProgrammes] = useState<any[]>([
@@ -548,41 +328,60 @@ export default function HomePage() {
 
     // C. Products from Admin (up to 24 products for continuous 5-second dynamic rotation)
     fetch('/api/products?limit=24', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Product catalogue unavailable');
+        return r.json();
+      })
       .then((d) => {
-        if (d?.products && d.products.length > 0) {
-          const mappedProducts = d.products.map((p: any) => ({
+        if (!d?.success || !Array.isArray(d.products)) throw new Error('Product catalogue unavailable');
+        const mappedProducts = d.products.map((p: any) => ({
             ...p,
             price: p.priceUSD || p.price || 0,
             priceUSD: p.priceUSD || p.price || 0,
             craft_name: (p.craft?.name || p.craftKey || '').toUpperCase(),
-            image_path: p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`,
+            image_path: p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg',
           }));
-          setAllProductsPool(mappedProducts);
-          setProducts(mappedProducts.slice(0, 8));
-        }
+        setAllProductsPool(mappedProducts);
+        setProducts(mappedProducts.slice(0, 8));
+        setProductsState('ready');
       })
-      .catch(() => {});
+      .catch(() => setProductsState('error'));
 
     // Outlets from Admin for continuous 5-second dynamic rotation
-    fetch('/api/outlets', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.outlets && d.outlets.length > 0) {
-          setAllOutletsPool(d.outlets);
-        }
+    fetch('/api/outlets?shuffle=false', { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) throw new Error('Outlet directory unavailable');
+        return r.json();
       })
-      .catch(() => {});
+      .then((d) => {
+        if (!d?.success || !Array.isArray(d.outlets)) throw new Error('Outlet directory unavailable');
+        const mappedOutlets = d.outlets.map((outlet: any) => ({
+          ...outlet,
+          image_path: outlet.imageUrl || '/assets/photos/image-unavailable.svg',
+        }));
+        setAllOutletsPool(mappedOutlets);
+        setOutlets(mappedOutlets);
+        setPunakhaOutlet(mappedOutlets.find((outlet: any) => outlet.key === 'punakha-market') || null);
+        setOutletsState('ready');
+      })
+      .catch(() => setOutletsState('error'));
 
     // D. Clusters from Admin
     fetch('/api/clusters', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.clusters && d.clusters.length > 0) {
-          setClusters(d.clusters.slice(0, 3));
-        }
+      .then((r) => {
+        if (!r.ok) throw new Error('Cluster directory unavailable');
+        return r.json();
       })
-      .catch(() => {});
+      .then((d) => {
+        if (!d?.success || !Array.isArray(d.clusters)) throw new Error('Cluster directory unavailable');
+        setClusters(d.clusters.slice(0, 3).map((cluster: any) => ({
+          ...cluster,
+          image_path: cluster.imageUrl || '/assets/photos/image-unavailable.svg',
+          meta: Number(cluster.members) > 0 ? `${cluster.members} members` : '',
+        })));
+        setClustersState('ready');
+      })
+      .catch(() => setClustersState('error'));
 
     // E. Honours & Masters from Admin (mapped accurately to prevent blank badges and duplicate Taktsang photos)
     fetch('/api/honours', { cache: 'no-store' })
@@ -709,13 +508,16 @@ export default function HomePage() {
 
     // J. Crafts from Admin
     fetch('/api/crafts', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.crafts && d.crafts.length > 0) {
-          setCraftsList(d.crafts);
-        }
+      .then((r) => {
+        if (!r.ok) throw new Error('Craft catalogue unavailable');
+        return r.json();
       })
-      .catch(() => {});
+      .then((d) => {
+        if (!d?.success || !Array.isArray(d.crafts)) throw new Error('Craft catalogue unavailable');
+        setCraftsList(d.crafts);
+        setCraftsState('ready');
+      })
+      .catch(() => setCraftsState('error'));
 
     // K. Support Pillars from Admin
     fetch('/api/support-pillars', { cache: 'no-store' })
@@ -735,16 +537,6 @@ export default function HomePage() {
             };
           });
           setSupportPillars(mapped);
-        }
-      })
-      .catch(() => {});
-
-    // L. Punakha Market Outlet from Admin
-    fetch('/api/outlets?key=punakha-market', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.outlet) {
-          setPunakhaOutlet(d.outlet);
         }
       })
       .catch(() => {});
@@ -772,32 +564,25 @@ export default function HomePage() {
     return () => clearInterval(t);
   }, [heroSlides.length]);
 
-  useEffect(() => {
-    const t = setInterval(() => {
-      setCurrentPunakha((c) => (c + 1) % PUNAKHA_SLIDES.length);
-    }, 5000);
-    return () => clearInterval(t);
-  }, []);
-
   // 5-second continuous auto-rotation for Shop Products
   useEffect(() => {
-    const pool = allProductsPool.length > 0 ? allProductsPool : products;
+    const pool = allProductsPool;
     if (pool.length <= 1) return;
     const t = setInterval(() => {
       setProductOffset((prev) => (prev + 1) % pool.length);
     }, 5000);
     return () => clearInterval(t);
-  }, [allProductsPool.length, products.length]);
+  }, [allProductsPool.length]);
 
   // 5-second continuous auto-rotation for Outlets
   useEffect(() => {
-    const pool = allOutletsPool.length > 0 ? allOutletsPool : outlets;
+    const pool = allOutletsPool;
     if (pool.length <= 1) return;
     const t = setInterval(() => {
       setOutletOffset((prev) => (prev + 1) % pool.length);
     }, 5000);
     return () => clearInterval(t);
-  }, [allOutletsPool.length, outlets.length]);
+  }, [allOutletsPool.length]);
 
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1068,8 +853,8 @@ export default function HomePage() {
         <div className="grid grid--4">
           {displayedProducts.map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
-            const productImg = p.image_path || (p.images && p.images[0]?.url) || `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
-            const makerName = typeof p.maker === 'object' ? p.maker?.name : (p.maker || 'Registered Member');
+            const productImg = p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg';
+            const makerName = typeof p.maker === 'object' ? p.maker?.name : p.maker;
             return (
               <article key={`${p.code}-${pIdx}`} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`}>
@@ -1078,14 +863,7 @@ export default function HomePage() {
                       src={productImg}
                       alt={p.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (!target.src.includes('/assets/photos/product-')) {
-                          target.src = `/assets/photos/product-${p.code.toLowerCase()}.jpg`;
-                        } else {
-                          target.src = '/assets/photos/product-hhb01.jpg';
-                        }
-                      }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                     />
                   </figure>
                   <span className="product__ref">{p.code}</span>
@@ -1096,7 +874,7 @@ export default function HomePage() {
                     <Link href={`/product/${p.code}`}>{p.name}</Link>
                   </h3>
 
-                  <p className="card__meta clamp-1">{makerName}</p>
+                  {makerName && <p className="card__meta clamp-1">{makerName}</p>}
                   <div className="card__foot">
                     <span className="price">{fmt(displayPrice)}</span>
                     <button
@@ -1111,6 +889,9 @@ export default function HomePage() {
               </article>
             );
           })}
+          {displayedProducts.length === 0 && <p className="section__lede" role={productsState === 'error' ? 'alert' : 'status'}>
+            {productsState === 'loading' ? 'Loading the shop catalogue…' : productsState === 'error' ? 'The shop catalogue is temporarily unavailable.' : 'No published products are available yet.'}
+          </p>}
         </div>
       </section>
     ),
@@ -1171,122 +952,64 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <article className="outlet-lead" id="outletLead">
-          <div className="carousel carousel--outlet" aria-label="Punakha Crafts Market">
-            <div className="carousel__track">
-              {PUNAKHA_SLIDES.map((sl, i) => (
-                <div
-                  key={i}
-                  className={`carousel__slide ${i === currentPunakha ? 'is-on' : ''}`}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    opacity: i === currentPunakha ? 1 : 0,
-                    transition: 'opacity .6s ease',
-                    zIndex: i === currentPunakha ? 1 : 0,
-                  }}
-                >
-                  <img
-                    src={sl.img}
-                    alt={sl.cap}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-2-punakha.jpg'; }}
-                  />
+        {punakhaOutlet && (
+          <article className="outlet-lead" id="outletLead">
+            <figure className="frame frame--wide16" style={{ minHeight: 280 }}>
+              <img
+                src={punakhaOutlet.image_path || '/assets/photos/image-unavailable.svg'}
+                alt={punakhaOutlet.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(event) => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
+              />
+            </figure>
+            <div className="outlet-lead__body">
+              <p className="badge badge--ink">{punakhaOutlet.type || 'Outlet'}</p>
+              <h3 className="display display--panel">{punakhaOutlet.name}</h3>
+              {punakhaOutlet.place && <p className="outlet-lead__place">{punakhaOutlet.place}</p>}
+              {(punakhaOutlet.description || punakhaOutlet.note) && (
+                <p className="outlet-lead__desc">{punakhaOutlet.description || punakhaOutlet.note}</p>
+              )}
+              {(punakhaOutlet.hours || punakhaOutlet.stalls || punakhaOutlet.craftsOnSite || punakhaOutlet.payment) && (
+                <div className="factgrid">
+                  {punakhaOutlet.hours && <div className="factgrid__cell"><span className="factgrid__key">Hours</span><span className="factgrid__val clamp-2">{punakhaOutlet.hours}</span></div>}
+                  {punakhaOutlet.stalls && <div className="factgrid__cell"><span className="factgrid__key">Stalls</span><span className="factgrid__val clamp-2">{punakhaOutlet.stalls}</span></div>}
+                  {punakhaOutlet.craftsOnSite && <div className="factgrid__cell"><span className="factgrid__key">Crafts on site</span><span className="factgrid__val clamp-2">{punakhaOutlet.craftsOnSite}</span></div>}
+                  {punakhaOutlet.payment && <div className="factgrid__cell"><span className="factgrid__key">Payment</span><span className="factgrid__val clamp-2">{punakhaOutlet.payment}</span></div>}
                 </div>
-              ))}
-            </div>
-            <button
-              className="carousel__nav carousel__nav--prev"
-              type="button"
-              onClick={() => setCurrentPunakha((c) => (c - 1 + PUNAKHA_SLIDES.length) % PUNAKHA_SLIDES.length)}
-              aria-label="Previous photograph"
-            >
-              ‹
-            </button>
-            <button
-              className="carousel__nav carousel__nav--next"
-              type="button"
-              onClick={() => setCurrentPunakha((c) => (c + 1) % PUNAKHA_SLIDES.length)}
-              aria-label="Next photograph"
-            >
-              ›
-            </button>
-            <div className="carousel__dots">
-              {PUNAKHA_SLIDES.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={`carousel__dot ${i === currentPunakha ? 'is-on' : ''}`}
-                  onClick={() => setCurrentPunakha(i)}
-                  aria-label={`Slide ${i + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="outlet-lead__body">
-            <p className="badge badge--ink">
-              <span aria-hidden="true">★</span> HAB validated &amp; managed
-            </p>
-            <h3 className="display display--panel">Punakha Crafts Market</h3>
-            <p className="outlet-lead__place">Punakha · beside the Mo Chhu, on the Khuruthang road</p>
-            <p className="outlet-lead__desc">
-              The only authentic crafts market validated and managed by HAB. Every stall is a registered member selling their own work, priced as agreed with the association — no resellers, no imported copies.
-            </p>
-            <div className="factgrid">
-              <div className="factgrid__cell">
-                <span className="factgrid__key">Hours</span>
-                <span className="factgrid__val clamp-2">Daily, 09:00 – 18:00</span>
-              </div>
-              <div className="factgrid__cell">
-                <span className="factgrid__key">Stalls</span>
-                <span className="factgrid__val clamp-2">32 member artisans</span>
-              </div>
-              <div className="factgrid__cell">
-                <span className="factgrid__key">Crafts on site</span>
-                <span className="factgrid__val clamp-2">Weaving, bamboo, wood turning, paper</span>
-              </div>
-              <div className="factgrid__cell">
-                <span className="factgrid__key">Payment</span>
-                <span className="factgrid__val clamp-2">Cash, mBoB, cards</span>
+              )}
+              <div className="actions">
+                <Link className="btn btn--accent" href={`/outlets/${punakhaOutlet.key}`}>View outlet</Link>
+                <Link className="btn btn--text" href="/outlets">All outlets →</Link>
               </div>
             </div>
-            <div className="actions">
-              <Link className="btn btn--accent" href="/outlets/punakha-market">
-                Get directions
-              </Link>
-              <Link className="btn btn--outline" href="/contact">
-                Plan a group visit
-              </Link>
-              <Link className="btn btn--text" href="/outlets/punakha-market">
-                Learn more →
-              </Link>
-            </div>
-          </div>
-        </article>
+          </article>
+        )}
 
         {/* Physical outlets grid (3 columns matching index.html lines 346-360 & Image 2) */}
         <div className="grid grid--3" style={{ marginBottom: '48px', marginTop: '32px' }}>
           {displayedOutlets.map((o, oIdx) => (
-            <Link key={`${o.key}-${oIdx}`} className="card outlet" href={`/outlet?outlet=${o.key}`} style={{ color: 'inherit' }}>
+            <Link key={`${o.key}-${oIdx}`} className="card outlet" href={`/outlets/${o.key}`} style={{ color: 'inherit' }}>
               <figure className="frame frame--wide16">
                 <img
-                  src={o.image_path || OUTLET_IMAGE_MAP[o.key] || '/assets/photos/hero-2-punakha.jpg'}
+                  src={o.image_path || '/assets/photos/image-unavailable.svg'}
                   alt={o.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = OUTLET_IMAGE_MAP[o.key] || '/assets/photos/hero-2-punakha.jpg'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                 />
                 <figcaption className="frame__caption frame__caption--sm">{o.name}</figcaption>
               </figure>
               <div className="card__body">
                 <span className="tag">{o.type || 'Outlet'}</span>
                 <h3 className="card__title clamp-2">{o.name}</h3>
-                <p className="card__meta clamp-1">{o.place}</p>
-                <p className="card__text clamp-3">{o.note || o.description}</p>
+                {o.place && <p className="card__meta clamp-1">{o.place}</p>}
+                {(o.note || o.description) && <p className="card__text clamp-3">{o.note || o.description}</p>}
                 {o.hours && <p className="outlet__hours">{o.hours}</p>}
               </div>
             </Link>
           ))}
+          {outlets.length === 0 && <p className="section__lede" role={outletsState === 'error' ? 'alert' : 'status'}>
+            {outletsState === 'loading' ? 'Loading outlet directory…' : outletsState === 'error' ? 'Outlets are temporarily unavailable.' : 'No outlets have been published yet.'}
+          </p>}
         </div>
 
         {/* Artisan clusters subhead */}
@@ -1307,26 +1030,25 @@ export default function HomePage() {
             <Link key={c.key} className="card cluster" href={`/clusters/${c.key}`}>
               <figure className="frame frame--wide16">
                 <img
-                  src={c.image_path || CLUSTER_IMAGE_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
+                  src={c.image_path || '/assets/photos/image-unavailable.svg'}
                   alt={c.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = CLUSTER_IMAGE_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                 />
               </figure>
               <div className="card__body">
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{c.craft_name || c.craftKey}</p>
                 <h3 className="cluster__name">{c.name}</h3>
-                <p className="cluster__place">{c.dzongkhag} · {c.meta || 'Active Cluster'}</p>
+                <p className="cluster__place">{[c.dzongkhag, c.meta].filter(Boolean).join(' · ')}</p>
                 <p className="card__text cluster__summary">{c.summary}</p>
                 <p className="cluster__read">Read the story →</p>
               </div>
             </Link>
           ))}
+          {clusters.length === 0 && <p className="section__lede" role={clustersState === 'error' ? 'alert' : 'status'}>
+            {clustersState === 'loading' ? 'Loading artisan clusters…' : clustersState === 'error' ? 'Artisan clusters are temporarily unavailable.' : 'No artisan clusters have been published yet.'}
+          </p>}
         </div>
-
-        <p className="footnote">
-          195 affiliated stores across Bhutan also carry member work. Outlets and clusters are added here as they are validated.
-        </p>
       </section>
     ),
     'crafts': (
@@ -1355,10 +1077,10 @@ export default function HomePage() {
                 <figure className="frame frame--wide16" style={{ position: 'relative' }}>
                   <span className="craft__num">{num} / 13</span>
                   <img
-                    src={craft.image_path || CRAFT_IMAGE_MAP[craft.key] || `/images/crafts/${craft.key}.jpg`}
+                  src={craft.image_path || craft.bannerUrl || '/assets/photos/image-unavailable.svg'}
                     alt={craft.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = CRAFT_IMAGE_MAP[craft.key] || '/assets/photos/hero-1-weaving.jpg'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                   />
                 </figure>
                 <div className="card__body">
@@ -1379,6 +1101,9 @@ export default function HomePage() {
               </article>
             );
           })}
+          {craftsList.length === 0 && <p className="section__lede" role={craftsState === 'error' ? 'alert' : 'status'}>
+            {craftsState === 'loading' ? 'Loading the craft catalogue…' : craftsState === 'error' ? 'The craft catalogue is temporarily unavailable.' : 'No active crafts are available yet.'}
+          </p>}
         </div>
       </section>
     ),
