@@ -24,39 +24,6 @@ interface HeroSlide {
   linkUrl?: string | null;
 }
 
-const DEFAULT_HERO_SLIDES: HeroSlide[] = [
-  {
-    id: 'hero-1',
-    imageUrl: '/assets/photos/hero-1-weaving.jpg',
-    caption: 'photo 1 — artisan at the loom, Khoma',
-    altText: 'Artisan at the backstrap loom in Khoma, Lhuentse',
-  },
-  {
-    id: 'hero-2',
-    imageUrl: '/assets/photos/hero-2-punakha.jpg',
-    caption: 'photo 2 — the Punakha crafts market, stalls and buyers',
-    altText: 'The Punakha crafts market, stalls and buyers',
-  },
-  {
-    id: 'hero-3',
-    imageUrl: '/assets/photos/hero-3-clay.jpg',
-    caption: 'photo 3 — a natural dye training, Lhuentse',
-    altText: 'Traditional clay sculpture and statue making in Bhutan',
-  },
-  {
-    id: 'hero-4',
-    imageUrl: '/assets/photos/hero-4-textiles.jpg',
-    caption: 'photo 4 — carving workshop, Trashiyangtse',
-    altText: 'Naturally dyed yathra and silk textiles in Bumthang',
-  },
-  {
-    id: 'hero-5',
-    imageUrl: '/assets/photos/hero-5-desho.jpg',
-    caption: 'photo 5 — HAB outlet counter, Thimphu',
-    altText: 'Handmade traditional desho paper workshop in Trashiyangtse',
-  },
-];
-
 const DEFAULT_HOMEPAGE_SECTION_ORDER: string[] = [
   'hero',
   'stats',
@@ -82,8 +49,8 @@ export default function HomePage() {
   const isDz = language === 'dz';
   const { addToCart } = useCart();
 
-  // Dynamic States initialized with exact client reference fallbacks
-  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [heroSlidesState, setHeroSlidesState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [currentHero, setCurrentHero] = useState(0);
 
   const [siteSettings, setSiteSettings] = useState({
@@ -202,17 +169,17 @@ export default function HomePage() {
     // A. Hero Slides from Admin
     const loadHeroSlides = () => {
       fetch('/api/hero-slides', { cache: 'no-store' })
-        .then((r) => r.json())
-        .then((d) => {
-          if (d?.slides && Array.isArray(d.slides)) {
-            if (d.slides.length >= 2) {
-              setHeroSlides(d.slides);
-            } else if (d.slides.length === 1) {
-              setHeroSlides([d.slides[0], ...DEFAULT_HERO_SLIDES.slice(1)]);
-            }
-          }
+        .then((r) => {
+          if (!r.ok) throw new Error('Homepage slides unavailable');
+          return r.json();
         })
-        .catch(() => {});
+        .then((d) => {
+          if (!d?.success || !Array.isArray(d.slides)) throw new Error('Homepage slides unavailable');
+          setHeroSlides(d.slides);
+          setCurrentHero(0);
+          setHeroSlidesState('ready');
+        })
+        .catch(() => setHeroSlidesState('error'));
     };
 
     // B. Site Settings from Admin
@@ -625,16 +592,17 @@ export default function HomePage() {
         <div className="hero__visual">
           <figure className="frame frame--hero has-image relative overflow-hidden rounded-[16px] shadow-sm group">
             <img
-              src={heroSlides[currentHero]?.imageUrl || '/assets/photos/hero-1-weaving.jpg'}
-              alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || 'HAB craft artisan'}
+              src={heroSlides[currentHero]?.imageUrl || '/assets/photos/image-unavailable.svg'}
+              alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || ''}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                if (!target.src.includes('hero-1-weaving.jpg')) {
-                  target.src = '/assets/photos/hero-1-weaving.jpg';
-                }
-              }}
+              onError={(event) => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
             />
+
+            {heroSlides.length === 0 && (
+              <p className="absolute inset-x-4 bottom-4 z-10 rounded-lg bg-black/60 px-3 py-2 text-sm text-white" role={heroSlidesState === 'error' ? 'alert' : 'status'}>
+                {heroSlidesState === 'loading' ? 'Loading homepage images…' : heroSlidesState === 'error' ? 'Homepage images are temporarily unavailable.' : 'No homepage images have been published yet.'}
+              </p>
+            )}
 
             {/* Gradient overlay for contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
