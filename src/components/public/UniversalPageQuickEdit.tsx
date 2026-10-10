@@ -3,51 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
-import { ImagePlus, Link2, RotateCcw, Save, X } from 'lucide-react';
+import { ImagePlus, Link2, Plus, RotateCcw, Save, X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isEditableInlineTextPath, joinEditableText } from '@/lib/quick-edit-text';
 import { applyQuickEditImage } from '@/lib/quick-edit-image';
-import UniversalLiveSectionEditor, { type SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
 
 const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,label,small,strong,em,b,dt,dd,th,td,time,option,div,input[placeholder],textarea[placeholder],[data-hab-editable]';
 const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],[role="dialog"],script,style,noscript';
-
-function editorForSection(section: string): SectionType | null {
-  // Keep home-page section names distinct from their similarly named CMS pages.
-  // e.g. the home membership feature is not the members directory.
-  if (section === 'about') return 'about';
-  if (section === 'membership') return 'membership';
-  if (section === 'header' || section === 'utility-bar') return 'utility-bar';
-  if (section === 'footer') return 'footer';
-  if (/^about-/.test(section) || /^mandate|^ethics|^strategic/.test(section)) return 'about-page';
-  if (/^board/.test(section)) return 'board-records';
-  if (/^secretariat/.test(section)) return 'secretariat-records';
-  if (/^project/.test(section)) return 'projects';
-  if (/^programme/.test(section)) return 'programmes';
-  if (/^outlet/.test(section)) return 'outlets';
-  if (/^cluster/.test(section)) return 'clusters';
-  if (/^membership-/.test(section)) return 'membership';
-  if (/^member|^registered-member/.test(section)) return 'members';
-  if (/^product|^shop/.test(section)) return 'products';
-  if (/^craft/.test(section)) return 'crafts';
-  if (/^news/.test(section)) return 'news';
-  if (/^event/.test(section)) return 'events';
-  if (/^publication|^annual-report|^audit/.test(section)) return 'publications';
-  if (/^tender/.test(section)) return 'tenders';
-  if (/^wholesale/.test(section)) return 'wholesale';
-  if (/^donate|^support/.test(section)) return 'donate';
-  if (/^contact/.test(section)) return 'contact';
-  if (/^policy|^privacy|^terms|^shipping|^returns|^customs/.test(section)) return 'policies';
-  if (/^basket|^checkout|^order-confirmation|^track-order/.test(section)) return 'order-records';
-  if (section === 'hero') return 'hero';
-  if (section === 'stats') return 'stats';
-  if (section === 'buy') return 'buy';
-  if (section === 'assurance') return 'assurances';
-  return null;
-}
 
 function elementKey(element: Element, root: Element): string {
   const explicit = element.getAttribute('data-hab-edit-key');
@@ -119,12 +84,15 @@ export default function UniversalPageQuickEdit() {
   const [active, setActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
-  const [sectionEditor, setSectionEditor] = useState<{ type: SectionType; title: string } | null>(null);
   const [draft, setDraft] = useState<Override>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [newSlideUrl, setNewSlideUrl] = useState('');
+  const [newSlideCaption, setNewSlideCaption] = useState('');
+  const [newSlideAlt, setNewSlideAlt] = useState('');
   const overridesRef = useRef<OverrideMap>({});
   const fileRef = useRef<HTMLInputElement>(null);
+  const slideFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,7 +143,7 @@ export default function UniversalPageQuickEdit() {
     const handleToggle = (event: Event) => {
       const enabled = Boolean((event as CustomEvent).detail?.active);
       setActive(enabled);
-      if (!enabled) { setSelected(null); setSectionEditor(null); }
+      if (!enabled) setSelected(null);
     };
     window.addEventListener('hab:visual-edit-toggled', handleToggle);
     setActive(document.body.classList.contains('hab-visual-edit-on'));
@@ -210,27 +178,16 @@ export default function UniversalPageQuickEdit() {
       }
       const isTextOrMedia = target instanceof HTMLImageElement || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || editableTextNodes(target).length > 0;
       if (!isTextOrMedia) {
-        const section = clicked?.closest<HTMLElement>('[data-hab-section]');
-        if (section) {
-          const badgeButton = section.querySelector<HTMLButtonElement>('.hab-section-edit-badge button[title="Quick edit this section in a live modal"]');
-          if (badgeButton) {
-            event.preventDefault(); event.stopPropagation(); setSelected(null); badgeButton.click(); return;
-          }
-          const type = editorForSection(section.dataset.habSection || '');
-          if (type) {
-            event.preventDefault(); event.stopPropagation(); setSelected(null);
-            setSectionEditor({ type, title: section.dataset.habSection?.replace(/-/g, ' ') || 'Section' });
-            return;
-          }
-        }
         setSelected(null);
         return;
       }
       event.preventDefault();
       event.stopPropagation();
-      setSectionEditor(null);
       setSelected(target);
       setMessage('');
+      setNewSlideUrl('');
+      setNewSlideCaption('');
+      setNewSlideAlt('');
       const saved = overridesRef.current[elementKey(target, shell)];
       setDraft(target instanceof HTMLImageElement
         ? { ...(saved || {}), src: saved?.src || target.currentSrc || target.src, alt: saved?.alt ?? target.alt, href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) }
@@ -314,17 +271,79 @@ export default function UniversalPageQuickEdit() {
     finally { setSaving(false); }
   };
 
+  const uploadSlide = async (file: File) => {
+    const body = new FormData(); body.append('file', file);
+    setSaving(true); setMessage('Uploading new slide…');
+    try {
+      const response = await fetch('/api/admin/upload', { method: 'POST', credentials: 'include', body });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Upload failed.');
+      setNewSlideUrl(data.url);
+      setMessage('Photo uploaded. Select Add slide to publish it.');
+    } catch (error: any) { setMessage(error?.message || 'Upload failed.'); }
+    finally { setSaving(false); }
+  };
+
+  const galleryElement = typeof HTMLImageElement !== 'undefined' && selected instanceof HTMLImageElement
+    ? selected.closest<HTMLElement>('[data-hab-gallery]') : null;
+  const galleryType = galleryElement?.dataset.habGallery;
+  const galleryId = galleryElement?.dataset.habGalleryId;
+  const canAddSlide = Boolean(galleryType === 'hero' || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '')));
+
+  const addSlide = async () => {
+    const url = newSlideUrl.trim();
+    if (!url || !canAddSlide) { setMessage('Upload or enter a photo URL first.'); return; }
+    if (!/^\/(?!\/)/.test(url) && !/^https:\/\//i.test(url)) { setMessage('Use a site image path or HTTPS URL.'); return; }
+    if (galleryType === 'hero' && (!newSlideCaption.trim() || !newSlideAlt.trim())) { setMessage('Enter a caption and image description for this hero slide.'); return; }
+    setSaving(true); setMessage('Adding slide…');
+    try {
+      const requestJson = async (url: string, init?: RequestInit) => {
+        const response = await fetch(url, { credentials: 'include', cache: 'no-store', ...init });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || 'Could not save the slide.');
+        return data;
+      };
+      const write = (url: string, method: string, payload: unknown) => requestJson(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (galleryType === 'hero') {
+        const { slides } = await requestJson('/api/admin/hero-slides');
+        await write('/api/admin/hero-slides', 'POST', {
+          imageUrl: url, caption: newSlideCaption.trim(),
+          altText: newSlideAlt.trim(),
+          sortOrder: Math.max(0, ...slides.map((slide: { sortOrder?: number }) => Number(slide.sortOrder) || 0)) + 1,
+          isActive: true,
+        });
+      } else if (galleryType === 'outlet') {
+        const { outlets } = await requestJson('/api/admin/outlets');
+        const outlet = outlets.find((item: { key: string }) => item.key === galleryId);
+        if (!outlet) throw new Error('Outlet not found in Admin.');
+        const photos: string[] = Array.isArray(outlet.galleryImages) ? outlet.galleryImages : [];
+        if (photos.length >= 24) throw new Error('This outlet has reached the 24-slide limit.');
+        await write('/api/admin/outlets', 'PUT', { id: outlet.id, galleryImages: [...photos, url] });
+      } else if (galleryType === 'product') {
+        const { products } = await requestJson('/api/admin/products');
+        const product = products.find((item: { code: string }) => item.code === galleryId);
+        if (!product) throw new Error('Product not found in Admin.');
+        const images = Array.isArray(product.images) ? product.images : [];
+        await write('/api/admin/products', 'PATCH', { id: product.id, images: [...images, { url, role: 'gallery', alt: newSlideAlt.trim() || undefined }] });
+      } else if (galleryType === 'page') {
+        const { page } = await requestJson(`/api/admin/pages/${galleryId}`);
+        const images = Array.isArray(page.galleryImages) ? page.galleryImages : [];
+        await write(`/api/admin/pages/${galleryId}`, 'PUT', { galleryImages: [...images, { url, caption: newSlideCaption.trim() || newSlideAlt.trim() }] });
+      }
+      window.location.reload();
+    } catch (error: any) { setMessage(error?.message || 'Could not add the slide.'); setSaving(false); }
+  };
+
   if (!active || !isStaff) return null;
   const image = selected instanceof HTMLImageElement;
   const field = selected instanceof HTMLInputElement || selected instanceof HTMLTextAreaElement;
   const link = Boolean(selected?.closest('a'));
 
   return <>
-    {sectionEditor && <UniversalLiveSectionEditor isOpen sectionType={sectionEditor.type} sectionTitle={sectionEditor.title} onClose={() => setSectionEditor(null)} />}
     {selected && createPortal(
-    <aside role="dialog" aria-modal="false" aria-label="Quick edit selected page content" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
+    <aside role="dialog" aria-modal="false" aria-label="Edit selected page content" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
       <div className="flex items-center justify-between gap-3 mb-3">
-        <strong className="text-sm">Quick edit {image ? 'image' : selected.tagName.toLowerCase()}</strong>
+        <strong className="text-sm">Edit this {image ? 'image' : field ? 'placeholder' : 'text'}</strong>
         <button type="button" onClick={() => setSelected(null)} aria-label="Close quick editor" className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-500"><X className="w-4 h-4" /><span>Close</span></button>
       </div>
       {image ? <>
@@ -335,6 +354,17 @@ export default function UniversalPageQuickEdit() {
         {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
+        {canAddSlide && <div className="mt-4 border-t border-slate-200 pt-3">
+          <strong className="text-xs">Add another {galleryType === 'product' ? 'product photo' : 'slide'}</strong>
+          <p className="mt-1 text-xs text-slate-500">This adds a new photo to the {galleryType} gallery; it does not replace the current one.</p>
+          <input ref={slideFileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadSlide(e.target.files[0])} />
+          <button type="button" disabled={saving} className="mt-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => slideFileRef.current?.click()}><ImagePlus className="mr-1 inline h-4 w-4" /> Upload new photo</button>
+          <input aria-label="New slide image URL" placeholder="Or enter image URL" className="mt-2 w-full rounded-lg border px-3 py-2 text-sm" value={newSlideUrl} onChange={e => setNewSlideUrl(e.target.value)} />
+          {(galleryType === 'hero' || galleryType === 'page') && <input aria-label="New slide caption" placeholder="Caption" className="mt-2 w-full rounded-lg border px-3 py-2 text-sm" value={newSlideCaption} onChange={e => setNewSlideCaption(e.target.value)} />}
+          <input aria-label="New slide image description" placeholder="Image description" className="mt-2 w-full rounded-lg border px-3 py-2 text-sm" value={newSlideAlt} onChange={e => setNewSlideAlt(e.target.value)} />
+          <button type="button" disabled={saving || !newSlideUrl.trim()} onClick={addSlide} className="mt-2 inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"><Plus className="h-4 w-4" /> Add slide</button>
+          <a className="ml-3 text-xs font-semibold text-[#8B2E24] underline" href={galleryType === 'hero' ? '/admin/hero' : galleryType === 'outlet' ? '/admin/clusters-outlets' : galleryType === 'product' ? '/admin/products' : '/admin/pages'}>Manage gallery in Admin</a>
+        </div>}
       </> : field ? <>
         <label className="block text-xs font-semibold mb-1">Form placeholder</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm" value={draft.placeholder || ''} onChange={(e) => setDraft({ ...draft, placeholder: e.target.value })} />

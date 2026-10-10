@@ -223,7 +223,7 @@ export default function HeroSlidesAdminPage() {
         <div className="text-center py-16 admin-card border admin-border rounded-xl">
           <div className="text-4xl mb-3">🖼️</div>
           <h3 className="text-base font-semibold admin-title mb-1">No slides yet</h3>
-          <p className="text-sm admin-muted mb-4">The homepage will show the default artisan image until you add slides.</p>
+          <p className="text-sm admin-muted mb-4">Add a photograph to start the homepage slideshow.</p>
           <button onClick={openAdd} className="admin-button-primary text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
             Add First Slide
           </button>
@@ -297,7 +297,7 @@ export default function HeroSlidesAdminPage() {
       )}
 
       <div className="mt-4 p-3 bg-sky-500/15 border border-sky-500/30 rounded-lg text-xs text-sky-300">
-        <strong>How to add images:</strong> Upload your image files to <code className="admin-panel px-1 rounded">/www/wwwroot/default/hab-bhutan-platform/public/images/hero/</code> on the server, then enter the path as <code className="admin-panel px-1 rounded">/images/hero/yourfile.jpg</code> in the Image URL field.
+        <strong>How to add images:</strong> Select Add Slide above, upload a photograph, add its caption and description, then save. You can reorder or edit slides here at any time.
       </div>
     </div>
   );

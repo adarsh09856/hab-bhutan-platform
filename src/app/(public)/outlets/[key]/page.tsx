@@ -128,7 +128,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           <p className="lede lede--wide">{outlet.description || outlet.note}</p>
         </div>
 
-        <div style={{ height: 440 }}><OutletGallery image={bannerImg} galleryImages={outlet.galleryImages} name={outlet.name} /></div>
+        <div style={{ height: 440 }}><OutletGallery image={bannerImg} galleryImages={outlet.galleryImages} name={outlet.name} outletKey={outlet.key} /></div>
       </section>
 
       {/* Facts */}

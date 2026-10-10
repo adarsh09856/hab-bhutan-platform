@@ -169,7 +169,7 @@ export default function ProductDetailPage() {
 
           {/* Left Column: Gallery & Thumbnails */}
           <div>
-            <div className="gallery" id="prodMain">
+            <div className="gallery" id="prodMain" data-hab-gallery="product" data-hab-gallery-id={product.code}>
               {galleryImages.map((src, i) => (
                 <div
                   key={i}

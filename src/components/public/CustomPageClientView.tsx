@@ -185,7 +185,7 @@ export default function CustomPageClientView({ initialPage }: CustomPageClientVi
                   Photo Gallery &amp; Visual Archive
                 </h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" data-hab-gallery="page" data-hab-gallery-id={page.id}>
                 {page.galleryImages.map((img: any, i: number) => (
                   <div key={i} className="group bg-white rounded-xl overflow-hidden border border-stone-200 shadow-xs hover:shadow-md transition-shadow">
                     <div className="aspect-4/3 overflow-hidden bg-stone-100">

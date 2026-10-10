@@ -272,6 +272,19 @@ const configs: Record<string, Config> = {
 
 export function hasNativeRecordEditor(sectionType: string) { return Boolean(configs[sectionType]); }
 
+function emptyRecord(config: Config | undefined, sectionType: string) {
+  if (!config) return null;
+  const next = Object.fromEntries(config.fields.map((field) => [field.key, field.kind === 'check' ? false : field.kind === 'number' ? 0 : field.kind === 'select' ? field.options?.[0] || '' : '']));
+  if ('isActive' in next) next.isActive = true;
+  if ('isPublished' in next) next.isPublished = true;
+  if ('year' in next) next.year = new Date().getFullYear();
+  if ('closingDate' in next) next.closingDate = new Date().toISOString().slice(0, 10);
+  if ('status' in next) next.status = sectionType === 'tenders' ? 'OPEN' : sectionType === 'members' ? 'PENDING' : sectionType === 'products' ? 'PUBLISHED' : 'current';
+  if (sectionType === 'wholesale') { next.status = 'PENDING'; next.country = 'Bhutan'; next.discountTier = 20; }
+  if (sectionType === 'donate') { next.status = 'PENDING'; next.frequency = 'ONE_TIME'; }
+  return next;
+}
+
 export default function QuickEditRecords({ sectionType }: { sectionType: string }) {
   const config = configs[sectionType];
   const router = useRouter();
@@ -281,6 +294,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [query, setQuery] = useState('');
+  const [showOptional, setShowOptional] = useState(false);
 
   const load = useCallback(async () => {
     if (!config) return;
@@ -301,15 +315,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
   if (!config) return null;
 
   const startCreate = () => {
-    const next = Object.fromEntries(config.fields.map((field) => [field.key, field.kind === 'check' ? false : field.kind === 'number' ? 0 : '']));
-    if ('isActive' in next) next.isActive = true;
-    if ('isPublished' in next) next.isPublished = true;
-    if ('year' in next) next.year = new Date().getFullYear();
-    if ('closingDate' in next) next.closingDate = new Date().toISOString().slice(0, 10);
-    if ('status' in next) next.status = sectionType === 'tenders' ? 'OPEN' : sectionType === 'members' ? 'PENDING' : sectionType === 'products' ? 'PUBLISHED' : 'current';
-    if (sectionType === 'wholesale') { next.status = 'PENDING'; next.country = 'Bhutan'; next.discountTier = 20; }
-    if (sectionType === 'donate') { next.status = 'PENDING'; next.frequency = 'ONE_TIME'; }
-    setDraft(next); setMessage('');
+    setDraft(emptyRecord(config, sectionType)); setShowOptional(false); setMessage('');
   };
   const startEdit = (row: Record<string, any>) => {
     const primaryImage = Array.isArray(row.images) ? row.images.find((image: any) => image.role === 'primary') || row.images[0] : null;
@@ -322,7 +328,7 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
       ...(config.governanceCategory ? { chapterOrNote: governanceNote.trim(), photoUrl: row.photoUrl || (governancePhoto || '').trim() } : {}),
       activities: Array.isArray(row.activities) ? row.activities.join('\n') : row.activities || '',
       results: Array.isArray(row.results) ? row.results.map(projectResultLine).join('\n') : row.results || '' });
-    setMessage('');
+    setShowOptional(true); setMessage('');
   };
   const payload = () => {
     const result = Object.fromEntries(config.fields.filter((field) => field.kind !== 'date' || draft?.[field.key]).map((field) => [field.key,
@@ -376,7 +382,8 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
         window.location.assign(`/admin/trade?product=${encodeURIComponent(productCode)}`);
         return;
       }
-      setDraft(null); await load();
+      setDraft(null);
+      await load();
       window.dispatchEvent(new CustomEvent('hab:records-updated', { detail: { sectionType } }));
       router.refresh(); setMessage('Saved to the live database.');
     } catch (error: any) { setMessage(error?.message || 'Save failed.'); }
@@ -459,24 +466,51 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
     finally { setSaving(false); }
   };
   const visible = rows.filter((row) => `${row[config.labelKey] || ''} ${row.key || ''} ${row.customerName || ''} ${row.customerEmail || ''}`.toLowerCase().includes(query.toLowerCase()));
+  const primaryFields = config.fields.filter((field) => field.required || field.kind === 'image');
+  const optionalFields = config.fields.filter((field) => !field.required && field.kind !== 'image');
+
+  const renderField = (field: Field) => {
+    if (!draft || (field.createOnly && draft.id)) return null;
+    const update = (value: string | boolean) => setDraft((current) => current ? { ...current, [field.key]: value } : current);
+    return <div key={field.key} className={field.kind === 'long' || field.kind === 'image' || field.kind === 'file' || field.kind === 'lines' ? 'sm:col-span-2' : ''}>
+      {field.kind === 'check' ? <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={Boolean(draft[field.key])} onChange={(event) => update(event.target.checked)} />{field.label}</label>
+        : field.kind === 'select' ? <label className="block text-xs font-semibold">{field.label}<select className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal" value={String(draft[field.key] || '')} onChange={(event) => update(event.target.value)}>{(field.options || []).map((option) => <option key={option} value={option}>{option.replaceAll('_', ' ')}</option>)}</select></label>
+          : field.kind === 'image' || field.kind === 'file' ? <FileUploadInput value={String(draft[field.key] || '')} onChange={(url) => update(url)} label={field.label} accept={field.kind === 'image' ? 'image/*' : 'application/pdf,.pdf,.doc,.docx'} hint={field.kind === 'image' ? 'JPG, PNG, WebP or SVG image, up to 30MB' : 'PDF or document, up to 30MB'} />
+            : <label className="block text-xs font-semibold">{field.label}{field.required ? ' *' : ''}
+              {field.kind === 'long' || field.kind === 'lines' ? <textarea rows={3} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={String(draft[field.key] ?? '')} onChange={(event) => update(event.target.value)} />
+                : <input type={field.kind === 'number' ? 'number' : field.kind === 'date' ? 'date' : field.kind === 'password' ? 'password' : 'text'} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={draft[field.key] ?? ''} onChange={(event) => update(event.target.value)} />}
+            </label>}
+    </div>;
+  };
+
+  const renderFields = () => <>
+    {primaryFields.length > 0 && <><p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">Main details</p><div className="grid gap-3 sm:grid-cols-2">{primaryFields.map(renderField)}</div></>}
+    {optionalFields.length > 0 && <div className="mt-4 border-t pt-3">
+      <button type="button" onClick={() => setShowOptional((open) => !open)} aria-expanded={showOptional} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50">
+        {showOptional ? '−' : '+'} More fields and settings ({optionalFields.filter((field) => !field.createOnly || !draft?.id).length})
+      </button>
+      {showOptional && <div className="mt-3 grid gap-3 sm:grid-cols-2">{optionalFields.map(renderField)}</div>}
+    </div>}
+  </>;
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 text-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <strong className="text-sm">{config.title} ({rows.length})</strong>
         <div className="flex gap-2">
-          <button type="button" onClick={load} disabled={loading || saving} className="rounded-lg border px-2 py-1.5 text-xs"><RefreshCw className="w-4 h-4" /></button>
-          {config.canCreate !== false && <button type="button" onClick={startCreate} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-1.5 text-xs font-bold text-white"><Plus className="w-4 h-4" /> Create</button>}
+          <button type="button" onClick={load} disabled={loading || saving} aria-label="Refresh records" className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs"><RefreshCw className="w-4 h-4" /> Refresh</button>
+          {config.canCreate !== false && <button type="button" onClick={startCreate} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-1.5 text-xs font-bold text-white"><Plus className="w-4 h-4" /> Add new</button>}
         </div>
       </div>
       <input aria-label={`Search ${config.title}`} className="mb-3 w-full rounded-lg border px-3 py-2 text-sm" placeholder="Search records" value={query} onChange={(event) => setQuery(event.target.value)} />
       {message && <p role="status" className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">{message}</p>}
       <div className="grid gap-4 md:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
-        <div className="max-h-[55vh] overflow-y-auto rounded-xl border divide-y">
+        <div className="max-h-[62vh] overflow-y-auto rounded-xl border divide-y">
           {loading && <p className="p-3 text-sm">Loading…</p>}
           {!loading && visible.length === 0 && <p className="p-3 text-sm">No records found.</p>}
-          {visible.map((row) => <div key={row.id} className="flex items-center gap-2 p-2.5">
-            <button type="button" onClick={() => startEdit(row)} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24]">{String(row[config.labelKey] || row.key || row.id)}{sectionType === 'order-records' ? ` · ${row.orderStatus || 'Unknown'} · ${row.currencyUsed || 'USD'} ${Number(row.totalPaidCurrency || row.totalUSD || 0).toFixed(2)}` : ''}{sectionType === 'membership-applications' ? ` · ${row.status || 'PENDING'}` : ''}{row.isActive === false ? ' (hidden)' : ''}</button>
+          {visible.map((row) => <div key={row.id || row.slug || row.key} className={`flex items-center gap-2 p-2.5 ${draft && (draft.id === row.id || (sectionType === 'policies' && draft.slug === row.slug)) ? 'bg-amber-50' : ''}`}>
+            <button type="button" onClick={() => startEdit(row)} disabled={saving} className="min-w-0 flex-1 text-left text-sm font-medium hover:text-[#8B2E24] disabled:opacity-50">{String(row[config.labelKey] || row.key || row.id)}{sectionType === 'order-records' ? ` · ${row.orderStatus || 'Unknown'} · ${row.currencyUsed || 'USD'} ${Number(row.totalPaidCurrency || row.totalUSD || 0).toFixed(2)}` : ''}{sectionType === 'membership-applications' ? ` · ${row.status || 'PENDING'}` : ''}{row.isActive === false ? ' (hidden)' : ''}</button>
+            <button type="button" onClick={() => startEdit(row)} disabled={saving} className="rounded-md border px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">Edit</button>
             {sectionType === 'membership-applications' && !['APPROVED', 'REJECTED'].includes(String(row.status)) && <button type="button" title="Approve, enroll and notify applicant" disabled={saving} onClick={() => reviewMembershipApplication(row, 'APPROVED')} className="rounded-md border border-green-300 px-2 py-1 text-[11px] font-bold text-green-800">✓</button>}
             {sectionType === 'membership-applications' && !['APPROVED', 'REJECTED'].includes(String(row.status)) && <button type="button" title="Reject with reason and notify applicant" disabled={saving} onClick={() => reviewMembershipApplication(row, 'REJECTED')} className="rounded-md border border-red-300 px-2 py-1 text-[11px] font-bold text-red-800">✕</button>}
             {sectionType === 'membership-applications' && row.status === 'PENDING' && <button type="button" title="Mark under review" disabled={saving} onClick={() => reviewMembershipApplication(row, 'UNDER_REVIEW')} className="rounded-md border border-amber-300 px-2 py-1 text-[11px] font-bold text-amber-800">Review</button>}
@@ -485,9 +519,9 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
             {config.canDelete !== false && !(sectionType === 'membership-applications' && ['APPROVED', 'REJECTED'].includes(String(row.status))) && <button type="button" aria-label={`${sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : sectionType === 'donate' ? 'Void' : 'Delete'} ${String(row[config.labelKey] || row.key || row.id)}`} title={sectionType === 'crafts' || config.governanceCardSection ? 'Hide' : sectionType === 'donate' ? 'Void donation' : 'Delete'} onClick={() => remove(row)} disabled={saving || (sectionType === 'policies' && ['terms', 'privacy', 'shipping-policy', 'conduct'].includes(String(row.slug))) || (sectionType === 'donate' && row.status === 'CANCELLED')} className="rounded-md p-1.5 text-red-700 hover:bg-red-50 disabled:opacity-40"><Trash2 className="w-4 h-4" /></button>}
           </div>)}
         </div>
-        <div className="rounded-xl border p-3 sm:p-4">
+        <div className="max-h-[62vh] overflow-y-auto rounded-xl border p-3 sm:p-4">
           {!draft ? <p className="text-sm text-slate-600">{config.canCreate === false ? 'Select an order to review its details or update fulfillment.' : 'Select a record to edit, or create a new one.'}</p> : <>
-            <div className="mb-3 flex items-center justify-between"><strong className="text-sm">{draft.id ? 'Edit record' : 'New record'}</strong><button type="button" onClick={() => setDraft(null)} aria-label="Close record form"><X className="w-4 h-4" /></button></div>
+            <div className="mb-4 flex items-center justify-between gap-3"><strong className="min-w-0 truncate text-base">{draft.id ? `Edit ${String(draft[config.labelKey] || 'record')}` : 'Add new record'}</strong><button type="button" onClick={() => setDraft(null)} disabled={saving} aria-label="Close record form" className="rounded-md border px-2 py-1 text-xs font-semibold disabled:opacity-50">Cancel</button></div>
             {sectionType === 'order-records' && <div className="mb-3 rounded-lg border bg-slate-50 p-3 text-xs text-slate-700">
               <strong className="text-sm">Order details · {String(draft.paymentMethod || 'Payment method unavailable')} · {String(draft.paymentStatus || 'Payment status unavailable')}</strong>
               <p className="mt-1">Total: {String(draft.currencyUsed || 'USD')} {Number(draft.totalPaidCurrency || draft.totalUSD || 0).toFixed(2)} · Shipping: {String(draft.shippingMethod || 'Not set')}</p>
@@ -519,18 +553,8 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
                   : null;
               })()}
             </div>}
-            <div className="grid gap-3 sm:grid-cols-2">
-              {config.fields.map((field) => <div key={field.key} className={field.kind === 'long' || field.kind === 'image' || field.kind === 'file' || field.kind === 'lines' ? 'sm:col-span-2' : ''}>
-                {field.kind === 'check' ? <label className="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={Boolean(draft[field.key])} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.checked })} />{field.label}</label>
-                  : field.kind === 'select' ? <label className="block text-xs font-semibold">{field.label}<select className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal" value={String(draft[field.key] || '')} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })}>{(field.options || []).map((option) => <option key={option} value={option}>{option.replaceAll('_', ' ')}</option>)}</select></label>
-                  : field.kind === 'image' || field.kind === 'file' ? <FileUploadInput value={String(draft[field.key] || '')} onChange={(url) => setDraft((current) => ({ ...current, [field.key]: url }))} label={field.label} accept={field.kind === 'image' ? 'image/*' : 'application/pdf,.pdf,.doc,.docx'} />
-                    : <label className="block text-xs font-semibold">{field.label}{field.required ? ' *' : ''}
-                      {field.kind === 'long' || field.kind === 'lines' ? <textarea rows={3} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={String(draft[field.key] ?? '')} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} />
-                        : <input type={field.kind === 'number' ? 'number' : field.kind === 'date' ? 'date' : field.kind === 'password' ? 'password' : 'text'} required={field.required && (!field.createOnly || !draft.id)} className="mt-1 w-full rounded-lg border px-3 py-2 text-sm font-normal" value={draft[field.key] ?? ''} onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })} />}
-                    </label>}
-              </div>)}
-            </div>
-            <div className="mt-4 flex justify-end"><button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-4 py-2 text-xs font-bold text-white"><Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save live'}</button></div>
+            {renderFields()}
+            <div className="sticky bottom-0 mt-4 flex justify-end border-t bg-white py-3"><button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"><Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save changes'}</button></div>
           </>}
         </div>
       </div>

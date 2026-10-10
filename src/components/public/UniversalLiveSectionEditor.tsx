@@ -1094,11 +1094,11 @@ export default function UniversalLiveSectionEditor({
                   {displayTitle}
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 uppercase tracking-wider">
-                  In-Place Live Edit
+                  Section settings
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Update titles, paragraphs, buttons, and media with instant 2-way reflection across the live page.
+                Manage section fields and records. For a single text or image, click it on the page.
               </p>
             </div>
           </div>

@@ -90,7 +90,7 @@ export default function AdminClustersOutletsPage() {
     gettingThere: '',
     facilities: '',
     imageUrl: '',
-    galleryImages: ['', '', ''],
+    galleryImages: [] as string[],
   });
 
   const [deleting, setDeleting] = useState<{ type: 'CLUSTER' | 'OUTLET'; id: string; name: string } | null>(null);
@@ -284,7 +284,7 @@ export default function AdminClustersOutletsPage() {
                   gettingThere: '',
                   facilities: '',
                   imageUrl: '',
-                  galleryImages: ['', '', ''],
+                  galleryImages: [],
                 });
               }}
               className="admin-button-primary flex items-center gap-1.5 text-xs py-2 px-3 rounded-lg"
@@ -458,7 +458,7 @@ export default function AdminClustersOutletsPage() {
                           gettingThere: o.gettingThere || '',
                           facilities: o.facilities || '',
                           imageUrl: o.imageUrl || '',
-                          galleryImages: [0, 1, 2].map(index => o.galleryImages?.[index] || ''),
+                          galleryImages: o.galleryImages || [],
                         });
                       }}
                       className="p-1.5 rounded admin-hover text-slate-300 hover:text-white"
@@ -815,15 +815,18 @@ export default function AdminClustersOutletsPage() {
 
               <div className="space-y-3 rounded-xl border border-slate-200 p-4">
                 <p className="font-semibold text-slate-900">Outlet slider photographs</p>
-                <p className="text-slate-500">Upload up to three extra photographs. They appear after the cover photo on the homepage, outlets page and outlet detail page.</p>
-                {[0, 1, 2].map(index => <FileUploadInput
-                  key={index}
-                  label={`Slider photograph ${index + 2}`}
-                  value={outletForm.galleryImages[index] || ''}
-                  onChange={url => setOutletForm({ ...outletForm, galleryImages: outletForm.galleryImages.map((current, slot) => slot === index ? url : current) })}
-                  accept="image/*"
-                  hint="Upload an image or select an existing image URL. Clear it to use the reference photo."
-                />)}
+                <p className="text-slate-500">Add photographs after the cover photo. They appear on the homepage, outlets page and outlet detail page.</p>
+                {outletForm.galleryImages.map((url, index) => <div key={index} className="flex items-end gap-2">
+                  <div className="min-w-0 flex-1"><FileUploadInput
+                    label={`Slider photograph ${index + 2}`}
+                    value={url}
+                    onChange={next => setOutletForm(current => ({ ...current, galleryImages: current.galleryImages.map((value, slot) => slot === index ? next : value) }))}
+                    accept="image/*"
+                    hint="Upload or select a photograph."
+                  /></div>
+                  <button type="button" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" onClick={() => setOutletForm(current => ({ ...current, galleryImages: current.galleryImages.filter((_, slot) => slot !== index) }))}>Remove</button>
+                </div>)}
+                <button type="button" disabled={outletForm.galleryImages.length >= 24} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold" onClick={() => setOutletForm(current => ({ ...current, galleryImages: [...current.galleryImages, ''] }))}>+ Add another slide</button>
               </div>
 
               <div className="flex items-center gap-4 pt-1">

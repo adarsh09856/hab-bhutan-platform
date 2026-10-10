@@ -9,10 +9,10 @@ const referenceSlides = [
   '/assets/photos/hero-3-clay.jpg',
 ];
 
-export default function OutletGallery({ image, galleryImages = [], name }: { image?: string; galleryImages?: string[]; name: string }) {
+export default function OutletGallery({ image, galleryImages = [], name, outletKey }: { image?: string; galleryImages?: string[]; name: string; outletKey?: string }) {
   const isPunakhaMarket = /punakha crafts market/i.test(name);
   const additional = isPunakhaMarket
-    ? referenceSlides.slice(1).map((fallback, index) => galleryImages[index] || fallback)
+    ? [...referenceSlides.slice(1).map((fallback, index) => galleryImages[index] || fallback), ...galleryImages.slice(3)]
     : galleryImages;
   const slides = Array.from(new Set([image, ...additional]
     .filter((src): src is string => Boolean(src) && !src!.includes('image-unavailable'))));
@@ -24,7 +24,7 @@ export default function OutletGallery({ image, galleryImages = [], name }: { ima
     return () => clearInterval(timer);
   }, [paused, slides.length]);
 
-  return <div className="carousel carousel--outlet" role="region" aria-label={`${name} photographs`}
+  return <div className="carousel carousel--outlet" role="region" aria-label={`${name} photographs`} data-hab-gallery="outlet" data-hab-gallery-id={outletKey || ''}
     style={{ minHeight: 280 }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
     onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}>
     <div className="carousel__track">

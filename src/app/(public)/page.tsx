@@ -600,7 +600,7 @@ export default function HomePage() {
         </div>
 
         <div className="hero__visual">
-          <figure className="frame frame--hero has-image relative overflow-hidden rounded-[16px] shadow-sm group">
+          <figure className="frame frame--hero has-image relative overflow-hidden rounded-[16px] shadow-sm group" data-hab-gallery="hero">
             <img
               src={heroSlides[currentHero]?.imageUrl || '/assets/photos/image-unavailable.svg'}
               alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || ''}
@@ -877,7 +877,7 @@ export default function HomePage() {
 
         {punakhaOutlet && (
           <article className="outlet-lead" id="outletLead">
-            <OutletGallery image={punakhaOutlet.image_path} galleryImages={punakhaOutlet.galleryImages} name={punakhaOutlet.name} />
+            <OutletGallery image={punakhaOutlet.image_path} galleryImages={punakhaOutlet.galleryImages} name={punakhaOutlet.name} outletKey={punakhaOutlet.key} />
             <div className="outlet-lead__body">
               <p className="badge badge--ink">{punakhaOutlet.type || 'Outlet'}</p>
               <h3 className="display display--panel">{punakhaOutlet.name}</h3>

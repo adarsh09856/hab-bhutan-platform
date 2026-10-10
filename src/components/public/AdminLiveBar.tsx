@@ -189,7 +189,7 @@ export default function AdminLiveBar() {
               </button>
               {editMode && (
                 <span className="text-[11px] text-amber-300/90 font-mono hidden xl:inline">
-                  (Move sections with [↑] [↓] or click Quick Edit)
+                  (Click text or images to edit; manage records in Admin)
                 </span>
               )}
             </div>
