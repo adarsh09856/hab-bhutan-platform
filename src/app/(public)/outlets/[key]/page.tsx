@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { outletImages } from '@/lib/reference-images';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import OutletGallery from '@/components/public/OutletGallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,16 +125,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           <p className="lede lede--wide">{outlet.description || outlet.note}</p>
         </div>
 
-        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-          <Image
-            src={bannerImg}
-            alt={outlet.name}
-            fill
-            priority
-            sizes="100vw"
-            style={{ objectFit: 'cover' }}
-          />
-        </figure>
+        <div style={{ height: 440 }}><OutletGallery image={bannerImg} name={outlet.name} /></div>
       </section>
 
       {/* Facts */}

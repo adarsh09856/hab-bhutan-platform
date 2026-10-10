@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Clock, Search, ChevronDown, ChevronUp, Sparkles, Filter } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import OutletGallery from '@/components/public/OutletGallery';
 
 const NO_IMAGE = '/assets/photos/image-unavailable.svg';
 
@@ -96,16 +97,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
               </div>
             </div>
 
-            <figure className="frame frame--banner" style={{ position: 'relative', height: 440, overflow: 'hidden', marginTop: 24 }}>
-              <Image
-                src={(featured as any)?.imageUrl || NO_IMAGE}
-                alt={featured.name}
-                fill
-                priority
-                sizes="100vw"
-                style={{ objectFit: 'cover' }}
-              />
-            </figure>
+            <div style={{ height: 440, marginTop: 24 }}><OutletGallery image={featured.imageUrl} name={featured.name} /></div>
           </>
         )}
       </section>

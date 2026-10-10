@@ -13,6 +13,7 @@ import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailab
 import { useCart } from '@/context/CartContext';
 import { CLIENT_VERBATIM } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import OutletGallery from '@/components/public/OutletGallery';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 
@@ -870,14 +871,7 @@ export default function HomePage() {
 
         {punakhaOutlet && (
           <article className="outlet-lead" id="outletLead">
-            <figure className="frame frame--wide16" style={{ minHeight: 280 }}>
-              <img
-                src={punakhaOutlet.image_path || '/assets/photos/image-unavailable.svg'}
-                alt={punakhaOutlet.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(event) => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
-              />
-            </figure>
+            <OutletGallery image={punakhaOutlet.image_path} name={punakhaOutlet.name} />
             <div className="outlet-lead__body">
               <p className="badge badge--ink">{punakhaOutlet.type || 'Outlet'}</p>
               <h3 className="display display--panel">{punakhaOutlet.name}</h3>
