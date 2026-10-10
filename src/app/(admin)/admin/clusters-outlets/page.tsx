@@ -818,7 +818,7 @@ export default function AdminClustersOutletsPage() {
                 <p className="text-slate-500">Add photographs after the cover photo. They appear on the homepage, outlets page and outlet detail page.</p>
                 {outletForm.galleryImages.map((url, index) => <div key={index} className="flex items-end gap-2">
                   <div className="min-w-0 flex-1"><FileUploadInput
-                    label={`Slider photograph ${index + 2}`}
+                    label={`Additional slider photograph ${index + 1}`}
                     value={url}
                     onChange={next => setOutletForm(current => ({ ...current, galleryImages: current.galleryImages.map((value, slot) => slot === index ? next : value) }))}
                     accept="image/*"

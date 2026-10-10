@@ -12,7 +12,7 @@ const referenceSlides = [
 export default function OutletGallery({ image, galleryImages = [], name, outletKey }: { image?: string; galleryImages?: string[]; name: string; outletKey?: string }) {
   const isPunakhaMarket = /punakha crafts market/i.test(name);
   const additional = isPunakhaMarket
-    ? [...referenceSlides.slice(1).map((fallback, index) => galleryImages[index] || fallback), ...galleryImages.slice(3)]
+    ? [...referenceSlides.slice(1), ...galleryImages]
     : galleryImages;
   const slides = Array.from(new Set([image, ...additional]
     .filter((src): src is string => Boolean(src) && !src!.includes('image-unavailable'))));
