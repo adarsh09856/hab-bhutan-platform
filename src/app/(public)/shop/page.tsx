@@ -7,9 +7,15 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
-import { CRAFTS } from '@/lib/data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
+
+interface ShopCraft {
+  key: string;
+  name: string;
+  english: string;
+  description?: string;
+}
 
 interface ProductItem {
   code: string;
@@ -32,6 +38,8 @@ function ShopContent() {
   const { addToCart } = useCart();
 
   const [products, setProducts] = useState<ProductItem[]>([]);
+  const [crafts, setCrafts] = useState<ShopCraft[]>([]);
+  const [craftsState, setCraftsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [catalogueState, setCatalogueState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedCraft, setSelectedCraft] = useState<string>(initialCraft);
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
@@ -48,6 +56,17 @@ function ShopContent() {
       setSelectedCraft(craft);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    fetch('/api/crafts', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('Crafts unavailable')))
+      .then(data => {
+        if (!data?.success || !Array.isArray(data.crafts)) throw new Error('Crafts unavailable');
+        setCrafts(data.crafts);
+        setCraftsState('ready');
+      })
+      .catch(() => setCraftsState('error'));
+  }, []);
 
   useEffect(() => {
     fetch('/api/products?shuffle=false', { cache: 'no-store' })
@@ -109,8 +128,8 @@ function ShopContent() {
   }, [products]);
 
   const activeCraftMeta = useMemo(() => {
-    return CRAFTS.find((c) => c.key === selectedCraft);
-  }, [selectedCraft]);
+    return crafts.find((c) => c.key === selectedCraft);
+  }, [crafts, selectedCraft]);
 
   const filteredAndSortedProducts = useMemo(() => {
     let result = products.slice();
@@ -164,7 +183,7 @@ function ShopContent() {
                 <span className="rail__n">{products.length}</span>
               </button>
 
-              {CRAFTS.map((c) => (
+              {crafts.map((c) => (
                 <button
                   key={c.key}
                   type="button"
@@ -179,6 +198,8 @@ function ShopContent() {
                   <span className="rail__n">{craftCounts[c.key] || 0}</span>
                 </button>
               ))}
+              {craftsState !== 'ready' && <p className="px-3 py-2 text-sm" role="status">{craftsState === 'loading' ? 'Loading craft categories…' : 'Craft categories are temporarily unavailable.'}</p>}
+              {craftsState === 'ready' && crafts.length === 0 && <p className="px-3 py-2 text-sm">No craft categories are published yet.</p>}
             </div>
 
             <div className="railtitle" id="shopSortWrap" style={{ marginTop: '22px' }}>
@@ -203,12 +224,12 @@ function ShopContent() {
             </p>
 
             <h1 className="display display--band" id="shopTitle">
-              {activeCraftMeta ? `${activeCraftMeta.name} — ${activeCraftMeta.english}` : 'The HAB e-shop'}
+              {selectedCraft ? activeCraftMeta ? `${activeCraftMeta.name} — ${activeCraftMeta.english}` : craftsState === 'loading' ? 'Loading craft…' : 'Craft information unavailable' : 'The HAB e-shop'}
             </h1>
 
             <p className="section__lede" id="shopLede" style={{ marginBottom: '18px' }}>
-              {activeCraftMeta
-                ? `Work in ${activeCraftMeta.english.toLowerCase()}, one of the thirteen crafts of Zorig Chusum, bought from registered members at an agreed price and sold centrally by HAB.`
+              {selectedCraft
+                ? activeCraftMeta?.description || ''
                 : 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category on the left.'}
             </p>
 

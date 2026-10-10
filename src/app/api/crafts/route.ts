@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
+
+const BUNDLED_CRAFT_PHOTOS = new Set([
+  'shingzo', 'dozo', 'parzo', 'lhazo', 'jinzo', 'lugzo', 'garzo',
+  'troezo', 'tshazo', 'thagzo', 'tshemzo', 'shagzo', 'dezo',
+]);
 
 function publicCraft(craft: any) {
-  const reference = CLIENT_DATA.crafts.find((item) => item.key === craft.key);
+  // Existing live craft records still lack most banner paths. Keep those
+  // exact craft photographs visible until an admin replaces them in the database.
+  const bundledPhoto = BUNDLED_CRAFT_PHOTOS.has(craft.key) ? `/images/crafts/${craft.key}.jpg` : null;
   return {
     key: craft.key,
     name: craft.name,
     english: craft.english,
     dzongkha: craft.dzongkha,
     description: craft.description,
-    long_description: craft.longDescription || reference?.long_description || craft.description,
-    longDescription: craft.longDescription || reference?.long_description || craft.description,
-    typical_products: craft.typicalProducts || reference?.typical_products || null,
-    typicalProducts: craft.typicalProducts || reference?.typical_products || null,
-    history: craft.history || reference?.history || null,
-    bannerUrl: craft.bannerUrl || reference?.image_path || null,
-    image_alt: reference?.image_alt || `${craft.name} — ${craft.english}`,
+    long_description: craft.longDescription || craft.description,
+    longDescription: craft.longDescription || craft.description,
+    typical_products: craft.typicalProducts || null,
+    typicalProducts: craft.typicalProducts || null,
+    history: craft.history || null,
+    bannerUrl: craft.bannerUrl || bundledPhoto,
+    image_alt: `${craft.name} — ${craft.english}`,
     technique: craft.technique,
     materials: craft.materials,
     shop_note: craft.shopNote,
@@ -36,8 +42,8 @@ export async function GET(req: NextRequest) {
     const key = searchParams.get('key');
 
     if (key) {
-      const craft = await prisma.craft.findUnique({
-        where: { key },
+      const craft = await prisma.craft.findFirst({
+        where: { key, isActive: true },
       });
       if (craft) {
         return NextResponse.json({
@@ -45,8 +51,7 @@ export async function GET(req: NextRequest) {
           craft: publicCraft(craft),
         });
       }
-      const fallback = CLIENT_DATA.crafts.find((c) => c.key === key);
-      return NextResponse.json({ success: true, craft: fallback || null });
+      return NextResponse.json({ success: true, craft: null });
     }
 
     const crafts = await prisma.craft.findMany({
@@ -54,15 +59,8 @@ export async function GET(req: NextRequest) {
       orderBy: { sortOrder: 'asc' },
     });
 
-    if (crafts.length > 0) {
-      return NextResponse.json({
-        success: true,
-        crafts: crafts.map(publicCraft),
-      });
-    }
-
-    return NextResponse.json({ success: true, crafts: CLIENT_DATA.crafts });
+    return NextResponse.json({ success: true, crafts: crafts.map(publicCraft) });
   } catch {
-    return NextResponse.json({ success: true, crafts: CLIENT_DATA.crafts });
+    return NextResponse.json({ success: false, error: 'Craft catalogue unavailable.' }, { status: 503 });
   }
 }

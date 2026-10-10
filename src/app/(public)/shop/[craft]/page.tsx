@@ -5,10 +5,18 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
-import { CRAFTS } from '@/lib/data';
 import ProductCard from '@/components/public/ProductCard';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
+
+interface ShopCraft {
+  key: string;
+  name: string;
+  english: string;
+  dzongkha?: string;
+  description?: string;
+  bannerUrl?: string;
+}
 
 function ShopGridContent() {
   const params = useParams();
@@ -16,7 +24,10 @@ function ShopGridContent() {
 
   const craftParam = params.craft as string;
   const isAll = !craftParam || craftParam === 'all';
-  const currentCraft = CRAFTS.find((c) => c.key === craftParam);
+  const [crafts, setCrafts] = useState<ShopCraft[]>([]);
+  const [craftsLoading, setCraftsLoading] = useState(true);
+  const [craftsError, setCraftsError] = useState(false);
+  const currentCraft = crafts.find((c) => c.key === craftParam);
 
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
   const [productsList, setProductsList] = useState<any[]>([]);
@@ -24,6 +35,17 @@ function ShopGridContent() {
   const [catalogueError, setCatalogueError] = useState(false);
   const [productEditorOpen, setProductEditorOpen] = useState(false);
   const collectionParam = searchParams.get('collection');
+
+  React.useEffect(() => {
+    fetch('/api/crafts', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('Crafts unavailable')))
+      .then(data => {
+        if (!data?.success || !Array.isArray(data.crafts)) throw new Error('Crafts unavailable');
+        setCrafts(data.crafts);
+      })
+      .catch(() => setCraftsError(true))
+      .finally(() => setCraftsLoading(false));
+  }, []);
 
   React.useEffect(() => {
     fetch('/api/products?shuffle=false', { cache: 'no-store' })
@@ -99,7 +121,7 @@ function ShopGridContent() {
                 </span>
               </Link>
 
-              {CRAFTS.map((c) => {
+              {crafts.map((c) => {
                 const isActive = craftParam === c.key;
                 const count = craftCounts[c.key] || 0;
                 return (
@@ -126,6 +148,7 @@ function ShopGridContent() {
                   </Link>
                 );
               })}
+              {craftsError && <p className="p-3 text-sm" role="alert">Craft categories are temporarily unavailable.</p>}
             </div>
           </div>
 
@@ -155,21 +178,22 @@ function ShopGridContent() {
         <div className="flex flex-col gap-6">
           <div>
             <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[42px] font-normal leading-[1.1] text-[#33261F] mb-2">
-              {isAll ? 'The HAB e-shop' : `${currentCraft?.name} — ${currentCraft?.english}`}
+              {isAll ? 'The HAB e-shop' : currentCraft ? `${currentCraft.name} — ${currentCraft.english}` : craftsLoading ? 'Loading craft…' : 'Craft information unavailable'}
             </h1>
             <p className="font-lora text-sm sm:text-base lg:text-[16.5px] text-[#6B5A4C] max-w-[70ch] leading-[1.55]">
               {isAll
                 ? 'Every piece is bought from a registered member at a fair price and sold centrally by HAB. Browse by craft category.'
-                : currentCraft?.description}
+                : currentCraft?.description || ''}
             </p>
           </div>
 
           {currentCraft && (
             <div data-cms-img className="aspect-[16/9] sm:aspect-[24/7] rounded-[12px] bg-[#E8E1D4] border border-[#E4DDD1] overflow-hidden relative shadow-sm">
               <img
-                src={`/images/crafts/${currentCraft.key}.jpg`}
+                src={currentCraft.bannerUrl || '/assets/photos/image-unavailable.svg'}
                 alt={`${currentCraft.name} — ${currentCraft.english}`}
                 className="w-full h-full object-cover"
+                onError={event => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-3 left-3 sm:left-4 z-10 flex flex-wrap items-center gap-2 sm:gap-3 max-w-[90%]">
