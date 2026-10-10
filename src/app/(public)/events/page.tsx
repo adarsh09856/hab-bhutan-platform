@@ -3,26 +3,33 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
+import { eventImage } from '@/lib/event-illustrations';
 
 export const dynamic = 'force-dynamic';
 
 export default function EventsPage() {
   const { t, language } = useLanguage();
-  const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
+  const [eventsList, setEventsList] = useState<any[]>([]);
+  const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedKind, setSelectedKind] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/events', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
-          setEventsList(d.events);
-        }
+    const controller = new AbortController();
+    fetch('/api/events', { cache: 'no-store', signal: controller.signal })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data.success === false) throw new Error('Event calendar unavailable');
+        return data;
       })
-      .catch(() => {});
+      .then((d) => {
+        if (controller.signal.aborted) return;
+        setEventsList(Array.isArray(d.events) ? d.events : []);
+        setEventsState('ready');
+      })
+      .catch(() => { if (!controller.signal.aborted) setEventsState('error'); });
+    return () => controller.abort();
   }, []);
 
   const kinds = useMemo(() => {
@@ -38,27 +45,6 @@ export default function EventsPage() {
     if (!selectedKind) return eventsList;
     return eventsList.filter((e) => (language === 'dz' ? (e.categoryDz || e.kindDz || e.kind || e.category) : (e.kind || e.category)) === selectedKind);
   }, [selectedKind, eventsList, language]);
-
-  const EVENT_PHOTO_MAP: Record<string, string> = {
-    'craft-bazaar-2026': '/assets/photos/hero-2-punakha.jpg',
-    'export-clinic-sep': '/images/programs/trade.jpg',
-    'sector-forum-2026': '/assets/photos/about-hab.jpg',
-    'dye-training-nov': '/images/programs/dye_training.jpg',
-    'buyer-mission-nov': '/images/programs/design_lab.jpg',
-    'apprentice-intake-dec': '/images/training_workshop.jpg',
-  };
-
-  const photoPool = [
-    '/assets/photos/hero-2-punakha.jpg',
-    '/images/programs/trade.jpg',
-    '/assets/photos/about-hab.jpg',
-    '/images/programs/dye_training.jpg',
-    '/images/programs/design_lab.jpg',
-    '/images/training_workshop.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/images/programs/heritage.jpg',
-  ];
 
   return (
     <main id="main">
@@ -106,73 +92,53 @@ export default function EventsPage() {
               </option>
             ))}
           </select>
-          <span className="craft__count" id="eventCount" style={{ margin: 0, alignSelf: 'center' }}>
+          {eventsState === 'ready' && <span className="craft__count" id="eventCount" style={{ margin: 0, alignSelf: 'center' }}>
             {filteredEvents.length} {filteredEvents.length === 1 ? t('events.count_one', 'event') : t('events.count_many', 'events')}
-          </span>
+          </span>}
         </div>
 
         {/* Events List */}
+        {eventsState === 'loading' && <p>Loading events…</p>}
+        {eventsState === 'error' && <p role="alert">The event calendar is temporarily unavailable. Please try again shortly.</p>}
+        {eventsState === 'ready' && eventsList.length === 0 && <p>No events are listed yet.</p>}
         <div className="eventlist" id="eventList" data-cms-repeat>
-          {filteredEvents.map((e, idx) => {
+          {filteredEvents.map((e) => {
             const displayTitle = language === 'dz' ? (e.titleDz || e.title) : e.title;
             const displayKind = language === 'dz' ? (e.categoryDz || e.kindDz || e.kind || e.category) : (e.kind || e.category);
             const displayPlace = language === 'dz' ? (e.locationDz || e.venueDz || e.placeDz || e.place) : (e.place || e.location || e.venue);
             const displaySummary = language === 'dz' ? (e.summaryDz || e.descriptionDz || e.summary) : e.summary;
-            const customImg = e.bannerUrl || e.imageUrl || e.image_path || e.image_url;
-            const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg') && !customImg.includes('hero-1-weaving.jpg');
-            const titleLower = String(displayTitle || '').toLowerCase();
-            const k = String(e.key || e.id || '').toLowerCase();
-            let imgSrc = '';
-
-            if (hasValidCustom) {
-              imgSrc = customImg;
-            } else if (titleLower.includes('bazaar') || k.includes('bazaar')) {
-              imgSrc = '/assets/photos/hero-2-punakha.jpg';
-            } else if (titleLower.includes('clinic') || titleLower.includes('export') || k.includes('export')) {
-              imgSrc = '/images/programs/trade.jpg';
-            } else if (titleLower.includes('forum') || titleLower.includes('assembly') || k.includes('forum')) {
-              imgSrc = '/assets/photos/about-hab.jpg';
-            } else if (titleLower.includes('dye') || k.includes('dye')) {
-              imgSrc = '/images/programs/dye_training.jpg';
-            } else if (titleLower.includes('buyer') || titleLower.includes('mission') || k.includes('buyer')) {
-              imgSrc = '/images/programs/design_lab.jpg';
-            } else if (titleLower.includes('apprentice') || titleLower.includes('training') || titleLower.includes('intake')) {
-              imgSrc = '/images/training_workshop.jpg';
-            } else if (EVENT_PHOTO_MAP[k]) {
-              imgSrc = EVENT_PHOTO_MAP[k];
-            } else {
-              imgSrc = photoPool[idx % photoPool.length];
-            }
+            const image = eventImage(e.key, e.bannerUrl || e.imageUrl || e.image_path || e.image_url);
 
             return (
               <article key={e.key} id={e.key} className="eventcard" data-cms-item>
                 <Link className="eventcard__shot" href={`/events/${e.key}`}>
                   <figure className="frame frame--eventshot has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
-                      src={imgSrc}
-                      alt={displayTitle}
+                      src={image.src}
+                      alt={image.illustrative ? `Illustrative craft photograph for ${displayTitle}; not a photograph of this event` : displayTitle}
                       fill
                       sizes="(max-width: 768px) 100vw, 30vw"
                       style={{ objectFit: 'cover' }}
                     />
                   </figure>
+                  {image.illustrative && <span className="event-photo-note">Illustrative photo</span>}
                   <span className="eventcard__cal">
-                    <span className="eventcard__day">{e.day || '12'}</span>
-                    <span className="eventcard__mon">{e.mon || 'OCT'}</span>
-                    <span className="eventcard__year">{e.year || '2026'}</span>
+                    <span className="eventcard__day">{e.day || ''}</span>
+                    <span className="eventcard__mon">{e.mon || ''}</span>
+                    <span className="eventcard__year">{e.year || e.dateDisplay || ''}</span>
                   </span>
                 </Link>
 
                 <div className="eventcard__body">
                   <div className="news__meta">
                   <span className="tag">{displayKind}</span>
-                    <span className="news__date">{e.time || 'All day'}</span>
+                    {e.time && <span className="news__date">{e.time}</span>}
                   </div>
                   <h2 className="eventcard__title">
                     <Link href={`/events/${e.key}`}>{displayTitle}</Link>
                   </h2>
                   <p className="eventcard__place">
-                    {displayPlace} · {e.who || t('events.open_to_all', 'Open to all')}
+                    {[displayPlace, e.who || e.registration].filter(Boolean).join(' · ')}
                   </p>
                   <p className="card__text">{displaySummary}</p>
                   <Link className="news__more font-semibold" href={`/events/${e.key}`}>

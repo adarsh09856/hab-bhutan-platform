@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { CLIENT_DATA, getEventByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
+import { eventImage } from '@/lib/event-illustrations';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +18,8 @@ export async function generateMetadata({ params }: EventPageProps): Promise<Meta
   const { key } = await params;
   let event: any = null;
   try {
-    event = await prisma.eventRecord.findUnique({ where: { key } });
+    event = await prisma.eventRecord.findFirst({ where: { key, isActive: true } });
   } catch {}
-  if (!event) event = getEventByKey(key);
   if (!event) return { title: 'Event Not Found' };
 
   return {
@@ -35,17 +34,16 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   let dbOtherEvents: any[] = [];
   try {
     [dbEvent, dbOtherEvents] = await Promise.all([
-      prisma.eventRecord.findUnique({ where: { key } }),
+      prisma.eventRecord.findFirst({ where: { key, isActive: true } }),
       prisma.eventRecord.findMany({
         where: { isActive: true, key: { not: key } },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
         take: 3,
       }),
     ]);
-  } catch {}
+  } catch { throw new Error('Event calendar temporarily unavailable.'); }
 
-  const fallback = getEventByKey(key);
-  const rawEvent = dbEvent || fallback;
+  const rawEvent = dbEvent;
 
   if (!rawEvent) {
     notFound();
@@ -53,7 +51,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
   let day = '';
   let mon = '';
-  let year = 2026;
+  let year: number | null = null;
   let time = '';
 
   if (rawEvent.schedule && typeof rawEvent.schedule === 'object') {
@@ -106,55 +104,22 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     documentUrl: rawEvent.documentUrl || rawEvent.pdfUrl || sched.pdfUrl || sched.documentUrl || null,
     documentType: rawEvent.documentType || 'PDF',
     documentTitle: rawEvent.documentTitle || `${rawEvent.title || 'Event'} – Schedule & Official Guide`,
-    subCategory: rawEvent.subCategory || 'Community & Craft Gathering',
-    day: day || rawEvent.day || '12',
-    mon: mon || rawEvent.mon || 'SEP',
-    year: year || rawEvent.year || '2026',
-    kind: rawEvent.kind || rawEvent.category || 'Exhibition',
-    place: rawEvent.place || rawEvent.location || rawEvent.venue || 'Thimphu, Bhutan',
-    time: time || rawEvent.time || sched.time || 'All day',
-    summary: rawEvent.summary || rawEvent.description?.slice(0, 160) + '...',
+    subCategory: rawEvent.subCategory || null,
+    day: day || rawEvent.day || '',
+    mon: mon || rawEvent.mon || '',
+    year: year || rawEvent.year || null,
+    kind: rawEvent.kind || rawEvent.category || '',
+    place: rawEvent.place || rawEvent.location || rawEvent.venue || '',
+    time: time || rawEvent.time || sched.time || '',
+    summary: rawEvent.summary || rawEvent.description?.slice(0, 160) || '',
     detail: rawEvent.detail || rawEvent.description || '',
-    who: rawEvent.who || rawEvent.registration || 'Open to all',
+    who: rawEvent.who || rawEvent.registration || '',
     contact: rawEvent.contact || 'officehab@gmail.com',
   };
 
-  const EVENT_PHOTO_MAP: Record<string, string> = {
-    'craft-bazaar-2026': '/assets/photos/hero-2-punakha.jpg',
-    'export-clinic-sep': '/images/programs/trade.jpg',
-    'sector-forum-2026': '/assets/photos/about-hab.jpg',
-    'dye-training-nov': '/images/programs/dye_training.jpg',
-    'buyer-mission-nov': '/images/programs/design_lab.jpg',
-    'apprentice-intake-dec': '/images/training_workshop.jpg',
-  };
+  const bannerImage = eventImage(event.key, event.bannerUrl || event.imageUrl);
 
-  const customBanner = event.bannerUrl || event.imageUrl || event.image_url || event.image_path;
-  const hasValidBanner = customBanner && typeof customBanner === 'string' && customBanner.trim() && !customBanner.includes('hero-4-textiles.jpg') && !customBanner.includes('hero-1-weaving.jpg');
-  const evTitle = String(event.title || '').toLowerCase();
-  const evKey = String(event.key || event.id || '').toLowerCase();
-  let bannerImg = '';
-
-  if (hasValidBanner) {
-    bannerImg = customBanner;
-  } else if (evTitle.includes('bazaar') || evKey.includes('bazaar')) {
-    bannerImg = '/assets/photos/hero-2-punakha.jpg';
-  } else if (evTitle.includes('clinic') || evTitle.includes('export') || evKey.includes('export')) {
-    bannerImg = '/images/programs/trade.jpg';
-  } else if (evTitle.includes('forum') || evTitle.includes('assembly') || evKey.includes('forum')) {
-    bannerImg = '/assets/photos/about-hab.jpg';
-  } else if (evTitle.includes('dye') || evKey.includes('dye')) {
-    bannerImg = '/images/programs/dye_training.jpg';
-  } else if (evTitle.includes('buyer') || evTitle.includes('mission') || evKey.includes('buyer')) {
-    bannerImg = '/images/programs/design_lab.jpg';
-  } else if (evTitle.includes('apprentice') || evTitle.includes('training') || evKey.includes('intake')) {
-    bannerImg = '/images/training_workshop.jpg';
-  } else if (EVENT_PHOTO_MAP[event.key]) {
-    bannerImg = EVENT_PHOTO_MAP[event.key];
-  } else {
-    bannerImg = '/assets/photos/hero-2-punakha.jpg';
-  }
-
-  const otherEvents = (dbOtherEvents.length > 0 ? dbOtherEvents : CLIENT_DATA.events.filter((e) => e.key !== event.key)).slice(0, 3);
+  const otherEvents = dbOtherEvents;
 
   return (
     <main id="main">
@@ -175,7 +140,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            <LocalizedRecordField as="span" english={event.kind} dzongkha={event.categoryDz} /> · {event.day} {event.mon} {event.year}
+            <LocalizedRecordField as="span" english={event.kind} dzongkha={event.categoryDz} /> · {event.dateDisplay}
           </p>
           <LocalizedRecordField as="h1" className="display display--page" english={event.title} dzongkha={event.titleDz} />
           <LocalizedRecordField as="p" className="lede lede--wide" english={event.summary} dzongkha={event.summaryDz || event.descriptionDz} />
@@ -183,13 +148,14 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
-            src={bannerImg}
-            alt={event.title}
+            src={bannerImage.src}
+            alt={bannerImage.illustrative ? `Illustrative craft photograph for ${event.title}; not a photograph of this event` : event.title}
             fill
             priority
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
+          {bannerImage.illustrative && <span className="event-photo-note">Illustrative photo</span>}
         </figure>
       </section>
 
@@ -198,20 +164,20 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <div className="craftfacts">
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Date</span>
-            <span className="craftfacts__val">{event.day} {event.mon} {event.year}</span>
+            <span className="craftfacts__val">{event.dateDisplay}</span>
           </div>
-          <div className="craftfacts__cell">
+          {event.time && <div className="craftfacts__cell">
             <span className="craftfacts__key">Time</span>
             <span className="craftfacts__val">{event.time}</span>
-          </div>
+          </div>}
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Location</span>
             <LocalizedRecordField as="span" className="craftfacts__val" english={event.place} dzongkha={event.locationDz || event.venueDz} />
           </div>
-          <div className="craftfacts__cell">
+          {event.who && <div className="craftfacts__cell">
             <span className="craftfacts__key">Attendance</span>
-            <LocalizedRecordField as="span" className="craftfacts__val" english={event.who || 'Open to all'} dzongkha={event.registrationDz} />
-          </div>
+            <LocalizedRecordField as="span" className="craftfacts__val" english={event.who} dzongkha={event.registrationDz} />
+          </div>}
         </div>
       </section>
 
@@ -281,22 +247,23 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           </div>
           <div className="grid grid--3">
             {otherEvents.map((oe) => {
-              const oeImg = oe.bannerUrl || oe.imageUrl || oe.image_url || oe.image_path || EVENT_PHOTO_MAP[oe.key] || '/assets/photos/hero-4-textiles.jpg';
+              const oeImage = eventImage(oe.key, (oe.schedule as any)?.imageUrl || oe.imageUrl);
 
               return (
                 <Link key={oe.key} className="card" href={`/events/${oe.key}`}>
                   <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <Image
-                      src={oeImg}
-                      alt={oe.title}
+                      src={oeImage.src}
+                      alt={oeImage.illustrative ? `Illustrative craft photograph for ${oe.title}; not a photograph of this event` : oe.title}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}
                     />
+                    {oeImage.illustrative && <span className="event-photo-note">Illustrative photo</span>}
                   </figure>
                   <div className="card__body">
                     <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>
-                      {oe.day} {oe.mon} · {oe.kind}
+                      {oe.dateDisplay} · {oe.category}
                     </p>
                     <LocalizedRecordField as="h3" className="card__title clamp-2" style={{ marginBottom: 4 }} english={oe.title} dzongkha={oe.titleDz} />
                     <LocalizedRecordField as="p" className="card__text clamp-2" english={oe.place || oe.location || oe.venue} dzongkha={oe.locationDz || oe.venueDz} />

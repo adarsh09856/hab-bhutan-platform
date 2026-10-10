@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +12,7 @@ export async function GET(req: NextRequest) {
     const normalizeEvent = (e: any) => {
       let day = '';
       let mon = '';
-      let year = 2026;
+      let year: number | null = null;
       let time = '';
 
       // 1. Check schedule JSON first (admin explicit settings)
@@ -31,6 +30,12 @@ export async function GET(req: NextRequest) {
           july: 'JUL', august: 'AUG', september: 'SEP', october: 'OCT', november: 'NOV', december: 'DEC'
         };
         const abbrMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const isoDate = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T)/);
+        if (isoDate) {
+          year = Number(isoDate[1]);
+          mon = abbrMonths[Number(isoDate[2]) - 1] || '';
+          day = isoDate[3].padStart(2, '0');
+        }
 
         for (const [full, abbr] of Object.entries(fullMonths)) {
           if (new RegExp(`\\b${full}\\b`, 'i').test(raw)) {
@@ -48,7 +53,7 @@ export async function GET(req: NextRequest) {
         }
 
         const dayMatch = raw.match(/\b([0-2]?[0-9]|3[01])\b/);
-        if (dayMatch) {
+        if (!day && dayMatch) {
           day = dayMatch[1].padStart(2, '0');
         }
 
@@ -63,7 +68,7 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // 3. Fallback to startDate if available
+      // 3. Use the saved start date if a display date was not fully parsed.
       if ((!day || !mon) && e.startDate) {
         const dt = new Date(e.startDate);
         day = String(dt.getDate()).padStart(2, '0');
@@ -77,12 +82,12 @@ export async function GET(req: NextRequest) {
 
       return {
         ...e,
-        day: day || e.day || '12',
-        mon: mon || e.mon || 'SEP',
-        year: year || e.year || 2026,
-        time: time || e.time || (typeof e.schedule === 'object' && e.schedule?.time) || 'All day',
-        kind: e.kind || e.category || 'Exhibition',
-        place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
+        day: day || e.day || '',
+        mon: mon || e.mon || '',
+        year: year || e.year || null,
+        time: time || e.time || (typeof e.schedule === 'object' && e.schedule?.time) || '',
+        kind: e.kind || e.category || '',
+        place: e.place || e.location || e.venue || '',
         summary: e.summary || (e.description ? e.description.slice(0, 160) : ''),
         summaryDz: e.summaryDz || (e.descriptionDz ? e.descriptionDz.slice(0, 160) : ''),
         url: e.url || `/events/${e.key || e.id}`,
@@ -93,16 +98,15 @@ export async function GET(req: NextRequest) {
     };
 
     if (key) {
-      const event = await prisma.eventRecord.findUnique({
-        where: { key },
+      const event = await prisma.eventRecord.findFirst({
+        where: { key, isActive: true },
       });
       if (event) {
         const res = NextResponse.json({ success: true, event: normalizeEvent(event) });
         res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
         return res;
       }
-      const fallback = CLIENT_DATA.events?.find((e: any) => e.key === key);
-      const res = NextResponse.json({ success: true, event: fallback ? normalizeEvent(fallback) : null });
+      const res = NextResponse.json({ success: true, event: null });
       res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
       return res;
     }
@@ -117,23 +121,12 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
 
-    let res: NextResponse;
-    if (events.length > 0) {
-      res = NextResponse.json({ success: true, events: events.map(normalizeEvent) });
-    } else {
-      let fallbackEvents = CLIENT_DATA.events || [];
-      if (category && category !== 'all' && category !== 'All Events') {
-        fallbackEvents = fallbackEvents.filter((e: any) => e.category?.toLowerCase() === category.toLowerCase());
-      }
-      res = NextResponse.json({ success: true, events: fallbackEvents.map(normalizeEvent) });
-    }
+    const res = NextResponse.json({ success: true, events: events.map(normalizeEvent) });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');
     res.headers.set('Expires', '0');
     return res;
   } catch {
-    const res = NextResponse.json({ success: true, events: CLIENT_DATA.events || [] });
-    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-    return res;
+    return NextResponse.json({ success: false, error: 'Event calendar temporarily unavailable.' }, { status: 503 });
   }
 }
