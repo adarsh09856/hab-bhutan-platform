@@ -19,7 +19,17 @@ export async function GET() {
       }),
     ]);
 
-    const articles = dbArticles.map((a: any) => {
+    const seenArticleCopies = new Set<string>();
+    const uniqueArticles = dbArticles.filter((article: any) => {
+      const title = String(article.title || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+      const summary = String(article.blurb || article.summary || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+      const identity = title && summary ? `${title}\n${summary}` : String(article.slug || article.id);
+      if (seenArticleCopies.has(identity)) return false;
+      seenArticleCopies.add(identity);
+      return true;
+    });
+
+    const articles = uniqueArticles.map((a: any) => {
       let image_path = '';
       let cleanContent = a.content || '';
       if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
