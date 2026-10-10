@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -11,17 +10,22 @@ export const dynamic = 'force-dynamic';
 
 export default function NewsPage() {
   const { t, language } = useLanguage();
-  const [newsList, setNewsList] = useState<any[]>(() => CLIENT_DATA.news);
-  const [eventsList, setEventsList] = useState<any[]>(() => CLIENT_DATA.events);
+  const [newsList, setNewsList] = useState<any[]>([]);
+  const [eventsList, setEventsList] = useState<any[]>([]);
+  const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedKind, setSelectedKind] = useState<string>('');
 
   useEffect(() => {
     fetch('/api/news', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data?.success === false) throw new Error('News unavailable');
+        return data;
+      })
       .then((d) => {
-        if (d?.articles && Array.isArray(d.articles) && d.articles.length > 0) {
-          setNewsList(
-            d.articles.map((a: any) => ({
+        if (Array.isArray(d?.articles)) {
+          setNewsList(d.articles.map((a: any) => ({
               id: a.id,
               slug: a.slug || a.id,
               kind: a.kind || 'Notice',
@@ -30,22 +34,33 @@ export default function NewsPage() {
               titleDz: a.titleDz || '',
               blurb: a.blurb || a.summary || '',
               blurbDz: a.blurbDz || '',
-              published_at: a.dateString || a.published_at || 'Recent',
+              published_at: a.dateString || a.published_at || '',
               image_path: a.image_path || '',
-            }))
-          );
+          })));
         }
+        setNewsState('ready');
       })
-      .catch(() => {});
+      .catch(() => setNewsState('error'));
 
     fetch('/api/events', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.events && Array.isArray(d.events) && d.events.length > 0) {
-          setEventsList(d.events);
-        }
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data?.success === false) throw new Error('Events unavailable');
+        return data;
       })
-      .catch(() => {});
+      .then((d) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = (Array.isArray(d?.events) ? d.events : [])
+          .filter((event: any) => {
+            const date = event.startDate ? new Date(event.startDate) : null;
+            return date && !Number.isNaN(date.getTime()) && date >= today;
+          })
+          .sort((a: any, b: any) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        setEventsList(upcoming);
+        setEventsState('ready');
+      })
+      .catch(() => setEventsState('error'));
   }, []);
 
   const displayKind = (n: any) => language === 'dz' ? (n.kindDz || n.kind) : n.kind;
@@ -56,27 +71,6 @@ export default function NewsPage() {
   const filtered = !selectedKind
     ? newsList
     : newsList.filter((n) => displayKind(n) === selectedKind);
-
-  const NEWS_PHOTO_MAP: Record<string, string> = {
-    'trade-facilitation-desk-autumn': '/images/programs/trade.jpg',
-    'natural-dye-training-lhuentse': '/images/programs/dye_training.jpg',
-    'craft-bazaar-clock-tower': '/assets/photos/hero-2-punakha.jpg',
-    'annual-report-2025': '/assets/photos/hero-5-desho.jpg',
-    'product-innovation-lab': '/images/programs/design_lab.jpg',
-  };
-
-  const photoPool = [
-    '/images/programs/design_lab.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-2-punakha.jpg',
-    '/images/programs/dye_training.jpg',
-    '/images/programs/trade.jpg',
-    '/assets/photos/about-hab.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/images/programs/heritage.jpg',
-    '/images/training_workshop.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-  ];
 
   return (
     <main id="main">
@@ -116,29 +110,7 @@ export default function NewsPage() {
             <div className="newslist" id="newsList" data-cms-repeat>
               {filtered.map((n, idx) => {
                 const slug = n.slug || n.id || `post-${idx}`;
-                const customImg = n.image_path || n.imageUrl || n.image_url;
-                const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg');
-                const titleLower = String(displayTitle(n) || n.title || '').toLowerCase();
-                const s = String(slug).toLowerCase();
-                let imgSrc = '';
-
-                if (hasValidCustom) {
-                  imgSrc = customImg;
-                } else if (titleLower.includes('innovation') || s.includes('innovation') || titleLower.includes('designer')) {
-                  imgSrc = '/images/programs/design_lab.jpg';
-                } else if (titleLower.includes('annual report') || s.includes('annual-report') || titleLower.includes('accounts')) {
-                  imgSrc = '/assets/photos/hero-5-desho.jpg';
-                } else if (titleLower.includes('bazaar') || s.includes('bazaar') || titleLower.includes('clock tower')) {
-                  imgSrc = '/assets/photos/hero-2-punakha.jpg';
-                } else if (titleLower.includes('dye') || s.includes('dye') || titleLower.includes('lhuentse')) {
-                  imgSrc = '/images/programs/dye_training.jpg';
-                } else if (titleLower.includes('trade') || s.includes('trade') || titleLower.includes('export')) {
-                  imgSrc = '/images/programs/trade.jpg';
-                } else if (NEWS_PHOTO_MAP[s]) {
-                  imgSrc = NEWS_PHOTO_MAP[s];
-                } else {
-                  imgSrc = photoPool[idx % photoPool.length];
-                }
+                const imgSrc = n.image_path || '/assets/photos/image-unavailable.svg';
 
                 return (
                   <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item>
@@ -146,7 +118,7 @@ export default function NewsPage() {
                       <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', height: '100%', minHeight: 190, overflow: 'hidden' }}>
                         <Image
                           src={imgSrc}
-                          alt={displayTitle(n)}
+                          alt={n.image_path ? displayTitle(n) : ''}
                           fill
                           sizes="(max-width: 768px) 100vw, 260px"
                           style={{ objectFit: 'cover' }}
@@ -157,7 +129,7 @@ export default function NewsPage() {
                     <div className="newsitem__body">
                       <div className="news__meta">
                       <span className="tag">{displayKind(n)}</span>
-                        <span className="news__date">{n.published_at || 'Recent'}</span>
+                        {n.published_at && <span className="news__date">{n.published_at}</span>}
                       </div>
                       <h2 className="newsitem__title">
                         <Link href={`/news/${slug}`}>{displayTitle(n)}</Link>
@@ -170,6 +142,15 @@ export default function NewsPage() {
                   </article>
                 );
               })}
+              {filtered.length === 0 && (
+                <p className="panel__body">
+                  {newsState === 'loading'
+                    ? (language === 'dz' ? 'གསར་འགྱུར་འཚོལ་བཞིན་ཡོད།' : 'Loading updates…')
+                    : newsState === 'error'
+                      ? (language === 'dz' ? 'གསར་འགྱུར་ད་ལྟ་ལྟ་མི་ཚུགས།' : 'News is temporarily unavailable.')
+                      : (language === 'dz' ? 'གསར་འགྱུར་ད་ལྟ་མེད།' : 'No published updates yet.')}
+                </p>
+              )}
             </div>
           </div>
 
@@ -186,8 +167,8 @@ export default function NewsPage() {
                 {eventsList.slice(0, 4).map((e, idx) => (
                   <Link key={e.key || e.id || idx} className="eventrow" href={e.url || `/events/${e.key || e.id}`}>
                     <span className="eventrow__date">
-                      <strong>{e.day || '12'}</strong>
-                      <span>{e.mon || 'SEP'}</span>
+                      <strong>{e.day}</strong>
+                      <span>{e.mon}</span>
                     </span>
                     <span className="eventrow__body">
                       <span className="eventrow__title clamp-2">{language === 'dz' ? (e.titleDz || e.title) : e.title}</span>
@@ -195,6 +176,15 @@ export default function NewsPage() {
                     </span>
                   </Link>
                 ))}
+                {eventsList.length === 0 && (
+                  <p className="newsaside__body">
+                    {eventsState === 'loading'
+                      ? (language === 'dz' ? 'བྱུང་རིམ་འཚོལ་བཞིན་ཡོད།' : 'Loading events…')
+                      : eventsState === 'error'
+                        ? (language === 'dz' ? 'བྱུང་རིམ་ད་ལྟ་ལྟ་མི་ཚུགས།' : 'Events are temporarily unavailable.')
+                        : (language === 'dz' ? 'མ་འོངས་པའི་བྱུང་རིམ་བཀོད་མི་འདུག' : 'No upcoming events are listed yet.')}
+                  </p>
+                )}
               </div>
             </div>
 

@@ -83,14 +83,6 @@ const OUTLET_IMAGE_MAP: Record<string, string> = {
   'bumthang-outlet': '/assets/photos/hero-3-clay.jpg',
 };
 
-const NEWS_IMAGE_MAP: Record<string, string> = {
-  'trade-facilitation-desk-autumn': '/assets/photos/hero-1-weaving.jpg',
-  'natural-dye-training-lhuentse': '/assets/photos/hero-4-textiles.jpg',
-  'craft-bazaar-clock-tower': '/assets/photos/hero-5-desho.jpg',
-  'annual-report-2025': '/assets/photos/about-hab.jpg',
-  'product-innovation-lab': '/assets/photos/hero-2-punakha.jpg',
-};
-
 const PRODUCT_POOL = [
   '/assets/photos/product-sad03.jpg',
   '/assets/photos/product-hhb01.jpg',
@@ -427,35 +419,8 @@ export default function HomePage() {
     },
   ]);
 
-  const [news, setNews] = useState<any[]>([
-    {
-      kind: 'Programmes',
-      date: '28 Aug 2026',
-      title: 'Trade facilitation desk opens for the autumn export season',
-      blurb: 'Members can now book one-to-one sessions on export documentation, EMS rates and commercial invoicing at the HAB office in Thimphu.',
-      slug: 'trade-facilitation-desk-autumn',
-      image_path: '/images/programs/trade.jpg',
-      slot: 'photo — HAB trade facilitation desk',
-    },
-    {
-      kind: 'Artisan support',
-      date: '14 Aug 2026',
-      title: 'Natural dye training concludes in Lhuentse',
-      blurb: 'Twenty-six weavers from Khoma and Gangzur completed a ten-day course on madder, indigo and lac dye preparation.',
-      slug: 'natural-dye-training-lhuentse',
-      image_path: '/images/programs/dye_training.jpg',
-      slot: 'photo — natural dye preparation in Lhuentse',
-    },
-    {
-      kind: 'Events',
-      date: '02 Aug 2026',
-      title: 'Zorig Chusum craft bazaar returns to Clock Tower Square',
-      blurb: 'Forty member enterprises will exhibit across three days, with live demonstrations from each of the thirteen crafts.',
-      slug: 'craft-bazaar-clock-tower',
-      image_path: '/assets/photos/hero-2-punakha.jpg',
-      slot: 'photo — Clock Tower Square craft bazaar',
-    },
-  ]);
+  const [news, setNews] = useState<any[]>([]);
+  const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [events, setEvents] = useState<any[]>([]);
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -664,23 +629,28 @@ export default function HomePage() {
 
     // G. News from Admin
     fetch('/api/news', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data?.success === false) throw new Error('News unavailable');
+        return data;
+      })
       .then((d) => {
-        if (d?.articles && d.articles.length > 0) {
+        if (Array.isArray(d?.articles)) {
           const mappedNews = d.articles.slice(0, 3).map((a: any) => ({
             id: a.id,
             slug: a.slug || a.id,
             kind: a.kind || 'Notice',
             title: a.title,
             blurb: a.blurb || a.summary || '',
-            date: a.dateString || a.date || a.published_at || 'Recent',
-            published_at: a.dateString || a.published_at || 'Recent',
-            image_path: a.image_path || a.imageUrl || NEWS_IMAGE_MAP[a.slug] || '/assets/photos/hero-1-weaving.jpg',
+            date: a.dateString || a.date || a.published_at || '',
+            published_at: a.dateString || a.published_at || '',
+            image_path: a.image_path || a.imageUrl || '',
           }));
           setNews(mappedNews);
         }
+        setNewsState('ready');
       })
-      .catch(() => {});
+      .catch(() => setNewsState('error'));
 
     // H. Upcoming events come only from saved records with an explicit future start date.
     fetch('/api/events', { cache: 'no-store' })
@@ -1610,16 +1580,16 @@ export default function HomePage() {
               <article key={item.slug || idx} className="card news">
                 <figure className="frame frame--wide16">
                   <img
-                    src={item.image_path || NEWS_IMAGE_MAP[item.slug] || '/assets/photos/hero-2-punakha.jpg'}
-                    alt={item.title}
+                    src={item.image_path || '/assets/photos/image-unavailable.svg'}
+                    alt={item.image_path ? item.title : ''}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = NEWS_IMAGE_MAP[item.slug] || '/assets/photos/hero-2-punakha.jpg'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                   />
                 </figure>
                 <div className="card__body">
                   <div className="news__meta">
                     <span className="tag">{item.kind || 'News'}</span>
-                    <span className="news__date">{item.date || item.published_at || 'Recent'}</span>
+                    {(item.date || item.published_at) && <span className="news__date">{item.date || item.published_at}</span>}
                   </div>
                   <h3 className="news__title clamp-2">{item.title}</h3>
                   <p className="card__text clamp-4">{item.blurb}</p>
@@ -1629,6 +1599,15 @@ export default function HomePage() {
                 </div>
               </article>
             ))}
+            {news.length === 0 && (
+              <p className="section__lede">
+                {newsState === 'loading'
+                  ? (isDz ? 'གསར་འགྱུར་འཚོལ་བཞིན་ཡོད།' : 'Loading updates…')
+                  : newsState === 'error'
+                    ? (isDz ? 'གསར་འགྱུར་ད་ལྟ་ལྟ་མི་ཚུགས།' : 'News is temporarily unavailable.')
+                    : (isDz ? 'གསར་འགྱུར་ད་ལྟ་མེད།' : 'No published updates yet.')}
+              </p>
+            )}
           </div>
 
           <aside className="newsaside">

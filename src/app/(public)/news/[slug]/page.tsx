@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
@@ -19,10 +18,10 @@ export async function generateMetadata({ params }: NewsPostPageProps): Promise<M
   let dbPost: any = null;
   try {
     dbPost = await prisma.newsArticle.findFirst({
-      where: { OR: [{ slug }, { id: slug }] },
+      where: { OR: [{ slug }, { id: slug }], isPublished: true },
     });
   } catch {}
-  const post = dbPost || CLIENT_DATA.news.find((n) => n.slug === slug || n.id === slug);
+  const post = dbPost;
   if (!post) return { title: 'News Post Not Found' };
 
   return {
@@ -36,12 +35,11 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
   let dbPost: any = null;
   try {
     dbPost = await prisma.newsArticle.findFirst({
-      where: { OR: [{ slug }, { id: slug }] },
+      where: { OR: [{ slug }, { id: slug }], isPublished: true },
     });
   } catch {}
 
-  const fallback = CLIENT_DATA.news.find((n) => n.slug === slug || n.id === slug);
-  const rawPost = dbPost || fallback;
+  const rawPost = dbPost;
 
   if (!rawPost) {
     notFound();
@@ -70,64 +68,21 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     body: cleanContent,
     bodyDz: rawPost.contentDz,
     image_path,
-    published_at: rawPost.dateString || rawPost.published_at || rawPost.date || 'Recent',
+    published_at: rawPost.dateString || rawPost.published_at || rawPost.date || '',
     documentUrl: rawPost.documentUrl || rawPost.pdfUrl || null,
     documentType: rawPost.documentType || 'PDF',
     documentTitle: rawPost.documentTitle || `${rawPost.title} – Official Document`,
-    subCategory: rawPost.subCategory || (slug === 'product-innovation-lab' ? 'Design & Prototyping' : null),
+    subCategory: rawPost.subCategory || null,
   };
 
-  const otherNews = CLIENT_DATA.news
-    .filter((n) => (n.slug || n.id) !== (post.slug || post.id))
-    .slice(0, 3);
+  const bannerImg = post.image_path || '/assets/photos/image-unavailable.svg';
+  const otherNews = await prisma.newsArticle.findMany({
+    where: { isPublished: true, id: { not: rawPost.id } },
+    orderBy: { createdAt: 'desc' },
+    take: 3,
+  }).catch(() => []);
 
-  const NEWS_PHOTO_MAP: Record<string, string> = {
-    'trade-facilitation-desk-autumn': '/images/programs/trade.jpg',
-    'natural-dye-training-lhuentse': '/images/programs/dye_training.jpg',
-    'craft-bazaar-clock-tower': '/assets/photos/hero-2-punakha.jpg',
-    'annual-report-2025': '/assets/photos/hero-5-desho.jpg',
-    'product-innovation-lab': '/images/programs/design_lab.jpg',
-  };
-
-  const photoPool = [
-    '/images/programs/design_lab.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-2-punakha.jpg',
-    '/images/programs/dye_training.jpg',
-    '/images/programs/trade.jpg',
-    '/assets/photos/about-hab.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/images/programs/heritage.jpg',
-    '/images/training_workshop.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-  ];
-  const postIndex = CLIENT_DATA.news.findIndex((n) => (n.slug || n.id) === (post.slug || post.id));
-
-  const customImg = post.image_path;
-  const hasValidCustom = customImg && typeof customImg === 'string' && customImg.trim() && !customImg.includes('hero-4-textiles.jpg') && !customImg.includes('hero-1-weaving.jpg');
-  const t = String(post.title || '').toLowerCase();
-  const s = String(post.slug || post.id || '').toLowerCase();
-  let bannerImg = '';
-
-  if (hasValidCustom) {
-    bannerImg = customImg;
-  } else if (t.includes('innovation') || s.includes('innovation') || t.includes('designer')) {
-    bannerImg = '/images/programs/design_lab.jpg';
-  } else if (t.includes('annual report') || s.includes('annual-report') || t.includes('accounts')) {
-    bannerImg = '/assets/photos/hero-5-desho.jpg';
-  } else if (t.includes('bazaar') || s.includes('bazaar') || t.includes('clock tower')) {
-    bannerImg = '/assets/photos/hero-2-punakha.jpg';
-  } else if (t.includes('dye') || s.includes('dye') || t.includes('lhuentse')) {
-    bannerImg = '/images/programs/dye_training.jpg';
-  } else if (t.includes('trade') || s.includes('trade') || t.includes('export')) {
-    bannerImg = '/images/programs/trade.jpg';
-  } else if (NEWS_PHOTO_MAP[s]) {
-    bannerImg = NEWS_PHOTO_MAP[s];
-  } else {
-    bannerImg = photoPool[postIndex >= 0 ? postIndex % photoPool.length : 0];
-  }
-
-  const displayDate = post.published_at || post.date || post.created_at || 'Recent';
+  const displayDate = post.published_at || post.date || post.created_at || '';
 
   return (
     <main id="main">
@@ -147,7 +102,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            <LocalizedRecordField as="span" english={post.kind} dzongkha={post.kindDz} /> · {displayDate}
+            <LocalizedRecordField as="span" english={post.kind} dzongkha={post.kindDz} />{displayDate ? ` · ${displayDate}` : ''}
           </p>
           <LocalizedRecordField as="h1" className="display display--page" english={post.title} dzongkha={post.titleDz} />
           <LocalizedRecordField as="p" className="lede lede--wide" english={post.blurb || post.summary} dzongkha={post.blurbDz} />
@@ -156,7 +111,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
-            alt={post.title}
+            alt={post.image_path ? post.title : ''}
             fill
             priority
             sizes="100vw"
@@ -211,16 +166,15 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           </div>
 
           <div className="grid grid--3">
-            {otherNews.map((on, idx) => {
-              const slugKey = on.slug || on.id || '';
-              const cardImg = (on as any).image_path || (on as any).imageUrl || (on as any).image_url || (slugKey ? NEWS_PHOTO_MAP[slugKey] : undefined) || photoPool[idx % photoPool.length];
+            {otherNews.map((on: any) => {
+              const cardImg = on.imageUrl || on.image_url || on.image_path || '/assets/photos/image-unavailable.svg';
 
               return (
                 <Link key={on.slug || on.id} className="card news" href={`/news/${on.slug || on.id}`}>
                   <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <Image
                       src={cardImg}
-                      alt={on.title}
+                      alt={on.imageUrl || on.image_url || on.image_path ? on.title : ''}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}
