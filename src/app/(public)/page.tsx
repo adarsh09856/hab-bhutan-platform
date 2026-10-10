@@ -457,29 +457,8 @@ export default function HomePage() {
     },
   ]);
 
-  const [events, setEvents] = useState<any[]>([
-    {
-      day: '12',
-      mon: 'SEP',
-      title: 'Zorig Chusum craft bazaar',
-      place: 'Clock Tower Square, Thimphu',
-      url: '/events/craft-bazaar-2026',
-    },
-    {
-      day: '27',
-      mon: 'SEP',
-      title: 'Export documentation clinic',
-      place: 'HAB office, Metog Lam',
-      url: '/events/export-clinic-sep',
-    },
-    {
-      day: '08',
-      mon: 'OCT',
-      title: 'Annual Sector Forum',
-      place: 'Thimphu',
-      url: '/events/sector-forum-2026',
-    },
-  ]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [publications, setPublications] = useState<any[]>([
     {
@@ -703,23 +682,35 @@ export default function HomePage() {
       })
       .catch(() => {});
 
-    // H. Events from Admin (normalized to guarantee day, mon, time, place and url)
+    // H. Upcoming events come only from saved records with an explicit future start date.
     fetch('/api/events', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.events && d.events.length > 0) {
-          const mappedEvents = d.events.slice(0, 3).map((e: any) => ({
-            day: e.day || '12',
-            mon: e.mon || 'SEP',
-            time: e.time || 'All day',
-            title: e.title,
-            place: e.place || e.location || e.venue || 'Thimphu, Bhutan',
-            url: e.url || `/events/${e.key || e.id}`,
-          }));
-          setEvents(mappedEvents);
-        }
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data?.success === false) throw new Error('Events unavailable');
+        return data;
       })
-      .catch(() => {});
+      .then((d) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const upcoming = (Array.isArray(d?.events) ? d.events : [])
+          .map((event: any) => ({ event, date: event.startDate ? new Date(event.startDate) : null }))
+          .filter(({ event, date }: { event: any; date: Date | null }) =>
+            date && !Number.isNaN(date.getTime()) && date >= today && typeof event.title === 'string' && event.title.trim(),
+          )
+          .sort((a: any, b: any) => a.date.getTime() - b.date.getTime())
+          .slice(0, 3)
+          .map(({ event, date }: { event: any; date: Date }) => ({
+            day: String(date.getDate()).padStart(2, '0'),
+            mon: date.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+            title: event.title,
+            place: event.place || event.location || event.venue || '',
+            time: event.time || '',
+            url: event.url || `/events/${event.key || event.id}`,
+          }));
+        setEvents(upcoming);
+        setEventsState('ready');
+      })
+      .catch(() => setEventsState('error'));
 
     // I. Publications from Admin
     const loadPublications = () => {
@@ -1663,6 +1654,15 @@ export default function HomePage() {
                     </span>
                   </Link>
                 ))}
+                {(eventsState !== 'ready' || events.length === 0) && (
+                  <p className="newsaside__body">
+                    {eventsState === 'loading'
+                      ? (isDz ? 'བྱུང་རིམ་འཚོལ་བཞིན་ཡོད།' : 'Loading events…')
+                      : eventsState === 'error'
+                        ? (isDz ? 'བྱུང་རིམ་ད་ལྟ་ལྟ་མི་ཚུགས།' : 'Events are temporarily unavailable.')
+                        : (isDz ? 'མ་འོངས་པའི་བྱུང་རིམ་བཀོད་མི་འདུག' : 'No upcoming events are listed yet.')}
+                  </p>
+                )}
               </div>
             </div>
             <div className="newsaside__block newsaside__block--dark">
