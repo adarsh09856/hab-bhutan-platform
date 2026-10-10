@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import { fallbackHeroPhoto } from '@/lib/public-images';
 
 interface Project {
   key: string;
@@ -23,174 +22,38 @@ interface Project {
   reportPdfUrl?: string;
 }
 
-const DEFAULT_PROJECTS: Project[] = [
-  {
-    key: 'switch-asia',
-    status: 'current',
-    name: 'Sustainable Bhutanese Handicrafts (SWITCH-Asia)',
-    partner: 'EU SWITCH-Asia · with GrAT and SHINE',
-    period: '2024 – 2027',
-    budget: 'EUR 1.4 m',
-    progress: 62,
-    summary: 'Shifting member enterprises to resource-efficient production: natural dyes, waste reduction and cleaner finishing, while holding craft quality.',
-    activities: [
-      'Cleaner-production audits in 240 workshops',
-      'Natural dye and low-waste finishing training',
-      'Green business plans and access to finance',
-      'Eco-label criteria drafted with RGoB',
-    ],
-    results: [
-      { n: '240', l: 'Enterprises audited' },
-      { n: '1,180', l: 'Artisans trained' },
-      { n: '31%', l: 'Average waste reduction' },
-    ],
-    image_path: '/assets/photos/hero-1-weaving.jpg',
-  },
-  {
-    key: 'market-access',
-    status: 'current',
-    name: 'Market Access for Rural Artisans',
-    partner: 'Enhanced Integrated Framework (EIF)',
-    period: '2025 – 2027',
-    budget: 'USD 620,000',
-    progress: 38,
-    summary: 'Connecting rural producer groups to export buyers through the HAB e-shop, trade fairs and consolidated EMS shipping.',
-    activities: [
-      'Product photography and cataloguing for 400 items',
-      'Export documentation clinics in six dzongkhags',
-      'Buyer missions to India, Thailand and Japan',
-      'Consolidated shipping desk at the secretariat',
-    ],
-    results: [
-      { n: '400', l: 'Products catalogued' },
-      { n: '14', l: 'Export buyers engaged' },
-      { n: '6', l: 'Dzongkhags covered' },
-    ],
-    image_path: '/assets/photos/hero-2-punakha.jpg',
-  },
-  {
-    key: 'skills-transmission',
-    status: 'current',
-    name: 'Zorig Chusum Skills Transmission',
-    partner: 'UNDP GEF Small Grants Programme',
-    period: '2026 – 2028',
-    budget: 'USD 180,000',
-    progress: 12,
-    summary: 'Master-to-apprentice placements in the five crafts with the fewest practising members, to keep endangered techniques alive.',
-    activities: [
-      'Master craftspeople identified in Lugzo, Garzo, Jinzo, Dozo and Shingzo',
-      'Two-year paid apprenticeships for 40 young artisans',
-      'Technique documentation in video and print',
-      'Curriculum shared with the Institute of Zorig Chusum',
-    ],
-    results: [
-      { n: '40', l: 'Apprenticeships opened' },
-      { n: '5', l: 'Endangered crafts covered' },
-      { n: '18', l: 'Masters engaged' },
-    ],
-    image_path: '/assets/photos/hero-3-clay.jpg',
-  },
-  {
-    key: 'women-in-craft',
-    status: 'past',
-    name: 'Women in Craft Enterprise',
-    partner: 'Government of Canada · Helvetas Bhutan',
-    period: '2021 – 2024',
-    budget: 'CAD 900,000',
-    summary: 'Business and pricing capability for women-led craft enterprises, with a revolving fund for raw material purchase.',
-    activities: [
-      'Costing and pricing training for 2,100 women',
-      'Revolving raw-material fund in 9 dzongkhags',
-      'Producer groups formalised and registered',
-      'Childcare support at training venues',
-    ],
-    results: [
-      { n: '2,100', l: 'Women trained' },
-      { n: '64%', l: 'Reported income increase' },
-      { n: '312', l: 'New enterprises registered' },
-    ],
-    image_path: '/assets/photos/hero-4-textiles.jpg',
-  },
-  {
-    key: 'covid-recovery',
-    status: 'past',
-    name: 'COVID-19 Craft Sector Recovery',
-    partner: 'UNDP Bhutan · RGoB',
-    period: '2020 – 2022',
-    budget: 'USD 450,000',
-    summary: 'Emergency income support and a first move to online selling when tourism arrivals stopped.',
-    activities: [
-      'Cash-for-craft procurement from 1,600 artisans',
-      'HAB e-shop launched with payment gateway',
-      'Domestic craft bazaars in four dzongkhags',
-      'Raw material bulk purchase to hold prices',
-    ],
-    results: [
-      { n: '1,600', l: 'Artisans supported' },
-      { n: 'Nu. 24 m', l: 'Craft purchased directly' },
-      { n: '195', l: 'Stores kept trading' },
-    ],
-    image_path: '/assets/photos/hero-5-desho.jpg',
-  },
-  {
-    key: 'innovation-lab',
-    status: 'past',
-    name: 'Craft Product Innovation Lab',
-    partner: 'BCCI · Ernst & Young (pro bono)',
-    period: '2019 – 2021',
-    budget: 'USD 210,000',
-    summary: 'Pairing artisans with designers to develop contemporary lines from traditional technique for retail and hospitality.',
-    activities: [
-      'Six design–artisan cycles across four crafts',
-      'Prototyping grants and material sourcing',
-      'Hotel and retail buyer showcases',
-      'Design rights guidance for participants',
-    ],
-    results: [
-      { n: '38', l: 'New products launched' },
-      { n: '11', l: 'Hotel and retail accounts' },
-      { n: '4', l: 'Crafts represented' },
-    ],
-    image_path: '/assets/photos/hero-1-weaving.jpg',
-  },
-];
-
-const PROJECT_STATS = [
-  { value: '11', label: 'Projects delivered since 2011' },
-  { value: '7,500', label: 'Artisans in the network reached' },
-  { value: 'USD 4.6 m', label: 'Programme funding managed' },
-  { value: '9', label: 'Funding partners' },
-];
-
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [statusTab, setStatusTab] = useState<'current' | 'past'>('current');
 
   useEffect(() => {
     fetch('/api/projects', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.projects && Array.isArray(data.projects) && data.projects.length > 0) {
-          setProjects(
-            data.projects.map((p: any) => ({
-              key: p.key || p.slug || p.id,
-              status: (p.status === 'completed' || p.status === 'past') ? 'past' : 'current',
-              name: p.name || p.title,
-              partner: p.partner || p.donor || 'HAB Strategic Partner',
-              period: p.period || p.yearRange || '2024 – 2027',
-              budget: p.budget || 'Grant Funded',
-              progress: p.progressPercent || p.progress || 50,
-              summary: p.summary || p.description,
-              activities: Array.isArray(p.activities) ? p.activities : [],
-              results: Array.isArray(p.results)
-                ? p.results.map((r: any) => (typeof r === 'string' ? { n: '✓', l: r } : r))
-                : [],
-              image_path: p.imageUrl || p.image_path || '/assets/photos/hero-1-weaving.jpg',
-            }))
-          );
-        }
+      .then((r) => {
+        if (!r.ok) throw new Error('Projects unavailable');
+        return r.json();
       })
-      .catch(() => {});
+      .then((data) => {
+        if (!data?.success || !Array.isArray(data.projects)) throw new Error('Projects unavailable');
+        setProjects(data.projects.map((p: any) => ({
+          key: p.key || p.slug || p.id,
+          status: ['completed', 'past'].includes(String(p.status).toLowerCase()) ? 'past' : 'current',
+          name: p.name || p.title || '',
+          partner: p.partner || p.donor || '',
+          period: p.period || p.yearRange || '',
+          budget: p.budget || '',
+          summary: p.summary || p.description || '',
+          activities: Array.isArray(p.activities) ? p.activities : [],
+          results: Array.isArray(p.results)
+            ? p.results.map((result: any) => typeof result === 'string' ? { n: '', l: result } : result)
+            : [],
+          image_path: p.coverPhotoUrl || p.imageUrl || p.image_path || '',
+          coverPhotoUrl: p.coverPhotoUrl || '',
+          reportPdfUrl: p.reportPdfUrl || '',
+        })));
+        setLoadState('ready');
+      })
+      .catch(() => { setProjects([]); setLoadState('error'); });
   }, []);
 
   const currentProjects = projects.filter((p) => p.status === 'current');
@@ -212,14 +75,6 @@ export default function ProjectsPage() {
             <p className="lede">
               HAB delivers its programmes as funded projects, each with an agreed workplan, budget and reporting cycle. Below are the projects currently in hand and those already completed, with their key activities and what they achieved.
             </p>
-          </div>
-          <div className="craftfacts craftfacts--2" id="projectStats">
-            {PROJECT_STATS.map((st, i) => (
-              <div key={i} className="craftfacts__cell">
-                <span className="craftfacts__key">{st.label}</span>
-                <span className="craftfacts__val">{st.value}</span>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -252,28 +107,26 @@ export default function ProjectsPage() {
 
         {/* 3. Projects List */}
         <div className="projectlist" id="projectList">
+          {loadState !== 'ready' || displayedProjects.length === 0 ? (
+            <p className="section__lede" role={loadState === 'error' ? 'alert' : 'status'}>
+              {loadState === 'loading' ? 'Loading projects…' : loadState === 'error' ? 'Projects are temporarily unavailable.' : `No ${statusTab === 'current' ? 'current' : 'completed'} projects are listed.`}
+            </p>
+          ) : null}
           {displayedProjects.map((p, idx) => (
             <article key={p.key || idx} className="projectcard" id={p.key}>
-              <figure className="frame frame--projshot">
-                <img
-                  src={p.coverPhotoUrl || p.image_path || fallbackHeroPhoto(idx)}
-                  alt={p.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/hero-1-weaving.jpg'; }}
-                />
-              </figure>
+              {p.coverPhotoUrl || p.image_path ? <figure className="frame frame--projshot">
+                <img src={p.coverPhotoUrl || p.image_path} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </figure> : null}
               <div className="projectcard__body">
                 <div className="projectcard__status">
                   <span className={`tag ${p.status === 'past' ? 'tag--done' : ''}`}>
                     {p.status === 'current' ? 'In progress' : 'Completed'}
                   </span>
-                  <span className="projectcard__period">
-                    {p.period} · {p.budget}
-                  </span>
+                  {(p.period || p.budget) && <span className="projectcard__period">{[p.period, p.budget].filter(Boolean).join(' · ')}</span>}
                 </div>
                 <h2 className="projectcard__name">{p.name}</h2>
-                <p className="projectcard__partner">{p.partner}</p>
-                <p className="projectcard__summary">{p.summary}</p>
+                {p.partner && <p className="projectcard__partner">{p.partner}</p>}
+                {p.summary && <p className="projectcard__summary">{p.summary}</p>}
                 <Link className="btn btn--accent btn--sm projectcard__more" href={`/projects/${p.key}`}>
                   Read more →
                 </Link>
