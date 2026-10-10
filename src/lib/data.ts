@@ -50,6 +50,20 @@ export const CLIENT_VERBATIM = {
   punakhaMarket: "the only authentic crafts market validated and managed by HAB"
 };
 
+// Older saved site settings contain copy from an unused hero draft. Keep the
+// currently published wording until an editor explicitly saves a replacement.
+const UNUSED_HERO_DRAFT = 'We champion authentic Bhutanese crafts and the people who keep them alive. We strengthen traditional skills, open new markets, and build a handicrafts sector that creates lasting value for artisans, communities and Bhutan.';
+
+export function publishedHeroParagraph(value?: string | null): string {
+  const copy = value?.trim();
+  return !copy || copy === UNUSED_HERO_DRAFT ? CLIENT_VERBATIM.heroPara : copy;
+}
+
+export function publishedHeroSecondaryText(value?: string | null): string {
+  const copy = value?.trim();
+  return !copy || copy === 'Shop the crafts ->' ? 'Shop the crafts →' : copy;
+}
+
 export const PROGRAM_OBJECTS = [
   { ref: "a", t: "Sector Representation and Advocacy", d: "Represent and advance the collective interests of all handicrafts sector stakeholders — artisans, producers, designers, traders and service providers — before governmental, legislative, regulatory, intergovernmental and private sector bodies.", activities: ["Representation in national and subnational planning processes", "Participation in legislative and regulatory consultations", "Engagement with ministries, regulators and international forums"] },
   { ref: "b", t: "Policy Development and Intervention", d: "Engage with competent authorities on policies, laws, regulations, standards and incentive frameworks affecting the sector; submit evidence-based positions and monitor implementation of policy commitments.", activities: ["Evidence-based policy positions submitted to competent authorities", "Review of standards and incentive frameworks affecting the sector", "Monitoring of sector-relevant policy commitments"] },

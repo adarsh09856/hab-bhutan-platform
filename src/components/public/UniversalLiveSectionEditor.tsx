@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import QuickEditRecords, { hasNativeRecordEditor } from '@/components/public/QuickEditRecords';
+import { publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 
 const STATIC_SYSTEM_PAGES = [
   { label: 'Homepage', href: '/', category: 'Core Pages' },
@@ -287,12 +288,10 @@ export default function UniversalLiveSectionEditor({
         // Hero fields
         heroEyebrow: s.heroEyebrow || 'Crafted in the Himalayas',
         tagline: s.tagline || 'Towards a vibrant & sustainable handicrafts sector',
-        heroParagraph:
-          s.heroParagraph ||
-          'Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports skills development and capacity building of the craftspeople.',
+        heroParagraph: publishedHeroParagraph(s.heroParagraph),
         heroCtaPrimaryText: s.heroCtaPrimaryText || 'Our mission',
         heroCtaPrimaryLink: s.heroCtaPrimaryLink || '/about',
-        heroCtaSecondaryText: s.heroCtaSecondaryText || 'Shop the crafts →',
+        heroCtaSecondaryText: publishedHeroSecondaryText(s.heroCtaSecondaryText),
         heroCtaSecondaryLink: s.heroCtaSecondaryLink || '/shop',
 
         // Stats fields

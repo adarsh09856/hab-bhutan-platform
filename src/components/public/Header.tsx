@@ -524,7 +524,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
             type="search"
             placeholder={t('nav.search_placeholder', 'Search crafts, members, publications')}
             autoComplete="off"
-            aria-label="Search crafts and members"
+            aria-label={t('nav.search_placeholder', 'Search crafts, members, publications...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setSearchOpen(true)}

@@ -34,6 +34,7 @@ import {
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { AdminModal } from '@/components/admin/AdminUI';
+import { publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 
 interface PartnerItem {
   name: string;
@@ -213,6 +214,8 @@ export default function HomePageStudio() {
           setSettings((prev) => ({
             ...prev,
             ...d.setting,
+            heroParagraph: publishedHeroParagraph(d.setting.heroParagraph),
+            heroCtaSecondaryText: publishedHeroSecondaryText(d.setting.heroCtaSecondaryText),
             shopProductCodes: Array.isArray(d.setting.shopProductCodes) ? d.setting.shopProductCodes.map(String).slice(0, 8) : [],
             partnersList: parsedPartners,
             homepageSectionOrder: order,

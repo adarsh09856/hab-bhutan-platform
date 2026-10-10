@@ -11,7 +11,8 @@ import { removeRepeatedLead } from '@/lib/display-copy';
 import { selectFeaturedProducts } from '@/lib/featured-products';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
 import { useCart } from '@/context/CartContext';
-import { CLIENT_VERBATIM } from '@/lib/data';
+import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
+import { isPolicyHtml, preparePolicyHtml } from '@/lib/policy-html';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
@@ -58,8 +59,10 @@ export default function HomePage() {
     tagline: CLIENT_VERBATIM.tagline,
     heroParagraph: CLIENT_VERBATIM.heroPara,
     heroEyebrow: 'Civil Society Organization · Bhutan',
-    heroCtaPrimaryText: 'Meet the Makers →',
-    heroCtaPrimaryLink: '/masters',
+    heroCtaPrimaryText: 'Our mission',
+    heroCtaPrimaryLink: '/about',
+    heroCtaSecondaryText: 'Shop the crafts →',
+    heroCtaSecondaryLink: '/shop',
     assurance1Title: 'Tracked Origin',
     assurance1Text: 'Materials, makers, and worldwide shipping are 100% traceable.',
     assurance2Title: 'Registered Chain',
@@ -192,10 +195,12 @@ export default function HomePage() {
             setSiteSettings((prev) => ({
               ...prev,
               tagline: d.setting.tagline || prev.tagline,
-              heroParagraph: d.setting.heroParagraph || prev.heroParagraph,
+              heroParagraph: publishedHeroParagraph(d.setting.heroParagraph),
               heroEyebrow: d.setting.heroEyebrow || prev.heroEyebrow,
               heroCtaPrimaryText: d.setting.heroCtaPrimaryText || prev.heroCtaPrimaryText,
               heroCtaPrimaryLink: d.setting.heroCtaPrimaryLink || prev.heroCtaPrimaryLink,
+              heroCtaSecondaryText: publishedHeroSecondaryText(d.setting.heroCtaSecondaryText),
+              heroCtaSecondaryLink: d.setting.heroCtaSecondaryLink || prev.heroCtaSecondaryLink,
               assurance1Title: d.setting.assurance1Title || prev.assurance1Title,
               assurance1Text: d.setting.assurance1Text || prev.assurance1Text,
               assurance2Title: d.setting.assurance2Title || prev.assurance2Title,
@@ -576,17 +581,17 @@ export default function HomePage() {
         <div className="hero__copy">
           <p className="eyebrow eyebrow--accent">{isDz ? t('home.hero_eyebrow', 'འབྲུག་གི་མི་སྡེ་ཚོགས་པ') : siteSettings.heroEyebrow}</p>
           <h1 className="display display--hero">{isDz ? t('home.hero_tagline', 'འབྲུག་གི་ལག་བཟོ་སྡེ་ཚན་གྱི་གོང་འཕེལ་དང་ཡུན་བརྟན') : siteSettings.tagline}</h1>
-          <p className="lede">
-            {isDz ? t('home.hero_intro', 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་པ་ཚུ་ལུ་ རྒྱལ་ཁབ་ནང་དང་ཕྱི་རྒྱལ་གྱི་ཁྲོམ་ར་ནང་ ལག་བཟོ་ཚུ་ཁྱབ་སྤེལ་གཏང་ནི་ལུ་རྒྱབ་སྐྱོར་འབདཝ་ཨིན། དེ་མ་ཚད་ ལག་བཟོ་པ་ཚུའི་རིག་རྩལ་གོང་འཕེལ་དང་ནུས་ཤུགས་ཡར་སེང་ལུ་ཡང་རྒྱབ་སྐྱོར་འབདཝ་ཨིན།') : <>
+          <div className="lede">
+            {isDz ? t('home.hero_intro', 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་པ་ཚུ་ལུ་ རྒྱལ་ཁབ་ནང་དང་ཕྱི་རྒྱལ་གྱི་ཁྲོམ་ར་ནང་ ལག་བཟོ་ཚུ་ཁྱབ་སྤེལ་གཏང་ནི་ལུ་རྒྱབ་སྐྱོར་འབདཝ་ཨིན། དེ་མ་ཚད་ ལག་བཟོ་པ་ཚུའི་རིག་རྩལ་གོང་འཕེལ་དང་ནུས་ཤུགས་ཡར་སེང་ལུ་ཡང་རྒྱབ་སྐྱོར་འབདཝ་ཨིན།') : siteSettings.heroParagraph === CLIENT_VERBATIM.heroPara ? <>
               Handicrafts Association of Bhutan supports <Link href="/members">local artisans</Link> in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
-            </>}
-          </p>
+            </> : isPolicyHtml(siteSettings.heroParagraph) ? <div dangerouslySetInnerHTML={{ __html: preparePolicyHtml(siteSettings.heroParagraph).html }} /> : siteSettings.heroParagraph}
+          </div>
           <div className="actions flex flex-wrap items-center gap-3">
-            <Link className="btn btn--ink" href="/about">
+            <Link className="btn btn--ink" href={siteSettings.heroCtaPrimaryLink || '/about'}>
               {isDz ? 'ང་བཅས་ཀྱི་དམིགས་ཡུལ' : (siteSettings.heroCtaPrimaryText || 'Our mission')}
             </Link>
-            <Link className="btn btn--outline" href="/shop">
-              {isDz ? 'ལག་བཟོ་ཚོང་ཉོ →' : ((siteSettings as any).heroCtaSecondaryText || 'Shop the crafts →')}
+            <Link className="btn btn--outline" href={siteSettings.heroCtaSecondaryLink || '/shop'}>
+              {isDz ? 'ལག་བཟོ་ཚོང་ཉོ →' : siteSettings.heroCtaSecondaryText}
             </Link>
             <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/members">
               {isDz ? 'འཐུས་མི་འཚོལ' : 'Find a member'}
@@ -860,7 +865,7 @@ export default function HomePage() {
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">Visit us in person</p>
-            <h2 className="display display--band">Our physical outlets &amp; clusters</h2>
+            <h2 className="display display--band">{isDz ? t('home.outlets_title', 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང') : 'Our physical outlets & clusters'}</h2>
             <p className="section__lede">
               Buy directly from the artisans, at the markets and clusters the association runs or validates.
             </p>

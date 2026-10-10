@@ -8,6 +8,7 @@ import { Save, AlertCircle, CheckCircle2, Megaphone, Home, Phone, ShieldCheck, H
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import { AdminModal } from '@/components/admin/AdminUI';
+import { publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 
 interface PartnerItem {
   name: string;
@@ -266,6 +267,8 @@ export default function AdminSiteSettingsPage() {
           setForm((prev) => ({
             ...prev,
             ...d.setting,
+            heroParagraph: publishedHeroParagraph(d.setting.heroParagraph),
+            heroCtaSecondaryText: publishedHeroSecondaryText(d.setting.heroCtaSecondaryText),
             partnersList: Array.isArray(d.setting.partnersList) ? d.setting.partnersList.map(normalizePartner) : prev.partnersList,
             tickerMessages: Array.isArray(d.setting.tickerMessages) && d.setting.tickerMessages.length > 0 ? d.setting.tickerMessages : prev.tickerMessages,
           }));
@@ -281,6 +284,8 @@ export default function AdminSiteSettingsPage() {
                 setForm((prev) => ({
                   ...prev,
                   ...s,
+                  heroParagraph: publishedHeroParagraph(s.heroParagraph),
+                  heroCtaSecondaryText: publishedHeroSecondaryText(s.heroCtaSecondaryText),
                   partnersList: Array.isArray(s.partnersList) ? s.partnersList.map(normalizePartner) : prev.partnersList,
                   tickerMessages: Array.isArray(s.tickerMessages) && s.tickerMessages.length > 0 ? s.tickerMessages : prev.tickerMessages,
                 }));
@@ -303,6 +308,8 @@ export default function AdminSiteSettingsPage() {
               setForm((prev) => ({
                 ...prev,
                 ...s,
+                heroParagraph: publishedHeroParagraph(s.heroParagraph),
+                heroCtaSecondaryText: publishedHeroSecondaryText(s.heroCtaSecondaryText),
                 partnersList: Array.isArray(s.partnersList) ? s.partnersList.map(normalizePartner) : prev.partnersList,
                 tickerMessages: Array.isArray(s.tickerMessages) && s.tickerMessages.length > 0 ? s.tickerMessages : prev.tickerMessages,
               }));
