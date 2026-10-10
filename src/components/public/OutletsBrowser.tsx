@@ -3,89 +3,19 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Store, Clock, Search, ChevronDown, ChevronUp, Sparkles, Filter } from 'lucide-react';
+import { MapPin, Clock, Search, ChevronDown, ChevronUp, Sparkles, Filter } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import SectionEditBadge from '@/components/public/SectionEditBadge';
 
-const SCENE_POOL = [
-  '/assets/photos/hero-4-textiles.jpg',
-  '/assets/photos/hero-1-weaving.jpg',
-  '/assets/photos/hero-5-desho.jpg',
-  '/assets/photos/hero-3-clay.jpg',
-  '/assets/photos/hero-2-punakha.jpg',
-  '/assets/photos/about-hab.jpg',
-];
+const NO_IMAGE = '/assets/photos/image-unavailable.svg';
 
-// Affiliated regional partner counters across Bhutan's Dzongkhags
-const AFFILIATED_REGIONAL_OUTLETS = [
-  {
-    key: 'paro-town-crafts',
-    name: 'Paro Heritage Craft Counter',
-    type: 'COUNTER',
-    place: 'Paro Town, Paro Dzongkhag',
-    hours: '09:00 - 18:30 daily',
-    note: 'Direct consignment collection of silver jewelry (Troezo) and local slate carvings (Parzo).',
-    craftsOnSite: 'Troezo, Parzo, Thagzo',
-    payment: 'Cash, Card, mBoB, BNB',
-  },
-  {
-    key: 'trongsa-ta-dzong',
-    name: 'Trongsa Tower of Heritage Counter',
-    type: 'COUNTER',
-    place: 'Ta Dzong Museum Entrance, Trongsa',
-    hours: '09:00 - 17:00 (Tue-Sun)',
-    note: 'Curated traditional woodturning bowls (Dapa) and ancestral weaving work.',
-    craftsOnSite: 'Shagzo, Thagzo',
-    payment: 'Cash, mBoB, BNB',
-  },
-  {
-    key: 'trashigang-radhi',
-    name: 'Radhi Bura Silk Consignment Hub',
-    type: 'OUTLET',
-    place: 'Radhi, Trashigang Dzongkhag',
-    hours: '08:30 - 17:30 daily',
-    note: 'Authentic wild raw silk bura textiles hand-spun and backstrap-woven by local guild members.',
-    craftsOnSite: 'Thagzo (Bura silk), Tshazo',
-    payment: 'Cash, mBoB',
-  },
-  {
-    key: 'zhemgang-kheng-crafts',
-    name: 'Kheng Bamboo & Cane Guild Outlet',
-    type: 'OUTLET',
-    place: 'Buli / Bjoka, Zhemgang Dzongkhag',
-    hours: '09:00 - 18:00 daily',
-    note: 'Master-grade Bangchung woven baskets, bamboo containers, and cane mats.',
-    craftsOnSite: 'Tshazo (Bamboo & Cane)',
-    payment: 'Cash, mBoB',
-  },
-  {
-    key: 'trashiyangtse-shagzo',
-    name: 'Yangtse Traditional Dapa & Paper Emporium',
-    type: 'OUTLET',
-    place: 'Old Town, Trashi Yangtse Dzongkhag',
-    hours: '09:00 - 18:00 daily',
-    note: 'Turned wooden cups (Dapa) and authentic handmade Desho parchment scrolls.',
-    craftsOnSite: 'Shagzo, Dezo',
-    payment: 'Cash, mBoB, BNB',
-  },
-  {
-    key: 'phuentsholing-gateway',
-    name: 'Phuentsholing Border Craft Pavilion',
-    type: 'COUNTER',
-    place: 'Lower Market, Phuentsholing, Chhukha',
-    hours: '09:30 - 19:30 daily',
-    note: 'Convenient exit gateway counter for traveling patrons carrying certified craft exports.',
-    craftsOnSite: 'All 13 Crafts overview',
-    payment: 'Cash, Card, mBoB, BNB',
-  },
-];
 
 interface OutletsBrowserProps {
   initialOutlets: any[];
   clusters: any[];
+  unavailable?: boolean;
 }
 
-export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrowserProps) {
+export default function OutletsBrowser({ initialOutlets, clusters, unavailable = false }: OutletsBrowserProps) {
   const { language, t } = useLanguage();
   const isDz = language === 'dz';
 
@@ -120,21 +50,9 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
   const featured = shuffledOutlets.find((o) => o.is_featured || o.isFeatured) || shuffledOutlets[0];
   const primaryOutlets = shuffledOutlets.filter((o) => o.key !== featured?.key);
 
-  // Combine primary outlets with regional affiliated counters
-  const combinedAllOutlets = useMemo(() => {
-    const list = [...primaryOutlets];
-    // Add affiliated outlets that are not already present
-    AFFILIATED_REGIONAL_OUTLETS.forEach((aff) => {
-      if (!list.some((o) => o.key === aff.key)) {
-        list.push(aff);
-      }
-    });
-    return list;
-  }, [primaryOutlets]);
-
   // Filtered outlets based on type and search query
   const filteredOutlets = useMemo(() => {
-    return combinedAllOutlets.filter((o) => {
+    return primaryOutlets.filter((o) => {
       if (filterType !== 'ALL' && o.type !== filterType) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -145,7 +63,7 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
       }
       return true;
     });
-  }, [combinedAllOutlets, filterType, searchQuery]);
+  }, [primaryOutlets, filterType, searchQuery]);
 
   // How many outlets to show initially before clicking "View More"
   const visibleOutlets = showAllOutlets ? filteredOutlets : filteredOutlets.slice(0, 3);
@@ -158,6 +76,8 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
           <Link href="/">{t('nav.home', 'Home')}</Link> / {isDz ? 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང་' : 'Outlets & clusters'}
         </p>
 
+        {unavailable && <p role="alert">The outlet directory is temporarily unavailable. Please try again shortly.</p>}
+        {!unavailable && !featured && <p>No outlets have been listed yet.</p>}
         {featured && (
           <>
             <div className="detailhero">
@@ -178,7 +98,7 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
 
             <figure className="frame frame--banner" style={{ position: 'relative', height: 440, overflow: 'hidden', marginTop: 24 }}>
               <Image
-                src={(featured as any)?.imageUrl || '/assets/photos/hero-2-punakha.jpg'}
+                src={(featured as any)?.imageUrl || NO_IMAGE}
                 alt={featured.name}
                 fill
                 priority
@@ -202,14 +122,14 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
               <span className="craftfacts__key">{isDz ? 'སྒོ་ཕྱེའི་དུས་ཚོད' : 'Open'}</span>
               <span className="craftfacts__val">{featured.hours}</span>
             </div>
-            <div className="craftfacts__cell">
+            {featured.stalls && <div className="craftfacts__cell">
               <span className="craftfacts__key">{isDz ? 'ཚོང་ཁྲོམ་རྒྱ་ཁྱོན' : 'Scale'}</span>
-              <span className="craftfacts__val">{featured.stalls || '30+ Artisan Stalls'}</span>
-            </div>
-            <div className="craftfacts__cell">
+              <span className="craftfacts__val">{featured.stalls}</span>
+            </div>}
+            {featured.payment && <div className="craftfacts__cell">
               <span className="craftfacts__key">{isDz ? 'དངུལ་སྤྲོད' : 'Payment'}</span>
-              <span className="craftfacts__val">{featured.payment || 'Cash, mBoB, BNB, Card'}</span>
-            </div>
+              <span className="craftfacts__val">{featured.payment}</span>
+            </div>}
           </div>
         </section>
       )}
@@ -227,8 +147,8 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
             </h2>
             <p className="section__lede">
               {isDz
-                ? 'འབྲུག་རྒྱལ་ཁབ་ཀྱི་རྫོང་ཁག་ ༢༠ ག་རའི་ནང་ ལག་བཟོ་ཚོགས་པའི་བདེན་དཔྱད་ཅན་གྱི་ཚོང་ཁང་ཚུ།'
-                : 'The association’s own verified shops and airport counters across Bhutan. Each carries certified member work.'}
+                ? 'འདི་ནང་ HAB གིས་ཐོ་བཀོད་ཡོད་པའི་ཚོང་ཁང་དང་ཚོང་ཁྲོམ་ཚུ་བཀོད་ཡོད།'
+                : 'Explore the outlets and counters currently listed by HAB.'}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm self-start md:self-auto" href="/shop">
@@ -279,12 +199,12 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
 
         {/* Outlets Grid */}
         <div className="grid grid--3">
-          {visibleOutlets.map((o: any, idx: number) => (
+          {visibleOutlets.map((o: any) => (
             <article key={o.key} className="card outlet hover:shadow-md transition-shadow">
               <Link href={`/outlets/${o.key}`}>
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
-                    src={o.imageUrl || SCENE_POOL[idx % SCENE_POOL.length]}
+                    src={o.imageUrl || NO_IMAGE}
                     alt={o.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
@@ -313,6 +233,8 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
           ))}
         </div>
 
+        {!unavailable && filteredOutlets.length === 0 && <p>No outlets match the current search or filter.</p>}
+
         {/* Feedback Item 10: "View More Outlets" Button */}
         {filteredOutlets.length > 3 && (
           <div className="mt-8 text-center">
@@ -330,19 +252,17 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
                 <>
                   <ChevronDown className="w-4 h-4" />
                   {isDz
-                    ? `ཚོང་ཁང་མངམ་གཟིགས (${filteredOutlets.length} རྫོང་ཁག་ ༢༠ ནང་)`
-                    : `View More Outlets (${filteredOutlets.length} Total across 20 Dzongkhags)`}
+                    ? `ཚོང་ཁང་མངམ་གཟིགས (${filteredOutlets.length})`
+                    : `View More Outlets (${filteredOutlets.length} listed)`}
                 </>
               )}
             </button>
           </div>
         )}
 
-        <p className="footnote" style={{ marginTop: 24, textAlign: 'center' }}>
-          {isDz
-            ? 'འབྲུག་རྒྱལ་ཁབ་ཀྱི་རྫོང་ཁག་ ༢༠ ག་རའི་ནང་ ཚོང་ཁང་ ༡༩༥ གིས་ འཐུས་མིའི་ལག་བཟོ་དངོས་པོ་ཚུ་ འགྲེམས་སྟོན་འབདཝ་ཨིན།'
-            : '195 affiliated partner stores across Bhutan also carry authenticated member craftwork.'}
-        </p>
+        {!unavailable && <p className="footnote" style={{ marginTop: 24, textAlign: 'center' }}>
+          {initialOutlets.length} {isDz ? 'ཐོ་བཀོད་ཡོད་པའི་ཚོང་ཁང་།' : 'outlets currently listed by HAB.'}
+        </p>}
       </section>
 
       {/* Clusters Section */}
@@ -363,12 +283,12 @@ export default function OutletsBrowser({ initialOutlets, clusters }: OutletsBrow
         </div>
 
         <div className="grid grid--3">
-          {clusters.slice(0, 3).map((c: any, idx: number) => (
+          {clusters.slice(0, 3).map((c: any) => (
             <article key={c.key} className="card cluster">
               <Link href={`/clusters/${c.key}`}>
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
-                    src={c.imageUrl || SCENE_POOL[(idx + 2) % SCENE_POOL.length]}
+                    src={c.imageUrl || NO_IMAGE}
                     alt={c.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"

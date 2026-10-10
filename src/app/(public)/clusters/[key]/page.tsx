@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { CLIENT_DATA, getClusterByKey, getCraftByKey, getProductsForCraft } from '@/lib/client-data';
+import { getCraftByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -14,7 +14,6 @@ interface ClusterPageProps {
 }
 
 async function resolveCluster(key: string) {
-  try {
     const c = await prisma.clusterRecord.findUnique({ where: { key } });
     if (c) {
       let visitor_note = c.visitorNote || undefined;
@@ -41,8 +40,7 @@ async function resolveCluster(key: string) {
         imageUrl,
       };
     }
-  } catch {}
-  return getClusterByKey(key);
+  return null;
 }
 
 export async function generateMetadata({ params }: ClusterPageProps): Promise<Metadata> {
@@ -93,17 +91,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
         image_path: normalized.imageUrl,
       };
     });
-  } catch {
-    products = getProductsForCraft(cluster.craft_key).slice(0, 4).map((product) => ({
-      code: product.code,
-      name: product.name,
-      craft_key: product.craft_key,
-      maker: product.maker,
-      region: product.region,
-      price_usd: product.price_usd,
-      image_path: product.image_path,
-    }));
-  }
+  } catch {}
   try {
     const dbMembers = await prisma.member.findMany({
       where: { craftKey: cluster.craft_key, status: 'VERIFIED' },
@@ -112,32 +100,20 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
       take: 6,
     });
     members = dbMembers.map((member) => ({ id: member.id, name: member.name, dzongkhag: member.dzongkhag, blurb: member.bio }));
-  } catch {
-    members = (CLIENT_DATA.members || []).filter((member: any) => member.craft_key === cluster.craft_key);
-  }
+  } catch {}
 
   // Compute prev/next cluster
   let allClusters: any[] = [];
   try {
     const dbC = await prisma.clusterRecord.findMany({ orderBy: { sortOrder: 'asc' } });
-    if (dbC.length > 0) {
-      allClusters = dbC.map((c) => ({ key: c.key, name: c.name, craft_key: c.craftKey }));
-    }
+    allClusters = dbC.map((c) => ({ key: c.key, name: c.name, craft_key: c.craftKey }));
   } catch {}
-  if (!allClusters.length) allClusters = CLIENT_DATA.clusters;
 
   const currentIndex = allClusters.findIndex((c) => c.key === cluster.key);
-  const prevCluster = allClusters[(currentIndex - 1 + allClusters.length) % allClusters.length];
-  const nextCluster = allClusters[(currentIndex + 1) % allClusters.length];
+  const prevCluster = currentIndex >= 0 && allClusters.length > 1 ? allClusters[(currentIndex - 1 + allClusters.length) % allClusters.length] : null;
+  const nextCluster = currentIndex >= 0 && allClusters.length > 1 ? allClusters[(currentIndex + 1) % allClusters.length] : null;
 
-  const photoPool = [
-    '/assets/photos/hero-1-weaving.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/assets/photos/hero-2-punakha.jpg',
-  ];
-  const bannerImg = (cluster as any).imageUrl || (cluster as any).bannerUrl || photoPool[currentIndex >= 0 ? currentIndex % photoPool.length : 0];
+  const bannerImg = cluster.imageUrl || '/assets/photos/image-unavailable.svg';
 
   return (
     <main id="main">
@@ -249,7 +225,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
-                      src={p.image_path || '/assets/photos/product-sad03.jpg'}
+                      src={p.image_path || '/assets/photos/image-unavailable.svg'}
                       alt={p.name}
                       fill
                       sizes="(max-width: 768px) 100vw, 25vw"
@@ -307,7 +283,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
       )}
 
       {/* 7. Next / Prev Bottom Nav */}
-      <section className="section section--last">
+      {prevCluster && nextCluster && <section className="section section--last">
         <nav className="craftnav" aria-label="Other clusters">
           <Link className="craftnav__link" href={`/clusters/${prevCluster.key}`}>
             <span className="craftnav__hint">← Previous cluster</span>
@@ -318,7 +294,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
             <span>{nextCluster.name}</span>
           </Link>
         </nav>
-      </section>
+      </section>}
     </main>
   );
 }

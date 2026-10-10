@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,8 +31,7 @@ export async function GET(req: NextRequest) {
       if (outlet) {
         return NextResponse.json({ success: true, outlet: unpackOutlet(outlet) });
       }
-      const fallback = CLIENT_DATA.outlets.find((o) => o.key === key);
-      return NextResponse.json({ success: true, outlet: fallback ? unpackOutlet(fallback) : null });
+      return NextResponse.json({ success: true, outlet: null });
     }
 
     const outlets = await prisma.outletRecord.findMany({
@@ -41,7 +39,7 @@ export async function GET(req: NextRequest) {
     });
 
     const shouldShuffle = searchParams.get('shuffle') !== 'false';
-    let rawList = outlets.length > 0 ? outlets.map(unpackOutlet) : CLIENT_DATA.outlets.map(unpackOutlet);
+    let rawList = outlets.map(unpackOutlet);
 
     if (shouldShuffle && rawList.length > 1) {
       const featured = rawList.filter((o: any) => o.isFeatured);
@@ -59,13 +57,6 @@ export async function GET(req: NextRequest) {
     res.headers.set('Expires', '0');
     return res;
   } catch {
-    const rawList = [...CLIENT_DATA.outlets.map(unpackOutlet)];
-    for (let i = rawList.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [rawList[i], rawList[j]] = [rawList[j], rawList[i]];
-    }
-    const res = NextResponse.json({ success: true, outlets: rawList });
-    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-    return res;
+    return NextResponse.json({ success: false, error: 'Outlet directory temporarily unavailable.' }, { status: 503 });
   }
 }

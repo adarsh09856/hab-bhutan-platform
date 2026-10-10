@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,27 +32,19 @@ export async function GET(req: NextRequest) {
       if (cluster) {
         return NextResponse.json({ success: true, cluster: unpackCluster(cluster) });
       }
-      const fallback = CLIENT_DATA.clusters.find((c) => c.key === key);
-      return NextResponse.json({ success: true, cluster: fallback ? unpackCluster(fallback) : null });
+      return NextResponse.json({ success: true, cluster: null });
     }
 
     const clusters = await prisma.clusterRecord.findMany({
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
 
-    let res: NextResponse;
-    if (clusters.length > 0) {
-      res = NextResponse.json({ success: true, clusters: clusters.map(unpackCluster) });
-    } else {
-      res = NextResponse.json({ success: true, clusters: CLIENT_DATA.clusters.map(unpackCluster) });
-    }
+    const res = NextResponse.json({ success: true, clusters: clusters.map(unpackCluster) });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');
     res.headers.set('Expires', '0');
     return res;
   } catch {
-    const res = NextResponse.json({ success: true, clusters: CLIENT_DATA.clusters.map(unpackCluster) });
-    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-    return res;
+    return NextResponse.json({ success: false, error: 'Cluster directory temporarily unavailable.' }, { status: 503 });
   }
 }

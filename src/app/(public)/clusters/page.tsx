@@ -17,8 +17,7 @@ async function getClusters() {
     const dbClusters = await prisma.clusterRecord.findMany({
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
-    if (dbClusters.length > 0) {
-      return dbClusters.map((c) => {
+    return { clusters: dbClusters.map((c) => {
         let visitor_note = c.visitorNote || undefined;
         let imageUrl: string | undefined = undefined;
         if (visitor_note && visitor_note.includes('<!-- HAB_IMAGE:')) {
@@ -42,14 +41,14 @@ async function getClusters() {
           visitor_note,
           imageUrl,
         };
-      });
-    }
-  } catch {}
-  return CLIENT_DATA.clusters;
+      }), unavailable: false };
+  } catch {
+    return { clusters: [], unavailable: true };
+  }
 }
 
 export default async function ClustersPage() {
-  const [clusters, setting] = await Promise.all([
+  const [{ clusters, unavailable }, setting] = await Promise.all([
     getClusters(),
     prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } }).catch(() => null),
   ]);
@@ -58,14 +57,6 @@ export default async function ClustersPage() {
   const lede = typeof copy.clustersHeroLede === 'string' ? copy.clustersHeroLede : 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.';
   const countTemplate = typeof copy.clustersCountText === 'string' ? copy.clustersCountText : '{count} clusters listed';
   const display = (key: string, fallback: string) => typeof copy[key] === 'string' ? copy[key] as string : fallback;
-
-  const photoPool = [
-    '/assets/photos/hero-1-weaving.jpg',
-    '/assets/photos/hero-4-textiles.jpg',
-    '/assets/photos/hero-5-desho.jpg',
-    '/assets/photos/hero-3-clay.jpg',
-    '/assets/photos/hero-2-punakha.jpg',
-  ];
 
   return (
     <main id="main">
@@ -80,17 +71,19 @@ export default async function ClustersPage() {
         <p className="lede">
           {lede}
         </p>
-        <p className="craft__count" id="clusterCount" style={{ margin: '0 0 34px' }}>
+        {!unavailable && <p className="craft__count" id="clusterCount" style={{ margin: '0 0 34px' }}>
           {countTemplate.replace('{count}', String(clusters.length))}
-        </p>
+        </p>}
 
+        {unavailable ? <p role="alert">The cluster directory is temporarily unavailable. Please try again shortly.</p>
+          : clusters.length === 0 ? <p>No clusters are listed yet.</p> : null}
         <div className="clusterlist" id="clusterList" data-cms-repeat>
-          {clusters.map((row: any, idx: number) => {
+          {clusters.map((row: any) => {
             const craft = CLIENT_DATA.crafts.find((cr) => cr.key === row.craft_key) || {
               name: '',
               english: '',
             };
-            const imgSrc = row.imageUrl || photoPool[idx % photoPool.length];
+            const imgSrc = row.imageUrl || '/assets/photos/image-unavailable.svg';
 
             return (
               <article key={row.key} id={row.key} className="clusterlist__item" data-cms-item>

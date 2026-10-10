@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 import OutletsBrowser from '@/components/public/OutletsBrowser';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -19,8 +18,7 @@ async function getOutletsData() {
     const dbClusters = await prisma.clusterRecord.findMany({
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
-    const outlets = dbOutlets.length > 0
-      ? dbOutlets.map(o => {
+    const outlets = dbOutlets.map(o => {
           let note = o.note || '';
           let imageUrl: string | undefined = undefined;
           if (note.includes('<!-- HAB_IMAGE:')) {
@@ -48,11 +46,9 @@ async function getOutletsData() {
             facilities: o.facilities || '',
             imageUrl,
           };
-        })
-      : CLIENT_DATA.outlets;
+        });
 
-    const clusters = dbClusters.length > 0
-      ? dbClusters.map(c => {
+    const clusters = dbClusters.map(c => {
           let visitor_note = c.visitorNote || undefined;
           let imageUrl: string | undefined = undefined;
           if (visitor_note && visitor_note.includes('<!-- HAB_IMAGE:')) {
@@ -76,20 +72,20 @@ async function getOutletsData() {
             visitor_note,
             imageUrl,
           };
-        })
-      : CLIENT_DATA.clusters;
+        });
 
-    return { outlets, clusters };
-  } catch {}
-  return { outlets: CLIENT_DATA.outlets, clusters: CLIENT_DATA.clusters };
+    return { outlets, clusters, unavailable: false };
+  } catch {
+    return { outlets: [], clusters: [], unavailable: true };
+  }
 }
 
 export default async function OutletsPage() {
-  const { outlets, clusters } = await getOutletsData();
+  const { outlets, clusters, unavailable } = await getOutletsData();
   return (
     <div className="relative">
       <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" sectionType="outlets" />
-      <OutletsBrowser initialOutlets={outlets} clusters={clusters} />
+      <OutletsBrowser initialOutlets={outlets} clusters={clusters} unavailable={unavailable} />
     </div>
   );
 }

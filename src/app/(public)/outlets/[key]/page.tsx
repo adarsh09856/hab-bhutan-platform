@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { CLIENT_DATA, getOutletByKey } from '@/lib/client-data';
 
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -14,7 +13,6 @@ interface OutletPageProps {
 }
 
 async function resolveOutlet(key: string) {
-  try {
     const o = await prisma.outletRecord.findUnique({ where: { key } });
     if (o) {
       let note = o.note || '';
@@ -45,8 +43,7 @@ async function resolveOutlet(key: string) {
         imageUrl,
       };
     }
-  } catch {}
-  return getOutletByKey(key);
+  return null;
 }
 
 export async function generateMetadata({ params }: OutletPageProps): Promise<Metadata> {
@@ -68,11 +65,10 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
     notFound();
   }
 
-  let others = CLIENT_DATA.outlets.filter((o) => o.key !== outlet.key);
+  let others: any[] = [];
   try {
     const dbAll = await prisma.outletRecord.findMany({ where: { NOT: { key: outlet.key } }, orderBy: { sortOrder: 'asc' } });
-    if (dbAll.length > 0) {
-      others = dbAll.map(o => {
+    others = dbAll.map(o => {
         let note = o.note || '';
         let imageUrl: string | undefined = undefined;
         if (note.includes('<!-- HAB_IMAGE:')) {
@@ -99,10 +95,9 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           imageUrl,
         };
       });
-    }
   } catch {}
 
-  const bannerImg = (outlet as any).imageUrl || (outlet as any).bannerUrl || '/assets/photos/hero-2-punakha.jpg';
+  const bannerImg = outlet.imageUrl || '/assets/photos/image-unavailable.svg';
 
   return (
     <main id="main">
@@ -151,14 +146,14 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
             <span className="craftfacts__key">Open</span>
             <span className="craftfacts__val">{outlet.hours || '—'}</span>
           </div>
-          <div className="craftfacts__cell">
+          {outlet.stalls && <div className="craftfacts__cell">
             <span className="craftfacts__key">Scale</span>
-            <span className="craftfacts__val">{outlet.stalls || 'HAB outlet'}</span>
-          </div>
-          <div className="craftfacts__cell">
+            <span className="craftfacts__val">{outlet.stalls}</span>
+          </div>}
+          {outlet.payment && <div className="craftfacts__cell">
             <span className="craftfacts__key">Payment</span>
-            <span className="craftfacts__val">{outlet.payment || 'Cash, mBoB, cards'}</span>
-          </div>
+            <span className="craftfacts__val">{outlet.payment}</span>
+          </div>}
         </div>
       </section>
 
@@ -214,7 +209,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
               <Link key={row.key} className="card outlet" href={`/outlets/${row.key}`}>
                 <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                   <Image
-                    src={row.imageUrl || '/assets/photos/hero-4-textiles.jpg'}
+                    src={row.imageUrl || '/assets/photos/image-unavailable.svg'}
                     alt={row.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
