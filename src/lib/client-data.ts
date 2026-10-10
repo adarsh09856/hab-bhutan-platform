@@ -17,6 +17,7 @@ export interface CraftData {
   practised_in?: string;
   typical_products?: string;
   image_path?: string;
+  bannerUrl?: string | null;
   image_alt?: string;
   shop_note?: string;
 }

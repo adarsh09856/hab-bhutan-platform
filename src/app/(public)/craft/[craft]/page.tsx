@@ -5,12 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { 
-  CLIENT_DATA, 
-  getCraftByKey, 
-  getProductsForCraft,
-  CraftData
-} from '@/lib/client-data';
+import type { CraftData } from '@/lib/client-data';
 import { useCart } from '@/context/CartContext';
 import { useCurrency } from '@/context/CurrencyContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
@@ -23,114 +18,105 @@ export default function CraftProfilePage() {
   const params = useParams();
   const craftKey = (params.craft as string) || 'thagzo';
 
-  const [craft, setCraft] = useState<CraftData>(() => getCraftByKey(craftKey) || CLIENT_DATA.crafts[0]);
+  const [craft, setCraft] = useState<CraftData | null>(null);
+  const [crafts, setCrafts] = useState<CraftData[]>([]);
+  const [craftState, setCraftState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
+  const [relatedErrors, setRelatedErrors] = useState({ products: false, clusters: false, members: false });
+  const [relatedLoading, setRelatedLoading] = useState({ products: true, clusters: true, members: true });
   const [editorOpen, setEditorOpen] = useState(false);
 
-  const [products, setProducts] = useState<any[]>(() => getProductsForCraft(craft.key));
-  const [clusters, setClusters] = useState<any[]>(() => CLIENT_DATA.clusters.filter((c) => c.craft_key === craft.key));
-  const [members, setMembers] = useState<any[]>(() => (CLIENT_DATA.members || []).filter((m: any) => m.craft_key === craft.key));
+  const [products, setProducts] = useState<any[]>([]);
+  const [clusters, setClusters] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
 
   useEffect(() => {
-    const fallbackCraft = getCraftByKey(craftKey);
-    if (fallbackCraft) setCraft(fallbackCraft);
-    fetch(`/api/crafts?key=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.craft) setCraft(d.craft);
-      })
-      .catch(() => {});
+    const controller = new AbortController();
+    const load = async (path: string) => {
+      const response = await fetch(path, { cache: 'no-store', signal: controller.signal });
+      const body = await response.json();
+      if (!response.ok || body.success === false) throw new Error(`Could not load ${path}`);
+      return body;
+    };
+    setCraft(null);
+    setCraftState('loading');
+    setCrafts([]);
+    setProducts([]);
+    setClusters([]);
+    setMembers([]);
+    setRelatedErrors({ products: false, clusters: false, members: false });
+    setRelatedLoading({ products: true, clusters: true, members: true });
 
-    // Fetch live products for this craft
-    fetch(`/api/products?craft=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.products && Array.isArray(d.products) && d.products.length > 0) {
-          setProducts(
-            d.products.map((p: any) => ({
-              code: p.code,
-              name: p.name,
-              craft_key: p.craftKey || p.craft_key,
-              region: p.region || 'Bhutan',
-              maker: p.maker?.name || p.maker || 'Registered Master',
-              price_usd: p.priceUSD ?? p.price ?? p.price_usd ?? 0,
-              image_path: p.images?.[0]?.url || p.image_path || `/images/products/${(p.code || '').toLowerCase()}.jpg`,
-              hero_image: p.images?.[0]?.url || p.image_path || `/images/products/${(p.code || '').toLowerCase()}.jpg`,
-              summary: p.description || p.summary || '',
-            }))
-          );
-        }
-      })
-      .catch(() => {});
+    load('/api/crafts').then((data) => {
+      if (controller.signal.aborted) return;
+      const savedCrafts: CraftData[] = Array.isArray(data.crafts) ? data.crafts : [];
+      setCrafts(savedCrafts);
+      const selected = savedCrafts.find((item) => item.key === craftKey) || null;
+      setCraft(selected);
+      setCraftState(selected ? 'ready' : 'missing');
+    }).catch(() => { if (!controller.signal.aborted) setCraftState('error'); });
 
-    // Fetch live clusters for this craft
-    fetch('/api/clusters', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.clusters && Array.isArray(d.clusters)) {
-          const matching = d.clusters.filter((c: any) => (c.craftKey || c.craft_key) === craftKey);
-          if (matching.length > 0) {
-            setClusters(
-              matching.map((c: any) => ({
-                key: c.key,
-                name: c.name,
-                craft_key: c.craftKey || c.craft_key,
-                dzongkhag: c.dzongkhag,
-                members: c.members,
-                established: c.established,
-                summary: c.summary,
-                imageUrl: c.imageUrl,
-                sort_order: c.sortOrder || c.sort_order,
-              }))
-            );
-          }
-        }
-      })
-      .catch(() => {});
+    load(`/api/products?craft=${encodeURIComponent(craftKey)}`).then((data) => {
+      if (controller.signal.aborted) return;
+      setProducts((Array.isArray(data.products) ? data.products : []).map((p: any) => ({
+        code: p.code, name: p.name, craft_key: p.craftKey || p.craft_key,
+        region: p.region || p.maker?.dzongkhag || '', maker: p.maker?.name || (typeof p.maker === 'string' ? p.maker : ''),
+        price_usd: p.priceUSD ?? p.price ?? p.price_usd,
+        image_path: p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg',
+        hero_image: p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg',
+        summary: p.description || p.summary || '',
+      })));
+      setRelatedLoading((state) => ({ ...state, products: false }));
+    }).catch(() => { if (!controller.signal.aborted) { setRelatedErrors((state) => ({ ...state, products: true })); setRelatedLoading((state) => ({ ...state, products: false })); } });
 
-    fetch(`/api/members?craft=${encodeURIComponent(craftKey)}`, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d?.members) && d.members.length > 0) {
-          setMembers(d.members.map((member: any) => ({
-            name: member.name,
-            regNumber: member.regNumber,
-            dzongkhag: member.dzongkhag,
-            blurb: member.bio,
-            member_since: member.joinYear,
-          })));
-        }
-      })
-      .catch(() => {});
+    load('/api/clusters').then((data) => {
+      if (controller.signal.aborted) return;
+      setClusters((Array.isArray(data.clusters) ? data.clusters : [])
+        .filter((item: any) => (item.craftKey || item.craft_key) === craftKey)
+        .map((item: any) => ({ ...item, craft_key: item.craftKey || item.craft_key })));
+      setRelatedLoading((state) => ({ ...state, clusters: false }));
+    }).catch(() => { if (!controller.signal.aborted) { setRelatedErrors((state) => ({ ...state, clusters: true })); setRelatedLoading((state) => ({ ...state, clusters: false })); } });
+
+    load(`/api/members?craft=${encodeURIComponent(craftKey)}`).then((data) => {
+      if (controller.signal.aborted) return;
+      setMembers((Array.isArray(data.members) ? data.members : []).map((member: any) => ({
+        name: member.name, regNumber: member.regNumber, dzongkhag: member.dzongkhag,
+        blurb: member.bio, member_since: member.joinYear,
+      })));
+      setRelatedLoading((state) => ({ ...state, members: false }));
+    }).catch(() => { if (!controller.signal.aborted) { setRelatedErrors((state) => ({ ...state, members: true })); setRelatedLoading((state) => ({ ...state, members: false })); } });
+    return () => controller.abort();
   }, [craftKey]);
-
-  const craftIndex = CLIENT_DATA.crafts.findIndex((c) => c.key === craft.key);
-  const totalCrafts = CLIENT_DATA.crafts.length;
-
-  const prevCraft = CLIENT_DATA.crafts[(craftIndex - 1 + totalCrafts) % totalCrafts];
-  const nextCraft = CLIENT_DATA.crafts[(craftIndex + 1) % totalCrafts];
 
   const [activeSlide, setActiveSlide] = useState(0);
   const { addToCart } = useCart();
   const { fmt } = useCurrency();
+  const galleryCount = (craft?.bannerUrl || craft?.image_path ? 1 : 0)
+    + products.slice(0, 2).filter((product) => product.hero_image && product.hero_image !== '/assets/photos/image-unavailable.svg').length;
 
   // Auto-flipper
   useEffect(() => {
+    setActiveSlide(0);
+    if (galleryCount <= 1) return;
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 3);
+      setActiveSlide((prev) => (prev + 1) % galleryCount);
     }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [galleryCount]);
 
-  const slideCaptions = [
-    `photo 1 — ${craft.english.toLowerCase()}, the work in progress`,
-    `photo 2 — ${craft.english.toLowerCase()}, tools and materials`,
-    `photo 3 — ${craft.english.toLowerCase()}, a finished piece`,
-  ];
+  if (!craft || craft.key !== craftKey) {
+    const message = craftState === 'error' ? 'The craft catalogue is temporarily unavailable. Please try again shortly.'
+      : craftState === 'missing' ? 'This craft is not listed.' : 'Loading craft details…';
+    return <main id="main"><section className="section"><h1 className="display display--page">Craft</h1><p role={craftState === 'error' ? 'alert' : undefined}>{message}</p><Link href="/crafts">View all crafts</Link></section></main>;
+  }
 
-  const triptychCaptions = [
-    `large photo — a ${craft.name} workshop`,
-    'photo — detail of the technique',
-    'photo — the maker at work',
+  const craftIndex = crafts.findIndex((item) => item.key === craft.key);
+  const prevCraft = craftIndex >= 0 && crafts.length > 1 ? crafts[(craftIndex - 1 + crafts.length) % crafts.length] : null;
+  const nextCraft = craftIndex >= 0 && crafts.length > 1 ? crafts[(craftIndex + 1) % crafts.length] : null;
+
+  const galleryImages = [
+    ...(craft.bannerUrl || craft.image_path ? [{ src: craft.bannerUrl || craft.image_path!, alt: craft.image_alt || `${craft.name} craft` }] : []),
+    ...products.slice(0, 2).filter((product) => product.hero_image && product.hero_image !== '/assets/photos/image-unavailable.svg')
+      .map((product) => ({ src: product.hero_image as string, alt: product.name as string })),
   ];
 
   const historyText = language === 'dz' && craft.historyDz ? craft.historyDz : craft.history || '';
@@ -149,12 +135,7 @@ export default function CraftProfilePage() {
     .split(/\n\s*\n/)
     .filter(Boolean);
 
-  const historyWordCount = historyText
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
-
-  const badgeNum = ('0' + craft.sort_order).slice(-2) + '/13 · ZORIG CHUSUM';
+  const badgeNum = ('0' + craft.sort_order).slice(-2) + `/${crafts.length} · ZORIG CHUSUM`;
   const craftFacts = getCraftFacts(craft);
 
   return (
@@ -171,7 +152,7 @@ export default function CraftProfilePage() {
         {/* Blueprint Backbar */}
         <div className="backbar">
           <Link className="backbar__link" href="/#crafts">
-            <span aria-hidden="true">←</span> Back to The 13 Crafts
+            <span aria-hidden="true">←</span> Back to the crafts
           </Link>
         </div>
 
@@ -197,17 +178,7 @@ export default function CraftProfilePage() {
 
           {/* Crossfading Flipper */}
           <div className="flipper" tabIndex={0} aria-label="Photographs of this craft">
-            {slideCaptions.map((cap, i) => {
-              const flipperImgs = [
-                (craft as any).bannerUrl || craft.image_path || `/images/crafts/${craft.key}.jpg`,
-                products[0]?.hero_image ? (/^(https?:)?\//.test(products[0].hero_image) ? products[0].hero_image : `/${products[0].hero_image}`) : '/assets/photos/hero-4-textiles.jpg',
-                products[1]?.hero_image ? (/^(https?:)?\//.test(products[1].hero_image) ? products[1].hero_image : `/${products[1].hero_image}`) : '/assets/photos/hero-3-clay.jpg',
-              ];
-              const fallbacks = [
-                (craft as any).bannerUrl || craft.image_path || `/images/crafts/${craft.key}.jpg`,
-                '/assets/photos/hero-4-textiles.jpg',
-                '/assets/photos/hero-3-clay.jpg',
-              ];
+            {(galleryImages.length ? galleryImages : [{ src: '/assets/photos/image-unavailable.svg', alt: 'Craft image not available' }]).map(({ src, alt }, i) => {
               return (
                 <div
                   key={i}
@@ -223,19 +194,21 @@ export default function CraftProfilePage() {
                   }}
                 >
                   <img
-                    src={flipperImgs[i]}
-                    alt={cap}
+                    src={src}
+                    alt={alt}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = fallbacks[i];
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = '/assets/photos/image-unavailable.svg';
                     }}
                   />
-                  <span className="flipper__cap">{cap}</span>
+                  <span className="flipper__cap">{alt}</span>
                 </div>
               );
             })}
-            <div className="flipper__dots">
-              {[0, 1, 2].map((i) => (
+            {galleryImages.length > 1 && <div className="flipper__dots">
+              {galleryImages.map((_, i) => (
                 <button
                   key={i}
                   type="button"
@@ -244,7 +217,7 @@ export default function CraftProfilePage() {
                   aria-label={`Show photograph ${i + 1}`}
                 />
               ))}
-            </div>
+            </div>}
           </div>
         </div>
       </section>
@@ -283,9 +256,6 @@ export default function CraftProfilePage() {
             <div>
               <p className="eyebrow eyebrow--accent">Where it comes from</p>
               <h2 className="display display--sub">History of the craft</h2>
-              <p className="section__lede">
-                Written for HAB. Around {Math.round(historyWordCount / 10) * 10} words.
-              </p>
             </div>
             <div>
               {historyParas.map((para: string, i: number) => (
@@ -297,42 +267,20 @@ export default function CraftProfilePage() {
       )}
 
       {/* 5. Visual Triptych */}
-      <section className="section section--tight">
+      {galleryImages.length > 1 && <section className="section section--tight">
         <div className="triptych">
-          {triptychCaptions.map((cap, i) => {
-            const craftTriptychs: Record<string, string[]> = {
-              parzo: ['/images/crafts/parzo.jpg', '/assets/photos/product-mas01.jpg', '/assets/photos/hero-2-punakha.jpg'],
-              thagzo: ['/images/crafts/thagzo.jpg', '/assets/photos/hero-1-weaving.jpg', '/assets/photos/hero-4-textiles.jpg'],
-              shingzo: ['/images/crafts/shingzo.jpg', '/images/crafts/parzo.jpg', '/assets/photos/hero-2-punakha.jpg'],
-              lhazo: ['/images/crafts/lhazo.jpg', '/assets/photos/product-lha01.jpg', '/assets/photos/about-hab.jpg'],
-              shagzo: ['/images/crafts/shagzo.jpg', '/assets/photos/product-dap02.jpg', '/images/crafts/shingzo.jpg'],
-              tshazo: ['/images/crafts/tshazo.jpg', '/assets/photos/product-ftb04.jpg', '/assets/photos/product-lud01.jpg'],
-              troezo: ['/images/crafts/troezo.jpg', '/assets/photos/product-tro04.jpg', '/images/crafts/garzo.jpg'],
-              dezo: ['/images/crafts/dezo.jpg', '/assets/photos/hero-5-desho.jpg', '/assets/photos/product-dez01.jpg'],
-              tshemzo: ['/images/crafts/tshemzo.jpg', '/assets/photos/product-cam01.jpg', '/assets/photos/product-cus02.jpg'],
-              dozo: ['/images/crafts/dozo.jpg', '/assets/photos/hero-2-punakha.jpg', '/images/crafts/shingzo.jpg'],
-              garzo: ['/images/crafts/garzo.jpg', '/images/crafts/troezo.jpg', '/assets/photos/product-tro04.jpg'],
-              jinzo: ['/images/crafts/jinzo.jpg', '/assets/photos/hero-3-clay.jpg', '/images/crafts/parzo.jpg'],
-              lugzo: ['/images/crafts/lugzo.jpg', '/images/crafts/garzo.jpg', '/images/crafts/troezo.jpg'],
-            };
-            const specificTriptych = craftTriptychs[craft.key] || [
-              `/images/crafts/${craft.key}.jpg`,
-              '/assets/photos/hero-1-weaving.jpg',
-              '/assets/photos/hero-2-punakha.jpg',
-            ];
-            const tripSrc = specificTriptych[i] || `/images/crafts/${craft.key}.jpg`;
-
+          {galleryImages.map(({ src, alt }, i) => {
             return (
               <div key={i} className="triptych__cell">
                 <figure className="frame frame--wide16 has-image" data-cms-img>
                   <img
-                    src={tripSrc}
-                    alt={cap}
+                    src={src}
+                    alt={alt}
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null;
-                      target.src = `/images/crafts/${craft.key}.jpg`;
+                      target.src = '/assets/photos/image-unavailable.svg';
                     }}
                   />
                 </figure>
@@ -340,16 +288,16 @@ export default function CraftProfilePage() {
             );
           })}
         </div>
-      </section>
+      </section>}
 
       {/* 6. Products in the shop / Made to commission */}
       <section className="section" id="craftShop">
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">
-              {products.length > 0
+              {relatedLoading.products ? 'Loading shop items' : relatedErrors.products ? 'Shop items unavailable' : products.length > 0
                 ? `${products.length} ${products.length === 1 ? 'piece' : 'pieces'} in the HAB shop`
-                : 'Not sold online'}
+                : 'No published pieces'}
             </p>
             <h2 className="display display--sub">In the shop</h2>
           </div>
@@ -358,20 +306,20 @@ export default function CraftProfilePage() {
           </Link>
         </div>
 
-        {products.length > 0 ? (
+        {relatedLoading.products ? <p>Loading shop items…</p> : relatedErrors.products ? <p role="alert">The craft shop items are temporarily unavailable. Please try again shortly.</p> : products.length > 0 ? (
           <div className="grid grid--4" data-cms-repeat>
             {products.map((p) => (
               <article key={p.code} className="card product" data-cms-item data-code={p.code}>
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img>
                     <img
-                      src={p.image_path || `/images/products/${(p.code || '').toLowerCase()}.jpg`}
+                      src={p.image_path || '/assets/photos/image-unavailable.svg'}
                       alt={p.name}
                       loading="lazy"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.onerror = null;
-                        target.src = `/images/crafts/${craft.key}.jpg`;
+                        target.src = '/assets/photos/image-unavailable.svg';
                       }}
                     />
                   </figure>
@@ -383,7 +331,7 @@ export default function CraftProfilePage() {
                     <Link href={`/product/${p.code}`}>{p.name}</Link>
                   </h3>
                   <p className="card__meta clamp-1">
-                    {p.maker} · {p.region}
+                    {[p.maker, p.region].filter(Boolean).join(' · ')}
                   </p>
                   <div className="card__foot">
                     <span className="price">{fmt(p.price_usd ?? p.price ?? p.priceUSD ?? 0)}</span>
@@ -401,10 +349,10 @@ export default function CraftProfilePage() {
           </div>
         ) : (
           <div className="shopempty">
-            <h3 className="shopempty__title">Made to commission</h3>
+            <h3 className="shopempty__title">No pieces published yet</h3>
             <p className="shopempty__body">
               {craft.shop_note ||
-                `${craft.name} is commissioned rather than shipped. Send the secretariat your specification and we will match it to a member who practises it.`}
+                `There are no ${craft.name} pieces in the online catalogue at present. Contact the secretariat to ask about availability or a commission.`}
             </p>
             <Link
               className="btn btn--accent"
@@ -417,6 +365,7 @@ export default function CraftProfilePage() {
       </section>
 
       {/* 7. Clusters Section */}
+      {relatedErrors.clusters && <section className="section"><p role="alert">Cluster listings are temporarily unavailable.</p></section>}
       {clusters.length > 0 && (
         <section className="section">
           <div className="section__head">
@@ -436,8 +385,7 @@ export default function CraftProfilePage() {
                     <img
                       src={
                         c.imageUrl ||
-                        CLIENT_DATA.clusters.find((knownCluster) => knownCluster.key === c.key)?.image_path ||
-                        '/assets/photos/hero-2-punakha.jpg'
+                        '/assets/photos/image-unavailable.svg'
                       }
                       alt={c.name}
                       loading="lazy"
@@ -450,9 +398,9 @@ export default function CraftProfilePage() {
                     <Link href={`/clusters/${c.key}`}>{c.name}</Link>
                   </h3>
                   <p className="card__text clamp-3">{c.summary}</p>
-                  <p className="card__meta">
-                    {c.members} artisans · Established {c.established}
-                  </p>
+                  {(c.members > 0 || (c.established && c.established !== 2026)) && <p className="card__meta">
+                    {[c.members > 0 ? `${c.members} artisans` : null, c.established && c.established !== 2026 ? `Established ${c.established}` : null].filter(Boolean).join(' · ')}
+                  </p>}
                 </div>
               </article>
             ))}
@@ -461,6 +409,7 @@ export default function CraftProfilePage() {
       )}
 
       {/* 8. Members Section */}
+      {relatedErrors.members && <section className="section"><p role="alert">Member listings are temporarily unavailable.</p></section>}
       {members.length > 0 && (
         <section className="section">
           <div className="section__head">
@@ -481,7 +430,7 @@ export default function CraftProfilePage() {
                     <Link href={`/members/${encodeURIComponent(m.regNumber || m.name)}`}>{m.name}</Link>
                   </h3>
                   <p className="card__text clamp-3">{m.blurb}</p>
-                  <p className="card__meta">HAB member since {m.member_since}</p>
+                  {m.member_since && <p className="card__meta">HAB member since {m.member_since}</p>}
                 </div>
               </article>
             ))}
@@ -490,7 +439,7 @@ export default function CraftProfilePage() {
       )}
 
       {/* 9. Next / Prev Bottom Navigation */}
-      <section className="section section--last">
+      {prevCraft && nextCraft && <section className="section section--last">
         <nav className="craftnav" aria-label="Other crafts">
           <Link className="craftnav__link" href={`/craft/${prevCraft.key}`}>
             <span className="craftnav__hint">← Previous craft</span>
@@ -501,7 +450,7 @@ export default function CraftProfilePage() {
             <span>{nextCraft.name} · {nextCraft.english}</span>
           </Link>
         </nav>
-      </section>
+      </section>}
 
       <UniversalLiveSectionEditor
         isOpen={editorOpen}
