@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { outletImages, clusterImages } from '@/lib/reference-images';
+import { cleanOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
 import OutletsBrowser from '@/components/public/OutletsBrowser';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -36,7 +37,7 @@ async function getOutletsData() {
             sort_order: o.sortOrder,
             is_featured: o.isFeatured,
             place: o.place,
-            note,
+            note: cleanOutletGalleryMarker(note),
             description: o.description,
             long_description: o.longDescription,
             hours: o.hours,
@@ -46,6 +47,7 @@ async function getOutletsData() {
             getting_there: o.gettingThere || '',
             facilities: o.facilities || '',
             imageUrl: imageUrl || outletImages[o.key],
+            galleryImages: readOutletGallery(o.note),
           };
         });
 

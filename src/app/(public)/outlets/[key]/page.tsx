@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 
 import prisma from '@/lib/prisma';
 import { outletImages } from '@/lib/reference-images';
+import { cleanOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
 
@@ -33,7 +34,7 @@ async function resolveOutlet(key: string) {
         sort_order: o.sortOrder,
         is_featured: o.isFeatured,
         place: o.place,
-        note,
+        note: cleanOutletGalleryMarker(note),
         description: o.description,
         long_description: o.longDescription,
         hours: o.hours,
@@ -43,6 +44,7 @@ async function resolveOutlet(key: string) {
         getting_there: o.gettingThere || '',
         facilities: o.facilities || '',
         imageUrl: imageUrl || outletImages[o.key],
+        galleryImages: readOutletGallery(o.note),
       };
     }
   return null;
@@ -85,7 +87,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           type: o.type,
           name: o.name,
           place: o.place,
-          note,
+          note: cleanOutletGalleryMarker(note),
           description: o.description,
           long_description: o.longDescription,
           hours: o.hours,
@@ -95,6 +97,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           getting_there: o.gettingThere || '',
           facilities: o.facilities || '',
           imageUrl: imageUrl || outletImages[o.key],
+          galleryImages: readOutletGallery(o.note),
         };
       });
   } catch {}
@@ -125,7 +128,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           <p className="lede lede--wide">{outlet.description || outlet.note}</p>
         </div>
 
-        <div style={{ height: 440 }}><OutletGallery image={bannerImg} name={outlet.name} /></div>
+        <div style={{ height: 440 }}><OutletGallery image={bannerImg} galleryImages={outlet.galleryImages} name={outlet.name} /></div>
       </section>
 
       {/* Facts */}

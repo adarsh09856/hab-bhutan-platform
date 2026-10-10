@@ -185,7 +185,7 @@ export default function ProductDetailPage() {
                 >
                   <img
                     src={src}
-                    alt={`${product.name} view ${i + 1}`}
+                    alt={src === '/images/crafts/thagzo.jpg' ? 'Illustrative photograph of Bhutanese weaving' : `${product.name} view ${i + 1}`}
                     style={{
                       position: 'absolute',
                       inset: 0,

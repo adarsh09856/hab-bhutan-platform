@@ -42,6 +42,7 @@ interface Outlet {
   gettingThere?: string | null;
   facilities?: string | null;
   imageUrl?: string | null;
+  galleryImages?: string[];
 }
 
 export default function AdminClustersOutletsPage() {
@@ -89,6 +90,7 @@ export default function AdminClustersOutletsPage() {
     gettingThere: '',
     facilities: '',
     imageUrl: '',
+    galleryImages: ['', '', ''],
   });
 
   const [deleting, setDeleting] = useState<{ type: 'CLUSTER' | 'OUTLET'; id: string; name: string } | null>(null);
@@ -282,6 +284,7 @@ export default function AdminClustersOutletsPage() {
                   gettingThere: '',
                   facilities: '',
                   imageUrl: '',
+                  galleryImages: ['', '', ''],
                 });
               }}
               className="admin-button-primary flex items-center gap-1.5 text-xs py-2 px-3 rounded-lg"
@@ -455,6 +458,7 @@ export default function AdminClustersOutletsPage() {
                           gettingThere: o.gettingThere || '',
                           facilities: o.facilities || '',
                           imageUrl: o.imageUrl || '',
+                          galleryImages: [0, 1, 2].map(index => o.galleryImages?.[index] || ''),
                         });
                       }}
                       className="p-1.5 rounded admin-hover text-slate-300 hover:text-white"
@@ -807,6 +811,19 @@ export default function AdminClustersOutletsPage() {
                   accept="image/*"
                   hint="Exterior or interior shop photograph representing this outlet."
                 />
+              </div>
+
+              <div className="space-y-3 rounded-xl border border-slate-200 p-4">
+                <p className="font-semibold text-slate-900">Outlet slider photographs</p>
+                <p className="text-slate-500">Upload up to three extra photographs. They appear after the cover photo on the homepage, outlets page and outlet detail page.</p>
+                {[0, 1, 2].map(index => <FileUploadInput
+                  key={index}
+                  label={`Slider photograph ${index + 2}`}
+                  value={outletForm.galleryImages[index] || ''}
+                  onChange={url => setOutletForm({ ...outletForm, galleryImages: outletForm.galleryImages.map((current, slot) => slot === index ? url : current) })}
+                  accept="image/*"
+                  hint="Upload an image or select an existing image URL. Clear it to use the reference photo."
+                />)}
               </div>
 
               <div className="flex items-center gap-4 pt-1">

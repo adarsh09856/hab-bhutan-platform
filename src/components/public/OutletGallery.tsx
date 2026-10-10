@@ -9,9 +9,12 @@ const referenceSlides = [
   '/assets/photos/hero-3-clay.jpg',
 ];
 
-export default function OutletGallery({ image, name }: { image?: string; name: string }) {
+export default function OutletGallery({ image, galleryImages = [], name }: { image?: string; galleryImages?: string[]; name: string }) {
   const isPunakhaMarket = /punakha crafts market/i.test(name);
-  const slides = Array.from(new Set([image, ...(isPunakhaMarket ? referenceSlides : [])]
+  const additional = isPunakhaMarket
+    ? referenceSlides.slice(1).map((fallback, index) => galleryImages[index] || fallback)
+    : galleryImages;
+  const slides = Array.from(new Set([image, ...additional]
     .filter((src): src is string => Boolean(src) && !src!.includes('image-unavailable'))));
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);

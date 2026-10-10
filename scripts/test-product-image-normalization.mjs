@@ -29,7 +29,7 @@ const relatedWithLegacyPlaceholders = ['HHB01', 'SAD03', 'KIS02'].map((code) => 
 assert.deepEqual(relatedWithLegacyPlaceholders.map((item) => item.imageUrl), [
   '/assets/photos/product-hhb01.jpg',
   '/assets/photos/product-sad03.jpg',
-  '/assets/photos/image-unavailable.svg',
+  '/images/crafts/thagzo.jpg',
 ]);
 
 assert.equal(normalizeProductImages('LHA01', 'lhazo', [
@@ -37,10 +37,10 @@ assert.equal(normalizeProductImages('LHA01', 'lhazo', [
 ]).imageUrl, '/assets/photos/product-lha01.jpg');
 assert.equal(normalizeProductImages('KIS02', 'thagzo', [
   { url: '/assets/photos/product-cam01.jpg', role: 'primary' },
-]).imageUrl, '/assets/photos/image-unavailable.svg');
+]).imageUrl, '/images/crafts/thagzo.jpg');
 assert.equal(normalizeProductImages('KIS02', 'thagzo', [
   { url: '/assets/photos/product-kis02.jpg', role: 'primary' },
-]).imageUrl, '/assets/photos/image-unavailable.svg');
+]).imageUrl, '/images/crafts/thagzo.jpg');
 assert.equal(normalizeProductImages('KIS02', 'thagzo', [
   { url: '/assets/photos/product-kis02.jpg', role: 'primary' },
   { url: '/uploads/verified-kisuthara-photo.jpg', role: 'gallery' },
@@ -54,4 +54,4 @@ assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', statu
 assert.equal(isPublicCatalogProduct({ code: 'SKU-TEST-44899', name: 'Automated Test Kishuthara Textile', status: 'PUBLISHED' }), false);
 assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', status: 'DRAFT' }), false);
 
-console.log('PASS: mismatched Kisuthara photo is suppressed, genuine uploads survive, missing images stay neutral, and test/draft catalogue records stay out of public responses.');
+console.log('PASS: mismatched Kisuthara photo is suppressed, craft illustration and genuine uploads work, and test/draft catalogue records stay out of public responses.');

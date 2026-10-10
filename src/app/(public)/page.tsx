@@ -269,6 +269,7 @@ export default function HomePage() {
         const mappedOutlets = d.outlets.map((outlet: any) => ({
           ...outlet,
           image_path: outlet.imageUrl || '/assets/photos/image-unavailable.svg',
+          galleryImages: outlet.galleryImages || [],
         }));
         setAllOutletsPool(mappedOutlets);
         setPunakhaOutlet(mappedOutlets.find((outlet: any) => outlet.key === 'punakha-market') || null);
@@ -778,7 +779,7 @@ export default function HomePage() {
                   <figure className="frame frame--square has-image">
                     <img
                       src={productImg}
-                      alt={p.name}
+                      alt={productImg === '/images/crafts/thagzo.jpg' ? 'Illustrative photograph of Bhutanese weaving' : p.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                     />
@@ -871,7 +872,7 @@ export default function HomePage() {
 
         {punakhaOutlet && (
           <article className="outlet-lead" id="outletLead">
-            <OutletGallery image={punakhaOutlet.image_path} name={punakhaOutlet.name} />
+            <OutletGallery image={punakhaOutlet.image_path} galleryImages={punakhaOutlet.galleryImages} name={punakhaOutlet.name} />
             <div className="outlet-lead__body">
               <p className="badge badge--ink">{punakhaOutlet.type || 'Outlet'}</p>
               <h3 className="display display--panel">{punakhaOutlet.name}</h3>

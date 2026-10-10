@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { cleanOutletGalleryMarker, packOutletGallery, readOutletGallery } from '@/lib/outlet-gallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,8 +42,9 @@ function unpackOutlet(outlet: any) {
   }
   return {
     ...outlet,
-    note: note || null,
+    note: cleanOutletGalleryMarker(note) || null,
     imageUrl: imageUrl || null,
+    galleryImages: readOutletGallery(outlet.note),
   };
 }
 
@@ -84,6 +86,7 @@ export async function POST(req: NextRequest) {
       gettingThere,
       facilities,
       imageUrl,
+      galleryImages,
     } = body;
 
     if (!key || !name || !place) {
@@ -98,7 +101,7 @@ export async function POST(req: NextRequest) {
         sortOrder: Number(sortOrder) || 0,
         isFeatured: Boolean(isFeatured),
         place: place.trim(),
-        note: packOutletNote(note, imageUrl),
+        note: packOutletGallery(packOutletNote(note, imageUrl), galleryImages || []),
         description: description?.trim() || '',
         longDescription: longDescription?.trim() || description?.trim() || '',
         hours: hours?.trim() || '09:00 - 18:00 daily',
@@ -150,6 +153,7 @@ export async function PUT(req: NextRequest) {
       gettingThere,
       facilities,
       imageUrl,
+      galleryImages,
     } = body;
 
     if (!id && !key) {
@@ -160,8 +164,8 @@ export async function PUT(req: NextRequest) {
       where: id ? { id } : { key },
     });
 
-    const packedNote = (note !== undefined || imageUrl !== undefined)
-      ? packOutletNote(note, imageUrl, existing?.note)
+    const packedNote = (note !== undefined || imageUrl !== undefined || galleryImages !== undefined)
+      ? packOutletGallery(packOutletNote(note, imageUrl, existing?.note), galleryImages === undefined ? readOutletGallery(existing?.note) : galleryImages)
       : undefined;
 
     const updated = await prisma.outletRecord.update({

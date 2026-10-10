@@ -278,7 +278,7 @@ function ShopContent() {
                       <figure className="frame frame--square has-image">
                         <img
                           src={p.image_path || '/assets/photos/image-unavailable.svg'}
-                          alt={p.name}
+                          alt={p.image_path === '/images/crafts/thagzo.jpg' ? 'Illustrative photograph of Bhutanese weaving' : p.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;

@@ -13,6 +13,9 @@ const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
   hhb10: '/assets/photos/product-hhb10.jpg',
   lud01: '/assets/photos/product-lud01.jpg',
   cam01: '/assets/photos/product-cam01.jpg',
+  // The bundled KIS02 product file is unrelated. Show the existing Khoma
+  // weaving photograph until an actual product image is uploaded in Admin.
+  kis02: '/images/crafts/thagzo.jpg',
   pho03: '/assets/photos/product-pho03.jpg',
   dez07: '/assets/photos/product-dez07.jpg',
   tro09: '/assets/photos/product-tro09.jpg',
