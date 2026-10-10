@@ -1627,6 +1627,7 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-xl);
   overflow:hidden;display:grid;grid-template-columns:420px 1fr;align-items:stretch;
 }
+.projectcard--no-image{grid-template-columns:minmax(0,1fr)}
 .frame--projshot{border:0;border-radius:0;aspect-ratio:auto;min-height:100%;align-items:flex-end}
 .projectcard__body{padding:34px 38px}
 .projectcard__status{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}

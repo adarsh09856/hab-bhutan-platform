@@ -119,7 +119,11 @@ export default function ProjectsPage() {
             </p>
           ) : null}
           {displayedProjects.map((p, idx) => (
-            <article key={p.key || idx} className="projectcard" id={p.key}>
+            <article
+              key={p.key || idx}
+              className={`projectcard ${p.coverPhotoUrl || p.image_path ? '' : 'projectcard--no-image'}`}
+              id={p.key}
+            >
               {p.coverPhotoUrl || p.image_path ? <figure className="frame frame--projshot">
                 <img src={p.coverPhotoUrl || p.image_path} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </figure> : null}
