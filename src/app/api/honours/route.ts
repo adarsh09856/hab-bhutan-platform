@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,30 +18,16 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { yearAwarded: 'desc' }, { name: 'asc' }],
     });
 
-    if (honours.length > 0) {
-      const res = NextResponse.json({ success: true, honours, masters: honours });
-      res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-      res.headers.set('Pragma', 'no-cache');
-      res.headers.set('Expires', '0');
-      return res;
-    }
-
-    // Fallback to CLIENT_DATA honours
-    let fallback = (CLIENT_DATA as any).honours || [];
-    if (awardType) {
-      fallback = fallback.filter((h: any) => h.awardType === awardType);
-    }
-
-    const res = NextResponse.json({ success: true, honours: fallback, masters: fallback });
+    const res = NextResponse.json({ success: true, honours, masters: honours });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');
     res.headers.set('Expires', '0');
     return res;
-  } catch {
-    const res = NextResponse.json({ success: true, honours: (CLIENT_DATA as any).honours || [], masters: (CLIENT_DATA as any).honours || [] });
-    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-    res.headers.set('Pragma', 'no-cache');
-    res.headers.set('Expires', '0');
-    return res;
+  } catch (error) {
+    console.error('Failed to load honours:', error);
+    return NextResponse.json(
+      { success: false, error: 'The honours directory is temporarily unavailable.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 }

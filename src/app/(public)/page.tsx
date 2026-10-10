@@ -294,7 +294,10 @@ export default function HomePage() {
 
     // E. Honours & Masters from Admin (mapped accurately to prevent blank badges and duplicate Taktsang photos)
     fetch('/api/honours', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Honours directory unavailable');
+        return r.json();
+      })
       .then((d) => {
         if (d?.masters && d.masters.length > 0) {
           const formattedMasters = d.masters
@@ -317,7 +320,7 @@ export default function HomePage() {
           setMasters(formattedMasters);
         }
       })
-      .catch(() => {});
+      .catch(() => setMasters([]));
 
     // F. Programmes from Admin (ONLY 1 row = 3 cards)
     fetch('/api/programmes', { cache: 'no-store' })
@@ -1287,17 +1290,6 @@ export default function HomePage() {
                   </p>
                 )}
               </div>
-            </div>
-            <div className="newsaside__block newsaside__block--dark">
-              <h3 className="newsaside__title newsaside__title--light">{isDz ? 'སྙན་ཞུ་དང་དཔེ་སྐྲུན' : 'Reports & publications'}</h3>
-              <p className="newsaside__body">
-                {isDz
-                  ? 'ལོ་བསྟར་སྙན་ཞུ་དང་ རྩིས་ཞིབ་སྙན་ཞུ་ དེ་ལས་ ཟོ་རིག་བཅུ་གསུམ་གྱི་ དཔེ་དེབ་ཚུ་ རིན་མེད་ཕབ་ལེན་འབད།'
-                  : 'Annual reports, audited accounts, sector studies and the Zorig Chusum catalogue — free to download.'}
-              </p>
-              <Link className="link-brass" href="/publications">
-                {isDz ? 'སྙན་ཞུ་ཆ་མཉམ་གཟིགས' : 'Browse all reports'}
-              </Link>
             </div>
           </aside>
         </div>
