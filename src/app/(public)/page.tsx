@@ -127,7 +127,6 @@ export default function HomePage() {
     homepageSectionOrder: DEFAULT_HOMEPAGE_SECTION_ORDER,
   });
 
-  const [products, setProducts] = useState<any[]>([]);
   const [productsState, setProductsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [allProductsPool, setAllProductsPool] = useState<any[]>([]);
@@ -136,7 +135,6 @@ export default function HomePage() {
   const [allOutletsPool, setAllOutletsPool] = useState<any[]>([]);
   const [outletOffset, setOutletOffset] = useState(0);
 
-  const [outlets, setOutlets] = useState<any[]>([]);
   const [outletsState, setOutletsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [clusters, setClusters] = useState<any[]>([]);
   const [clustersState, setClustersState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -152,7 +150,7 @@ export default function HomePage() {
       res.push(pool[(productOffset + i) % pool.length]);
     }
     return res;
-  }, [allProductsPool, productOffset, products, siteSettings.shopProductCodes]);
+  }, [allProductsPool, productOffset, siteSettings.shopProductCodes]);
 
   const displayedOutlets = React.useMemo(() => {
     const pool = allOutletsPool;
@@ -163,41 +161,19 @@ export default function HomePage() {
       res.push(pool[(outletOffset + i) % pool.length]);
     }
     return res;
-  }, [allOutletsPool, outletOffset, outlets]);
+  }, [allOutletsPool, outletOffset]);
 
   const [masters, setMasters] = useState<any[]>([]);
 
-  const [supportPillars, setSupportPillars] = useState<any[]>([
-    { key: 'grassroots', letter: 'leaf', title: 'Grassroots Benefit', line: 'Keeps rural creators trading through the lean season.', body: 'Every ngultrum stays in the sector. Your gift funds vital market access, export logistics, and fair-price advocacy that keeps rural enterprises viable.' },
-    { key: 'impact', letter: '', title: 'Impact Crowdfunding & Enterprise', line: 'Buys the raw materials an artisan cannot afford upfront.', body: 'Artisans lose orders due to upfront material costs. This revolving fund buys their supplies; they repay upon sale, cycling your money continuously to the next entrepreneur.' },
-    { key: 'cultural', letter: '', title: 'Vital Cultural Preservation', line: 'Funds critical master-to-apprentice placements.', body: 'Several of Bhutan’s traditional crafts face critical decline. Paid apprenticeships are the only way youth can afford to learn and save these sacred arts.' },
-    { key: 'environment', letter: '', title: 'Environmental & Landscape Conservation', line: 'Replants the natural materials our crafts grow from.', body: 'Craft demand can outrun forest regrowth. We fund local artisan clusters to manage ecological replanting, ensuring both the heritage and our hillsides thrive.' },
-  ]);
+  const [supportPillars, setSupportPillars] = useState<any[]>([]);
+  const [supportPillarsState, setSupportPillarsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [craftsList, setCraftsList] = useState<any[]>([]);
   const [craftsState, setCraftsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [punakhaOutlet, setPunakhaOutlet] = useState<any>(null);
 
-  const [programmes, setProgrammes] = useState<any[]>([
-    {
-      ref: 'a',
-      title: 'Sector Representation and Advocacy',
-      description: 'Represent and advance the collective interests of all handicrafts sector stakeholders before governmental, legislative and private sector bodies.',
-      url: '/programmes/a',
-    },
-    {
-      ref: 'b',
-      title: 'Policy Development and Intervention',
-      description: 'Engage with competent authorities on policies, laws, regulations and incentive frameworks affecting the craft sector in Bhutan.',
-      url: '/programmes/b',
-    },
-    {
-      ref: 'c',
-      title: 'Trade Facilitation',
-      description: 'Facilitate domestic and international trade through trade infrastructure, standards compliance, market linkages and export facilitation.',
-      url: '/programmes/c',
-    },
-  ]);
+  const [programmes, setProgrammes] = useState<any[]>([]);
+  const [programmesState, setProgrammesState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [news, setNews] = useState<any[]>([]);
   const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -205,40 +181,8 @@ export default function HomePage() {
   const [events, setEvents] = useState<any[]>([]);
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
-  const [publications, setPublications] = useState<any[]>([
-    {
-      id: 'pub-01',
-      kind: 'Latest · Annual report',
-      title: 'Annual Report 2025',
-      meta: 'PDF · 4.2 MB · English & Dzongkha',
-      file_url: '/publications',
-      isFeatured: true,
-    },
-    {
-      id: 'pub-02',
-      kind: 'Strategy',
-      title: 'Five-Year Strategic Plan 2026–2030',
-      meta: 'PDF · 3.6 MB · Board approved',
-      file_url: '/publications',
-      isFeatured: true,
-    },
-    {
-      id: 'pub-03',
-      kind: 'Sector study',
-      title: 'Zorig Chusum Value Chain Assessment',
-      meta: 'PDF · 2.8 MB · 96 pages',
-      file_url: '/publications',
-      isFeatured: true,
-    },
-    {
-      id: 'pub-04',
-      kind: 'Accounts',
-      title: 'Audited Financial Statements 2025',
-      meta: 'PDF · 1.1 MB · Independent auditor',
-      file_url: '/publications',
-      isFeatured: true,
-    },
-  ]);
+  const [publications, setPublications] = useState<any[]>([]);
+  const [publicationsState, setPublicationsState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
   const [liveEditorOpen, setLiveEditorOpen] = useState(false);
@@ -342,7 +286,6 @@ export default function HomePage() {
             image_path: p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg',
           }));
         setAllProductsPool(mappedProducts);
-        setProducts(mappedProducts.slice(0, 8));
         setProductsState('ready');
       })
       .catch(() => setProductsState('error'));
@@ -360,7 +303,6 @@ export default function HomePage() {
           image_path: outlet.imageUrl || '/assets/photos/image-unavailable.svg',
         }));
         setAllOutletsPool(mappedOutlets);
-        setOutlets(mappedOutlets);
         setPunakhaOutlet(mappedOutlets.find((outlet: any) => outlet.key === 'punakha-market') || null);
         setOutletsState('ready');
       })
@@ -412,19 +354,22 @@ export default function HomePage() {
 
     // F. Programmes from Admin (ONLY 1 row = 3 cards)
     fetch('/api/programmes', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Programmes unavailable');
+        return r.json();
+      })
       .then((d) => {
-        if (d?.pillars && d.pillars.length > 0) {
-          const mappedProgrammes = d.pillars.slice(0, 3).map((p: any) => ({
+        if (!d?.success || !Array.isArray(d.pillars)) throw new Error('Programmes unavailable');
+        const mappedProgrammes = d.pillars.slice(0, 3).map((p: any) => ({
             ref: p.ref || 'a',
             title: p.title,
             description: p.description,
             url: `/programmes/${p.ref || 'a'}`,
           }));
-          setProgrammes(mappedProgrammes);
-        }
+        setProgrammes(mappedProgrammes);
+        setProgrammesState('ready');
       })
-      .catch(() => {});
+      .catch(() => setProgrammesState('error'));
 
     // G. News from Admin
     fetch('/api/news', { cache: 'no-store' })
@@ -484,25 +429,22 @@ export default function HomePage() {
     // I. Publications from Admin
     const loadPublications = () => {
       fetch('/api/publications?featured=true', { cache: 'no-store' })
-        .then((r) => r.json())
-        .then((d) => {
-          if (d?.publications && Array.isArray(d.publications) && d.publications.length > 0) {
-            const featured = d.publications.filter((p: any) => p.isFeatured !== false);
-            const mapped = featured.slice(0, 4).map((p: any, idx: number) => {
-              const rawKind = (p.kind || 'Annual report').replace(/^Latest\s*·\s*/i, '');
-              return {
-                ...p,
-                kind: idx === 0 ? `Latest · ${rawKind}` : rawKind,
-                meta: p.metaDetails || p.meta || 'PDF · 4.2 MB · English & Dzongkha',
-                file_url: p.fileUrl || p.file_url || '/publications',
-              };
-            });
-            if (mapped.length > 0) {
-              setPublications(mapped);
-            }
-          }
+        .then((r) => {
+          if (!r.ok) throw new Error('Publications unavailable');
+          return r.json();
         })
-        .catch(() => {});
+        .then((d) => {
+          if (!d?.success || !Array.isArray(d.publications)) throw new Error('Publications unavailable');
+          const mapped = d.publications.filter((p: any) => p.isFeatured !== false).slice(0, 4).map((p: any) => ({
+            ...p,
+            kind: p.kind || 'Publication',
+            meta: p.metaDetails || p.meta || '',
+            file_url: p.fileUrl || p.file_url || '',
+          }));
+          setPublications(mapped);
+          setPublicationsState('ready');
+        })
+        .catch(() => setPublicationsState('error'));
     };
     loadPublications();
 
@@ -521,10 +463,13 @@ export default function HomePage() {
 
     // K. Support Pillars from Admin
     fetch('/api/support-pillars', { cache: 'no-store' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Support information unavailable');
+        return r.json();
+      })
       .then((d) => {
-        if (d?.pillars && d.pillars.length > 0) {
-          const mapped = d.pillars.map((p: any) => {
+        if (!d?.success || !Array.isArray(d.pillars)) throw new Error('Support information unavailable');
+        const mapped = d.pillars.map((p: any) => {
             const isGrassroots = p.key === 'grassroots';
             const description = p.description || p.body || '';
             const line = p.tagline || p.line || (description ? `${description.split('.')[0]}.` : '');
@@ -536,10 +481,10 @@ export default function HomePage() {
               body: removeRepeatedLead(line, description),
             };
           });
-          setSupportPillars(mapped);
-        }
+        setSupportPillars(mapped);
+        setSupportPillarsState('ready');
       })
-      .catch(() => {});
+      .catch(() => setSupportPillarsState('error'));
 
     // Listen for live updates broadcast from admin studios
     window.addEventListener('hab:hero-slides-updated', loadHeroSlides);
@@ -566,20 +511,20 @@ export default function HomePage() {
 
   // 5-second continuous auto-rotation for Shop Products
   useEffect(() => {
-    const pool = allProductsPool;
-    if (pool.length <= 1) return;
+    const poolLength = allProductsPool.length;
+    if (poolLength <= 1) return;
     const t = setInterval(() => {
-      setProductOffset((prev) => (prev + 1) % pool.length);
+      setProductOffset((prev) => (prev + 1) % poolLength);
     }, 5000);
     return () => clearInterval(t);
   }, [allProductsPool.length]);
 
   // 5-second continuous auto-rotation for Outlets
   useEffect(() => {
-    const pool = allOutletsPool;
-    if (pool.length <= 1) return;
+    const poolLength = allOutletsPool.length;
+    if (poolLength <= 1) return;
     const t = setInterval(() => {
-      setOutletOffset((prev) => (prev + 1) % pool.length);
+      setOutletOffset((prev) => (prev + 1) % poolLength);
     }, 5000);
     return () => clearInterval(t);
   }, [allOutletsPool.length]);
@@ -1007,7 +952,7 @@ export default function HomePage() {
               </div>
             </Link>
           ))}
-          {outlets.length === 0 && <p className="section__lede" role={outletsState === 'error' ? 'alert' : 'status'}>
+          {allOutletsPool.length === 0 && <p className="section__lede" role={outletsState === 'error' ? 'alert' : 'status'}>
             {outletsState === 'loading' ? 'Loading outlet directory…' : outletsState === 'error' ? 'Outlets are temporarily unavailable.' : 'No outlets have been published yet.'}
           </p>}
         </div>
@@ -1176,6 +1121,9 @@ export default function HomePage() {
               </Link>
             </article>
           ))}
+          {programmes.length === 0 && <p className="section__lede" role={programmesState === 'error' ? 'alert' : 'status'}>
+            {programmesState === 'loading' ? 'Loading programmes…' : programmesState === 'error' ? 'Programmes are temporarily unavailable.' : 'No active programmes have been published yet.'}
+          </p>}
         </div>
       </section>
     ),
@@ -1227,6 +1175,9 @@ export default function HomePage() {
               </article>
             );
           })}
+          {supportPillars.length === 0 && <p className="section__lede" role={supportPillarsState === 'error' ? 'alert' : 'status'}>
+            {supportPillarsState === 'loading' ? 'Loading support information…' : supportPillarsState === 'error' ? 'Support information is temporarily unavailable.' : 'No support options have been published yet.'}
+          </p>}
         </div>
       </section>
     ),
@@ -1403,19 +1354,20 @@ export default function HomePage() {
             </div>
             <div className="grid grid--2">
               {publications.slice(0, 4).map((pb, idx) => {
-                const metaText = pb.metaDetails || pb.meta || 'PDF · 4.2 MB · English & Dzongkha';
-                const fileLink = pb.fileUrl || pb.file_url || '/publications';
-                const rawKind = (pb.kind || (idx === 0 ? 'Annual report' : 'Strategy')).replace(/^Latest\s*·\s*/i, '');
-                const kindText = idx === 0 ? `Latest · ${rawKind}` : rawKind;
-                const displayMeta = metaText.endsWith('↓') ? metaText : `${metaText} ↓`;
+                const metaText = pb.metaDetails || pb.meta || '';
+                const fileLink = pb.fileUrl || pb.file_url;
+                const kindText = (pb.kind || 'Publication').replace(/^Latest\s*·\s*/i, '');
                 return (
-                  <Link key={pb.id || idx} className="card pub" href={fileLink}>
+                  <Link key={pb.id || idx} className="card pub" href={fileLink || '/publications'}>
                     <span className="eyebrow eyebrow--accent eyebrow--sm">{kindText}</span>
                     <span className="pub__title clamp-3">{pb.title}</span>
-                    <span className="pub__meta">{displayMeta}</span>
+                    {metaText && <span className="pub__meta">{metaText}{fileLink ? ' ↓' : ''}</span>}
                   </Link>
                 );
               })}
+              {publications.length === 0 && <p className="section__lede" role={publicationsState === 'error' ? 'alert' : 'status'}>
+                {publicationsState === 'loading' ? 'Loading publications…' : publicationsState === 'error' ? 'Publications are temporarily unavailable.' : 'No featured publications are available yet.'}
+              </p>}
             </div>
           </div>
         </div>

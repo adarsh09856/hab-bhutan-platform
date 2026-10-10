@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { CLIENT_DATA } from '@/lib/client-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,13 +19,9 @@ export async function GET(req: NextRequest) {
 
     if (key) {
       const pillar = await prisma.supportPillar.findUnique({
-        where: { key },
+        where: { key, isActive: true },
       });
-      if (pillar) {
-        return NextResponse.json({ success: true, pillar: sanitizePillar(pillar) });
-      }
-      const fallback = (CLIENT_DATA as any).supportPillars?.find((p: any) => p.key === key);
-      return NextResponse.json({ success: true, pillar: fallback ? sanitizePillar(fallback) : null });
+      return NextResponse.json({ success: true, pillar: pillar ? sanitizePillar(pillar) : null });
     }
 
     const pillars = await prisma.supportPillar.findMany({
@@ -34,18 +29,8 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
 
-    if (pillars.length > 0) {
-      return NextResponse.json({ success: true, pillars: pillars.map(sanitizePillar) });
-    }
-
-    const fallbackList = ((CLIENT_DATA as any).supportPillars || []).map(sanitizePillar);
-    return NextResponse.json({ success: true, pillars: fallbackList });
+    return NextResponse.json({ success: true, pillars: pillars.map(sanitizePillar) });
   } catch {
-    const fallbackList = ((CLIENT_DATA as any).supportPillars || []).map((p: any) => ({
-      ...p,
-      iconEmoji: p.key === 'grassroots' ? 'leaf' : '',
-      letter: p.key === 'grassroots' ? 'leaf' : '',
-    }));
-    return NextResponse.json({ success: true, pillars: fallbackList });
+    return NextResponse.json({ success: false, error: 'Support information is temporarily unavailable.', pillars: [] }, { status: 503 });
   }
 }
