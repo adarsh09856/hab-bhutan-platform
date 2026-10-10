@@ -4,7 +4,7 @@ export function applyQuickEditImage(
   src: string,
 ) {
   if (!src) return;
-  image.removeAttribute('srcset');
-  image.removeAttribute('sizes');
+  if (image.getAttribute('srcset') !== null) image.removeAttribute('srcset');
+  if (image.getAttribute('sizes') !== null) image.removeAttribute('sizes');
   if (image.getAttribute('src') !== src) image.setAttribute('src', src);
 }

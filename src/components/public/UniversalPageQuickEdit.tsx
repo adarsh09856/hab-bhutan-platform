@@ -63,12 +63,12 @@ function editableTextNodes(element: HTMLElement): Text[] {
   });
   const nodes: Text[] = [];
   while (walker.nextNode()) nodes.push(walker.currentNode as Text);
-  return nodes.filter((node) => node.parentElement === element && node.textContent?.trim());
+  return nodes.filter((node) => node.textContent?.trim());
 }
 
 function setVisibleText(element: HTMLElement, text: string) {
   const nodes = editableTextNodes(element);
-  const first = nodes.find((node) => node.textContent?.trim());
+  const first = nodes.find((node) => node.parentElement === element) || nodes[0];
   if (!first) {
     return;
   }
@@ -194,7 +194,13 @@ export default function UniversalPageQuickEdit() {
     const shell = document.body;
     if (!shell) return;
     const observer = new MutationObserver(() => applyOverrides(overridesRef.current));
-    observer.observe(shell, { childList: true, subtree: true });
+    observer.observe(shell, {
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['src', 'srcset', 'sizes', 'alt', 'href', 'placeholder'],
+      subtree: true,
+    });
     return () => observer.disconnect();
   }, [applyOverrides, pathname]);
 
