@@ -84,6 +84,7 @@ export default function UniversalPageQuickEdit() {
   const [active, setActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
+  const [sectionManagement, setSectionManagement] = useState<{ label: string; href: string } | null>(null);
   const [draft, setDraft] = useState<Override>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -143,7 +144,7 @@ export default function UniversalPageQuickEdit() {
     const handleToggle = (event: Event) => {
       const enabled = Boolean((event as CustomEvent).detail?.active);
       setActive(enabled);
-      if (!enabled) setSelected(null);
+      if (!enabled) { setSelected(null); setSectionManagement(null); }
     };
     window.addEventListener('hab:visual-edit-toggled', handleToggle);
     setActive(document.body.classList.contains('hab-visual-edit-on'));
@@ -151,13 +152,13 @@ export default function UniversalPageQuickEdit() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selected && !sectionManagement) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelected(null);
+      if (event.key === 'Escape') { setSelected(null); setSectionManagement(null); }
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [selected]);
+  }, [selected, sectionManagement]);
 
   useEffect(() => {
     if (!active || !isStaff) return;
@@ -174,6 +175,19 @@ export default function UniversalPageQuickEdit() {
       const target = clicked?.closest<HTMLElement>(EDITABLE_SELECTOR);
       if (!target || !shell.contains(target) || target.closest(EXCLUDED_SELECTOR)) {
         setSelected(null);
+        setSectionManagement(null);
+        if (clicked && !clicked.closest('a,button,input,textarea,select,[role="button"],[data-hab-no-quick-edit],.hab-section-edit-badge')) {
+          const section = clicked.closest<HTMLElement>('[data-hab-section]');
+          const adminLink = section?.querySelector<HTMLAnchorElement>('.hab-section-edit-badge a[href]');
+          if (section && adminLink) {
+            event.preventDefault();
+            event.stopPropagation();
+            setSectionManagement({
+              label: adminLink.textContent?.replace(/\s+/g, ' ').trim() || 'Manage this section',
+              href: adminLink.href,
+            });
+          }
+        }
         return;
       }
       const isTextOrMedia = target instanceof HTMLImageElement || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || editableTextNodes(target).length > 0;
@@ -184,6 +198,7 @@ export default function UniversalPageQuickEdit() {
       event.preventDefault();
       event.stopPropagation();
       setSelected(target);
+      setSectionManagement(null);
       setMessage('');
       setNewSlideUrl('');
       setNewSlideCaption('');
@@ -340,6 +355,16 @@ export default function UniversalPageQuickEdit() {
   const link = Boolean(selected?.closest('a'));
 
   return <>
+    {sectionManagement && createPortal(
+      <aside role="dialog" aria-modal="false" aria-label="Manage selected page section" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(320px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
+        <div className="flex items-center justify-between gap-3">
+          <strong className="text-sm">Empty section</strong>
+          <button type="button" onClick={() => setSectionManagement(null)} aria-label="Close section editor" className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"><X className="w-4 h-4" /><span>Close</span></button>
+        </div>
+        <p className="mt-2 text-xs text-slate-600">Use the existing section manager to add or manage this section’s content.</p>
+        <a href={sectionManagement.href} className="mt-3 inline-flex rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white">{sectionManagement.label}</a>
+      </aside>, document.body,
+    )}
     {selected && createPortal(
     <aside role="dialog" aria-modal="false" aria-label="Edit selected page content" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
       <div className="flex items-center justify-between gap-3 mb-3">
