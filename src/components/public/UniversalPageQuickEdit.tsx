@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { ImagePlus, Link2, Plus, RotateCcw, Save, X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isEditableInlineTextPath, joinEditableText } from '@/lib/quick-edit-text';
-import { applyQuickEditImage } from '@/lib/quick-edit-image';
+import { applyQuickEditImage, normalizeQuickEditImageSource } from '@/lib/quick-edit-image';
 
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
@@ -190,7 +190,7 @@ export default function UniversalPageQuickEdit() {
       setNewSlideAlt('');
       const saved = overridesRef.current[elementKey(target, shell)];
       setDraft(target instanceof HTMLImageElement
-        ? { ...(saved || {}), src: saved?.src || target.currentSrc || target.src, alt: saved?.alt ?? target.alt, href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) }
+        ? { ...(saved || {}), src: saved?.src || normalizeQuickEditImageSource(target.getAttribute('src') || target.currentSrc || target.src, window.location.href), alt: saved?.alt ?? target.alt, href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) }
         : target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
           ? { ...(saved || {}), placeholder: saved?.placeholder ?? target.placeholder }
           : { ...(saved || {}), text: saved?.text ?? joinEditableText(editableTextNodes(target)), href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) });

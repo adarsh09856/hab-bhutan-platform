@@ -232,12 +232,10 @@ export default async function MembersPage() {
             };
             const imgSrc = m.image_path || '';
             const hasPortrait = Boolean(imgSrc) && !isPlaceholderPortrait(imgSrc);
-            const initials = m.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 
             return (
               <article key={m.name} className="card honour">
-                <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-                  {hasPortrait ? (
+                {hasPortrait && <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={imgSrc}
                       alt={`Portrait of ${m.name}`}
@@ -245,13 +243,7 @@ export default async function MembersPage() {
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}
                     />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#e8dfd0] text-[#6d5949]" role="img" aria-label={`Portrait pending for ${m.name}`}>
-                      <span className="text-4xl font-semibold tracking-wide">{initials}</span>
-                      <span className="text-xs font-medium">Portrait to be supplied</span>
-                    </div>
-                  )}
-                </figure>
+                </figure>}
                 <div className="card__body">
                   <span className="honour__badge">{m.honour}</span>
                   <h3 className="card__title">

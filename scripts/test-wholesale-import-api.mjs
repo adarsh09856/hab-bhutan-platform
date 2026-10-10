@@ -10,18 +10,12 @@ const baseUrl = process.env.WHOLESALE_IMPORT_TEST_URL || 'http://127.0.0.1:3033'
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const freshEmail = `wholesale-import-${suffix}@example.invalid`;
 const existingEmail = `wholesale-existing-${suffix}@example.invalid`;
+const fallbackFile = path.join(process.cwd(), '.data', 'wholesale-buyers.json');
+const hadFallbackFile = fs.existsSync(fallbackFile);
+const originalFallbackBytes = hadFallbackFile ? fs.readFileSync(fallbackFile) : null;
 let user;
 let seededDuplicate;
 const createdBuyerIds = [];
-
-function cleanFallbackRows() {
-  const file = path.join(process.cwd(), '.data', 'wholesale-buyers.json');
-  if (!fs.existsSync(file)) return;
-  const rows = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (!Array.isArray(rows)) return;
-  const filtered = rows.filter((row) => ![freshEmail, existingEmail].includes(String(row?.email || '').toLowerCase()));
-  if (filtered.length !== rows.length) fs.writeFileSync(file, JSON.stringify(filtered, null, 2), 'utf8');
-}
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -53,10 +47,10 @@ async function run() {
       .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
     const rows = [
-      { _sourceRowNumber: 2, companyName: `Temporary buyer ${suffix}`, contactName: 'Local Test', email: freshEmail, country: 'Bhutan', discountTier: 20, status: 'PENDING' },
-      { _sourceRowNumber: 7, companyName: 'Duplicate existing', contactName: 'Existing', email: existingEmail },
-      { _sourceRowNumber: 11, companyName: 'Duplicate in file', contactName: 'Again', email: freshEmail },
-      { _sourceRowNumber: 18, companyName: 'Invalid email', contactName: 'No email', email: 'bad-email' },
+      { _sourceRowNumber: 2, companyName: `Temporary buyer ${suffix}`, contactName: 'Local Test', email: freshEmail, username: `fresh_${suffix.replace(/\W/g, '').slice(-12)}`, country: 'Bhutan', discountTier: 20, status: 'PENDING' },
+      { _sourceRowNumber: 7, companyName: 'Duplicate existing', contactName: 'Existing', email: existingEmail, username: `existing_${suffix.replace(/\W/g, '').slice(-12)}` },
+      { _sourceRowNumber: 11, companyName: 'Duplicate in file', contactName: 'Again', email: freshEmail, username: `repeat_${suffix.replace(/\W/g, '').slice(-12)}` },
+      { _sourceRowNumber: 18, companyName: 'Invalid email', contactName: 'No email', email: 'bad-email', username: `invalid_${suffix.replace(/\W/g, '').slice(-12)}` },
     ];
     const requestImport = async (payload) => {
       const response = await fetch(`${baseUrl}/api/admin/wholesale/import`, {
@@ -84,7 +78,10 @@ async function run() {
   } finally {
     await prisma.wholesaleBuyer.deleteMany({ where: { OR: [{ id: { in: createdBuyerIds } }, { email: { equals: freshEmail, mode: 'insensitive' } }] } });
     if (seededDuplicate) await prisma.wholesaleBuyer.deleteMany({ where: { id: seededDuplicate.id } });
-    cleanFallbackRows();
+    // The local API also writes its JSON fallback. Restore its exact bytes so
+    // this DB/API test cannot reformat or leave anything in the user's .data.
+    if (hadFallbackFile) fs.writeFileSync(fallbackFile, originalFallbackBytes);
+    else if (fs.existsSync(fallbackFile)) fs.rmSync(fallbackFile);
     if (user) {
       await prisma.auditLog.deleteMany({ where: { actorId: user.id } }).catch(() => {});
       await prisma.user.deleteMany({ where: { id: user.id } });

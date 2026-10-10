@@ -570,18 +570,23 @@ await runTest('User Accounts: Bcrypt password hashing & self-deactivation guard'
 let adminCookie = '';
 async function getAdminSessionCookie() {
   if (adminCookie) return adminCookie;
+  let adminEmail = process.env.ADMIN_EMAIL || '';
   let adminPassword = process.env.ADMIN_INITIAL_PASSWORD || process.env.ADMIN_TEST_PASSWORD || '';
-  if (!adminPassword && fs.existsSync('.admin_credentials.local')) {
-    const content = fs.readFileSync('.admin_credentials.local', 'utf8');
-    const match = content.match(/ADMIN_PASSWORD=(.+)/);
-    if (match) adminPassword = match[1].trim();
+  const credentialFile = process.env.ADMIN_CREDENTIALS_FILE || 'server-credentials.env';
+  if ((!adminEmail || !adminPassword) && fs.existsSync(credentialFile)) {
+    const content = fs.readFileSync(credentialFile, 'utf-8');
+    const emailMatch = content.match(/ADMIN_EMAIL=(.+)/);
+    const passwordMatch = content.match(/ADMIN_PASSWORD=(.+)/);
+    if (emailMatch) adminEmail = emailMatch[1].trim();
+    if (passwordMatch) adminPassword = passwordMatch[1].trim();
   }
+  if (!adminEmail || !adminPassword) throw new Error('Configure ADMIN_EMAIL and ADMIN_INITIAL_PASSWORD or ADMIN_CREDENTIALS_FILE before database-backed runtime tests.');
 
   const res = await fetch('http://localhost:3000/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-bypass-rate-limit': 'true' },
     body: JSON.stringify({
-      email: 'admin@handicraftsbhutan.org',
+      email: adminEmail,
       password: adminPassword,
       targetPortal: 'admin',
     }),
@@ -1844,13 +1849,14 @@ await runTest('Phase 4: Member application approval provisions secure onboarding
     assert.equal(detailsStr.includes(approveData.tempCredentials.temporaryPassword), false, 'Plaintext password must NEVER exist in AuditLog');
   }
 
-  // Member uses activation link to set initial permanent password directly
+  // Member uses activation link to set an ephemeral initial password directly.
+  const permanentPassword = `${crypto.randomBytes(24).toString('base64url')}Aa1!`;
   const setPassRes = await fetch('http://localhost:3000/api/auth/reset-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       token: approveData.activation.activationToken,
-      newPassword: 'Artisan_Permanent#2026!',
+      newPassword: permanentPassword,
     }),
   });
   assert.equal(setPassRes.status, 200, 'Member setting initial password via activation token must succeed');
@@ -1861,7 +1867,7 @@ await runTest('Phase 4: Member application approval provisions secure onboarding
     headers: { 'Content-Type': 'application/json', 'x-bypass-rate-limit': 'true' },
     body: JSON.stringify({
       email: applicantEmail,
-      password: 'Artisan_Permanent#2026!',
+      password: permanentPassword,
       targetPortal: 'member',
     }),
   });

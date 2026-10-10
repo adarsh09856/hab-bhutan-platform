@@ -304,18 +304,15 @@ export default function MastersPage() {
 
             return (
               <article key={i} className="card honour">
-                <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-                  {hasPortrait ? <Image
+                {hasPortrait && <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+                  <Image
                     src={imgSrc}
                     alt={`${m.name}, ${craft.name}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     style={{ objectFit: 'cover' }}
-                  /> : <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#e8dfd0] text-[#6d5949]" role="img" aria-label={`Portrait pending for ${m.name}`}>
-                    <span className="text-4xl font-semibold">{m.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part: string) => part[0]).join('').toUpperCase()}</span>
-                    <span className="text-xs">Portrait to be supplied</span>
-                  </div>}
-                </figure>
+                  />
+                </figure>}
                 <div className="card__body">
                   <span className="honour__badge">{m.honour}</span>
                   <h3 className="card__title">{m.name}</h3>

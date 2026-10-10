@@ -136,7 +136,9 @@ async function run() {
   // =========================================================================
   try {
     logModuleStart(1, 'Products & Inventory Catalog');
-    const testSku = `SKU-TEST-${Date.now().toString().slice(-5)}`;
+    // Public catalogue deliberately hides SKU-TEST-* fixtures, so use a
+    // distinct verification SKU to exercise the real Admin-to-public path.
+    const testSku = `CRUDCHK-${Date.now().toString().slice(-5)}`;
     
     // 1. Create
     console.log(`  1. Creating product '${testSku}' in admin catalog...`);
@@ -145,13 +147,13 @@ async function run() {
       headers: adminHeaders,
     }, {
       code: testSku,
-      name: 'Automated Test Kishuthara Textile',
+      name: 'Catalogue Sync Verification Textile',
       priceUSD: 185,
       craftKey: 'thagzo',
       region: 'Lhuentse',
       stock: 12,
       status: 'PUBLISHED',
-      description: 'Masterwork test silk textile for automated verification.',
+      description: 'Isolated catalogue sync verification fixture.',
     });
     assert(createRes.statusCode === 201 || createRes.statusCode === 200, `Create product returned ${createRes.statusCode}: ${createRes.data}`);
     console.log(`    ✓ Product '${testSku}' created successfully in PostgreSQL.`);
@@ -170,7 +172,7 @@ async function run() {
       headers: adminHeaders,
     }, {
       code: testSku,
-      name: 'Automated Test Kishuthara Textile (Premium)',
+      name: 'Catalogue Sync Verification Textile (Premium)',
       priceUSD: 210,
     });
     assert(updateRes.statusCode === 200, `Update product returned ${updateRes.statusCode}`);
@@ -444,7 +446,7 @@ async function run() {
       iconEmoji: '🏥',
       isActive: true,
     });
-    assert(createRes.statusCode === 200, `Create pillar returned ${createRes.statusCode}: ${createRes.data}`);
+    assert([200, 201].includes(createRes.statusCode), `Create pillar returned ${createRes.statusCode}: ${createRes.data}`);
     console.log(`    ✓ Pillar '${pillarKey}' created.`);
 
     // 2. Read Public Sync
@@ -611,34 +613,35 @@ async function run() {
     console.log('  1. Reading membership dues settings...');
     const readRes = await request(`${BASE_URL}/api/admin/membership-settings`, { headers: adminHeaders });
     assert(readRes.statusCode === 200, 'Failed to fetch membership settings');
-    const origBank = readRes.json?.setting?.bankName || 'Bank of Bhutan (BoB)';
+    const origDues = Number(readRes.json?.setting?.activeDuesBTN || 0);
 
     // 2. Update
-    const testBank = `Bank of Bhutan (BoB Main) - Verified ${Date.now().toString().slice(-4)}`;
-    console.log(`  2. Updating bank details to '${testBank}'...`);
+    const testDues = origDues + 17;
+    console.log(`  2. Updating active member dues to '${testDues}' BTN...`);
     const updateRes = await request(`${BASE_URL}/api/admin/membership-settings`, {
       method: 'PUT',
       headers: adminHeaders,
     }, {
-      bankName: testBank,
+      activeDuesBTN: testDues,
     });
     assert(updateRes.statusCode === 200, `Update membership settings returned ${updateRes.statusCode}`);
 
     // 3. Read Public Sync
     console.log('  3. Checking public /api/membership-settings...');
     const pubRes = await request(`${BASE_URL}/api/membership-settings`);
-    const currentBank = pubRes.json?.setting?.bankName || pubRes.json?.bankName;
-    assert(currentBank === testBank, `Public settings bank '${currentBank}' did not match '${testBank}'`);
-    console.log(`    ✓ Public membership settings reflects updated bank details.`);
+    const publicDues = Number(pubRes.json?.setting?.activeDuesBTN);
+    assert(publicDues === testDues, `Public settings active dues '${publicDues}' did not match '${testDues}'`);
+    assert(!Object.prototype.hasOwnProperty.call(pubRes.json?.setting || {}, 'bankName'), 'Public membership settings must not disclose bank account settings.');
+    console.log(`    ✓ Public membership settings reflects dues while keeping bank details private.`);
 
     // 4. Restore
     await request(`${BASE_URL}/api/admin/membership-settings`, {
       method: 'PUT',
       headers: adminHeaders,
     }, {
-      bankName: origBank,
+      activeDuesBTN: origDues,
     });
-    console.log(`    ✓ Restored original bank name.`);
+    console.log(`    ✓ Restored original active dues.`);
 
     stats.passed++;
     stats.modules.push({ module: 'Membership Dues Settings', status: 'PASSED' });
@@ -714,7 +717,9 @@ async function run() {
   // =========================================================================
   try {
     logModuleStart(11, 'Publications CMS');
-    const pubTitle = `HAB Annual Craft Sector Impact Report ${Date.now().toString().slice(-4)}`;
+    // The legacy generated-title pattern is intentionally hidden from public
+    // feeds because old versions of this suite left those rows in production.
+    const pubTitle = `HAB Verification Publication ${Date.now().toString().slice(-4)}`;
 
     // 1. Create
     console.log(`  1. Publishing new publication '${pubTitle}'...`);
@@ -1022,6 +1027,7 @@ async function run() {
     const readRes = await request(`${BASE_URL}/api/admin/site-settings`, { headers: adminHeaders });
     assert(readRes.statusCode === 200, 'Failed to fetch site settings');
     const origNotice = readRes.json?.setting?.announcementText || '';
+    const origAnnouncementOn = Boolean(readRes.json?.setting?.isAnnouncementOn);
 
     // 2. Update
     const testNotice = `HAB Verification Notice: Active Secretariat Monitoring (${Date.now().toString().slice(-4)})`;
@@ -1048,6 +1054,7 @@ async function run() {
       headers: adminHeaders,
     }, {
       announcementText: origNotice,
+      isAnnouncementOn: origAnnouncementOn,
     });
     console.log(`    ✓ Restored original site notice.`);
 
@@ -1083,12 +1090,14 @@ async function run() {
         country: 'Bhutan',
       },
       shippingMethod: 'ems',
+      currency: 'USD',
       paymentMethod: 'MBOB',
+      mBOBTransactionRef: `LOCAL-VERIFY-${Date.now()}`,
       items: [
         { code: 'DAP02', name: 'Handcrafted Bhutanese Bamboo Basket', priceUSD: 165, quantity: 1 },
       ],
     });
-    assert(orderRes.statusCode === 200 || orderRes.statusCode === 201, `Order placement returned ${orderRes.statusCode}`);
+    assert(orderRes.statusCode === 200 || orderRes.statusCode === 201, `Order placement returned ${orderRes.statusCode}: ${orderRes.data}`);
     const orderNumber = orderRes.json?.orderNumber || orderRes.json?.order?.orderNumber;
     assert(orderNumber, 'No orderNumber returned from checkout API');
     console.log(`    ✓ Public order placed. Order Number: '${orderNumber}'.`);
@@ -1098,11 +1107,23 @@ async function run() {
     const adminOrdersRes = await request(`${BASE_URL}/api/admin/orders`, { headers: adminHeaders });
     const foundInAdmin = adminOrdersRes.json?.orders?.find((o) => o.orderNumber === orderNumber);
     assert(foundInAdmin, `Order '${orderNumber}' did not appear in admin fulfillment queue!`);
+    assert(foundInAdmin.paymentStatus === 'PENDING', `New transfer order must remain pending until staff confirmation (received ${foundInAdmin.paymentStatus}).`);
+    assert(foundInAdmin.orderStatus === 'PENDING_PAYMENT', `New transfer order must remain awaiting payment (received ${foundInAdmin.orderStatus}).`);
     console.log(`    ✓ Order '${orderNumber}' found in admin panel (Status: ${foundInAdmin.orderStatus}).`);
 
     // 3. Admin Fulfillment & Tracking Number Assignment
     const trackingNum = `BP-EMS-${Date.now()}`;
     console.log(`  3. Admin dispatching order with tracking '${trackingNum}'...`);
+    const paidRes = await request(`${BASE_URL}/api/admin/orders`, {
+      method: 'PATCH',
+      headers: adminHeaders,
+    }, {
+      id: foundInAdmin.id,
+      paymentStatus: 'PAID',
+    });
+    assert(paidRes.statusCode === 200, `Manual payment confirmation returned ${paidRes.statusCode}`);
+    console.log('    ✓ Admin confirmed the submitted transfer reference in the isolated test database.');
+
     const dispatchRes = await request(`${BASE_URL}/api/admin/orders`, {
       method: 'PATCH',
       headers: adminHeaders,
@@ -1211,9 +1232,11 @@ async function run() {
       yearsPractising: 14,
       planTier: 'ACTIVE_SECTOR_MEMBER',
       paymentMethod: 'MBOB',
+      paymentRef: `LOCAL-VERIFY-${Date.now()}`,
+      uploadedDocUrl: '/uploads/local-verification-receipt.pdf',
     });
     assert(appRes.statusCode === 200 || appRes.statusCode === 201, `Application returned ${appRes.statusCode}: ${appRes.data}`);
-    const appId = appRes.json?.application?.id || appRes.json?.id;
+    const appId = appRes.json?.applicationId || appRes.json?.application?.id || appRes.json?.id;
     console.log(`    ✓ Application saved to database (ID: ${appId}).`);
 
     // 2. Admin Application Queue Verification

@@ -4,8 +4,8 @@ const fs = require('fs');
 
 const BASE_URL = process.env.TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
 
-let adminEmail = process.env.ADMIN_EMAIL || 'admin@handicraftsbhutan.org';
-let adminPassword = process.env.ADMIN_PASSWORD || 'HabAdminProduction2026!#';
+let adminEmail = process.env.ADMIN_EMAIL || '';
+let adminPassword = process.env.ADMIN_PASSWORD || '';
 if (fs.existsSync('.admin_credentials.local')) {
   try {
     const credContent = fs.readFileSync('.admin_credentials.local', 'utf-8');
@@ -14,6 +14,9 @@ if (fs.existsSync('.admin_credentials.local')) {
     if (mEmail) adminEmail = mEmail[1].trim();
     if (mPass) adminPassword = mPass[1].trim();
   } catch {}
+}
+if (!adminEmail || !adminPassword) {
+  throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD or provide them in .admin_credentials.local before running this suite.');
 }
 
 function request(url, options = {}, postData = null) {
