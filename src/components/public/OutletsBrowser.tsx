@@ -97,7 +97,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
               </div>
             </div>
 
-            <div style={{ height: 440, marginTop: 24 }}><OutletGallery image={featured.imageUrl} name={featured.name} /></div>
+            <div style={{ height: 440, marginTop: 24 }}><OutletGallery image={featured.imageUrl} galleryImages={featured.galleryImages} name={featured.name} /></div>
           </>
         )}
       </section>
