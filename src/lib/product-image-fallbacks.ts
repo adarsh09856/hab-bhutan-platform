@@ -13,7 +13,6 @@ const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
   hhb10: '/assets/photos/product-hhb10.jpg',
   lud01: '/assets/photos/product-lud01.jpg',
   cam01: '/assets/photos/product-cam01.jpg',
-  kis02: '/assets/photos/product-kis02.jpg',
   pho03: '/assets/photos/product-pho03.jpg',
   dez07: '/assets/photos/product-dez07.jpg',
   tro09: '/assets/photos/product-tro09.jpg',
@@ -24,8 +23,14 @@ const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
   gaki01: '/assets/photos/product-gaki.jpg',
 };
 
+// This bundled file depicts an unrelated person with a folder, not the
+// Kisuthara textile. Keep it on disk for review, but never present it as
+// product evidence. A genuine image uploaded in Admin remains eligible.
+const KNOWN_MISMATCHED_IMAGES = new Set(['/assets/photos/product-kis02.jpg']);
+
 function isUnusableImageUrl(url: unknown): boolean {
-  return typeof url !== 'string' || !url.trim() || /placeholder|parotaktshang/i.test(url);
+  return typeof url !== 'string' || !url.trim() || /placeholder|parotaktshang/i.test(url)
+    || KNOWN_MISMATCHED_IMAGES.has(url.trim().toLowerCase());
 }
 
 export function normalizeProductImages(code: string, craftKey: string, rawImages: unknown) {
@@ -41,9 +46,10 @@ export function normalizeProductImages(code: string, craftKey: string, rawImages
     return [{ ...record, url: record.url.trim(), role: String(record.role || 'gallery') }];
   });
   const expectedProductImage = KNOWN_PRODUCT_IMAGES[code.toLowerCase()];
-  const productPhotos = expectedProductImage
-    ? usable.filter((image) => !/^\/assets\/photos\/product-[^/]+\.jpg$/i.test(image.url) || image.url === expectedProductImage)
-    : usable;
+  const productPhotos = usable.filter((image) =>
+    !/^\/assets\/photos\/product-[^/]+\.jpg$/i.test(image.url)
+    || Boolean(expectedProductImage && image.url === expectedProductImage)
+  );
   const primary = productPhotos.find((image) => image.role.toLowerCase() === 'primary') || productPhotos[0];
   const images = primary
     ? [

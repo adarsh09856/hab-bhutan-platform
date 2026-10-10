@@ -20,7 +20,7 @@ assert.equal(uploaded.images[0].focalPoint, 'center');
 assert.ok(uploaded.images.every((image) => !image.url.toLowerCase().includes('placeholder')));
 
 const missingImage = normalizeProductImages('UNKNOWN-01', 'thagzo', []);
-assert.equal(missingImage.imageUrl, '/assets/photos/product-sad03.jpg');
+assert.equal(missingImage.imageUrl, '/assets/photos/image-unavailable.svg');
 
 const relatedWithLegacyPlaceholders = ['HHB01', 'SAD03', 'KIS02'].map((code) => ({
   code,
@@ -29,7 +29,7 @@ const relatedWithLegacyPlaceholders = ['HHB01', 'SAD03', 'KIS02'].map((code) => 
 assert.deepEqual(relatedWithLegacyPlaceholders.map((item) => item.imageUrl), [
   '/assets/photos/product-hhb01.jpg',
   '/assets/photos/product-sad03.jpg',
-  '/assets/photos/product-kis02.jpg',
+  '/assets/photos/image-unavailable.svg',
 ]);
 
 assert.equal(normalizeProductImages('LHA01', 'lhazo', [
@@ -37,7 +37,14 @@ assert.equal(normalizeProductImages('LHA01', 'lhazo', [
 ]).imageUrl, '/assets/photos/product-lha01.jpg');
 assert.equal(normalizeProductImages('KIS02', 'thagzo', [
   { url: '/assets/photos/product-cam01.jpg', role: 'primary' },
-]).imageUrl, '/assets/photos/product-kis02.jpg');
+]).imageUrl, '/assets/photos/image-unavailable.svg');
+assert.equal(normalizeProductImages('KIS02', 'thagzo', [
+  { url: '/assets/photos/product-kis02.jpg', role: 'primary' },
+]).imageUrl, '/assets/photos/image-unavailable.svg');
+assert.equal(normalizeProductImages('KIS02', 'thagzo', [
+  { url: '/assets/photos/product-kis02.jpg', role: 'primary' },
+  { url: '/uploads/verified-kisuthara-photo.jpg', role: 'gallery' },
+]).imageUrl, '/uploads/verified-kisuthara-photo.jpg');
 assert.equal(normalizeProductImages('PAR06', 'parzo', [
   { url: '/assets/photos/product-cam01.jpg', role: 'primary' },
   { url: '/uploads/member-photo.jpg', role: 'angle2' },
@@ -47,4 +54,4 @@ assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', statu
 assert.equal(isPublicCatalogProduct({ code: 'SKU-TEST-44899', name: 'Automated Test Kishuthara Textile', status: 'PUBLISHED' }), false);
 assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', status: 'DRAFT' }), false);
 
-console.log('PASS: legacy/cross-assigned static photos resolve to the correct product asset; member uploads and metadata are preserved; test/draft catalogue records stay out of public responses.');
+console.log('PASS: mismatched Kisuthara photo is suppressed, genuine uploads survive, missing images stay neutral, and test/draft catalogue records stay out of public responses.');
