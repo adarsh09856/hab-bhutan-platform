@@ -6,6 +6,7 @@ import { CLIENT_DATA } from '@/lib/client-data';
 import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 import { getWholesaleJwtSecret } from '@/lib/wholesale-auth-secret';
+import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,13 @@ export async function GET(request: NextRequest) {
     if (!buyer) return NextResponse.json({ success: false, error: 'Active approved wholesale account required.' }, { status: 403 });
     const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
     const products = await prisma.product.findMany({
-      where: { status: 'PUBLISHED' },
+      where: {
+        status: 'PUBLISHED',
+        AND: [
+          { NOT: { code: { startsWith: 'SKU-TEST-', mode: 'insensitive' } } },
+          { NOT: { name: { contains: 'Automated Test', mode: 'insensitive' } } },
+        ],
+      },
       include: { craft: true, maker: true, wholesaleTerms: true },
       orderBy: { code: 'asc' },
     });
@@ -41,11 +48,12 @@ export async function GET(request: NextRequest) {
 
     const mapped = products.map((p) => {
       const t = resolveWholesaleOffer(p.wholesaleTerms, (wholesaleTerms as any)[p.code]);
-      const img = (p.images as any)?.[0]?.url || '/assets/photos/product-sad03.jpg';
+      const normalizedImages = normalizeProductImages(p.code, p.craftKey, p.images);
       return {
         ...p,
-        image_path: img,
-        hero_image: img,
+        image_path: normalizedImages.imageUrl,
+        hero_image: normalizedImages.imageUrl,
+        images: normalizedImages.images,
         terms: t,
       };
     }).filter((p) => p.terms !== null);

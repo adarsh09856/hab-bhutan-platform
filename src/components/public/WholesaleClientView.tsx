@@ -10,6 +10,8 @@ import { CLIENT_DATA } from '@/lib/client-data';
 interface WholesaleClientViewProps {
   initialSettings: any;
   craftCounts: Record<string, number>;
+  crafts: Array<{ key: string; name: string; english: string }>;
+  unavailable: boolean;
   initialProducts: any[];
   flowSteps: Array<{ title: string; desc: string }>;
 }
@@ -17,6 +19,8 @@ interface WholesaleClientViewProps {
 export default function WholesaleClientView({
   initialSettings,
   craftCounts,
+  crafts,
+  unavailable,
   initialProducts,
   flowSteps,
 }: WholesaleClientViewProps) {
@@ -63,9 +67,7 @@ export default function WholesaleClientView({
                 'HAB supplies Bhutanese handicraft at trade terms to retailers, hotels, designers, institutions and distributors. You contract with the association; we manage the makers, the quality control and the shipping.'}
             </p>
             <p className="section__lede">
-              Trade prices, minimum order quantities (typical MOQ {settings?.wholesaleMoq || 10} units, lead time{' '}
-              {settings?.wholesaleLeadTime || '2 to 4 weeks'}) are shown to verified buyers only. Registration takes a
-              few minutes and is reviewed by the secretariat.
+              Product-specific trade prices, minimum order quantities and lead times are shown to verified buyers only. Registration is reviewed by the secretariat.
             </p>
           </div>
           <div className="panel panel--accent">
@@ -112,20 +114,21 @@ export default function WholesaleClientView({
             <p className="eyebrow eyebrow--accent">Zorig Chusum</p>
             <h2 className="display display--sub">Wholesale by craft category</h2>
             <p className="section__lede">
-              The same thirteen crafts and the same catalogue as the retail shop. Browse freely; trade terms appear once your account is verified.
+              Browse the available crafts and wholesale-enabled products. Trade terms appear once your account is verified.
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/shop">
             Retail shop →
           </Link>
         </div>
+        {unavailable && <p role="alert">The wholesale product catalogue is temporarily unavailable. Please try again shortly.</p>}
         <div className="countgrid">
-          {CLIENT_DATA.crafts.map((c, idx) => {
+          {crafts.map((c, idx) => {
             const count = craftCounts[c.key] || 0;
             return (
               <Link key={c.key} className="countcard" href={`/wholesale/shop?craft=${c.key}`}>
                 <span className="countcard__badge">
-                  {String(idx + 1).padStart(2, '0')}/13
+                  {String(idx + 1).padStart(2, '0')}/{crafts.length}
                 </span>
                 <div className="countcard__body">
                   <h3 className="countcard__title">{c.name}</h3>
@@ -133,7 +136,7 @@ export default function WholesaleClientView({
                 </div>
                 <div className="countcard__links">
                   <span className="countcard__link">
-                    {count > 0 ? 'View wholesale range →' : 'Made to commission →'}
+                    {count > 0 ? 'View wholesale range →' : 'Explore craft →'}
                   </span>
                 </div>
               </Link>
@@ -156,14 +159,15 @@ export default function WholesaleClientView({
             Unlock trade pricing →
           </Link>
         </div>
+        {!unavailable && initialProducts.length === 0 && <p>No products have approved wholesale terms yet.</p>}
         <div className="grid grid--4">
           {initialProducts.map((p) => {
-            const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
+            const craft = crafts.find((c) => c.key === p.craft_key);
             const imgSrc = p.image_path
               ? /^(https?:)?\/\//i.test(p.image_path)
                 ? p.image_path
                 : `/${p.image_path.replace(/^\/+/, '')}`
-              : '/assets/photos/product-sad03.jpg';
+              : '/assets/photos/image-unavailable.svg';
 
             return (
               <article key={p.code} className="card product">
@@ -180,11 +184,11 @@ export default function WholesaleClientView({
                   <span className="product__ref">{p.code}</span>
                 </Link>
                 <div className="card__body">
-                  <p className="eyebrow eyebrow--accent eyebrow--sm">{craft?.name || 'Zorig Chusum'}</p>
+                  <p className="eyebrow eyebrow--accent eyebrow--sm">{craft?.name || p.craft_key}</p>
                   <h3 className="card__title clamp-2">
                     <Link href={`/product/${p.code}`}>{p.name}</Link>
                   </h3>
-                  <p className="card__meta clamp-1">{p.maker} · {p.region}</p>
+                  {(p.maker || p.region) && <p className="card__meta clamp-1">{[p.maker, p.region].filter(Boolean).join(' · ')}</p>}
                   <div className="card__foot">
                     <span className="tradelock">
                       Trade terms shown to approved buyers

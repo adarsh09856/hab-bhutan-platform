@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
-import { CLIENT_DATA, getCountsByCraft } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import WholesaleClientView from '@/components/public/WholesaleClientView';
+import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
+import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
+import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,33 +24,45 @@ const FLOW_STEPS = [
 export default async function WholesalePage() {
   let siteSettings: any = null;
   let dbProducts: any[] = [];
+  let crafts: Array<{ key: string; name: string; english: string }> = [];
+  let unavailable = false;
   try {
-    siteSettings = await prisma.siteSetting.findFirst();
-    dbProducts = await prisma.product.findMany({
-      where: { status: 'PUBLISHED' },
-      take: 8,
-      orderBy: { createdAt: 'desc' },
-      include: { craft: true, maker: true },
-    });
-  } catch {}
+    [siteSettings, dbProducts, crafts] = await Promise.all([
+      prisma.siteSetting.findFirst(),
+      prisma.product.findMany({
+        where: {
+          status: 'PUBLISHED',
+          AND: [
+            { NOT: { code: { startsWith: 'SKU-TEST-', mode: 'insensitive' } } },
+            { NOT: { name: { contains: 'Automated Test', mode: 'insensitive' } } },
+          ],
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { craft: true, maker: true, wholesaleTerms: true },
+      }),
+      prisma.craft.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' }, select: { key: true, name: true, english: true } }),
+    ]);
+  } catch { unavailable = true; }
 
-  const craftCounts = getCountsByCraft();
-  const previewProducts = dbProducts.length > 0
-    ? dbProducts.map((p) => ({
+  const legacyTerms = { ...SERVER_WHOLESALE_TERMS, ...((siteSettings?.wholesaleTerms as Record<string, any> | null) || {}) };
+  const eligibleProducts = dbProducts.filter((product) => resolveWholesaleOffer(product.wholesaleTerms, legacyTerms[product.code]));
+  const craftCounts = Object.fromEntries(crafts.map((craft) => [craft.key, eligibleProducts.filter((product) => product.craftKey === craft.key).length]));
+  const previewProducts = eligibleProducts.slice(0, 8).map((p) => ({
         code: p.code,
         name: p.name,
-        craft_key: p.craft?.key || p.craftKey || 'thagzo',
-        craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : 'Zorig Chusum',
-        maker: p.maker?.name || 'Master Artisan',
-        region: p.region || 'Bhutan',
-        image_path: (p.images as any)?.[0]?.url || '/assets/photos/product-sad03.jpg',
-      }))
-    : CLIENT_DATA.products.slice(0, 8);
+        craft_key: p.craftKey,
+        craft_name: p.craft?.name || p.craftKey,
+        maker: p.maker?.name || '',
+        region: p.region || p.maker?.dzongkhag || '',
+        image_path: normalizeProductImages(p.code, p.craftKey, p.images).imageUrl,
+      }));
 
   return (
     <WholesaleClientView
       initialSettings={siteSettings}
       craftCounts={craftCounts}
+      crafts={crafts}
+      unavailable={unavailable}
       initialProducts={previewProducts}
       flowSteps={FLOW_STEPS}
     />

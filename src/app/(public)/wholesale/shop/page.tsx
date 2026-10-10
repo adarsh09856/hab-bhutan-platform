@@ -6,7 +6,7 @@ import { useState, useEffect, Suspense, useMemo, type FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { CLIENT_DATA, getCountsByCraft, getTierPrice, ProductData, WholesaleTermData } from '@/lib/client-data';
+import { getTierPrice, type ProductData, type WholesaleTermData } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 function WholesaleShopContent() {
@@ -25,6 +25,7 @@ function WholesaleShopContent() {
   const [quoteBasket, setQuoteBasket] = useState<Record<string, number>>({});
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [catalogueState, setCatalogueState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   // Sync selected craft if URL parameter changes
   useEffect(() => {
@@ -81,6 +82,8 @@ function WholesaleShopContent() {
     } finally {
       setBuyerInfo(null);
       setIsAuthenticated(false);
+      setProductsList([]);
+      setCatalogueState('loading');
       setQuoteBasket({});
       try { localStorage.removeItem('hab_quote_basket'); } catch {}
     }
@@ -130,57 +133,59 @@ function WholesaleShopContent() {
     showToast(`${product.name} × ${qty} added to the quote basket.`);
   };
 
-  const [productsList, setProductsList] = useState<any[]>(() => CLIENT_DATA.products);
+  const [productsList, setProductsList] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    fetch('/api/trade', { cache: 'no-store', credentials: 'include' })
-      .then((r) => r.json())
+    const controller = new AbortController();
+    setProductsList([]);
+    setCatalogueState('loading');
+    fetch('/api/trade', { cache: 'no-store', credentials: 'include', signal: controller.signal })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data.success === false) throw new Error(data.error || 'Wholesale catalogue unavailable');
+        return data;
+      })
       .then((data) => {
-        if (data?.products && Array.isArray(data.products) && data.products.length > 0) {
-          setProductsList(
-            data.products.map((p: any) => ({
+        if (controller.signal.aborted) return;
+        setProductsList(
+          (Array.isArray(data.products) ? data.products : []).filter((p: any) => p.terms).map((p: any) => ({
               code: p.code,
               name: p.name,
               craft_key: p.craftKey || p.craft_key,
-              region: p.region || 'Bhutan',
-              maker: p.maker?.name || p.maker || 'Registered Master',
+              craft: p.craft,
+              region: p.region || p.maker?.dzongkhag || '',
+              maker: p.maker?.name || (typeof p.maker === 'string' ? p.maker : ''),
               price: p.priceUSD ?? p.price,
-              hero_image: p.image_path || p.images?.[0]?.url || p.hero_image || 'assets/photos/hero-1-weaving.jpg',
+              image_path: p.image_path || p.hero_image || '/assets/photos/image-unavailable.svg',
               summary: p.description || p.summary || '',
-              terms: p.terms ? {
+              terms: {
                 moq: p.terms.moq,
                 lead: p.terms.lead_time || p.terms.lead,
                 tiers: p.terms.tiers,
                 custom: p.terms.customisation || p.terms.custom,
                 isActive: p.terms.is_active !== false,
-              } : undefined,
+              },
             }))
-          );
-        }
+        );
+        setCatalogueState('ready');
       })
-      .catch(() => setLoginError('Could not load your confidential wholesale catalogue. Please refresh or sign in again.'));
+      .catch(() => { if (!controller.signal.aborted) setCatalogueState('error'); });
+    return () => controller.abort();
   }, [isAuthenticated]);
 
-  const counts = getCountsByCraft();
-  const activeCraft = selectedCraft ? CLIENT_DATA.crafts.find((c) => c.key === selectedCraft) : null;
-
-  // Helper to ensure terms exist for all products (dynamic fallback)
-  const getTermsForProduct = (code: string, price: number): WholesaleTermData => {
-    const saved = productsList.find((product) => product.code === code)?.terms;
-    if (saved) return saved;
-    void code;
-    const base = price || 50;
-    return {
-      moq: 5,
-      lead: '2 – 3 weeks',
-      tiers: [
-        [5, Math.round(base * 0.9)],
-        [10, Math.round(base * 0.82)],
-        [25, Math.round(base * 0.72)],
-      ],
-    };
-  };
+  const craftOptions = useMemo(() => {
+    const byKey = new Map<string, { key: string; name: string; english: string; count: number }>();
+    for (const product of productsList) {
+      const key = product.craft_key;
+      if (!key) continue;
+      const option = byKey.get(key) || { key, name: product.craft?.name || key, english: product.craft?.english || '', count: 0 };
+      option.count += 1;
+      byKey.set(key, option);
+    }
+    return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [productsList]);
+  const activeCraft = selectedCraft ? craftOptions.find((craft) => craft.key === selectedCraft) : null;
 
   // Filter products that have wholesale terms
   const filteredProducts = useMemo(() => {
@@ -193,24 +198,20 @@ function WholesaleShopContent() {
 
     if (sortOrder === 'moq') {
       list.sort((a, b) => {
-        const ma = getTermsForProduct(a.code, a.price)?.moq || 0;
-        const mb = getTermsForProduct(b.code, b.price)?.moq || 0;
+        const ma = a.terms.moq;
+        const mb = b.terms.moq;
         return ma - mb;
       });
     } else if (sortOrder === 'low') {
       list.sort((a, b) => {
-        const ta = getTermsForProduct(a.code, a.price);
-        const tb = getTermsForProduct(b.code, b.price);
-        const pa = getTierPrice(ta, 0);
-        const pb = getTierPrice(tb, 0);
+        const pa = getTierPrice(a.terms, a.terms.moq);
+        const pb = getTierPrice(b.terms, b.terms.moq);
         return pa - pb;
       });
     } else if (sortOrder === 'high') {
       list.sort((a, b) => {
-        const ta = getTermsForProduct(a.code, a.price);
-        const tb = getTermsForProduct(b.code, b.price);
-        const pa = getTierPrice(ta, 0);
-        const pb = getTierPrice(tb, 0);
+        const pa = getTierPrice(a.terms, a.terms.moq);
+        const pb = getTierPrice(b.terms, b.terms.moq);
         return pb - pa;
       });
     }
@@ -313,9 +314,9 @@ function WholesaleShopContent() {
                   style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   <span className="rail__name">All crafts</span>
-                  <span className="rail__n">{CLIENT_DATA.products.length}</span>
+                  <span className="rail__n">{productsList.length}</span>
                 </button>
-                {CLIENT_DATA.crafts.map((c) => (
+                {craftOptions.map((c) => (
                   <button
                     key={c.key}
                     type="button"
@@ -327,7 +328,7 @@ function WholesaleShopContent() {
                       <span className="rail__name">{c.name}</span>
                       <span className="rail__en">{c.english}</span>
                     </span>
-                    <span className="rail__n">{counts[c.key] || 0}</span>
+                    <span className="rail__n">{c.count}</span>
                   </button>
                 ))}
               </div>
@@ -380,20 +381,23 @@ function WholesaleShopContent() {
                     About {activeCraft.name} →
                   </Link>
                 )}
-                <span className="craft__count" style={{ margin: 0, alignSelf: 'center' }}>
+                {catalogueState === 'ready' && <span className="craft__count" style={{ margin: 0, alignSelf: 'center' }}>
                   {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-                </span>
+                </span>}
               </div>
 
+              {catalogueState === 'loading' && <p>Loading your approved wholesale catalogue…</p>}
+              {catalogueState === 'error' && <p role="alert">The wholesale catalogue is temporarily unavailable. Please refresh or sign in again.</p>}
+              {catalogueState === 'ready' && productsList.length === 0 && <p>No products have approved wholesale terms yet.</p>}
               <div className="grid grid--3">
                 {filteredProducts.map((p) => {
-                  const craft = CLIENT_DATA.crafts.find((c) => c.key === p.craft_key);
-                  const terms = getTermsForProduct(p.code, p.price);
+                  const craft = craftOptions.find((c) => c.key === p.craft_key);
+                  const terms = p.terms as WholesaleTermData;
                   const currentQty = quantities[p.code] || terms.moq;
-                  const unitPrice = getTierPrice(terms, currentQty) || Math.round(Number(p.price || 0) * (1 - Math.min(100, Math.max(0, Number(buyerInfo?.discountTier) || 0)) / 100) * 100) / 100;
+                  const unitPrice = getTierPrice(terms, currentQty);
                   const imgSrc = p.image_path
                     ? (p.image_path.startsWith('/') ? p.image_path : `/${p.image_path}`)
-                    : (p.hero_image ? (p.hero_image.startsWith('/') || p.hero_image.startsWith('http') ? p.hero_image : `/${p.hero_image}`) : '/assets/photos/product-sad03.jpg');
+                    : '/assets/photos/image-unavailable.svg';
 
                   return (
                     <article key={p.code} className="card product wscard" id={p.code}>
@@ -411,11 +415,11 @@ function WholesaleShopContent() {
                       </Link>
 
                       <div className="card__body">
-                        <p className="eyebrow eyebrow--accent eyebrow--sm">{craft?.name || 'Zorig Chusum'}</p>
+                        <p className="eyebrow eyebrow--accent eyebrow--sm">{craft?.name || p.craft_key}</p>
                         <h3 className="card__title clamp-2">
                           <Link href={`/product/${p.code}`}>{p.name}</Link>
                         </h3>
-                        <p className="card__meta clamp-1">{p.maker} · {p.region}</p>
+                        {(p.maker || p.region) && <p className="card__meta clamp-1">{[p.maker, p.region].filter(Boolean).join(' · ')}</p>}
 
                         <dl className="wsterms">
                           <div className="wsterms__row">
