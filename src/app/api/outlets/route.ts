@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { outletImages } from '@/lib/reference-images';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ function unpackOutlet(outlet: any) {
   return {
     ...outlet,
     note: note || null,
-    imageUrl: imageUrl || null,
+    imageUrl: imageUrl || outletImages[outlet.key] || null,
   };
 }
 

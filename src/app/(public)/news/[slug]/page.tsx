@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
+import { referenceNewsImage } from '@/lib/reference-images';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
@@ -67,7 +68,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     blurbDz: rawPost.blurbDz,
     body: cleanContent,
     bodyDz: rawPost.contentDz,
-    image_path,
+    image_path: image_path || referenceNewsImage(rawPost.slug),
     published_at: rawPost.dateString || rawPost.published_at || rawPost.date || '',
     documentUrl: rawPost.documentUrl || rawPost.pdfUrl || null,
     documentType: rawPost.documentType || 'PDF',
@@ -167,7 +168,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
 
           <div className="grid grid--3">
             {otherNews.map((on: any) => {
-              const cardImg = on.imageUrl || on.image_url || on.image_path || '/assets/photos/image-unavailable.svg';
+              const cardImg = on.imageUrl || on.image_url || on.image_path || referenceNewsImage(on.slug) || '/assets/photos/image-unavailable.svg';
 
               return (
                 <Link key={on.slug || on.id} className="card news" href={`/news/${on.slug || on.id}`}>

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
+import { outletImages, clusterImages } from '@/lib/reference-images';
 import OutletsBrowser from '@/components/public/OutletsBrowser';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -44,7 +45,7 @@ async function getOutletsData() {
             payment: o.payment || '',
             getting_there: o.gettingThere || '',
             facilities: o.facilities || '',
-            imageUrl,
+            imageUrl: imageUrl || outletImages[o.key],
           };
         });
 
@@ -70,7 +71,7 @@ async function getOutletsData() {
             summary: c.summary,
             story: c.story,
             visitor_note,
-            imageUrl,
+            imageUrl: imageUrl || clusterImages[c.key],
           };
         });
 

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import prisma from '@/lib/prisma';
+import { outletImages } from '@/lib/reference-images';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +41,7 @@ async function resolveOutlet(key: string) {
         payment: o.payment || '',
         getting_there: o.gettingThere || '',
         facilities: o.facilities || '',
-        imageUrl,
+        imageUrl: imageUrl || outletImages[o.key],
       };
     }
   return null;
@@ -92,7 +93,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           payment: o.payment || '',
           getting_there: o.gettingThere || '',
           facilities: o.facilities || '',
-          imageUrl,
+          imageUrl: imageUrl || outletImages[o.key],
         };
       });
   } catch {}

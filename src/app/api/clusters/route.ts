@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { clusterImages } from '@/lib/reference-images';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,7 @@ function unpackCluster(cluster: any) {
     ...cluster,
     visitorNote: visitorNote || null,
     visitor_note: visitorNote || null,
-    imageUrl: imageUrl || null,
+    imageUrl: imageUrl || clusterImages[cluster.key] || null,
   };
 }
 

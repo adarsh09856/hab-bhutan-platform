@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import prisma from '@/lib/prisma';
+import { clusterImages } from '@/lib/reference-images';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -39,7 +40,7 @@ async function getClusters() {
           summary: c.summary,
           story: c.story,
           visitor_note,
-          imageUrl,
+          imageUrl: imageUrl || clusterImages[c.key],
         };
       }), unavailable: false };
   } catch {

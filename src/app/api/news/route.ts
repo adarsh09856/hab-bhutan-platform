@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { referenceNewsImage } from '@/lib/reference-images';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export async function GET() {
         }
       }
 
-      const finalImage = image_path || a.imageUrl || a.image_url || a.image_path || null;
+      const finalImage = image_path || a.imageUrl || a.image_url || a.image_path || referenceNewsImage(a.slug) || null;
 
       return {
         ...a,

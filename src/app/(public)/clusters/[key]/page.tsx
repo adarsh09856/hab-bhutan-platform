@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getCraftByKey } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import { clusterImages } from '@/lib/reference-images';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -37,7 +38,7 @@ async function resolveCluster(key: string) {
         summary: c.summary,
         story: c.story,
         visitor_note,
-        imageUrl,
+        imageUrl: imageUrl || clusterImages[c.key],
       };
     }
   return null;
