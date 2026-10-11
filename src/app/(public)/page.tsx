@@ -878,7 +878,10 @@ export default function HomePage() {
             <p className="eyebrow eyebrow--accent">{localizeHomeText('Visit us in person', 'མི་ངོ་མར་ལྟ་བསྐོར་གནང་།')}</p>
             <h2 className="display display--band">{isDz ? t('home.outlets_title', 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང') : 'Our physical outlets & clusters'}</h2>
             <p className="section__lede">
-              Buy directly from the artisans, at the markets and clusters the association runs or validates.
+              {localizeHomeText(
+                'Buy directly from the artisans, at the markets and clusters the association runs or validates.',
+                'ལག་བཟོ་ཚོགས་པ་གིས་འཛིན་སྐྱོང་ཡང་ན་བདེན་དཔྱད་འབད་མི་ཚོང་ཁང་དང་ཁྲོམ་ར་ཚུ་ནང་ ལག་བཟོ་པ་ཚུ་ལས་ཐད་ཀར་ཉོ་གནང་།',
+              )}
             </p>
           </div>
           <Link className="link-accent" href="/shop">
