@@ -1,3 +1,5 @@
+import { normalizeProductImages } from '@/lib/product-image-fallbacks';
+
 export const PUBLIC_MEMBER_PROFILE_SELECT = {
   name: true,
   craftKey: true,
@@ -40,7 +42,9 @@ export function toPublicMemberProfile(member: any) {
       code: product.code,
       name: product.name,
       priceUSD: product.priceUSD,
-      images: product.images,
+      images: Array.isArray(product.images) && product.images.length
+        ? normalizeProductImages(product.code, product.craftKey, product.images).images
+        : [],
       stock: product.stock,
       craftKey: product.craftKey,
       region: product.region,

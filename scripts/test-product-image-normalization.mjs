@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { normalizeProductImages } from '../src/lib/product-image-fallbacks.ts';
 import { isPublicCatalogProduct } from '../src/lib/public-catalog-visibility.ts';
+import { toPublicMemberProfile } from '../src/lib/public-member-profile.ts';
 
 const brokenHhb10 = normalizeProductImages('HHB10', 'thagzo', [
   { url: '/placeholders/hhb10_1.jpg', role: 'primary' },
@@ -54,4 +55,17 @@ assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', statu
 assert.equal(isPublicCatalogProduct({ code: 'SKU-TEST-44899', name: 'Automated Test Kishuthara Textile', status: 'PUBLISHED' }), false);
 assert.equal(isPublicCatalogProduct({ code: 'HHB10', name: 'Handheld Bag', status: 'DRAFT' }), false);
 
-console.log('PASS: mismatched Kisuthara photo is suppressed, craft illustration and genuine uploads work, and test/draft catalogue records stay out of public responses.');
+const memberProfile = toPublicMemberProfile({
+  name: 'Verified Maker',
+  products: [
+    { code: 'HHB10', craftKey: 'thagzo', images: [
+      { url: '/placeholders/hhb10_1.jpg', role: 'primary' },
+      { url: '/placeholders/hhb10_2.jpg', role: 'gallery' },
+    ] },
+    { code: 'NO-PHOTO', craftKey: 'thagzo', images: [] },
+  ],
+});
+assert.deepEqual(memberProfile.products[0].images, [{ url: '/assets/photos/product-hhb10.jpg', role: 'primary' }]);
+assert.deepEqual(memberProfile.products[1].images, [], 'A member product with no saved photo stays blank.');
+
+console.log('PASS: product and member-profile image fallbacks, genuine uploads, and public catalogue visibility.');
