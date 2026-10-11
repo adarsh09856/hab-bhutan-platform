@@ -1,7 +1,8 @@
 ﻿import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
+import { requireTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasources: { db: { url: requireTestDatabaseUrl() } } });
 
 console.log('====================================================');
 console.log('  STARTING TWO-WAY VERIFICATION FOR PHASE 6');

@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
+import { requireTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasources: { db: { url: requireTestDatabaseUrl() } } });
 
 async function runPhase2Tests() {
   console.log('====================================================');
