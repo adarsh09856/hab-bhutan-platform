@@ -172,27 +172,28 @@ export default function UniversalPageQuickEdit() {
     const onClick = (event: Event) => {
       const clicked = event.target as HTMLElement | null;
       if (clicked?.closest('.hab-page-quick-editor')) return;
-      const target = clicked?.closest<HTMLElement>(EDITABLE_SELECTOR);
-      if (!target || !shell.contains(target) || target.closest(EXCLUDED_SELECTOR)) {
+      const openSectionManager = () => {
         setSelected(null);
         setSectionManagement(null);
-        if (clicked && !clicked.closest('a,button,input,textarea,select,[role="button"],[data-hab-no-quick-edit],.hab-section-edit-badge')) {
-          const section = clicked.closest<HTMLElement>('[data-hab-section]');
-          const adminLink = section?.querySelector<HTMLAnchorElement>('.hab-section-edit-badge a[href]');
-          if (section && adminLink) {
-            event.preventDefault();
-            event.stopPropagation();
-            setSectionManagement({
-              label: adminLink.textContent?.replace(/\s+/g, ' ').trim() || 'Manage this section',
-              href: adminLink.href,
-            });
-          }
-        }
+        if (!clicked || clicked.closest('a,button,input,textarea,select,[role="button"],[data-hab-no-quick-edit],.hab-section-edit-badge')) return;
+        const section = clicked.closest<HTMLElement>('[data-hab-section]');
+        const adminLink = section?.querySelector<HTMLAnchorElement>('.hab-section-edit-badge a[href]');
+        if (!section || !adminLink) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setSectionManagement({
+          label: adminLink.textContent?.replace(/\s+/g, ' ').trim() || 'Manage this section',
+          href: adminLink.href,
+        });
+      };
+      const target = clicked?.closest<HTMLElement>(EDITABLE_SELECTOR);
+      if (!target || !shell.contains(target) || target.closest(EXCLUDED_SELECTOR)) {
+        openSectionManager();
         return;
       }
       const isTextOrMedia = target instanceof HTMLImageElement || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || editableTextNodes(target).length > 0;
       if (!isTextOrMedia) {
-        setSelected(null);
+        openSectionManager();
         return;
       }
       event.preventDefault();
