@@ -298,13 +298,20 @@ model ProjectRecord {
   id              String   @id @default(uuid())
   status          String   // current | past
   name            String
+  nameDz          String?
   partner         String
+  partnerDz       String?
   period          String
+  periodDz        String?
   budget          String
+  budgetDz        String?
   progressPercent Int?
   summary         String   @db.Text
+  summaryDz       String?  @db.Text
   activities      Json     // string[]
+  activitiesDz    Json?    // string[] aligned to activities
   results         Json     // [{ n: string, l: string }]
+  resultsDz       Json?    // translated labels aligned to results
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

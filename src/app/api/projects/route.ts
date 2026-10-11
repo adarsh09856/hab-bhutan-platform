@@ -21,6 +21,8 @@ function unpackProject(p: any) {
   return {
     ...p,
     activities,
+    activitiesDz: Array.isArray(p.activitiesDz) ? p.activitiesDz : [],
+    resultsDz: Array.isArray(p.resultsDz) ? p.resultsDz : [],
     coverPhotoUrl: getProjectCoverPhotoUrl({ ...p, coverPhotoUrl }),
     reportPdfUrl: reportPdfUrl || p.reportPdfUrl || '',
     image_path: getProjectCoverPhotoUrl({ ...p, coverPhotoUrl }),

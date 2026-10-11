@@ -23,6 +23,8 @@ function unpackProject(p: any) {
   return {
     ...p,
     activities,
+    activitiesDz: Array.isArray(p.activitiesDz) ? p.activitiesDz : [],
+    resultsDz: Array.isArray(p.resultsDz) ? p.resultsDz : [],
     coverPhotoUrl: getProjectCoverPhotoUrl({ ...p, coverPhotoUrl }),
     reportPdfUrl: reportPdfUrl || p.reportPdfUrl || '',
     image_path: getProjectCoverPhotoUrl({ ...p, coverPhotoUrl }),
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requirePermission(req, 'content:create');
     const body = await req.json();
-    const { status, name, partner, period, budget, progressPercent, summary, activities, results, coverPhotoUrl, reportPdfUrl } = body;
+    const { status, name, nameDz, partner, partnerDz, period, periodDz, budget, budgetDz, progressPercent, summary, summaryDz, activities, activitiesDz, results, resultsDz, coverPhotoUrl, reportPdfUrl } = body;
 
     if (!name?.trim() || !partner?.trim() || !summary?.trim()) {
       return NextResponse.json({ error: 'Project name, partner, and summary are required.' }, { status: 400 });
@@ -64,13 +66,20 @@ export async function POST(req: NextRequest) {
       data: {
         status: status || 'current',
         name: name.trim(),
+        nameDz: nameDz ? String(nameDz).trim() : null,
         partner: partner.trim(),
+        partnerDz: partnerDz ? String(partnerDz).trim() : null,
         period: period?.trim() || '2026 – 2028',
+        periodDz: periodDz ? String(periodDz).trim() : null,
         budget: budget?.trim() || 'Undisclosed',
+        budgetDz: budgetDz ? String(budgetDz).trim() : null,
         progressPercent: progressPercent !== undefined ? Number(progressPercent) : 50,
         summary: summary.trim(),
+        summaryDz: summaryDz ? String(summaryDz).trim() : null,
         activities: storedActivities,
+        activitiesDz: Array.isArray(activitiesDz) ? activitiesDz.map((item: unknown) => String(item || '').trim()) : [],
         results: Array.isArray(results) ? results : [],
+        resultsDz: Array.isArray(resultsDz) ? resultsDz.map((item: unknown) => String(item || '').trim()) : [],
       },
     });
 
@@ -95,7 +104,7 @@ export async function PUT(req: NextRequest) {
   try {
     const session = await requirePermission(req, 'content:edit');
     const body = await req.json();
-    const { id, status, name, partner, period, budget, progressPercent, summary, activities, results, coverPhotoUrl, reportPdfUrl } = body;
+    const { id, status, name, nameDz, partner, partnerDz, period, periodDz, budget, budgetDz, progressPercent, summary, summaryDz, activities, activitiesDz, results, resultsDz, coverPhotoUrl, reportPdfUrl } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
@@ -128,13 +137,20 @@ export async function PUT(req: NextRequest) {
       data: {
         ...(status && { status }),
         ...(name && { name: name.trim() }),
+        ...(nameDz !== undefined && { nameDz: String(nameDz || '').trim() || null }),
         ...(partner && { partner: partner.trim() }),
+        ...(partnerDz !== undefined && { partnerDz: String(partnerDz || '').trim() || null }),
         ...(period && { period: period.trim() }),
+        ...(periodDz !== undefined && { periodDz: String(periodDz || '').trim() || null }),
         ...(budget && { budget: budget.trim() }),
+        ...(budgetDz !== undefined && { budgetDz: String(budgetDz || '').trim() || null }),
         ...(progressPercent !== undefined && { progressPercent: Number(progressPercent) }),
         ...(summary && { summary: summary.trim() }),
+        ...(summaryDz !== undefined && { summaryDz: String(summaryDz || '').trim() || null }),
         activities: storedActivities,
+        ...(activitiesDz !== undefined && { activitiesDz: Array.isArray(activitiesDz) ? activitiesDz.map((item: unknown) => String(item || '').trim()) : [] }),
         ...(results !== undefined && { results: Array.isArray(results) ? results : [] }),
+        ...(resultsDz !== undefined && { resultsDz: Array.isArray(resultsDz) ? resultsDz.map((item: unknown) => String(item || '').trim()) : [] }),
       },
     });
 

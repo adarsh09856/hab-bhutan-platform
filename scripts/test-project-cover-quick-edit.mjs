@@ -53,6 +53,16 @@ try {
   };
   assert((await getPublic())?.coverPhotoUrl === original, 'Original cover missing from public API.');
 
+  const translated = await fetch(`${baseUrl}/api/admin/projects`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: `hab_session=${token}` },
+    body: JSON.stringify({ id: project.id, nameDz: 'ལས་འགུལ་ཚོད་བལྟ།', partnerDz: 'མཉམ་འབྲེལ་ཚོད་བལྟ།',
+      periodDz: '༢༠༢༦', budgetDz: 'ཚོད་བལྟ།', summaryDz: 'ལས་འགུལ་གྱི་སྙིང་བསྡུས།',
+      activitiesDz: ['ལས་དོན་ཚོད་བལྟ།'], resultsDz: [] }),
+  });
+  const translationResult = await translated.json();
+  assert(translated.ok && translationResult.success, `Project translation save failed: ${translationResult.error || translated.status}`);
+  assert((await getPublic())?.nameDz === 'ལས་འགུལ་ཚོད་བལྟ།', 'Public listing omitted saved Dzongkha name.');
+
   const denied = await fetch(`${baseUrl}/api/admin/projects`, {
     method: 'PUT', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: project.id, coverPhotoUrl: replacement }),
@@ -72,13 +82,15 @@ try {
   const stored = await prisma.projectRecord.findUniqueOrThrow({ where: { id: project.id } });
   assert(stored.activities?.coverPhotoUrl === replacement, 'Project record did not persist replacement.');
   assert(stored.activities?.list?.[0] === 'Preserve this activity', 'Project activity was overwritten.');
+  assert(stored.nameDz === 'ལས་འགུལ་ཚོད་བལྟ།' && stored.activitiesDz?.[0] === 'ལས་དོན་ཚོད་བལྟ།', 'Cover-only update erased translations.');
 
   const detail = await fetch(`${baseUrl}/projects/${project.id}`, { cache: 'no-store' });
   const html = await detail.text();
   assert(detail.ok && html.includes('data-hab-gallery="project"'), 'Detail cover is not record-aware in Quick Edit.');
   assert(html.includes(replacement), 'Detail page did not render replacement cover.');
   assert(html.includes(`data-hab-gallery-id="${project.id}"`), 'Detail cover lacks Project ID.');
-  console.log('PASS: anonymous cover save denied; isolated authorized save persisted to Admin record, public listing, and detail page; other project fields were preserved.');
+  assert(html.includes('ལས་འགུལ་ཚོད་བལྟ།'), 'Detail page did not render the saved Dzongkha field.');
+  console.log('PASS: anonymous cover save denied; isolated translations and cover persisted to Admin record, public listing, and detail page; other project fields were preserved.');
 } finally {
   if (project) await prisma.projectRecord.deleteMany({ where: { id: project.id } });
   if (user) {

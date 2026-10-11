@@ -6,6 +6,7 @@ import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import { getProjectCoverPhotoUrl } from '@/lib/project-media';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,15 +86,15 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
         </div>
 
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/projects">Projects</Link> / {projectTitle}
+          <Link href="/">Home</Link> / <Link href="/projects">Projects</Link> / <LocalizedRecordField english={projectTitle} dzongkha={project.nameDz} />
         </p>
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            {isCurrent ? 'Project in hand' : 'Completed project'} · {project.period}
+            {isCurrent ? 'Project in hand' : 'Completed project'} · <LocalizedRecordField english={project.period} dzongkha={project.periodDz} />
           </p>
-          <h1 className="display display--page">{projectTitle}</h1>
-          <p className="lede lede--wide">{project.summary}</p>
+          <LocalizedRecordField as="h1" className="display display--page" english={projectTitle} dzongkha={project.nameDz} />
+          <LocalizedRecordField as="p" className="lede lede--wide" english={project.summary} dzongkha={project.summaryDz} />
         </div>
 
         {bannerImg && <figure className="frame frame--banner has-image" data-cms-img data-hab-gallery="project" data-hab-gallery-id={project.id} style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
@@ -117,15 +118,15 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Period</span>
-            <span className="craftfacts__val">{project.period}</span>
+            <LocalizedRecordField as="span" className="craftfacts__val" english={project.period} dzongkha={project.periodDz} />
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Budget</span>
-            <span className="craftfacts__val">{project.budget}</span>
+            <LocalizedRecordField as="span" className="craftfacts__val" english={project.budget} dzongkha={project.budgetDz} />
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Funding partner</span>
-            <span className="craftfacts__val">{partnerName}</span>
+            <LocalizedRecordField as="span" className="craftfacts__val" english={partnerName} dzongkha={project.partnerDz} />
           </div>
         </div>
       </section>
@@ -138,11 +139,8 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             <h2 className="display display--sub">{isCurrent ? 'What it is doing' : 'What it achieved'}</h2>
           </div>
           <div>
-            {(project.description || project.summary).split('\n\n').map((para: string, i: number) => (
-              <p key={i} className="longread__body" style={{ marginBottom: 20 }}>
-                {para.trim()}
-              </p>
-            ))}
+            <LocalizedRecordField as="p" className="longread__body" style={{ marginBottom: 20 }}
+              english={project.description || project.summary} dzongkha={project.summaryDz} splitParagraphs />
           </div>
         </div>
       </section>
@@ -160,7 +158,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
                 {project.outputs.map((item: string, idx: number) => (
                   <li key={idx} className="numlist__item">
                     <span className="numlist__n">{String(idx + 1).padStart(2, '0')}</span>
-                    <span className="numlist__t">{item}</span>
+                    <LocalizedRecordField as="span" className="numlist__t" english={item} dzongkha={Array.isArray(project.activitiesDz) ? project.activitiesDz[idx] : ''} />
                   </li>
                 ))}
               </ol>
@@ -202,11 +200,9 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
                     <span className={`tag ${r.status.toLowerCase().includes('completed') ? 'tag--done' : ''}`} style={{ marginBottom: 4 }}>
                       {r.status}
                     </span>
-                    <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
-                      {rTitle}
-                    </h3>
-                    <p className="card__meta" style={{ marginBottom: 4 }}>{r.period} · {r.partner}</p>
-                    <p className="card__text clamp-3">{r.summary}</p>
+                    <LocalizedRecordField as="h3" className="card__title clamp-2" style={{ marginBottom: 4 }} english={rTitle} dzongkha={r.nameDz} />
+                    <p className="card__meta" style={{ marginBottom: 4 }}><LocalizedRecordField english={r.period} dzongkha={r.periodDz} /> · <LocalizedRecordField english={r.partner} dzongkha={r.partnerDz} /></p>
+                    <LocalizedRecordField as="p" className="card__text clamp-3" english={r.summary} dzongkha={r.summaryDz} />
                   </div>
                 </Link>
               );
@@ -220,11 +216,11 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
         <nav className="craftnav">
           {prevProj && <Link className="craftnav__link" href={`/projects/${prevProj.id}`}>
             <span className="craftnav__hint">← Previous project</span>
-            <span>{prevProj.name}</span>
+            <LocalizedRecordField english={prevProj.name} dzongkha={prevProj.nameDz} />
           </Link>}
           {nextProj && <Link className="craftnav__link craftnav__link--next" href={`/projects/${nextProj.id}`}>
             <span className="craftnav__hint">Next project →</span>
-            <span>{nextProj.name}</span>
+            <LocalizedRecordField english={nextProj.name} dzongkha={nextProj.nameDz} />
           </Link>}
         </nav>
       </section>

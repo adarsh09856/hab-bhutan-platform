@@ -11,13 +11,20 @@ interface ProjectRecord {
   id: string;
   status: string;
   name: string;
+  nameDz?: string;
   partner: string;
+  partnerDz?: string;
   period: string;
+  periodDz?: string;
   budget: string;
+  budgetDz?: string;
   progressPercent: number;
   summary: string;
+  summaryDz?: string;
   activities: string[];
+  activitiesDz?: string[];
   results: string[];
+  resultsDz?: string[];
   coverPhotoUrl?: string;
   reportPdfUrl?: string;
   createdAt: string;
@@ -38,13 +45,20 @@ export default function AdminProjectsPage() {
   const [form, setForm] = useState({
     status: 'current',
     name: '',
+    nameDz: '',
     partner: '',
+    partnerDz: '',
     period: '2026 – 2028',
+    periodDz: '',
     budget: 'Undisclosed',
+    budgetDz: '',
     progressPercent: 50,
     summary: '',
+    summaryDz: '',
     activities: [] as string[],
+    activitiesDz: [] as string[],
     results: [] as string[],
+    resultsDz: [] as string[],
     coverPhotoUrl: '',
     reportPdfUrl: '',
   });
@@ -79,13 +93,20 @@ export default function AdminProjectsPage() {
     setForm({
       status: 'current',
       name: '',
+      nameDz: '',
       partner: '',
+      partnerDz: '',
       period: '2026 – 2028',
+      periodDz: '',
       budget: 'Undisclosed',
+      budgetDz: '',
       progressPercent: 50,
       summary: '',
+      summaryDz: '',
       activities: [],
+      activitiesDz: [],
       results: [],
+      resultsDz: [],
       coverPhotoUrl: '',
       reportPdfUrl: '',
     });
@@ -99,13 +120,20 @@ export default function AdminProjectsPage() {
     setForm({
       status: p.status,
       name: p.name,
+      nameDz: p.nameDz || '',
       partner: p.partner,
+      partnerDz: p.partnerDz || '',
       period: p.period,
+      periodDz: p.periodDz || '',
       budget: p.budget,
+      budgetDz: p.budgetDz || '',
       progressPercent: p.progressPercent,
       summary: p.summary,
+      summaryDz: p.summaryDz || '',
       activities: Array.isArray(p.activities) ? p.activities : [],
+      activitiesDz: (Array.isArray(p.activities) ? p.activities : []).map((_, index) => p.activitiesDz?.[index] || ''),
       results: Array.isArray(p.results) ? p.results.map(projectResultLine) : [],
+      resultsDz: (Array.isArray(p.results) ? p.results : []).map((_, index) => p.resultsDz?.[index] || ''),
       coverPhotoUrl: (p as any).coverPhotoUrl || '',
       reportPdfUrl: (p as any).reportPdfUrl || '',
     });
@@ -116,22 +144,22 @@ export default function AdminProjectsPage() {
 
   const addActivity = () => {
     if (!activityInput.trim()) return;
-    setForm({ ...form, activities: [...form.activities, activityInput.trim()] });
+    setForm({ ...form, activities: [...form.activities, activityInput.trim()], activitiesDz: [...form.activitiesDz, ''] });
     setActivityInput('');
   };
 
   const removeActivity = (idx: number) => {
-    setForm({ ...form, activities: form.activities.filter((_, i) => i !== idx) });
+    setForm({ ...form, activities: form.activities.filter((_, i) => i !== idx), activitiesDz: form.activitiesDz.filter((_, i) => i !== idx) });
   };
 
   const addResult = () => {
     if (!resultInput.trim()) return;
-    setForm({ ...form, results: [...form.results, resultInput.trim()] });
+    setForm({ ...form, results: [...form.results, resultInput.trim()], resultsDz: [...form.resultsDz, ''] });
     setResultInput('');
   };
 
   const removeResult = (idx: number) => {
-    setForm({ ...form, results: form.results.filter((_, i) => i !== idx) });
+    setForm({ ...form, results: form.results.filter((_, i) => i !== idx), resultsDz: form.resultsDz.filter((_, i) => i !== idx) });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,7 +228,7 @@ export default function AdminProjectsPage() {
 
   const filteredProjects = projects.filter((p) => {
     if (filter === 'ALL') return true;
-    return p.status === filter;
+    return filter === 'completed' ? ['completed', 'past'].includes(p.status.toLowerCase()) : p.status === filter;
   });
 
   return (
@@ -268,7 +296,7 @@ export default function AdminProjectsPage() {
             filter === 'completed' ? 'border-amber-400 text-amber-300' : 'border-transparent admin-muted admin-hover'
           }`}
         >
-          Completed / Impact Archive ({projects.filter((p) => p.status === 'completed').length})
+          Completed / Impact Archive ({projects.filter((p) => ['completed', 'past'].includes(p.status.toLowerCase())).length})
         </button>
       </div>
 
@@ -598,6 +626,48 @@ export default function AdminProjectsPage() {
                   ))}
                 </div>
               </div>
+
+              <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <summary className="cursor-pointer font-semibold text-slate-800">Dzongkha translations (optional)</summary>
+                <p className="mt-2 text-xs text-slate-600">Add reviewed translations for this project. Blank fields continue to show the English version; numbers and saved records are not translated automatically.</p>
+                <div className="mt-4 space-y-3">
+                  {([
+                    ['nameDz', 'Project name in Dzongkha'],
+                    ['partnerDz', 'Funding partner in Dzongkha'],
+                    ['periodDz', 'Period in Dzongkha'],
+                    ['budgetDz', 'Budget text in Dzongkha'],
+                  ] as const).map(([field, label]) => (
+                    <label key={field} className="block text-xs font-semibold text-slate-700">
+                      {label}
+                      <input type="text" value={form[field]} onChange={(event) => setForm({ ...form, [field]: event.target.value })}
+                        className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-normal text-slate-900" />
+                    </label>
+                  ))}
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Summary in Dzongkha
+                    <textarea rows={3} value={form.summaryDz} onChange={(event) => setForm({ ...form, summaryDz: event.target.value })}
+                      className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-normal text-slate-900" />
+                  </label>
+                  {form.activities.map((activity, index) => (
+                    <label key={`activity-dz-${index}`} className="block text-xs font-semibold text-slate-700">
+                      Activity {index + 1}: {activity}
+                      <input type="text" value={form.activitiesDz[index] || ''} onChange={(event) => {
+                        const next = [...form.activitiesDz]; next[index] = event.target.value;
+                        setForm({ ...form, activitiesDz: next });
+                      }} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-normal text-slate-900" />
+                    </label>
+                  ))}
+                  {form.results.map((result, index) => (
+                    <label key={`result-dz-${index}`} className="block text-xs font-semibold text-slate-700">
+                      Result {index + 1}: {result} (translate its label; the figure stays unchanged)
+                      <input type="text" value={form.resultsDz[index] || ''} onChange={(event) => {
+                        const next = [...form.resultsDz]; next[index] = event.target.value;
+                        setForm({ ...form, resultsDz: next });
+                      }} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-normal text-slate-900" />
+                    </label>
+                  ))}
+                </div>
+              </details>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-200">
                 <FileUploadInput
