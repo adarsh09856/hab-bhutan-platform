@@ -462,7 +462,7 @@ export default function AdminProjectsPage() {
                     className="w-full px-3.5 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                   >
                     <option value="current">Active / Current</option>
-                    <option value="completed">Completed / Archive</option>
+                    <option value={form.status === 'past' ? 'past' : 'completed'}>Completed / Archive</option>
                   </select>
                 </div>
 
