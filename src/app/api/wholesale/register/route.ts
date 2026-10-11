@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { paymentProofExists } from '@/lib/payment-proof-storage';
 import crypto from 'crypto';
 import { notifySubmission } from '@/lib/transaction-notifications';
 import bcrypt from 'bcryptjs';
@@ -63,6 +64,9 @@ export async function POST(req: NextRequest) {
     const duplicateMessage = 'This email already has a wholesale registration. Contact HAB if you need to update it.';
     if (getAllFallbackWholesaleBuyers().some((buyer) => buyer.email.trim().toLowerCase() === cleanEmail)) {
       return NextResponse.json({ success: false, error: duplicateMessage }, { status: 409 });
+    }
+    if (offlinePayment && !(await paymentProofExists(String(proofUrl || '')))) {
+      return NextResponse.json({ success: false, error: 'Payment proof was not found. Please upload it again.' }, { status: 400 });
     }
     let databaseAvailable = true;
     try {

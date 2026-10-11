@@ -2,13 +2,17 @@ import nextEnv from '@next/env';
 import { PrismaClient } from '@prisma/client';
 import fs from 'node:fs';
 import path from 'node:path';
+import { validateTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
 nextEnv.loadEnvConfig(process.cwd(), true);
-const prisma = new PrismaClient();
+const testDatabaseUrl = validateTestDatabaseUrl(process.env.TEST_DATABASE_URL);
+const prisma = new PrismaClient({ datasources: { db: { url: testDatabaseUrl } } });
 const baseUrl = process.env.WHOLESALE_REGISTRATION_TEST_URL || 'http://127.0.0.1:3033';
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const email = `wholesale-duplicate-${suffix}@example.invalid`;
 let createdBuyerId;
+let proofUrl;
+let uploadedProofPath;
 const fallbackPath = path.join(process.cwd(), '.data', 'wholesale-buyers.json');
 
 function readFallback() {
@@ -29,17 +33,26 @@ async function submit(businessName) {
   const response = await fetch(`${baseUrl}/api/wholesale/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ businessName, contactPerson: 'Temporary Local Test', email, paymentMethod: 'mbob', paymentRef: 'LOCAL-TEST-ONLY', proofUrl: '/local-test-only.png' }),
+    body: JSON.stringify({ businessName, contactPerson: 'Temporary Local Test', email, paymentMethod: 'mbob', paymentRef: 'LOCAL-TEST-ONLY', proofUrl }),
   });
   return { response, body: await response.json().catch(() => ({})) };
 }
 
 async function run() {
-  assert(['localhost', '127.0.0.1', '::1'].includes(new URL(process.env.DATABASE_URL).hostname), 'Safety stop: test requires localhost PostgreSQL.');
   assert(['localhost', '127.0.0.1', '::1'].includes(new URL(baseUrl).hostname), 'Safety stop: test requires a localhost app.');
   assert(!readFallback().some((buyer) => buyer.email.toLowerCase() === email), 'Safety stop: generated test email already exists in fallback data.');
 
   try {
+    proofUrl = 'https://example.invalid/fake.pdf';
+    const externalProof = await submit(`Temporary Test Company ${suffix}`);
+    assert(externalProof.response.status === 400, 'An arbitrary URL cannot stand in for an uploaded wholesale proof.');
+    const form = new FormData();
+    form.append('file', new Blob(['%PDF-1.4\nTemporary local wholesale proof\n'], { type: 'application/pdf' }), 'local-proof.pdf');
+    const proofResponse = await fetch(`${baseUrl}/api/upload`, { method: 'POST', body: form });
+    const proofBody = await proofResponse.json();
+    assert(proofResponse.status === 200 && /^\/api\/payment-proofs\/[a-f0-9-]{36}\.pdf$/.test(proofBody.url || ''), 'Disposable proof upload failed.');
+    proofUrl = proofBody.url;
+    uploadedProofPath = path.join(process.cwd(), '.data', 'private-uploads', 'payment-proofs', path.basename(proofUrl));
     const created = await submit(`Temporary Test Company ${suffix}`);
     assert(created.response.status === 200 && created.body.success, `Local wholesale registration failed: ${created.body.error || created.response.status}.`);
     createdBuyerId = created.body.buyerId;
@@ -63,6 +76,7 @@ async function run() {
     const fallback = readFallback();
     const filtered = fallback.filter((buyer) => buyer.email.toLowerCase() !== email);
     if (filtered.length !== fallback.length) fs.writeFileSync(fallbackPath, JSON.stringify(filtered, null, 2), 'utf8');
+    if (uploadedProofPath) fs.unlinkSync(uploadedProofPath);
     await prisma.$disconnect();
   }
 }

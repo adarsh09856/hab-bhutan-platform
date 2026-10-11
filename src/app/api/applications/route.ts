@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { paymentProofExists } from '@/lib/payment-proof-storage';
 import crypto from 'crypto';
 import { notifySubmission } from '@/lib/transaction-notifications';
 import prisma from '@/lib/prisma';
@@ -60,6 +61,13 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Bhutan Citizenship ID (CID) must be exactly 11 numeric digits.' },
         { status: 400 }
       );
+    }
+
+    if (offlinePayment && !(await paymentProofExists(String(uploadedDocUrl || '')))) {
+      return NextResponse.json({ success: false, error: 'Payment proof was not found. Please upload it again.' }, { status: 400 });
+    }
+    if (uploadedCidUrl && !(await paymentProofExists(String(uploadedCidUrl)))) {
+      return NextResponse.json({ success: false, error: 'CID document was not found. Please upload it again.' }, { status: 400 });
     }
 
     // Map planTier to schema MemberTier enum
