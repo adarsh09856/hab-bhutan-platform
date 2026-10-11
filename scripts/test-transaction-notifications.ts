@@ -6,7 +6,7 @@ import { createSessionToken } from '../src/lib/rbac';
 import { PATCH as updateOrder } from '../src/app/api/admin/orders/route';
 import { POST as submitOrder } from '../src/app/api/orders/route';
 import prisma from '../src/lib/prisma';
-import { sendEmail, sendOrderConfirmationEmail, sendMembershipStatusEmail } from '../src/lib/email-service';
+import { getEffectiveSmtpConfig, sendEmail, sendOrderConfirmationEmail, sendMembershipStatusEmail } from '../src/lib/email-service';
 import { notifySubmission, notifyOrderUpdate, notifyDonationStatus, orderNotificationEvents } from '../src/lib/transaction-notifications';
 import { resolveBankTransferConfig } from '../src/lib/payments';
 
@@ -61,9 +61,11 @@ async function main() {
   const savedFind = prisma.siteSetting.findUnique;
   const savedAudit = prisma.auditLog.create;
   const smtp = { host: '127.0.0.1', port, secure: false, fromEmail: 'hab@example.invalid', fromName: 'HAB test' };
-  const smtpEnv = ['SMTP_USER', 'SMTP_PASS', 'SMTP_SECURE'] as const;
+  const smtpEnv = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_SECURE', 'SMTP_FROM_NAME', 'SMTP_FROM_EMAIL'] as const;
   const oldEnv = smtpEnv.map(key => process.env[key]);
-  smtpEnv.forEach(key => delete process.env[key]);
+  smtpEnv.forEach(key => { process.env[key] = `env-only-${key.toLowerCase()}`; });
+  process.env.SMTP_SECURE = 'true';
+  process.env.SMTP_PORT = '465';
   (prisma.siteSetting as any).findUnique = async () => ({
     emailSettings: smtp, officialEmail: 'staff@example.invalid', emailTemplates: {},
     checkoutBankName: 'Local test bank', checkoutAccountTitle: 'HAB local test', checkoutAccountNumber: 'TEST-ONLY',
@@ -71,6 +73,27 @@ async function main() {
   });
   (prisma.auditLog as any).create = async ({ data }: any) => { audit.push(data); return data; };
   try {
+    assert.deepEqual(await getEffectiveSmtpConfig(), {
+      ...smtp,
+      username: '',
+      password: '',
+    }, 'SMTP credentials are read from database settings even when environment variables are set');
+    (prisma.siteSetting as any).findUnique = async () => ({ emailSettings: {}, officialEmail: 'db-staff@example.invalid' });
+    const emptyDbConfig = await getEffectiveSmtpConfig();
+    assert.equal(emptyDbConfig.host, '', 'missing database SMTP host never falls back to environment');
+    assert.equal(emptyDbConfig.username, '', 'missing database SMTP username never falls back to environment');
+    assert.equal(emptyDbConfig.password, '', 'missing database SMTP password never falls back to environment');
+    assert.equal(emptyDbConfig.port, 587, 'missing database SMTP port uses the safe default');
+    assert.equal(emptyDbConfig.secure, false, 'missing database TLS option never falls back to environment');
+    assert.equal(emptyDbConfig.fromEmail, 'db-staff@example.invalid', 'sender address uses the database-managed official email');
+    (prisma.siteSetting as any).findUnique = async () => { throw new Error('simulated database read failure'); };
+    assert.equal((await getEffectiveSmtpConfig()).host, '', 'database read failure disables SMTP rather than falling back to environment');
+    (prisma.siteSetting as any).findUnique = async () => ({
+      emailSettings: smtp, officialEmail: 'staff@example.invalid', emailTemplates: {},
+      checkoutBankName: 'Local test bank', checkoutAccountTitle: 'HAB local test', checkoutAccountNumber: 'TEST-ONLY',
+      paymentGateways: { bob: { accountNumber: 'LOCAL-BOB' }, bnb: { accountNumber: 'LOCAL-BNB' } },
+    });
+
     const missing = await sendEmail({ to: 'buyer@example.invalid', subject: 'test', body: 'test', customConfig: {} });
     assert.equal(missing.success, false);
     assert.equal(captured.length, 0);

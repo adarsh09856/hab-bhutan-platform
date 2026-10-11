@@ -93,7 +93,9 @@ Handicrafts Association of Bhutan`,
 };
 
 /**
- * Retrieves effective SMTP settings from SiteSetting in PostgreSQL with fallback to process.env
+ * Retrieves SMTP settings saved in Admin → System Settings from PostgreSQL.
+ * Mail credentials are intentionally database-managed; missing/unavailable DB
+ * settings must not silently switch delivery to environment credentials.
  */
 export async function getEffectiveSmtpConfig(): Promise<SmtpConfig> {
   try {
@@ -105,24 +107,24 @@ export async function getEffectiveSmtpConfig(): Promise<SmtpConfig> {
     const es = (setting?.emailSettings as any) || {};
 
     return {
-      host: es.host || process.env.SMTP_HOST || '',
-      port: Number(es.port || process.env.SMTP_PORT || 587),
-      secure: es.secure === true || process.env.SMTP_SECURE === 'true',
-      username: es.username || process.env.SMTP_USER || '',
-      password: es.password || process.env.SMTP_PASS || '',
-      fromName: es.fromName || process.env.SMTP_FROM_NAME || 'Handicrafts Association of Bhutan',
-      fromEmail: es.fromEmail || setting?.officialEmail || process.env.SMTP_FROM_EMAIL || 'officehab@gmail.com',
+      host: String(es.host || '').trim(),
+      port: Number(es.port || 587),
+      secure: es.secure === true,
+      username: String(es.username || '').trim(),
+      password: String(es.password || ''),
+      fromName: String(es.fromName || 'Handicrafts Association of Bhutan'),
+      fromEmail: String(es.fromEmail || setting?.officialEmail || 'officehab@gmail.com'),
     };
   } catch (err) {
-    console.warn('[email-service] Failed to read database emailSettings, falling back to env vars:', err);
+    console.warn('[email-service] Failed to read database emailSettings; SMTP delivery is disabled:', err);
     return {
-      host: process.env.SMTP_HOST || '',
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      username: process.env.SMTP_USER || '',
-      password: process.env.SMTP_PASS || '',
-      fromName: process.env.SMTP_FROM_NAME || 'Handicrafts Association of Bhutan',
-      fromEmail: process.env.SMTP_FROM_EMAIL || 'officehab@gmail.com',
+      host: '',
+      port: 587,
+      secure: false,
+      username: '',
+      password: '',
+      fromName: 'Handicrafts Association of Bhutan',
+      fromEmail: 'officehab@gmail.com',
     };
   }
 }
