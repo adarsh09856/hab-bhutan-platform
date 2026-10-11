@@ -28,7 +28,9 @@ async function runPhase8Tests() {
     // ----------------------------------------------------
     console.log('[1/6] Auditing Next.js production build artifacts (.next)...');
     assert(fs.existsSync('.next'), '.next build output directory exists');
-    assert(fs.existsSync('.next/BUILD_ID'), '.next/BUILD_ID exists');
+    // Next.js 15 no longer emits the legacy BUILD_ID file for this app; the
+    // generated build manifest is the authoritative production-build marker.
+    assert(fs.existsSync('.next/build-manifest.json'), '.next/build-manifest.json exists');
     assert(fs.existsSync('.next/routes-manifest.json'), '.next/routes-manifest.json exists');
     assert(fs.existsSync('.next/prerender-manifest.json'), '.next/prerender-manifest.json exists');
     assert(fs.existsSync('.next/server'), '.next/server directory exists');
