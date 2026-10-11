@@ -10,28 +10,32 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export default function MastersPage() {
   const [activeTab, setActiveTab] = useState<string>('');
-  const [allRecognised, setAllRecognised] = useState<any[]>(() => CLIENT_DATA.recognised);
+  const [allRecognised, setAllRecognised] = useState<any[]>([]);
+  const [honoursStatus, setHonoursStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
     fetch('/api/honours', { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.honours && Array.isArray(d.honours) && d.honours.length > 0) {
-          const mapped = d.honours.map((h: any) => ({
-            name: h.name,
-            craft_key: h.craft,
-            dzongkhag: h.dzongkhag,
-            honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
-            since: h.yearAwarded,
-            note: h.citation,
-            image_path: h.portraitUrl || '',
-            image_alt: h.name,
-          }));
-          setAllRecognised(mapped);
-        }
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok || data?.success !== true || !Array.isArray(data.honours)) throw new Error('Honours unavailable');
+        return data;
       })
-      .catch(() => {});
+      .then((d) => {
+        const mapped = d.honours.map((h: any) => ({
+          name: h.name,
+          craft_key: h.craft,
+          dzongkhag: h.dzongkhag,
+          honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
+          since: h.yearAwarded,
+          note: h.citation,
+          image_path: h.portraitUrl || '',
+          image_alt: h.name,
+        }));
+        setAllRecognised(mapped);
+        setHonoursStatus('ready');
+      })
+      .catch(() => setHonoursStatus('error'));
   }, []);
 
   // Carousel auto-rotate
@@ -48,7 +52,7 @@ export default function MastersPage() {
 
   const totalRecognised = allRecognised.length;
   const uniqueCrafts = Array.from(new Set(allRecognised.map((r) => r.craft_key))).length;
-  const earliestYear = Math.min(...allRecognised.map((r) => r.since || 2026));
+  const earliestYear = allRecognised.length ? Math.min(...allRecognised.map((r) => r.since || 2026)) : null;
 
   const slides = [
     { src: '/assets/photos/hero-1-weaving.jpg', cap: 'photo 1 — a master at the loom' },
@@ -145,7 +149,7 @@ export default function MastersPage() {
         <div className="craftfacts" id="mastersStats">
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Recognised members</span>
-            <span className="craftfacts__val">{totalRecognised}</span>
+            <span className="craftfacts__val">{honoursStatus === 'ready' ? totalRecognised : '—'}</span>
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Honours categories</span>
@@ -153,11 +157,11 @@ export default function MastersPage() {
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Crafts represented</span>
-            <span className="craftfacts__val">{uniqueCrafts} of 13</span>
+            <span className="craftfacts__val">{honoursStatus === 'ready' ? `${uniqueCrafts} of 13` : '—'}</span>
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Practising since</span>
-            <span className="craftfacts__val">{earliestYear}</span>
+            <span className="craftfacts__val">{earliestYear ?? '—'}</span>
           </div>
         </div>
       </section>
@@ -328,8 +332,8 @@ export default function MastersPage() {
             );
           })}
         </div>
-        <p className="footnote" style={{ marginTop: 20 }}>
-          Names, portraits and citations to be supplied by the secretariat.
+        <p className="footnote" role="status" style={{ marginTop: 20 }}>
+          {honoursStatus === 'loading' ? 'Loading recognised members…' : honoursStatus === 'error' ? 'The honours directory is temporarily unavailable.' : allRecognised.length === 0 ? 'No recognised-member profiles have been published yet.' : 'Profiles are managed by the HAB Secretariat.'}
         </p>
       </section>
 

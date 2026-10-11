@@ -19,8 +19,7 @@ async function getRecognisedMembers() {
       orderBy: [{ sortOrder: 'asc' }, { yearAwarded: 'desc' }, { name: 'asc' }],
       take: 6,
     });
-    if (dbHonours.length > 0) {
-      return dbHonours.map((h) => ({
+    return { available: true, records: dbHonours.map((h) => ({
         name: h.name,
         craft_key: h.craft,
         dzongkhag: h.dzongkhag,
@@ -28,10 +27,10 @@ async function getRecognisedMembers() {
         since: h.yearAwarded,
         note: h.citation,
         image_path: h.portraitUrl || '',
-      }));
-    }
+      })) };
   } catch {}
-  return CLIENT_DATA.recognised.filter((member) => !/^name to confirm$/i.test(member.name.trim()));
+  // An empty or unavailable registry must not publish bundled example people.
+  return { available: false, records: [] };
 }
 
 function isPlaceholderPortrait(src: string) {
@@ -39,7 +38,7 @@ function isPlaceholderPortrait(src: string) {
 }
 
 export default async function MembersPage() {
-  const recognised = await getRecognisedMembers();
+  const { records: recognised, available: honoursAvailable } = await getRecognisedMembers();
 
   const dynamicMemberCounts: Record<string, number> = Object.fromEntries(CLIENT_DATA.crafts.map((craft) => [craft.key, 0]));
   const dynamicRegionCounts = new Map<string, number>();
@@ -263,7 +262,7 @@ export default async function MembersPage() {
             );
           })}
         </div>
-        {recognised.length === 0 && <p className="footnote" style={{ marginTop: 20 }}>Recognised-member profiles are awaiting approved records from the secretariat.</p>}
+        {recognised.length === 0 && <p className="footnote" style={{ marginTop: 20 }}>{honoursAvailable ? 'Recognised-member profiles are awaiting approved records from the secretariat.' : 'The honours directory is temporarily unavailable.'}</p>}
       </section>
 
       {/* 5. CTA Band */}
