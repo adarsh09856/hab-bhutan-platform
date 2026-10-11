@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react';
 
 const referenceSlides = [
   '/assets/photos/hero-2-punakha.jpg',
-  '/assets/photos/hero-1-weaving.jpg',
   '/assets/photos/hero-4-textiles.jpg',
-  '/assets/photos/hero-3-clay.jpg',
+  '/assets/photos/hero-1-weaving.jpg',
+  '/assets/photos/hero-5-desho.jpg',
 ];
 
 export default function OutletGallery({ image, galleryImages = [], name, outletKey }: { image?: string; galleryImages?: string[]; name: string; outletKey?: string }) {
-  const isPunakhaMarket = /punakha crafts market/i.test(name);
+  const isPunakhaMarket = outletKey === 'punakha-market' || (!outletKey && /punakha crafts market/i.test(name));
   const additional = isPunakhaMarket
     ? [...referenceSlides.slice(1), ...galleryImages]
     : galleryImages;
@@ -18,11 +18,21 @@ export default function OutletGallery({ image, galleryImages = [], name, outletK
     .filter((src): src is string => Boolean(src) && !src!.includes('image-unavailable'))));
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [visualEditing, setVisualEditing] = useState(false);
   useEffect(() => {
-    if (paused || slides.length < 2) return;
+    const syncVisualEdit = (event?: Event) => {
+      const active = (event as CustomEvent<{ active?: boolean }> | undefined)?.detail?.active;
+      setVisualEditing(typeof active === 'boolean' ? active : document.body.classList.contains('hab-visual-edit-on'));
+    };
+    syncVisualEdit();
+    window.addEventListener('hab:visual-edit-toggled', syncVisualEdit);
+    return () => window.removeEventListener('hab:visual-edit-toggled', syncVisualEdit);
+  }, []);
+  useEffect(() => {
+    if (paused || visualEditing || slides.length < 2) return;
     const timer = setInterval(() => setIndex(value => (value + 1) % slides.length), 5500);
     return () => clearInterval(timer);
-  }, [paused, slides.length]);
+  }, [paused, visualEditing, slides.length]);
 
   return <div className="carousel carousel--outlet" role="region" aria-label={`${name} photographs`} data-hab-gallery="outlet" data-hab-gallery-id={outletKey || ''}
     style={{ minHeight: 280 }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
