@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
+import { sanitizePublicSiteSettings } from '@/lib/public-site-settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,7 +63,7 @@ export async function GET() {
     const bnbBanking = pg.bnb || {};
 
     const enriched = {
-      ...setting,
+      ...sanitizePublicSiteSettings(setting),
       assurance3Text: removeUnavailableCardClaim(setting.assurance3Text, CARD_PAYMENT_UNAVAILABLE_COPY),
       assurance4Title: /escrow|secure\s+payment/i.test(setting.assurance4Title || '') ? 'Tracked worldwide' : setting.assurance4Title,
       assurance4Text: removeUnavailableCardClaim(setting.assurance4Text, 'EMS via Bhutan Post with commercial invoice and craft certificate.'),

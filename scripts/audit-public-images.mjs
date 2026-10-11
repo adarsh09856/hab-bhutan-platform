@@ -138,8 +138,27 @@ async function fetchHtml(path) {
 }
 
 async function checkAsset(url) {
-  const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(12_000), redirect: 'follow' });
-  return response.status;
+  let headStatus;
+  try {
+    const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(12_000), redirect: 'follow' });
+    if (response.ok) return response.status;
+    headStatus = response.status;
+  } catch {
+    // Some hosts stall or reject HEAD even though the file is available.
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-0' },
+      signal: AbortSignal.timeout(20_000),
+      redirect: 'follow',
+    });
+    await response.body?.cancel();
+    return response.status;
+  } catch (error) {
+    return headStatus ?? error.name ?? 'REQUEST_FAILED';
+  }
 }
 
 async function fetchStylesheet(url) {
