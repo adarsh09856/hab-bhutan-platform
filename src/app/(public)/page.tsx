@@ -49,6 +49,7 @@ export default function HomePage() {
   const { currency, fmt } = useCurrency();
   const { language, t } = useLanguage();
   const isDz = language === 'dz';
+  const localizeHomeText = (english: string, dzongkha: string) => isDz ? dzongkha : english;
   const { addToCart } = useCart();
 
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
@@ -610,7 +611,11 @@ export default function HomePage() {
 
             {heroSlides.length === 0 && (
               <p className="absolute inset-x-4 bottom-4 z-10 rounded-lg bg-black/60 px-3 py-2 text-sm text-white" role={heroSlidesState === 'error' ? 'alert' : 'status'}>
-                {heroSlidesState === 'loading' ? 'Loading homepage images…' : heroSlidesState === 'error' ? 'Homepage images are temporarily unavailable.' : 'No homepage images have been published yet.'}
+                {heroSlidesState === 'loading'
+                  ? localizeHomeText('Loading homepage images…', 'གཙོ་ངོས་ཀྱི་པར་ཚུ་བཙུགས་བཞིན་པ།')
+                  : heroSlidesState === 'error'
+                    ? localizeHomeText('Homepage images are temporarily unavailable.', 'གཙོ་ངོས་ཀྱི་པར་ཚུ་ད་ལྟོ་མི་ཐོབ།')
+                    : localizeHomeText('No homepage images have been published yet.', 'གཙོ་ངོས་ཀྱི་པར་གང་ཡང་ད་ལྟོ་བཏོན་མ་འབད།')}
               </p>
             )}
 
@@ -639,7 +644,7 @@ export default function HomePage() {
                 <button
                   onClick={() => setCurrentHero((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
                   className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none border border-white/10"
-                  aria-label="Previous slide"
+                  aria-label={localizeHomeText('Previous slide', 'ཧེ་མའི་པར')}
                   type="button"
                 >
                   ‹
@@ -647,7 +652,7 @@ export default function HomePage() {
                 <button
                   onClick={() => setCurrentHero((prev) => (prev + 1) % heroSlides.length)}
                   className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/45 hover:bg-black/75 text-white flex items-center justify-center text-lg sm:text-xl z-10 transition-all backdrop-blur-xs cursor-pointer select-none border border-white/10"
-                  aria-label="Next slide"
+                  aria-label={localizeHomeText('Next slide', 'ཤུལ་མའི་པར')}
                   type="button"
                 >
                   ›
@@ -813,7 +818,11 @@ export default function HomePage() {
             );
           })}
           {displayedProducts.length === 0 && <p className="section__lede" role={productsState === 'error' ? 'alert' : 'status'}>
-            {productsState === 'loading' ? 'Loading the shop catalogue…' : productsState === 'error' ? 'The shop catalogue is temporarily unavailable.' : 'No published products are available yet.'}
+            {productsState === 'loading'
+              ? localizeHomeText('Loading the shop catalogue…', 'ཚོང་ཁང་གི་ཐོ་བཀོད་བཙུགས་བཞིན་པ།')
+              : productsState === 'error'
+                ? localizeHomeText('The shop catalogue is temporarily unavailable.', 'ཚོང་ཁང་གི་ཐོ་བཀོད་ད་ལྟོ་མི་ཐོབ།')
+                : localizeHomeText('No published products are available yet.', 'ཅ་ཆས་གང་ཡང་ད་ལྟོ་བཏོན་མ་འབད།')}
           </p>}
         </div>
       </section>
@@ -864,14 +873,14 @@ export default function HomePage() {
 
         <div className="section__head">
           <div>
-            <p className="eyebrow eyebrow--accent">Visit us in person</p>
+            <p className="eyebrow eyebrow--accent">{localizeHomeText('Visit us in person', 'མི་ངོ་མར་ལྟ་བསྐོར་གནང་།')}</p>
             <h2 className="display display--band">{isDz ? t('home.outlets_title', 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང') : 'Our physical outlets & clusters'}</h2>
             <p className="section__lede">
               Buy directly from the artisans, at the markets and clusters the association runs or validates.
             </p>
           </div>
           <Link className="link-accent" href="/shop">
-            Or shop online →
+            {localizeHomeText('Or shop online →', 'ཡང་ན་དྲ་ཐོག་ཉོ་ཚོང་གནང་ →')}
           </Link>
         </div>
 
@@ -887,15 +896,15 @@ export default function HomePage() {
               )}
               {(punakhaOutlet.hours || punakhaOutlet.stalls || punakhaOutlet.craftsOnSite || punakhaOutlet.payment) && (
                 <div className="factgrid">
-                  {punakhaOutlet.hours && <div className="factgrid__cell"><span className="factgrid__key">Hours</span><span className="factgrid__val clamp-2">{punakhaOutlet.hours}</span></div>}
-                  {punakhaOutlet.stalls && <div className="factgrid__cell"><span className="factgrid__key">Stalls</span><span className="factgrid__val clamp-2">{punakhaOutlet.stalls}</span></div>}
-                  {punakhaOutlet.craftsOnSite && <div className="factgrid__cell"><span className="factgrid__key">Crafts on site</span><span className="factgrid__val clamp-2">{punakhaOutlet.craftsOnSite}</span></div>}
-                  {punakhaOutlet.payment && <div className="factgrid__cell"><span className="factgrid__key">Payment</span><span className="factgrid__val clamp-2">{punakhaOutlet.payment}</span></div>}
+                  {punakhaOutlet.hours && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Hours', 'སྒོ་ཕྱེའི་དུས་ཚོད')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.hours}</span></div>}
+                  {punakhaOutlet.stalls && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Stalls', 'ཚོང་སྒྲོམ')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.stalls}</span></div>}
+                  {punakhaOutlet.craftsOnSite && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Crafts on site', 'ས་གནས་ཀྱི་ལག་བཟོ་ཚུ')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.craftsOnSite}</span></div>}
+                  {punakhaOutlet.payment && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Payment', 'དངུལ་སྤྲོད་ཐབས')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.payment}</span></div>}
                 </div>
               )}
               <div className="actions">
-                <Link className="btn btn--accent" href={`/outlets/${punakhaOutlet.key}`}>View outlet</Link>
-                <Link className="btn btn--text" href="/outlets">All outlets →</Link>
+                <Link className="btn btn--accent" href={`/outlets/${punakhaOutlet.key}`}>{localizeHomeText('View outlet', 'ཚོང་ཁང་གཟིགས')}</Link>
+                <Link className="btn btn--text" href="/outlets">{localizeHomeText('All outlets →', 'ཚོང་ཁང་ཆ་མཉམ་ →')}</Link>
               </div>
             </div>
           </article>
@@ -924,20 +933,27 @@ export default function HomePage() {
             </Link>
           ))}
           {allOutletsPool.length === 0 && <p className="section__lede" role={outletsState === 'error' ? 'alert' : 'status'}>
-            {outletsState === 'loading' ? 'Loading outlet directory…' : outletsState === 'error' ? 'Outlets are temporarily unavailable.' : 'No outlets have been published yet.'}
+            {outletsState === 'loading'
+              ? localizeHomeText('Loading outlet directory…', 'ཚོང་ཁང་གི་ཐོ་བཀོད་བཙུགས་བཞིན་པ།')
+              : outletsState === 'error'
+                ? localizeHomeText('Outlets are temporarily unavailable.', 'ཚོང་ཁང་ཚུ་ད་ལྟོ་མི་ཐོབ།')
+                : localizeHomeText('No outlets have been published yet.', 'ཚོང་ཁང་གང་ཡང་ད་ལྟོ་བཏོན་མ་འབད།')}
           </p>}
         </div>
 
         {/* Artisan clusters subhead */}
         <div className="subhead" id="clusters">
           <div>
-            <p className="eyebrow eyebrow--accent">Artisan clusters</p>
+            <p className="eyebrow eyebrow--accent">{localizeHomeText('Artisan clusters', 'ལག་བཟོ་པའི་སྡེ་ཚན')}</p>
             <p className="subhead__lede">
-              A cluster is a village or valley where one craft is concentrated, and where members hold a common price, buy materials together and receive visitors.
+              {localizeHomeText(
+                'A cluster is a village or valley where one craft is concentrated, and where members hold a common price, buy materials together and receive visitors.',
+                'སྡེ་ཚན་འདི་ ལག་བཟོ་གཅིག་ལུ་གཙོ་བོར་བཏོན་པའི་གྲོང་ཚོ་ཡང་ན་ལུང་གཤོང་ཅིག་ཨིན། འཐུས་མི་ཚུ་གིས་རིན་གོང་གཅིག་མཐུན་བཟོ་སྟེ་ རྒྱུ་ཆ་མཉམ་སྦྲགས་ཉོ་ཞིང་ ལཱ་ལུ་བལྟ་བར་འོང་མི་ཚུ་ལུ་བསུ་བ་འབདཝ་ཨིན།'
+              )}
             </p>
           </div>
           <Link className="btn btn--outline btn--sm" href="/clusters">
-            Visit more clusters →
+            {localizeHomeText('Visit more clusters →', 'སྡེ་ཚན་གཞན་ཚུ་གཟིགས་ →')}
           </Link>
         </div>
 
@@ -962,7 +978,11 @@ export default function HomePage() {
             </Link>
           ))}
           {clusters.length === 0 && <p className="section__lede" role={clustersState === 'error' ? 'alert' : 'status'}>
-            {clustersState === 'loading' ? 'Loading artisan clusters…' : clustersState === 'error' ? 'Artisan clusters are temporarily unavailable.' : 'No artisan clusters have been published yet.'}
+            {clustersState === 'loading'
+              ? localizeHomeText('Loading artisan clusters…', 'ལག་བཟོ་པའི་སྡེ་ཚན་ཚུ་བཙུགས་བཞིན་པ།')
+              : clustersState === 'error'
+                ? localizeHomeText('Artisan clusters are temporarily unavailable.', 'ལག་བཟོ་པའི་སྡེ་ཚན་ཚུ་ད་ལྟོ་མི་ཐོབ།')
+                : localizeHomeText('No artisan clusters have been published yet.', 'ལག་བཟོ་པའི་སྡེ་ཚན་གང་ཡང་ད་ལྟོ་བཏོན་མ་འབད།')}
           </p>}
         </div>
       </section>
@@ -1018,7 +1038,11 @@ export default function HomePage() {
             );
           })}
           {craftsList.length === 0 && <p className="section__lede" role={craftsState === 'error' ? 'alert' : 'status'}>
-            {craftsState === 'loading' ? 'Loading the craft catalogue…' : craftsState === 'error' ? 'The craft catalogue is temporarily unavailable.' : 'No active crafts are available yet.'}
+            {craftsState === 'loading'
+              ? localizeHomeText('Loading the craft catalogue…', 'ལག་བཟོའི་ཐོ་བཀོད་བཙུགས་བཞིན་པ།')
+              : craftsState === 'error'
+                ? localizeHomeText('The craft catalogue is temporarily unavailable.', 'ལག་བཟོའི་ཐོ་བཀོད་ད་ལྟོ་མི་ཐོབ།')
+                : localizeHomeText('No active crafts are available yet.', 'ལག་བཟོ་གང་ཡང་ད་ལྟོ་བཏོན་མ་འབད།')}
           </p>}
         </div>
       </section>
@@ -1093,7 +1117,11 @@ export default function HomePage() {
             </article>
           ))}
           {programmes.length === 0 && <p className="section__lede" role={programmesState === 'error' ? 'alert' : 'status'}>
-            {programmesState === 'loading' ? 'Loading programmes…' : programmesState === 'error' ? 'Programmes are temporarily unavailable.' : 'No active programmes have been published yet.'}
+            {programmesState === 'loading'
+              ? localizeHomeText('Loading programmes…', 'ལས་རིམ་ཚུ་བཙུགས་བཞིན་པ།')
+              : programmesState === 'error'
+                ? localizeHomeText('Programmes are temporarily unavailable.', 'ལས་རིམ་ཚུ་ད་ལྟོ་མི་ཐོབ།')
+                : localizeHomeText('No active programmes have been published yet.', 'ལས་རིམ་གང་ཡང་ད་ལྟོ་བཏོན་མ་འབད།')}
           </p>}
         </div>
       </section>
@@ -1147,7 +1175,11 @@ export default function HomePage() {
             );
           })}
           {supportPillars.length === 0 && <p className="section__lede" role={supportPillarsState === 'error' ? 'alert' : 'status'}>
-            {supportPillarsState === 'loading' ? 'Loading support information…' : supportPillarsState === 'error' ? 'Support information is temporarily unavailable.' : 'No support options have been published yet.'}
+            {supportPillarsState === 'loading'
+              ? localizeHomeText('Loading support information…', 'རྒྱབ་སྐྱོར་གྱི་བརྡ་དོན་བཙུགས་བཞིན་པ།')
+              : supportPillarsState === 'error'
+                ? localizeHomeText('Support information is temporarily unavailable.', 'རྒྱབ་སྐྱོར་གྱི་བརྡ་དོན་ད་ལྟོ་མི་ཐོབ།')
+                : localizeHomeText('No support options have been published yet.', 'རྒྱབ་སྐྱོར་གྱི་གདམ་ཁ་གང་ཡང་ད་ལྟོ་མ་བཏོན།')}
           </p>}
         </div>
       </section>
@@ -1170,7 +1202,7 @@ export default function HomePage() {
                 : (siteSettings.membershipLeftText || 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.')}
             </p>
             <form className="inline-form" onSubmit={handleMemberSearch}>
-              <label className="visually-hidden" htmlFor="memberSearch">Search crafts, makers, clusters and products</label>
+              <label className="visually-hidden" htmlFor="memberSearch">{localizeHomeText('Search crafts, makers, clusters and products', 'ལག་བཟོ་ བཟོ་མི་ སྡེ་ཚན་ དང་ཅ་ཆས་ཚུ་འཚོལ།')}</label>
               <input
                 className="input"
                 id="memberSearch"
@@ -1326,7 +1358,11 @@ export default function HomePage() {
                 );
               })}
               {publications.length === 0 && <p className="section__lede" role={publicationsState === 'error' ? 'alert' : 'status'}>
-                {publicationsState === 'loading' ? 'Loading publications…' : publicationsState === 'error' ? 'Publications are temporarily unavailable.' : 'No featured publications are available yet.'}
+                {publicationsState === 'loading'
+                  ? localizeHomeText('Loading publications…', 'དཔེ་སྐྲུན་ཚུ་བཙུགས་བཞིན་པ།')
+                  : publicationsState === 'error'
+                    ? localizeHomeText('Publications are temporarily unavailable.', 'དཔེ་སྐྲུན་ཚུ་ད་ལྟོ་མི་ཐོབ།')
+                    : localizeHomeText('No featured publications are available yet.', 'དཔེ་སྐྲུན་གང་ཡང་ད་ལྟོ་མ་བཏོན།')}
               </p>}
             </div>
           </div>
