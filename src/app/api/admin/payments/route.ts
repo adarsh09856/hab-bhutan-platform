@@ -99,6 +99,9 @@ export async function POST(req: NextRequest) {
     }
 
     const updatedPaymentGateways = {
+      // This JSON also stores localization, styling and other provider settings.
+      // Editing payment methods must not discard those independently saved values.
+      ...existingGateways,
       card: {
         enabled: Boolean(card?.enabled),
         mode: card?.mode === 'LIVE' ? 'LIVE' : 'TEST',

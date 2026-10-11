@@ -6,12 +6,14 @@ import Image from 'next/image';
 import { MapPin, Clock, Search, ChevronDown, ChevronUp, Sparkles, Filter } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import OutletGallery from '@/components/public/OutletGallery';
+import type { OutletData } from '@/lib/client-data';
+import { resolveOutletText } from '@/lib/outlet-localization';
 
 const NO_IMAGE = '/assets/photos/image-unavailable.svg';
 
 
 interface OutletsBrowserProps {
-  initialOutlets: any[];
+  initialOutlets: Array<OutletData & { galleryImages?: string[]; isFeatured?: boolean; craftsOnSite?: string }>;
   clusters: any[];
   unavailable?: boolean;
 }
@@ -19,13 +21,10 @@ interface OutletsBrowserProps {
 export default function OutletsBrowser({ initialOutlets, clusters, unavailable = false }: OutletsBrowserProps) {
   const { language, t } = useLanguage();
   const isDz = language === 'dz';
-  const outletText = (outlet: any, englishKey: string, dzongkhaKey: string) => {
-    const english = outlet?.[englishKey] || '';
-    return isDz && outlet?.[dzongkhaKey]?.trim() ? outlet[dzongkhaKey] : english;
-  };
+  const outletText = (outlet: OutletData, key: 'name' | 'place' | 'note' | 'description' | 'hours' | 'stalls' | 'payment') => resolveOutletText(outlet, language, key);
 
   // Auto-shuffle outlets on mount so order is dynamic (Item 10)
-  const [shuffledOutlets, setShuffledOutlets] = useState<any[]>(initialOutlets);
+  const [shuffledOutlets, setShuffledOutlets] = useState(initialOutlets);
   const [showAllOutlets, setShowAllOutlets] = useState(false);
   const [filterType, setFilterType] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,9 +60,9 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
       if (filterType !== 'ALL' && o.type !== filterType) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesName = `${o.name || ''} ${o.nameDz || ''}`.toLowerCase().includes(q);
-        const matchesPlace = `${o.place || ''} ${o.placeDz || ''}`.toLowerCase().includes(q);
-        const matchesCrafts = `${o.crafts_on_site || o.craftsOnSite || ''} ${o.craftsOnSiteDz || ''}`.toLowerCase().includes(q);
+        const matchesName = `${o.name || ''} ${o.name_dz || ''}`.toLowerCase().includes(q);
+        const matchesPlace = `${o.place || ''} ${o.place_dz || ''}`.toLowerCase().includes(q);
+        const matchesCrafts = `${o.crafts_on_site || o.craftsOnSite || ''} ${o.crafts_on_site_dz || ''}`.toLowerCase().includes(q);
         if (!matchesName && !matchesPlace && !matchesCrafts) return false;
       }
       return true;
@@ -89,8 +88,8 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
               <p className="eyebrow eyebrow--accent">
                 {featured.type} · {isDz ? 'ལག་བཟོ་ཚོགས་པས་བདེན་དཔྱད་ཅན' : 'HAB validated'}
               </p>
-              <h1 className="display display--page">{outletText(featured, 'name', 'nameDz')}</h1>
-              <p className="lede lede--wide">{outletText(featured, 'description', 'descriptionDz') || outletText(featured, 'note', 'noteDz')}</p>
+              <h1 className="display display--page">{outletText(featured, 'name')}</h1>
+              <p className="lede lede--wide">{outletText(featured, 'description') || outletText(featured, 'note')}</p>
               <div className="actions">
                 <Link className="btn btn--accent" href={`/outlets/${featured.key}`}>
                   {isDz ? 'ཚོང་ཁང་འདིའི་སྐོར་ལྷག་པར་གཟིགས →' : 'Learn more about this market →'}
@@ -101,7 +100,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
               </div>
             </div>
 
-              <div style={{ height: 440, marginTop: 24 }}><OutletGallery image={featured.imageUrl} galleryImages={featured.galleryImages} name={outletText(featured, 'name', 'nameDz')} outletKey={featured.key} /></div>
+              <div style={{ height: 440, marginTop: 24 }}><OutletGallery image={featured.imageUrl} galleryImages={featured.galleryImages} name={outletText(featured, 'name')} outletKey={featured.key} /></div>
           </>
         )}
       </section>
@@ -112,19 +111,19 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
           <div className="craftfacts">
             <div className="craftfacts__cell">
               <span className="craftfacts__key">{isDz ? 'གནས་ས' : 'Where'}</span>
-              <span className="craftfacts__val">{outletText(featured, 'place', 'placeDz')}</span>
+              <span className="craftfacts__val">{outletText(featured, 'place')}</span>
             </div>
             <div className="craftfacts__cell">
               <span className="craftfacts__key">{isDz ? 'སྒོ་ཕྱེའི་དུས་ཚོད' : 'Open'}</span>
-              <span className="craftfacts__val">{outletText(featured, 'hours', 'hoursDz')}</span>
+              <span className="craftfacts__val">{outletText(featured, 'hours')}</span>
             </div>
             {featured.stalls && <div className="craftfacts__cell">
               <span className="craftfacts__key">{isDz ? 'ཚོང་ཁྲོམ་རྒྱ་ཁྱོན' : 'Scale'}</span>
-              <span className="craftfacts__val">{outletText(featured, 'stalls', 'stallsDz')}</span>
+              <span className="craftfacts__val">{outletText(featured, 'stalls')}</span>
             </div>}
             {featured.payment && <div className="craftfacts__cell">
               <span className="craftfacts__key">{isDz ? 'དངུལ་སྤྲོད' : 'Payment'}</span>
-              <span className="craftfacts__val">{outletText(featured, 'payment', 'paymentDz')}</span>
+              <span className="craftfacts__val">{outletText(featured, 'payment')}</span>
             </div>}
           </div>
         </section>
@@ -201,7 +200,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
                     src={o.imageUrl || NO_IMAGE}
-                    alt={outletText(o, 'name', 'nameDz')}
+                    alt={outletText(o, 'name')}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     style={{ objectFit: 'cover' }}
@@ -211,17 +210,17 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
               <div className="card__body">
                 <span className="tag">{o.type}</span>
                 <h3 className="card__title clamp-2">
-                  <Link href={`/outlets/${o.key}`}>{outletText(o, 'name', 'nameDz')}</Link>
+                  <Link href={`/outlets/${o.key}`}>{outletText(o, 'name')}</Link>
                 </h3>
                 <p className="card__meta clamp-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-[#8B2E24] flex-shrink-0" />
-                  {outletText(o, 'place', 'placeDz')}
+                  {outletText(o, 'place')}
                 </p>
-                <p className="card__text clamp-3">{outletText(o, 'note', 'noteDz') || outletText(o, 'description', 'descriptionDz')}</p>
+                <p className="card__text clamp-3">{outletText(o, 'note') || outletText(o, 'description')}</p>
                 {o.hours && (
                   <p className="outlet__hours flex items-center gap-1 text-xs text-[#6B5A4C] mt-2">
                     <Clock className="w-3 h-3 text-slate-400" />
-                    {outletText(o, 'hours', 'hoursDz')}
+                    {outletText(o, 'hours')}
                   </p>
                 )}
               </div>
