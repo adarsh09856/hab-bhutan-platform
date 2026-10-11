@@ -47,7 +47,7 @@ export async function GET() {
           accountTitle: mbob.accountTitle,
           accountNumber: mbob.accountNumber || gateways.bob?.accountNumber || setting?.checkoutAccountNumber || '',
           phone: mbob.phone,
-          qrImageUrl: mbob.qrImageUrl || '',
+          qrImageUrl: mbob.qrImageUrl || gateways.bob?.qrUrl || '',
           requireJournalRef: mbob.requireJournalRef,
           instructions: mbob.instructions,
         },

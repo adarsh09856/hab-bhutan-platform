@@ -489,7 +489,7 @@ async function runTests() {
 
     // Verify public craft page reads bannerUrl in flipper carousel
     const publicCraftPage = fs.readFileSync(path.join(rootDir, 'src/app/(public)/craft/[craft]/page.tsx'), 'utf-8');
-    assert(publicCraftPage.includes('(craft as any).bannerUrl'), 'PUBLIC /craft/[craft] page dynamically binds craft.bannerUrl');
+    assert(publicCraftPage.includes('craft?.bannerUrl') && publicCraftPage.includes("load('/api/crafts')"), 'PUBLIC /craft/[craft] hydrates the saved craft banner from the crafts API');
 
     // Restore original banner
     await prisma.craft.update({
@@ -551,9 +551,13 @@ async function runTests() {
   // Test 14: Membership Settings mBoB QR Code
   console.log('\n>>> 15. TESTING: Membership Settings mBoB QR Code Upload');
   {
-    const mbobPage = fs.readFileSync(path.join(rootDir, 'src/app/(admin)/admin/membership-settings/page.tsx'), 'utf-8');
-    assert(mbobPage.includes('mBoB QR Code Image') && mbobPage.includes('FileUploadInput'), 
-      'Membership Settings uses FileUploadInput for official mBoB QR code upload');
+    const donateSettingsPage = fs.readFileSync(path.join(rootDir, 'src/app/(admin)/admin/donate-settings/page.tsx'), 'utf-8');
+    assert(donateSettingsPage.includes('label="mBoB Official QR Code Image"') && donateSettingsPage.includes('FileUploadInput'),
+      'Donate Settings uploads the official mBoB QR code');
+    const paymentsPage = fs.readFileSync(path.join(rootDir, 'src/app/(admin)/admin/payments/page.tsx'), 'utf-8');
+    assert(paymentsPage.includes('config.mbob.qrImageUrl'), 'Admin Payments exposes the saved mBoB QR image URL');
+    const publicPaymentsApi = fs.readFileSync(path.join(rootDir, 'src/app/api/payment-methods/route.ts'), 'utf-8');
+    assert(publicPaymentsApi.includes('gateways.bob?.qrUrl'), 'Public payment methods return the QR saved by Donate Settings');
   }
 
   console.log('\n================================================================');

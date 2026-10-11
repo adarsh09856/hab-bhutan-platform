@@ -81,7 +81,7 @@ export async function GET() {
       bobAccountTitle: bobBanking.accountTitle || setting?.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
       bobBankName: bobBanking.bankName || setting?.checkoutBankName || 'Bank of Bhutan (BoB)',
       bobPhone: bobBanking.phone || '+975-2-338089',
-      bobQrUrl: bobBanking.qrUrl || '',
+      bobQrUrl: pg.mbob?.qrImageUrl || bobBanking.qrUrl || '',
       bnbAccountNumber: bnbBanking.accountNumber || '',
       bnbAccountTitle: bnbBanking.accountTitle || 'Handicrafts Association of Bhutan',
       bnbBankName: bnbBanking.bankName || 'Bhutan National Bank Limited (BNB)',

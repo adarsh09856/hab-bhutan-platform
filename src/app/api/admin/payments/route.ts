@@ -28,7 +28,11 @@ export async function GET(req: NextRequest) {
     // Merge stored config with defaults
     const card = { ...DEFAULT_PAYMENT_CONFIG.card, ...(gateways.card || {}), enabled: CARD_CHECKOUT_AVAILABLE && Boolean(gateways.card?.enabled) };
     const cod = { ...DEFAULT_PAYMENT_CONFIG.cod, ...(gateways.cod || {}) };
-    const mbob = { ...DEFAULT_PAYMENT_CONFIG.mbob, ...(gateways.mbob || {}) };
+    const mbob = {
+      ...DEFAULT_PAYMENT_CONFIG.mbob,
+      ...(gateways.mbob || {}),
+      qrImageUrl: gateways.mbob?.qrImageUrl || gateways.bob?.qrUrl || '',
+    };
     const bank = {
       ...DEFAULT_PAYMENT_CONFIG.bank,
       bankName: setting?.checkoutBankName || gateways.bank?.bankName || DEFAULT_PAYMENT_CONFIG.bank.bankName,
@@ -98,6 +102,9 @@ export async function POST(req: NextRequest) {
       finalWebhookSecret = existingCard.webhookSecret || '';
     }
 
+    const mbobQrImageUrl = mbob?.qrImageUrl === undefined
+      ? (existingGateways.mbob?.qrImageUrl || existingGateways.bob?.qrUrl || '')
+      : String(mbob.qrImageUrl || '').trim();
     const updatedPaymentGateways = {
       // This JSON also stores localization, styling and other provider settings.
       // Editing payment methods must not discard those independently saved values.
@@ -121,9 +128,13 @@ export async function POST(req: NextRequest) {
         accountTitle: (mbob?.accountTitle || '').trim(),
         accountNumber: (mbob?.accountNumber || '').trim(),
         phone: (mbob?.phone || '').trim(),
-        qrImageUrl: (mbob?.qrImageUrl || '').trim(),
+        qrImageUrl: mbobQrImageUrl,
         requireJournalRef: mbob?.requireJournalRef !== false,
         instructions: (mbob?.instructions || '').trim(),
+      },
+      bob: {
+        ...(existingGateways.bob || {}),
+        qrUrl: mbobQrImageUrl,
       },
       bank: {
         enabled: Boolean(bank?.enabled),

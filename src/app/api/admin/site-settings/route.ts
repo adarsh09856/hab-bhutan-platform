@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
     bobAccountTitle: bobBanking.accountTitle || setting.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
     bobBankName: bobBanking.bankName || setting.checkoutBankName || 'Bank of Bhutan (BoB)',
     bobPhone: bobBanking.phone || '+975-2-338089',
-    bobQrUrl: bobBanking.qrUrl || '',
+    bobQrUrl: pg.mbob?.qrImageUrl || bobBanking.qrUrl || '',
     bnbAccountNumber: bnbBanking.accountNumber || '0000028471019',
     bnbAccountTitle: bnbBanking.accountTitle || 'Handicrafts Association of Bhutan',
     bnbBankName: bnbBanking.bankName || 'Bhutan National Bank Limited (BNB)',
@@ -301,12 +301,16 @@ export async function PUT(req: NextRequest) {
       updatePayload.paymentGateways = {
         ...currentPg,
         ...(updatePayload.paymentGateways || {}),
+        mbob: {
+          ...(currentPg.mbob || {}),
+          ...(body.bobQrUrl !== undefined && { qrImageUrl: body.bobQrUrl }),
+        },
         bob: {
           accountNumber: body.bobAccountNumber ?? currentBob.accountNumber ?? body.checkoutAccountNumber ?? '200847291038',
           accountTitle: body.bobAccountTitle ?? currentBob.accountTitle ?? body.checkoutAccountTitle ?? 'Handicrafts Association of Bhutan',
           bankName: body.bobBankName ?? currentBob.bankName ?? body.checkoutBankName ?? 'Bank of Bhutan (BoB)',
           phone: body.bobPhone ?? currentBob.phone ?? '+975-2-338089',
-          qrUrl: body.bobQrUrl ?? currentBob.qrUrl ?? '',
+          qrUrl: body.bobQrUrl ?? currentPg.mbob?.qrImageUrl ?? currentBob.qrUrl ?? '',
         },
         bnb: {
           accountNumber: body.bnbAccountNumber ?? currentBnb.accountNumber ?? '0000028471019',
@@ -429,6 +433,7 @@ export async function PUT(req: NextRequest) {
     const updatedPaymentGateways = {
       ...currentGateways,
       ...(body.paymentGateways || {}),
+      ...(updatePayload.paymentGateways || {}),
       localization: newLoc,
     };
 
