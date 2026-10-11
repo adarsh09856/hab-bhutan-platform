@@ -1,13 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import passwordPrompt from '../scripts/lib/secure-password.cjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database for HAB Digital Platform...');
+
+  const adminEmail = 'admin@handicraftsbhutan.org';
+  const existingAdminAtStart = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const initialAdminPassword = existingAdminAtStart
+    ? null
+    : await passwordPrompt.promptNewPassword({ label: `Create the initial password for ${adminEmail}` });
 
   // Production Safety Guard: Refuse to execute destructive re-seeds if users already exist
   if (process.env.NODE_ENV === 'production') {
@@ -115,13 +121,12 @@ async function main() {
   });
 
   // 3. Provision Initial Staff Administrator (Bootstrap only — never overwrite existing passwords)
-  const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@handicraftsbhutan.org' } });
-  if (!existingAdmin) {
-    const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD || crypto.randomBytes(16).toString('hex');
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (!existingAdmin && initialAdminPassword) {
     const adminPasswordHash = bcrypt.hashSync(initialAdminPassword, 12);
     await prisma.user.create({
       data: {
-        email: 'admin@handicraftsbhutan.org',
+        email: adminEmail,
         name: 'HAB Secretariat Admin',
         passwordHash: adminPasswordHash,
         roleId: superAdminRole.id,

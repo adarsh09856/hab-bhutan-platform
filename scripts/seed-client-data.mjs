@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
+import passwordPrompt from './lib/secure-password.cjs';
 
 const prisma = new PrismaClient();
 
@@ -29,10 +30,11 @@ function sanitizeJson(val) {
 }
 
 async function main() {
-  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD;
-  if (!adminPassword || adminPassword.length < 14) {
-    throw new Error('Set ADMIN_INITIAL_PASSWORD (at least 14 characters) before running the data seed; no default admin password is provided.');
-  }
+  const adminEmail = 'admin@handicraftsbhutan.org';
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const adminPassword = existingAdmin
+    ? null
+    : await passwordPrompt.promptNewPassword({ label: `Create the initial password for ${adminEmail}` });
 
   console.log('Seeding clusters, outlets, policies, and craft metadata from client-data.json...');
   try {
@@ -859,8 +861,7 @@ async function main() {
   console.log('✓ Seeded roles.');
 
   // 18. Seed Super Admin User & Demo Member
-  const adminEmail = 'admin@handicraftsbhutan.org';
-  const adminHash = bcrypt.hashSync(adminPassword, 12);
+  const adminHash = adminPassword ? bcrypt.hashSync(adminPassword, 12) : undefined;
 
   await prisma.user.upsert({
     where: { email: adminEmail },

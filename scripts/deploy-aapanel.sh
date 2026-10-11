@@ -52,6 +52,9 @@ echo "Generating Prisma Client and applying schema without data-loss override"
 npx prisma generate
 npx prisma db push --skip-generate
 
+# Deliberately do not run seed/reset-admin here: deploys must preserve all existing
+# database credentials and business records. First-time admin provisioning is interactive.
+
 echo "Building production application"
 npm run build
 

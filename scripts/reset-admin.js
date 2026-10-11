@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const { promptNewPassword } = require('./lib/secure-password.cjs');
 
 const prisma = new PrismaClient();
 
@@ -39,11 +40,8 @@ const DEFAULT_FOOTER_COLUMNS = [
 ];
 
 async function resetAdmin() {
-  const newPassword = process.env.HAB_ADMIN_RESET_PASSWORD;
-  if (!newPassword || newPassword.length < 12) {
-    throw new Error('Set HAB_ADMIN_RESET_PASSWORD to a new password of at least 12 characters before running this script.');
-  }
   const email = 'admin@handicraftsbhutan.org';
+  const newPassword = await promptNewPassword({ label: `Enter a new database password for ${email}`, minLength: 12 });
   const hash = bcrypt.hashSync(newPassword, 12);
 
   console.log('1. Resetting admin password for:', email);
