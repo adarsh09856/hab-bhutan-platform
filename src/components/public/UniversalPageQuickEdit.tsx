@@ -84,7 +84,7 @@ export default function UniversalPageQuickEdit() {
   const [active, setActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
-  const [sectionManagement, setSectionManagement] = useState<{ label: string; href: string } | null>(null);
+  const [sectionManagement, setSectionManagement] = useState<{ label: string; href: string; description: string } | null>(null);
   const [draft, setDraft] = useState<Override>({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -178,12 +178,17 @@ export default function UniversalPageQuickEdit() {
         if (!clicked || clicked.closest('a,button,input,textarea,select,[role="button"],[data-hab-no-quick-edit],.hab-section-edit-badge')) return;
         const section = clicked.closest<HTMLElement>('[data-hab-section]');
         const adminLink = section?.querySelector<HTMLAnchorElement>('.hab-section-edit-badge a[href]');
-        if (!section || !adminLink) return;
+        if (!section) return;
         event.preventDefault();
         event.stopPropagation();
-        setSectionManagement({
+        setSectionManagement(adminLink ? {
           label: adminLink.textContent?.replace(/\s+/g, ' ').trim() || 'Manage this section',
           href: adminLink.href,
+          description: 'Use the existing section manager to add or manage this section’s content.',
+        } : {
+          label: 'Add an extra page section',
+          href: `/admin/pages/sections?path=${encodeURIComponent(pathname)}`,
+          description: 'This area has no dedicated section manager. Click visible text to edit it, or add an extra content block below this page in Admin.',
         });
       };
       const target = clicked?.closest<HTMLElement>(EDITABLE_SELECTOR);
@@ -362,7 +367,7 @@ export default function UniversalPageQuickEdit() {
           <strong className="text-sm">Empty section</strong>
           <button type="button" onClick={() => setSectionManagement(null)} aria-label="Close section editor" className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"><X className="w-4 h-4" /><span>Close</span></button>
         </div>
-        <p className="mt-2 text-xs text-slate-600">Use the existing section manager to add or manage this section’s content.</p>
+        <p className="mt-2 text-xs text-slate-600">{sectionManagement.description}</p>
         <a href={sectionManagement.href} className="mt-3 inline-flex rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white">{sectionManagement.label}</a>
       </aside>, document.body,
     )}
