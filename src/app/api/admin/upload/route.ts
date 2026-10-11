@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { storeResponsiveImage } from '@/lib/image-processing';
 
@@ -9,7 +9,12 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser(req);
+    let user;
+    try {
+      user = await requirePermission(req, 'content:edit');
+    } catch (error: any) {
+      return NextResponse.json({ success: false, error: error.message || 'Unauthorized.' }, { status: error.statusCode || 401 });
+    }
     const role = String(user?.roleSlug || user?.role || '').toLowerCase();
     if (!user || !['super_admin', 'staff_operator'].includes(role)) {
       return NextResponse.json({ success: false, error: 'Unauthorized. Staff session required.' }, { status: 401 });

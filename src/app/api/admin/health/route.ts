@@ -36,6 +36,34 @@ export async function GET(req: NextRequest) {
   const uptimeSeconds = Math.round(process.uptime());
   const mem = process.memoryUsage();
   const sessionUser = await getSessionUser(req);
+  let activeUser: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    roleSlug: string;
+    permissions: string[];
+  } | null = null;
+  if (sessionUser && dbConnected) {
+    try {
+      const account = await prisma.user.findUnique({ where: { id: sessionUser.id }, include: { role: true } });
+      if (account?.status === 'ACTIVE' && account.role.status === 'ACTIVE'
+        && (!sessionUser.sessionVersion || sessionUser.sessionVersion >= account.sessionVersion)
+        && (!sessionUser.roleId || sessionUser.roleId === account.roleId)
+        && (!sessionUser.roleVersion || sessionUser.roleVersion === account.role.version)) {
+        activeUser = {
+          id: account.id,
+          name: account.name,
+          email: account.email,
+          role: account.role.slug,
+          roleSlug: account.role.slug,
+          permissions: Array.isArray(account.role.permissions) ? account.role.permissions as string[] : [],
+        };
+      }
+    } catch (error) {
+      console.error('Health account check failed:', error);
+    }
+  }
 
   const isHealthy = dbConnected;
   const statusCode = isHealthy ? 200 : 503;
@@ -63,13 +91,7 @@ export async function GET(req: NextRequest) {
         stalenessHours: fxInfo.stalenessHours || 0,
         isBlocked: fxInfo.blocked,
       },
-      user: sessionUser ? {
-        id: sessionUser.id,
-        name: sessionUser.name,
-        email: sessionUser.email,
-        role: sessionUser.role || sessionUser.roleSlug,
-        roleSlug: sessionUser.roleSlug,
-      } : null,
+      user: activeUser,
     },
     { status: statusCode }
   );

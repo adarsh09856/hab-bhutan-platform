@@ -83,6 +83,7 @@ export default function UniversalPageQuickEdit() {
   const { language } = useLanguage();
   const [active, setActive] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
+  const [staffPermissions, setStaffPermissions] = useState<string[]>([]);
   const [selected, setSelected] = useState<HTMLElement | null>(null);
   const [sectionManagement, setSectionManagement] = useState<{ label: string; href: string; description: string } | null>(null);
   const [draft, setDraft] = useState<Override>({});
@@ -101,9 +102,12 @@ export default function UniversalPageQuickEdit() {
       .then((response) => response.json())
       .then((data) => {
         const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
-        if (!cancelled) setIsStaff(['super_admin', 'staff_operator'].includes(role));
+        if (!cancelled) {
+          setIsStaff(['super_admin', 'staff_operator'].includes(role));
+          setStaffPermissions(Array.isArray(data?.user?.permissions) ? data.user.permissions : []);
+        }
       })
-      .catch(() => { if (!cancelled) setIsStaff(false); });
+      .catch(() => { if (!cancelled) { setIsStaff(false); setStaffPermissions([]); } });
     return () => { cancelled = true; };
   }, [pathname]);
 
@@ -382,7 +386,13 @@ export default function UniversalPageQuickEdit() {
     ? selected.closest<HTMLElement>('[data-hab-gallery]') : null;
   const galleryType = galleryElement?.dataset.habGallery;
   const galleryId = galleryElement?.dataset.habGalleryId;
-  const canAddSlide = Boolean(galleryType === 'hero' || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '') && galleryElement?.dataset.habGalleryView !== 'card'));
+  const hasPermission = (permission: string) => staffPermissions.includes('*') || staffPermissions.includes(permission);
+  const requiredPermissions = galleryType === 'product' ? ['products:view', 'products:edit']
+    : galleryType === 'outlet' ? []
+      : galleryType ? ['content:view', 'content:edit'] : ['content:edit'];
+  const canSaveSelection = requiredPermissions.every(hasPermission);
+  const canAddSlide = Boolean(canSaveSelection && (galleryType === 'hero' && hasPermission('content:create')
+    || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '') && galleryElement?.dataset.habGalleryView !== 'card')));
 
   const addSlide = async () => {
     const url = newSlideUrl.trim();
@@ -460,7 +470,7 @@ export default function UniversalPageQuickEdit() {
         {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : 'its gallery'} in Admin and on other public pages.</p>}
         {link && !galleryElement && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-        <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
+        <button type="button" disabled={!canSaveSelection} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
         {canAddSlide && <div className="mt-4 border-t border-slate-200 pt-3">
           <strong className="text-xs">Add another {galleryType === 'product' ? 'product photo' : 'slide'}</strong>
           <p className="mt-1 text-xs text-slate-500">This adds a new photo to the {galleryType} gallery; it does not replace the current one.</p>
@@ -483,9 +493,10 @@ export default function UniversalPageQuickEdit() {
         {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
       </>}
       {message && <p className="mt-3 text-xs text-slate-600">{message}</p>}
+      {!canSaveSelection && <p className="mt-3 text-xs text-amber-800" role="status">Your role cannot save this {galleryType === 'product' ? 'product image' : 'content'}. Ask an administrator for {requiredPermissions.join(' and ')} access.</p>}
       <div className="mt-4 flex justify-end gap-2">
         {(!galleryElement || overridesRef.current[selected.dataset.habEditKey || '']) && <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>}
-        <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryType === 'project' ? 'Save cover' : galleryElement ? 'Save gallery' : 'Save live'}</button>
+        <button type="button" disabled={saving || !canSaveSelection} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryType === 'project' ? 'Save cover' : galleryElement ? 'Save gallery' : 'Save live'}</button>
       </div>
     </aside>,
     document.body

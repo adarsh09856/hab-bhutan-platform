@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { cleanOutletGalleryMarker, displayOutletGallery, packOutletGallery, readOutletGallery } from '@/lib/outlet-gallery';
 
 export const dynamic = 'force-dynamic';
 
 async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff =
-    user.roleSlug === 'super_admin' ||
-    user.roleSlug === 'staff_operator' ||
-    user.permissions?.includes('*') ||
-    user.permissions?.includes('content:edit');
-  return isStaff ? user : null;
+  try {
+    return await requirePermission(req, 'content:edit');
+  } catch {
+    return null;
+  }
 }
 
 function packOutletNote(note?: string | null, imageUrl?: string | null, currentNote?: string | null) {
