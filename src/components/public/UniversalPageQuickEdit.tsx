@@ -280,15 +280,18 @@ export default function UniversalPageQuickEdit() {
           const { products } = await requestJson('/api/admin/products');
           const product = products.find((item: { code: string }) => item.code === galleryId);
           if (!product) throw new Error('Product not found in Admin.');
-          const position = Array.from(galleryElement.querySelectorAll('.gallery__slide img')).indexOf(selected);
+          const position = galleryElement.dataset.habGalleryView === 'card'
+            ? 0 : Array.from(galleryElement.querySelectorAll('.gallery__slide img')).indexOf(selected);
           if (position < 0) throw new Error('Could not identify this product photo.');
           const images: Array<{ url: string; role?: string; alt?: string }> = Array.isArray(product.images)
             ? product.images.map((item: string | { url: string; role?: string; alt?: string }) => typeof item === 'string' ? { url: item } : item)
             : [];
           const source = selected.getAttribute('src');
           const sourceIndex = images.findIndex(item => item.url === source);
-          const target = sourceIndex >= 0 ? sourceIndex : position;
-          if (target < images.length) images[target] = { ...images[target], url: nextUrl, alt: draft.alt?.trim() || selected.alt };
+          const isCard = galleryElement.dataset.habGalleryView === 'card';
+          const primaryIndex = images.findIndex(item => item.role?.toLowerCase() === 'primary');
+          const target = isCard ? Math.max(0, primaryIndex) : sourceIndex >= 0 ? sourceIndex : position;
+          if (target < images.length) images[target] = { ...images[target], url: nextUrl, ...(isCard ? { role: 'primary' } : {}), alt: draft.alt?.trim() || selected.alt };
           else if (position === 0) images.unshift({ url: nextUrl, role: 'primary', alt: draft.alt?.trim() || selected.alt });
           else throw new Error('This product photo is not available in Admin.');
           await write('/api/admin/products', 'PATCH', { id: product.id, images });
@@ -379,7 +382,7 @@ export default function UniversalPageQuickEdit() {
     ? selected.closest<HTMLElement>('[data-hab-gallery]') : null;
   const galleryType = galleryElement?.dataset.habGallery;
   const galleryId = galleryElement?.dataset.habGalleryId;
-  const canAddSlide = Boolean(galleryType === 'hero' || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '')));
+  const canAddSlide = Boolean(galleryType === 'hero' || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '') && galleryElement?.dataset.habGalleryView !== 'card'));
 
   const addSlide = async () => {
     const url = newSlideUrl.trim();
@@ -455,7 +458,7 @@ export default function UniversalPageQuickEdit() {
           <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
         </>}
         {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : 'its gallery'} in Admin and on other public pages.</p>}
-        {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
+        {link && !galleryElement && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
         {canAddSlide && <div className="mt-4 border-t border-slate-200 pt-3">

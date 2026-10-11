@@ -787,7 +787,7 @@ export default function HomePage() {
             const makerName = typeof p.maker === 'object' ? p.maker?.name : p.maker;
             return (
               <article key={`${p.code}-${pIdx}`} className="card product">
-                <Link className="product__shot" href={`/product/${p.code}`}>
+                <Link className="product__shot" href={`/product/${p.code}`} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                   <figure className="frame frame--square has-image">
                     <img
                       src={productImg}

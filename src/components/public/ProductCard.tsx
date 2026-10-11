@@ -48,7 +48,7 @@ export default function ProductCard({
 
   return (
     <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
-      <Link href={`/product/${code}`} data-cms-img className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
+      <Link href={`/product/${code}`} data-cms-img data-hab-gallery="product" data-hab-gallery-id={code} data-hab-gallery-view="card" className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
         <img
           src={imgSrc}
           alt={imgSrc.includes('/assets/photos/image-unavailable.svg') ? `Photo unavailable for ${name}` : name}

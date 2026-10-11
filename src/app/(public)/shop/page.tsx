@@ -274,7 +274,7 @@ function ShopContent() {
               <div className="grid grid--3" id="shopProducts">
                 {filteredAndSortedProducts.map((p) => (
                   <article key={p.code} className="card product">
-                    <Link className="product__shot" href={`/product/${p.code}`}>
+                    <Link className="product__shot" href={`/product/${p.code}`} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                       <figure className="frame frame--square has-image">
                         <img
                           src={p.image_path || '/assets/photos/image-unavailable.svg'}
