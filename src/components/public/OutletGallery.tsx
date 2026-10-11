@@ -1,19 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-const referenceSlides = [
-  '/assets/photos/hero-2-punakha.jpg',
-  '/assets/photos/hero-4-textiles.jpg',
-  '/assets/photos/hero-1-weaving.jpg',
-  '/assets/photos/hero-5-desho.jpg',
-];
+import { displayOutletGallery } from '@/lib/outlet-gallery';
 
 export default function OutletGallery({ image, galleryImages = [], name, outletKey }: { image?: string; galleryImages?: string[]; name: string; outletKey?: string }) {
-  const isPunakhaMarket = outletKey === 'punakha-market' || (!outletKey && /punakha crafts market/i.test(name));
-  const additional = isPunakhaMarket
-    ? [...referenceSlides.slice(1), ...galleryImages]
-    : galleryImages;
+  const key = outletKey || (/punakha crafts market/i.test(name) ? 'punakha-market' : undefined);
+  const additional = displayOutletGallery(key, galleryImages);
   const slides = Array.from(new Set([image, ...additional]
     .filter((src): src is string => Boolean(src) && !src!.includes('image-unavailable'))));
   const [index, setIndex] = useState(0);
@@ -38,7 +30,7 @@ export default function OutletGallery({ image, galleryImages = [], name, outletK
     style={{ minHeight: 280 }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
     onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}>
     <div className="carousel__track">
-      {slides.map((src, i) => <div key={src} className={`carousel__slide ${i === index % slides.length ? 'is-on' : ''}`} aria-hidden={i !== index % slides.length}>
+      {slides.map((src, i) => <div key={src} className={`carousel__slide ${i === index % slides.length ? 'is-on' : ''}`} aria-hidden={i !== index % slides.length} style={{ pointerEvents: i === index % slides.length ? 'auto' : 'none' }}>
         <img src={src} alt={`${name} — photograph ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>)}
     </div>

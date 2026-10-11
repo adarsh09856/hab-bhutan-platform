@@ -244,6 +244,71 @@ export default function UniversalPageQuickEdit() {
     const storagePath = /^(header|footer|utility)\//.test(key) ? '/__global__' : pathname;
     setSaving(true); setMessage('');
     try {
+      if (selected instanceof HTMLImageElement && galleryElement && galleryType) {
+        const nextUrl = draft.src?.trim() || '';
+        if (!/^\/(?!\/)/.test(nextUrl) && !/^https:\/\//i.test(nextUrl)) {
+          throw new Error('Use a site image path or HTTPS URL.');
+        }
+        const requestJson = async (url: string, init?: RequestInit) => {
+          const response = await fetch(url, { credentials: 'include', cache: 'no-store', ...init });
+          const data = await response.json();
+          if (!response.ok || !data.success) throw new Error(data.error || 'Could not update the gallery.');
+          return data;
+        };
+        const write = (url: string, method: string, payload: unknown) => requestJson(url, {
+          method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+        });
+        if (galleryType === 'hero') {
+          const id = selected.dataset.habGallerySlideId;
+          if (!id) throw new Error('This hero slide has not loaded yet. Please try again.');
+          await write(`/api/admin/hero-slides/${encodeURIComponent(id)}`, 'PUT', { imageUrl: nextUrl, altText: draft.alt?.trim() || selected.alt });
+        } else if (galleryType === 'outlet' && galleryId) {
+          const { outlets } = await requestJson('/api/admin/outlets');
+          const outlet = outlets.find((item: { key: string }) => item.key === galleryId);
+          if (!outlet) throw new Error('Outlet not found in Admin.');
+          const position = Array.from(galleryElement.querySelectorAll('img')).indexOf(selected);
+          if (position < 0) throw new Error('Could not identify this outlet photo.');
+          if (position === 0) {
+            await write('/api/admin/outlets', 'PUT', { id: outlet.id, imageUrl: nextUrl });
+          } else {
+            const images: string[] = Array.isArray(outlet.galleryImages) ? [...outlet.galleryImages] : [];
+            if (position > images.length) throw new Error('This outlet photo is not available in Admin.');
+            images[position - 1] = nextUrl;
+            await write('/api/admin/outlets', 'PUT', { id: outlet.id, galleryImages: images });
+          }
+        } else if (galleryType === 'product' && galleryId) {
+          const { products } = await requestJson('/api/admin/products');
+          const product = products.find((item: { code: string }) => item.code === galleryId);
+          if (!product) throw new Error('Product not found in Admin.');
+          const position = Array.from(galleryElement.querySelectorAll('.gallery__slide img')).indexOf(selected);
+          if (position < 0) throw new Error('Could not identify this product photo.');
+          const images: Array<{ url: string; role?: string; alt?: string }> = Array.isArray(product.images)
+            ? product.images.map((item: string | { url: string; role?: string; alt?: string }) => typeof item === 'string' ? { url: item } : item)
+            : [];
+          const source = selected.getAttribute('src');
+          const sourceIndex = images.findIndex(item => item.url === source);
+          const target = sourceIndex >= 0 ? sourceIndex : position;
+          if (target < images.length) images[target] = { ...images[target], url: nextUrl, alt: draft.alt?.trim() || selected.alt };
+          else if (position === 0) images.unshift({ url: nextUrl, role: 'primary', alt: draft.alt?.trim() || selected.alt });
+          else throw new Error('This product photo is not available in Admin.');
+          await write('/api/admin/products', 'PATCH', { id: product.id, images });
+        } else if (galleryType === 'page' && galleryId) {
+          const { page } = await requestJson(`/api/admin/pages/${encodeURIComponent(galleryId)}`);
+          const position = Array.from(galleryElement.querySelectorAll('img')).indexOf(selected);
+          const images: Array<{ url: string; caption?: string }> = Array.isArray(page.galleryImages) ? [...page.galleryImages] : [];
+          if (position < 0 || position >= images.length) throw new Error('This page photo is not available in Admin.');
+          images[position] = { ...images[position], url: nextUrl, caption: draft.alt?.trim() || images[position].caption };
+          await write(`/api/admin/pages/${encodeURIComponent(galleryId)}`, 'PUT', { galleryImages: images });
+        } else {
+          throw new Error('This gallery is not linked to an Admin record.');
+        }
+        if (overridesRef.current[key]) {
+          await write('/api/page-overrides', 'PUT', { pathname: storagePath, key, remove: true, override: {} });
+          delete overridesRef.current[key];
+        }
+        window.location.reload();
+        return;
+      }
       const response = await fetch('/api/page-overrides', {
         method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pathname: storagePath, key, override: draft }),
@@ -380,8 +445,11 @@ export default function UniversalPageQuickEdit() {
       {image ? <>
         <label className="block text-xs font-semibold mb-1">Image URL</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.src || ''} onChange={(e) => setDraft({ ...draft, src: e.target.value })} />
-        <label className="block text-xs font-semibold mb-1">Alternative text</label>
-        <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
+        {galleryType !== 'outlet' && <>
+          <label className="block text-xs font-semibold mb-1">Alternative text</label>
+          <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
+        </>}
+        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates its gallery in Admin and on other public pages.</p>}
         {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
@@ -408,8 +476,8 @@ export default function UniversalPageQuickEdit() {
       </>}
       {message && <p className="mt-3 text-xs text-slate-600">{message}</p>}
       <div className="mt-4 flex justify-end gap-2">
-        <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>
-        <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : 'Save live'}</button>
+        {(!galleryElement || overridesRef.current[selected.dataset.habEditKey || '']) && <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>}
+        <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryElement ? 'Save gallery' : 'Save live'}</button>
       </div>
     </aside>,
     document.body

@@ -482,6 +482,7 @@ export default function HomePage() {
   useEffect(() => {
     if (heroSlides.length <= 1) return;
     const t = setInterval(() => {
+      if (document.body.classList.contains('hab-visual-edit-on')) return;
       setCurrentHero((c) => (c + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(t);
@@ -603,6 +604,7 @@ export default function HomePage() {
         <div className="hero__visual">
           <figure className="frame frame--hero has-image relative overflow-hidden rounded-[16px] shadow-sm group" data-hab-gallery="hero">
             <img
+              data-hab-gallery-slide-id={heroSlides[currentHero]?.id || ''}
               src={heroSlides[currentHero]?.imageUrl || '/assets/photos/image-unavailable.svg'}
               alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || ''}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}

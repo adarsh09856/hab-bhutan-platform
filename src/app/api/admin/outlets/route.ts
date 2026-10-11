@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUser } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
-import { cleanOutletGalleryMarker, packOutletGallery, readOutletGallery } from '@/lib/outlet-gallery';
+import { cleanOutletGalleryMarker, displayOutletGallery, packOutletGallery, readOutletGallery } from '@/lib/outlet-gallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +44,7 @@ function unpackOutlet(outlet: any) {
     ...outlet,
     note: cleanOutletGalleryMarker(note) || null,
     imageUrl: imageUrl || null,
-    galleryImages: readOutletGallery(outlet.note),
+    galleryImages: displayOutletGallery(outlet.key, readOutletGallery(outlet.note)),
   };
 }
 

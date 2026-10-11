@@ -86,6 +86,7 @@ export default async function CustomPageRoute({ params }: CustomPageRouteProps) 
     excerpt: page.excerpt,
     content: page.content,
     bannerUrl: page.bannerUrl,
+    galleryImages: page.galleryImages,
     seoTitle: page.seoTitle,
     seoDescription: page.seoDescription,
     isPublished: page.isPublished,

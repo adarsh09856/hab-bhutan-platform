@@ -1,5 +1,17 @@
 const galleryMarker = /<!--\s*HAB_GALLERY:\s*(\[[\s\S]*?\])\s*-->/;
 
+export const PUNAKHA_REFERENCE_GALLERY = [
+  '/assets/photos/hero-4-textiles.jpg',
+  '/assets/photos/hero-1-weaving.jpg',
+  '/assets/photos/hero-5-desho.jpg',
+];
+
+export function displayOutletGallery(key: string | undefined, savedImages: string[]): string[] {
+  return key === 'punakha-market' && savedImages.length === 0
+    ? [...PUNAKHA_REFERENCE_GALLERY]
+    : savedImages;
+}
+
 export function readOutletGallery(note: string | null | undefined): string[] {
   const match = note?.match(galleryMarker);
   if (!match) return [];
