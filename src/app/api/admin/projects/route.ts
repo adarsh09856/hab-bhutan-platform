@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { getProjectCoverPhotoUrl } from '@/lib/project-media';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +23,9 @@ function unpackProject(p: any) {
   return {
     ...p,
     activities,
-    coverPhotoUrl: coverPhotoUrl || p.coverPhotoUrl || '',
+    coverPhotoUrl: getProjectCoverPhotoUrl({ ...p, coverPhotoUrl }),
     reportPdfUrl: reportPdfUrl || p.reportPdfUrl || '',
-    image_path: coverPhotoUrl || p.image_path || '',
+    image_path: getProjectCoverPhotoUrl({ ...p, coverPhotoUrl }),
   };
 }
 

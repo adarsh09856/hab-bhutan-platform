@@ -29,6 +29,11 @@ function sanitizeJson(val) {
 }
 
 async function main() {
+  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD;
+  if (!adminPassword || adminPassword.length < 14) {
+    throw new Error('Set ADMIN_INITIAL_PASSWORD (at least 14 characters) before running the data seed; no default admin password is provided.');
+  }
+
   console.log('Seeding clusters, outlets, policies, and craft metadata from client-data.json...');
   try {
     await prisma.$executeRawUnsafe("SET client_encoding = 'UTF8';");
@@ -855,7 +860,6 @@ async function main() {
 
   // 18. Seed Super Admin User & Demo Member
   const adminEmail = 'admin@handicraftsbhutan.org';
-  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'HabAdminProduction2026!#';
   const adminHash = bcrypt.hashSync(adminPassword, 12);
 
   await prisma.user.upsert({

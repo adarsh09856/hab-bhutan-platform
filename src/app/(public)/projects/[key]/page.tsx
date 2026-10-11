@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
+import { getProjectCoverPhotoUrl } from '@/lib/project-media';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
 
   const storedMedia = dbProj.activities && !Array.isArray(dbProj.activities) && typeof dbProj.activities === 'object' ? dbProj.activities : {};
   const savedActivities = Array.isArray(dbProj.activities) ? dbProj.activities : Array.isArray(storedMedia.list) ? storedMedia.list : [];
-  const coverPhotoUrl = typeof storedMedia.coverPhotoUrl === 'string' ? storedMedia.coverPhotoUrl : '';
+  const coverPhotoUrl = getProjectCoverPhotoUrl(dbProj);
 
   const project = {
     ...dbProj,
