@@ -96,7 +96,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           <p className="lede lede--wide">{project.summary}</p>
         </div>
 
-        {bannerImg && <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+        {bannerImg && <figure className="frame frame--banner has-image" data-cms-img data-hab-gallery="project" data-hab-gallery-id={project.id} style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={projectTitle}

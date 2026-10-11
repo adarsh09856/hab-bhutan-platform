@@ -124,7 +124,7 @@ export default function ProjectsPage() {
               className={`projectcard ${p.coverPhotoUrl || p.image_path ? '' : 'projectcard--no-image'}`}
               id={p.key}
             >
-              {p.coverPhotoUrl || p.image_path ? <figure className="frame frame--projshot">
+              {p.coverPhotoUrl || p.image_path ? <figure className="frame frame--projshot" data-hab-gallery="project" data-hab-gallery-id={p.key}>
                 <img src={p.coverPhotoUrl || p.image_path} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </figure> : null}
               <div className="projectcard__body">

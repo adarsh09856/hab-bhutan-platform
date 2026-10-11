@@ -299,6 +299,11 @@ export default function UniversalPageQuickEdit() {
           if (position < 0 || position >= images.length) throw new Error('This page photo is not available in Admin.');
           images[position] = { ...images[position], url: nextUrl, caption: draft.alt?.trim() || images[position].caption };
           await write(`/api/admin/pages/${encodeURIComponent(galleryId)}`, 'PUT', { galleryImages: images });
+        } else if (galleryType === 'project' && galleryId) {
+          const { projects } = await requestJson('/api/admin/projects');
+          const project = projects.find((item: { id: string }) => item.id === galleryId);
+          if (!project) throw new Error('Project not found in Admin.');
+          await write('/api/admin/projects', 'PUT', { id: project.id, coverPhotoUrl: nextUrl });
         } else {
           throw new Error('This gallery is not linked to an Admin record.');
         }
@@ -445,11 +450,11 @@ export default function UniversalPageQuickEdit() {
       {image ? <>
         <label className="block text-xs font-semibold mb-1">Image URL</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.src || ''} onChange={(e) => setDraft({ ...draft, src: e.target.value })} />
-        {galleryType !== 'outlet' && <>
+        {galleryType !== 'outlet' && galleryType !== 'project' && <>
           <label className="block text-xs font-semibold mb-1">Alternative text</label>
           <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
         </>}
-        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates its gallery in Admin and on other public pages.</p>}
+        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : 'its gallery'} in Admin and on other public pages.</p>}
         {link && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
@@ -477,7 +482,7 @@ export default function UniversalPageQuickEdit() {
       {message && <p className="mt-3 text-xs text-slate-600">{message}</p>}
       <div className="mt-4 flex justify-end gap-2">
         {(!galleryElement || overridesRef.current[selected.dataset.habEditKey || '']) && <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>}
-        <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryElement ? 'Save gallery' : 'Save live'}</button>
+        <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryType === 'project' ? 'Save cover' : galleryElement ? 'Save gallery' : 'Save live'}</button>
       </div>
     </aside>,
     document.body
