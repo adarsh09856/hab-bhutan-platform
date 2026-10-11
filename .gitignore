@@ -46,4 +46,5 @@ Thumbs.db
 *.zip
 typography-audit.json
 .db_data/
+.data/private-uploads/
 .backups/

@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { paymentProofViewUrl } from '@/lib/payment-proof-links';
 import {
   Heart,
   Plus,
@@ -785,7 +786,7 @@ SWIFT Code: BOBTBLBT`;
                           {d.proofUrl ? (
                             <button
                               type="button"
-                              onClick={() => setSelectedProofUrl(d.proofUrl || null)}
+                              onClick={() => setSelectedProofUrl(d.proofUrl ? paymentProofViewUrl(d.proofUrl) : null)}
                               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-colors shadow-xs cursor-pointer"
                               title="View uploaded payment slip screenshot"
                             >

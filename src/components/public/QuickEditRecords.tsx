@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, RefreshCw, Save, Trash2, X } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import { parseProjectResultLine, projectResultLine } from '@/lib/project-results';
+import { paymentProofViewUrl } from '@/lib/payment-proof-links';
 
 type Field = { key: string; label: string; kind?: 'text' | 'long' | 'number' | 'check' | 'image' | 'file' | 'lines' | 'date' | 'password' | 'select'; options?: string[]; required?: boolean; createOnly?: boolean };
 type Config = { endpoint: string; collection: string; title: string; labelKey: string; fields: Field[]; contentType?: string; updateMethod?: 'PUT' | 'PATCH'; canCreate?: boolean; canDelete?: boolean; governanceCategory?: string; governanceCardSection?: 'strategic' | 'mandate' | 'ethics' };
@@ -543,13 +544,13 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
               {draft.rejectionReason && <p className="mt-1 whitespace-pre-wrap">Decision reason: {String(draft.rejectionReason)}</p>}
               <div className="mt-2 flex flex-wrap gap-3">{[['uploadedDocUrl', 'Open payment proof'], ['uploadedCidUrl', 'Open CID document']].map(([key, label]) => {
                 const url = String(draft[key] || '');
-                return url && (url.startsWith('/uploads/') || /^https:\/\//i.test(url)) ? <a key={key} href={url} target="_blank" rel="noopener noreferrer" className="font-bold underline">{label}</a> : null;
+                return url && (url.startsWith('/uploads/') || url.startsWith('/api/payment-proofs/') || /^https:\/\//i.test(url)) ? <a key={key} href={paymentProofViewUrl(url)} target="_blank" rel="noopener noreferrer" className="font-bold underline">{label}</a> : null;
               })}</div>
             </div>}
             {sectionType === 'donate' && <div className="mb-3 rounded-lg border bg-slate-50 p-3 text-xs text-slate-700">
               <strong className="text-sm">Receipt · {String(draft.receiptNumber || 'New donation')} · {String(draft.status || 'PENDING')}</strong>
               <p className="mt-1">Pillar: {String(draft.pillar?.title || draft.pillarKey || 'Not selected')} · Amount: USD {Number(draft.amountUSD || 0).toFixed(2)} · {String(draft.frequency || 'ONE_TIME')}</p>
-              {draft.proofUrl && <a className="mt-2 inline-block text-[#8B2E24] underline" href={String(draft.proofUrl)} target="_blank" rel="noreferrer">View payment proof</a>}
+              {draft.proofUrl && <a className="mt-2 inline-block text-[#8B2E24] underline" href={paymentProofViewUrl(String(draft.proofUrl))} target="_blank" rel="noreferrer">View payment proof</a>}
               <p className="mt-2 text-slate-500">Voiding preserves the receipt record and removes completed gifts from the public totals.</p>
             </div>}
             {sectionType === 'wholesale' && draft.notes && <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
@@ -557,8 +558,8 @@ export default function QuickEditRecords({ sectionType }: { sectionType: string 
               <pre className="mt-1 whitespace-pre-wrap break-all font-sans">{String(draft.notes)}</pre>
               {(() => {
                 const proof = String(draft.notes).match(/Payment Slip Proof:\s*(\S+)/i)?.[1];
-                return proof && (proof.startsWith('/uploads/') || /^https?:\/\//i.test(proof))
-                  ? <a href={proof} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-bold underline">Open deposit proof</a>
+                return proof && (proof.startsWith('/uploads/') || proof.startsWith('/api/payment-proofs/') || /^https?:\/\//i.test(proof))
+                  ? <a href={paymentProofViewUrl(proof)} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-bold underline">Open deposit proof</a>
                   : null;
               })()}
             </div>}

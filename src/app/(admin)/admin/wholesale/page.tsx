@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import { paymentProofViewUrl } from '@/lib/payment-proof-links';
 import WholesaleProductCreate from '@/components/admin/WholesaleProductCreate';
 import { 
   Building2, 
@@ -66,7 +67,7 @@ const EMPTY_FORM = {
 
 function paymentProofFromNotes(notes?: string | null) {
   const value = notes?.match(/^Payment Slip Proof:\s*(\S+)/m)?.[1] || '';
-  return value.startsWith('/uploads/') ? value : '';
+  return value.startsWith('/uploads/') || value.startsWith('/api/payment-proofs/') ? paymentProofViewUrl(value) : '';
 }
 
 export default function AdminWholesalePage() {

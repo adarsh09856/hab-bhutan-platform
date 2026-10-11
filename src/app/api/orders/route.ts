@@ -9,9 +9,8 @@ import { sendOrderConfirmationEmail } from '@/lib/email-service';
 import { notifyStaff } from '@/lib/transaction-notifications';
 import { resolveBankTransferConfig } from '@/lib/payments';
 import { isPublicCatalogProduct } from '@/lib/public-catalog-visibility';
-import { stat } from 'node:fs/promises';
-import path from 'node:path';
 import { getFallbackOrders } from '@/lib/order-store';
+import { PAYMENT_PROOF_PREFIX, paymentProofExists } from '@/lib/payment-proof-storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -167,11 +166,13 @@ export async function POST(req: NextRequest) {
 
     if (normalizedPaymentMethod === 'BANK') {
       const proof = String(body.proofUrl || '');
-      if (!/^\/uploads\/[a-zA-Z0-9_-]+\.(?:png|jpe?g|webp|pdf)$/i.test(proof)) {
+      const isLegacyProof = /^\/uploads\/[a-zA-Z0-9_-]+\.(?:png|jpe?g|webp|pdf)$/i.test(proof);
+      if (!isLegacyProof && !proof.startsWith(PAYMENT_PROOF_PREFIX)) {
         return NextResponse.json({ success: false, error: 'Upload your bank transfer receipt before placing the order.' }, { status: 400 });
       }
       try {
-        if (!(await stat(path.join(process.cwd(), 'public', proof.slice(1)))).isFile()) throw new Error('Missing proof');
+        const exists = await paymentProofExists(proof);
+        if (!exists) throw new Error('Missing proof');
       } catch {
         return NextResponse.json({ success: false, error: 'Payment proof was not found. Please upload it again.' }, { status: 400 });
       }

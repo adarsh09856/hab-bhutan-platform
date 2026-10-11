@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stat } from 'fs/promises';
-import path from 'path';
 import prisma from '@/lib/prisma';
 import { notifySubmission } from '@/lib/transaction-notifications';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
+import { PAYMENT_PROOF_PREFIX, paymentProofExists } from '@/lib/payment-proof-storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,12 +62,13 @@ export async function POST(req: NextRequest) {
     if (!paymentReference || paymentReference.length > 120) {
       return NextResponse.json({ success: false, error: 'Enter the mBoB, BNB, or bank transfer reference (up to 120 characters).' }, { status: 400 });
     }
-    if (!/^\/uploads\/hab-[a-z0-9-]+(?:\.[a-z0-9]+)?$/i.test(uploadedProof)) {
+    const isLegacyProof = /^\/uploads\/hab-[a-z0-9-]+(?:\.[a-z0-9]+)?$/i.test(uploadedProof);
+    if (!isLegacyProof && !uploadedProof.startsWith(PAYMENT_PROOF_PREFIX)) {
       return NextResponse.json({ success: false, error: 'Upload your payment receipt or deposit slip before submitting.' }, { status: 400 });
     }
     try {
-      const proofFile = await stat(path.join(process.cwd(), 'public', uploadedProof.slice(1)));
-      if (!proofFile.isFile()) throw new Error('Payment proof is not a file.');
+      const exists = await paymentProofExists(uploadedProof);
+      if (!exists) throw new Error('Payment proof is not a file.');
     } catch {
       return NextResponse.json({ success: false, error: 'The uploaded payment proof could not be found. Please upload it again.' }, { status: 400 });
     }

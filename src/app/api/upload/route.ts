@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
 import { validatePublicUpload } from '@/lib/upload-validation';
+import { storePaymentProof } from '@/lib/payment-proof-storage';
+import { checkDurableRateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+    const limit = await checkDurableRateLimit(`payment-proof-upload:${ip}`, 30, 3600);
+    if (!limit.success) return NextResponse.json({ error: 'Too many proof uploads. Please try again later.' }, { status: 429 });
     const formData = await req.formData();
     const file = (formData.get('file') || formData.get('image')) as File | null;
 
@@ -36,9 +39,6 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadsDir, { recursive: true });
-
     const ext = validatePublicUpload(buffer, file.type);
     if (!ext) {
       return NextResponse.json(
@@ -46,17 +46,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const cleanFileName = `hab-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}.${ext}`;
-    const filePath = join(uploadsDir, cleanFileName);
-
-    await writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/${cleanFileName}`;
+    const publicUrl = await storePaymentProof(buffer, ext);
 
     return NextResponse.json({
       success: true,
       url: publicUrl,
-      fileName: cleanFileName,
+      fileName: publicUrl.split('/').pop(),
     });
   } catch (err: any) {
     return NextResponse.json(

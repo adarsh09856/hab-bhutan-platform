@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import { paymentProofViewUrl } from '@/lib/payment-proof-links';
 import { 
   Package, 
   Truck, 
@@ -731,7 +732,7 @@ export default function AdminOrdersPage() {
                           <div className="mt-1">
                             <button
                               type="button"
-                              onClick={() => setSelectedProofUrl(o.proofUrl)}
+                              onClick={() => setSelectedProofUrl(paymentProofViewUrl(o.proofUrl))}
                               className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-semibold transition-colors cursor-pointer"
                               title="View customer payment proof slip"
                             >

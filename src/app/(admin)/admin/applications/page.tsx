@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { CRAFTS } from '@/lib/data';
+import { paymentProofViewUrl } from '@/lib/payment-proof-links';
 import { UserCheck, Search, CheckCircle, XCircle, Clock, Shield, AlertCircle, FileText, Plus, Edit2, Trash2, Copy, Check, CheckCircle2, Eye, KeyRound } from 'lucide-react';
 
 const DZONGKHAGS = [
@@ -514,7 +515,7 @@ export default function AdminApplicationsPage() {
                         ✓ Payment Deposit Slip / Proof Uploaded:
                       </span>
                       <a
-                        href={selectedApp.uploadedDocUrl}
+                        href={paymentProofViewUrl(selectedApp.uploadedDocUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-xs text-sky-400 hover:text-sky-300 underline font-mono flex items-center gap-1.5"
@@ -530,7 +531,7 @@ export default function AdminApplicationsPage() {
                         CID Document Copy:
                       </span>
                       <a
-                        href={selectedApp.uploadedCidUrl}
+                        href={paymentProofViewUrl(selectedApp.uploadedCidUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-xs text-sky-400 hover:text-sky-300 underline font-mono flex items-center gap-1.5"

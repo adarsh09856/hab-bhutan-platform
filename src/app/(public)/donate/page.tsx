@@ -567,7 +567,7 @@ function DonateContent() {
                         )}
                         {proofUrl && (
                           <p style={{ fontSize: 11.5, color: '#166534', marginTop: 6, fontWeight: 600 }}>
-                            ✓ Payment slip attached successfully: <a href={proofUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'underline' }}>View uploaded file</a>
+                            ✓ Payment slip attached successfully. HAB staff can view it during verification.
                           </p>
                         )}
                         {uploadError && (
