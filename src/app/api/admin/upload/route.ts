@@ -4,14 +4,22 @@ import path from 'path';
 import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { storeResponsiveImage } from '@/lib/image-processing';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const purpose = searchParams.get('purpose');
+    const memberRegNumber = searchParams.get('memberRegNumber')?.trim();
+    if (purpose && purpose !== 'member-portrait') {
+      return NextResponse.json({ success: false, error: 'Unsupported upload purpose.' }, { status: 400 });
+    }
+
     let user;
     try {
-      user = await requirePermission(req, 'content:edit');
+      user = await requirePermission(req, purpose === 'member-portrait' ? 'members:edit' : 'content:edit');
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message || 'Unauthorized.' }, { status: error.statusCode || 401 });
     }
@@ -44,6 +52,21 @@ export async function POST(req: NextRequest) {
 
     const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv'];
     const fileExt = file.name && file.name.includes('.') ? file.name.split('.').pop()?.toLowerCase() || '' : '';
+
+    if (purpose === 'member-portrait') {
+      if (!memberRegNumber) {
+        return NextResponse.json({ success: false, error: 'Member registration number is required.' }, { status: 400 });
+      }
+      const member = await prisma.member.findUnique({ where: { regNumber: memberRegNumber }, select: { id: true } });
+      if (!member) {
+        return NextResponse.json({ success: false, error: 'Member not found.' }, { status: 404 });
+      }
+      const imageMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
+      const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'];
+      if (!imageMimes.includes(file.type) && !imageExtensions.includes(fileExt)) {
+        return NextResponse.json({ success: false, error: 'Member portrait must be a JPG, PNG, WebP, GIF, or AVIF image.' }, { status: 400 });
+      }
+    }
 
     if (!validMimes.includes(file.type) && !allowedExtensions.includes(fileExt)) {
       return NextResponse.json(

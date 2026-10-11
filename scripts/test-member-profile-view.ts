@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { toMemberProfileView, toMemberProductViews } from '../src/lib/member-profile-view';
 
-assert.deepEqual(toMemberProfileView({ name: 'Verified Artisan', craftKey: 'thagzo' }), {
-  name: 'Verified Artisan', craft_key: 'thagzo', dzongkhag: '', member_since: null, blurb: '', portraitUrl: '',
+assert.deepEqual(toMemberProfileView({ regNumber: 'HAB-TEST-001', name: 'Verified Artisan', craftKey: 'thagzo' }), {
+  regNumber: 'HAB-TEST-001', name: 'Verified Artisan', craft_key: 'thagzo', dzongkhag: '', member_since: null, blurb: '', portraitUrl: '',
 }, 'Missing member details stay empty instead of receiving a sample portrait, bio, or year.');
+
+assert.equal(toMemberProfileView({ regNumber: 'HAB-TEST-002', portraitUrl: '/uploads/portrait.jpg' }).portraitUrl, '/uploads/portrait.jpg');
 
 assert.deepEqual(toMemberProductViews([
   { id: 'private-id', code: 'A', name: 'Maker product', craftKey: 'thagzo', priceUSD: 12, region: '', images: [] },

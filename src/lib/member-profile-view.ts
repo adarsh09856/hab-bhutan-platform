@@ -1,5 +1,6 @@
 export function toMemberProfileView(record: any) {
   return {
+    regNumber: record.regNumber || '',
     name: record.name,
     craft_key: record.craftKey,
     dzongkhag: record.dzongkhag || '',

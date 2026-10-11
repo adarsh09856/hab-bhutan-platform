@@ -200,7 +200,8 @@ export default function UniversalPageQuickEdit() {
         openSectionManager();
         return;
       }
-      const isTextOrMedia = target instanceof HTMLImageElement || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || editableTextNodes(target).length > 0;
+      const isMediaPlaceholder = target.hasAttribute('data-hab-media-placeholder');
+      const isTextOrMedia = target instanceof HTMLImageElement || isMediaPlaceholder || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || editableTextNodes(target).length > 0;
       if (!isTextOrMedia) {
         openSectionManager();
         return;
@@ -214,8 +215,13 @@ export default function UniversalPageQuickEdit() {
       setNewSlideCaption('');
       setNewSlideAlt('');
       const saved = overridesRef.current[elementKey(target, shell)];
-      setDraft(target instanceof HTMLImageElement
-        ? { ...(saved || {}), src: saved?.src || normalizeQuickEditImageSource(target.getAttribute('src') || target.currentSrc || target.src, window.location.href), alt: saved?.alt ?? target.alt, href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) }
+      setDraft(target instanceof HTMLImageElement || isMediaPlaceholder
+        ? {
+          ...(saved || {}),
+          src: saved?.src || normalizeQuickEditImageSource(target instanceof HTMLImageElement ? (target.getAttribute('src') || target.currentSrc || target.src) : '', window.location.href),
+          alt: saved?.alt ?? (target instanceof HTMLImageElement ? target.alt : target.getAttribute('data-hab-media-alt') || ''),
+          href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined),
+        }
         : target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
           ? { ...(saved || {}), placeholder: saved?.placeholder ?? target.placeholder }
           : { ...(saved || {}), text: saved?.text ?? joinEditableText(editableTextNodes(target)), href: saved?.href ?? (target.closest('a')?.getAttribute('href') || undefined) });
@@ -248,7 +254,9 @@ export default function UniversalPageQuickEdit() {
     const storagePath = /^(header|footer|utility)\//.test(key) ? '/__global__' : pathname;
     setSaving(true); setMessage('');
     try {
-      if (selected instanceof HTMLImageElement && galleryElement && galleryType) {
+      if ((selected instanceof HTMLImageElement || selected.hasAttribute('data-hab-media-placeholder')) && galleryElement && galleryType) {
+        const imageElement = selected instanceof HTMLImageElement ? selected : null;
+        const imageAlt = draft.alt?.trim() || imageElement?.alt || '';
         const nextUrl = draft.src?.trim() || '';
         if (!/^\/(?!\/)/.test(nextUrl) && !/^https:\/\//i.test(nextUrl)) {
           throw new Error('Use a site image path or HTTPS URL.');
@@ -265,12 +273,13 @@ export default function UniversalPageQuickEdit() {
         if (galleryType === 'hero') {
           const id = selected.dataset.habGallerySlideId;
           if (!id) throw new Error('This hero slide has not loaded yet. Please try again.');
-          await write(`/api/admin/hero-slides/${encodeURIComponent(id)}`, 'PUT', { imageUrl: nextUrl, altText: draft.alt?.trim() || selected.alt });
+          await write(`/api/admin/hero-slides/${encodeURIComponent(id)}`, 'PUT', { imageUrl: nextUrl, altText: imageAlt });
         } else if (galleryType === 'outlet' && galleryId) {
           const { outlets } = await requestJson('/api/admin/outlets');
           const outlet = outlets.find((item: { key: string }) => item.key === galleryId);
           if (!outlet) throw new Error('Outlet not found in Admin.');
-          const position = Array.from(galleryElement.querySelectorAll('img')).indexOf(selected);
+          if (!imageElement) throw new Error('Select an existing outlet photo to replace it.');
+          const position = Array.from(galleryElement.querySelectorAll('img')).indexOf(imageElement);
           if (position < 0) throw new Error('Could not identify this outlet photo.');
           if (position === 0) {
             await write('/api/admin/outlets', 'PUT', { id: outlet.id, imageUrl: nextUrl });
@@ -284,24 +293,26 @@ export default function UniversalPageQuickEdit() {
           const { products } = await requestJson('/api/admin/products');
           const product = products.find((item: { code: string }) => item.code === galleryId);
           if (!product) throw new Error('Product not found in Admin.');
+          if (!imageElement) throw new Error('Select an existing product photo to replace it.');
           const position = galleryElement.dataset.habGalleryView === 'card'
-            ? 0 : Array.from(galleryElement.querySelectorAll('.gallery__slide img')).indexOf(selected);
+            ? 0 : Array.from(galleryElement.querySelectorAll('.gallery__slide img')).indexOf(imageElement);
           if (position < 0) throw new Error('Could not identify this product photo.');
           const images: Array<{ url: string; role?: string; alt?: string }> = Array.isArray(product.images)
             ? product.images.map((item: string | { url: string; role?: string; alt?: string }) => typeof item === 'string' ? { url: item } : item)
             : [];
-          const source = selected.getAttribute('src');
+          const source = imageElement.getAttribute('src');
           const sourceIndex = images.findIndex(item => item.url === source);
           const isCard = galleryElement.dataset.habGalleryView === 'card';
           const primaryIndex = images.findIndex(item => item.role?.toLowerCase() === 'primary');
           const target = isCard ? Math.max(0, primaryIndex) : sourceIndex >= 0 ? sourceIndex : position;
-          if (target < images.length) images[target] = { ...images[target], url: nextUrl, ...(isCard ? { role: 'primary' } : {}), alt: draft.alt?.trim() || selected.alt };
-          else if (position === 0) images.unshift({ url: nextUrl, role: 'primary', alt: draft.alt?.trim() || selected.alt });
+          if (target < images.length) images[target] = { ...images[target], url: nextUrl, ...(isCard ? { role: 'primary' } : {}), alt: imageAlt };
+          else if (position === 0) images.unshift({ url: nextUrl, role: 'primary', alt: imageAlt });
           else throw new Error('This product photo is not available in Admin.');
           await write('/api/admin/products', 'PATCH', { id: product.id, images });
         } else if (galleryType === 'page' && galleryId) {
           const { page } = await requestJson(`/api/admin/pages/${encodeURIComponent(galleryId)}`);
-          const position = Array.from(galleryElement.querySelectorAll('img')).indexOf(selected);
+          if (!imageElement) throw new Error('Select an existing page photo to replace it.');
+          const position = Array.from(galleryElement.querySelectorAll('img')).indexOf(imageElement);
           const images: Array<{ url: string; caption?: string }> = Array.isArray(page.galleryImages) ? [...page.galleryImages] : [];
           if (position < 0 || position >= images.length) throw new Error('This page photo is not available in Admin.');
           images[position] = { ...images[position], url: nextUrl, caption: draft.alt?.trim() || images[position].caption };
@@ -311,6 +322,11 @@ export default function UniversalPageQuickEdit() {
           const project = projects.find((item: { id: string }) => item.id === galleryId);
           if (!project) throw new Error('Project not found in Admin.');
           await write('/api/admin/projects', 'PUT', { id: project.id, coverPhotoUrl: nextUrl });
+        } else if (galleryType === 'member' && galleryId) {
+          const { members } = await requestJson('/api/admin/members');
+          const member = members.find((item: { regNumber: string }) => item.regNumber === galleryId);
+          if (!member) throw new Error('Member not found in Admin.');
+          await write('/api/admin/members', 'PATCH', { id: member.id, portraitUrl: nextUrl });
         } else {
           throw new Error('This gallery is not linked to an Admin record.');
         }
@@ -360,7 +376,10 @@ export default function UniversalPageQuickEdit() {
     const body = new FormData(); body.append('file', file);
     setSaving(true); setMessage('Uploading original image…');
     try {
-      const response = await fetch('/api/admin/upload', { method: 'POST', credentials: 'include', body });
+      const uploadUrl = galleryType === 'member' && galleryId
+        ? `/api/admin/upload?purpose=member-portrait&memberRegNumber=${encodeURIComponent(galleryId)}`
+        : '/api/admin/upload';
+      const response = await fetch(uploadUrl, { method: 'POST', credentials: 'include', body });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.error || 'Upload failed.');
       setDraft((current) => ({ ...current, src: data.url }));
@@ -382,15 +401,17 @@ export default function UniversalPageQuickEdit() {
     finally { setSaving(false); }
   };
 
-  const galleryElement = typeof HTMLImageElement !== 'undefined' && selected instanceof HTMLImageElement
-    ? selected.closest<HTMLElement>('[data-hab-gallery]') : null;
+  const mediaSelection = typeof HTMLImageElement !== 'undefined'
+    && (selected instanceof HTMLImageElement || Boolean(selected?.hasAttribute('data-hab-media-placeholder')));
+  const galleryElement = mediaSelection ? selected?.closest<HTMLElement>('[data-hab-gallery]') || null : null;
   const galleryType = galleryElement?.dataset.habGallery;
   const galleryId = galleryElement?.dataset.habGalleryId;
   const hasPermission = (permission: string) => staffPermissions.includes('*') || staffPermissions.includes(permission);
   const requiredPermissions = galleryType === 'product' ? ['products:view', 'products:edit']
+    : galleryType === 'member' ? ['members:view', 'members:edit']
     : galleryType === 'outlet' ? []
       : galleryType ? ['content:view', 'content:edit'] : ['content:edit'];
-  const canSaveSelection = requiredPermissions.every(hasPermission);
+  const canSaveSelection = requiredPermissions.every(hasPermission) && (galleryType !== 'member' || Boolean(galleryId));
   const canAddSlide = Boolean(canSaveSelection && (galleryType === 'hero' && hasPermission('content:create')
     || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '') && galleryElement?.dataset.habGalleryView !== 'card')));
 
@@ -439,7 +460,7 @@ export default function UniversalPageQuickEdit() {
   };
 
   if (!active || !isStaff) return null;
-  const image = selected instanceof HTMLImageElement;
+  const image = Boolean(mediaSelection);
   const field = selected instanceof HTMLInputElement || selected instanceof HTMLTextAreaElement;
   const link = Boolean(selected?.closest('a'));
 
@@ -457,17 +478,17 @@ export default function UniversalPageQuickEdit() {
     {selected && createPortal(
     <aside role="dialog" aria-modal="false" aria-label="Edit selected page content" className="hab-page-quick-editor fixed right-4 bottom-4 z-[99999] w-[min(390px,calc(100vw-2rem))] rounded-2xl border border-amber-300 bg-white p-4 text-slate-900 shadow-2xl" data-hab-no-quick-edit>
       <div className="flex items-center justify-between gap-3 mb-3">
-        <strong className="text-sm">Edit this {image ? 'image' : field ? 'placeholder' : 'text'}</strong>
+        <strong className="text-sm">{image && selected?.hasAttribute('data-hab-media-placeholder') ? 'Add member portrait' : `Edit this ${image ? 'image' : field ? 'placeholder' : 'text'}`}</strong>
         <button type="button" onClick={() => setSelected(null)} aria-label="Close quick editor" className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-500"><X className="w-4 h-4" /><span>Close</span></button>
       </div>
       {image ? <>
         <label className="block text-xs font-semibold mb-1">Image URL</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.src || ''} onChange={(e) => setDraft({ ...draft, src: e.target.value })} />
-        {galleryType !== 'outlet' && galleryType !== 'project' && <>
+        {galleryType !== 'outlet' && galleryType !== 'project' && galleryType !== 'member' && <>
           <label className="block text-xs font-semibold mb-1">Alternative text</label>
           <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
         </>}
-        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : 'its gallery'} in Admin and on other public pages.</p>}
+        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : galleryType === 'member' ? 'the member portrait in the registry and public profile' : 'its gallery'} in Admin and on other public pages.</p>}
         {link && !galleryElement && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" disabled={!canSaveSelection} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>

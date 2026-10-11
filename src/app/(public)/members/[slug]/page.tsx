@@ -101,14 +101,19 @@ export default function MemberProfilePage() {
         </p>
 
         <div className="memberhero">
-          <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
+          <figure className="frame frame--square has-image" data-cms-img data-hab-gallery="member" data-hab-gallery-id={member.regNumber} style={{ position: 'relative', overflow: 'hidden' }}>
             {portraitImg ? <Image
               src={portraitImg}
               alt={member.name}
               fill
               sizes="(max-width: 768px) 100vw, 380px"
               style={{ objectFit: 'cover' }}
-            /> : <span aria-label={`${member.name} portrait not provided`} className="flex h-full w-full items-center justify-center text-4xl font-semibold">{member.name.slice(0, 1)}</span>}
+            /> : <span
+              aria-label={`${member.name} portrait not provided`}
+              data-hab-media-placeholder="member-portrait"
+              data-hab-media-alt={member.name}
+              className="flex h-full w-full items-center justify-center text-4xl font-semibold"
+            >{member.name.slice(0, 1)}</span>}
           </figure>
 
           <div>
