@@ -829,6 +829,7 @@ model HonourRecord {
   awardType   String   // RoyalSeal | Authenticity | NationalMaster
   yearAwarded Int      @default(2026)
   citation    String   @db.Text
+  citationDz  String?  @db.Text
   portraitUrl String?
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)

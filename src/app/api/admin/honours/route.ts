@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, craft, dzongkhag, awardType, yearAwarded, citation, portraitUrl, isActive, sortOrder } = body;
+    const { name, craft, dzongkhag, awardType, yearAwarded, citation, citationDz, portraitUrl, isActive, sortOrder } = body;
 
     if (!name || !craft || !dzongkhag || !citation) {
       return NextResponse.json({ error: 'name, craft, dzongkhag, and citation are required' }, { status: 400 });
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         awardType: awardType?.trim() || 'RoyalSeal',
         yearAwarded: Number(yearAwarded) || new Date().getFullYear(),
         citation: citation.trim(),
+        citationDz: citationDz?.trim() || null,
         portraitUrl: portraitUrl?.trim() || null,
         isActive: isActive !== undefined ? Boolean(isActive) : true,
         sortOrder: Number(sortOrder) || 0,
@@ -79,7 +80,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, name, craft, dzongkhag, awardType, yearAwarded, citation, portraitUrl, isActive, sortOrder } = body;
+    const { id, name, craft, dzongkhag, awardType, yearAwarded, citation, citationDz, portraitUrl, isActive, sortOrder } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'id is required for update' }, { status: 400 });
@@ -94,6 +95,7 @@ export async function PUT(req: NextRequest) {
         ...(awardType !== undefined && { awardType: awardType.trim() }),
         ...(yearAwarded !== undefined && { yearAwarded: Number(yearAwarded) || new Date().getFullYear() }),
         ...(citation !== undefined && { citation: citation.trim() }),
+        ...(citationDz !== undefined && { citationDz: citationDz?.trim() || null }),
         ...(portraitUrl !== undefined && { portraitUrl: portraitUrl?.trim() || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) || 0 }),

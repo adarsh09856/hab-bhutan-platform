@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Award, Plus, Edit2, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -15,6 +15,7 @@ interface HonourItem {
   awardType: string;
   yearAwarded: number;
   citation: string;
+  citationDz?: string | null;
   portraitUrl?: string | null;
   isActive: boolean;
   sortOrder: number;
@@ -27,6 +28,7 @@ const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
   awardType: 'RoyalSeal',
   yearAwarded: new Date().getFullYear(),
   citation: '',
+  citationDz: '',
   portraitUrl: '',
   isActive: true,
   sortOrder: 0,
@@ -47,7 +49,12 @@ export default function AdminHonoursPage() {
   const [saving, setSaving] = useState(false);
   const [flashMsg, setFlashMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const loadHonours = async () => {
+  const showFlash = useCallback((type: 'success' | 'error', text: string) => {
+    setFlashMsg({ type, text });
+    setTimeout(() => setFlashMsg(null), 4000);
+  }, []);
+
+  const loadHonours = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/honours', { cache: 'no-store' });
@@ -58,16 +65,11 @@ export default function AdminHonoursPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showFlash]);
 
   useEffect(() => {
-    loadHonours();
-  }, []);
-
-  const showFlash = (type: 'success' | 'error', text: string) => {
-    setFlashMsg({ type, text });
-    setTimeout(() => setFlashMsg(null), 4000);
-  };
+    void loadHonours();
+  }, [loadHonours]);
 
   const openCreate = () => {
     setForm(EMPTY_HONOUR);
@@ -83,6 +85,7 @@ export default function AdminHonoursPage() {
       awardType: h.awardType,
       yearAwarded: h.yearAwarded,
       citation: h.citation,
+      citationDz: h.citationDz || '',
       portraitUrl: h.portraitUrl || '',
       isActive: h.isActive,
       sortOrder: h.sortOrder,
@@ -357,6 +360,15 @@ export default function AdminHonoursPage() {
                   value={form.citation}
                   onChange={(html) => setForm({ ...form, citation: html })}
                   hint="Fifty-one years at the backstrap loom, and teacher to eleven weavers..."
+                />
+              </div>
+
+              <div>
+                <RichTextEditor
+                  label="Citation / Living Heritage Narrative (Dzongkha)"
+                  value={form.citationDz || ''}
+                  onChange={(html) => setForm({ ...form, citationDz: html })}
+                  hint="Optional. Enter HAB-approved Dzongkha copy. Public pages use the English citation until this translation is saved."
                 />
               </div>
 

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function MastersPage() {
@@ -33,6 +34,7 @@ export default function MastersPage() {
           honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
           since: h.yearAwarded,
           note: h.citation,
+          noteDz: h.citationDz || '',
           image_path: h.portraitUrl || '',
           image_alt: h.name,
         }));
@@ -339,7 +341,7 @@ export default function MastersPage() {
                   <p className="card__meta">
                     {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag} · {text('since', 'ལོ་')} {m.since}
                   </p>
-                  <p className="card__text">{m.note}</p>
+                  <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />
                   <Link className="news__more" href={`/shop?craft=${m.craft_key}`}>
                     {text(`Shop ${craft.name} →`, `ལག་བཟོ་${craft.dzongkha && dz ? craft.dzongkha : craft.name} ཉོ →`)}
                   </Link>

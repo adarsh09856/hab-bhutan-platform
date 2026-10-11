@@ -1,0 +1,2 @@
+ALTER TABLE "HonourRecord"
+  ADD COLUMN IF NOT EXISTS "citationDz" TEXT;

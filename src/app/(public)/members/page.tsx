@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { CLIENT_DATA } from '@/lib/client-data';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,7 @@ async function getRecognisedMembers() {
         honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : 'Master Craftsperson',
         since: h.yearAwarded,
         note: h.citation,
+        noteDz: h.citationDz || '',
         image_path: h.portraitUrl || '',
       })) };
   } catch {}
@@ -253,7 +255,7 @@ export default async function MembersPage() {
                   <p className="card__meta">
                     {craft.name} · {m.dzongkhag} · since {m.since}
                   </p>
-                  <p className="card__text">{m.note}</p>
+                  <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />
                   <Link className="news__more" href={`/shop?craft=${m.craft_key}`}>
                     Shop {craft.name} →
                   </Link>
