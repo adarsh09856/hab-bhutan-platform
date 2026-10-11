@@ -95,14 +95,12 @@ export default function ProjectsPage() {
         <div className="projhero">
           <div>
             <h1 className="display display--page">{t('nav.projects', 'Projects')}</h1>
-            <p className="lede">
-              HAB delivers its programmes as funded projects, each with an agreed workplan, budget and reporting cycle. Below are the projects currently in hand and those already completed, with their key activities and what they achieved.
-            </p>
+            <p className="lede">{t('projects.intro', 'HAB delivers its programmes as funded projects, each with an agreed workplan, budget and reporting cycle. Below are the projects currently in hand and those already completed, with their key activities and what they achieved.')}</p>
           </div>
         </div>
 
         {/* 2. Tabs */}
-        <div className="tabs tabs--rule" role="tablist" aria-label="Project status">
+        <div className="tabs tabs--rule" role="tablist" aria-label={t('projects.status_label', 'Project status')}>
           <button
             type="button"
             className={`tab ${statusTab === 'current' ? 'is-active' : ''}`}
@@ -110,7 +108,7 @@ export default function ProjectsPage() {
             aria-selected={statusTab === 'current'}
             onClick={() => setStatusTab('current')}
           >
-            Projects in hand
+            {t('projects.current_tab', 'Projects in hand')}
             <span className="tab__n" style={{ marginLeft: '6px' }}>{currentProjects.length}</span>
           </button>
           <button
@@ -120,11 +118,11 @@ export default function ProjectsPage() {
             aria-selected={statusTab === 'past'}
             onClick={() => setStatusTab('past')}
           >
-            Completed projects
+            {t('projects.completed_tab', 'Completed projects')}
             <span className="tab__n" style={{ marginLeft: '6px' }}>{pastProjects.length}</span>
           </button>
           <span className="craft__count" id="projectCount" style={{ margin: 0, alignSelf: 'center', marginLeft: 'auto' }}>
-            {displayedProjects.length} {displayedProjects.length === 1 ? 'project' : 'projects'}
+            {displayedProjects.length} {displayedProjects.length === 1 ? t('projects.project_one', 'project') : t('projects.project_many', 'projects')}
           </span>
         </div>
 
@@ -132,7 +130,7 @@ export default function ProjectsPage() {
         <div className="projectlist" id="projectList">
           {loadState !== 'ready' || displayedProjects.length === 0 ? (
             <p className="section__lede" role={loadState === 'error' ? 'alert' : 'status'}>
-              {loadState === 'loading' ? 'Loading projects…' : loadState === 'error' ? 'Projects are temporarily unavailable.' : `No ${statusTab === 'current' ? 'current' : 'completed'} projects are listed.`}
+              {loadState === 'loading' ? t('projects.loading', 'Loading projects…') : loadState === 'error' ? t('projects.unavailable', 'Projects are temporarily unavailable.') : t(statusTab === 'current' ? 'projects.none_current' : 'projects.none_completed', statusTab === 'current' ? 'No current projects are listed.' : 'No completed projects are listed.')}
             </p>
           ) : null}
           {displayedProjects.map((p, idx) => (
@@ -147,7 +145,7 @@ export default function ProjectsPage() {
               <div className="projectcard__body">
                 <div className="projectcard__status">
                   <span className={`tag ${p.status === 'past' ? 'tag--done' : ''}`}>
-                    {p.status === 'current' ? 'In progress' : 'Completed'}
+                    {p.status === 'current' ? t('projects.in_progress', 'In progress') : t('projects.completed', 'Completed')}
                   </span>
                   {(p.period || p.budget) && <span className="projectcard__period">{[local(p.period, p.periodDz), local(p.budget, p.budgetDz)].filter(Boolean).join(' · ')}</span>}
                 </div>
@@ -155,13 +153,13 @@ export default function ProjectsPage() {
                 {p.partner && <p className="projectcard__partner">{local(p.partner, p.partnerDz)}</p>}
                 {p.summary && <p className="projectcard__summary">{local(p.summary, p.summaryDz)}</p>}
                 <Link className="btn btn--accent btn--sm projectcard__more" href={`/projects/${p.key}`}>
-                  Read more →
+                  {t('projects.read_more', 'Read more →')}
                 </Link>
 
                 <div className="projectcard__cols">
                   {p.activities && p.activities.length > 0 && (
                     <div>
-                      <p className="eyebrow eyebrow--muted eyebrow--sm">Key activities</p>
+                      <p className="eyebrow eyebrow--muted eyebrow--sm">{t('projects.key_activities', 'Key activities')}</p>
                       <ol className="numlist numlist--ruled">
                         {p.activities.map((item, i) => (
                           <li key={i} className="numlist__item">
@@ -175,7 +173,7 @@ export default function ProjectsPage() {
 
                   {p.results && p.results.length > 0 && (
                     <div>
-                      <p className="eyebrow eyebrow--muted eyebrow--sm">Key results</p>
+                      <p className="eyebrow eyebrow--muted eyebrow--sm">{t('projects.key_results', 'Key results')}</p>
                       <div className="grid grid--2" style={{ gap: '8px' }}>
                         {p.results.map((res, i) => (
                           <div key={i} className="stats__cell" style={{ padding: '10px 0' }}>
@@ -197,17 +195,15 @@ export default function ProjectsPage() {
       <section className="section section--last">
         <div className="ctaband">
           <div>
-            <h2 className="display display--panel">Partner on a project</h2>
-            <p className="ctaband__body">
-              HAB works with government agencies, development partners, research institutions and the private sector. Project evaluations are available from the secretariat on request.
-            </p>
+            <h2 className="display display--panel">{t('projects.partner_title', 'Partner on a project')}</h2>
+            <p className="ctaband__body">{t('projects.partner_body', 'HAB works with government agencies, development partners, research institutions and the private sector. Project evaluations are available from the secretariat on request.')}</p>
           </div>
           <div className="actions">
             <Link className="btn btn--light" href="/contact">
-              Contact the secretariat
+              {t('projects.contact_secretariat', 'Contact the secretariat')}
             </Link>
             <Link className="btn btn--ghost" href="/publications">
-              Evaluations &amp; reports
+              {t('projects.evaluations_reports', 'Evaluations & reports')}
             </Link>
           </div>
         </div>
