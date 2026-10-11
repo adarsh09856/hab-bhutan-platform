@@ -26,7 +26,7 @@ assert(fs.existsSync('src/components/public/AdminLiveBar.tsx'), 'AdminLiveBar.ts
 const liveBar = fs.readFileSync('src/components/public/AdminLiveBar.tsx', 'utf-8');
 
 assert(liveBar.includes('/api/admin/health'), 'AdminLiveBar checks /api/admin/health for session verification');
-assert(liveBar.includes('loading || !isAdmin'), 'AdminLiveBar completely suppresses output when not authenticated');
+assert(liveBar.includes('{isAdmin && (') && liveBar.includes('finally {\n        setLoading(false);'), 'Admin live controls require a verified staff session and auth check resolves');
 assert(liveBar.includes('hab-visual-edit-on'), 'AdminLiveBar toggles hab-visual-edit-on class on document.body');
 assert(liveBar.includes('usePathname'), 'AdminLiveBar uses Next.js usePathname for dynamic route detection');
 assert(liveBar.includes('ROUTE_STUDIO_MAP'), 'AdminLiveBar contains intelligent route-to-studio mapping dictionary');
@@ -47,7 +47,7 @@ const badgeCode = fs.readFileSync('src/components/public/SectionEditBadge.tsx', 
 assert(badgeCode.includes('hab-section-edit-badge'), 'Badge uses hab-section-edit-badge CSS target');
 assert(badgeCode.includes('studioHref'), 'Badge receives and binds studioHref');
 assert(badgeCode.includes('onQuickEdit'), 'Badge supports onQuickEdit callback');
-assert(badgeCode.includes('Studio'), 'Badge displays Studio action button');
+assert(badgeCode.includes('Manage in Admin') && badgeCode.includes('Add section in Admin'), 'Badge links to the real Admin CRUD instead of a duplicate Studio editor');
 
 // ----------------------------------------------------
 // 3. VisualSectionEditor Modal Audit

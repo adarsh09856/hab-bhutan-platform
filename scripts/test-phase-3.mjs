@@ -1,6 +1,8 @@
 ﻿import fs from 'fs';
 
 const homePage = fs.readFileSync('src/app/(public)/page.tsx', 'utf-8');
+const outletsPage = fs.readFileSync('src/app/(public)/outlets/page.tsx', 'utf-8');
+const outletsBrowser = fs.readFileSync('src/components/public/OutletsBrowser.tsx', 'utf-8');
 const programmesPage = fs.readFileSync('src/app/(public)/programmes/page.tsx', 'utf-8');
 const clientCss = fs.readFileSync('src/styles/client-hab.css', 'utf-8');
 
@@ -29,8 +31,9 @@ console.log('[1/3] Verifying Image 2 Alignment (Outlets & Clusters)...');
 
 assert(homePage.includes('id="outlets"'), 'Section #outlets exists on homepage');
 assert(homePage.includes('className="outlet-lead"'), 'Punakha Crafts Market lead card exists');
-assert(homePage.includes('Punakha Crafts Market'), 'Punakha Crafts Market title exists');
-assert(homePage.includes('HAB validated &amp; managed') || homePage.includes('HAB validated & managed'), 'HAB validated & managed badge exists');
+assert(homePage.includes("outlet.key === 'punakha-market'"), 'Featured market is selected from saved outlet records by key');
+assert(outletsPage.includes('prisma.outletRecord.findMany'), 'Outlet directory is sourced from saved outlet records');
+assert(outletsBrowser.includes('HAB validated'), 'Featured outlet is labelled as HAB validated');
 
 // Verify 3-column outlets grid directly follows Punakha Market
 const outletLeadPos = homePage.indexOf('className="outlet-lead"');
@@ -40,10 +43,10 @@ const clustersPos = homePage.indexOf('id="clusters"', outletGridPos);
 assert(outletLeadPos > 0 && outletGridPos > outletLeadPos, '3-column outlets grid placed after Punakha lead card');
 assert(clustersPos > outletGridPos, 'Artisan clusters section placed after 3-column outlets grid');
 
-// Verify default 3 outlets exist in state
-assert(homePage.includes('HAB Craft Outlet, Thimphu'), 'Default outlet 1 exists: HAB Craft Outlet, Thimphu');
-assert(homePage.includes('Paro Departures Counter'), 'Default outlet 2 exists: Paro Departures Counter');
-assert(homePage.includes('Chumey Yathra Outlet'), 'Default outlet 3 exists: Chumey Yathra Outlet');
+// Outlet copy is now data-driven and must not be coupled to historical seed names.
+assert(homePage.includes('displayedOutlets.map'), 'Homepage renders saved outlet records from the outlet collection');
+assert(homePage.includes("fetch('/api/outlets?shuffle=false'"), 'Homepage loads its outlet list from the public outlet API');
+assert(outletsBrowser.includes('filteredOutlets.map') || outletsBrowser.includes('visibleOutlets.map'), 'Outlet directory renders its filtered saved records');
 
 // -----------------------------------------------------------------
 // 2. Image 1 Alignment: Reports & Publications + Development Partners
