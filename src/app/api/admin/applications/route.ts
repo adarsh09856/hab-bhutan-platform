@@ -273,6 +273,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Membership application not found.' }, { status: 404 });
     }
 
+    if (status === 'APPROVED' && ['APPROVED', 'REJECTED'].includes(application.status)) {
+      return NextResponse.json({ success: false, error: `This application is already finalized (${application.status}).` }, { status: 409 });
+    }
+
     // MODE 1: Profile/Data Correction
     if (isProfileEdit) {
       const updated = await prisma.membershipApplication.update({ where: { id }, data: updateData });
@@ -316,14 +320,25 @@ export async function PATCH(req: NextRequest) {
         const activationTokenHash = crypto.createHash('sha256').update(activationToken).digest('hex');
         const activationTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days onboarding link
 
-        const user = await tx.user.upsert({
+        const existingUser = await tx.user.findUnique({
           where: { email: application.email },
-          update: {
-            mustChangePassword: true,
-            resetTokenHash: activationTokenHash,
-            resetTokenExpiry: activationTokenExpiry,
-          },
-          create: {
+          include: { memberProfile: { select: { id: true } } },
+        });
+        if (existingUser && (existingUser.roleId !== memberRole.id || existingUser.memberProfile)) {
+          throw Object.assign(new Error('This email already belongs to another site account or enrolled member. Review the applicant email before approval.'), { statusCode: 409 });
+        }
+        const user = existingUser
+          ? await tx.user.update({
+              where: { id: existingUser.id },
+              data: {
+                passwordHash: tempPasswordHash,
+                mustChangePassword: true,
+                resetTokenHash: activationTokenHash,
+                resetTokenExpiry: activationTokenExpiry,
+                sessionVersion: { increment: 1 },
+              },
+            })
+          : await tx.user.create({ data: {
             email: application.email,
             name: application.applicantName,
             passwordHash: tempPasswordHash,
@@ -332,8 +347,7 @@ export async function PATCH(req: NextRequest) {
             mustChangePassword: true,
             resetTokenHash: activationTokenHash,
             resetTokenExpiry: activationTokenExpiry,
-          },
-        });
+          } });
 
         // 4. Provision authenticated Member enterprise record
         const memberCount = await tx.member.count();
