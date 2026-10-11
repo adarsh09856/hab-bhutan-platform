@@ -20,7 +20,9 @@ export interface FallbackWholesaleBuyer {
   updatedAt: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), '.data');
+const DATA_DIR = process.env.HAB_WHOLESALE_DATA_DIR
+  ? path.resolve(process.env.HAB_WHOLESALE_DATA_DIR)
+  : path.join(process.cwd(), '.data');
 const FILE_PATH = path.join(DATA_DIR, 'wholesale-buyers.json');
 
 function ensureDir() {

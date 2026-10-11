@@ -52,7 +52,7 @@ try {
   upload.append('file', new Blob(['%PDF-1.4\nLocal test payment evidence\n%%EOF'], { type: 'application/pdf' }), 'temporary-proof.pdf');
   const uploaded = await fetch(`${host}/api/upload`, { method: 'POST', body: upload });
   const uploadedBody = await uploaded.json().catch(() => ({}));
-  assert(uploaded.ok && uploadedBody.success && /^\/uploads\/hab-[a-z0-9-]+\.pdf$/i.test(uploadedBody.url), `Temporary proof upload failed: ${uploadedBody.error || uploaded.status}.`);
+  assert(uploaded.ok && uploadedBody.success && /^\/api\/payment-proofs\/[a-f0-9-]{36}\.pdf$/i.test(uploadedBody.url), `Temporary proof upload failed: ${uploadedBody.error || uploaded.status}.`);
   uploadedPath = uploadedBody.url;
 
   const saved = await postDonation({ ...base, paymentMethod: 'MBOB', journalRef: 'LOCAL-TEST-REFERENCE', proofUrl: uploadedPath });
@@ -74,8 +74,8 @@ try {
     await prisma.auditLog.deleteMany({ where: { entityType: 'DonationRecord', entityId: donationId } }).catch(() => {});
     await prisma.donationRecord.deleteMany({ where: { id: donationId } }).catch(() => {});
   }
-  if (uploadedPath && /^\/uploads\/hab-[a-z0-9-]+\.pdf$/i.test(uploadedPath)) {
-    await unlink(path.join(process.cwd(), 'public', uploadedPath.slice(1))).catch(() => {});
+  if (uploadedPath && /^\/api\/payment-proofs\/[a-f0-9-]{36}\.pdf$/i.test(uploadedPath)) {
+    await unlink(path.join(process.cwd(), '.data', 'private-uploads', 'payment-proofs', path.basename(uploadedPath))).catch(() => {});
   }
   await prisma.$disconnect();
 }

@@ -12,6 +12,7 @@ const https = require('https');
 const http = require('http');
 
 const fs = require('fs');
+const path = require('path');
 
 const BASE_URL = process.env.TEST_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
 
@@ -1211,10 +1212,25 @@ async function run() {
   // =========================================================================
   // MODULE 19: Membership Applications Intake (/api/applications <-> /api/admin/applications)
   // =========================================================================
+  let uploadedProofPath = null;
   try {
     logModuleStart(19, 'Membership Applications Two-Way Intake');
     const testCid = `1150${Math.floor(1000000 + Math.random() * 9000000)}`;
     const testApplicantName = `Sonam Tshering AutoTest ${Date.now().toString().slice(-4)}`;
+    // Current applications require an actual locally uploaded payment proof;
+    // a made-up public path is correctly rejected by the API.
+    const proofForm = new FormData();
+    proofForm.append('file', new Blob([
+      '%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [] /Count 0 >> endobj\ntrailer << /Root 1 0 R >>\n%%EOF',
+    ], { type: 'application/pdf' }), `crud-verification-${Date.now()}.pdf`);
+    const proofResponse = await fetch(`${BASE_URL}/api/upload`, { method: 'POST', body: proofForm });
+    const proofBody = await proofResponse.json().catch(() => ({}));
+    assert(proofResponse.status === 200 && proofBody.success, `Local payment-proof upload returned ${proofResponse.status}: ${JSON.stringify(proofBody)}`);
+    assert(typeof proofBody.url === 'string' && /^\/api\/payment-proofs\/[a-f0-9-]{36}\.pdf$/.test(proofBody.url), 'Payment-proof upload returned an unexpected private URL.');
+    const proofName = path.basename(proofBody.url);
+    const proofDirectory = path.resolve(process.cwd(), '.data', 'private-uploads', 'payment-proofs');
+    uploadedProofPath = path.resolve(proofDirectory, proofName);
+    assert(path.dirname(uploadedProofPath) === proofDirectory, 'Payment-proof cleanup target escaped private proof storage.');
 
     // 1. Public Membership Application Submission
     console.log(`  1. Submitting public membership application for '${testApplicantName}' (CID: ${testCid})...`);
@@ -1233,7 +1249,7 @@ async function run() {
       planTier: 'ACTIVE_SECTOR_MEMBER',
       paymentMethod: 'MBOB',
       paymentRef: `LOCAL-VERIFY-${Date.now()}`,
-      uploadedDocUrl: '/uploads/local-verification-receipt.pdf',
+      uploadedDocUrl: proofBody.url,
     });
     assert(appRes.statusCode === 200 || appRes.statusCode === 201, `Application returned ${appRes.statusCode}: ${appRes.data}`);
     const appId = appRes.json?.applicationId || appRes.json?.application?.id || appRes.json?.id;
@@ -1265,10 +1281,14 @@ async function run() {
     });
     assert(delRes.statusCode === 200, `Delete application returned ${delRes.statusCode}`);
     console.log(`    ✓ Test application purged.`);
+    if (uploadedProofPath && fs.existsSync(uploadedProofPath)) fs.unlinkSync(uploadedProofPath);
+    uploadedProofPath = null;
 
     stats.passed++;
     stats.modules.push({ module: 'Membership Applications Intake', status: 'PASSED' });
   } catch (err) {
+    // Best-effort cleanup for the unique temporary proof on failure as well.
+    if (typeof uploadedProofPath === 'string' && fs.existsSync(uploadedProofPath)) fs.unlinkSync(uploadedProofPath);
     stats.failed++;
     stats.modules.push({ module: 'Membership Applications Intake', status: 'FAILED', error: err.message });
     console.error(`  ✗ MODULE 19 FAILED:`, err.message);

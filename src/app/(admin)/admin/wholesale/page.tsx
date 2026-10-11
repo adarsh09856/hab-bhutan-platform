@@ -30,6 +30,7 @@ import {
   WHOLESALE_HEADERS, 
   WHOLESALE_SAMPLE_ROWS, 
   validateWholesaleImport, 
+  wholesaleBuyerExportRows,
   WholesaleImportValidationResult 
 } from '@/lib/spreadsheet';
 
@@ -291,18 +292,7 @@ export default function AdminWholesalePage() {
 
   // Export Wholesalers to Excel / CSV
   const handleExportCsv = () => {
-    const rows = buyers.map((b) => [
-      b.companyName,
-      b.contactName,
-      b.email,
-      b.phone || '',
-      b.country || 'Bhutan',
-      b.city || '',
-      b.taxId || '',
-      b.discountTier || 20,
-      b.status || 'ACTIVE',
-      (b.notes || '').replace(/\r?\n/g, ' | '),
-    ]);
+    const rows = wholesaleBuyerExportRows(buyers);
 
     const dateStr = new Date().toISOString().slice(0, 10);
     downloadExcelWorkbook(`HAB_Wholesale_Buyers_${dateStr}.xlsx`, 'Wholesale Buyers', WHOLESALE_HEADERS, rows);

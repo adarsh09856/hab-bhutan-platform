@@ -9,6 +9,7 @@ import {
   parseSpreadsheetFile,
   validateMemberImport,
   validateWholesaleImport,
+  wholesaleBuyerExportRows,
 } from '../src/lib/spreadsheet';
 
 async function main() {
@@ -38,6 +39,27 @@ async function main() {
     assert.deepEqual(reopened[0], [...headers], `${sheetName} XLSX download contains its complete template headers.`);
     assert.equal(reopened.length, 1, `${sheetName} import template contains headers only and cannot seed fake records.`);
   }
+
+  const buyerWithPrivateFields = {
+    companyName: 'Bhutan Craft Store', contactName: 'Pema Dorji', email: 'buyer@example.bt',
+    phone: '+975 1712 3456', country: 'Bhutan', city: 'Thimphu', taxId: 'LIC-100',
+    discountTier: 20, status: 'ACTIVE', notes: 'First line\nSecond line',
+    passwordHash: 'must-never-be-exported',
+  };
+  const exportRows = wholesaleBuyerExportRows([buyerWithPrivateFields]);
+  assert.deepEqual(exportRows[0], [
+    'Bhutan Craft Store', 'Pema Dorji', 'buyer@example.bt', '+975 1712 3456', 'Bhutan',
+    'Thimphu', 'LIC-100', 20, 'ACTIVE', 'First line | Second line',
+  ], 'Wholesale export maps every approved column and excludes password data.');
+  const buyerWorkbook = await createExcelWorkbookBuffer('Wholesale Buyers', [...WHOLESALE_HEADERS], exportRows);
+  const buyerWorkbookFile = {
+    name: 'wholesale-export.xlsx',
+    arrayBuffer: async () => buyerWorkbook,
+  } as File;
+  const roundTrippedBuyer = await parseSpreadsheetFile(buyerWorkbookFile);
+  assert.deepEqual(roundTrippedBuyer[0], [...WHOLESALE_HEADERS], 'Wholesale export workbook preserves the published headers.');
+  assert.deepEqual(roundTrippedBuyer[1], exportRows[0].map(String), 'Wholesale export workbook preserves buyer values and sanitized notes.');
+  assert.equal(roundTrippedBuyer.flat().includes('must-never-be-exported'), false, 'Wholesale export workbook never contains password hashes.');
 
   const validMember = ['Pema Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'CID-100', '', '', '', '', '', ''];
   const repeatedMember = ['Another Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'cid-100', '', '', '', '', '', ''];

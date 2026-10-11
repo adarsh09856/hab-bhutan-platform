@@ -10,7 +10,15 @@ const baseUrl = process.env.WHOLESALE_IMPORT_TEST_URL || 'http://127.0.0.1:3033'
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const freshEmail = `wholesale-import-${suffix}@example.invalid`;
 const existingEmail = `wholesale-existing-${suffix}@example.invalid`;
-const fallbackFile = path.join(process.cwd(), '.data', 'wholesale-buyers.json');
+if (!process.env.HAB_WHOLESALE_DATA_DIR) {
+  throw new Error('Safety stop: set HAB_WHOLESALE_DATA_DIR to a disposable directory outside the repository.');
+}
+const isolatedDataDir = path.resolve(process.env.HAB_WHOLESALE_DATA_DIR);
+const relativeDataDir = path.relative(path.resolve(process.cwd()), isolatedDataDir);
+const isInsideRepository = relativeDataDir === ''
+  || (relativeDataDir !== '..' && !relativeDataDir.startsWith(`..${path.sep}`) && !path.isAbsolute(relativeDataDir));
+if (isInsideRepository) throw new Error('Safety stop: HAB_WHOLESALE_DATA_DIR must be outside the repository.');
+const fallbackFile = path.join(isolatedDataDir, 'wholesale-buyers.json');
 const hadFallbackFile = fs.existsSync(fallbackFile);
 const originalFallbackBytes = hadFallbackFile ? fs.readFileSync(fallbackFile) : null;
 let user;
@@ -79,7 +87,7 @@ async function run() {
     await prisma.wholesaleBuyer.deleteMany({ where: { OR: [{ id: { in: createdBuyerIds } }, { email: { equals: freshEmail, mode: 'insensitive' } }] } });
     if (seededDuplicate) await prisma.wholesaleBuyer.deleteMany({ where: { id: seededDuplicate.id } });
     // The local API also writes its JSON fallback. Restore its exact bytes so
-    // this DB/API test cannot reformat or leave anything in the user's .data.
+    // this DB/API test cannot leave fixtures in the isolated disposable store.
     if (hadFallbackFile) fs.writeFileSync(fallbackFile, originalFallbackBytes);
     else if (fs.existsSync(fallbackFile)) fs.rmSync(fallbackFile);
     if (user) {

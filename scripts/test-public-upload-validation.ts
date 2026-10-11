@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { NextRequest } from 'next/server';
 import { POST as upload } from '../src/app/api/upload/route';
 import { POST as uploadDonationSlip } from '../src/app/api/donations/upload/route';
@@ -38,8 +38,8 @@ async function exerciseEndpoint(name: string, handler: (request: NextRequest) =>
   const result = await validResponse.json() as { url?: string; fileName?: string };
   const filename = result.fileName || result.url?.split('/').pop();
   assert.ok(filename?.endsWith('.png'), `${name} derives .png extension from content type, not submitted .svg suffix`);
-  const relativePath = name === 'donations/upload' ? join('public', 'uploads', 'slips', filename!) : join('public', 'uploads', filename!);
-  await unlink(join(process.cwd(), relativePath));
+  assert.match(filename!, /^[a-f0-9-]{36}\.png$/, `${name} returns a generated private proof filename.`);
+  await unlink(join(process.cwd(), '.data', 'private-uploads', 'payment-proofs', basename(filename!)));
 }
 
 async function main() {

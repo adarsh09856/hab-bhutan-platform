@@ -188,6 +188,35 @@ export const WHOLESALE_HEADERS = [
 // import file can be mistaken for real applications if the template is uploaded.
 export const WHOLESALE_SAMPLE_ROWS: string[][] = [];
 
+export interface WholesaleBuyerExportRecord {
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone?: string | null;
+  country?: string | null;
+  city?: string | null;
+  taxId?: string | null;
+  discountTier?: number | null;
+  status?: string | null;
+  notes?: string | null;
+}
+
+/** Keep the buyer export limited to the published spreadsheet columns. */
+export function wholesaleBuyerExportRows(buyers: readonly WholesaleBuyerExportRecord[]) {
+  return buyers.map((buyer) => [
+    buyer.companyName,
+    buyer.contactName,
+    buyer.email,
+    buyer.phone || '',
+    buyer.country || 'Bhutan',
+    buyer.city || '',
+    buyer.taxId || '',
+    buyer.discountTier || 20,
+    buyer.status || 'ACTIVE',
+    (buyer.notes || '').replace(/\r?\n/g, ' | '),
+  ]);
+}
+
 export interface WholesaleImportValidationResult {
   validRows: any[];
   badRows: { rowNumber: number; data: string[]; reason: string }[];
