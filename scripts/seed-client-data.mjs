@@ -863,22 +863,21 @@ async function main() {
   // 18. Seed Super Admin User & Demo Member
   const adminHash = adminPassword ? bcrypt.hashSync(adminPassword, 12) : undefined;
 
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: {
-      roleId: superAdminRole.id,
-      status: 'ACTIVE',
-      mustChangePassword: false,
-    },
-    create: {
-      email: adminEmail,
-      name: 'HAB Secretariat Admin',
-      passwordHash: adminHash,
-      roleId: superAdminRole.id,
-      status: 'ACTIVE',
-      mustChangePassword: false,
-    },
-  });
+  if (existingAdmin) {
+    console.log('Existing admin account and credentials preserved without modification.');
+  } else {
+    if (!adminHash) throw new Error('Initial admin password was not collected.');
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        name: 'HAB Secretariat Admin',
+        passwordHash: adminHash,
+        roleId: superAdminRole.id,
+        status: 'ACTIVE',
+        mustChangePassword: false,
+      },
+    });
+  }
 
   const memberEmail = 'member@handicraftsbhutan.org';
   const memberHash = bcrypt.hashSync('ArtisanMember2026!', 10);
