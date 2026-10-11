@@ -39,7 +39,10 @@ const DEFAULT_FOOTER_COLUMNS = [
 ];
 
 async function resetAdmin() {
-  const newPassword = process.argv[2] || 'HabAdminProduction2026!#';
+  const newPassword = process.env.HAB_ADMIN_RESET_PASSWORD;
+  if (!newPassword || newPassword.length < 12) {
+    throw new Error('Set HAB_ADMIN_RESET_PASSWORD to a new password of at least 12 characters before running this script.');
+  }
   const email = 'admin@handicraftsbhutan.org';
   const hash = bcrypt.hashSync(newPassword, 12);
 
@@ -137,7 +140,7 @@ async function resetAdmin() {
   console.log('====================================================');
   console.log('SUCCESS: Admin credentials & Platform restored!');
   console.log('Email:    ' + email);
-  console.log('Password: ' + newPassword);
+  console.log('Password: updated (value not logged)');
   console.log('Role:     ' + superAdminRole.name);
   console.log('====================================================');
 }
