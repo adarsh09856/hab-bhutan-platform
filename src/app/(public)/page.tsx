@@ -889,17 +889,17 @@ export default function HomePage() {
             <OutletGallery image={punakhaOutlet.image_path} galleryImages={punakhaOutlet.galleryImages} name={punakhaOutlet.name} outletKey={punakhaOutlet.key} />
             <div className="outlet-lead__body">
               <p className="badge badge--ink">{punakhaOutlet.type || 'Outlet'}</p>
-              <h3 className="display display--panel">{punakhaOutlet.name}</h3>
-              {punakhaOutlet.place && <p className="outlet-lead__place">{punakhaOutlet.place}</p>}
+              <h3 className="display display--panel">{isDz && punakhaOutlet.nameDz?.trim() ? punakhaOutlet.nameDz : punakhaOutlet.name}</h3>
+              {punakhaOutlet.place && <p className="outlet-lead__place">{isDz && punakhaOutlet.placeDz?.trim() ? punakhaOutlet.placeDz : punakhaOutlet.place}</p>}
               {(punakhaOutlet.description || punakhaOutlet.note) && (
-                <p className="outlet-lead__desc">{punakhaOutlet.description || punakhaOutlet.note}</p>
+                <p className="outlet-lead__desc">{isDz && (punakhaOutlet.descriptionDz || punakhaOutlet.noteDz)?.trim() ? (punakhaOutlet.descriptionDz || punakhaOutlet.noteDz) : (punakhaOutlet.description || punakhaOutlet.note)}</p>
               )}
               {(punakhaOutlet.hours || punakhaOutlet.stalls || punakhaOutlet.craftsOnSite || punakhaOutlet.payment) && (
                 <div className="factgrid">
-                  {punakhaOutlet.hours && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Hours', 'སྒོ་ཕྱེའི་དུས་ཚོད')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.hours}</span></div>}
-                  {punakhaOutlet.stalls && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Stalls', 'ཚོང་སྒྲོམ')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.stalls}</span></div>}
-                  {punakhaOutlet.craftsOnSite && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Crafts on site', 'ས་གནས་ཀྱི་ལག་བཟོ་ཚུ')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.craftsOnSite}</span></div>}
-                  {punakhaOutlet.payment && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Payment', 'དངུལ་སྤྲོད་ཐབས')}</span><span className="factgrid__val clamp-2">{punakhaOutlet.payment}</span></div>}
+                  {punakhaOutlet.hours && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Hours', 'སྒོ་ཕྱེའི་དུས་ཚོད')}</span><span className="factgrid__val clamp-2">{isDz && punakhaOutlet.hoursDz?.trim() ? punakhaOutlet.hoursDz : punakhaOutlet.hours}</span></div>}
+                  {punakhaOutlet.stalls && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Stalls', 'ཚོང་སྒྲོམ')}</span><span className="factgrid__val clamp-2">{isDz && punakhaOutlet.stallsDz?.trim() ? punakhaOutlet.stallsDz : punakhaOutlet.stalls}</span></div>}
+                  {punakhaOutlet.craftsOnSite && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Crafts on site', 'ས་གནས་ཀྱི་ལག་བཟོ་ཚུ')}</span><span className="factgrid__val clamp-2">{isDz && punakhaOutlet.craftsOnSiteDz?.trim() ? punakhaOutlet.craftsOnSiteDz : punakhaOutlet.craftsOnSite}</span></div>}
+                  {punakhaOutlet.payment && <div className="factgrid__cell"><span className="factgrid__key">{localizeHomeText('Payment', 'དངུལ་སྤྲོད་ཐབས')}</span><span className="factgrid__val clamp-2">{isDz && punakhaOutlet.paymentDz?.trim() ? punakhaOutlet.paymentDz : punakhaOutlet.payment}</span></div>}
                 </div>
               )}
               <div className="actions">
@@ -921,14 +921,14 @@ export default function HomePage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">{o.name}</figcaption>
+                <figcaption className="frame__caption frame__caption--sm">{isDz && (o as any).nameDz?.trim() ? (o as any).nameDz : o.name}</figcaption>
               </figure>
               <div className="card__body">
                 <span className="tag">{o.type || 'Outlet'}</span>
-                <h3 className="card__title clamp-2">{o.name}</h3>
-                {o.place && <p className="card__meta clamp-1">{o.place}</p>}
-                {(o.note || o.description) && <p className="card__text clamp-3">{o.note || o.description}</p>}
-                {o.hours && <p className="outlet__hours">{o.hours}</p>}
+                <h3 className="card__title clamp-2">{isDz && (o as any).nameDz?.trim() ? (o as any).nameDz : o.name}</h3>
+                {o.place && <p className="card__meta clamp-1">{isDz && (o as any).placeDz?.trim() ? (o as any).placeDz : o.place}</p>}
+                {(o.note || o.description) && <p className="card__text clamp-3">{isDz && ((o as any).noteDz || (o as any).descriptionDz)?.trim() ? ((o as any).noteDz || (o as any).descriptionDz) : (o.note || o.description)}</p>}
+                {o.hours && <p className="outlet__hours">{isDz && (o as any).hoursDz?.trim() ? (o as any).hoursDz : o.hours}</p>}
               </div>
             </Link>
           ))}

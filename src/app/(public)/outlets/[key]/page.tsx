@@ -8,6 +8,7 @@ import { outletImages } from '@/lib/reference-images';
 import { cleanOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
+import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,18 +32,29 @@ async function resolveOutlet(key: string) {
         key: o.key,
         type: o.type,
         name: o.name,
+        name_dz: o.nameDz,
         sort_order: o.sortOrder,
         is_featured: o.isFeatured,
         place: o.place,
+        place_dz: o.placeDz,
         note: cleanOutletGalleryMarker(note),
+        note_dz: o.noteDz,
         description: o.description,
+        description_dz: o.descriptionDz,
         long_description: o.longDescription,
+        long_description_dz: o.longDescriptionDz,
         hours: o.hours,
+        hours_dz: o.hoursDz,
         stalls: o.stalls || '',
+        stalls_dz: o.stallsDz || '',
         crafts_on_site: o.craftsOnSite || '',
+        crafts_on_site_dz: o.craftsOnSiteDz || '',
         payment: o.payment || '',
+        payment_dz: o.paymentDz || '',
         getting_there: o.gettingThere || '',
+        getting_there_dz: o.gettingThereDz || '',
         facilities: o.facilities || '',
+        facilities_dz: o.facilitiesDz || '',
         imageUrl: imageUrl || outletImages[o.key],
         galleryImages: readOutletGallery(o.note),
       };
@@ -86,16 +98,27 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           key: o.key,
           type: o.type,
           name: o.name,
+          name_dz: o.nameDz,
           place: o.place,
+          place_dz: o.placeDz,
           note: cleanOutletGalleryMarker(note),
+          note_dz: o.noteDz,
           description: o.description,
+          description_dz: o.descriptionDz,
           long_description: o.longDescription,
+          long_description_dz: o.longDescriptionDz,
           hours: o.hours,
+          hours_dz: o.hoursDz,
           stalls: o.stalls || '',
+          stalls_dz: o.stallsDz || '',
           crafts_on_site: o.craftsOnSite || '',
+          crafts_on_site_dz: o.craftsOnSiteDz || '',
           payment: o.payment || '',
+          payment_dz: o.paymentDz || '',
           getting_there: o.gettingThere || '',
+          getting_there_dz: o.gettingThereDz || '',
           facilities: o.facilities || '',
+          facilities_dz: o.facilitiesDz || '',
           imageUrl: imageUrl || outletImages[o.key],
           galleryImages: readOutletGallery(o.note),
         };
@@ -112,20 +135,20 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
         {/* Blueprint Backbar */}
         <div className="backbar">
           <Link className="backbar__link" href="/outlets">
-            <span aria-hidden="true">←</span> Back to Outlets &amp; clusters
+            <span aria-hidden="true">←</span> <LocalizedRecordField english="Back to Outlets & clusters" dzongkha="ཚོང་ཁང་དང་ལག་བཟོའི་གླིང་ཚུ་ལུ་ལོག་འགྱོ" />
           </Link>
         </div>
 
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/outlets">Outlets &amp; clusters</Link> / {outlet.name}
+          <Link href="/"><LocalizedRecordField english="Home" dzongkha="ཁྱིམ" /></Link> / <Link href="/outlets"><LocalizedRecordField english="Outlets & clusters" dzongkha="ཚོང་ཁང་དང་ལག་བཟོའི་གླིང" /></Link> / <LocalizedRecordField english={outlet.name} dzongkha={outlet.name_dz} />
         </p>
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
             {outlet.type} · HAB validated
           </p>
-          <h1 className="display display--page">{outlet.name}</h1>
-          <p className="lede lede--wide">{outlet.description || outlet.note}</p>
+          <h1 className="display display--page"><LocalizedRecordField english={outlet.name} dzongkha={outlet.name_dz} /></h1>
+          <p className="lede lede--wide"><LocalizedRecordField english={outlet.description || outlet.note} dzongkha={outlet.description_dz || outlet.note_dz} /></p>
         </div>
 
         <div style={{ height: 440 }}><OutletGallery image={bannerImg} galleryImages={outlet.galleryImages} name={outlet.name} outletKey={outlet.key} /></div>
@@ -135,20 +158,20 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
       <section className="section section--tight">
         <div className="craftfacts">
           <div className="craftfacts__cell">
-            <span className="craftfacts__key">Where</span>
-            <span className="craftfacts__val">{outlet.place || '—'}</span>
+            <span className="craftfacts__key"><LocalizedRecordField english="Where" dzongkha="ག་ཏེ" /></span>
+            <span className="craftfacts__val"><LocalizedRecordField english={outlet.place || '—'} dzongkha={outlet.place_dz} /></span>
           </div>
           <div className="craftfacts__cell">
-            <span className="craftfacts__key">Open</span>
-            <span className="craftfacts__val">{outlet.hours || '—'}</span>
+            <span className="craftfacts__key"><LocalizedRecordField english="Open" dzongkha="སྒོ་ཕྱེ" /></span>
+            <span className="craftfacts__val"><LocalizedRecordField english={outlet.hours || '—'} dzongkha={outlet.hours_dz} /></span>
           </div>
           {outlet.stalls && <div className="craftfacts__cell">
-            <span className="craftfacts__key">Scale</span>
-            <span className="craftfacts__val">{outlet.stalls}</span>
+            <span className="craftfacts__key"><LocalizedRecordField english="Scale" dzongkha="ཚོང་སྒྲོམ" /></span>
+            <span className="craftfacts__val"><LocalizedRecordField english={outlet.stalls} dzongkha={outlet.stalls_dz} /></span>
           </div>}
           {outlet.payment && <div className="craftfacts__cell">
-            <span className="craftfacts__key">Payment</span>
-            <span className="craftfacts__val">{outlet.payment}</span>
+            <span className="craftfacts__key"><LocalizedRecordField english="Payment" dzongkha="དངུལ་སྤྲོད" /></span>
+            <span className="craftfacts__val"><LocalizedRecordField english={outlet.payment} dzongkha={outlet.payment_dz} /></span>
           </div>}
         </div>
       </section>
@@ -157,11 +180,11 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
       <section className="section">
         <div className="longread">
           <div>
-            <p className="eyebrow eyebrow--accent">How it works</p>
+            <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="How it works" dzongkha="ལཱ་ག་དེ་སྦེ་འབདཝ་ཨིན་ན" /></p>
           </div>
           <div>
             <p className="longread__body">
-              {outlet.long_description || outlet.description || outlet.note}
+              <LocalizedRecordField english={outlet.long_description || outlet.description || outlet.note} dzongkha={outlet.long_description_dz || outlet.description_dz || outlet.note_dz} />
             </p>
           </div>
         </div>
@@ -170,25 +193,25 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
       {/* Practical Detail */}
       {(outlet.getting_there || outlet.facilities || outlet.crafts_on_site) && (
         <section className="section">
-          <p className="eyebrow eyebrow--accent">Practical detail</p>
-          <h2 className="display display--sub">Before you go</h2>
+          <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="Practical detail" dzongkha="ལག་ལེན་གྱི་གནས་ཚུལ" /></p>
+          <h2 className="display display--sub"><LocalizedRecordField english="Before you go" dzongkha="མ་འགྱོ་བའི་ཧེ་མ" /></h2>
           <dl className="deeplist" style={{ marginTop: 22 }}>
             {outlet.getting_there && (
               <div className="deeplist__row">
-                <dt className="deeplist__key">Getting there</dt>
-                <dd className="deeplist__val">{outlet.getting_there}</dd>
+                <dt className="deeplist__key"><LocalizedRecordField english="Getting there" dzongkha="འགྱོ་ཐངས" /></dt>
+                <dd className="deeplist__val"><LocalizedRecordField english={outlet.getting_there} dzongkha={outlet.getting_there_dz} /></dd>
               </div>
             )}
             {outlet.facilities && (
               <div className="deeplist__row">
-                <dt className="deeplist__key">Facilities</dt>
-                <dd className="deeplist__val">{outlet.facilities}</dd>
+                <dt className="deeplist__key"><LocalizedRecordField english="Facilities" dzongkha="མཁོ་ཆས་ཚུ" /></dt>
+                <dd className="deeplist__val"><LocalizedRecordField english={outlet.facilities} dzongkha={outlet.facilities_dz} /></dd>
               </div>
             )}
             {outlet.crafts_on_site && (
               <div className="deeplist__row">
-                <dt className="deeplist__key">What you will find</dt>
-                <dd className="deeplist__val">{outlet.crafts_on_site}</dd>
+                <dt className="deeplist__key"><LocalizedRecordField english="What you will find" dzongkha="འདི་ནང་ག་ཅི་ཐོབ་འོང" /></dt>
+                <dd className="deeplist__val"><LocalizedRecordField english={outlet.crafts_on_site} dzongkha={outlet.crafts_on_site_dz} /></dd>
               </div>
             )}
           </dl>
@@ -198,8 +221,8 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
       {/* Other Outlets */}
       {others.length > 0 && (
         <section className="section section--last">
-          <p className="eyebrow eyebrow--accent">Also</p>
-          <h2 className="display display--sub">Other outlets &amp; markets</h2>
+          <p className="eyebrow eyebrow--accent"><LocalizedRecordField english="Also" dzongkha="གཞན་ཡང" /></p>
+          <h2 className="display display--sub"><LocalizedRecordField english="Other outlets & markets" dzongkha="ཚོང་ཁང་དང་ཁྲོམ་ར་གཞན" /></h2>
           <div className="grid grid--3" style={{ marginTop: 22 }}>
             {others.map((row) => (
               <Link key={row.key} className="card outlet" href={`/outlets/${row.key}`}>
@@ -215,11 +238,11 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
                 <div className="card__body">
                   <span className="tag" style={{ marginBottom: 4 }}>{row.type}</span>
                   <h3 className="card__title clamp-2" style={{ marginBottom: 4 }}>
-                    {row.name}
+                    <LocalizedRecordField english={row.name} dzongkha={row.name_dz} />
                   </h3>
-                  <p className="card__meta clamp-1" style={{ marginBottom: 4 }}>{row.place}</p>
-                  <p className="card__text clamp-3">{row.note}</p>
-                  {row.hours && <p className="outlet__hours">{row.hours}</p>}
+                  <p className="card__meta clamp-1" style={{ marginBottom: 4 }}><LocalizedRecordField english={row.place} dzongkha={row.place_dz} /></p>
+                  <p className="card__text clamp-3"><LocalizedRecordField english={row.note || row.description} dzongkha={row.note_dz || row.description_dz} /></p>
+                  {row.hours && <p className="outlet__hours"><LocalizedRecordField english={row.hours} dzongkha={row.hours_dz} /></p>}
                 </div>
               </Link>
             ))}

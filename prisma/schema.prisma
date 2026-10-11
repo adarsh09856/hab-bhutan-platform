@@ -718,19 +718,30 @@ model OutletRecord {
   id              String   @id @default(uuid())
   key             String   @unique
   type            String   @default("OUTLET") // MARKET | OUTLET | COUNTER
+  nameDz          String?  @db.Text
   name            String
   sortOrder       Int      @default(0)
   isFeatured      Boolean  @default(false)
   place           String
+  placeDz         String?  @db.Text
   note            String?
+  noteDz          String?  @db.Text
   description     String   @db.Text
+  descriptionDz   String?  @db.Text
   longDescription String   @db.Text
+  longDescriptionDz String? @db.Text
   hours           String   @default("09:00 - 18:00 daily")
+  hoursDz         String?  @db.Text
   stalls          String?
+  stallsDz        String?  @db.Text
   craftsOnSite    String?
+  craftsOnSiteDz  String?  @db.Text
   payment         String?
+  paymentDz       String?  @db.Text
   gettingThere    String?  @db.Text
+  gettingThereDz  String?  @db.Text
   facilities      String?  @db.Text
+  facilitiesDz    String?  @db.Text
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

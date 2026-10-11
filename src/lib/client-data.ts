@@ -60,18 +60,29 @@ export interface OutletData {
   key: string;
   type: string;
   name: string;
+  name_dz?: string | null;
   sort_order?: number;
   is_featured?: boolean;
   place: string;
+  place_dz?: string | null;
   note: string;
+  note_dz?: string | null;
   description: string;
+  description_dz?: string | null;
   long_description: string;
+  long_description_dz?: string | null;
   hours: string;
+  hours_dz?: string | null;
   stalls: string;
+  stalls_dz?: string | null;
   crafts_on_site: string;
+  crafts_on_site_dz?: string | null;
   payment: string;
+  payment_dz?: string | null;
   getting_there: string;
+  getting_there_dz?: string | null;
   facilities: string;
+  facilities_dz?: string | null;
   imageUrl?: string;
 }
 

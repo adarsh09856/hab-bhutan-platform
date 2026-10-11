@@ -29,18 +29,29 @@ interface Outlet {
   key: string;
   type: string;
   name: string;
+  nameDz?: string | null;
   sortOrder: number;
   isFeatured: boolean;
   place: string;
+  placeDz?: string | null;
   note?: string | null;
+  noteDz?: string | null;
   description: string;
+  descriptionDz?: string | null;
   longDescription: string;
+  longDescriptionDz?: string | null;
   hours: string;
+  hoursDz?: string | null;
   stalls?: string | null;
+  stallsDz?: string | null;
   craftsOnSite?: string | null;
+  craftsOnSiteDz?: string | null;
   payment?: string | null;
+  paymentDz?: string | null;
   gettingThere?: string | null;
+  gettingThereDz?: string | null;
   facilities?: string | null;
+  facilitiesDz?: string | null;
   imageUrl?: string | null;
   galleryImages?: string[];
 }
@@ -77,18 +88,29 @@ export default function AdminClustersOutletsPage() {
     key: '',
     type: 'OUTLET',
     name: '',
+    nameDz: '',
     sortOrder: 0,
     isFeatured: false,
     place: '',
+    placeDz: '',
     note: '',
+    noteDz: '',
     description: '',
+    descriptionDz: '',
     longDescription: '',
+    longDescriptionDz: '',
     hours: '09:00 - 18:00 daily',
+    hoursDz: '',
     stalls: '',
+    stallsDz: '',
     craftsOnSite: '',
+    craftsOnSiteDz: '',
     payment: 'Cash, card and mBoB accepted',
+    paymentDz: '',
     gettingThere: '',
+    gettingThereDz: '',
     facilities: '',
+    facilitiesDz: '',
     imageUrl: '',
     galleryImages: [] as string[],
   });
@@ -271,18 +293,29 @@ export default function AdminClustersOutletsPage() {
                   key: '',
                   type: 'OUTLET',
                   name: '',
+                  nameDz: '',
                   sortOrder: outlets.length + 1,
                   isFeatured: false,
                   place: '',
+                  placeDz: '',
                   note: '',
+                  noteDz: '',
                   description: '',
+                  descriptionDz: '',
                   longDescription: '',
+                  longDescriptionDz: '',
                   hours: '09:00 - 18:00 daily',
+                  hoursDz: '',
                   stalls: '',
+                  stallsDz: '',
                   craftsOnSite: '',
+                  craftsOnSiteDz: '',
                   payment: 'Cash, card and mBoB accepted',
+                  paymentDz: '',
                   gettingThere: '',
+                  gettingThereDz: '',
                   facilities: '',
+                  facilitiesDz: '',
                   imageUrl: '',
                   galleryImages: [],
                 });
@@ -445,18 +478,29 @@ export default function AdminClustersOutletsPage() {
                           key: o.key,
                           type: o.type,
                           name: o.name,
+                          nameDz: o.nameDz || '',
                           sortOrder: o.sortOrder,
                           isFeatured: o.isFeatured,
                           place: o.place,
+                          placeDz: o.placeDz || '',
                           note: o.note || '',
+                          noteDz: o.noteDz || '',
                           description: o.description,
+                          descriptionDz: o.descriptionDz || '',
                           longDescription: o.longDescription,
+                          longDescriptionDz: o.longDescriptionDz || '',
                           hours: o.hours,
+                          hoursDz: o.hoursDz || '',
                           stalls: o.stalls || '',
+                          stallsDz: o.stallsDz || '',
                           craftsOnSite: o.craftsOnSite || '',
+                          craftsOnSiteDz: o.craftsOnSiteDz || '',
                           payment: o.payment || '',
+                          paymentDz: o.paymentDz || '',
                           gettingThere: o.gettingThere || '',
+                          gettingThereDz: o.gettingThereDz || '',
                           facilities: o.facilities || '',
+                          facilitiesDz: o.facilitiesDz || '',
                           imageUrl: o.imageUrl || '',
                           galleryImages: o.galleryImages || [],
                         });
@@ -802,6 +846,56 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
               </div>
+
+              <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <summary className="cursor-pointer text-sm font-semibold text-slate-800">Optional Dzongkha translations</summary>
+                <p className="mt-2 text-xs text-slate-600">Add HAB-reviewed translations here. Visitors who choose Dzongkha will see these values; if a translation is blank, the English value remains visible.</p>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Outlet name · Dzongkha</label>
+                    <input className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.nameDz} onChange={(e) => setOutletForm({ ...outletForm, nameDz: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Location · Dzongkha</label>
+                    <input className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.placeDz} onChange={(e) => setOutletForm({ ...outletForm, placeDz: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Opening hours · Dzongkha</label>
+                    <input className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.hoursDz} onChange={(e) => setOutletForm({ ...outletForm, hoursDz: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Stalls / scale · Dzongkha</label>
+                    <input className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.stallsDz} onChange={(e) => setOutletForm({ ...outletForm, stallsDz: e.target.value })} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Short description · Dzongkha</label>
+                    <textarea rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.descriptionDz} onChange={(e) => setOutletForm({ ...outletForm, descriptionDz: e.target.value })} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <RichTextEditor label="Long description · Dzongkha" value={outletForm.longDescriptionDz} onChange={(html) => setOutletForm({ ...outletForm, longDescriptionDz: html })} hint="Use HAB-reviewed Dzongkha copy; leave blank until approved." />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Crafts on site · Dzongkha</label>
+                    <textarea rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.craftsOnSiteDz} onChange={(e) => setOutletForm({ ...outletForm, craftsOnSiteDz: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Payment methods · Dzongkha</label>
+                    <input className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.paymentDz} onChange={(e) => setOutletForm({ ...outletForm, paymentDz: e.target.value })} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Visitor note · Dzongkha</label>
+                    <textarea rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.noteDz} onChange={(e) => setOutletForm({ ...outletForm, noteDz: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Getting there · Dzongkha</label>
+                    <textarea rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.gettingThereDz} onChange={(e) => setOutletForm({ ...outletForm, gettingThereDz: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Facilities · Dzongkha</label>
+                    <textarea rows={2} className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900" value={outletForm.facilitiesDz} onChange={(e) => setOutletForm({ ...outletForm, facilitiesDz: e.target.value })} />
+                  </div>
+                </div>
+              </details>
 
               <div>
                 <FileUploadInput
