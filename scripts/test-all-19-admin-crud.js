@@ -17,7 +17,7 @@ const BASE_URL = process.env.TEST_BASE_URL || process.env.BASE_URL || 'http://lo
 
 let adminEmail = process.env.ADMIN_EMAIL || '';
 let adminPassword = process.env.ADMIN_PASSWORD || '';
-if (fs.existsSync('.admin_credentials.local')) {
+if ((!adminEmail || !adminPassword) && fs.existsSync('.admin_credentials.local')) {
   try {
     const credContent = fs.readFileSync('.admin_credentials.local', 'utf-8');
     const mEmail = credContent.match(/ADMIN_EMAIL=(.+)/);
