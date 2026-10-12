@@ -26,9 +26,15 @@ export async function GET(req: NextRequest) {
       logs
     });
   } catch (err: any) {
+    const statusCode = Number(err?.statusCode);
+    const status = [401, 403, 503].includes(statusCode)
+      ? statusCode
+      : err?.message?.includes('Forbidden')
+        ? 403
+        : 500;
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: err.message.includes('Forbidden') ? 403 : 500 }
+      { status }
     );
   }
 }
