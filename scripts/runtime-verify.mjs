@@ -234,8 +234,7 @@ await runTest('Security: No hardcoded plaintext passwords in src/app/api/auth/lo
   const loginRoutePath = path.resolve('src/app/api/auth/login/route.ts');
   const content = fs.readFileSync(loginRoutePath, 'utf8');
 
-  assert.equal(content.includes('BhutanCrafts2026!'), false, 'Forbidden string BhutanCrafts2026! found');
-  assert.equal(content.includes('Artisan2026!'), false, 'Forbidden string Artisan2026! found');
+  assert.doesNotMatch(content, /password\s*[:=]\s*['"][^'"]{8,}/i, 'A literal password assignment was found');
   assert.equal(content.includes('mockUser'), false, 'Mock user objects found in login route');
   assert.equal(content.includes('bcrypt.compareSync'), true, 'bcrypt verification call must be present');
 });
@@ -244,20 +243,21 @@ await runTest('Security: No hardcoded plaintext passwords in src/app/api/auth/lo
 // 7. Bcrypt: Password Hashing Verification
 // ==========================================
 await runTest('Bcrypt: New passwords match hashes, old deprecated credentials fail', () => {
-  const testPassword = 'Test_Verification_Key_2026!';
+  const testPassword = `${crypto.randomBytes(24).toString('base64url')}Aa1!`;
+  const memberTestPassword = `${crypto.randomBytes(24).toString('base64url')}Bb2!`;
   const adminHash = bcrypt.hashSync(testPassword, 10);
-  const memberHash = bcrypt.hashSync('ArtisanMember2026!', 10);
+  const memberHash = bcrypt.hashSync(memberTestPassword, 10);
 
   // Valid credentials verify
   assert.equal(bcrypt.compareSync(testPassword, adminHash), true);
-  assert.equal(bcrypt.compareSync('ArtisanMember2026!', memberHash), true);
+  assert.equal(bcrypt.compareSync(memberTestPassword, memberHash), true);
 
-  // Old deprecated and exposed passwords must fail
-  assert.equal(bcrypt.compareSync('AdminSecure2026!', adminHash), false);
-  assert.equal(bcrypt.compareSync('H@b!Admin_7e684cdc9446168c', adminHash), false);
-  assert.equal(bcrypt.compareSync('BhutanCrafts2026!', adminHash), false);
-  assert.equal(bcrypt.compareSync('Artisan2026!', memberHash), false);
-  assert.equal(bcrypt.compareSync('RandomPassword123!', adminHash), false);
+  // Independently generated invalid values must not match either stored hash.
+  for (let index = 0; index < 5; index++) {
+    const unrelatedPassword = crypto.randomBytes(24).toString('base64url');
+    assert.equal(bcrypt.compareSync(unrelatedPassword, adminHash), false);
+    assert.equal(bcrypt.compareSync(unrelatedPassword, memberHash), false);
+  }
 });
 
 // ==========================================

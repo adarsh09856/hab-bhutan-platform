@@ -31,6 +31,10 @@ function sanitizeJson(val) {
 
 async function main() {
   const adminEmail = 'admin@handicraftsbhutan.org';
+  if (process.env.NODE_ENV === 'production' && await prisma.user.count() > 0) {
+    console.log('[Seed Guard] Production database already contains users. Refusing to reseed or overwrite live data.');
+    return;
+  }
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   const adminPassword = existingAdmin
     ? null
@@ -880,14 +884,14 @@ async function main() {
   }
 
   const memberEmail = 'member@handicraftsbhutan.org';
-  const memberHash = bcrypt.hashSync('ArtisanMember2026!', 10);
+  const existingMemberAccount = await prisma.user.findUnique({ where: { email: memberEmail } });
+  const memberPassword = existingMemberAccount
+    ? null
+    : await passwordPrompt.promptNewPassword({ label: `Create the initial password for ${memberEmail}` });
+  const memberHash = memberPassword ? bcrypt.hashSync(memberPassword, 12) : undefined;
   await prisma.user.upsert({
     where: { email: memberEmail },
-    update: {
-      roleId: memberRole.id,
-      status: 'ACTIVE',
-      mustChangePassword: false,
-    },
+    update: {},
     create: {
       email: memberEmail,
       name: 'Choki Wangmo (Khoma Weavers)',

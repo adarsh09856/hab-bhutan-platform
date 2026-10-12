@@ -138,21 +138,21 @@ async function main() {
     console.log('Admin user already exists. Existing credentials preserved without modification.');
   }
 
-  // 3b. Seed Demo Member User Account with real bcrypt hash
-  // Note: Seed demo accounts maintain fixed demo credentials with mustChangePassword: false for evaluation testing,
-  // whereas real member auto-provisioning generates 100% random temporary passwords with mustChangePassword: true.
-  const memberPasswordHash = bcrypt.hashSync('ArtisanMember2026!', 10);
+  // 3b. Seed the demo member account once, collecting its initial password
+  // interactively and preserving existing credentials on reruns.
+  const memberEmail = 'member@handicraftsbhutan.org';
+  const existingMemberAccount = await prisma.user.findUnique({ where: { email: memberEmail } });
+  const memberPassword = existingMemberAccount
+    ? null
+    : await passwordPrompt.promptNewPassword({ label: `Create the initial password for ${memberEmail}` });
+  const memberPasswordHash = memberPassword ? bcrypt.hashSync(memberPassword, 12) : undefined;
   const memberUser = await prisma.user.upsert({
-    where: { email: 'member@handicraftsbhutan.org' },
-    update: {
-      passwordHash: memberPasswordHash,
-      status: 'ACTIVE',
-      mustChangePassword: false,
-    },
+    where: { email: memberEmail },
+    update: {},
     create: {
-      email: 'member@handicraftsbhutan.org',
+      email: memberEmail,
       name: 'Choki Wangmo (Khoma Weavers)',
-      passwordHash: memberPasswordHash,
+      passwordHash: memberPasswordHash!,
       roleId: memberRole.id,
       status: 'ACTIVE',
       mustChangePassword: false,

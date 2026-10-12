@@ -1,69 +1,42 @@
 import { PrismaClient } from '@prisma/client';
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
+import passwordPrompt from './lib/secure-password.cjs';
+import credentialRotation from './lib/admin-credential-rotation.cjs';
 
 const prisma = new PrismaClient();
 
 async function rotateAdminPassword() {
-  // Generate high-entropy 32-character secure random password
-  const newPassword = 'Admin_' + crypto.randomBytes(16).toString('hex') + '!2026';
-  const passwordHash = bcrypt.hashSync(newPassword, 12);
-
-  // Update in Database
-  const updatedUser = await prisma.user.update({
-    where: { email: 'admin@handicraftsbhutan.org' },
-    data: {
-      passwordHash: passwordHash,
-      status: 'ACTIVE',
-      mustChangePassword: false,
-    },
+  const email = 'admin@handicraftsbhutan.org';
+  const newPassword = await passwordPrompt.promptNewPassword({
+    label: `Enter a new database password for ${email}`,
+    minLength: 14,
   });
+  const passwordHash = await bcrypt.hash(newPassword, 12);
 
-  // Write to gitignored .admin_credentials.local
-  const credsPath = path.join(process.cwd(), '.admin_credentials.local');
-  const credsContent = `# Handicrafts Association of Bhutan — Rotated Administrative Credentials
-# Generated: ${new Date().toISOString()}
-# CAUTION: Confidential production credential. Do not commit or share.
-
-ADMIN_EMAIL=admin@handicraftsbhutan.org
-ADMIN_PASSWORD=${newPassword}
-`;
-  fs.writeFileSync(credsPath, credsContent, { mode: 0o600 });
-
-  // Invalidate any active sessions by updating JWT secret in .env
-  const newJwtSecret = crypto.randomBytes(32).toString('hex');
-  const envPath = path.join(process.cwd(), '.env');
-  if (fs.existsSync(envPath)) {
-    let envContent = fs.readFileSync(envPath, 'utf8');
-    envContent = envContent.replace(/JWT_SECRET="[^"]*"/, `JWT_SECRET="${newJwtSecret}"`);
-    fs.writeFileSync(envPath, envContent);
-  }
-
-  // Audit log this administrative credential rotation
-  await prisma.auditLog.create({
-    data: {
-      actorType: 'STAFF',
-      actorId: updatedUser.id,
-      actorIdentifier: 'admin@handicraftsbhutan.org',
-      actorIp: '127.0.0.1',
-      action: 'ADMIN_CREDENTIAL_ROTATED_INCIDENT_REMEDIATION',
-      entityType: 'User',
-      entityId: updatedUser.id,
-      details: {
-        reason: 'Phase 0 Security Incident: Plaintext chat/code exposure remediation',
-        rotatedAt: new Date().toISOString(),
-        jwtSecretRotated: true,
+  const updatedUser = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.update({
+      where: { email },
+      data: credentialRotation.buildAdminPasswordUpdate(passwordHash),
+    });
+    await tx.auditLog.create({
+      data: {
+        actorType: 'STAFF',
+        actorId: user.id,
+        actorIdentifier: email,
+        actorIp: null,
+        action: 'ADMIN_PASSWORD_ROTATED',
+        entityType: 'User',
+        entityId: user.id,
+        details: { rotatedAt: new Date().toISOString(), sessionsRevoked: true },
       },
-    },
+    });
+    return user;
   });
 
-  console.log('[SUCCESS] Admin password rotated in database.');
-  console.log('[SUCCESS] Rotated credentials securely written to .admin_credentials.local (file is gitignored).');
-  console.log('[SUCCESS] JWT session secret re-rotated in .env (all active sessions invalidated).');
-  console.log('[SUCCESS] Security audit entry logged in AuditLog table.');
-  console.log('[NOTE] Plaintext password was NOT printed to standard output or chat logs.');
+  console.log(`[SUCCESS] Password hash updated in the database for ${updatedUser.email}.`);
+  console.log('[SUCCESS] Existing sessions revoked using the database session version.');
+  console.log('[SUCCESS] Existing account status, role, and two-factor settings were preserved.');
+  console.log('[SUCCESS] Audit entry recorded. Plaintext password was not saved or printed.');
 }
 
 rotateAdminPassword()
