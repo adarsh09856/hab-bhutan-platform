@@ -413,6 +413,57 @@ export default function UniversalPageQuickEdit() {
   const canSaveSelection = requiredPermissions.every(hasPermission) && (galleryType !== 'member' || Boolean(galleryId));
   const canAddSlide = Boolean(canSaveSelection && (galleryType === 'hero' && hasPermission('content:create')
     || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '') && galleryElement?.dataset.habGalleryView !== 'card')));
+  const selectedGalleryImage = selected instanceof HTMLImageElement ? selected : null;
+  const selectedGalleryPosition = selectedGalleryImage && galleryElement
+    ? Array.from(galleryElement.querySelectorAll('img')).indexOf(selectedGalleryImage) : -1;
+  const canRemoveMedia = Boolean(canSaveSelection && selectedGalleryImage && (
+    galleryType === 'hero' && selectedGalleryImage.dataset.habGallerySlideId && hasPermission('content:delete')
+    || galleryType === 'outlet' && galleryId && selectedGalleryPosition > 0
+    || galleryType === 'product' && galleryId && galleryElement?.dataset.habGalleryView !== 'card'
+    || galleryType === 'page' && galleryId && selectedGalleryPosition >= 0
+  ));
+
+  const removeMedia = async () => {
+    if (!canRemoveMedia || !selectedGalleryImage || !galleryElement) return;
+    if (!window.confirm('Remove this photo from its gallery? The uploaded file will not be deleted.')) return;
+    setSaving(true); setMessage('Removing photo…');
+    try {
+      const requestJson = async (url: string, init?: RequestInit) => {
+        const response = await fetch(url, { credentials: 'include', cache: 'no-store', ...init });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || 'Could not remove this photo.');
+        return data;
+      };
+      const write = (url: string, method: string, payload: unknown) => requestJson(url, {
+        method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
+      if (galleryType === 'hero') {
+        await requestJson(`/api/admin/hero-slides/${encodeURIComponent(selectedGalleryImage.dataset.habGallerySlideId || '')}`, { method: 'DELETE' });
+      } else if (galleryType === 'outlet' && galleryId) {
+        const { outlets } = await requestJson('/api/admin/outlets');
+        const outlet = outlets.find((item: { key: string }) => item.key === galleryId);
+        if (!outlet) throw new Error('Outlet not found in Admin.');
+        const photos: string[] = Array.isArray(outlet.galleryImages) ? outlet.galleryImages : [];
+        if (selectedGalleryPosition - 1 >= photos.length) throw new Error('This outlet slide is not available in Admin.');
+        await write('/api/admin/outlets', 'PUT', { id: outlet.id, galleryImages: photos.filter((_, i) => i !== selectedGalleryPosition - 1) });
+      } else if (galleryType === 'product' && galleryId) {
+        const { products } = await requestJson('/api/admin/products');
+        const product = products.find((item: { code: string }) => item.code === galleryId);
+        if (!product) throw new Error('Product not found in Admin.');
+        const images: Array<string | { url: string }> = Array.isArray(product.images) ? product.images : [];
+        const source = selectedGalleryImage.getAttribute('src');
+        const imageIndex = images.findIndex(item => (typeof item === 'string' ? item : item.url) === source);
+        if (imageIndex < 0) throw new Error('This photo is a reference fallback, not a saved product image. Manage its photos in Admin.');
+        await write('/api/admin/products', 'PATCH', { id: product.id, images: images.filter((_, i) => i !== imageIndex) });
+      } else if (galleryType === 'page' && galleryId) {
+        const { page } = await requestJson(`/api/admin/pages/${encodeURIComponent(galleryId)}`);
+        const photos: Array<{ url: string; caption?: string }> = Array.isArray(page.galleryImages) ? page.galleryImages : [];
+        if (selectedGalleryPosition >= photos.length) throw new Error('This page photo is not available in Admin.');
+        await write(`/api/admin/pages/${encodeURIComponent(galleryId)}`, 'PUT', { galleryImages: photos.filter((_, i) => i !== selectedGalleryPosition) });
+      }
+      window.location.reload();
+    } catch (error: any) { setMessage(error?.message || 'Could not remove this photo.'); setSaving(false); }
+  };
 
   const addSlide = async () => {
     const url = newSlideUrl.trim();
@@ -515,6 +566,7 @@ export default function UniversalPageQuickEdit() {
       {message && <p className="mt-3 text-xs text-slate-600">{message}</p>}
       {!canSaveSelection && <p className="mt-3 text-xs text-amber-800" role="status">Your role cannot save this {galleryType === 'product' ? 'product image' : 'content'}. Ask an administrator for {requiredPermissions.join(' and ')} access.</p>}
       <div className="mt-4 flex justify-end gap-2">
+        {canRemoveMedia && <button type="button" disabled={saving} onClick={removeMedia} className="mr-auto rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-50">Remove photo</button>}
         {(!galleryElement || overridesRef.current[selected.dataset.habEditKey || '']) && <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>}
         <button type="button" disabled={saving || !canSaveSelection} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryType === 'project' ? 'Save cover' : galleryElement ? 'Save gallery' : 'Save live'}</button>
       </div>
