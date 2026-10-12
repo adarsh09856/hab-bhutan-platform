@@ -1,11 +1,17 @@
 import nextEnv from '@next/env';
 import { PrismaClient } from '@prisma/client';
 import { SignJWT } from 'jose';
+import { requireTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
 nextEnv.loadEnvConfig(process.cwd(), true);
 
-const prisma = new PrismaClient();
+const testDatabaseUrl = requireTestDatabaseUrl();
+const prisma = new PrismaClient({ datasources: { db: { url: testDatabaseUrl } } });
 const baseUrl = process.env.QUICK_EDIT_TEST_URL || 'http://127.0.0.1:3033';
+const parsedBaseUrl = new URL(baseUrl);
+if (parsedBaseUrl.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(parsedBaseUrl.hostname.toLowerCase())) {
+  throw new Error('Safety stop: QUICK_EDIT_TEST_URL must target a loopback HTTP test server; refusing external requests.');
+}
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const permissions = ['content:view', 'content:create', 'content:edit', 'content:delete', 'members:view', 'members:create', 'members:edit', 'members:delete', 'applications:view', 'applications:create', 'applications:edit', 'applications:delete'];
 const roleSlug = `codex_nav_check_${suffix.replace(/[^a-z0-9]/gi, '_')}`;
