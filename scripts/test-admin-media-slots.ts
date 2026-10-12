@@ -32,7 +32,10 @@ async function main() {
     (prisma.heroSlide as any).updateMany = async ({ where, data }: any) => { updates.push({ type: 'hero', where, data }); return { count: where.id === 'slide-1' ? 1 : 0 }; };
     (prisma.craft as any).findMany = async () => [{ key: 'thagzo', name: 'Thagzo', english: 'Weaving', bannerUrl: null }];
     (prisma.craft as any).updateMany = async ({ where, data }: any) => { updates.push({ type: 'craft', where, data }); return { count: where.key === 'thagzo' ? 1 : 0 }; };
-    (prisma.outletRecord as any).findMany = async () => [{ key: 'saved-outlet', name: 'Saved outlet', note: 'Existing note' }];
+    (prisma.outletRecord as any).findMany = async () => [
+      { key: 'saved-outlet', name: 'Saved outlet', note: 'Existing note' },
+      { key: 'thimphu-outlet', name: 'Thimphu outlet', note: null },
+    ];
     (prisma.outletRecord as any).findUnique = async ({ where }: any) => where.key === 'saved-outlet' ? { id: 'outlet-1', note: 'Existing note' } : null;
     (prisma.outletRecord as any).update = async ({ where, data }: any) => { updates.push({ type: 'outlet', where, data }); return { id: where.id }; };
 
@@ -45,8 +48,10 @@ async function main() {
     const listed = await GET(request('GET'));
     assert.equal(listed.status, 200);
     const slots = (await listed.json()).slots;
-    assert.deepEqual(slots.map((slot: any) => slot.key), ['hero.slide-1', 'about.band', 'craft.thagzo', 'outlet.saved-outlet']);
+    assert.deepEqual(slots.map((slot: any) => slot.key), ['hero.slide-1', 'about.band', 'craft.thagzo', 'outlet.saved-outlet', 'outlet.thimphu-outlet']);
     assert.equal(slots[0].caption, 'Saved alt');
+    assert.equal(slots[3].url, '/assets/photos/image-unavailable.svg', 'unknown outlets do not get invented photos');
+    assert.equal(slots[4].url, '/assets/photos/hero-4-textiles.jpg', 'Admin gallery uses the same existing outlet fallback as the public page');
 
     const unsafe = await PATCH(request('PATCH', { key: 'hero.slide-1', url: 'javascript:alert(1)' }));
     assert.equal(unsafe.status, 400);

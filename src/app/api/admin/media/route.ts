@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAnyPermission, requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { resolveCraftPhoto } from '@/lib/craft-photo-fallbacks';
+import { outletImages } from '@/lib/reference-images';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
       key: `outlet.${outlet.key}`,
       category: 'Outlets & Markets',
       label: `${outlet.name} image`,
-      url: outletImage(outlet.note) || '/assets/photos/image-unavailable.svg',
+      url: outletImage(outlet.note) || outletImages[outlet.key] || '/assets/photos/image-unavailable.svg',
       aspect: '16:9 / Landscape',
       description: `Saved photo for /outlets/${outlet.key}.`,
     }));
