@@ -18,33 +18,8 @@ const CRAFT_THUMBNAIL_MAP: Record<string, string> = {
   weaving: '/images/crafts/thagzo.jpg',
   tshazo: '/images/crafts/tshazo.jpg',
   'cane-bamboo': '/images/crafts/tshazo.jpg',
-  shagzo: '/images/crafts/shagzo.jpg',
-  'wood-turning': '/images/crafts/shagzo.jpg',
-  lhadri: '/images/crafts/lhazo.jpg',
-  lhazo: '/images/crafts/lhazo.jpg',
-  painting: '/images/crafts/lhazo.jpg',
-  jimzo: '/images/crafts/jinzo.jpg',
-  jinzo: '/images/crafts/jinzo.jpg',
-  sculpture: '/images/crafts/jinzo.jpg',
-  dezo: '/images/crafts/dezo.jpg',
-  papermaking: '/images/crafts/dezo.jpg',
-  troezo: '/images/crafts/troezo.jpg',
-  trokzo: '/images/crafts/troezo.jpg',
-  'gold-silver': '/images/crafts/troezo.jpg',
-  garzo: '/images/crafts/garzo.jpg',
-  blacksmithing: '/images/crafts/garzo.jpg',
-  chezo: '/images/crafts/tshemzo.jpg',
-  tshemzo: '/images/crafts/tshemzo.jpg',
-  tailoring: '/images/crafts/tshemzo.jpg',
   parzo: '/images/crafts/parzo.jpg',
   carving: '/images/crafts/parzo.jpg',
-  lugzo: '/images/crafts/lugzo.jpg',
-  'bronze-casting': '/images/crafts/lugzo.jpg',
-  shingzo: '/images/crafts/shingzo.jpg',
-  carpentry: '/images/crafts/shingzo.jpg',
-  dzozo: '/images/crafts/dozo.jpg',
-  dozo: '/images/crafts/dozo.jpg',
-  masonry: '/images/crafts/dozo.jpg',
 };
 
 export default function Header({ initialNavigation }: { initialNavigation?: { label: string; href: string }[] | null }) {
@@ -747,15 +722,17 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                       href={`/shop/${c.key}`}
                       onClick={() => setShopOpen(false)}
                     >
-                      <div className="w-8 h-8 rounded-md overflow-hidden relative flex-shrink-0 bg-stone-100 border border-[#E4DDD1] shadow-2xs group-hover:scale-105 transition-transform">
-                        <Image
-                          src={CRAFT_THUMBNAIL_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
-                          alt={c.name}
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                        />
-                      </div>
+                      {CRAFT_THUMBNAIL_MAP[c.key] && (
+                        <div className="w-8 h-8 rounded-md overflow-hidden relative flex-shrink-0 bg-stone-100 border border-[#E4DDD1] shadow-2xs group-hover:scale-105 transition-transform">
+                          <Image
+                            src={CRAFT_THUMBNAIL_MAP[c.key]}
+                            alt={c.name}
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
                       <div className="min-w-0">
                         <span className="menu__craft-name group-hover:text-[#8B2E24] transition-colors">{c.name}</span>
                         <span className="menu__craft-en clamp-1">{c.english || ''}</span>
@@ -918,15 +895,17 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                           onClick={() => setMobileNavOpen(false)}
                           className="flex items-center gap-2 p-1.5 rounded-lg bg-stone-50 hover:bg-stone-100 border border-[#E4DDD1]/60 transition-colors"
                         >
-                          <div className="w-7 h-7 rounded-md overflow-hidden relative flex-shrink-0 bg-stone-200 border border-[#E4DDD1]">
-                            <Image
-                              src={CRAFT_THUMBNAIL_MAP[c.key] || '/assets/photos/hero-1-weaving.jpg'}
-                              alt={c.name}
-                              fill
-                              sizes="28px"
-                              className="object-cover"
-                            />
-                          </div>
+                          {CRAFT_THUMBNAIL_MAP[c.key] && (
+                            <div className="w-7 h-7 rounded-md overflow-hidden relative flex-shrink-0 bg-stone-200 border border-[#E4DDD1]">
+                              <Image
+                                src={CRAFT_THUMBNAIL_MAP[c.key]}
+                                alt={c.name}
+                                fill
+                                sizes="28px"
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
                           <div className="min-w-0 flex-1">
                             <span className="block text-[11px] font-bold text-stone-900 truncate leading-tight">{c.name}</span>
                             <span className="block text-[10px] text-stone-500 truncate leading-tight">{c.english || ''}</span>
