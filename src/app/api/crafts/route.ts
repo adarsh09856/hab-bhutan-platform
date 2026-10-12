@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-
-const BUNDLED_CRAFT_PHOTOS = new Set([
-  'shingzo', 'dozo', 'parzo', 'lhazo', 'jinzo', 'lugzo', 'garzo',
-  'troezo', 'tshazo', 'thagzo', 'tshemzo', 'shagzo', 'dezo',
-]);
+import { resolveCraftPhoto } from '@/lib/craft-photo-fallbacks';
 
 function publicCraft(craft: any) {
-  // Existing live craft records still lack most banner paths. Keep those
-  // exact craft photographs visible until an admin replaces them in the database.
-  const bundledPhoto = BUNDLED_CRAFT_PHOTOS.has(craft.key) ? `/images/crafts/${craft.key}.jpg` : null;
   return {
     key: craft.key,
     name: craft.name,
@@ -24,7 +17,7 @@ function publicCraft(craft: any) {
     typicalProducts: craft.typicalProducts || null,
     history: craft.history || null,
     historyDz: craft.historyDz || null,
-    bannerUrl: craft.bannerUrl || bundledPhoto,
+    bannerUrl: resolveCraftPhoto(craft.key, craft.bannerUrl),
     image_alt: `${craft.name} — ${craft.english}`,
     technique: craft.technique,
     materials: craft.materials,

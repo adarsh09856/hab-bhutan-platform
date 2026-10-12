@@ -1013,17 +1013,19 @@ export default function HomePage() {
         <div className="grid grid--auto">
           {craftsList.map((craft, idx) => {
             const num = String(idx + 1).padStart(2, '0');
+            const craftPhoto = craft.bannerUrl || craft.image_path || null;
             return (
               <article key={craft.key} className="card craft">
-                <figure className="frame frame--wide16" style={{ position: 'relative' }}>
-                  <span className="craft__num">{num} / 13</span>
-                  <img
-                  src={craft.image_path || craft.bannerUrl || '/assets/photos/image-unavailable.svg'}
-                    alt={craft.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
-                  />
-                </figure>
+                {craftPhoto && !/(?:^|\/)image-unavailable\.svg(?:[?#].*)?$/i.test(craftPhoto) && (
+                  <figure className="frame frame--wide16" style={{ position: 'relative' }}>
+                    <span className="craft__num">{num} / 13</span>
+                    <img
+                      src={craftPhoto}
+                      alt={craft.image_alt || `${craft.name} — ${craft.english}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </figure>
+                )}
                 <div className="card__body">
                   <div className="craft__heading">
                     <h3 className="craft__name">{craft.name}</h3>

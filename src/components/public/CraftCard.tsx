@@ -9,6 +9,7 @@ export interface CraftCardProps {
   english: string;
   description: string;
   index: number;
+  imageUrl?: string | null;
   memberCount?: number;
   productCount?: number;
 }
@@ -19,6 +20,7 @@ export default function CraftCard({
   english,
   description,
   index,
+  imageUrl,
   memberCount = 1,
   productCount = 1,
 }: CraftCardProps) {
@@ -26,23 +28,22 @@ export default function CraftCard({
 
   return (
     <article className="card craft bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#33261F] transition-colors duration-150 group">
-      <Link href={`/craft/${craftKey}`} className="craft__shot block relative aspect-[16/10] bg-[#E8E1D4] border-b border-[#E4DDD1] p-3 overflow-hidden">
-        <img
-          src={`/images/crafts/${craftKey}.jpg`}
-          alt={`${name} — ${english}`}
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-          onError={(e) => {
-            (e.target as HTMLElement).style.display = 'none';
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25 pointer-events-none" />
-        <span className="absolute top-3 left-3 z-10 font-mono text-[10.5px] bg-[#33261F]/90 backdrop-blur-sm text-[#F4F0E7] px-[7px] py-[3px] rounded-[4px]">
-          {numString}
-        </span>
-        <span className="absolute bottom-3 left-3 z-10 font-mono text-[11px] text-[#F4F0E7] bg-[#33261F]/80 backdrop-blur-sm px-[8px] py-[3px] rounded-[4px] border border-white/20">
-          {english}
-        </span>
-      </Link>
+      {imageUrl && !/(?:^|\/)image-unavailable\.svg(?:[?#].*)?$/i.test(imageUrl) && (
+        <Link href={`/craft/${craftKey}`} className="craft__shot block relative aspect-[16/10] bg-[#E8E1D4] border-b border-[#E4DDD1] p-3 overflow-hidden">
+          <img
+            src={imageUrl}
+            alt={`${name} — ${english}`}
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25 pointer-events-none" />
+          <span className="absolute top-3 left-3 z-10 font-mono text-[10.5px] bg-[#33261F]/90 backdrop-blur-sm text-[#F4F0E7] px-[7px] py-[3px] rounded-[4px]">
+            {numString}
+          </span>
+          <span className="absolute bottom-3 left-3 z-10 font-mono text-[11px] text-[#F4F0E7] bg-[#33261F]/80 backdrop-blur-sm px-[8px] py-[3px] rounded-[4px] border border-white/20">
+            {english}
+          </span>
+        </Link>
+      )}
 
       <div className="card__body p-[18px_20px_20px] flex flex-col flex-1">
         <div className="craft__head flex items-baseline gap-2 mb-2">

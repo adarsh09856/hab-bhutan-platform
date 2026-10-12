@@ -24,6 +24,16 @@ async function main() {
       longDescription: 'Saved long description', longDescriptionDz: 'ལག་བཟོའི་རྒྱས་བཤད།',
       typicalProducts: null, history: 'Saved history', historyDz: 'ལོ་རྒྱུས།',
       bannerUrl: null, isActive: true, sortOrder: 1,
+    }, {
+      key: 'dozo', name: 'Masonry', english: 'Masonry', dzongkha: '',
+      description: 'Masonry description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: null, isActive: true, sortOrder: 2,
+    }, {
+      key: 'shingzo', name: 'Carpentry', english: 'Carpentry', dzongkha: '',
+      description: 'Carpentry description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: '/uploads/approved-carpentry.webp', isActive: true, sortOrder: 3,
     }];
     const saved = await GET(new NextRequest('http://localhost/api/crafts'));
     const body = await saved.json();
@@ -33,6 +43,8 @@ async function main() {
     assert.equal(body.crafts[0].longDescriptionDz, 'ལག་བཟོའི་རྒྱས་བཤད།');
     assert.equal(body.crafts[0].historyDz, 'ལོ་རྒྱུས།');
     assert.equal(body.crafts[0].bannerUrl, '/images/crafts/thagzo.jpg');
+    assert.equal(body.crafts[1].bannerUrl, null, 'Dozo must not receive the unrelated bundled candy image');
+    assert.equal(body.crafts[2].bannerUrl, '/uploads/approved-carpentry.webp', 'an Admin-saved craft photo takes precedence');
 
     (prisma.craft as any).findMany = async () => { throw new Error('Simulated database outage'); };
     const outage = await GET(new NextRequest('http://localhost/api/crafts'));
