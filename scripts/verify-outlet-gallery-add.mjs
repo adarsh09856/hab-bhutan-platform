@@ -70,7 +70,18 @@ try {
   if (JSON.stringify(adminOutlet?.galleryImages) !== JSON.stringify(expected)) throw new Error('Admin reload did not retain the appended photo.');
   const rereadPublic = await request(`/api/outlets?key=${encodeURIComponent(key)}`);
   if (JSON.stringify(rereadPublic.body.outlet?.galleryImages) !== JSON.stringify(expected)) throw new Error('Public outlet API did not reflect the appended photo.');
-  console.log('PASS: adding an outlet slide preserves the lead image and all existing gallery slides; Admin reload and public read show the appended slide in order.');
+
+  const emptied = await request('/api/admin/outlets', token, 'PUT', { id: outlet.id, galleryImages: [] });
+  if (!emptied.response.ok || JSON.stringify(emptied.body.outlet?.galleryImages) !== '[]') throw new Error('Saving an empty gallery did not remain empty in the Admin response.');
+  const emptyPublic = await request(`/api/outlets?key=${encodeURIComponent(key)}`);
+  if (JSON.stringify(emptyPublic.body.outlet?.galleryImages) !== '[]') throw new Error('The public API restored slides after Admin explicitly emptied the gallery.');
+
+  const unrelatedEdit = await request('/api/admin/outlets', token, 'PUT', { id: outlet.id, description: 'Still empty after unrelated edit.' });
+  if (!unrelatedEdit.response.ok || JSON.stringify(unrelatedEdit.body.outlet?.galleryImages) !== '[]') throw new Error('An unrelated outlet edit restored the explicitly empty gallery.');
+  const emptyAfterReload = await request(`/api/outlets?key=${encodeURIComponent(key)}`);
+  if (JSON.stringify(emptyAfterReload.body.outlet?.galleryImages) !== '[]') throw new Error('The explicitly empty gallery did not persist after Admin reload and unrelated edits.');
+
+  console.log('PASS: outlet gallery add, Admin/public reload, explicit empty save, and preservation across an unrelated outlet edit.');
 } finally {
   if (outlet) await prisma.outletRecord.deleteMany({ where: { id: outlet.id } });
   if (user) {
