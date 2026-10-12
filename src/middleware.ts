@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/rbac';
+import { canAccessAdminPortal } from '@/lib/permissions';
 
 function applySecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('X-Frame-Options', 'DENY');
@@ -35,14 +36,7 @@ export async function middleware(req: NextRequest) {
     const token = req.cookies.get('hab_session')?.value;
     if (token) {
       const sessionUser = await verifyToken(token);
-      const isStaff = sessionUser && (
-        sessionUser.roleSlug === 'super_admin' ||
-        sessionUser.roleSlug === 'staff_operator' ||
-        sessionUser.roleSlug === 'trustee_viewer' ||
-        sessionUser.permissions?.includes('*') ||
-        sessionUser.permissions?.includes('orders:view') ||
-        sessionUser.permissions?.includes('applications:view')
-      );
+      const isStaff = sessionUser && canAccessAdminPortal(sessionUser.roleSlug, sessionUser.permissions);
       // If already signed in as staff, redirect directly to admin dashboard
       if (isStaff) {
         return applyNoStoreHeaders(applySecurityHeaders(NextResponse.redirect(new URL('/admin', req.url))));
@@ -74,12 +68,7 @@ export async function middleware(req: NextRequest) {
     }
 
     // Enforce role check: Non-staff (e.g. member/artisan) cannot access /admin
-    const isStaff = sessionUser.roleSlug === 'super_admin' ||
-                    sessionUser.roleSlug === 'staff_operator' ||
-                    sessionUser.roleSlug === 'trustee_viewer' ||
-                    sessionUser.permissions?.includes('*') ||
-                    sessionUser.permissions?.includes('orders:view') ||
-                    sessionUser.permissions?.includes('applications:view');
+    const isStaff = canAccessAdminPortal(sessionUser.roleSlug, sessionUser.permissions);
 
     if (!isStaff) {
       const adminLoginUrl = new URL('/admin/login', req.url);

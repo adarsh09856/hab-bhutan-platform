@@ -23,10 +23,7 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message || 'Unauthorized.' }, { status: error.statusCode || 401 });
     }
-    const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-    if (!user || !['super_admin', 'staff_operator'].includes(role)) {
-      return NextResponse.json({ success: false, error: 'Unauthorized. Staff session required.' }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ success: false, error: 'Unauthorized. Staff session required.' }, { status: 401 });
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;

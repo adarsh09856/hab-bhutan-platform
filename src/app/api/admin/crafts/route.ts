@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest, write = false) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff = user.roleSlug === 'super_admin' ||
-                  user.roleSlug === 'staff_operator' ||
-                  user.permissions?.includes('*') ||
-                  (write ? user.permissions?.includes('content:edit') : user.permissions?.includes('products:review') || user.permissions?.includes('content:view'));
-  return isStaff ? user : null;
+async function verifyAdmin(req: NextRequest, permissions: Permission[]) {
+  return getSessionUserForAnyPermission(req, permissions);
 }
 
 export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, ['content:view', 'content:edit', 'products:view', 'products:review']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const crafts = await prisma.craft.findMany({
     orderBy: { sortOrder: 'asc' },
@@ -26,7 +20,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req, true);
+  const user = await verifyAdmin(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
   const { key, name, english, dzongkha, description, descriptionDz, longDescription, longDescriptionDz, typicalProducts, bannerUrl, technique, materials, practisedIn, history, historyDz, shopNote, sortOrder, isActive } = body;
@@ -62,7 +56,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req, true);
+  const user = await verifyAdmin(req, ['content:create', 'content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await req.json();

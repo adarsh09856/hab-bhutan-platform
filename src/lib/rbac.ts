@@ -119,7 +119,10 @@ export async function canPreviewDraftPage(token: string | undefined): Promise<bo
   }
 }
 
-export async function requirePermission(req: NextRequest, permission: Permission): Promise<SessionUser> {
+export async function requireAnyPermission(req: NextRequest, permissions: Permission[]): Promise<SessionUser> {
+  const requestedPermissions = [...new Set(permissions)];
+  if (requestedPermissions.length === 0) throw new AuthError(500, 'At least one permission is required');
+  const permissionLabel = requestedPermissions.length === 1 ? requestedPermissions[0] : requestedPermissions.join('|');
   const user = await getSessionUser(req);
   const clientIp = getClientIp(req);
 
@@ -130,8 +133,10 @@ export async function requirePermission(req: NextRequest, permission: Permission
       actorIp: clientIp,
       action: 'UNAUTHENTICATED_ACCESS_ATTEMPT',
       entityType: 'Security',
-      entityId: permission,
-      details: { attemptedPermission: permission },
+      entityId: permissionLabel,
+      details: requestedPermissions.length === 1
+        ? { attemptedPermission: requestedPermissions[0] }
+        : { attemptedPermissions: requestedPermissions },
     });
     throw new AuthError(401, 'Authentication required');
   }
@@ -155,7 +160,9 @@ export async function requirePermission(req: NextRequest, permission: Permission
       action: 'SUSPENDED_USER_ACCESS_BLOCKED',
       entityType: 'User',
       entityId: user.id,
-      details: { attemptedPermission: permission, userStatus: dbUser?.status || 'NOT_FOUND' },
+      details: requestedPermissions.length === 1
+        ? { attemptedPermission: requestedPermissions[0], userStatus: dbUser?.status || 'NOT_FOUND' }
+        : { attemptedPermissions: requestedPermissions, userStatus: dbUser?.status || 'NOT_FOUND' },
     });
     throw new AuthError(403, 'Account is inactive or suspended');
   }
@@ -184,13 +191,15 @@ export async function requirePermission(req: NextRequest, permission: Permission
       action: 'RETIRED_ROLE_ACCESS_BLOCKED',
       entityType: 'Role',
       entityId: dbUser.role.id,
-      details: { attemptedPermission: permission, roleSlug: dbUser.role.slug, version: dbUser.role.version },
+      details: requestedPermissions.length === 1
+        ? { attemptedPermission: requestedPermissions[0], roleSlug: dbUser.role.slug, version: dbUser.role.version }
+        : { attemptedPermissions: requestedPermissions, roleSlug: dbUser.role.slug, version: dbUser.role.version },
     });
     throw new AuthError(403, 'Your assigned role has been retired. Please contact an administrator.');
   }
 
   const rolePermissions = (dbUser.role.permissions as string[]) || [];
-  const hasPermission = rolePermissions.includes('*') || rolePermissions.includes(permission);
+  const hasPermission = rolePermissions.includes('*') || requestedPermissions.some((permission) => rolePermissions.includes(permission));
 
   if (!hasPermission) {
     await logAudit({
@@ -200,13 +209,15 @@ export async function requirePermission(req: NextRequest, permission: Permission
       actorIp: clientIp,
       action: 'PERMISSION_DENIED',
       entityType: 'Security',
-      entityId: permission,
+      entityId: permissionLabel,
       details: {
         role: dbUser.role.name,
-        attemptedPermission: permission,
+        ...(requestedPermissions.length === 1
+          ? { attemptedPermission: requestedPermissions[0] }
+          : { attemptedPermissions: requestedPermissions }),
       },
     });
-    throw new AuthError(403, `Forbidden: missing permission '${permission}'`);
+    throw new AuthError(403, `Forbidden: missing permission '${permissionLabel}'`);
   }
 
   return {
@@ -220,6 +231,20 @@ export async function requirePermission(req: NextRequest, permission: Permission
     roleStatus: dbUser.role.status as 'ACTIVE' | 'RETIRED',
     permissions: rolePermissions,
   };
+}
+
+/** Require one of several explicit permissions while retaining DB-backed account/role checks. */
+export async function requirePermission(req: NextRequest, permission: Permission): Promise<SessionUser> {
+  return requireAnyPermission(req, [permission]);
+}
+
+/** Legacy handlers that preserve their 401 response shape can use this fail-closed adapter. */
+export async function getSessionUserForAnyPermission(req: NextRequest, permissions: Permission[]): Promise<SessionUser | null> {
+  try {
+    return await requireAnyPermission(req, permissions);
+  } catch {
+    return null;
+  }
 }
 
 // Immutable Role Lifecycle Management

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import {
   getRecycleBinItems,
   moveToRecycleBin,
@@ -11,19 +11,12 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-async function verifyStaff(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff =
-    user.roleSlug === 'super_admin' ||
-    user.roleSlug === 'staff_operator' ||
-    user.permissions?.includes('*') ||
-    user.permissions?.includes('content:edit');
-  return isStaff ? user : null;
+async function verifyStaff(req: NextRequest, permissions: Permission[]) {
+  return getSessionUserForAnyPermission(req, permissions);
 }
 
 export async function GET(req: NextRequest) {
-  const user = await verifyStaff(req);
+  const user = await verifyStaff(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const items = await getRecycleBinItems();
@@ -31,7 +24,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyStaff(req);
+  const user = await verifyStaff(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -65,7 +58,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyStaff(req);
+  const user = await verifyStaff(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -88,7 +81,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await verifyStaff(req);
+  const user = await verifyStaff(req, ['content:delete', 'content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

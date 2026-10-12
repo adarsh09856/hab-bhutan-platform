@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, SmtpConfig } from '@/lib/email-service';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getSessionUser(req);
-    const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-    if (!user || !['super_admin', 'staff_operator'].includes(role)) {
+    const user = await getSessionUserForAnyPermission(req, ['content:edit']);
+    if (!user || !['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
       return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
     }
     const body = await req.json();

@@ -50,9 +50,6 @@ export async function GET(req: NextRequest) {
         { status: error?.statusCode || 500 }
       );
     }
-    if (!['super_admin', 'staff_operator'].includes(String(staffUser.roleSlug || '').toLowerCase())) {
-      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
-    }
   }
   try {
     const setting = await prisma.siteSetting.findUnique({
@@ -87,9 +84,6 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const user = await requirePermission(req, 'content:edit');
-    if (!['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
-      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
-    }
 
     const body = await req.json();
     const pathname = normalizePath(typeof body.pathname === 'string' ? body.pathname : '/');

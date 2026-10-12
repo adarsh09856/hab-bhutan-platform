@@ -2,16 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { getAllFallbackWholesaleBuyers, saveFallbackWholesaleBuyer } from '@/lib/wholesale-store';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const user = await getSessionUser(req);
-  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-  if (!user || !['super_admin', 'staff_operator'].includes(role)) {
+  const user = await getSessionUserForAnyPermission(req, ['products:review']);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

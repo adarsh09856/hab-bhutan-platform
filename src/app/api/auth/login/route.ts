@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { canAccessAdminPortal } from '@/lib/permissions';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
@@ -132,12 +133,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Role & Portal Scoping
     const rolePermissions = (user.role.permissions as string[]) || [];
-    const isStaffRole = user.role.slug === 'super_admin' || 
-                        user.role.slug === 'staff_operator' || 
-                        user.role.slug === 'trustee_viewer' || 
-                        rolePermissions.includes('*') || 
-                        rolePermissions.includes('orders:view') || 
-                        rolePermissions.includes('applications:view');
+    const isStaffRole = canAccessAdminPortal(user.role.slug, rolePermissions);
 
     // Reject non-staff attempting to sign in via Staff Portal
     if (targetPortal === 'admin' && !isStaffRole) {

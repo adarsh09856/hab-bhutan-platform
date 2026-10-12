@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requirePermission } from '@/lib/rbac';
+import { requireAnyPermission, requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
@@ -17,10 +17,7 @@ function outletImage(note: string | null) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requirePermission(request, 'content:view');
-    if (!['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
-      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
-    }
+    await requireAnyPermission(request, ['content:view', 'content:edit']);
     const [siteSetting, heroSlides, crafts, outlets] = await Promise.all([
       prisma.siteSetting.findUnique({ where: { id: 'default' } }),
       prisma.heroSlide.findMany({ orderBy: { sortOrder: 'asc' } }),
@@ -81,9 +78,6 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const user = await requirePermission(request, 'content:edit');
-    if (!['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) {
-      return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 403 });
-    }
     const body = await request.json();
     const { key, url, caption } = body;
 

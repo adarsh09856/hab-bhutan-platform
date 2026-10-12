@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { policyLookupSlugs } from '@/lib/policy-slugs';
 
 export const dynamic = 'force-dynamic';
 
-async function staff(request: NextRequest) {
-  const user = await getSessionUser(request);
-  const role = String(user?.roleSlug || user?.role || '').toLowerCase();
-  return user && ['super_admin', 'staff_operator'].includes(role);
+async function staff(request: NextRequest, permissions: Permission[]) {
+  return getSessionUserForAnyPermission(request, permissions);
 }
 
 export async function GET(request: NextRequest) {
-  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+  if (!(await staff(request, ['content:view', 'content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const dbPolicies = await prisma.policyPage.findMany({ orderBy: { updatedAt: 'desc' } });
 
@@ -98,7 +96,7 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+  if (!(await staff(request, ['content:create', 'content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
     const { slug: rawSlug, title, content } = body;
@@ -138,7 +136,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+  if (!(await staff(request, ['content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
     const { slug, title, content } = body;
@@ -160,7 +158,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!(await staff(request))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
+  if (!(await staff(request, ['content:delete', 'content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');

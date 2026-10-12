@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import {
   getAllFallbackWholesaleBuyers,
@@ -12,19 +12,12 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest, write = false) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff =
-    user.roleSlug === 'super_admin' ||
-    user.roleSlug === 'staff_operator' ||
-    user.permissions?.includes('*') ||
-    (write ? user.permissions?.includes('members:edit') : user.permissions?.includes('members:view') || user.permissions?.includes('orders:fulfill'));
-  return isStaff ? user : null;
+async function verifyAdmin(req: NextRequest, permissions: Permission[]) {
+  return getSessionUserForAnyPermission(req, permissions);
 }
 
 export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, ['members:view', 'orders:fulfill']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -78,7 +71,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await verifyAdmin(req, true);
+  const user = await verifyAdmin(req, ['members:create', 'members:edit', 'members:verify', 'content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -169,7 +162,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req, true);
+  const user = await verifyAdmin(req, ['members:edit', 'members:verify', 'content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -241,7 +234,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const user = await verifyAdmin(req, true);
+  const user = await verifyAdmin(req, ['members:delete', 'members:edit', 'members:verify', 'content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

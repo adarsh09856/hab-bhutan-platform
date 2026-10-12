@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { setManualFxOverride } from '@/lib/fx';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff = user.roleSlug === 'super_admin' ||
-                  user.roleSlug === 'staff_operator' ||
-                  user.permissions?.includes('*') ||
-                  user.permissions?.includes('content:edit');
-  return isStaff ? user : null;
+async function verifyAdmin(req: NextRequest, permissions: Permission[]) {
+  const user = await getSessionUserForAnyPermission(req, permissions);
+  if (!user || !['super_admin', 'staff_operator'].includes(String(user.roleSlug || '').toLowerCase())) return null;
+  return user;
 }
 
 export async function GET(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
   
@@ -123,7 +119,7 @@ async function safeUpsertSiteSetting(updateData: Record<string, any>, createData
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
 

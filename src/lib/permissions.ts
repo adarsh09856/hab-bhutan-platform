@@ -181,3 +181,16 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
     ],
   },
 ];
+
+const ADMIN_PORTAL_ROLE_SLUGS = new Set(['super_admin', 'staff_operator', 'trustee_viewer']);
+const ADMIN_PORTAL_PERMISSIONS = new Set<string>(
+  PERMISSION_CATEGORIES.flatMap((category) => category.permissions.map(({ slug }) => slug))
+    .filter((permission) => permission !== 'products:create')
+);
+
+/** Keep portal entry consistent with the Admin RBAC matrix without admitting member-only product submission. */
+export function canAccessAdminPortal(roleSlug: string | null | undefined, permissions: string[] | null | undefined): boolean {
+  if (ADMIN_PORTAL_ROLE_SLUGS.has(String(roleSlug || '').toLowerCase())) return true;
+  if (!Array.isArray(permissions)) return false;
+  return permissions.includes('*') || permissions.some((permission) => ADMIN_PORTAL_PERMISSIONS.has(permission));
+}

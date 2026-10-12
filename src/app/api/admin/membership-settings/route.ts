@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSessionUser, getClientIp } from '@/lib/rbac';
+import { getSessionUserForAnyPermission, getClientIp, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-async function verifyAdmin(req: NextRequest) {
-  const user = await getSessionUser(req);
-  if (!user) return null;
-  const isStaff = user.roleSlug === 'super_admin' ||
-                  user.roleSlug === 'staff_operator' ||
-                  user.permissions?.includes('*') ||
-                  user.permissions?.includes('members:verify');
-  return isStaff ? user : null;
+async function verifyAdmin(req: NextRequest, permissions: Permission[]) {
+  return getSessionUserForAnyPermission(req, permissions);
 }
 
 export async function GET(req: NextRequest) {
-  if (!await verifyAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!await verifyAdmin(req, ['members:view', 'dues:view', 'members:verify'])) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
     let setting = await prisma.membershipSetting.findUnique({ where: { id: 'default' } });
@@ -76,7 +70,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, ['members:verify', 'members:edit', 'dues:record']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
   try {
@@ -106,7 +100,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await verifyAdmin(req);
+  const user = await verifyAdmin(req, ['members:verify', 'members:edit', 'dues:record']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
