@@ -194,3 +194,9 @@ export function canAccessAdminPortal(roleSlug: string | null | undefined, permis
   if (!Array.isArray(permissions)) return false;
   return permissions.includes('*') || permissions.some((permission) => ADMIN_PORTAL_PERMISSIONS.has(permission));
 }
+
+/** Whether a staff account has at least one permission that can mutate public content through Quick Edit. */
+export function canUseUniversalQuickEdit(permissions: string[] | null | undefined): boolean {
+  return Array.isArray(permissions)
+    && (permissions.includes('*') || ['content:edit', 'products:edit', 'members:edit'].some((permission) => permissions.includes(permission)));
+}

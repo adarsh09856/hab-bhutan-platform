@@ -7,6 +7,7 @@ import { ImagePlus, Link2, Plus, RotateCcw, Save, X } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isEditableInlineTextPath, joinEditableText } from '@/lib/quick-edit-text';
 import { applyQuickEditImage, normalizeQuickEditImageSource } from '@/lib/quick-edit-image';
+import { canUseUniversalQuickEdit } from '@/lib/permissions';
 
 type Override = { text?: string; textDz?: string; href?: string; src?: string; alt?: string; placeholder?: string };
 type OverrideMap = Record<string, Override>;
@@ -101,10 +102,10 @@ export default function UniversalPageQuickEdit() {
     fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' })
       .then((response) => response.json())
       .then((data) => {
-        const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
+        const permissions = Array.isArray(data?.user?.permissions) ? data.user.permissions : [];
         if (!cancelled) {
-          setIsStaff(['super_admin', 'staff_operator'].includes(role));
-          setStaffPermissions(Array.isArray(data?.user?.permissions) ? data.user.permissions : []);
+          setIsStaff(canUseUniversalQuickEdit(permissions));
+          setStaffPermissions(permissions);
         }
       })
       .catch(() => { if (!cancelled) { setIsStaff(false); setStaffPermissions([]); } });

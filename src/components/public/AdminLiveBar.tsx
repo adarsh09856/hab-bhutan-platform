@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Edit3, Eye, Settings, ExternalLink, Sparkles, Layers, ShieldCheck, Check } from 'lucide-react';
+import { canAccessAdminPortal, canUseUniversalQuickEdit } from '@/lib/permissions';
 
 const ROUTE_STUDIO_MAP: Record<string, { label: string; href: string }> = {
   '/': { label: 'Homepage Studio', href: '/admin/pages/home' },
@@ -29,6 +30,7 @@ const ROUTE_STUDIO_MAP: Record<string, { label: string; href: string }> = {
 export default function AdminLiveBar() {
   const pathname = usePathname() || '/';
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canVisualEdit, setCanVisualEdit] = useState(false);
   const [adminName, setAdminName] = useState('Staff Admin');
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -42,14 +44,18 @@ export default function AdminLiveBar() {
         const res = await fetch('/api/admin/health', { credentials: 'include' });
         const data = await res.json();
         const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
-        const staff = ['super_admin', 'staff_operator'].includes(role);
+        const permissions = Array.isArray(data?.user?.permissions) ? data.user.permissions : [];
+        const staff = canAccessAdminPortal(role, permissions);
+        const canEdit = staff && canUseUniversalQuickEdit(permissions);
         setIsAdmin(staff);
-        setEditMode(staff && (urlHasEdit || storedEdit));
+        setCanVisualEdit(canEdit);
+        setEditMode(canEdit && (urlHasEdit || storedEdit));
         if (staff) {
           setAdminName(data.user.name || data.user.email || 'Staff Admin');
         }
       } catch {
         setIsAdmin(false);
+        setCanVisualEdit(false);
         setEditMode(false);
       } finally {
         setLoading(false);
@@ -59,7 +65,7 @@ export default function AdminLiveBar() {
   }, []);
 
   const toggleVisualEdit = () => {
-    if (!isAdmin) return;
+    if (!canVisualEdit) return;
     const next = !editMode;
     setEditMode(next);
     if (next) {
@@ -162,7 +168,7 @@ export default function AdminLiveBar() {
             </div>
 
             {/* Center: Live Visual Edit Toggle */}
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            {canVisualEdit && <div className="flex items-center gap-1.5 flex-shrink-0">
               <button
                 type="button"
                 onClick={toggleVisualEdit}
@@ -192,7 +198,7 @@ export default function AdminLiveBar() {
                   (Click text or images to edit; manage records in Admin)
                 </span>
               )}
-            </div>
+            </div>}
 
             {/* Right: Quick actions & Link to Admin */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
@@ -218,7 +224,7 @@ export default function AdminLiveBar() {
       )}
 
       {/* 2. Floating Bottom-Left Quick Edit Mode Switcher (Prevents overlap with Ask HAB) */}
-      {isAdmin && <div data-hab-no-quick-edit className="fixed bottom-5 left-5 z-[55] flex items-center gap-2">
+      {isAdmin && canVisualEdit && <div data-hab-no-quick-edit className="fixed bottom-5 left-5 z-[55] flex items-center gap-2">
         <button
           type="button"
           onClick={toggleVisualEdit}

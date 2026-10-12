@@ -93,7 +93,7 @@ function ShopGridContent() {
 
   return (
     <main className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-16 sm:pb-24 relative" data-hab-section="shop-craft">
-      <SectionEditBadge label="Craft products: add / edit / remove" studioHref="/admin/products" onQuickEdit={() => setProductEditorOpen(true)} />
+      <SectionEditBadge label="Craft products: add / edit / remove" studioHref="/admin/products" compactAction={{ requiredPermissions: ['products:view', 'products:edit'], onClick: () => setProductEditorOpen(true) }} />
       <ProductQuickEdit isOpen={productEditorOpen} onClose={() => setProductEditorOpen(false)} />
       {/* Breadcrumbs */}
       <div className="font-mono text-[11.5px] text-[#6B5A4C] mb-6 sm:mb-8">

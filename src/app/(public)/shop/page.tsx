@@ -164,7 +164,7 @@ function ShopContent() {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="shop">
-        <SectionEditBadge label="Shop products: add / edit / remove" studioHref="/admin/products" onQuickEdit={() => setProductEditorOpen(true)} />
+        <SectionEditBadge label="Shop products: add / edit / remove" studioHref="/admin/products" compactAction={{ requiredPermissions: ['products:view', 'products:edit'], onClick: () => setProductEditorOpen(true) }} />
         <ProductQuickEdit isOpen={productEditorOpen} onClose={() => setProductEditorOpen(false)} />
         {/* 1. Breadcrumbs */}
         <p className="crumbs">
