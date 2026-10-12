@@ -17,7 +17,7 @@ if (!['localhost', '127.0.0.1', '::1'].includes(host) || !['localhost', '127.0.0
 const prisma = new PrismaClient({ datasources: { db: { url: testDatabaseUrl } } });
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-const code = `BNB-LOCAL-${suffix}`;
+const code = `BNB-LOCAL-${suffix}`.toUpperCase();
 const email = `bnb-local-${suffix}@example.invalid`;
 let orderId;
 let orderNumber;
