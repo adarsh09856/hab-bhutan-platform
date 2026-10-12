@@ -12,26 +12,7 @@ async function rotateAdminPassword() {
     minLength: 14,
   });
   const passwordHash = await bcrypt.hash(newPassword, 12);
-
-  const updatedUser = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.update({
-      where: { email },
-      data: credentialRotation.buildAdminPasswordUpdate(passwordHash),
-    });
-    await tx.auditLog.create({
-      data: {
-        actorType: 'STAFF',
-        actorId: user.id,
-        actorIdentifier: email,
-        actorIp: null,
-        action: 'ADMIN_PASSWORD_ROTATED',
-        entityType: 'User',
-        entityId: user.id,
-        details: { rotatedAt: new Date().toISOString(), sessionsRevoked: true },
-      },
-    });
-    return user;
-  });
+  const updatedUser = await credentialRotation.rotateAdminPasswordInDatabase(prisma, email, passwordHash);
 
   console.log(`[SUCCESS] Password hash updated in the database for ${updatedUser.email}.`);
   console.log('[SUCCESS] Existing sessions revoked using the database session version.');
