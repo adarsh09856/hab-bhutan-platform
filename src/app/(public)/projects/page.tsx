@@ -82,6 +82,7 @@ export default function ProjectsPage() {
   const currentProjects = projects.filter((p) => p.status === 'current');
   const pastProjects = projects.filter((p) => p.status === 'past');
   const displayedProjects = statusTab === 'current' ? currentProjects : pastProjects;
+  const fundingPartners = new Set(projects.map((p) => p.partner.trim()).filter(Boolean)).size;
 
   return (
     <main id="main">
@@ -97,6 +98,21 @@ export default function ProjectsPage() {
             <h1 className="display display--page">{t('nav.projects', 'Projects')}</h1>
             <p className="lede">{t('projects.intro', 'HAB delivers its programmes as funded projects, each with an agreed workplan, budget and reporting cycle. Below are the projects currently in hand and those already completed, with their key activities and what they achieved.')}</p>
           </div>
+          {loadState === 'ready' && (
+            <div className="craftfacts craftfacts--2" aria-label={t('projects.facts_label', 'Project facts')}>
+              {[
+                { value: currentProjects.length, label: t('projects.current_tab', 'Projects in hand') },
+                { value: pastProjects.length, label: t('projects.completed_tab', 'Completed projects') },
+                { value: projects.length, label: t('projects.total_count', 'Projects recorded') },
+                { value: fundingPartners, label: t('projects.partners_count', 'Funding partners recorded') },
+              ].map((fact) => (
+                <div className="craftfacts__cell" key={fact.label}>
+                  <span className="craftfacts__key">{fact.label}</span>
+                  <span className="craftfacts__val">{fact.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 2. Tabs */}
