@@ -91,11 +91,22 @@ async function run() {
     assert(created.length === 1, 'Exactly one member should exist after first import.');
     assert(created[0].status === 'VERIFIED', 'Admin import must verify a member despite a PENDING input status.');
 
+    const adminResponse = await fetch(`${baseUrl}/api/admin/members`, {
+      headers: { Cookie: `hab_session=${token}` },
+    });
+    const adminResult = await adminResponse.json();
+    assert(adminResponse.ok && adminResult.members.some((member) => member.id === created[0].id && member.status === 'VERIFIED'),
+      'Imported member did not appear as verified in the Admin registry.');
+    const publicResponse = await fetch(`${baseUrl}/api/members?slug=${encodeURIComponent(created[0].regNumber)}`);
+    const publicResult = await publicResponse.json();
+    assert(publicResponse.ok && publicResult.member?.name === created[0].name,
+      'Imported verified member did not appear in the public member API.');
+
     const second = await postImport([rows[0]]);
     assert(second.response.ok && second.body.count === 0 && second.body.skippedCount === 1, 'Re-import should skip the already saved member.');
     created = await prisma.member.findMany({ where: { cidNumber: { equals: cidNumber, mode: 'insensitive' } } });
     assert(created.length === 1, 'Repeated import created a duplicate member.');
-    console.log('PASS: protected member import inserts valid row, reports invalid fields, skips a duplicate within the file, and remains idempotent when re-imported.');
+    console.log('PASS: protected member import verifies a valid row, reflects in Admin and public APIs, reports invalid fields, skips duplicates, and remains idempotent.');
   } finally {
     await prisma.member.deleteMany({
       where: { OR: [{ id: { in: memberIds } }, { cidNumber: { equals: cidNumber, mode: 'insensitive' } }] },
