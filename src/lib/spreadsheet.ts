@@ -333,7 +333,8 @@ export interface MemberImportValidationResult {
 
 export function validateMemberImport(
   rawRows: string[][],
-  existingCids: Set<string>
+  existingCids: Set<string>,
+  configuredCraftKeys: ReadonlySet<string>
 ): MemberImportValidationResult {
   const validRows: any[] = [];
   const badRows: { rowNumber: number; data: string[]; reason: string }[] = [];
@@ -367,6 +368,10 @@ export function validateMemberImport(
     }
     if (!craftKey) {
       badRows.push({ rowNumber: idx + 1, data: row, reason: 'Missing required craft key.' });
+      continue;
+    }
+    if (!configuredCraftKeys.has(craftKey)) {
+      badRows.push({ rowNumber: idx + 1, data: row, reason: `Unknown craft key: "${craftKey}". Choose a configured HAB craft.` });
       continue;
     }
     if (!dzongkhag) {

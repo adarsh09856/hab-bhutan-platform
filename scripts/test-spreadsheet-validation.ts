@@ -123,14 +123,17 @@ async function main() {
   const repeatedMember = ['Another Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'cid-100', '', '', '', '', '', ''];
   const missingCraft = ['No Craft', '', 'Thimphu', '', 'CID-101', '', '', '', '', '', ''];
   const missingDzongkhag = ['No Region', 'shingzo', '', '', 'CID-102', '', '', '', '', '', ''];
+  const unknownCraft = ['Unknown Craft', 'not-a-hab-craft', 'Thimphu', '', 'CID-104', '', '', '', '', '', ''];
   const sameNameDifferentCid = ['Pema Workshop', 'shingzo', 'Lhuentse', 'Khoma', 'CID-103', '', '', '', '', '', ''];
   const memberResult = validateMemberImport(
-    [MEMBER_HEADERS, validMember, repeatedMember, sameNameDifferentCid, missingCraft, missingDzongkhag],
+    [MEMBER_HEADERS, validMember, repeatedMember, sameNameDifferentCid, missingCraft, missingDzongkhag, unknownCraft],
     new Set(),
+    new Set(['thagzo', 'shingzo']),
   );
   assert.equal(memberResult.validRows.length, 2, 'Complete rows with distinct CID/licence keys are accepted even where names match.');
   assert.equal(memberResult.duplicateCount, 1, 'Case-insensitive duplicate CID within file is detected.');
-  assert.equal(memberResult.badRows.length, 3, 'Duplicate CID and missing required fields appear as preview errors.');
+  assert.equal(memberResult.badRows.length, 4, 'Duplicate CID, unknown craft keys, and missing required fields appear as preview errors.');
+  assert.match(memberResult.badRows[3].reason, /Unknown craft key/i, 'A craft key outside the configured HAB list is preview-invalid.');
   assert.equal(memberResult.validRows[0]._sourceRowNumber, 2, 'Member preview retains the original spreadsheet row number for server-side results.');
   assert.equal(memberResult.badRows[0].rowNumber, 3, 'Member preview issues use one-based spreadsheet row numbers including the header.');
   assert.equal(memberResult.validRows[0].status, 'VERIFIED', 'Admin member imports override a PENDING spreadsheet value.');

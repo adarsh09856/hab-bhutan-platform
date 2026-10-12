@@ -314,7 +314,8 @@ export default function AdminMembersPage() {
       const rawRows = await parseSpreadsheetFile(file);
       const existingCids = new Set(members.map((m) => (m.cidNumber || '').trim()).filter(Boolean));
 
-      const validation = validateMemberImport(rawRows, existingCids);
+      const configuredCraftKeys = new Set(CRAFTS.map((craft) => craft.key.trim().toLowerCase()));
+      const validation = validateMemberImport(rawRows, existingCids, configuredCraftKeys);
       setImportValidation(validation);
     } catch (error: any) {
       setActionError(error?.message || 'Unable to read the spreadsheet.');
