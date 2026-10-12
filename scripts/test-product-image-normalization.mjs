@@ -20,6 +20,14 @@ assert.equal(uploaded.images.length, 2);
 assert.equal(uploaded.images[0].focalPoint, 'center');
 assert.ok(uploaded.images.every((image) => !image.url.toLowerCase().includes('placeholder')));
 
+const bundledCustom = normalizeProductImages('CUSTOM-02', 'lhazo', [
+  { url: '/assets/photos/product-custom-02.jpg', role: 'primary' },
+]);
+assert.equal(bundledCustom.imageUrl, '/assets/photos/product-custom-02.jpg');
+assert.equal(normalizeProductImages('CUSTOM-02', 'lhazo', [
+  { url: '/assets/photos/product-cam01.jpg', role: 'primary' },
+]).imageUrl, '/assets/photos/image-unavailable.svg');
+
 const missingImage = normalizeProductImages('UNKNOWN-01', 'thagzo', []);
 assert.equal(missingImage.imageUrl, '/assets/photos/image-unavailable.svg');
 

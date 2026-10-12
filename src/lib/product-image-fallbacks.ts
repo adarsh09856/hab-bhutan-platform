@@ -49,8 +49,10 @@ export function normalizeProductImages(code: string, craftKey: string, rawImages
     return [{ ...record, url: record.url.trim(), role: String(record.role || 'gallery') }];
   });
   const expectedProductImage = KNOWN_PRODUCT_IMAGES[code.toLowerCase()];
+  const matchingProductImage = `/assets/photos/product-${code.toLowerCase()}.jpg`;
   const productPhotos = usable.filter((image) =>
     !/^\/assets\/photos\/product-[^/]+\.jpg$/i.test(image.url)
+    || image.url.toLowerCase() === matchingProductImage && !KNOWN_MISMATCHED_IMAGES.has(image.url.toLowerCase())
     || Boolean(expectedProductImage && image.url === expectedProductImage)
   );
   const primary = productPhotos.find((image) => image.role.toLowerCase() === 'primary') || productPhotos[0];
