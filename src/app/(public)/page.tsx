@@ -1017,7 +1017,7 @@ export default function HomePage() {
             return (
               <article key={craft.key} className="card craft">
                 {craftPhoto && !/(?:^|\/)image-unavailable\.svg(?:[?#].*)?$/i.test(craftPhoto) && (
-                  <figure className="frame frame--wide16" style={{ position: 'relative' }}>
+                  <figure className="frame frame--wide16" style={{ position: 'relative' }} data-hab-gallery="craft" data-hab-gallery-id={craft.key}>
                     <span className="craft__num">{num} / 13</span>
                     <img
                       src={craftPhoto}

@@ -323,6 +323,8 @@ export default function UniversalPageQuickEdit() {
           const project = projects.find((item: { id: string }) => item.id === galleryId);
           if (!project) throw new Error('Project not found in Admin.');
           await write('/api/admin/projects', 'PUT', { id: project.id, coverPhotoUrl: nextUrl });
+        } else if (galleryType === 'craft' && galleryId) {
+          await write('/api/admin/crafts', 'PUT', { key: galleryId, bannerUrl: nextUrl });
         } else if (galleryType === 'member' && galleryId) {
           const { members } = await requestJson('/api/admin/members');
           const member = members.find((item: { regNumber: string }) => item.regNumber === galleryId);
@@ -536,11 +538,11 @@ export default function UniversalPageQuickEdit() {
       {image ? <>
         <label className="block text-xs font-semibold mb-1">Image URL</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.src || ''} onChange={(e) => setDraft({ ...draft, src: e.target.value })} />
-        {galleryType !== 'outlet' && galleryType !== 'project' && galleryType !== 'member' && <>
+        {galleryType !== 'outlet' && galleryType !== 'project' && galleryType !== 'member' && galleryType !== 'craft' && <>
           <label className="block text-xs font-semibold mb-1">Alternative text</label>
           <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
         </>}
-        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : galleryType === 'member' ? 'the member portrait in the registry and public profile' : 'its gallery'} in Admin and on other public pages.</p>}
+        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : galleryType === 'craft' ? 'the craft photo' : galleryType === 'member' ? 'the member portrait in the registry and public profile' : 'its gallery'} in Admin and on other public pages.</p>}
         {link && !galleryElement && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" disabled={!canSaveSelection} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>

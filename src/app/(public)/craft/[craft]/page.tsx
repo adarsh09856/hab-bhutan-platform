@@ -184,6 +184,8 @@ export default function CraftProfilePage() {
                   key={i}
                   className={`flipper__slide ${activeSlide === i ? 'is-on' : ''}`}
                   data-cms-img
+                  data-hab-gallery={i === 0 && (craft.bannerUrl || craft.image_path || galleryImages.length === 0) ? 'craft' : undefined}
+                  data-hab-gallery-id={craft.key}
                   style={{
                     position: 'absolute',
                     inset: 0,
