@@ -413,7 +413,8 @@ export default function UniversalPageQuickEdit() {
   const canSaveSelection = requiredPermissions.every(hasPermission) && (galleryType !== 'member' || Boolean(galleryId));
   const canAddSlide = Boolean(canSaveSelection && (galleryType === 'hero' && hasPermission('content:create')
     || (galleryId && ['outlet', 'product', 'page'].includes(galleryType || '') && galleryElement?.dataset.habGalleryView !== 'card')));
-  const selectedGalleryImage = selected instanceof HTMLImageElement ? selected : null;
+  const selectedGalleryImage = typeof HTMLImageElement !== 'undefined' && selected instanceof HTMLImageElement
+    ? selected : null;
   const selectedGalleryPosition = selectedGalleryImage && galleryElement
     ? Array.from(galleryElement.querySelectorAll('img')).indexOf(selectedGalleryImage) : -1;
   const canRemoveMedia = Boolean(canSaveSelection && selectedGalleryImage && (
