@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 import prisma from '@/lib/prisma';
 import { outletImages } from '@/lib/reference-images';
-import { cleanOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
+import { cleanOutletGalleryMarker, displayOutletGallery, hasOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
@@ -56,7 +56,7 @@ async function resolveOutlet(key: string) {
         facilities: o.facilities || '',
         facilities_dz: o.facilitiesDz || '',
         imageUrl: imageUrl || outletImages[o.key],
-        galleryImages: readOutletGallery(o.note),
+        galleryImages: displayOutletGallery(o.key, readOutletGallery(o.note), hasOutletGalleryMarker(o.note)),
       };
     }
   return null;
@@ -120,7 +120,7 @@ export default async function OutletDetailPage({ params }: OutletPageProps) {
           facilities: o.facilities || '',
           facilities_dz: o.facilitiesDz || '',
           imageUrl: imageUrl || outletImages[o.key],
-          galleryImages: readOutletGallery(o.note),
+          galleryImages: displayOutletGallery(o.key, readOutletGallery(o.note), hasOutletGalleryMarker(o.note)),
         };
       });
   } catch {}

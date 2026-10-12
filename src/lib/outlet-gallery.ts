@@ -6,8 +6,12 @@ export const PUNAKHA_REFERENCE_GALLERY = [
   '/assets/photos/hero-5-desho.jpg',
 ];
 
-export function displayOutletGallery(key: string | undefined, savedImages: string[]): string[] {
-  return key === 'punakha-market' && savedImages.length === 0
+export function hasOutletGalleryMarker(note: string | null | undefined): boolean {
+  return galleryMarker.test(note || '');
+}
+
+export function displayOutletGallery(key: string | undefined, savedImages: string[], configured = false): string[] {
+  return key === 'punakha-market' && !configured && savedImages.length === 0
     ? [...PUNAKHA_REFERENCE_GALLERY]
     : savedImages;
 }
@@ -28,10 +32,10 @@ export function cleanOutletGalleryMarker(note: string): string {
   return note.replace(galleryMarker, '').trim();
 }
 
-export function packOutletGallery(note: string | null, images: string[]): string | null {
+export function packOutletGallery(note: string | null, images: string[], configured = true): string | null {
   const clean = cleanOutletGalleryMarker(note || '');
   const urls = images.slice(0, 24).map(url => url.trim());
-  if (!urls.some(Boolean)) return clean || null;
+  if (!configured) return clean || null;
   const marker = `<!-- HAB_GALLERY: ${JSON.stringify(urls)} -->`;
   return clean ? `${clean}\n${marker}` : marker;
 }

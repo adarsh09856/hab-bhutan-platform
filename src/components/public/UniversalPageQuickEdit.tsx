@@ -409,7 +409,6 @@ export default function UniversalPageQuickEdit() {
   const hasPermission = (permission: string) => staffPermissions.includes('*') || staffPermissions.includes(permission);
   const requiredPermissions = galleryType === 'product' ? ['products:view', 'products:edit']
     : galleryType === 'member' ? ['members:view', 'members:edit']
-    : galleryType === 'outlet' ? []
       : galleryType ? ['content:view', 'content:edit'] : ['content:edit'];
   const canSaveSelection = requiredPermissions.every(hasPermission) && (galleryType !== 'member' || Boolean(galleryId));
   const canAddSlide = Boolean(canSaveSelection && (galleryType === 'hero' && hasPermission('content:create')

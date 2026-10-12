@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
-import { cleanOutletGalleryMarker, displayOutletGallery, packOutletGallery, readOutletGallery } from '@/lib/outlet-gallery';
+import { cleanOutletGalleryMarker, displayOutletGallery, hasOutletGalleryMarker, packOutletGallery, readOutletGallery } from '@/lib/outlet-gallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,7 +41,7 @@ function unpackOutlet(outlet: any) {
     ...outlet,
     note: cleanOutletGalleryMarker(note) || null,
     imageUrl: imageUrl || null,
-    galleryImages: displayOutletGallery(outlet.key, readOutletGallery(outlet.note)),
+    galleryImages: displayOutletGallery(outlet.key, readOutletGallery(outlet.note), hasOutletGalleryMarker(outlet.note)),
   };
 }
 
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
         isFeatured: Boolean(isFeatured),
         place: place.trim(),
         placeDz: placeDz?.trim() || null,
-        note: packOutletGallery(packOutletNote(note, imageUrl), galleryImages || []),
+        note: packOutletGallery(packOutletNote(note, imageUrl), galleryImages || [], galleryImages !== undefined),
         noteDz: noteDz?.trim() || null,
         description: description?.trim() || '',
         descriptionDz: descriptionDz?.trim() || null,
@@ -195,7 +195,7 @@ export async function PUT(req: NextRequest) {
     });
 
     const packedNote = (note !== undefined || imageUrl !== undefined || galleryImages !== undefined)
-      ? packOutletGallery(packOutletNote(note, imageUrl, existing?.note), galleryImages === undefined ? readOutletGallery(existing?.note) : galleryImages)
+      ? packOutletGallery(packOutletNote(note, imageUrl, existing?.note), galleryImages === undefined ? readOutletGallery(existing?.note) : galleryImages, galleryImages !== undefined || hasOutletGalleryMarker(existing?.note))
       : undefined;
 
     const updated = await prisma.outletRecord.update({

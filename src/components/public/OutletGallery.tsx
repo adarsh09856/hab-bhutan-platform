@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { displayOutletGallery } from '@/lib/outlet-gallery';
 
 export default function OutletGallery({ image, galleryImages = [], name, outletKey }: { image?: string; galleryImages?: string[]; name: string; outletKey?: string }) {
-  const key = outletKey || (/punakha crafts market/i.test(name) ? 'punakha-market' : undefined);
-  const additional = displayOutletGallery(key, galleryImages);
-  const slides = Array.from(new Set([image, ...additional]
+  const slides = Array.from(new Set([image, ...galleryImages]
     .filter((src): src is string => Boolean(src) && !src!.includes('image-unavailable'))));
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);

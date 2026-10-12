@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { outletImages } from '@/lib/reference-images';
-import { cleanOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
+import { cleanOutletGalleryMarker, displayOutletGallery, hasOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,7 @@ function unpackOutlet(outlet: any) {
     ...outlet,
     note: cleanOutletGalleryMarker(note) || null,
     imageUrl: imageUrl || outletImages[outlet.key] || null,
-    galleryImages: readOutletGallery(outlet.note),
+    galleryImages: displayOutletGallery(outlet.key, readOutletGallery(outlet.note), hasOutletGalleryMarker(outlet.note)),
   };
 }
 

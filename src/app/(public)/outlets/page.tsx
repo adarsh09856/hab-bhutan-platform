@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { outletImages, clusterImages } from '@/lib/reference-images';
-import { cleanOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
+import { cleanOutletGalleryMarker, displayOutletGallery, hasOutletGalleryMarker, readOutletGallery } from '@/lib/outlet-gallery';
 import OutletsBrowser from '@/components/public/OutletsBrowser';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 
@@ -58,7 +58,7 @@ async function getOutletsData() {
             facilities: o.facilities || '',
             facilities_dz: o.facilitiesDz || '',
             imageUrl: imageUrl || outletImages[o.key],
-            galleryImages: readOutletGallery(o.note),
+            galleryImages: displayOutletGallery(o.key, readOutletGallery(o.note), hasOutletGalleryMarker(o.note)),
           };
         });
 
