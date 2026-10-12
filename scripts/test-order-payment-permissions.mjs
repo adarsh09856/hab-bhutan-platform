@@ -1,10 +1,19 @@
 import nextEnv from '@next/env';
 import { PrismaClient } from '@prisma/client';
 import { SignJWT } from 'jose';
+import { requireTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
 nextEnv.loadEnvConfig(process.cwd(), true);
-const prisma = new PrismaClient();
+const testDatabaseUrl = requireTestDatabaseUrl();
+if (process.env.DATABASE_URL !== testDatabaseUrl) {
+  throw new Error('Safety stop: DATABASE_URL must exactly match the isolated TEST_DATABASE_URL.');
+}
+const prisma = new PrismaClient({ datasources: { db: { url: testDatabaseUrl } } });
 const baseUrl = process.env.ORDER_PERMISSION_TEST_URL || 'http://127.0.0.1:3033';
+const parsedBaseUrl = new URL(baseUrl);
+if (parsedBaseUrl.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(parsedBaseUrl.hostname.toLowerCase())) {
+  throw new Error('Safety stop: ORDER_PERMISSION_TEST_URL must target a loopback HTTP test server.');
+}
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const orderNumber = `LOCAL-PERM-${Date.now()}`;
 const roleSlugs = [`local_orders_edit_${suffix}`, `local_orders_pay_${suffix}`];
@@ -56,10 +65,6 @@ async function patchPayment(id, token) {
 }
 
 async function run() {
-  const dbHost = process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : '';
-  const appHost = new URL(baseUrl).hostname;
-  assert(['localhost', '127.0.0.1', '::1'].includes(dbHost), 'Safety stop: only local PostgreSQL is allowed.');
-  assert(['localhost', '127.0.0.1', '::1'].includes(appHost), 'Safety stop: only a local app URL is allowed.');
   assert(process.env.JWT_SECRET?.length >= 32, 'Local JWT_SECRET is missing or too short.');
 
   try {
