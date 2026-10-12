@@ -77,6 +77,7 @@ async function run() {
     const created = await prisma.wholesaleBuyer.findMany({ where: { email: { equals: freshEmail, mode: 'insensitive' } } });
     createdBuyerIds.push(...created.map((buyer) => buyer.id));
     assert(created.length === 1, 'Exactly one newly imported wholesale buyer should exist.');
+    assert(created[0].status === 'ACTIVE', 'Admin import must create an ACTIVE/verified buyer even when the submitted row says PENDING.');
 
     const second = await requestImport([rows[0]]);
     assert(second.response.ok && second.body.count === 0 && second.body.skippedCount === 1, 'Re-import should skip the existing buyer.');

@@ -180,7 +180,7 @@ export const WHOLESALE_HEADERS = [
   'City',
   'Tax or License ID',
   'Discount Tier (%)',
-  'Requested Status (all imported buyers start PENDING)',
+  'Status (Admin imports set ACTIVE / verified)',
   'Notes / Purchasing Purpose',
 ];
 
@@ -294,9 +294,9 @@ export function validateWholesaleImport(
       city: city || null,
       taxId: taxId || null,
       discountTier: isNaN(discount) ? 20 : Math.min(50, Math.max(5, discount)),
-      // Imported buyers receive no plaintext credential. They must stay pending
-      // until staff approval generates and delivers a usable login credential.
-      status: 'PENDING',
+      // Admin explicitly imports/approves these buyers. The server also forces
+      // ACTIVE so a crafted spreadsheet cannot downgrade this policy.
+      status: 'ACTIVE',
       notes: notes || null,
       username,
     });

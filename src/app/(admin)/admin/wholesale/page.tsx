@@ -791,7 +791,7 @@ export default function AdminWholesalePage() {
                 <div>
                   <p className="font-semibold text-sky-950">Download Excel Template</p>
                   <p className="text-[11px] text-sky-700 mt-0.5">
-                    Start with the official formatted template with column headers and sample data.
+                    Start with the official formatted template. It contains the required column headers only.
                   </p>
                 </div>
                 <button
@@ -804,7 +804,7 @@ export default function AdminWholesalePage() {
                 </button>
               </div>
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">
-                Imported buyers are created as PENDING and cannot sign in yet. Review the application and approve it to generate and send their login credentials. Importing the same email or username again is skipped.
+                Admin-imported buyers are marked ACTIVE (verified) immediately. Import does not issue or email a password; use Reset Password on the buyer record to provide login access. Importing the same email or username again is skipped.
               </p>
 
               {/* Upload Input */}

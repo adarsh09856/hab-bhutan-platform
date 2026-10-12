@@ -97,14 +97,14 @@ export async function POST(req: NextRequest) {
             city: row.city || null,
             taxId: row.taxId || null,
             discountTier: row.discountTier || 20,
-            status: 'PENDING',
+            status: 'ACTIVE',
             notes: row.notes || 'Imported via Bulk Excel/CSV Studio',
           },
         });
         saveFallbackWholesaleBuyer({
           id: buyerId, username, passwordHash, companyName: row.companyName, contactName: row.contactName,
           email, phone: row.phone || null, country: row.country || 'Bhutan', city: row.city || null,
-          taxId: row.taxId || null, discountTier: row.discountTier || 20, status: 'PENDING',
+          taxId: row.taxId || null, discountTier: row.discountTier || 20, status: 'ACTIVE',
           notes: row.notes || 'Imported via Bulk Excel Studio', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         });
         importedCount++;
