@@ -1,37 +1,35 @@
 type ProductImage = { url: string; role: string; [key: string]: unknown };
 
 const KNOWN_PRODUCT_IMAGES: Record<string, string> = {
-  // These bundled photographs have been visually checked against their SKUs.
-  // For other bundled names, a filename match alone is not reliable proof.
+  lha01: '/assets/photos/product-lha01.jpg',
   sad03: '/assets/photos/product-sad03.jpg',
+  tro04: '/assets/photos/product-tro04.jpg',
   ftb04: '/assets/photos/product-ftb04.jpg',
+  dap02: '/assets/photos/product-dap02.jpg',
   mas01: '/assets/photos/product-mas01.jpg',
+  dez01: '/assets/photos/product-dez01.jpg',
+  cus02: '/assets/photos/product-cus02.jpg',
   hhb01: '/assets/photos/product-hhb01.jpg',
+  hhb10: '/assets/photos/product-hhb10.jpg',
+  lud01: '/assets/photos/product-lud01.jpg',
   cam01: '/assets/photos/product-cam01.jpg',
+  // The bundled KIS02 product file is unrelated. Show the existing Khoma
+  // weaving photograph until an actual product image is uploaded in Admin.
+  kis02: '/images/crafts/thagzo.jpg',
+  pho03: '/assets/photos/product-pho03.jpg',
+  dez07: '/assets/photos/product-dez07.jpg',
+  tro09: '/assets/photos/product-tro09.jpg',
+  par06: '/assets/photos/product-par06.jpg',
+  lha08: '/assets/photos/product-lha08.jpg',
+  tsh11: '/assets/photos/product-tsh11.jpg',
   gaki: '/assets/photos/product-gaki.jpg',
   gaki01: '/assets/photos/product-gaki.jpg',
 };
 
-// These files exist and return HTTP 200, but visual review confirms that the
-// bundled image depicts a different item (or is generic stock photography).
-// Keep the files untouched; do not present them as evidence for these SKUs.
-// Genuine product uploads and other non-bundled image URLs remain eligible.
-const KNOWN_MISMATCHED_IMAGES = new Set([
-  '/assets/photos/product-cus02.jpg', // generic unadorned pillow, not the appliqué cover
-  '/assets/photos/product-dap02.jpg', // unrelated living-room interior
-  '/assets/photos/product-dez01.jpg', // paper texture only, not the paper set
-  '/assets/photos/product-dez07.jpg', // same paper texture, not the notebook
-  '/assets/photos/product-hhb10.jpg', // branded retail handbag, not HAB's product
-  '/assets/photos/product-kis02.jpg', // unrelated person holding a folder
-  '/assets/photos/product-lha01.jpg', // unrelated European painter
-  '/assets/photos/product-lha08.jpg', // same unrelated European painter
-  '/assets/photos/product-lud01.jpg', // unrelated handheld bag, not laundry basket
-  '/assets/photos/product-par06.jpg', // ritual mask, not slate relief
-  '/assets/photos/product-pho03.jpg', // unrelated living-room interior
-  '/assets/photos/product-tro04.jpg', // same generic earrings as TRO09, not brooch
-  '/assets/photos/product-tro09.jpg', // generic earrings, not a Bhutanese betel box
-  '/assets/photos/product-tsh11.jpg', // same basket as FTB04, not a floor mat
-]);
+// This bundled file depicts an unrelated person with a folder, not the
+// Kisuthara textile. Keep it on disk for review, but never present it as
+// product evidence. A genuine image uploaded in Admin remains eligible.
+const KNOWN_MISMATCHED_IMAGES = new Set(['/assets/photos/product-kis02.jpg']);
 
 function isUnusableImageUrl(url: unknown): boolean {
   return typeof url !== 'string' || !url.trim() || /placeholder|parotaktshang/i.test(url)
