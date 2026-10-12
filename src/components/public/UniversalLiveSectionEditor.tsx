@@ -792,22 +792,30 @@ export default function UniversalLiveSectionEditor({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !slide.isActive }),
       });
-      if (res.ok) {
-        flashSlideNotice('success', `Slide "${slide.caption}" is now ${!slide.isActive ? 'Active' : 'Inactive'}.`);
-        await reloadHeroSlides();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Could not change the slide status.');
       }
-    } catch {}
+      flashSlideNotice('success', `Slide "${slide.caption}" is now ${!slide.isActive ? 'Active' : 'Inactive'}.`);
+      await reloadHeroSlides();
+    } catch (error: any) {
+      flashSlideNotice('error', error?.message || 'Could not change the slide status.');
+    }
   };
 
   const handleDeleteSlide = async (slide: any) => {
     if (!window.confirm(`Are you sure you want to delete slide "${slide.caption}"?`)) return;
     try {
       const res = await fetch(`/api/admin/hero-slides/${slide.id}`, { method: 'DELETE' });
-      if (res.ok) {
-        flashSlideNotice('success', `Slide "${slide.caption}" deleted.`);
-        await reloadHeroSlides();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Could not delete the slide.');
       }
-    } catch {}
+      flashSlideNotice('success', `Slide "${slide.caption}" deleted.`);
+      await reloadHeroSlides();
+    } catch (error: any) {
+      flashSlideNotice('error', error?.message || 'Could not delete the slide.');
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
