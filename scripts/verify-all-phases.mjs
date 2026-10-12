@@ -1,4 +1,12 @@
 import { execSync } from 'child_process';
+import { validateTestDatabaseUrl } from './lib/safe-test-database.mjs';
+
+// Phases 2, 6, 7 and 8 create, update, or delete records. Never allow the
+// master runner to inherit the developer's .env DATABASE_URL implicitly.
+const testDatabaseUrl = validateTestDatabaseUrl(process.env.TEST_DATABASE_URL);
+if (process.env.DATABASE_URL !== testDatabaseUrl) {
+  throw new Error('Safety stop: DATABASE_URL must exactly match the isolated TEST_DATABASE_URL before running the master verifier.');
+}
 
 const testScripts = [
   { phase: 'Phase 1: Admin Light Theme Guarantee', script: 'scripts/test-phase-1.mjs' },
@@ -21,7 +29,14 @@ let totalFailed = 0;
 for (const { phase, script } of testScripts) {
   console.log(`>>> RUNNING ${phase} (${script})...`);
   try {
-    const output = execSync(`node ${script}`, { encoding: 'utf-8' });
+    const output = execSync(`node ${script}`, {
+      encoding: 'utf-8',
+      env: {
+        ...process.env,
+        TEST_DATABASE_URL: testDatabaseUrl,
+        DATABASE_URL: testDatabaseUrl,
+      },
+    });
     console.log(output);
     totalPassed++;
   } catch (err) {
