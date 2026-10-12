@@ -1080,7 +1080,7 @@ export default function AdminMembersPage() {
                 </section>
               )}
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-5 text-amber-900">
-                CID or business licence is the duplicate check key, so different artisans with the same name are allowed. Unspecified verification status defaults to PENDING; set VERIFIED only for confirmed current members. Missing portrait photos stay empty instead of using a shared placeholder.
+                CID or business licence is the duplicate check key, so different artisans with the same name are allowed. Admin imports are verified immediately and appear in the public member directory. Only import confirmed current members. Missing portrait photos stay empty instead of using a shared placeholder.
               </p>
               <div className="p-4 bg-sky-50 rounded-xl border border-sky-100 flex items-center justify-between">
                 <div>

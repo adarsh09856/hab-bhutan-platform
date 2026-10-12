@@ -61,7 +61,7 @@ async function main() {
   assert.deepEqual(roundTrippedBuyer[1], exportRows[0].map(String), 'Wholesale export workbook preserves buyer values and sanitized notes.');
   assert.equal(roundTrippedBuyer.flat().includes('must-never-be-exported'), false, 'Wholesale export workbook never contains password hashes.');
 
-  const validMember = ['Pema Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'CID-100', '', '', '', '', '', ''];
+  const validMember = ['Pema Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'CID-100', '', '', '', 'PENDING', '', ''];
   const repeatedMember = ['Another Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'cid-100', '', '', '', '', '', ''];
   const missingCraft = ['No Craft', '', 'Thimphu', '', 'CID-101', '', '', '', '', '', ''];
   const missingDzongkhag = ['No Region', 'shingzo', '', '', 'CID-102', '', '', '', '', '', ''];
@@ -75,7 +75,7 @@ async function main() {
   assert.equal(memberResult.badRows.length, 3, 'Duplicate CID and missing required fields appear as preview errors.');
   assert.equal(memberResult.validRows[0]._sourceRowNumber, 2, 'Member preview retains the original spreadsheet row number for server-side results.');
   assert.equal(memberResult.badRows[0].rowNumber, 3, 'Member preview issues use one-based spreadsheet row numbers including the header.');
-  assert.equal(memberResult.validRows[0].status, 'PENDING', 'Member imports without a verification status remain pending.');
+  assert.equal(memberResult.validRows[0].status, 'VERIFIED', 'Admin member imports override a PENDING spreadsheet value.');
 
   const validBuyer = ['Bhutan Craft Store', 'Pema Dorji', 'BUYER@example.bt', '', 'Bhutan', '', '', '20', 'PENDING', ''];
   const duplicateBuyer = ['Second Store', 'Pema Dorji', 'buyer@example.bt', '', 'Bhutan', '', '', '20', 'PENDING', ''];

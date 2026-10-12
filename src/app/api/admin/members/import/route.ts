@@ -18,12 +18,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Member imports are limited to 5,000 rows per file.' }, { status: 400 });
     }
 
-    const requestedStatuses = new Set(rows
-      .filter((row) => row && typeof row === 'object' && !Array.isArray(row))
-      .map((row) => String(row.status || 'PENDING').toUpperCase()));
-    if (requestedStatuses.has('VERIFIED')) await requirePermission(req, 'members:verify');
-    if (requestedStatuses.has('SUSPENDED')) await requirePermission(req, 'members:suspend');
-    if (requestedStatuses.has('REJECTED')) await requirePermission(req, 'members:edit');
+    // An Admin import publishes members immediately, regardless of spreadsheet values.
+    await requirePermission(req, 'members:verify');
 
     let importedCount = 0;
     let skippedCount = 0;
@@ -44,13 +40,8 @@ export async function POST(req: NextRequest) {
         ? sourceRowNumber : index + 2;
       const cidNumber = String(row.cidNumber || '').trim();
       const name = String(row.name || '').trim();
-      const requestedStatus = String(row.status || 'PENDING').toUpperCase();
       if (!name || !row.craftKey || !row.dzongkhag || !cidNumber) {
         badRows.push({ rowNumber, reason: 'Name, craft, dzongkhag and CID/license are required.' });
-        continue;
-      }
-      if (!['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(requestedStatus)) {
-        badRows.push({ rowNumber, reason: 'Status must be PENDING, VERIFIED, REJECTED, or SUSPENDED.' });
         continue;
       }
       const craftKey = String(row.craftKey).trim().toLowerCase();
@@ -93,7 +84,7 @@ export async function POST(req: NextRequest) {
             phone: String(row.phone || '').trim() || null,
             email: email || null,
             tier: row.tier || 'ACTIVE_SECTOR_MEMBER',
-            status: requestedStatus as MemberStatus,
+            status: MemberStatus.VERIFIED,
             joinYear,
             bio: bioText,
             portraitUrl: null,

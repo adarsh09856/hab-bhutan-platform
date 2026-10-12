@@ -318,7 +318,7 @@ export const MEMBER_HEADERS = [
   'Contact Phone',
   'Email',
   'Membership Tier (ACTIVE_SECTOR_MEMBER/ASSOCIATE/INSTITUTIONAL)',
-  'Verification Status (defaults PENDING; VERIFIED only if confirmed)',
+  'Verification Status (Admin imports are VERIFIED)',
   'Join Year',
   'Bio / Description',
 ];
@@ -354,7 +354,6 @@ export function validateMemberImport(
     const phone = row[5]?.trim();
     const email = row[6]?.trim().toLowerCase();
     const tier = row[7]?.trim().toUpperCase() || 'ACTIVE_SECTOR_MEMBER';
-    const status = row[8]?.trim().toUpperCase() || 'PENDING';
     const joinYear = Number(row[9]?.trim() || new Date().getFullYear().toString());
     const bio = row[10]?.trim();
 
@@ -405,7 +404,7 @@ export function validateMemberImport(
       tier: ['ACTIVE_SECTOR_MEMBER', 'ASSOCIATE_SECTOR_MEMBER', 'INSTITUTIONAL'].includes(tier)
         ? tier
         : 'ACTIVE_SECTOR_MEMBER',
-      status: ['VERIFIED', 'PENDING', 'REJECTED', 'SUSPENDED'].includes(status) ? status : 'PENDING',
+      status: 'VERIFIED',
       joinYear: isNaN(joinYear) ? new Date().getFullYear() : joinYear,
       bio: bio || null,
     });

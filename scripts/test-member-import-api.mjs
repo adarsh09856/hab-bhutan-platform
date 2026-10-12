@@ -70,7 +70,7 @@ async function run() {
     assert(verifiedWithoutPermission.status === 403, 'Member import allowed VERIFIED rows without the members:verify permission.');
 
     const rows = [
-      { name: `Temporary member ${suffix}`, craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber, joinYear: 2025 },
+      { name: `Temporary member ${suffix}`, craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber, joinYear: 2025, status: 'PENDING' },
       { name: `Duplicate member ${suffix}`, craftKey: 'thagzo', dzongkhag: 'Thimphu', cidNumber: cidNumber.toLowerCase(), joinYear: 2025, status: 'PENDING' },
       { name: `Invalid member ${suffix}`, dzongkhag: 'Thimphu', cidNumber: `CID-INVALID-${Date.now()}` },
     ];
@@ -89,7 +89,7 @@ async function run() {
     let created = await prisma.member.findMany({ where: { cidNumber: { equals: cidNumber, mode: 'insensitive' } } });
     memberIds.push(...created.map((member) => member.id));
     assert(created.length === 1, 'Exactly one member should exist after first import.');
-    assert(created[0].status === 'PENDING', 'Import without an explicit status must create a pending record.');
+    assert(created[0].status === 'VERIFIED', 'Admin import must verify a member despite a PENDING input status.');
 
     const second = await postImport([rows[0]]);
     assert(second.response.ok && second.body.count === 0 && second.body.skippedCount === 1, 'Re-import should skip the already saved member.');
