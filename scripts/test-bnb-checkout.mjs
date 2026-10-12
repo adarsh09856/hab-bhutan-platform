@@ -1,15 +1,20 @@
 import nextEnv from '@next/env';
 import { PrismaClient } from '@prisma/client';
 import { deleteFallbackOrder } from '../src/lib/order-store.ts';
+import { validateTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
 nextEnv.loadEnvConfig(process.cwd(), true);
-const prisma = new PrismaClient();
 const baseUrl = process.env.BNB_CHECKOUT_TEST_URL || 'http://127.0.0.1:3033';
 const host = new URL(baseUrl).hostname;
-const dbHost = process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : '';
+const testDatabaseUrl = validateTestDatabaseUrl(process.env.TEST_DATABASE_URL);
+if (process.env.DATABASE_URL !== testDatabaseUrl) {
+  throw new Error('Safety stop: DATABASE_URL must exactly match the isolated TEST_DATABASE_URL.');
+}
+const dbHost = new URL(testDatabaseUrl).hostname;
 if (!['localhost', '127.0.0.1', '::1'].includes(host) || !['localhost', '127.0.0.1', '::1'].includes(dbHost)) {
   throw new Error('Safety stop: BNB checkout verification is restricted to loopback app and database hosts.');
 }
+const prisma = new PrismaClient({ datasources: { db: { url: testDatabaseUrl } } });
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 const code = `BNB-LOCAL-${suffix}`;
@@ -48,6 +53,13 @@ try {
     },
   });
   productId = product.id;
+  const visibleFixture = await prisma.product.findUnique({ where: { code }, select: { id: true, code: true, status: true } });
+  if (!visibleFixture || visibleFixture.status !== 'PUBLISHED') throw new Error('The local checkout test product was not persisted as a published fixture.');
+  const catalogueResponse = await fetch(`${baseUrl}/api/products?q=${encodeURIComponent(code)}&shuffle=false`);
+  const catalogueBody = await catalogueResponse.json().catch(() => ({}));
+  if (!catalogueResponse.ok || !catalogueBody.products?.some((item) => item.code === code)) {
+    throw new Error('The disposable checkout product was not visible through the local public catalogue.');
+  }
 
   const response = await fetch(`${baseUrl}/api/orders`, {
     method: 'POST',
