@@ -6,11 +6,62 @@ import {
   WHOLESALE_SAMPLE_ROWS,
   MEMBER_SAMPLE_ROWS,
   createExcelWorkbookBuffer,
+  downloadExcelWorkbook,
   parseSpreadsheetFile,
   validateMemberImport,
   validateWholesaleImport,
   wholesaleBuyerExportRows,
 } from '../src/lib/spreadsheet';
+
+async function verifyBrowserDownload(
+  filename: string,
+  sheetName: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][],
+) {
+  const previousDocument = (globalThis as any).document;
+  const previousCreateObjectURL = URL.createObjectURL;
+  const previousRevokeObjectURL = URL.revokeObjectURL;
+  const blobs = new Map<string, Blob>();
+  const clicked: Array<{ href: string; download: string }> = [];
+  const revoked: string[] = [];
+  let nextUrl = 0;
+  (URL as any).createObjectURL = (blob: Blob) => {
+    const url = `blob:spreadsheet-test-${++nextUrl}`;
+    blobs.set(url, blob);
+    return url;
+  };
+  (URL as any).revokeObjectURL = (url: string) => { revoked.push(url); };
+  (globalThis as any).document = {
+    createElement: (tag: string) => {
+      assert.equal(tag, 'a', 'Excel export creates a download link.');
+      const link: any = { click: () => clicked.push({ href: link.href, download: link.download }) };
+      return link;
+    },
+  };
+  try {
+    await downloadExcelWorkbook(filename, sheetName, headers, rows);
+    assert.equal(clicked.length, 1, 'Excel export clicks the download link exactly once.');
+    assert.equal(clicked[0].download, filename, 'Excel export uses the requested filename.');
+    const blob = blobs.get(clicked[0].href);
+    assert(blob, 'Excel export creates a downloadable Blob URL.');
+    assert.equal(blob.type, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const downloadedFile = {
+      name: filename,
+      arrayBuffer: () => blob.arrayBuffer(),
+    } as File;
+    const parsed = await parseSpreadsheetFile(downloadedFile);
+    assert.deepEqual(parsed[0], headers, `${filename} preserves every header after browser-download round-trip.`);
+    assert.deepEqual(parsed.slice(1), rows.map((row) => row.map((value) => String(value ?? ''))),
+      `${filename} preserves every data row after browser-download round-trip.`);
+    assert.deepEqual(revoked, [clicked[0].href], 'Excel export revokes its temporary Blob URL.');
+  } finally {
+    (URL as any).createObjectURL = previousCreateObjectURL;
+    (URL as any).revokeObjectURL = previousRevokeObjectURL;
+    if (previousDocument === undefined) delete (globalThis as any).document;
+    else (globalThis as any).document = previousDocument;
+  }
+}
 
 async function main() {
   const workbook = new ExcelJS.Workbook();
@@ -61,6 +112,13 @@ async function main() {
   assert.deepEqual(roundTrippedBuyer[1], exportRows[0].map(String), 'Wholesale export workbook preserves buyer values and sanitized notes.');
   assert.equal(roundTrippedBuyer.flat().includes('must-never-be-exported'), false, 'Wholesale export workbook never contains password hashes.');
 
+  await verifyBrowserDownload('HAB_Certified_Members_test.xlsx', 'Members', MEMBER_HEADERS, [
+    ['Test Artisan', 'thagzo', 'Bumthang', 'Chumey', 'CID-TEST-01', '', '', 'ACTIVE_SECTOR_MEMBER', 'VERIFIED', 2024, 'Dzongkha: འཐག'],
+  ]);
+  await verifyBrowserDownload('HAB_Wholesale_Buyers_test.xlsx', 'Wholesale Buyers', WHOLESALE_HEADERS, exportRows);
+  await verifyBrowserDownload('HAB_Member_Import_Template.xlsx', 'Import Template', MEMBER_HEADERS, MEMBER_SAMPLE_ROWS);
+  await verifyBrowserDownload('HAB_Wholesale_Import_Template.xlsx', 'Import Template', WHOLESALE_HEADERS, WHOLESALE_SAMPLE_ROWS);
+
   const validMember = ['Pema Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'CID-100', '', '', '', 'PENDING', '', ''];
   const repeatedMember = ['Another Workshop', 'thagzo', 'Lhuentse', 'Khoma', 'cid-100', '', '', '', '', '', ''];
   const missingCraft = ['No Craft', '', 'Thimphu', '', 'CID-101', '', '', '', '', '', ''];
@@ -92,7 +150,7 @@ async function main() {
   assert.equal(wholesaleResult.validRows[0].status, 'ACTIVE', 'Admin-imported wholesale buyers are marked active/verified regardless of the supplied sheet status.');
   assert.equal(wholesaleResult.badRows[0].rowNumber, 3, 'Wholesale preview issues use one-based spreadsheet row numbers including the header.');
 
-  console.log('Spreadsheet validation passed: XLSX Unicode round-trip, required member fields, within-file duplicate CID/email, and invalid wholesaler email.');
+  console.log('Spreadsheet checks passed: validation/import mapping plus four intercepted XLSX browser-download round-trips (members, buyers, and both header-only templates).');
 }
 
 main().catch((error) => {

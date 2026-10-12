@@ -45,14 +45,13 @@ async function runDeviceResponsiveAudit() {
   console.log('\n>>> 2. AUDITING PUBLIC NAVIGATION & HEADER RESPONSIVENESS (< 1191px, < 639px, < 380px)');
   {
     const clientCss = fs.readFileSync(path.join(rootDir, 'src/styles/client-hab.css'), 'utf-8');
-    assert(clientCss.includes('.nav{') && clientCss.includes('max-height:calc(100dvh - var(--header-h, 74px))'), 
-      'Mobile nav has max-height bounded to viewport minus header');
-    assert(clientCss.includes('overflow-y:auto') && clientCss.includes('-webkit-overflow-scrolling:touch'), 
-      'Mobile nav has smooth touch scrolling enabled');
-    assert(clientCss.includes('overscroll-behavior:contain'), 
-      'Mobile nav has overscroll-behavior: contain to prevent document scroll chaining');
-    assert(clientCss.includes('.nav-toggle{') && clientCss.includes('width:44px;height:44px'), 
-      'Mobile hamburger nav-toggle meets 44px min touch target');
+    const header = fs.readFileSync(path.join(rootDir, 'src/components/public/Header.tsx'), 'utf-8');
+    assert(header.includes('mobile-drawer-portal') && header.includes("height: '100dvh'") && header.includes('overflow-y-auto'),
+      'Mobile navigation uses a viewport-height, scrollable drawer');
+    assert(header.includes('aria-expanded={mobileNavOpen}') && header.includes('aria-controls="primaryNav"'),
+      'Mobile hamburger exposes its expanded state and controlled navigation');
+    assert(clientCss.includes('.nav-toggle{display:flex !important') && clientCss.includes('width:38px;height:38px'),
+      'Mobile hamburger is shown at phone breakpoints and keeps the compact reference-sized control');
     assert(clientCss.includes('.menu__panel--wide{') && clientCss.includes('width:min(440px,calc(100vw - 20px))'), 
       'Shop dropdown overlay panel safely constrained to mobile viewport');
     assert(clientCss.includes('@media (max-width:380px)'), 
@@ -81,8 +80,10 @@ async function runDeviceResponsiveAudit() {
       'Payment methods accordion header wraps gracefully on mobile phones');
     assert(clientCss.includes('.paymethod__body{padding:0 14px 16px 14px}'), 
       'Payment methods accordion body reduces side padding on mobile for maximum input width');
-    assert(clientCss.includes('.basketline{flex-wrap:wrap;gap:12px;padding:16px 14px}'), 
-      'Basket line items wrap gracefully with touch-friendly spacing on mobile');
+    assert(clientCss.includes('.basketline{display:grid;grid-template-columns:72px 1fr;gap:10px 12px;padding:14px;align-items:start}'),
+      'Basket line items reflow into a compact two-column mobile layout');
+    assert(clientCss.includes('.basketline__remove{grid-column:2;min-height:36px'),
+      'Basket remove action remains touch-accessible in the mobile layout');
   }
 
   // 5. Admin Console Universal Responsiveness
