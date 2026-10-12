@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAnyPermission, requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { resolveCraftPhoto } from '@/lib/craft-photo-fallbacks';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
       key: `craft.${c.key}`,
       category: '13 Crafts Heritage',
       label: `${c.name} (${c.english}) Banner`,
-      url: c.bannerUrl || `/images/crafts/${c.key}.jpg`,
+      url: resolveCraftPhoto(c.key, c.bannerUrl) || '/assets/photos/image-unavailable.svg',
       aspect: '16:9 / Landscape',
       description: `Official header image on /craft/${c.key}.`,
     }));

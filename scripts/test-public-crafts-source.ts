@@ -34,6 +34,16 @@ async function main() {
       description: 'Carpentry description', descriptionDz: null, longDescription: null,
       longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
       bannerUrl: '/uploads/approved-carpentry.webp', isActive: true, sortOrder: 3,
+    }, {
+      key: 'jinzo', name: 'Sculpture', english: 'Clay & sculpture', dzongkha: '',
+      description: 'Sculpture description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: null, isActive: true, sortOrder: 4,
+    }, {
+      key: 'dezo', name: 'Papermaking', english: 'Paper making', dzongkha: '',
+      description: 'Papermaking description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: '/assets/photos/image-unavailable.svg', isActive: true, sortOrder: 5,
     }];
     const saved = await GET(new NextRequest('http://localhost/api/crafts'));
     const body = await saved.json();
@@ -45,6 +55,8 @@ async function main() {
     assert.equal(body.crafts[0].bannerUrl, '/images/crafts/thagzo.jpg');
     assert.equal(body.crafts[1].bannerUrl, null, 'Dozo must not receive the unrelated bundled candy image');
     assert.equal(body.crafts[2].bannerUrl, '/uploads/approved-carpentry.webp', 'an Admin-saved craft photo takes precedence');
+    assert.equal(body.crafts[3].bannerUrl, '/assets/photos/hero-3-clay.jpg', 'Jinzo must use the verified clay-sculpting photograph');
+    assert.equal(body.crafts[4].bannerUrl, '/assets/photos/hero-5-desho.jpg', 'Dezo must use the verified papermaking photograph when its saved photo is unavailable');
 
     (prisma.craft as any).findMany = async () => { throw new Error('Simulated database outage'); };
     const outage = await GET(new NextRequest('http://localhost/api/crafts'));
