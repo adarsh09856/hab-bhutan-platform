@@ -1,6 +1,6 @@
 const REFERENCE_CRAFT_PHOTOS: Readonly<Record<string, string>> = Object.freeze({
   shingzo: '/images/crafts/shingzo.jpg',
-  dozo: '/images/crafts/dozo.jpg',
+  dozo: '/assets/photos/hero-2-punakha.jpg',
   lhazo: '/assets/photos/product-lha01.jpg',
   lugzo: '/images/crafts/lugzo.jpg',
   garzo: '/images/crafts/garzo.jpg',
