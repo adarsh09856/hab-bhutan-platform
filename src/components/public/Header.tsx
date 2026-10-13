@@ -15,11 +15,15 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const CRAFT_THUMBNAIL_MAP: Record<string, string> = {
   thagzo: '/images/crafts/thagzo.jpg',
-  weaving: '/images/crafts/thagzo.jpg',
   tshazo: '/images/crafts/tshazo.jpg',
-  'cane-bamboo': '/images/crafts/tshazo.jpg',
   parzo: '/images/crafts/parzo.jpg',
-  carving: '/images/crafts/parzo.jpg',
+  troezo: '/images/crafts/troezo.jpg',
+  dozo: '/assets/photos/hero-2-punakha.jpg',
+  lhazo: '/assets/photos/product-lha01.jpg',
+  tshemzo: '/assets/photos/product-cus02.jpg',
+  shagzo: '/assets/photos/product-dap02.jpg',
+  dezo: '/assets/photos/hero-5-desho.jpg',
+  jinzo: '/assets/photos/hero-3-clay.jpg',
 };
 
 export default function Header({ initialNavigation }: { initialNavigation?: { label: string; href: string }[] | null }) {

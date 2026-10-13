@@ -30,6 +30,7 @@ export default function FileUploadInput({
   const [imgError, setImgError] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(Date.now());
   const [showManualUrl, setShowManualUrl] = useState(false);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cleanValue = value === 'leaf' || value === 'tree' ? '' : (value || '');
@@ -71,6 +72,7 @@ export default function FileUploadInput({
 
       setCacheBuster(Date.now());
       setImgError(false);
+      setShowPdfPreview(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'));
       onChange(data.url);
     } catch (err: any) {
       setError(err.message || 'Error uploading file to server.');
@@ -171,6 +173,7 @@ export default function FileUploadInput({
           />
 
           {cleanValue ? (
+            <>
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -220,6 +223,16 @@ export default function FileUploadInput({
                     <span>View</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
+                  {isPdf && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPdfPreview((open) => !open)}
+                      className="text-[#8B2E24] hover:underline flex-shrink-0"
+                      aria-expanded={showPdfPreview}
+                    >
+                      {showPdfPreview ? 'Hide preview' : 'Preview PDF'}
+                    </button>
+                  )}
                 </div>
                 {isDragging && (
                   <p className="text-[10px] text-[#8B2E24] font-medium mt-0.5 animate-pulse">
@@ -250,6 +263,20 @@ export default function FileUploadInput({
                 </button>
               </div>
             </div>
+            {isPdf && showPdfPreview && (
+              <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                <iframe
+                  src={`${value}#toolbar=1&navpanes=0&view=FitH`}
+                  title={`PDF preview: ${value.split('/').pop() || 'uploaded document'}`}
+                  className="h-[320px] w-full border-0 bg-white"
+                  loading="lazy"
+                />
+                <p className="px-3 py-2 text-[11px] text-slate-500">
+                  If the preview is blocked by the file host, use View to open the PDF in a new tab.
+                </p>
+              </div>
+            )}
+            </>
           ) : (
             <div
               onDragOver={handleDragOver}
