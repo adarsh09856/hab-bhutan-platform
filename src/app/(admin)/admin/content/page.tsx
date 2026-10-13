@@ -3,6 +3,9 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { NEWS_CATEGORIES, NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath } from '@/lib/news-categories';
 import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -16,6 +19,7 @@ interface NewsItem {
   blurb?: string;
   excerpt?: string;
   content?: string;
+  isPublished?: boolean;
 }
 
 interface PublicationItem {
@@ -47,6 +51,8 @@ interface PolicyItem {
 }
 
 export default function AdminContentPage() {
+  const searchParams = useSearchParams();
+  const newsCategory = normalizeNewsCategory(searchParams.get('category'));
   const [activeTab, setActiveTab] = useState<'NEWS' | 'PUBLICATIONS' | 'GOVERNANCE' | 'POLICIES' | 'CLAMP_LAB'>('NEWS');
   const [clampLevel, setClampLevel] = useState<number>(3);
   const [sampleText, setSampleText] = useState<string>(
@@ -86,6 +92,7 @@ export default function AdminContentPage() {
     documentUrl: '',
     documentType: 'PDF',
     documentTitle: '',
+    isPublished: true,
   });
 
   const [pubForm, setPubForm] = useState({
@@ -233,6 +240,9 @@ export default function AdminContentPage() {
   useEffect(() => {
     loadContent();
   }, []);
+
+  useEffect(() => { setActiveTab('NEWS'); }, [newsCategory]);
+  const filteredNews = newsCategory ? news.filter((item) => normalizeNewsCategory(item.kind || item.category) === newsCategory) : news;
 
   const handleSavePolicy = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -385,11 +395,14 @@ export default function AdminContentPage() {
         <div className="flex items-center gap-2">
           {activeTab === 'NEWS' && (
             <button
-              onClick={() => setCreateModalType('NEWS')}
+              onClick={() => {
+                setNewsForm({ title: '', titleDz: '', kind: newsCategory || 'Programs', kindDz: '', subCategory: 'Secretariat Notice', dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), blurb: '', blurbDz: '', content: '', contentDz: '', image_path: '', documentUrl: '', documentType: 'PDF', documentTitle: '', isPublished: true });
+                setCreateModalType('NEWS');
+              }}
               className="px-3.5 py-1.5 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
             >
               <Plus className="w-4 h-4" />
-              <span>Create News Article</span>
+              <span>{newsCategory ? `Create ${newsCategory === 'Vacancies' ? 'Vacancy' : 'Announcement'}` : 'Create News Article'}</span>
             </button>
           )}
           {activeTab === 'PUBLICATIONS' && (
@@ -501,6 +514,11 @@ export default function AdminContentPage() {
       {/* Tab 1: Newsroom */}
       {activeTab === 'NEWS' && (
         <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden">
+          <nav aria-label="Manage news categories" className="flex flex-wrap items-center gap-3 p-4 border-b admin-border">
+            <Link href="/admin/content" className="admin-button-secondary px-3 py-2 rounded-lg" aria-current={!newsCategory ? 'page' : undefined}>All news ({news.length})</Link>
+            {NEWS_NOTICE_CATEGORIES.map((category) => <Link key={category} href={`/admin/content?category=${category}`} className="admin-button-secondary px-3 py-2 rounded-lg" aria-current={newsCategory === category ? 'page' : undefined}>{category} ({news.filter((item) => normalizeNewsCategory(item.kind || item.category) === category).length})</Link>)}
+            {NEWS_NOTICE_CATEGORIES.some((category) => category === newsCategory) && <Link href={newsCategoryPath(newsCategory as 'Vacancies' | 'Announcements')} target="_blank" className="text-[#8B2E24] underline">View public category →</Link>}
+          </nav>
           {loading ? (
             <div className="py-12 text-center admin-muted text-xs font-mono">Loading news from PostgreSQL...</div>
           ) : (
@@ -515,10 +533,11 @@ export default function AdminContentPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y admin-divider">
-                  {news.map((item) => (
+                  {filteredNews.map((item) => (
                     <tr key={item.id} className="admin-hover transition-colors">
                       <td className="py-3 px-4 max-w-md">
                         <div className="font-semibold admin-title">{item.title}</div>
+                        <span className="text-[10px] admin-muted">{item.isPublished === false ? 'Draft — hidden from website' : 'Published'}</span>
                         <div className="admin-muted text-[11px] truncate mt-0.5">{item.blurb || item.excerpt}</div>
                       </td>
                       <td className="py-3 px-4">
@@ -543,10 +562,10 @@ export default function AdminContentPage() {
                       </td>
                     </tr>
                   ))}
-                  {news.length === 0 && (
+                  {filteredNews.length === 0 && (
                     <tr>
                       <td colSpan={4} className="py-12 text-center admin-muted">
-                        No articles registered in database. Click &ldquo;Create News Article&rdquo; above.
+                        No {newsCategory ? newsCategory.toLowerCase() : 'articles'} yet. Use the create button above to add one.
                       </td>
                     </tr>
                   )}
@@ -825,11 +844,7 @@ export default function AdminContentPage() {
                         onChange={(e) => setNewsForm({ ...newsForm, kind: e.target.value })}
                         className="w-full admin-input border rounded px-2.5 py-1.5"
                       >
-                        <option value="Programs">Programs</option>
-                        <option value="Artisan Support">Artisan Support</option>
-                        <option value="Events">Events</option>
-                        <option value="Publications">Publications</option>
-                        <option value="Projects">Projects</option>
+                        {NEWS_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
                       </select>
                     </div>
                     <div>
@@ -928,6 +943,7 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div><RichTextEditor label="Full Article Story / Content (Dzongkha)" value={newsForm.contentDz} onChange={(html) => setNewsForm({ ...newsForm, contentDz: html })} hint="Optional full story translation." /></div>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={newsForm.isPublished} onChange={(e) => setNewsForm({ ...newsForm, isPublished: e.target.checked })} />Publish on website (uncheck to save a draft)</label>
                 </>
               )}
 
@@ -1057,7 +1073,7 @@ export default function AdminContentPage() {
                   disabled={submitting}
                   className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition-colors shadow-xs"
                 >
-                  {submitting ? 'Creating...' : 'Save & Publish'}
+                  {submitting ? 'Creating...' : createModalType === 'NEWS' && !newsForm.isPublished ? 'Save Draft' : 'Save & Publish'}
                 </button>
               </div>
             </form>
@@ -1117,15 +1133,11 @@ export default function AdminContentPage() {
                     <div>
                       <label className="block font-medium admin-text mb-1">Primary Category</label>
                       <select
-                        value={editingItem.data.kind || editingItem.data.category || 'Programs'}
+                        value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'}
                         onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind: e.target.value } })}
                         className="w-full admin-input border rounded px-2.5 py-1.5"
                       >
-                        <option value="Programs">Programs</option>
-                        <option value="Artisan Support">Artisan Support</option>
-                        <option value="Events">Events</option>
-                        <option value="Publications">Publications</option>
-                        <option value="Projects">Projects</option>
+                        {NEWS_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
                       </select>
                     </div>
                     <div>
@@ -1207,6 +1219,7 @@ export default function AdminContentPage() {
                     />
                   </div>
                   <div><RichTextEditor label="Full Article Story / Content (Dzongkha)" value={editingItem.data.contentDz || ''} onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, contentDz: html } })} /></div>
+                  <label className="flex items-center gap-2"><input type="checkbox" checked={editingItem.data.isPublished !== false} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, isPublished: e.target.checked } })} />Publish on website (uncheck to hide as draft)</label>
                 </>
               )}
 

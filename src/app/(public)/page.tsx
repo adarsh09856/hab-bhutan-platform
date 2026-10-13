@@ -358,7 +358,7 @@ export default function HomePage() {
       })
       .then((d) => {
         if (Array.isArray(d?.articles)) {
-          const mappedNews = d.articles.slice(0, 3).map((a: any) => ({
+          const mappedNews = d.articles.slice(0, 4).map((a: any) => ({
             id: a.id,
             slug: a.slug || a.id,
             kind: a.kind || 'Notice',
@@ -1261,7 +1261,7 @@ export default function HomePage() {
         </div>
 
         <div className="newsrow">
-          <div className="grid grid--3">
+          <div className="grid grid--2" data-home-news-posts>
             {news.map((item, idx) => (
               <article key={item.slug || idx} className="card news">
                 <figure className="frame frame--wide16" data-hab-gallery="news" data-hab-gallery-id={item.id}>

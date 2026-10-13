@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { moveToRecycleBin } from '@/lib/recycle-bin';
+import { normalizeNewsCategory } from '@/lib/news-categories';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
 
       const article = await prisma.newsArticle.create({
         data: {
-          kind: data.kind || data.category || 'Programs',
+          kind: normalizeNewsCategory(data.kind || data.category) || 'Programs',
           kindDz: data.kindDz || null,
           subCategory: data.subCategory || null,
           title: data.title.trim(),
@@ -198,7 +199,7 @@ export async function PATCH(req: NextRequest) {
       const updateData: any = {};
       if (data.title) updateData.title = data.title.trim();
       if (data.titleDz !== undefined) updateData.titleDz = data.titleDz || null;
-      if (data.kind || data.category) updateData.kind = data.kind || data.category;
+      if (data.kind || data.category) updateData.kind = normalizeNewsCategory(data.kind || data.category);
       if (data.kindDz !== undefined) updateData.kindDz = data.kindDz || null;
       if (data.subCategory !== undefined) updateData.subCategory = data.subCategory;
       if (data.dateString) updateData.dateString = data.dateString;

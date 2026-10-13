@@ -4,7 +4,9 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { AdminAccessContext } from '@/components/admin/AdminAccessContext';
+import { canOpenAdminRoute, hasAdminPermission } from '@/lib/admin-navigation-access';
 import '@/styles/globals.css';
 import '@/styles/admin.css';
 import { 
@@ -68,6 +70,7 @@ interface HealthData {
     email: string;
     role: string;
     roleSlug: string;
+    permissions: string[];
   } | null;
 }
 
@@ -84,6 +87,7 @@ interface NavGroup {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   const isLoginPage = pathname === '/admin/login';
@@ -126,6 +130,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     let isMounted = true;
+    setLoadingHealth(true);
+    setHealth(null);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
 
@@ -133,6 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const res = await fetch('/api/admin/health', {
           credentials: 'include',
+          cache: 'no-store',
           signal: controller.signal,
         });
         if (res.ok) {
@@ -152,7 +159,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       controller.abort();
       clearTimeout(timer);
     };
-  }, []);
+  }, [isLoginPage]);
 
   // Global keyboard shortcut for quick command launcher (Cmd/Ctrl + K)
   useEffect(() => {
@@ -225,6 +232,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       key: 'stories',
       items: [
         { label: 'News & Articles', href: '/admin/content', icon: FileText },
+        { label: 'Vacancies', href: '/admin/content?category=Vacancies', icon: FileText },
+        { label: 'Announcements', href: '/admin/content?category=Announcements', icon: FileText },
         { label: 'Events & Exhibitions', href: '/admin/events', icon: Calendar },
         { label: 'Tenders & Procurements', href: '/admin/tenders', icon: Building2, badge: 'New' },
         { label: 'Training Programmes', href: '/admin/programmes', icon: BookOpen },
@@ -275,11 +284,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
   ];
 
-  const allNavItems = navGroups.flatMap((group) => group.items);
+  const accessUser = health?.user ?? null;
+  const availableGroups = navGroups.map((group) => ({
+    ...group, items: group.items.filter((item) => canOpenAdminRoute(accessUser, item.href)),
+  })).filter((group) => group.items.length > 0);
+  const allNavItems = availableGroups.flatMap((group) => group.items);
   const activeNavItem = allNavItems
-    .map((item) => ({ item, route: item.href.split('?')[0] }))
-    .filter(({ route }) => pathname === route || pathname.startsWith(`${route}/`))
-    .sort((a, b) => b.route.length - a.route.length)[0]?.item;
+    .map((item) => ({ item, route: item.href.split('?')[0], query: new URLSearchParams(item.href.split('?')[1]) }))
+    .filter(({ route, query }) => (pathname === route || pathname.startsWith(`${route}/`))
+      && Array.from(query.entries()).every(([key, value]) => searchParams.get(key) === value))
+    .sort((a, b) => b.route.length - a.route.length || b.query.size - a.query.size)[0]?.item;
   const activeNavGroupKey = activeNavItem
     ? navGroups.find((group) => group.items.includes(activeNavItem))?.key
     : undefined;
@@ -306,6 +320,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
+    <AdminAccessContext.Provider value={{ user: accessUser, loading: loadingHealth, destinations: allNavItems }}>
     <div className="hab-admin h-full flex-1 flex flex-col relative overflow-hidden selection:bg-[#8B2E24]/20 selection:text-slate-900">
       {/* Top Clean Header - Strictly Pinned */}
       <header className="shrink-0 z-40 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 shadow-xs">
@@ -372,7 +387,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
 
           {/* Currency & Language Header Pill */}
-          <Link
+          {canOpenAdminRoute(accessUser, '/admin/localization') && <Link
             href="/admin/localization"
             title="Manage Store Currency & Language Settings"
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-xs font-mono text-slate-700 transition-colors"
@@ -384,7 +399,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Nu. {Number(health.fx.rate).toFixed(2)}
               </span>
             )}
-          </Link>
+          </Link>}
 
           {/* User profile dropdown button */}
           <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
@@ -396,7 +411,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {health?.user?.name || 'Administrator'}
               </div>
               <div className="text-[10px] text-[#8B2E24] font-mono font-medium">
-                {health?.user?.role || 'Super Admin'}
+                {health?.user?.role || 'Staff'}
               </div>
             </div>
           </div>
@@ -458,30 +473,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Quick Action Buttons */}
             <div className="grid grid-cols-3 gap-1.5 mt-2.5">
-              <Link
+              {hasAdminPermission(accessUser, 'products:create') && <Link
                 href="/admin/products"
                 className="flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg bg-slate-50 hover:bg-[#8B2E24]/10 hover:text-[#8B2E24] text-[10px] font-semibold text-slate-600 border border-slate-200 hover:border-[#8B2E24]/30 transition-all text-center"
                 title="Manage or add products"
               >
                 <ShoppingBag className="w-3 h-3 text-[#8B2E24]" />
                 <span>+ Product</span>
-              </Link>
-              <Link
+              </Link>}
+              {hasAdminPermission(accessUser, 'content:create') && <Link
                 href="/admin/content"
                 className="flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg bg-slate-50 hover:bg-[#8B2E24]/10 hover:text-[#8B2E24] text-[10px] font-semibold text-slate-600 border border-slate-200 hover:border-[#8B2E24]/30 transition-all text-center"
                 title="Publish story or news"
               >
                 <FileText className="w-3 h-3 text-[#8B2E24]" />
                 <span>+ Story</span>
-              </Link>
-              <Link
+              </Link>}
+              {canOpenAdminRoute(accessUser, '/admin/pos') && <Link
                 href="/admin/pos"
                 className="flex items-center justify-center gap-1 py-1 px-1.5 rounded-lg bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 text-[10px] font-semibold text-slate-600 border border-slate-200 hover:border-emerald-300 transition-all text-center"
                 title="Open counter billing POS"
               >
                 <Store className="w-3 h-3 text-emerald-600" />
                 <span>POS Sale</span>
-              </Link>
+              </Link>}
             </div>
           </div>
 
@@ -517,7 +532,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     pathname === '/admin' ? 'text-white' : 'text-[#8B2E24]'
                   }`}
                 />
-                <span className="truncate">Dashboard Overview</span>
+                <span className="truncate">{canOpenAdminRoute(accessUser, '/admin') ? 'Dashboard Overview' : 'Your Workspace'}</span>
               </div>
               <span
                 className={`text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider ${
@@ -530,7 +545,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </span>
             </Link>
 
-            {navGroups.map((group) => {
+            {availableGroups.map((group) => {
               const visibleItems = group.items.filter((item) =>
                 !quickSearch.trim() || item.label.toLowerCase().includes(quickSearch.trim().toLowerCase())
               );
@@ -619,7 +634,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {health?.user?.name || 'Staff Administrator'}
                 </div>
                 <div className="text-[10.5px] text-[#8B2E24] font-mono font-medium">
-                  {health?.user?.role || 'Super Admin'}
+                  {health?.user?.role || 'Staff'}
                 </div>
               </div>
               <button
@@ -665,7 +680,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           className="admin-main flex-1 min-h-0 h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 w-full custom-scrollbar"
         >
           <div className="max-w-7xl mx-auto w-full">
-            {children}
+            {loadingHealth ? <p className="p-6 text-sm text-slate-600" role="status">Loading your Admin access…</p>
+              : pathname === '/admin' || canOpenAdminRoute(accessUser, pathname) ? children
+              : <div className="p-6 space-y-3">
+                  <h1 className="text-xl font-semibold">This section is unavailable for your account</h1>
+                  <p className="text-sm text-slate-600">Choose an available section from the menu, or contact an administrator for access.</p>
+                  <Link href="/admin" className="text-[#8B2E24] underline">Return to Admin home</Link>
+                </div>}
           </div>
         </main>
       </div>
@@ -695,7 +716,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             <div className="p-3 max-h-80 overflow-y-auto space-y-1">
-              {navGroups.flatMap(g => g.items).filter((item) =>
+              {allNavItems.filter((item) =>
                 item.label.toLowerCase().includes(quickSearch.trim().toLowerCase())
               ).map((item) => {
                 const Icon = item.icon;
@@ -721,5 +742,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       )}
     </div>
+    </AdminAccessContext.Provider>
   );
 }

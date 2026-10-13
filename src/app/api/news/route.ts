@@ -1,11 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { normalizeNewsCategory } from '@/lib/news-categories';
 import prisma from '@/lib/prisma';
 import { referenceNewsImage } from '@/lib/reference-images';
 import { publicDocumentUrl } from '@/lib/public-documents';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const category = normalizeNewsCategory(req.nextUrl.searchParams.get('category'));
   try {
     const [dbArticles, dbEventRecords, dbCalendarEvents] = await Promise.all([
       prisma.newsArticle.findMany({
@@ -25,13 +27,13 @@ export async function GET() {
     const uniqueArticles = dbArticles.filter((article: any) => {
       const title = String(article.title || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
       const summary = String(article.blurb || article.summary || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
-      const identity = title && summary ? `${title}\n${summary}` : String(article.slug || article.id);
+      const identity = title && summary ? `${normalizeNewsCategory(article.kind)}\n${title}\n${summary}` : String(article.slug || article.id);
       if (seenArticleCopies.has(identity)) return false;
       seenArticleCopies.add(identity);
       return true;
     });
 
-    const articles = uniqueArticles.map((a: any) => {
+    const articles = uniqueArticles.filter((article) => !category || normalizeNewsCategory(article.kind) === category).map((a: any) => {
       let image_path = '';
       let cleanContent = a.content || '';
       if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
@@ -46,6 +48,7 @@ export async function GET() {
 
       return {
         ...a,
+        kind: normalizeNewsCategory(a.kind),
         documentUrl: publicDocumentUrl(a.documentUrl || a.pdfUrl),
         pdfUrl: publicDocumentUrl(a.pdfUrl),
         date: a.dateString || a.date || a.published_at || '',

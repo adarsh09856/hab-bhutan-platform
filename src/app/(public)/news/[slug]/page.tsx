@@ -8,6 +8,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
+import { NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath, type NewsNoticeCategory } from '@/lib/news-categories';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +64,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     slug: rawPost.slug || rawPost.id,
     title: rawPost.title,
     titleDz: rawPost.titleDz,
-    kind: rawPost.kind || 'Programs',
+    kind: normalizeNewsCategory(rawPost.kind) || 'Programs',
     kindDz: rawPost.kindDz,
     blurb: rawPost.blurb || rawPost.summary || '',
     blurbDz: rawPost.blurbDz,
@@ -78,6 +79,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
   };
 
   const bannerImg = post.image_path || '/assets/photos/image-unavailable.svg';
+  const noticeCategory = NEWS_NOTICE_CATEGORIES.includes(post.kind as NewsNoticeCategory) ? post.kind as NewsNoticeCategory : null;
   const otherNews = await prisma.newsArticle.findMany({
     where: { isPublished: true, id: { not: rawPost.id } },
     orderBy: { createdAt: 'desc' },
@@ -89,12 +91,12 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
   return (
     <main id="main">
       <section className="section relative" data-hab-section="news-post">
-        <SectionEditBadge label="News & Stories Studio" studioHref="/admin/content" />
+        <SectionEditBadge label="News & Stories Studio" studioHref={noticeCategory ? `/admin/content?category=${noticeCategory}` : '/admin/content'} />
         
         {/* Blueprint Backbar */}
         <div className="backbar">
-          <Link className="backbar__link" href="/news">
-            <span aria-hidden="true">←</span> Back to News &amp; events
+          <Link className="backbar__link" href={noticeCategory ? newsCategoryPath(noticeCategory) : '/news'}>
+            <span aria-hidden="true">←</span> Back to {noticeCategory || 'News & events'}
           </Link>
         </div>
 
