@@ -205,19 +205,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: 'Website & Pages',
+      group: 'Pages & Website Content',
       key: 'web',
       items: [
-        { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'A–Z' },
-        { label: 'Quick Edit History & Restore', href: '/admin/pages/live-content', icon: Edit3, badge: 'Live' },
-        { label: 'Extra Page Sections (optional)', href: '/admin/pages/sections', icon: Layers },
-        { label: 'Governance Page Cards', href: '/admin/pages/governance-cards', icon: BookOpen },
+        { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'Pages' },
         { label: '+ Create New Page', href: '/admin/pages?new=1', icon: Plus, badge: 'New' },
         { label: 'Edit Homepage', href: '/admin/pages/home', icon: LayoutDashboard },
-        { label: 'Hero Slides', href: '/admin/hero', icon: Layers },
-        { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
         { label: 'Edit About Us', href: '/admin/pages/about', icon: BookOpen },
         { label: 'Header & Footer Menus', href: '/admin/navigation', icon: Navigation },
+        { label: 'Hero Slides', href: '/admin/hero', icon: Layers },
+        { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
+        { label: 'Quick Edit History & Restore', href: '/admin/pages/live-content', icon: Edit3, badge: 'Undo' },
+        { label: 'Extra Page Sections (optional)', href: '/admin/pages/sections', icon: Layers },
+        { label: 'Governance Page Cards', href: '/admin/pages/governance-cards', icon: BookOpen },
       ],
     },
     {
@@ -233,70 +233,69 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: 'Artisans & Heritage',
+      group: 'Members & Heritage',
       key: 'heritage',
       items: [
-        { label: 'Artisans & Members', href: '/admin/members', icon: Users },
-        { label: 'Member Applications', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
-        { label: 'Membership Tiers & Dues', href: '/admin/membership-categories', icon: Layers },
-        { label: 'Member Dues Ledger', href: '/admin/membership-settings', icon: CreditCard },
-        { label: 'Traditional Crafts (13)', href: '/admin/crafts', icon: Palette },
+        { label: 'Members', href: '/admin/members', icon: Users },
+        { label: 'Applications to Review', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
+        { label: 'Membership Types & Fees', href: '/admin/membership-categories', icon: Layers },
+        { label: 'Dues & Renewals', href: '/admin/membership-settings', icon: CreditCard },
+        { label: 'Craft Categories (13)', href: '/admin/crafts', icon: Palette },
         { label: 'Master Artisans', href: '/admin/honours', icon: Award },
       ],
     },
     {
-      group: 'Commerce & Orders',
+      group: 'Products & Sales',
       key: 'store',
       items: [
         { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
+        { label: 'Retail Shops & Outlets', href: '/admin/clusters-outlets', icon: Store },
         { label: 'Orders & Tracking', href: '/admin/orders', icon: Package, badge: 'Track' },
         { label: 'Point of Sale (POS)', href: '/admin/pos', icon: Store, badge: 'Live' },
         { label: 'Wholesale Buyers', href: '/admin/wholesale', icon: Building2, badge: 'B2B' },
-        { label: 'Wholesale Trade Desk', href: '/admin/trade', icon: BadgePercent, badge: 'Pricing · Quotes' },
-        { label: 'Retail Shops & Outlets', href: '/admin/clusters-outlets', icon: Store },
-        { label: 'Payment Gateways & Bank', href: '/admin/payments', icon: CreditCard, badge: 'Pay' },
+        { label: 'Wholesale Prices & Quotes', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
+        { label: 'Payment Reviews', href: '/admin/payments', icon: CreditCard, badge: 'Pay' },
         { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
       ],
     },
     {
-      group: 'Operations & Settings',
+      group: 'Settings & Staff Access',
       key: 'settings',
       items: [
         { label: 'Site Details & Contact', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
-        { label: 'Languages & Currency', href: '/admin/localization', icon: Globe },
+        { label: 'Language & Currency', href: '/admin/localization', icon: Globe },
         { label: 'Typography & Styling', href: '/admin/styling', icon: Palette },
         { label: 'Legal Policies', href: '/admin/policies', icon: ShieldCheck },
         { label: 'Customer Messages', href: '/admin/inquiries', icon: Mail },
         { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
-        { label: 'Staff User Accounts', href: '/admin/users', icon: ShieldCheck, badge: 'Access' },
+        { label: 'Staff Accounts & Permissions', href: '/admin/users', icon: ShieldCheck, badge: 'Access' },
         { label: 'Recycle Bin', href: '/admin/recycle-bin', icon: Trash2, badge: 'Trash' },
         { label: 'System Settings & Health', href: '/admin/settings', icon: Settings },
       ],
     },
   ];
 
+  const allNavItems = navGroups.flatMap((group) => group.items);
+  const activeNavItem = allNavItems
+    .map((item) => ({ item, route: item.href.split('?')[0] }))
+    .filter(({ route }) => pathname === route || pathname.startsWith(`${route}/`))
+    .sort((a, b) => b.route.length - a.route.length)[0]?.item;
+  const activeNavGroupKey = activeNavItem
+    ? navGroups.find((group) => group.items.includes(activeNavItem))?.key
+    : undefined;
+
   useEffect(() => {
     if (pathname === '/admin') return;
-    for (const group of navGroups) {
-      if (group.items.some((item) => pathname === item.href || (item.href !== '/admin' && pathname.startsWith(`${item.href}/`)))) {
-        setOpenGroups((prev) => ({ ...prev, [group.key]: true }));
-      }
-    }
-  }, [pathname]);
+    if (!activeNavGroupKey) return;
+    setOpenGroups((prev) => prev[activeNavGroupKey] ? prev : { ...prev, [activeNavGroupKey]: true });
+  }, [pathname, activeNavGroupKey]);
 
   // Helper to generate dynamic breadcrumbs
   const getBreadcrumbs = () => {
     if (pathname === '/admin') return [{ label: 'Dashboard', href: '/admin' }];
     const crumbs = [{ label: 'Admin', href: '/admin' }];
     
-    for (const group of navGroups) {
-      for (const item of group.items) {
-        if (pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))) {
-          crumbs.push({ label: item.label, href: item.href });
-          break;
-        }
-      }
-    }
+    if (activeNavItem) crumbs.push({ label: activeNavItem.label, href: activeNavItem.href });
     return crumbs;
   };
 
@@ -545,6 +544,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.key)}
+                  aria-expanded={isOpen}
                     className="w-full px-2.5 py-1.5 mb-1 rounded-lg flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
@@ -564,10 +564,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="space-y-0.5 pl-1.5 border-l-2 border-slate-100 ml-2 animate-in fade-in duration-150">
                       {visibleItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive =
-                          item.href === '/admin'
-                            ? pathname === '/admin'
-                            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                        const isActive = item === activeNavItem;
 
                         return (
                           <Link

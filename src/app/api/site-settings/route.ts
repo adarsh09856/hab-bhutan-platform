@@ -77,7 +77,7 @@ export async function GET() {
       aboutBannerPosition: tb.aboutBannerPosition || 'center 12%',
       tickerMessages,
       topBarContactMode: tb.topBarContactMode || 'PHONE_ONLY',
-      bobAccountNumber: pg.mbob?.accountNumber || bobBanking.accountNumber || setting?.checkoutAccountNumber || '',
+      bobAccountNumber: bobBanking.accountNumber || setting?.checkoutAccountNumber || '',
       bobAccountTitle: bobBanking.accountTitle || setting?.checkoutAccountTitle || 'Handicrafts Association of Bhutan',
       bobBankName: bobBanking.bankName || setting?.checkoutBankName || 'Bank of Bhutan (BoB)',
       bobPhone: bobBanking.phone || '+975-2-338089',

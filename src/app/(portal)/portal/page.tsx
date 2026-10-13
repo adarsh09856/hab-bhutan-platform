@@ -27,19 +27,29 @@ interface DashboardData {
   } | null;
 }
 
+interface RenewalPaymentSettings {
+  bobAccountNumber?: string;
+  bobAccountTitle?: string;
+  bobBankName?: string;
+  officialEmail?: string;
+  secretaryEmail?: string;
+}
+
 export default function ArtisanDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [renewalSettings, setRenewalSettings] = useState<RenewalPaymentSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [profileRes, prodRes, orderRes] = await Promise.all([
+        const [profileRes, prodRes, orderRes, settingsRes] = await Promise.all([
           fetch('/api/member/profile'),
           fetch('/api/member/products'),
           fetch('/api/member/orders'),
+          fetch('/api/site-settings'),
         ]);
 
         if (profileRes.ok) {
@@ -55,6 +65,11 @@ export default function ArtisanDashboard() {
         if (orderRes.ok) {
           const oData = await orderRes.json();
           setOrders(oData.consignments || []);
+        }
+
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          setRenewalSettings(settingsData.setting || settingsData.settings || null);
         }
       } catch (err) {
         console.error('Failed to load dashboard:', err);
@@ -128,14 +143,18 @@ export default function ArtisanDashboard() {
           </div>
           <div>
             <div className="font-bold text-sm text-[#2E221B]">
-              Membership Status:{' '}
+              Membership tier:{' '}
               <span className={isDuesValid ? 'text-emerald-700' : 'text-[#8B2E24]'}>
                 {member?.tier?.replace(/_/g, ' ') || 'ACTIVE SECTOR MEMBER'}
               </span>
             </div>
             <div className="text-xs text-[#6B5A4C] mt-0.5">
               {duesDate ? (
-                <>Annual dues valid through <strong className="text-[#2E221B]">{duesDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</strong></>
+                <>
+                  Annual dues: <strong className={isDuesValid ? 'text-emerald-700' : 'text-[#8B2E24]'}>{isDuesValid ? 'CURRENT' : 'EXPIRED'}</strong>
+                  {' · '}valid through <strong className="text-[#2E221B]">{duesDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>
+                  {!isDuesValid && ' · Contact HAB Secretariat to renew; expiry does not automatically change your member account status.'}
+                </>
               ) : (
                 'Annual dues in good standing with the Association Secretariat.'
               )}
@@ -145,7 +164,16 @@ export default function ArtisanDashboard() {
 
         <div className="text-xs text-[#524135] bg-white/70 p-3 rounded-[8px] border border-[#E5DDD0] md:max-w-[380px]">
           <span className="font-semibold text-[#2E221B]">Dues Renewal: </span>
-          Bank of Bhutan Account: <strong className="font-mono text-[#8B2E24]">100889210</strong> (HAB Thimphu). Send deposit slip to <span className="font-mono text-[#2E221B]">finance@handicraftsbhutan.org</span>.
+          {renewalSettings?.bobAccountNumber ? (
+            <>
+              {renewalSettings.bobBankName || 'Bank transfer'} account: <strong className="font-mono text-[#8B2E24]">{renewalSettings.bobAccountNumber}</strong>
+              {renewalSettings.bobAccountTitle ? <> ({renewalSettings.bobAccountTitle})</> : null}. After payment, contact the Secretariat
+              {renewalSettings.secretaryEmail || renewalSettings.officialEmail ? <> at <a className="font-semibold underline" href={`mailto:${renewalSettings.secretaryEmail || renewalSettings.officialEmail}`}>{renewalSettings.secretaryEmail || renewalSettings.officialEmail}</a></> : null}
+              {' '}with your receipt and registration number so staff can record the renewal.
+            </>
+          ) : (
+            'Please contact the HAB Secretariat for current payment details and renewal instructions.'
+          )}
         </div>
       </div>
 
