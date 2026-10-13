@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { referenceNewsImage } from '@/lib/reference-images';
+import { publicDocumentUrl } from '@/lib/public-documents';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +46,8 @@ export async function GET() {
 
       return {
         ...a,
+        documentUrl: publicDocumentUrl(a.documentUrl || a.pdfUrl),
+        pdfUrl: publicDocumentUrl(a.pdfUrl),
         date: a.dateString || a.date || a.published_at || '',
         published_at: a.dateString || a.published_at || '',
         slug: a.slug || a.id,

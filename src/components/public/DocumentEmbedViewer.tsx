@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import PdfPreview from './PdfPreview';
+import { publicDocumentUrl } from '@/lib/public-documents';
 import { 
   FileText, 
   ExternalLink, 
@@ -33,11 +35,12 @@ export default function DocumentEmbedViewer({
   const [activeTab, setActiveTab] = useState<'preview' | 'overview'>('preview');
   const [copied, setCopied] = useState(false);
 
-  if (!documentUrl) {
+  const approvedUrl = publicDocumentUrl(documentUrl);
+  if (!approvedUrl) {
     return null;
   }
 
-  const cleanUrl = documentUrl.trim();
+  const cleanUrl = approvedUrl.trim();
   const isPdf = (documentType || '').toUpperCase() === 'PDF' || cleanUrl.toLowerCase().endsWith('.pdf');
   const isFlipbook = (documentType || '').toUpperCase() === 'FLIPBOOK' || cleanUrl.includes('fliphtml5') || cleanUrl.includes('issuu') || cleanUrl.includes('heyzine');
   const title = documentTitle || (isFlipbook ? 'Interactive Flipbook Publication' : 'Supporting Document & Publication');
@@ -63,6 +66,8 @@ export default function DocumentEmbedViewer({
         />
       );
     }
+
+    if (isPdf) return <PdfPreview url={cleanUrl} title={title} className={heightClass} />;
 
     return (
       <div className={`w-full ${heightClass} bg-white relative rounded-lg overflow-hidden border border-[#D5C9B8]`}>

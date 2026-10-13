@@ -3,6 +3,7 @@ import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
+import { publicDocumentUrl } from '@/lib/public-documents';
 import { 
   FileText, 
   Calendar, 
@@ -32,7 +33,7 @@ const DEFAULT_TENDERS = [
     description: 'The Handicrafts Association of Bhutan invites sealed bids from eligible national and regional suppliers for the supply, delivery, and testing of natural dye boiling vats, extract filtering equipment, and ventilation systems for the Lhuentse Khoma Cluster facility.',
     openingDate: new Date('2026-08-15'),
     closingDate: new Date('2026-10-30T17:00:00Z'),
-    documentUrl: '/docs/tenders/HAB_Tender_2026_001_DyeMachinery.pdf',
+    documentUrl: null,
     documentType: 'PDF',
     documentTitle: 'Bidding Document HAB/TEND/2026/001 (PDF)',
     submissionEmail: 'officehab@gmail.com',
@@ -50,7 +51,7 @@ const DEFAULT_TENDERS = [
     description: 'Request for Proposals (RFP) for technical consulting services to architect and deploy a decentralized batch verification system linking physical seals of origin to artisan producer registries.',
     openingDate: new Date('2026-09-01'),
     closingDate: new Date('2026-11-15T17:00:00Z'),
-    documentUrl: '/docs/tenders/HAB_RFP_2026_002_Provenance.pdf',
+    documentUrl: null,
     documentType: 'PDF',
     documentTitle: 'Terms of Reference & RFP Document (PDF)',
     submissionEmail: 'officehab@gmail.com',
@@ -88,7 +89,7 @@ export default async function TendersPage() {
     });
   } catch {}
 
-  const tenders = dbTenders.length > 0 ? dbTenders : DEFAULT_TENDERS;
+  const tenders = (dbTenders.length > 0 ? dbTenders : DEFAULT_TENDERS).map(t => ({ ...t, documentUrl: publicDocumentUrl(t.documentUrl) }));
   const openTenders = tenders.filter((t) => t.status === 'OPEN');
   const pastTenders = tenders.filter((t) => t.status !== 'OPEN');
 

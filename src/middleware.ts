@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/rbac';
 import { canAccessAdminPortal } from '@/lib/permissions';
+import { WITHDRAWN_BUNDLED_DOCUMENTS } from '@/lib/public-documents';
 
 function applySecurityHeaders(res: NextResponse, framePolicy: 'DENY' | 'SAMEORIGIN' = 'DENY'): NextResponse {
   res.headers.set('X-Frame-Options', framePolicy);
@@ -25,6 +26,10 @@ function applyNoStoreHeaders(res: NextResponse): NextResponse {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (WITHDRAWN_BUNDLED_DOCUMENTS.has(pathname)) {
+    return applyNoStoreHeaders(applySecurityHeaders(new NextResponse('Document unavailable. Contact the HAB Secretariat for the correct publication.', { status: 410 })));
+  }
 
   // Allow static assets, images, and API routes to bypass edge redirect logic.
   // Same-origin PDF previews are used by the Admin file editor. Keep every

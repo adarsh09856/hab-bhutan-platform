@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { publicDocumentUrl } from '@/lib/public-documents';
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -78,10 +79,11 @@ export async function GET(req: NextRequest) {
 
       const sched = (e.schedule && typeof e.schedule === 'object') ? (e.schedule as any) : {};
       const eventImg = sched.imageUrl || e.imageUrl || null;
-      const eventPdf = sched.pdfUrl || e.pdfUrl || null;
+      const eventPdf = publicDocumentUrl(sched.pdfUrl || e.pdfUrl);
 
       return {
         ...e,
+        documentUrl: publicDocumentUrl(e.documentUrl || sched.documentUrl),
         day: day || e.day || '',
         mon: mon || e.mon || '',
         year: year || e.year || null,

@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
+import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { eventImage } from '@/lib/event-illustrations';
 
@@ -100,8 +101,8 @@ export default async function EventDetailPage({ params }: EventPageProps) {
   const event = {
     ...rawEvent,
     imageUrl: sched.imageUrl || rawEvent.imageUrl || null,
-    pdfUrl: sched.pdfUrl || rawEvent.pdfUrl || null,
-    documentUrl: rawEvent.documentUrl || rawEvent.pdfUrl || sched.pdfUrl || sched.documentUrl || null,
+    pdfUrl: publicDocumentUrl(sched.pdfUrl || rawEvent.pdfUrl),
+    documentUrl: publicDocumentUrl(rawEvent.documentUrl || rawEvent.pdfUrl || sched.pdfUrl || sched.documentUrl),
     documentType: rawEvent.documentType || 'PDF',
     documentTitle: rawEvent.documentTitle || `${rawEvent.title || 'Event'} – Schedule & Official Guide`,
     subCategory: rawEvent.subCategory || null,

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import PdfPreview from '@/components/public/PdfPreview';
 import { Upload, Image as ImageIcon, FileText, CheckCircle2, AlertCircle, Loader2, X, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface FileUploadInputProps {
@@ -265,15 +266,7 @@ export default function FileUploadInput({
             </div>
             {isPdf && showPdfPreview && (
               <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                <iframe
-                  src={`${value}#toolbar=1&navpanes=0&view=FitH`}
-                  title={`PDF preview: ${value.split('/').pop() || 'uploaded document'}`}
-                  className="h-[320px] w-full border-0 bg-white"
-                  loading="lazy"
-                />
-                <p className="px-3 py-2 text-[11px] text-slate-500">
-                  If the preview is blocked by the file host, use View to open the PDF in a new tab.
-                </p>
+                <PdfPreview url={value} title={`PDF preview: ${value.split('/').pop() || 'uploaded document'}`} className="h-[400px]" />
               </div>
             )}
             </>

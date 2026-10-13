@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma';
 import { referenceNewsImage } from '@/lib/reference-images';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
+import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 
 export const dynamic = 'force-dynamic';
@@ -70,7 +71,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
     bodyDz: rawPost.contentDz,
     image_path: image_path || referenceNewsImage(rawPost.slug),
     published_at: rawPost.dateString || rawPost.published_at || rawPost.date || '',
-    documentUrl: rawPost.documentUrl || rawPost.pdfUrl || null,
+    documentUrl: publicDocumentUrl(rawPost.documentUrl || rawPost.pdfUrl),
     documentType: rawPost.documentType || 'PDF',
     documentTitle: rawPost.documentTitle || `${rawPost.title} – Official Document`,
     subCategory: rawPost.subCategory || null,
