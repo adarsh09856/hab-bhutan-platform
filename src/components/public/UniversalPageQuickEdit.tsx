@@ -325,6 +325,8 @@ export default function UniversalPageQuickEdit() {
           await write('/api/admin/projects', 'PUT', { id: project.id, coverPhotoUrl: nextUrl });
         } else if (galleryType === 'craft' && galleryId) {
           await write('/api/admin/crafts', 'PUT', { key: galleryId, bannerUrl: nextUrl });
+        } else if (galleryType === 'news' && galleryId) {
+          await write('/api/admin/content', 'PATCH', { type: 'NEWS', id: galleryId, image_path: nextUrl });
         } else if (galleryType === 'member' && galleryId) {
           const { members } = await requestJson('/api/admin/members');
           const member = members.find((item: { regNumber: string }) => item.regNumber === galleryId);
@@ -538,11 +540,11 @@ export default function UniversalPageQuickEdit() {
       {image ? <>
         <label className="block text-xs font-semibold mb-1">Image URL</label>
         <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.src || ''} onChange={(e) => setDraft({ ...draft, src: e.target.value })} />
-        {galleryType !== 'outlet' && galleryType !== 'project' && galleryType !== 'member' && galleryType !== 'craft' && <>
+        {galleryType !== 'outlet' && galleryType !== 'project' && galleryType !== 'member' && galleryType !== 'craft' && galleryType !== 'news' && <>
           <label className="block text-xs font-semibold mb-1">Alternative text</label>
           <input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.alt || ''} onChange={(e) => setDraft({ ...draft, alt: e.target.value })} />
         </>}
-        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : galleryType === 'craft' ? 'the craft photo' : galleryType === 'member' ? 'the member portrait in the registry and public profile' : 'its gallery'} in Admin and on other public pages.</p>}
+        {galleryElement && <p className="mb-2 text-xs text-slate-600">Replacing this photo updates {galleryType === 'project' ? 'the project cover' : galleryType === 'craft' ? 'the craft photo' : galleryType === 'news' ? 'the news cover' : galleryType === 'member' ? 'the member portrait in the registry and public profile' : 'its gallery'} in Admin and on other public pages.</p>}
         {link && !galleryElement && <><label className="flex items-center gap-1 text-xs font-semibold mb-1"><Link2 className="w-3 h-3" /> Link target</label><input className="w-full rounded-lg border px-3 py-2 text-sm mb-2" value={draft.href || ''} onChange={(e) => setDraft({ ...draft, href: e.target.value })} /></>}
         <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         <button type="button" disabled={!canSaveSelection} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50" onClick={() => fileRef.current?.click()}><ImagePlus className="w-4 h-4" /> Replace with upload</button>
@@ -572,7 +574,7 @@ export default function UniversalPageQuickEdit() {
       <div className="mt-4 flex justify-end gap-2">
         {canRemoveMedia && <button type="button" disabled={saving} onClick={removeMedia} className="mr-auto rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 disabled:opacity-50">Remove photo</button>}
         {(!galleryElement || overridesRef.current[selected.dataset.habEditKey || '']) && <button type="button" disabled={saving} onClick={reset} className="inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-xs"><RotateCcw className="w-3.5 h-3.5" /> Undo override</button>}
-        <button type="button" disabled={saving || !canSaveSelection} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryType === 'project' ? 'Save cover' : galleryElement ? 'Save gallery' : 'Save live'}</button>
+        <button type="button" disabled={saving || !canSaveSelection} onClick={save} className="inline-flex items-center gap-1 rounded-lg bg-[#8B2E24] px-3 py-2 text-xs font-bold text-white disabled:opacity-50"><Save className="w-3.5 h-3.5" /> {saving ? 'Saving…' : galleryType === 'project' || galleryType === 'news' ? 'Save cover' : galleryElement ? 'Save gallery' : 'Save live'}</button>
       </div>
     </aside>,
     document.body

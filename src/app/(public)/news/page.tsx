@@ -115,7 +115,7 @@ export default function NewsPage() {
                 return (
                   <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item>
                     <Link href={`/news/${slug}`} className="block relative" style={{ minHeight: 190 }}>
-                      <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', height: '100%', minHeight: 190, overflow: 'hidden' }}>
+                      <figure className="frame frame--wide16 has-image" data-cms-img data-hab-gallery="news" data-hab-gallery-id={n.id} style={{ position: 'relative', width: '100%', height: '100%', minHeight: 190, overflow: 'hidden' }}>
                         <Image
                           src={imgSrc}
                           alt={n.image_path ? displayTitle(n) : ''}

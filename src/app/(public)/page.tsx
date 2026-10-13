@@ -1264,7 +1264,7 @@ export default function HomePage() {
           <div className="grid grid--3">
             {news.map((item, idx) => (
               <article key={item.slug || idx} className="card news">
-                <figure className="frame frame--wide16">
+                <figure className="frame frame--wide16" data-hab-gallery="news" data-hab-gallery-id={item.id}>
                   <img
                     src={item.image_path || '/assets/photos/image-unavailable.svg'}
                     alt={item.image_path ? item.title : ''}

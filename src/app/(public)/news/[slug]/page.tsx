@@ -109,7 +109,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           <LocalizedRecordField as="p" className="lede lede--wide" english={post.blurb || post.summary} dzongkha={post.blurbDz} />
         </div>
 
-        <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
+        <figure className="frame frame--banner has-image" data-cms-img data-hab-gallery="news" data-hab-gallery-id={post.id} style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImg}
             alt={post.image_path ? post.title : ''}
