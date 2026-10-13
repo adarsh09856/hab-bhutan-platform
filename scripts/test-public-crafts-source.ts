@@ -40,6 +40,21 @@ async function main() {
       longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
       bannerUrl: null, isActive: true, sortOrder: 4,
     }, {
+      key: 'lhazo', name: 'Painting', english: 'Painting', dzongkha: '',
+      description: 'Painting description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: null, isActive: true, sortOrder: 5,
+    }, {
+      key: 'tshemzo', name: 'Tailoring', english: 'Tailoring and embroidery', dzongkha: '',
+      description: 'Tailoring description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: null, isActive: true, sortOrder: 6,
+    }, {
+      key: 'shagzo', name: 'Wood turning', english: 'Wood turning', dzongkha: '',
+      description: 'Wood turning description', descriptionDz: null, longDescription: null,
+      longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
+      bannerUrl: null, isActive: true, sortOrder: 7,
+    }, {
       key: 'dezo', name: 'Papermaking', english: 'Paper making', dzongkha: '',
       description: 'Papermaking description', descriptionDz: null, longDescription: null,
       longDescriptionDz: null, typicalProducts: null, history: null, historyDz: null,
@@ -56,7 +71,10 @@ async function main() {
     assert.equal(body.crafts[1].bannerUrl, '/images/crafts/dozo.jpg', 'retain the supplied reference asset when Admin has no photo');
     assert.equal(body.crafts[2].bannerUrl, '/uploads/approved-carpentry.webp', 'an Admin-saved craft photo takes precedence');
     assert.equal(body.crafts[3].bannerUrl, '/assets/photos/hero-3-clay.jpg', 'Jinzo must use the verified clay-sculpting photograph');
-    assert.equal(body.crafts[4].bannerUrl, '/assets/photos/hero-5-desho.jpg', 'Dezo must use the verified papermaking photograph when its saved photo is unavailable');
+    assert.equal(body.crafts[4].bannerUrl, '/assets/photos/product-lha01.jpg', 'Lhazo must use its existing Thangka product photograph');
+    assert.equal(body.crafts[5].bannerUrl, '/assets/photos/product-cus02.jpg', 'Tshemzo must use its existing appliqué product photograph');
+    assert.equal(body.crafts[6].bannerUrl, '/assets/photos/product-dap02.jpg', 'Shagzo must use its existing turned Dapa product photograph');
+    assert.equal(body.crafts[7].bannerUrl, '/assets/photos/hero-5-desho.jpg', 'Dezo must use the verified papermaking photograph when its saved photo is unavailable');
 
     (prisma.craft as any).findMany = async () => { throw new Error('Simulated database outage'); };
     const outage = await GET(new NextRequest('http://localhost/api/crafts'));
