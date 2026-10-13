@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import prisma from '@/lib/prisma';
 import { escapeEmailHtml } from '@/lib/email-html';
 import { logAudit } from '@/lib/audit';
+import { smtpConnectionOptions } from '@/lib/smtp-options';
 
 export interface SmtpConfig {
   host?: string;
@@ -219,8 +220,7 @@ export async function sendEmail(opts: SendEmailOptions): Promise<{
   try {
     const transporter = nodemailer.createTransport({
       host: config.host,
-      port: config.port || 587,
-      secure: config.secure || false,
+      ...smtpConnectionOptions(config),
       auth: config.username
         ? {
             user: config.username,

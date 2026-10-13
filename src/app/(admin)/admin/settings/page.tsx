@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save, Globe } from 'lucide-react';
 import { PERMISSION_CATEGORIES, Permission } from '@/lib/permissions';
+import { smtpConnectionOptions } from '@/lib/smtp-options';
 
 function AdminSettingsContent() {
   const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'GATEWAYS' | 'AUDIT'>('FX');
@@ -114,7 +115,10 @@ function AdminSettingsContent() {
           setEmailTemplates((prev) => ({ ...prev, ...d.setting.emailTemplates }));
         }
         if (d?.setting?.emailSettings) {
-          setSmtpSettings((prev) => ({ ...prev, ...d.setting.emailSettings }));
+          setSmtpSettings((prev) => {
+            const merged = { ...prev, ...d.setting.emailSettings };
+            return { ...merged, secure: smtpConnectionOptions(merged).secure };
+          });
         }
       }
     } catch (err) {
@@ -1224,7 +1228,10 @@ function AdminSettingsContent() {
                   <input
                     type="number"
                     value={smtpSettings.port}
-                    onChange={(e) => setSmtpSettings({ ...smtpSettings, port: parseInt(e.target.value, 10) || 587 })}
+                    onChange={(e) => {
+                      const port = parseInt(e.target.value, 10) || 587;
+                      setSmtpSettings({ ...smtpSettings, port, secure: smtpConnectionOptions({ port, secure: smtpSettings.secure }).secure });
+                    }}
                     placeholder="587 or 465"
                     className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
                   />
@@ -1235,10 +1242,11 @@ function AdminSettingsContent() {
                     <input
                       type="checkbox"
                       checked={smtpSettings.secure}
+                      disabled={smtpSettings.port === 465 || smtpSettings.port === 587}
                       onChange={(e) => setSmtpSettings({ ...smtpSettings, secure: e.target.checked })}
                       className="rounded border-slate-300 text-[#8B2E24] focus:ring-[#8B2E24]"
                     />
-                    <span className="text-xs font-semibold admin-text">Use SSL / TLS (Port 465)</span>
+                    <span className="text-xs font-semibold admin-text">{smtpSettings.port === 587 ? 'STARTTLS encryption (Port 587)' : 'Use SSL / TLS (Port 465)'}</span>
                   </label>
                 </div>
 

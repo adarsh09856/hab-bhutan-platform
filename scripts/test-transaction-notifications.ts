@@ -21,6 +21,9 @@ async function main() {
     // opening a socket. This does not prove SMTP connectivity or inbox delivery.
     (nodemailer as any).createTransport = (options: any) => {
       assert.equal(options.host, '127.0.0.1');
+      assert.equal(options.port, 587);
+      assert.equal(options.secure, false, 'port 587 must use STARTTLS');
+      assert.equal(options.requireTLS, true, 'port 587 must require the TLS upgrade');
       const transport = originalTransport({ streamTransport: true, buffer: true, newline: 'windows' });
       return { sendMail: async (message: any) => {
         if (message.to.startsWith('reject@')) throw new Error('Test transport rejected recipient');
@@ -57,7 +60,7 @@ async function main() {
     });
   });
   if (!memoryOnly) await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
-  const port = memoryOnly ? 2525 : (server.address() as net.AddressInfo).port;
+  const port = memoryOnly ? 587 : (server.address() as net.AddressInfo).port;
   const savedFind = prisma.siteSetting.findUnique;
   const savedAudit = prisma.auditLog.create;
   const smtp = { host: '127.0.0.1', port, secure: false, fromEmail: 'hab@example.invalid', fromName: 'HAB test' };
