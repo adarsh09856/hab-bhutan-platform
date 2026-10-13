@@ -53,7 +53,7 @@ async function main() {
     assert.equal(body.crafts[0].longDescriptionDz, 'ལག་བཟོའི་རྒྱས་བཤད།');
     assert.equal(body.crafts[0].historyDz, 'ལོ་རྒྱུས།');
     assert.equal(body.crafts[0].bannerUrl, '/images/crafts/thagzo.jpg');
-    assert.equal(body.crafts[1].bannerUrl, null, 'Dozo must not receive the unrelated bundled candy image');
+    assert.equal(body.crafts[1].bannerUrl, '/images/crafts/dozo.jpg', 'retain the supplied reference asset when Admin has no photo');
     assert.equal(body.crafts[2].bannerUrl, '/uploads/approved-carpentry.webp', 'an Admin-saved craft photo takes precedence');
     assert.equal(body.crafts[3].bannerUrl, '/assets/photos/hero-3-clay.jpg', 'Jinzo must use the verified clay-sculpting photograph');
     assert.equal(body.crafts[4].bannerUrl, '/assets/photos/hero-5-desho.jpg', 'Dezo must use the verified papermaking photograph when its saved photo is unavailable');
