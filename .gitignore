@@ -24,7 +24,6 @@ dist/
 # Documentation & PDF security guards (never commit md or pdf)
 *.md
 !README.md
-!PLAN.md
 *.pdf
 !public/docs/**/*.pdf
 
