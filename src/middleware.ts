@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/rbac';
 import { canAccessAdminPortal } from '@/lib/permissions';
 
-function applySecurityHeaders(res: NextResponse): NextResponse {
-  res.headers.set('X-Frame-Options', 'DENY');
+function applySecurityHeaders(res: NextResponse, framePolicy: 'DENY' | 'SAMEORIGIN' = 'DENY'): NextResponse {
+  res.headers.set('X-Frame-Options', framePolicy);
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.headers.set('X-XSS-Protection', '1; mode=block');
@@ -26,9 +26,13 @@ function applyNoStoreHeaders(res: NextResponse): NextResponse {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow static assets, images, and API routes to bypass edge redirect logic
+  // Allow static assets, images, and API routes to bypass edge redirect logic.
+  // Same-origin PDF previews are used by the Admin file editor. Keep every
+  // page and API response unframeable; only public PDF documents may be framed
+  // by this site, while cross-origin embedding remains blocked.
   if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
-    return applySecurityHeaders(NextResponse.next());
+    const isPublicPdf = !pathname.startsWith('/api/') && pathname.toLowerCase().endsWith('.pdf');
+    return applySecurityHeaders(NextResponse.next(), isPublicPdf ? 'SAMEORIGIN' : 'DENY');
   }
 
   // 1. Staff Sign In Page Handling (/admin/login)
