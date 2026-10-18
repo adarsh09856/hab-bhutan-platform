@@ -797,6 +797,15 @@ export default function AdminPagesHub() {
       )}
 
       {/* Page Header with Action Bar & "+ Create Page" Button */}
+      <details className="rounded-xl border border-slate-200 bg-white p-4">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-700">Advanced website tools</summary>
+        <p className="mt-2 text-xs text-slate-500">Optional tools for restoring direct edits, adding extra sections, and managing strategy, mandate and ethics cards.</p>
+        <div className="mt-3 flex flex-wrap gap-3 text-sm text-[#8B2E24]">
+          <Link href="/admin/pages/live-content" className="underline">Edit history &amp; restore</Link>
+          <Link href="/admin/pages/sections" className="underline">Additional page sections</Link>
+          <Link href="/admin/pages/governance-cards" className="underline">Strategy, mandate &amp; ethics cards</Link>
+        </div>
+      </details>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">

@@ -222,9 +222,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Header & Footer Menus', href: '/admin/navigation', icon: Navigation },
         { label: 'Hero Slides', href: '/admin/hero', icon: Layers },
         { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
-        { label: 'Quick Edit History & Restore', href: '/admin/pages/live-content', icon: Edit3, badge: 'Undo' },
-        { label: 'Extra Page Sections (optional)', href: '/admin/pages/sections', icon: Layers },
-        { label: 'Governance Page Cards', href: '/admin/pages/governance-cards', icon: BookOpen },
       ],
     },
     {
