@@ -5,7 +5,8 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { NEWS_CATEGORIES, NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath } from '@/lib/news-categories';
+import { NEWS_CATEGORIES, NEWS_SUBCATEGORIES, NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath } from '@/lib/news-categories';
+import NewsCategorySelect from '@/components/admin/NewsCategorySelect';
 import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -53,6 +54,7 @@ interface PolicyItem {
 export default function AdminContentPage() {
   const searchParams = useSearchParams();
   const newsCategory = normalizeNewsCategory(searchParams.get('category'));
+  const [taxonomy, setTaxonomy] = useState<{ categories: string[]; subCategories: string[] }>({ categories: [...NEWS_CATEGORIES], subCategories: [...NEWS_SUBCATEGORIES] });
   const [activeTab, setActiveTab] = useState<'NEWS' | 'PUBLICATIONS' | 'GOVERNANCE' | 'POLICIES' | 'CLAMP_LAB'>('NEWS');
   const [clampLevel, setClampLevel] = useState<number>(3);
   const [sampleText, setSampleText] = useState<string>(
@@ -239,6 +241,10 @@ export default function AdminContentPage() {
 
   useEffect(() => {
     loadContent();
+    fetch('/api/admin/news-taxonomy', { credentials: 'include', cache: 'no-store' })
+      .then(async (response) => { if (!response.ok) throw new Error('Unable to load saved categories.'); return response.json(); })
+      .then((data) => { if (data.success) setTaxonomy({ categories: data.categories, subCategories: data.subCategories }); })
+      .catch((error) => setFeedback({ type: 'error', message: error.message }));
   }, []);
 
   useEffect(() => { setActiveTab('NEWS'); }, [newsCategory]);
@@ -837,31 +843,8 @@ export default function AdminContentPage() {
                   </div>
                   <div><label className="block font-medium admin-text mb-1">Article Headline (Dzongkha)</label><input type="text" value={newsForm.titleDz} onChange={(e) => setNewsForm({ ...newsForm, titleDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <label className="block font-medium admin-text mb-1">Primary Category</label>
-                      <select
-                        value={newsForm.kind}
-                        onChange={(e) => setNewsForm({ ...newsForm, kind: e.target.value })}
-                        className="w-full admin-input border rounded px-2.5 py-1.5"
-                      >
-                        {NEWS_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block font-medium admin-text mb-1">Sub-Category</label>
-                      <select
-                        value={newsForm.subCategory}
-                        onChange={(e) => setNewsForm({ ...newsForm, subCategory: e.target.value })}
-                        className="w-full admin-input border rounded px-2.5 py-1.5"
-                      >
-                        <option value="Field Report">Field Report</option>
-                        <option value="Press Release">Press Release</option>
-                        <option value="Artisan Feature">Artisan Feature</option>
-                        <option value="Secretariat Notice">Secretariat Notice</option>
-                        <option value="Training Milestone">Training Milestone</option>
-                        <option value="Exhibition Report">Exhibition Report</option>
-                      </select>
-                    </div>
+                    <NewsCategorySelect type="category" value={newsForm.kind} options={taxonomy.categories} onChange={(kind) => setNewsForm({ ...newsForm, kind })} onOptions={setTaxonomy} />
+                    <NewsCategorySelect type="subCategory" value={newsForm.subCategory} options={taxonomy.subCategories} onChange={(subCategory) => setNewsForm({ ...newsForm, subCategory })} onOptions={setTaxonomy} />
                     <div>
                       <label className="block font-medium admin-text mb-1">Publication Date String</label>
                       <input
@@ -1130,31 +1113,8 @@ export default function AdminContentPage() {
                   </div>
                   <div><label className="block font-medium admin-text mb-1">Summary / Blurb (Dzongkha)</label><textarea rows={3} value={editingItem.data.blurbDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurbDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-medium admin-text mb-1">Primary Category</label>
-                      <select
-                        value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'}
-                        onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind: e.target.value } })}
-                        className="w-full admin-input border rounded px-2.5 py-1.5"
-                      >
-                        {NEWS_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block font-medium admin-text mb-1">Sub-Category</label>
-                      <select
-                        value={editingItem.data.subCategory || 'Field Report'}
-                        onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory: e.target.value } })}
-                        className="w-full admin-input border rounded px-2.5 py-1.5"
-                      >
-                        <option value="Field Report">Field Report</option>
-                        <option value="Press Release">Press Release</option>
-                        <option value="Artisan Feature">Artisan Feature</option>
-                        <option value="Secretariat Notice">Secretariat Notice</option>
-                        <option value="Training Milestone">Training Milestone</option>
-                        <option value="Exhibition Report">Exhibition Report</option>
-                      </select>
-                    </div>
+                    <NewsCategorySelect type="category" value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'} options={taxonomy.categories} onChange={(kind) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind } })} onOptions={setTaxonomy} />
+                    <NewsCategorySelect type="subCategory" value={editingItem.data.subCategory || ''} options={taxonomy.subCategories} onChange={(subCategory) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory } })} onOptions={setTaxonomy} />
                   </div>
 
                   <div><label className="block font-medium admin-text mb-1">Primary Category (Dzongkha)</label><input type="text" value={editingItem.data.kindDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kindDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>

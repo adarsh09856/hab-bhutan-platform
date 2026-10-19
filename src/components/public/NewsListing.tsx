@@ -14,11 +14,13 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
   const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedKind, setSelectedKind] = useState<string>('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('');
 
   useEffect(() => {
     setNewsState('loading');
     setNewsList([]);
     setSelectedKind('');
+    setSelectedSubCategory('');
     fetch(category ? `/api/news?category=${encodeURIComponent(category)}` : '/api/news', { cache: 'no-store' })
       .then(async (r) => {
         const data = await r.json();
@@ -32,6 +34,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
               slug: a.slug || a.id,
               kind: normalizeNewsCategory(a.kind) || 'Notice',
               kindDz: a.kindDz || '',
+              subCategory: a.subCategory || '',
               title: a.title,
               titleDz: a.titleDz || '',
               blurb: a.blurb || a.summary || '',
@@ -70,9 +73,11 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
   const displayBlurb = (n: any) => language === 'dz' ? (n.blurbDz || n.blurb) : n.blurb;
   const kinds = Array.from(new Set([...newsList.map((n) => n.kind), ...NEWS_NOTICE_CATEGORIES])).filter(Boolean);
 
-  const filtered = category || !selectedKind
+  const categoryArticles = category || !selectedKind
     ? newsList
     : newsList.filter((n) => n.kind === selectedKind);
+  const subCategories = Array.from(new Set(categoryArticles.map((n) => n.subCategory))).filter(Boolean);
+  const filtered = selectedSubCategory ? categoryArticles.filter((n) => n.subCategory === selectedSubCategory) : categoryArticles;
 
   return (
     <main id="main">
@@ -101,7 +106,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
                 className="input"
                 id="newsFilter"
                 value={selectedKind}
-                onChange={(e) => setSelectedKind(e.target.value)}
+                onChange={(e) => { setSelectedKind(e.target.value); setSelectedSubCategory(''); }}
               >
                 <option value="">{t('news.all_categories', 'All categories')}</option>
                 {kinds.map((k) => (
@@ -110,6 +115,13 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
                   </option>
                 ))}
               </select>}
+              {subCategories.length > 0 && <>
+                <label className="visually-hidden" htmlFor="newsSubCategory">Sub-category</label>
+                <select className="input" id="newsSubCategory" value={selectedSubCategory} onChange={(e) => setSelectedSubCategory(e.target.value)}>
+                  <option value="">All sub-categories</option>
+                  {subCategories.map((name) => <option key={name} value={name}>{name}</option>)}
+                </select>
+              </>}
               <span className="craft__count" id="newsCount" style={{ margin: 0, alignSelf: 'center' }}>
                 {filtered.length} {filtered.length === 1 ? t('news.post_singular', 'post') : t('news.post_plural', 'posts')}
               </span>
@@ -137,6 +149,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
                     <div className="newsitem__body">
                       <div className="news__meta">
                       <span className="tag">{displayKind(n)}</span>
+                        {n.subCategory && <span className="tag">{n.subCategory}</span>}
                         {n.published_at && <span className="news__date">{n.published_at}</span>}
                       </div>
                       <h2 className="newsitem__title">
