@@ -344,6 +344,14 @@ textarea.input{line-height:1.5;resize:vertical}
 .utility__lang span[aria-hidden]{
   opacity:.35;
 }
+.utility__google-translate{position:relative;flex:none;color:var(--on-dark-body);z-index:5}
+.utility__google-translate>summary{list-style:none;cursor:pointer;display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(255,255,255,.24);border-radius:9999px;font:700 12px var(--ui);color:#fff}
+.utility__google-translate>summary::-webkit-details-marker{display:none}
+.utility__google-translate>summary:hover,.utility__google-translate[open]>summary{background:rgba(255,255,255,.14)}
+.utility__google-panel{position:absolute;top:calc(100% + 8px);right:0;width:min(260px,calc(100vw - 24px));padding:14px;background:var(--surface,#fff);color:var(--ink,#2f211c);border:1px solid var(--line,#ddd);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);display:grid;gap:10px;font:13px var(--ui);z-index:1000}
+.utility__google-panel label{font-weight:650}
+.utility__google-panel select{width:100%;min-height:38px;padding:6px 9px;border:1px solid var(--line,#ddd);border-radius:7px;background:#fff;color:var(--ink,#2f211c)}
+.utility__google-panel button{min-height:38px;border:0;border-radius:7px;padding:8px 12px;background:var(--accent,#922f23);color:#fff;font:600 13px var(--ui);cursor:pointer}
 
 /* .header position/z-index now defined at end of file (fixed) */
 
@@ -1547,6 +1555,7 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 
 .detailhero{max-width:76ch;margin-bottom:34px}
 .lede--wide{max-width:66ch}
+.news-post__caption{font-size:18px;line-height:1.55}
 
 .numlist{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column}
 .numlist--tight{margin-top:16px}

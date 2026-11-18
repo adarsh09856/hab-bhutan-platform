@@ -49,6 +49,15 @@ export default function UtilityBar() {
   const [visible, setVisible] = useState(true);
   const { language, toggleLanguage, t } = useLanguage();
   const isDz = language === 'dz';
+  const [googleTargetLanguage, setGoogleTargetLanguage] = useState('dz');
+
+  const openGoogleTranslation = () => {
+    const target = new URL('https://translate.google.com/translate');
+    target.searchParams.set('sl', 'auto');
+    target.searchParams.set('tl', googleTargetLanguage);
+    target.searchParams.set('u', `${window.location.origin}${window.location.pathname}`);
+    window.open(target.toString(), '_blank', 'noopener,noreferrer');
+  };
 
   const textContainerRef = React.useRef<HTMLDivElement>(null);
   const textSpanRef = React.useRef<HTMLSpanElement>(null);
@@ -336,6 +345,30 @@ export default function UtilityBar() {
           </Link>
 
         </div>
+        <details className="utility__google-translate">
+          <summary aria-label="Translate this page with Google" title="Google Translate">G</summary>
+          <div className="utility__google-panel">
+            <label htmlFor="google-translate-language">Translate this page</label>
+            <select
+              id="google-translate-language"
+              value={googleTargetLanguage}
+              onChange={(event) => setGoogleTargetLanguage(event.target.value)}
+            >
+              <option value="dz">Dzongkha</option>
+              <option value="ar">Arabic</option>
+              <option value="bn">Bengali</option>
+              <option value="zh-CN">Chinese (Simplified)</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="hi">Hindi</option>
+              <option value="ja">Japanese</option>
+              <option value="ne">Nepali</option>
+              <option value="es">Spanish</option>
+              <option value="th">Thai</option>
+            </select>
+            <button type="button" onClick={openGoogleTranslation}>Translate page ↗</button>
+          </div>
+        </details>
         <button
           type="button"
           className="utility__lang utility__lang--switch"

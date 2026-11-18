@@ -114,7 +114,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             <LocalizedRecordField as="span" english={post.kind} dzongkha={post.kindDz} />{displayDate ? ` · ${displayDate}` : ''}
           </p>
           <LocalizedRecordField as="h1" className="display display--page" english={post.title} dzongkha={post.titleDz} />
-          <LocalizedRecordField as="p" className="lede lede--wide" english={post.blurb || post.summary} dzongkha={post.blurbDz} />
+          <LocalizedRecordField as="p" className="lede lede--wide news-post__caption" english={post.blurb || post.summary} dzongkha={post.blurbDz} />
         </div>
 
         <figure className="frame frame--banner has-image" data-cms-img data-hab-gallery="news" data-hab-gallery-id={post.id} style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
