@@ -9,6 +9,7 @@ import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath, type NewsNoticeCategory } from '@/lib/news-categories';
+import { isPolicyHtml, preparePolicyHtml } from '@/lib/policy-html';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +88,10 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
   }).catch(() => []);
 
   const displayDate = post.published_at || post.date || post.created_at || '';
+  const safeBodyHtml = isPolicyHtml(post.body) ? preparePolicyHtml(post.body).html : null;
+  const safeBodyDzongkhaHtml = post.bodyDz && isPolicyHtml(post.bodyDz)
+    ? preparePolicyHtml(post.bodyDz).html
+    : null;
 
   return (
     <main id="main">
@@ -151,7 +156,7 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
             )}
           </div>
           <div>
-            <LocalizedRecordField as="p" className="longread__body" style={{ marginBottom: 20 }} english={post.body || post.blurb} dzongkha={post.bodyDz} splitParagraphs />
+            <LocalizedRecordField as="div" className="longread__body" style={{ marginBottom: 20 }} english={post.body || post.blurb} dzongkha={post.bodyDz} splitParagraphs safeEnglishHtml={safeBodyHtml} safeDzongkhaHtml={safeBodyDzongkhaHtml} />
           </div>
         </div>
       </section>

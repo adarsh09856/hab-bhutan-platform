@@ -38,6 +38,16 @@ for (const kind of ['Announcements', 'Vacancies', 'Programs', 'Events']) {
   const article = await write('POST', { type: 'NEWS', title: `Local ${kind} ${key}`, kind, blurb: `Disposable ${kind} notice`, content: '<p>Local notice body.</p>', isPublished: true });
   created.push(article);
 }
+const htmlArticle = created[3];
+const htmlBody = '<section><h2>HTML editor verification</h2><p><strong>Formatted text</strong> &amp; saved content.</p></section>';
+await write('PATCH', { type: 'NEWS', id: htmlArticle.id, content: htmlBody });
+const publicHtmlArticle = (await list('Events')).find((item) => item.id === htmlArticle.id);
+assert.equal(publicHtmlArticle?.content, htmlBody, 'Raw HTML must round-trip through Admin edit into the public News API.');
+const htmlDetail = await fetch(`${base}/news/${htmlArticle.id}`);
+assert.equal(htmlDetail.status, 200, 'HTML article public detail must render.');
+const renderedDetail = await htmlDetail.text();
+assert(renderedDetail.includes('safeEnglishHtml') && renderedDetail.includes('html-editor-verification'), 'Public article detail must pass sanitized HTML to the rich-text renderer.');
+assert(renderedDetail.includes('\\u003cstrong\\u003eFormatted text\\u003c/strong\\u003e'), 'Sanitized formatted HTML must be present in the public render payload.');
 const vacancy = created[1];
 assert((await list('Vacancies')).some((item) => item.id === vacancy.id));
 assert(!(await list('Announcements')).some((item) => item.id === vacancy.id));

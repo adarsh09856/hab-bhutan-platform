@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { SignJWT } from 'jose';
 import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import { validateTestDatabaseUrl } from './lib/safe-test-database.mjs';
 
 const databaseUrl = validateTestDatabaseUrl(process.env.TEST_DATABASE_URL);
@@ -26,6 +28,9 @@ let customRole;
 let customUser;
 let customViewerRole;
 let customViewerUser;
+let creatorRole;
+let creatorUser;
+const generatedUploadPaths = [];
 let hadMembershipSetting = false;
 let originalTrustBadges;
 let hadSiteSetting = false;
@@ -62,6 +67,20 @@ async function requestAdmin(pathname, token, method = 'GET', body) {
     ...(body !== undefined ? { body: isFormData ? body : JSON.stringify(body) } : {}),
     cache: 'no-store',
   });
+}
+
+function listUploadFiles(root) {
+  if (!fs.existsSync(root)) return new Set();
+  const files = new Set();
+  const visit = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(fullPath);
+      else files.add(fullPath);
+    }
+  };
+  visit(root);
+  return files;
 }
 
 try {
@@ -180,6 +199,38 @@ try {
   const customViewerAdminPage = await requestAdmin('/admin', viewerToken);
   assert(customViewerAdminPage.status === 200, `Custom content:view role could not enter the Admin panel (HTTP ${customViewerAdminPage.status}).`);
 
+  creatorRole = await prisma.role.create({ data: {
+    name: 'Disposable content creator', slug: `content_creator_${suffix.slice(0, 24)}`, permissions: ['content:create'],
+  } });
+  creatorUser = await prisma.user.create({ data: {
+    email: `content-create-${suffix}@example.invalid`, name: 'Disposable content-create verifier',
+    passwordHash: 'not-used', roleId: creatorRole.id,
+  } });
+  const creatorToken = await tokenFor(['content:create'], creatorUser, creatorRole);
+  const uploadsRoot = path.resolve(process.cwd(), 'public', 'uploads');
+  const filesBeforeInvalidUpload = listUploadFiles(uploadsRoot);
+  const invalidImageForm = new FormData();
+  invalidImageForm.append('file', new File([Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0])], 'invalid-image.png', { type: 'image/png' }));
+  const invalidImageResponse = await requestAdmin('/api/admin/upload', creatorToken, 'POST', invalidImageForm);
+  assert(invalidImageResponse.status >= 400, 'A malformed image must be rejected.');
+  const filesAfterInvalidUpload = [...listUploadFiles(uploadsRoot)].filter((file) => !filesBeforeInvalidUpload.has(file));
+  assert(filesAfterInvalidUpload.length === 0, 'A rejected image must not leave partial files behind.');
+
+  const createOnlyForm = new FormData();
+  const sampleImage = fs.readFileSync(path.join(process.cwd(), 'public', 'assets', 'photos', 'hero-1-weaving.jpg'));
+  createOnlyForm.append('file', new File([sampleImage], 'permission-check.jpg', { type: 'image/jpeg' }));
+  const createOnlyUpload = await requestAdmin('/api/admin/upload', creatorToken, 'POST', createOnlyForm);
+  const createOnlyUploadBody = await createOnlyUpload.json();
+  assert(createOnlyUpload.status === 200 && createOnlyUploadBody.success, `A content:create-only role could not upload an article image (HTTP ${createOnlyUpload.status}: ${createOnlyUploadBody.error || createOnlyUpload.data}).`);
+  for (const url of [createOnlyUploadBody.url, createOnlyUploadBody.originalUrl, ...(createOnlyUploadBody.variants || []).map((variant) => variant.url)]) {
+    if (!url?.startsWith('/uploads/')) continue;
+    const filePath = path.resolve(uploadsRoot, url.slice('/uploads/'.length));
+    assert(path.dirname(filePath).startsWith(uploadsRoot), 'Upload cleanup path must remain under public/uploads.');
+    generatedUploadPaths.push(filePath);
+  }
+  const createdMedia = await fetch(`${baseUrl}${createOnlyUploadBody.url}`);
+  assert(createdMedia.status === 200, `Newly uploaded content image did not resolve (HTTP ${createdMedia.status}).`);
+
   role = await prisma.role.update({ where: { id: role.id }, data: { permissions: [
     'content:create', 'content:edit', 'members:view', 'members:verify', 'orders:fulfill', 'products:review',
   ] } });
@@ -257,6 +308,9 @@ try {
 
   console.log('PASS: legacy staff-role API uses current DB permissions, ignores over-claimed JWT permissions, and blocks revoked sessions.');
 } finally {
+  for (const filePath of generatedUploadPaths) {
+    try { fs.unlinkSync(filePath); } catch {}
+  }
   if (user) {
     await prisma.auditLog.deleteMany({ where: { actorId: user.id } });
     await prisma.user.deleteMany({ where: { id: user.id } });
@@ -275,6 +329,11 @@ try {
     await prisma.user.deleteMany({ where: { id: customViewerUser.id } });
   }
   if (customViewerRole) await prisma.role.deleteMany({ where: { id: customViewerRole.id } });
+  if (creatorUser) {
+    await prisma.auditLog.deleteMany({ where: { actorId: creatorUser.id } });
+    await prisma.user.deleteMany({ where: { id: creatorUser.id } });
+  }
+  if (creatorRole) await prisma.role.deleteMany({ where: { id: creatorRole.id } });
   if (!hadMembershipSetting) await prisma.membershipSetting.deleteMany({ where: { id: 'default' } });
   if (role) await prisma.role.deleteMany({ where: { id: role.id } });
   await prisma.$disconnect();

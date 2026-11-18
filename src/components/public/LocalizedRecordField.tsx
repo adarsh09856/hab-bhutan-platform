@@ -10,6 +10,10 @@ type Props = {
   className?: string;
   style?: CSSProperties;
   splitParagraphs?: boolean;
+  /** HTML already sanitized by a server-side caller. */
+  safeEnglishHtml?: string | null;
+  /** HTML already sanitized by a server-side caller. */
+  safeDzongkhaHtml?: string | null;
 };
 
 /** Renders a record's translation when present, otherwise preserves its English value. */
@@ -20,9 +24,17 @@ export default function LocalizedRecordField({
   className,
   style,
   splitParagraphs = false,
+  safeEnglishHtml,
+  safeDzongkhaHtml,
 }: Props) {
   const { language } = useLanguage();
-  const value = (language === 'dz' && dzongkha?.trim() ? dzongkha : english) || '';
+  const useDzongkha = language === 'dz' && Boolean(dzongkha?.trim());
+  const value = (useDzongkha ? dzongkha : english) || '';
+  const safeHtml = useDzongkha ? safeDzongkhaHtml : safeEnglishHtml;
+
+  if (safeHtml != null) {
+    return <Tag className={className} style={style} dangerouslySetInnerHTML={{ __html: safeHtml }} />;
+  }
 
   if (splitParagraphs) {
     const Paragraph = Tag === 'span' ? 'p' : Tag;

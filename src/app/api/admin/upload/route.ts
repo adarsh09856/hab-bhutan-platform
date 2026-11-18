@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { requirePermission } from '@/lib/rbac';
+import { requireAnyPermission, requirePermission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { storeResponsiveImage } from '@/lib/image-processing';
 import prisma from '@/lib/prisma';
@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
 
     let user;
     try {
-      user = await requirePermission(req, purpose === 'member-portrait' ? 'members:edit' : 'content:edit');
+      user = purpose === 'member-portrait'
+        ? await requirePermission(req, 'members:edit')
+        : await requireAnyPermission(req, ['content:create', 'content:edit']);
     } catch (error: any) {
       return NextResponse.json({ success: false, error: error.message || 'Unauthorized.' }, { status: error.statusCode || 401 });
     }
