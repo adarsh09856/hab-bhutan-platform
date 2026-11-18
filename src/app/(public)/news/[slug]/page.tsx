@@ -136,7 +136,6 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
           style={post.documentUrl ? { gridTemplateColumns: 'minmax(330px, 0.44fr) 0.56fr', gap: '40px', alignItems: 'start' } : undefined}
         >
           <div>
-            <p className="eyebrow eyebrow--accent">The story</p>
             {post.subCategory && (
               <span className="inline-block mt-2 px-2.5 py-1 rounded bg-[#EDE5D6] text-[#6B5A4C] font-mono text-xs font-semibold">
                 {post.subCategory}
