@@ -84,7 +84,7 @@ export default function AdminContentPage() {
     titleDz: '',
     kind: 'Programs',
     kindDz: '',
-    subCategory: 'Field Report',
+    subCategory: '',
     dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     blurb: '',
     blurbDz: '',
@@ -402,7 +402,7 @@ export default function AdminContentPage() {
           {activeTab === 'NEWS' && (
             <button
               onClick={() => {
-                setNewsForm({ title: '', titleDz: '', kind: newsCategory || 'Programs', kindDz: '', subCategory: 'Secretariat Notice', dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), blurb: '', blurbDz: '', content: '', contentDz: '', image_path: '', documentUrl: '', documentType: 'PDF', documentTitle: '', isPublished: true });
+                setNewsForm({ title: '', titleDz: '', kind: newsCategory || 'Programs', kindDz: '', subCategory: '', dateString: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), blurb: '', blurbDz: '', content: '', contentDz: '', image_path: '', documentUrl: '', documentType: 'PDF', documentTitle: '', isPublished: true });
                 setCreateModalType('NEWS');
               }}
               className="px-3.5 py-1.5 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
