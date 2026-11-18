@@ -11,7 +11,7 @@ function plainText(html: string): string {
   return read(document).replace(/\s+/g, ' ').trim();
 }
 
-export function preparePolicyHtml(content: string) {
+export function preparePolicyHtml(content: string, options: { inheritTypography?: boolean } = {}) {
   const filter = new FilterXSS({
     whiteList: {
       ...getDefaultWhiteList(),
@@ -22,7 +22,18 @@ export function preparePolicyHtml(content: string) {
     stripIgnoreTag: true,
     stripIgnoreTagBody: ['script', 'style', 'textarea', 'svg', 'math', 'iframe'],
   });
-  const safe = filter.process(content);
+  let safe = filter.process(content);
+  if (options.inheritTypography) {
+    // Rich text pasted from Word/Google Docs may carry Arial/black/11pt inline
+    // styles. Keep layout and emphasis styles, but let the site set typography.
+    safe = safe.replace(/\sstyle=(["'])(.*?)\1/gi, (_attribute, quote: string, value: string) => {
+      const kept = value
+        .split(';')
+        .map((declaration) => declaration.trim())
+        .filter((declaration) => declaration && !/^(?:font-family|font-size|color|background-color)\s*:/i.test(declaration));
+      return kept.length ? ` style=${quote}${kept.join('; ')}${quote}` : '';
+    });
+  }
   const used = new Map<string, number>();
   const headings: { text: string; id: string; blockIndex: number }[] = [];
   const html = safe.replace(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi, (_, inner: string) => {

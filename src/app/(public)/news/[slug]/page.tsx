@@ -88,9 +88,9 @@ export default async function NewsPostPage({ params }: NewsPostPageProps) {
   }).catch(() => []);
 
   const displayDate = post.published_at || post.date || post.created_at || '';
-  const safeBodyHtml = isPolicyHtml(post.body) ? preparePolicyHtml(post.body).html : null;
+  const safeBodyHtml = isPolicyHtml(post.body) ? preparePolicyHtml(post.body, { inheritTypography: true }).html : null;
   const safeBodyDzongkhaHtml = post.bodyDz && isPolicyHtml(post.bodyDz)
-    ? preparePolicyHtml(post.bodyDz).html
+    ? preparePolicyHtml(post.bodyDz, { inheritTypography: true }).html
     : null;
 
   return (
