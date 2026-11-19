@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Briefcase, Calendar, Building, DollarSign } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import ProjectBannerManager from '@/components/admin/ProjectBannerManager';
 import { parseProjectResultLine, projectResultLine } from '@/lib/project-results';
 
 interface ProjectRecord {
@@ -250,6 +251,8 @@ export default function AdminProjectsPage() {
           Add Project
         </button>
       </div>
+
+      <ProjectBannerManager />
 
       {/* Alerts */}
       {feedback && (

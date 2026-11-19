@@ -1284,6 +1284,17 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 
 /* ---------- projects ---------- */
 
+.projects-banner{margin:0 0 34px;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--surface);}
+.projects-banner__media{display:block;position:relative;aspect-ratio:21/8;min-height:260px;max-height:520px;overflow:hidden;background:var(--bg);}
+.projects-banner__image{display:block;width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center 42%;}
+.projects-banner__footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 16px 12px 20px;}
+.projects-banner__caption{margin:0;font-family:var(--display);font-size:17px;line-height:1.35;color:var(--ink);}
+.projects-banner__controls{display:flex;align-items:center;gap:10px;flex:none;font-family:var(--mono);font-size:12px;color:var(--muted);}
+.projects-banner__controls button{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--ink);cursor:pointer;}
+.projects-banner__controls button:hover{background:var(--ink);color:var(--surface);}
+.projects-banner__controls button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+@media(max-width:700px){.projects-banner{margin-bottom:26px}.projects-banner__media{aspect-ratio:4/3;min-height:220px}.projects-banner__footer{padding:10px 12px;gap:10px}.projects-banner__caption{font-size:15px}.projects-banner__controls{gap:6px}}
+
 .projectlist{display:flex;flex-direction:column;gap:22px}
 .project{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-xl);

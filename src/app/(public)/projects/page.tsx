@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
+import ProjectsMainBanner, { type ProjectsBannerSlide } from '@/components/public/ProjectsMainBanner';
 
 interface Project {
   key: string;
@@ -28,6 +29,7 @@ interface Project {
   image_path?: string;
   coverPhotoUrl?: string;
   reportPdfUrl?: string;
+  id?: string;
 }
 
 export default function ProjectsPage() {
@@ -36,6 +38,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [statusTab, setStatusTab] = useState<'current' | 'past'>('current');
+  const [bannerSlides, setBannerSlides] = useState<ProjectsBannerSlide[]>([]);
 
   useEffect(() => {
     const loadProjects = () => fetch('/api/projects', { cache: 'no-store' })
@@ -45,7 +48,8 @@ export default function ProjectsPage() {
       })
       .then((data) => {
         if (!data?.success || !Array.isArray(data.projects)) throw new Error('Projects unavailable');
-        setProjects(data.projects.map((p: any) => ({
+        const mappedProjects: Project[] = data.projects.map((p: any) => ({
+          id: p.id,
           key: p.key || p.slug || p.id,
           status: ['completed', 'past'].includes(String(p.status).toLowerCase()) ? 'past' : 'current',
           name: p.name || p.title || '',
@@ -67,7 +71,25 @@ export default function ProjectsPage() {
           image_path: p.coverPhotoUrl || p.imageUrl || p.image_path || '',
           coverPhotoUrl: p.coverPhotoUrl || '',
           reportPdfUrl: p.reportPdfUrl || '',
-        })));
+        }));
+        setProjects(mappedProjects);
+        const configuredSlides: ProjectsBannerSlide[] = Array.isArray(data.projectBannerSlides)
+          ? data.projectBannerSlides.filter((slide: any) => typeof slide?.imageUrl === 'string' && slide.imageUrl.trim()).map((slide: any) => ({
+            id: String(slide.id), imageUrl: slide.imageUrl, altText: slide.altText || slide.caption || 'Featured HAB project',
+            caption: slide.caption || '', linkUrl: slide.linkUrl || null, source: 'project-banner' as const,
+          }))
+          : [];
+        const fallbackSlides: ProjectsBannerSlide[] = mappedProjects
+          .filter((project) => Boolean(project.image_path || project.coverPhotoUrl))
+          .map((project) => ({
+            id: project.id || project.key,
+            imageUrl: project.coverPhotoUrl || project.image_path || '',
+            altText: project.name,
+            caption: project.name,
+            linkUrl: `/projects/${project.key}`,
+            source: 'project' as const,
+          }));
+        setBannerSlides(configuredSlides.length || data.hasProjectBannerSlides ? configuredSlides : fallbackSlides);
         setLoadState('ready');
       })
       .catch(() => { setProjects([]); setLoadState('error'); });
@@ -90,6 +112,7 @@ export default function ProjectsPage() {
       {/* 1. Hero & Stats */}
       <section className="section relative" data-hab-section="projects">
         <SectionEditBadge label="Donor Projects" studioHref="/admin/projects" />
+        <ProjectsMainBanner slides={bannerSlides} />
         <p className="crumbs">
           <Link href="/">{t('nav.home', 'Home')}</Link> / {t('nav.projects', 'Projects')}
         </p>

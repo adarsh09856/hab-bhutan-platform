@@ -31,11 +31,22 @@ function unpackProject(p: any) {
 
 export async function GET() {
   try {
-    const rawProjects = await prisma.projectRecord.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    const [rawProjects, settings] = await Promise.all([
+      prisma.projectRecord.findMany({ orderBy: { createdAt: 'desc' } }),
+      prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } }).catch(() => null),
+    ]);
 
-    const res = NextResponse.json({ success: true, projects: rawProjects.map(unpackProject) });
+    const trustBadges = (settings?.trustBadges as Record<string, unknown> | null) || {};
+    const bannerSlides = Array.isArray(trustBadges.projectBannerSlides)
+      ? trustBadges.projectBannerSlides.filter((slide: any) => slide && slide.isActive !== false).sort((a: any, b: any) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
+      : [];
+
+    const res = NextResponse.json({
+      success: true,
+      projects: rawProjects.map(unpackProject),
+      projectBannerSlides: bannerSlides,
+      hasProjectBannerSlides: Array.isArray(trustBadges.projectBannerSlides) && trustBadges.projectBannerSlides.length > 0,
+    });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');
     res.headers.set('Expires', '0');
