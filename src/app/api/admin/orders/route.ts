@@ -8,6 +8,7 @@ import { sendOrderShippedEmail, sendOrderConfirmationEmail } from '@/lib/email-s
 import { notifyOrderUpdate } from '@/lib/transaction-notifications';
 
 import { getFallbackOrders, saveFallbackOrder } from '@/lib/order-store';
+import { getOrderLineItems } from '@/lib/order-line-items';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,10 +60,11 @@ export async function GET(req: NextRequest) {
     const merged = Array.from(map.values()).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+    const ordersWithLineItems = merged.map((order) => ({ ...order, items: getOrderLineItems(order) }));
 
     return NextResponse.json({
       success: true,
-      orders: merged,
+      orders: ordersWithLineItems,
       wholesaleBuyers,
     });
   } catch (err: any) {
@@ -75,7 +77,7 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({
       success: true,
-      orders: getFallbackOrders(),
+      orders: getFallbackOrders().map((order) => ({ ...order, items: getOrderLineItems(order) })),
     });
   }
 }

@@ -26,6 +26,7 @@ import {
   FileText
 } from 'lucide-react';
 import OrderInvoiceModal from '@/components/public/OrderInvoiceModal';
+import { getOrderLineItems } from '@/lib/order-line-items';
 
 function parseShippingAddress(addr: any) {
   if (!addr) {
@@ -87,6 +88,7 @@ export default function AdminOrdersPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [copyFeedback, setCopyFeedback] = useState<{ [key: string]: boolean }>({});
+  const inspectedLineItems = getOrderLineItems(inspectingOrder);
 
   // Manual order form state
   const [orderForm, setOrderForm] = useState({
@@ -1096,8 +1098,8 @@ export default function AdminOrdersPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 print:divide-gray-200">
-                    {inspectingOrder.items && Array.isArray(inspectingOrder.items) && inspectingOrder.items.length > 0 ? (
-                      inspectingOrder.items.map((it: any, idx: number) => (
+                    {inspectedLineItems.length > 0 ? (
+                      inspectedLineItems.map((it, idx) => (
                         <tr key={idx} className="hover:bg-slate-50 print:text-black">
                           <td className="py-2.5 px-3 font-mono font-bold text-amber-700 print:text-black">{it.code}</td>
                           <td className="py-2.5 px-3">
