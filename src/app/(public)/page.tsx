@@ -106,6 +106,7 @@ export default function HomePage() {
 
   const [allOutletsPool, setAllOutletsPool] = useState<any[]>([]);
   const [punakhaOutlet, setPunakhaOutlet] = useState<any>(null);
+  const [outletOffset, setOutletOffset] = useState(0);
 
   const [outletsState, setOutletsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [clusters, setClusters] = useState<any[]>([]);
@@ -125,8 +126,11 @@ export default function HomePage() {
   }, [allProductsPool, productOffset, siteSettings.shopProductCodes]);
 
   const displayedOutlets = React.useMemo(() => {
-    return allOutletsPool.filter((outlet) => outlet.key !== punakhaOutlet?.key).slice(0, 3);
-  }, [allOutletsPool, punakhaOutlet?.key]);
+    const pool = allOutletsPool.filter((outlet) => outlet.key !== punakhaOutlet?.key);
+    if (pool.length === 0) return [];
+    const count = Math.min(3, pool.length);
+    return Array.from({ length: count }, (_, index) => pool[(outletOffset + index) % pool.length]);
+  }, [allOutletsPool, outletOffset, punakhaOutlet?.key]);
 
   const [masters, setMasters] = useState<any[]>([]);
 
@@ -489,6 +493,17 @@ export default function HomePage() {
     }, 5000);
     return () => clearInterval(t);
   }, [allProductsPool.length]);
+
+  // Rotate complete outlet records in the homepage row; their image and copy
+  // always come from the same item, and the featured market remains separate.
+  useEffect(() => {
+    const poolLength = allOutletsPool.filter((outlet) => outlet.key !== punakhaOutlet?.key).length;
+    if (poolLength <= 1) return;
+    const timer = window.setInterval(() => {
+      setOutletOffset((offset) => (offset + 1) % poolLength);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [allOutletsPool, punakhaOutlet?.key]);
 
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();

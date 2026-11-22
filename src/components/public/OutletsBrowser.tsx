@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Clock, Search, ChevronDown, ChevronUp, Sparkles, Filter } from 'lucide-react';
@@ -26,10 +26,26 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
   const [showAllOutlets, setShowAllOutlets] = useState(false);
   const [filterType, setFilterType] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [shuffleOffset, setShuffleOffset] = useState(0);
 
   // Featured outlet
   const featured = initialOutlets.find((o) => o.is_featured || o.isFeatured) || initialOutlets[0];
-  const primaryOutlets = initialOutlets.filter((o) => o.key !== featured?.key);
+  const remainingOutlets = initialOutlets.filter((o) => o.key !== featured?.key);
+  const rotationSize = remainingOutlets.length;
+
+  useEffect(() => {
+    if (rotationSize <= 1) return;
+    const timer = window.setInterval(() => {
+      setShuffleOffset((offset) => (offset + 1) % rotationSize);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [rotationSize]);
+
+  const primaryOutlets = useMemo(() => {
+    if (rotationSize <= 1) return remainingOutlets;
+    const offset = shuffleOffset % rotationSize;
+    return [...remainingOutlets.slice(offset), ...remainingOutlets.slice(0, offset)];
+  }, [remainingOutlets, rotationSize, shuffleOffset]);
 
   // Filtered outlets based on type and search query
   const filteredOutlets = useMemo(() => {
@@ -106,7 +122,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
         </section>
       )}
 
-      {/* Outlets List in the saved admin order */}
+      {/* Outlets List rotates by whole outlet record, preserving image and copy pairing. */}
       <section className="section">
         <div className="section__head flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
