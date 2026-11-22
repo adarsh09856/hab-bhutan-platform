@@ -20,9 +20,8 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   let dbProj: any = null;
   try {
     const legacyName = CLIENT_DATA.projects.find((p) => p.key === key)?.name;
-    dbProj = await prisma.projectRecord.findFirst({
-      where: { OR: [{ id: key }, ...(legacyName ? [{ name: legacyName }] : []), { name: { contains: key, mode: 'insensitive' } }] },
-    });
+    dbProj = await prisma.projectRecord.findUnique({ where: { id: key } });
+    if (!dbProj && legacyName) dbProj = await prisma.projectRecord.findFirst({ where: { name: legacyName } });
   } catch {}
   const project = dbProj;
   if (!project) return { title: 'Project Not Found' };
@@ -39,10 +38,16 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   let allProjects: any[] = [];
   try {
     const legacyName = CLIENT_DATA.projects.find((p) => p.key === key)?.name;
-    dbProj = await prisma.projectRecord.findFirst({
-      where: { OR: [{ id: key }, ...(legacyName ? [{ name: legacyName }] : []), { name: { contains: key, mode: 'insensitive' } }] },
-    });
-    allProjects = await prisma.projectRecord.findMany({ orderBy: { createdAt: 'desc' } });
+    [dbProj, allProjects] = await Promise.all([
+      (async () => {
+        const byId = await prisma.projectRecord.findUnique({ where: { id: key } });
+        return byId || (legacyName ? prisma.projectRecord.findFirst({ where: { name: legacyName } }) : null);
+      })(),
+      prisma.projectRecord.findMany({
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, name: true, nameDz: true, status: true, period: true, periodDz: true, budget: true, budgetDz: true, partner: true, partnerDz: true, summary: true, summaryDz: true, activities: true },
+      }),
+    ]);
   } catch {}
   if (!dbProj) {
     notFound();

@@ -743,6 +743,13 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 .outlet .card__body{padding:18px 20px 20px;gap:0}
 .outlet .card__title{font-size:var(--t-card-m);font-weight:700;letter-spacing:-.01em;margin:11px 0 3px}
 .outlet .card__meta{margin-bottom:9px}
+.outlet.card{display:flex;flex-direction:column;height:100%;color:inherit}
+.outlet.card > a:first-child{display:block}
+.outlet.card > .frame,
+.outlet.card > a:first-child > .frame{width:100%;aspect-ratio:16/9;padding:0;flex:none}
+.outlet.card .card__body{display:flex;flex:1;flex-direction:column;min-width:0}
+.outlet.card .card__text{min-height:4.5em}
+.outlet.card .outlet__hours{margin-top:auto;padding-top:11px}
 
 .outlet__hours{
   font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted);
@@ -1216,6 +1223,7 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 .pagehero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:end;padding-bottom:44px}
 .frame--banner{aspect-ratio:16/9;max-height:500px;border-radius:16px;margin-bottom:0;overflow:hidden}
 .frame--banner img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
+.about-page-banner{display:block;width:100%;flex:none}
 @media(min-width:768px){
   .frame--banner{aspect-ratio:21/9;max-height:540px}
 }

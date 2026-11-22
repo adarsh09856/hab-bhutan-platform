@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Clock, Search, ChevronDown, ChevronUp, Sparkles, Filter } from 'lucide-react';
@@ -23,36 +23,13 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
   const isDz = language === 'dz';
   const outletText = (outlet: OutletData, key: 'name' | 'place' | 'note' | 'description' | 'hours' | 'stalls' | 'payment') => resolveOutletText(outlet, language, key);
 
-  // Auto-shuffle outlets on mount so order is dynamic (Item 10)
-  const [shuffledOutlets, setShuffledOutlets] = useState(initialOutlets);
   const [showAllOutlets, setShowAllOutlets] = useState(false);
   const [filterType, setFilterType] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const rotateOutlets = () => {
-      const featured = initialOutlets.filter((o) => o.is_featured || o.isFeatured);
-      const nonFeatured = initialOutlets.filter((o) => !o.is_featured && !o.isFeatured);
-      if (nonFeatured.length <= 1) return;
-      const shuffledNonFeatured = [...nonFeatured];
-      for (let i = shuffledNonFeatured.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledNonFeatured[i], shuffledNonFeatured[j]] = [shuffledNonFeatured[j], shuffledNonFeatured[i]];
-      }
-      setShuffledOutlets([...featured, ...shuffledNonFeatured]);
-    };
-
-    // Initial shuffle on mount
-    rotateOutlets();
-
-    // 5-second continuous rotation
-    const timer = setInterval(rotateOutlets, 5000);
-    return () => clearInterval(timer);
-  }, [initialOutlets]);
-
   // Featured outlet
-  const featured = shuffledOutlets.find((o) => o.is_featured || o.isFeatured) || shuffledOutlets[0];
-  const primaryOutlets = shuffledOutlets.filter((o) => o.key !== featured?.key);
+  const featured = initialOutlets.find((o) => o.is_featured || o.isFeatured) || initialOutlets[0];
+  const primaryOutlets = initialOutlets.filter((o) => o.key !== featured?.key);
 
   // Filtered outlets based on type and search query
   const filteredOutlets = useMemo(() => {
@@ -129,7 +106,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
         </section>
       )}
 
-      {/* Outlets List with Auto-Shuffle and "View More Outlets" */}
+      {/* Outlets List in the saved admin order */}
       <section className="section">
         <div className="section__head flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -204,6 +181,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     style={{ objectFit: 'cover' }}
+                    loading="lazy"
                   />
                 </div>
               </Link>
@@ -230,7 +208,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
 
         {!unavailable && filteredOutlets.length === 0 && <p>No outlets match the current search or filter.</p>}
 
-        {/* Feedback Item 10: "View More Outlets" Button */}
+        {/* Show the remaining outlets on request. */}
         {filteredOutlets.length > 3 && (
           <div className="mt-8 text-center">
             <button

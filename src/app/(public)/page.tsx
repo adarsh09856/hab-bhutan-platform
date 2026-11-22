@@ -105,7 +105,7 @@ export default function HomePage() {
   const [productOffset, setProductOffset] = useState(0);
 
   const [allOutletsPool, setAllOutletsPool] = useState<any[]>([]);
-  const [outletOffset, setOutletOffset] = useState(0);
+  const [punakhaOutlet, setPunakhaOutlet] = useState<any>(null);
 
   const [outletsState, setOutletsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [clusters, setClusters] = useState<any[]>([]);
@@ -125,15 +125,8 @@ export default function HomePage() {
   }, [allProductsPool, productOffset, siteSettings.shopProductCodes]);
 
   const displayedOutlets = React.useMemo(() => {
-    const pool = allOutletsPool;
-    if (pool.length === 0) return [];
-    const count = Math.min(3, pool.length);
-    const res = [];
-    for (let i = 0; i < count; i++) {
-      res.push(pool[(outletOffset + i) % pool.length]);
-    }
-    return res;
-  }, [allOutletsPool, outletOffset]);
+    return allOutletsPool.filter((outlet) => outlet.key !== punakhaOutlet?.key).slice(0, 3);
+  }, [allOutletsPool, punakhaOutlet?.key]);
 
   const [masters, setMasters] = useState<any[]>([]);
 
@@ -142,7 +135,6 @@ export default function HomePage() {
 
   const [craftsList, setCraftsList] = useState<any[]>([]);
   const [craftsState, setCraftsState] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [punakhaOutlet, setPunakhaOutlet] = useState<any>(null);
 
   const [programmes, setProgrammes] = useState<any[]>([]);
   const [programmesState, setProgrammesState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -497,16 +489,6 @@ export default function HomePage() {
     }, 5000);
     return () => clearInterval(t);
   }, [allProductsPool.length]);
-
-  // 5-second continuous auto-rotation for Outlets
-  useEffect(() => {
-    const poolLength = allOutletsPool.length;
-    if (poolLength <= 1) return;
-    const t = setInterval(() => {
-      setOutletOffset((prev) => (prev + 1) % poolLength);
-    }, 5000);
-    return () => clearInterval(t);
-  }, [allOutletsPool.length]);
 
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -917,16 +899,17 @@ export default function HomePage() {
 
         {/* Physical outlets grid (3 columns matching index.html lines 346-360 & Image 2) */}
         <div className="grid grid--3" style={{ marginBottom: '48px', marginTop: '32px' }}>
-          {displayedOutlets.map((o, oIdx) => (
-            <Link key={`${o.key}-${oIdx}`} className="card outlet" href={`/outlets/${o.key}`} style={{ color: 'inherit' }}>
+          {displayedOutlets.map((o) => (
+            <Link key={o.key} className="card outlet" href={`/outlets/${o.key}`} style={{ color: 'inherit' }}>
               <figure className="frame frame--wide16">
                 <img
                   src={o.image_path || '/assets/photos/image-unavailable.svg'}
                   alt={o.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
                 />
-                <figcaption className="frame__caption frame__caption--sm">{isDz && (o as any).nameDz?.trim() ? (o as any).nameDz : o.name}</figcaption>
               </figure>
               <div className="card__body">
                 <span className="tag">{o.type || 'Outlet'}</span>

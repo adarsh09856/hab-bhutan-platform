@@ -166,7 +166,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-        <figure className="frame frame--banner overflow-hidden" style={{ aspectRatio: '16/9', maxHeight: '520px' }}>
+        <figure className="frame frame--banner about-page-banner overflow-hidden">
           <img
             src={s?.aboutBannerImage || "/assets/photos/about-hab.jpg"}
             alt="Handicrafts Association of Bhutan artisans and training"

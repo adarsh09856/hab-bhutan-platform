@@ -50,7 +50,9 @@ export default function ProjectsPage() {
         if (!data?.success || !Array.isArray(data.projects)) throw new Error('Projects unavailable');
         const mappedProjects: Project[] = data.projects.map((p: any) => ({
           id: p.id,
-          key: p.key || p.slug || p.id,
+          // Public detail routes are keyed by the database ID. Keeping a stale
+          // imported slug here could send “Read more” to a different record.
+          key: p.id || p.key || p.slug,
           status: ['completed', 'past'].includes(String(p.status).toLowerCase()) ? 'past' : 'current',
           name: p.name || p.title || '',
           nameDz: p.nameDz || '',
@@ -86,7 +88,7 @@ export default function ProjectsPage() {
             imageUrl: project.coverPhotoUrl || project.image_path || '',
             altText: project.name,
             caption: project.name,
-            linkUrl: `/projects/${project.key}`,
+            linkUrl: `/projects/${project.id || project.key}`,
             source: 'project' as const,
           }));
         setBannerSlides(configuredSlides.length || data.hasProjectBannerSlides ? configuredSlides : fallbackSlides);
@@ -172,14 +174,16 @@ export default function ProjectsPage() {
               {loadState === 'loading' ? t('projects.loading', 'Loading projects…') : loadState === 'error' ? t('projects.unavailable', 'Projects are temporarily unavailable.') : t(statusTab === 'current' ? 'projects.none_current' : 'projects.none_completed', statusTab === 'current' ? 'No current projects are listed.' : 'No completed projects are listed.')}
             </p>
           ) : null}
-          {displayedProjects.map((p, idx) => (
+          {displayedProjects.map((p, idx) => {
+            const detailKey = p.id || p.key;
+            return (
             <article
               key={p.key || idx}
               className={`projectcard ${p.coverPhotoUrl || p.image_path ? '' : 'projectcard--no-image'}`}
               id={p.key}
             >
               {p.coverPhotoUrl || p.image_path ? <figure className="frame frame--projshot" data-hab-gallery="project" data-hab-gallery-id={p.key}>
-                <img src={p.coverPhotoUrl || p.image_path} alt={local(p.name, p.nameDz)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={p.coverPhotoUrl || p.image_path} alt={local(p.name, p.nameDz)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" decoding="async" />
               </figure> : null}
               <div className="projectcard__body">
                 <div className="projectcard__status">
@@ -191,7 +195,7 @@ export default function ProjectsPage() {
                 <h2 className="projectcard__name">{local(p.name, p.nameDz)}</h2>
                 {p.partner && <p className="projectcard__partner">{local(p.partner, p.partnerDz)}</p>}
                 {p.summary && <p className="projectcard__summary">{local(p.summary, p.summaryDz)}</p>}
-                <Link className="btn btn--accent btn--sm projectcard__more" href={`/projects/${p.key}`}>
+                <Link className="btn btn--accent btn--sm projectcard__more" href={`/projects/${detailKey}`}>
                   {t('projects.read_more', 'Read more →')}
                 </Link>
 
@@ -226,7 +230,8 @@ export default function ProjectsPage() {
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
