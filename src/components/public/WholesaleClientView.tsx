@@ -171,7 +171,7 @@ export default function WholesaleClientView({
 
             return (
               <article key={p.code} className="card product">
-                <Link className="product__shot" href={`/product/${p.code}`}>
+                <Link className="product__shot" href={`/wholesale/product/${encodeURIComponent(p.code)}`}>
                   <div className="frame frame--square" style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={imgSrc}
@@ -186,7 +186,7 @@ export default function WholesaleClientView({
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{craft?.name || p.craft_key}</p>
                   <h3 className="card__title clamp-2">
-                    <Link href={`/product/${p.code}`}>{p.name}</Link>
+                    <Link href={`/wholesale/product/${encodeURIComponent(p.code)}`}>{p.name}</Link>
                   </h3>
                   {(p.maker || p.region) && <p className="card__meta clamp-1">{[p.maker, p.region].filter(Boolean).join(' · ')}</p>}
                   <div className="card__foot">

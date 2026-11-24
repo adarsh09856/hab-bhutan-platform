@@ -6,6 +6,15 @@ import {
   PUNAKHA_REFERENCE_GALLERY,
   readOutletGallery,
 } from '../src/lib/outlet-gallery.ts';
+import { outletImages } from '../src/lib/reference-images.ts';
+
+assert.deepEqual(outletImages, {
+  'punakha-market': '/images/outlets/punakha.jpg',
+  'thimphu-outlet': '/images/outlets/thimphu.jpg',
+  'paro-airport': '/images/outlets/paro.jpg',
+  'bumthang-outlet': '/images/outlets/bumthang.jpg',
+});
+assert.deepEqual(PUNAKHA_REFERENCE_GALLERY, ['/images/outlets/punakha.jpg']);
 
 const legacyNote = 'Open daily';
 assert.equal(hasOutletGalleryMarker(legacyNote), false);

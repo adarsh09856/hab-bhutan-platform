@@ -1,10 +1,10 @@
 // Existing reference photographs used by the public site before the media
 // fallback regression. Saved uploads always take precedence at call sites.
 export const outletImages: Record<string, string> = {
-  'punakha-market': '/assets/photos/hero-2-punakha.jpg',
-  'thimphu-outlet': '/assets/photos/hero-4-textiles.jpg',
-  'paro-airport': '/assets/photos/hero-5-desho.jpg',
-  'bumthang-outlet': '/assets/photos/hero-3-clay.jpg',
+  'punakha-market': '/images/outlets/punakha.jpg',
+  'thimphu-outlet': '/images/outlets/thimphu.jpg',
+  'paro-airport': '/images/outlets/paro.jpg',
+  'bumthang-outlet': '/images/outlets/bumthang.jpg',
 };
 
 export const clusterImages: Record<string, string> = {

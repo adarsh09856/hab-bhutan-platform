@@ -1,9 +1,7 @@
 const galleryMarker = /<!--\s*HAB_GALLERY:\s*(\[[\s\S]*?\])\s*-->/;
 
 export const PUNAKHA_REFERENCE_GALLERY = [
-  '/assets/photos/hero-4-textiles.jpg',
-  '/assets/photos/hero-1-weaving.jpg',
-  '/assets/photos/hero-5-desho.jpg',
+  '/images/outlets/punakha.jpg',
 ];
 
 export function hasOutletGalleryMarker(note: string | null | undefined): boolean {

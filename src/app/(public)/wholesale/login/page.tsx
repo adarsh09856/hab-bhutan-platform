@@ -62,7 +62,11 @@ export default function WholesaleLoginPage() {
       }
 
       setBuyerInfo(data.buyer);
-      router.push('/wholesale/shop');
+      const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '';
+      const safeDestination = returnTo.startsWith('/wholesale/product/') && !returnTo.startsWith('//')
+        ? returnTo
+        : '/wholesale/shop';
+      router.push(safeDestination);
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed. Please check your details.');
     } finally {

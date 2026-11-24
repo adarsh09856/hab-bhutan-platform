@@ -10,6 +10,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
+import { preparePolicyHtml } from '@/lib/policy-html';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -162,7 +163,7 @@ export default function ProductDetailPage() {
         </div>
 
         <p className="crumbs">
-          <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / <Link href="/wholesale">Wholesale &amp; bulk orders</Link> / <Link href={`/shop?craft=${product.craftKey}`}>{craft ? craft.name : product.craftKey}</Link> / <span>{product.code}</span>
+          <Link href="/">Home</Link> / <Link href="/shop">E-shop</Link> / <Link href={`/shop?craft=${product.craftKey}`}>{craft ? craft.name : product.craftKey}</Link> / <span>{product.code}</span>
         </p>
 
         <div className="proddetail">
@@ -267,7 +268,7 @@ export default function ProductDetailPage() {
               Approx. {alt(product.priceUSD)} · EMS tracked delivery included on qualifying orders
             </p>
 
-            {product.description && <p className="prodbuy__desc" id="prodDesc">{product.description}</p>}
+            {product.description && <div className="prodbuy__desc" id="prodDesc" dangerouslySetInnerHTML={{ __html: preparePolicyHtml(String(product.description), { inheritTypography: true }).html }} />}
 
             <div className="prodbuy__actions">
               <label className="visually-hidden" htmlFor="prodQty">Quantity</label>
