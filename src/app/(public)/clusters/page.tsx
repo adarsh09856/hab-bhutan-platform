@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { clusterImages } from '@/lib/reference-images';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { shopCraftHref } from '@/lib/product-routes';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,7 +114,7 @@ export default async function ClustersPage() {
                   )}
 
                   <div className="actions">
-                    <Link className="btn btn--accent btn--sm" href={`/shop?craft=${row.craft_key}`}>
+                    <Link className="btn btn--accent btn--sm" href={shopCraftHref(row.craft_key)}>
                       Shop {craft.name} →
                     </Link>
                     <Link className="btn btn--outline btn--sm" href={`/craft/${row.craft_key}`}>

@@ -22,6 +22,7 @@ import {
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { checkoutCopy } from '@/lib/checkout-copy';
+import { SHIPPING_COUNTRIES } from '@/lib/countries';
 
 export default function CheckoutPage() {
   const { language } = useLanguage();
@@ -92,6 +93,11 @@ export default function CheckoutPage() {
     country: 'Bhutan',
     postalCode: '',
   });
+  const isBhutanDelivery = customer.country.toLowerCase() === 'bhutan';
+
+  useEffect(() => {
+    if (!isBhutanDelivery && (paymentMethod === 'COD' || paymentMethod === 'MBOB')) setPaymentMethod('BANK');
+  }, [isBhutanDelivery, paymentMethod]);
 
   useEffect(() => {
     try {
@@ -192,6 +198,10 @@ export default function CheckoutPage() {
     }
     if (!customer.street.trim()) {
       setError('Please provide a physical delivery street address.');
+      return;
+    }
+    if (!customer.phone.trim() || !customer.city.trim() || !customer.country.trim() || !customer.postalCode.trim()) {
+      setError('Please enter phone, city, country and postcode for courier delivery.');
       return;
     }
     if (paymentMethod === 'MBOB' && !mbobRef.trim()) {
@@ -358,6 +368,7 @@ export default function CheckoutPage() {
                   </label>
                   <input
                     type="tel"
+                    required
                     value={customer.phone}
                     onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
                     placeholder="+975 1712 3456"
@@ -396,13 +407,14 @@ export default function CheckoutPage() {
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
                     {tr('Country *')}
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={customer.country}
-                    onChange={(e) => setCustomer({ ...customer, country: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]"
-                  />
+                  <select required value={customer.country} onChange={(e) => setCustomer({ ...customer, country: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]">
+                    <option value="">Select a country</option>
+                    {SHIPPING_COUNTRIES.map((country) => <option key={country.code} value={country.name}>{country.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">{tr('Postcode *')}</label>
+                  <input type="text" required autoComplete="postal-code" value={customer.postalCode} onChange={(e) => setCustomer({ ...customer, postalCode: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DDD1] bg-[#FFFCF8] text-sm text-[#33261F] focus:outline-hidden focus:border-[#8B2E24]" />
                 </div>
               </div>
             </div>
@@ -472,7 +484,7 @@ export default function CheckoutPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
 
-                <button
+                {isBhutanDelivery && <button
                   type="button"
                   onClick={() => setPaymentMethod('MBOB')}
                   className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
@@ -483,7 +495,7 @@ export default function CheckoutPage() {
                 >
                   <QrCode className="w-5 h-5" />
                   <span>mBoB (BoB)</span>
-                </button>
+                </button>}
 
                 <button
                   type="button"
@@ -511,7 +523,7 @@ export default function CheckoutPage() {
                   <span>{tr('SWIFT Wire')}</span>
                 </button>
 
-                <button
+                {isBhutanDelivery && <button
                   type="button"
                   onClick={() => setPaymentMethod('COD')}
                   className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-1.5 transition-all ${
@@ -522,7 +534,7 @@ export default function CheckoutPage() {
                 >
                   <Banknote className="w-5 h-5" />
                   <span>{tr('Cash on Delivery')}</span>
-                </button>
+                </button>}
               </div>
 
               {/* Card is intentionally unavailable until a server-side payment processor is configured. */}

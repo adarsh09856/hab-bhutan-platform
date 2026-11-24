@@ -37,7 +37,7 @@ const STATIC_SYSTEM_PAGES = [
   { label: 'Returns & Refunds Policy', href: '/returns-policy', category: 'Shop & Support' },
   { label: 'Track Order', href: '/track-order', category: 'Shop & Support' },
   { label: 'Customs & Duty Information', href: '/customs-policy', category: 'Shop & Support' },
-  { label: 'Artisans Directory by Category', href: '/members', category: 'Members & Network' },
+  { label: 'Accredited Traders', href: '/traders', category: 'Members & Network' },
   { label: 'Publications & Downloads', href: '/publications', category: 'Members & Network' },
   { label: 'Apply to Join HAB', href: '/register', category: 'Members & Network' },
   { label: 'Member Portal Login', href: '/login', category: 'Members & Network' },

@@ -12,6 +12,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import UniversalLiveSectionEditor from '@/components/public/UniversalLiveSectionEditor';
 import { getCraftFacts } from '@/lib/craft-facts';
 import { useLanguage } from '@/context/LanguageContext';
+import { productHref } from '@/lib/product-routes';
 
 export default function CraftProfilePage() {
   const { language } = useLanguage();
@@ -76,11 +77,11 @@ export default function CraftProfilePage() {
       setRelatedLoading((state) => ({ ...state, clusters: false }));
     }).catch(() => { if (!controller.signal.aborted) { setRelatedErrors((state) => ({ ...state, clusters: true })); setRelatedLoading((state) => ({ ...state, clusters: false })); } });
 
-    load(`/api/members?craft=${encodeURIComponent(craftKey)}`).then((data) => {
+    load(`/api/traders?craft=${encodeURIComponent(craftKey)}`).then((data) => {
       if (controller.signal.aborted) return;
-      setMembers((Array.isArray(data.members) ? data.members : []).map((member: any) => ({
-        name: member.name, regNumber: member.regNumber, dzongkhag: member.dzongkhag,
-        blurb: member.bio, member_since: member.joinYear,
+      setMembers((Array.isArray(data.traders) ? data.traders : []).map((trader: any) => ({
+        slug: trader.slug, name: trader.shopName, dzongkhag: trader.dzongkhag,
+        blurb: trader.shortDescription, member_since: trader.verifiedSince,
       })));
       setRelatedLoading((state) => ({ ...state, members: false }));
     }).catch(() => { if (!controller.signal.aborted) { setRelatedErrors((state) => ({ ...state, members: true })); setRelatedLoading((state) => ({ ...state, members: false })); } });
@@ -312,7 +313,7 @@ export default function CraftProfilePage() {
           <div className="grid grid--4" data-cms-repeat>
             {products.map((p) => (
               <article key={p.code} className="card product" data-cms-item data-code={p.code} data-hab-record-key={`product:${p.code}`}>
-                <Link className="product__shot" href={`/product/${p.code}`}>
+                <Link className="product__shot" href={productHref(p.code)}>
                   <figure className="frame frame--square has-image" data-cms-img>
                     <img
                       src={p.image_path || '/assets/photos/image-unavailable.svg'}
@@ -330,7 +331,7 @@ export default function CraftProfilePage() {
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{craft.name}</p>
                   <h3 className="card__title clamp-2">
-                    <Link href={`/product/${p.code}`}>{p.name}</Link>
+                    <Link href={productHref(p.code)}>{p.name}</Link>
                   </h3>
                   <p className="card__meta clamp-1">
                     {[p.maker, p.region].filter(Boolean).join(' · ')}
@@ -411,16 +412,15 @@ export default function CraftProfilePage() {
       )}
 
       {/* 8. Members Section */}
-      {relatedErrors.members && <section className="section"><p role="alert">Member listings are temporarily unavailable.</p></section>}
       {members.length > 0 && (
         <section className="section">
           <div className="section__head">
             <div>
-              <p className="eyebrow eyebrow--accent">Members</p>
-              <h2 className="display display--sub">Who practises it</h2>
+              <p className="eyebrow eyebrow--accent">Accredited traders</p>
+              <h2 className="display display--sub">Where to find this craft</h2>
             </div>
-            <Link className="link-accent" href="/members">
-              Search the directory →
+            <Link className="link-accent" href="/traders">
+              Search accredited traders →
             </Link>
           </div>
           <div className="grid grid--3">
@@ -429,7 +429,7 @@ export default function CraftProfilePage() {
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{m.dzongkhag}</p>
                   <h3 className="card__title">
-                    <Link href={`/members/${encodeURIComponent(m.regNumber || m.name)}`}>{m.name}</Link>
+                    <Link href={`/traders/${encodeURIComponent(m.slug)}`}>{m.name}</Link>
                   </h3>
                   <p className="card__text clamp-3">{m.blurb}</p>
                   {m.member_since && <p className="card__meta">HAB member since {m.member_since}</p>}

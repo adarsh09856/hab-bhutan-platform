@@ -27,7 +27,7 @@ let staffCheck: Promise<StaffAccess> | null = null;
 
 function checkStaffSession(): Promise<StaffAccess> {
   if (!staffCheck) {
-    staffCheck = fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' })
+    staffCheck = fetch('/api/admin/session', { credentials: 'include', cache: 'no-store' })
       .then((response) => response.json())
       .then((data) => {
         const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();

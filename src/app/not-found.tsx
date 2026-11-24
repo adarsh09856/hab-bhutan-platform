@@ -64,7 +64,7 @@ export default function NotFound() {
     {
       title: 'Master Artisans & Members',
       description: 'Directory of registered individual artisans, craft clusters, and Living Masters across all 20 dzongkhags.',
-      href: '/members',
+      href: '/traders',
       icon: Users,
       badge: 'Artisan Directory',
     },

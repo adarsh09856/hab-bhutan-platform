@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentFxRate } from '@/lib/fx';
 import { getSessionUser } from '@/lib/rbac';
+import { getSessionUserForAnyPermission } from '@/lib/rbac';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  const authorizedUser = await getSessionUserForAnyPermission(req, ['reports:view', 'products:view', 'content:view']);
+  if (!authorizedUser) return NextResponse.json({ success: false, error: 'Not authorised' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   let dbConnected = false;
   let dbLatencyMs = 0;
 

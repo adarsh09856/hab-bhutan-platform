@@ -13,6 +13,7 @@ import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailab
 import { useCart } from '@/context/CartContext';
 import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 import { isPolicyHtml, preparePolicyHtml } from '@/lib/policy-html';
+import { productHref } from '@/lib/product-routes';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
@@ -306,7 +307,8 @@ export default function HomePage() {
         if (d?.masters && d.masters.length > 0) {
           const formattedMasters = d.masters
             .filter((m: any) => typeof m?.name === 'string' && m.name.trim() && !/^(name to confirm|to be confirmed|undefined|null)$/i.test(m.name.trim()))
-            .slice(0, 3)
+            .filter((m: any) => m.showHome)
+            .slice(0, 6)
             .map((m: any) => {
             const details = [m.craft, m.dzongkhag, m.yearAwarded ? `Since ${m.yearAwarded}` : null].filter((value) => typeof value === 'string' && value.trim());
             const awardLabel = m.awardType === 'NationalMaster' 
@@ -314,6 +316,7 @@ export default function HomePage() {
               : (m.awardType === 'RoyalSeal' ? 'Master Craftsperson' : (m.honour || 'Master Craftsperson'));
             return {
               name: m.name.trim(),
+              slug: m.slug,
               honour: awardLabel,
               meta: details.join(' · '),
               note: m.citation || m.note || '',
@@ -784,7 +787,7 @@ export default function HomePage() {
             const makerName = typeof p.maker === 'object' ? p.maker?.name : p.maker;
             return (
               <article key={`${p.code}-${pIdx}`} data-hab-record-key={`product:${p.id || p.code}`} className="card product">
-                <Link className="product__shot" href={`/product/${p.code}`} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
+                <Link className="product__shot" href={productHref(p.code)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                   <figure className="frame frame--square has-image">
                     <img
                       src={productImg}
@@ -798,7 +801,7 @@ export default function HomePage() {
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{p.craft_name || p.craftKey}</p>
                   <h3 className="card__title clamp-2">
-                    <Link href={`/product/${p.code}`}>{p.name}</Link>
+                    <Link href={productHref(p.code)}>{p.name}</Link>
                   </h3>
 
                   {makerName && <p className="card__meta clamp-1">{makerName}</p>}
@@ -1072,7 +1075,7 @@ export default function HomePage() {
 
         {masters.length > 0 ? <div className="grid grid--3">
           {masters.map((m, idx) => (
-            <Link key={idx} className="card honour" href="/masters" style={{ color: 'inherit' }}>
+            <Link key={idx} className="card honour" href={`/masters/${encodeURIComponent(m.slug)}`} style={{ color: 'inherit' }}>
               {m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path) && (
                 <figure className="frame frame--square has-image" style={{ position: 'relative', overflow: 'hidden' }}>
                   <img src={m.image_path} alt={`${m.name}, master craftsperson`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

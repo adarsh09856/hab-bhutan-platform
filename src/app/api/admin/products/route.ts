@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     const [products, setting] = await Promise.all([prisma.product.findMany({
       include: {
         craft: true,
+        trader: { select: { id: true, shopName: true, slug: true, dzongkhag: true, town: true, isVisible: true, expiresAt: true } },
         wholesaleTerms: true,
         maker: {
           select: { id: true, name: true, regNumber: true, status: true },
@@ -56,6 +57,9 @@ export async function POST(req: NextRequest) {
       region,
       makerMemberId,
       description,
+      productType,
+      availability,
+      traderId,
       size,
       weight,
       materials,
@@ -101,6 +105,9 @@ export async function POST(req: NextRequest) {
         craftKey,
         region: region || 'Bhutan',
         makerMemberId: makerMemberId || null,
+        traderId: traderId || null,
+        productType: productType?.trim() || null,
+        availability: ['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability) ? availability : 'IN_STOCK',
         description: description || 'Authentic artisan handicraft curated by HAB.',
         size: size?.trim() || null,
         weight: weight?.trim() || null,
@@ -113,7 +120,7 @@ export async function POST(req: NextRequest) {
           ? status
           : 'PUBLISHED',
       },
-      include: { craft: true, maker: true },
+      include: { craft: true, maker: true, trader: true },
     });
 
     const ip = getClientIp(req);
@@ -161,6 +168,9 @@ export async function PATCH(req: NextRequest) {
       region,
       makerMemberId,
       description,
+      productType,
+      availability,
+      traderId,
       size,
       weight,
       materials,
@@ -232,6 +242,9 @@ export async function PATCH(req: NextRequest) {
     if (craftKey !== undefined) updateData.craftKey = craftKey;
     if (region !== undefined) updateData.region = region;
     if (makerMemberId !== undefined) updateData.makerMemberId = makerMemberId || null;
+    if (traderId !== undefined) updateData.traderId = traderId || null;
+    if (productType !== undefined) updateData.productType = productType?.trim() || null;
+    if (availability !== undefined) updateData.availability = ['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability) ? availability : 'IN_STOCK';
     if (description !== undefined) updateData.description = description;
     if (size !== undefined) updateData.size = size?.trim() || null;
     if (weight !== undefined) updateData.weight = weight?.trim() || null;
@@ -253,7 +266,7 @@ export async function PATCH(req: NextRequest) {
     const updated = await prisma.product.update({
       where,
       data: updateData,
-      include: { craft: true, maker: true },
+      include: { craft: true, maker: true, trader: true },
     });
 
     const ip = getClientIp(req);

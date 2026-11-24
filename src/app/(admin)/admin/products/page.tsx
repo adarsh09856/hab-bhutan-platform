@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { productHref } from '@/lib/product-routes';
 import { CRAFTS } from '@/lib/data';
 import { 
   Package, 
@@ -51,6 +52,7 @@ const generateProductSKU = (craftKey: string = 'thagzo') => {
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
+  const [traders, setTraders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [craftFilter, setCraftFilter] = useState('ALL');
@@ -71,6 +73,9 @@ export default function AdminProductsPage() {
     craftKey: CRAFTS[0].key,
     region: 'Thimphu',
     makerMemberId: '',
+    traderId: '',
+    productType: '',
+    availability: 'IN_STOCK',
     stock: 10,
     status: 'PUBLISHED',
     description: '',
@@ -99,9 +104,10 @@ export default function AdminProductsPage() {
     setLoading(true);
     setActionError('');
     try {
-      const [prodRes, memRes] = await Promise.all([
+      const [prodRes, memRes, traderRes] = await Promise.all([
         fetch('/api/admin/products', { credentials: 'include', cache: 'no-store' }),
         fetch('/api/admin/members', { credentials: 'include', cache: 'no-store' }).catch(() => null),
+        fetch('/api/admin/traders', { credentials: 'include', cache: 'no-store' }).catch(() => null),
       ]);
 
       if (prodRes.ok) {
@@ -116,6 +122,7 @@ export default function AdminProductsPage() {
         const memData = await memRes.json();
         setMembers(memData.members || []);
       }
+      if (traderRes && traderRes.ok) { const traderData = await traderRes.json(); setTraders(traderData.traders || []); }
     } catch (err: any) {
       setActionError(err.message || 'Network error fetching catalog.');
     } finally {
@@ -170,6 +177,7 @@ export default function AdminProductsPage() {
           craftKey: CRAFTS[0].key,
           region: 'Thimphu',
           makerMemberId: '',
+          traderId: '', productType: '', availability: 'IN_STOCK',
           stock: 10,
           status: 'PUBLISHED',
           description: '',
@@ -224,6 +232,9 @@ export default function AdminProductsPage() {
       craftKey: p.craftKey,
       region: p.region,
       makerMemberId: p.makerMemberId || '',
+      traderId: p.traderId || '',
+      productType: p.productType || '',
+      availability: p.availability || (Number(p.stock) > 0 ? 'IN_STOCK' : 'SOLD_OUT'),
       stock: p.stock ?? 0,
       status: p.status,
       description: p.description || '',
@@ -559,7 +570,7 @@ export default function AdminProductsPage() {
                           </div>
                           <div>
                             <Link
-                              href={`/product/${p.code}`}
+                              href={productHref(p.code)}
                               target="_blank"
                               className="font-medium admin-title hover:text-amber-200 flex items-center gap-1"
                             >
@@ -709,6 +720,20 @@ export default function AdminProductsPage() {
               />
               <span className="text-[10.5px] text-slate-500 block mt-1">Price in USD (auto-converted to Nu. on website).</span>
             </div>
+          </div>
+          <div><label className="block font-medium admin-text mb-1">Retail trader / shop (public listing)</label><select value={addForm.traderId || ''} onChange={(e) => setAddForm({ ...addForm, traderId: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2"><option value="">No trader linked</option>{traders.filter((trader) => trader.isVisible && new Date(trader.expiresAt) > new Date()).map((trader) => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select></div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block font-medium admin-text">Product type
+              <select value={addForm.productType} onChange={(e) => setAddForm({ ...addForm, productType: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1">
+                <option value="">Choose type</option><option>Bags</option><option>Cushions</option><option>Textiles</option><option>Home décor</option>
+              </select>
+            </label>
+            <label className="block font-medium admin-text">Availability
+              <select value={addForm.availability} onChange={(e) => setAddForm({ ...addForm, availability: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1">
+                <option value="IN_STOCK">In stock</option><option value="MADE_TO_ORDER">Made to order</option><option value="SOLD_OUT">Sold out</option>
+              </select>
+            </label>
           </div>
 
           <div>
@@ -965,6 +990,20 @@ export default function AdminProductsPage() {
                   <option value="ARCHIVED">Archived (Safe for past orders)</option>
                 </select>
               </div>
+            </div>
+            <div><label className="block font-medium admin-text mb-1">Retail trader / shop (public listing)</label><select value={editForm.traderId || ''} onChange={(e) => setEditForm({ ...editForm, traderId: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2"><option value="">No trader linked</option>{traders.map((trader) => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select></div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block font-medium admin-text">Product type
+                <select value={editForm.productType || ''} onChange={(e) => setEditForm({ ...editForm, productType: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1">
+                  <option value="">Choose type</option><option>Bags</option><option>Cushions</option><option>Textiles</option><option>Home décor</option>
+                </select>
+              </label>
+              <label className="block font-medium admin-text">Availability
+                <select value={editForm.availability || 'IN_STOCK'} onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1">
+                  <option value="IN_STOCK">In stock</option><option value="MADE_TO_ORDER">Made to order</option><option value="SOLD_OUT">Sold out</option>
+                </select>
+              </label>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

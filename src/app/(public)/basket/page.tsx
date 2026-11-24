@@ -7,6 +7,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { SHIPPING_COUNTRIES } from '@/lib/countries';
 
 export default function BasketPage() {
   const router = useRouter();
@@ -49,6 +50,10 @@ export default function BasketPage() {
       setFormError('Please enter a valid email address.');
       return;
     }
+    if (!customer.phone.trim() || !customer.city.trim() || !customer.postalCode.trim() || !customer.country.trim()) {
+      setFormError('Please enter phone, city, country and postcode for courier delivery.');
+      return;
+    }
     if (!customer.street.trim()) {
       setFormError('Please enter your delivery street address.');
       return;
@@ -68,6 +73,12 @@ export default function BasketPage() {
     { key: 'mbob', name: 'Bhutan mobile pay', note: 'mBoB / RMA-approved wallets, in Nu.' },
     { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
   ];
+  const isBhutanDelivery = customer.country.toLowerCase() === 'bhutan';
+  const availablePaymentOptions = payOptions.filter((option) => isBhutanDelivery || !['cod', 'mbob'].includes(option.key));
+
+  React.useEffect(() => {
+    if (!isBhutanDelivery && (paymentMethod === 'cod' || paymentMethod === 'mbob')) setPaymentMethod('bank');
+  }, [isBhutanDelivery, paymentMethod]);
 
   return (
     <main id="main">
@@ -207,7 +218,7 @@ export default function BasketPage() {
               <div className="panel" style={{ marginBottom: 22 }}>
                 <h2 className="newsaside__title">Payment</h2>
                 <div id="basketPay">
-                  {payOptions.map((opt) => (
+                  {availablePaymentOptions.map((opt) => (
                     <div
                       key={opt.key}
                       className={`payopt ${paymentMethod === opt.key ? 'is-active' : ''}`}
@@ -266,6 +277,7 @@ export default function BasketPage() {
                       type="tel"
                       value={customer.phone}
                       onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                      required
                     />
                   </label>
                   <label className="field">
@@ -285,16 +297,19 @@ export default function BasketPage() {
                       type="text"
                       value={customer.city}
                       onChange={(e) => setCustomer({ ...customer, city: e.target.value })}
+                      required
                     />
                   </label>
                   <label className="field">
                     <span className="field__label">Country</span>
-                    <input
-                      className="input"
-                      type="text"
-                      value={customer.country}
-                      onChange={(e) => setCustomer({ ...customer, country: e.target.value })}
-                    />
+                    <select className="input" value={customer.country} onChange={(e) => setCustomer({ ...customer, country: e.target.value })} required>
+                      <option value="">Select a country</option>
+                      {SHIPPING_COUNTRIES.map((country) => <option key={country.code} value={country.name}>{country.name}</option>)}
+                    </select>
+                  </label>
+                  <label className="field">
+                    <span className="field__label">Postcode</span>
+                    <input className="input" type="text" autoComplete="postal-code" value={customer.postalCode} onChange={(e) => setCustomer({ ...customer, postalCode: e.target.value })} required />
                   </label>
                 </div>
               </div>

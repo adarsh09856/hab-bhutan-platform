@@ -8,6 +8,7 @@ import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { eventImage } from '@/lib/event-illustrations';
+import { eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
       prisma.eventRecord.findMany({
         where: { isActive: true, key: { not: key } },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-        take: 3,
+        take: 12,
       }),
     ]);
   } catch { throw new Error('Event calendar temporarily unavailable.'); }
@@ -120,7 +121,8 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
   const bannerImage = eventImage(event.key, event.bannerUrl || event.imageUrl);
 
-  const otherEvents = dbOtherEvents;
+  const otherEvents = dbOtherEvents.filter((candidate) => eventIsUpcoming(candidate)).slice(0, 3);
+  const displayedDate = formatEventDateRange(rawEvent.startDate, rawEvent.endDate, rawEvent.dateDisplay);
 
   return (
     <main id="main">
@@ -136,12 +138,12 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
         <p className="crumbs">
           <Link href="/">Home</Link> / <Link href="/news">News &amp; events</Link> /{' '}
-          <Link href="/events">Events</Link> / <LocalizedRecordField as="span" english={event.title} dzongkha={event.titleDz} />
+            <Link href="/events">Events</Link> / <LocalizedRecordField as="span" english={event.title} dzongkha={event.titleDz} />
         </p>
 
         <div className="detailhero">
           <p className="eyebrow eyebrow--accent">
-            <LocalizedRecordField as="span" english={event.kind} dzongkha={event.categoryDz} /> · {event.dateDisplay}
+            <LocalizedRecordField as="span" english={event.kind} dzongkha={event.categoryDz} /> · {displayedDate}
           </p>
           <LocalizedRecordField as="h1" className="display display--page" english={event.title} dzongkha={event.titleDz} />
           <LocalizedRecordField as="p" className="lede lede--wide" english={event.summary} dzongkha={event.summaryDz || event.descriptionDz} />
@@ -156,7 +158,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             sizes="100vw"
             style={{ objectFit: 'cover' }}
           />
-          {bannerImage.illustrative && <span className="event-photo-note">Illustrative photo</span>}
         </figure>
       </section>
 
@@ -165,7 +166,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <div className="craftfacts">
           <div className="craftfacts__cell">
             <span className="craftfacts__key">Date</span>
-            <span className="craftfacts__val">{event.dateDisplay}</span>
+            <span className="craftfacts__val">{displayedDate}</span>
           </div>
           {event.time && <div className="craftfacts__cell">
             <span className="craftfacts__key">Time</span>
@@ -228,7 +229,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
               Contact the Secretariat
             </Link>
             <Link className="btn btn--outline" href="/events">
-              All upcoming events
+              View events calendar
             </Link>
           </div>
         </div>

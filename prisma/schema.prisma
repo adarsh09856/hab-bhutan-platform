@@ -153,6 +153,10 @@ model Product {
   region        String
   makerMemberId String?
   maker         Member?       @relation(fields: [makerMemberId], references: [id])
+  traderId      String?
+  trader        TraderRecord? @relation(fields: [traderId], references: [id], onDelete: SetNull)
+  productType   String?
+  availability  String        @default("IN_STOCK")
   description   String        @db.Text
   size          String?
   weight        String?
@@ -169,6 +173,9 @@ model Product {
 
   @@index([craftKey])
   @@index([makerMemberId])
+  @@index([traderId])
+  @@index([productType])
+  @@index([availability])
   @@index([status])
 }
 
@@ -778,6 +785,7 @@ model EventRecord {
   documentTitle String?  // e.g. "Exhibition Brochure & Catalogue"
   imageUrl     String?
   description  String    @db.Text
+  shortSummary String?   @db.Text
   descriptionDz String?  @db.Text
   summaryDz    String?   @db.Text
   schedule     Json?
@@ -841,12 +849,19 @@ model SupportPillar {
 // Master Artisan Recognitions and Honours
 model HonourRecord {
   id          String   @id @default(uuid())
+  slug        String?  @unique
   name        String
+  title       String   @default("Master Craftsperson")
   craft       String
   dzongkhag   String
   awardType   String   // RoyalSeal | Authenticity | NationalMaster
   yearAwarded Int      @default(2026)
+  practisingSince Int?
   citation    String   @db.Text
+  shortDescription String? @db.Text
+  story       String?  @db.Text
+  workPhotos  Json     @default("[]")
+  showHome    Boolean  @default(false)
   citationDz  String?  @db.Text
   portraitUrl String?
   isActive    Boolean  @default(true)
@@ -856,6 +871,38 @@ model HonourRecord {
 
   @@index([awardType])
   @@index([craft])
+}
+
+// HAB-verified retail traders, kept separate from private membership-registry records.
+model TraderRecord {
+  id                  String   @id @default(uuid())
+  slug                String   @unique
+  shopName            String
+  ownerName           String?
+  registrationNumber  String   @unique
+  dzongkhag           String
+  town                String
+  address             String   @db.Text
+  mapUrl              String?
+  openingHours        String?  @db.Text
+  shortDescription    String   @db.Text
+  description         String   @db.Text
+  craftKeys           Json     @default("[]")
+  productTypes        Json     @default("[]")
+  productPhotoUrls    Json     @default("[]")
+  bannerUrl           String?
+  expiresAt           DateTime
+  isVisible           Boolean  @default(true)
+  expiryNoticeSentAt  DateTime?
+  verifiedSince       Int?
+  sortOrder           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  products            Product[]
+
+  @@index([dzongkhag])
+  @@index([expiresAt, isVisible])
+  @@index([isVisible, sortOrder])
 }
 
 // Dynamic membership tiers & categories

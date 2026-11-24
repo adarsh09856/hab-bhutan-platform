@@ -25,7 +25,7 @@ console.log('[1/5] Auditing AdminLiveBar.tsx component...');
 assert(fs.existsSync('src/components/public/AdminLiveBar.tsx'), 'AdminLiveBar.tsx exists on disk');
 const liveBar = fs.readFileSync('src/components/public/AdminLiveBar.tsx', 'utf-8');
 
-assert(liveBar.includes('/api/admin/health'), 'AdminLiveBar checks /api/admin/health for session verification');
+assert(liveBar.includes('/api/admin/session'), 'AdminLiveBar checks the permission-scoped admin session endpoint');
 assert(liveBar.includes('{isAdmin && (') && liveBar.includes('finally {\n        setLoading(false);'), 'Admin live controls require a verified staff session and auth check resolves');
 assert(liveBar.includes('hab-visual-edit-on'), 'AdminLiveBar toggles hab-visual-edit-on class on document.body');
 assert(liveBar.includes('usePathname'), 'AdminLiveBar uses Next.js usePathname for dynamic route detection');

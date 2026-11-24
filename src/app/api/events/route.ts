@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import prisma from '@/lib/prisma';
+import { formatEventDateRange } from '@/lib/event-dates';
+import { shortenEventSummary } from '@/lib/event-summary';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,8 +92,9 @@ export async function GET(req: NextRequest) {
         time: time || e.time || (typeof e.schedule === 'object' && e.schedule?.time) || '',
         kind: e.kind || e.category || '',
         place: e.place || e.location || e.venue || '',
-        summary: e.summary || (e.description ? e.description.slice(0, 160) : ''),
-        summaryDz: e.summaryDz || (e.descriptionDz ? e.descriptionDz.slice(0, 160) : ''),
+        dateDisplay: formatEventDateRange(e.startDate, e.endDate, e.dateDisplay),
+        summary: e.shortSummary || e.summary || shortenEventSummary(e.description),
+        summaryDz: e.summaryDz || shortenEventSummary(e.descriptionDz),
         url: e.url || `/events/${e.key || e.id}`,
         imageUrl: eventImg,
         bannerUrl: eventImg,

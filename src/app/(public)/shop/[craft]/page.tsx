@@ -33,6 +33,11 @@ function ShopGridContent() {
   const currentCraft = crafts.find((c) => c.key === craftParam);
 
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
+  const [search, setSearch] = useState('');
+  const [productType, setProductType] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [productsList, setProductsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [catalogueError, setCatalogueError] = useState(false);
@@ -68,6 +73,11 @@ function ShopGridContent() {
     let prods = productsList.filter((p) => {
       const price = p.priceUSD || p.price || 0;
       if (!isAll && p.craftKey !== craftParam) return false;
+      if (search && ![p.name, p.code, p.description, p.maker?.name, p.trader?.shopName].some((value) => String(value || '').toLowerCase().includes(search.toLowerCase()))) return false;
+      if (productType && p.productType !== productType) return false;
+      if (minPrice && price < Number(minPrice)) return false;
+      if (maxPrice && price > Number(maxPrice)) return false;
+      if (onlyAvailable && (p.stock <= 0 || p.availability === 'SOLD_OUT')) return false;
       if (collectionParam === 'under50' && price >= 50) return false;
       if (collectionParam === 'home' && !['tsharo-zo', 'shag-zo', 'de-zo', 'tshazo', 'shagzo', 'dezo'].includes(p.craftKey)) return false;
       return true;
@@ -80,7 +90,7 @@ function ShopGridContent() {
     }
 
     return prods;
-  }, [productsList, craftParam, isAll, collectionParam, sortOrder]);
+  }, [productsList, craftParam, isAll, collectionParam, sortOrder, search, productType, minPrice, maxPrice, onlyAvailable]);
 
   // Craft counts
   const craftCounts = useMemo(() => {
@@ -124,7 +134,7 @@ function ShopGridContent() {
                 </span>
               </Link>
 
-              {crafts.map((c) => {
+              {crafts.filter((c) => (craftCounts[c.key] || 0) > 0).map((c) => {
                 const isActive = craftParam === c.key;
                 const count = craftCounts[c.key] || 0;
                 return (
@@ -179,6 +189,13 @@ function ShopGridContent() {
 
         {/* Right Catalog Content */}
         <div className="flex flex-col gap-6">
+          <div className="flex flex-wrap gap-2">
+            <input aria-label="Search products" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products" className="rounded-lg border border-[#E4DDD1] bg-white px-3 py-2 text-sm" />
+            <select aria-label="Product type" value={productType} onChange={(event) => setProductType(event.target.value)} className="rounded-lg border border-[#E4DDD1] bg-white px-3 py-2 text-sm"><option value="">All types</option><option>Bags</option><option>Cushions</option><option>Textiles</option><option>Home décor</option></select>
+            <input type="number" min="0" aria-label="Minimum price" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} placeholder="Min price" className="w-28 rounded-lg border border-[#E4DDD1] bg-white px-3 py-2 text-sm" />
+            <input type="number" min="0" aria-label="Maximum price" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} placeholder="Max price" className="w-28 rounded-lg border border-[#E4DDD1] bg-white px-3 py-2 text-sm" />
+            <label className="inline-flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyAvailable} onChange={(event) => setOnlyAvailable(event.target.checked)} />In stock</label>
+          </div>
           <div>
             <h1 className="font-marcellus text-2xl sm:text-3xl lg:text-[42px] font-normal leading-[1.1] text-[#33261F] mb-2">
               {isAll ? t('shop.title') : currentCraft ? language === 'dz' && currentCraft.dzongkha ? currentCraft.dzongkha : `${currentCraft.name} — ${currentCraft.english}` : craftsLoading ? t('shop.loading_craft') : t('shop.craft_unavailable')}
@@ -235,6 +252,7 @@ function ShopGridContent() {
                   imageUrl={p.imageUrl || p.image_path || (p.images && p.images[0]?.url)}
                   images={p.images}
                   stock={p.stock}
+                  availability={p.availability}
                 />
               ))}
             </div>

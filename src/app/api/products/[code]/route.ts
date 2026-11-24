@@ -23,6 +23,7 @@ export async function GET(
         maker: {
           select: PUBLIC_PRODUCT_MAKER_SELECT,
         },
+        trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
       },
     });
 

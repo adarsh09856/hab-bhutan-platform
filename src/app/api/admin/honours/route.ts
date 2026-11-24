@@ -29,20 +29,28 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { name, craft, dzongkhag, awardType, yearAwarded, citation, citationDz, portraitUrl, isActive, sortOrder } = body;
+    const { name, title, craft, dzongkhag, awardType, yearAwarded, practisingSince, citation, citationDz, shortDescription, story, workPhotos, showHome, portraitUrl, isActive, sortOrder } = body;
 
     if (!name || !craft || !dzongkhag || !citation) {
       return NextResponse.json({ error: 'name, craft, dzongkhag, and citation are required' }, { status: 400 });
     }
 
+    if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });
+    if (showHome && await prisma.honourRecord.count({ where: { showHome: true, isActive: true } }) >= 6) return NextResponse.json({ error: 'Only six active profiles can be featured on the homepage.' }, { status: 400 });
     const honour = await prisma.honourRecord.create({
       data: {
         name: name.trim(),
+        title: title?.trim() || 'Master Craftsperson',
         craft: craft.trim(),
         dzongkhag: dzongkhag.trim(),
         awardType: awardType?.trim() || 'RoyalSeal',
         yearAwarded: Number(yearAwarded) || new Date().getFullYear(),
+        practisingSince: practisingSince ? Number(practisingSince) : null,
         citation: citation.trim(),
+        shortDescription: shortDescription?.trim() || null,
+        story: story?.trim() || null,
+        workPhotos: Array.isArray(workPhotos) ? workPhotos.slice(0, 6) : [],
+        showHome: Boolean(showHome),
         citationDz: citationDz?.trim() || null,
         portraitUrl: portraitUrl?.trim() || null,
         isActive: isActive !== undefined ? Boolean(isActive) : true,
@@ -72,21 +80,29 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, name, craft, dzongkhag, awardType, yearAwarded, citation, citationDz, portraitUrl, isActive, sortOrder } = body;
+    const { id, name, title, craft, dzongkhag, awardType, yearAwarded, practisingSince, citation, citationDz, shortDescription, story, workPhotos, showHome, portraitUrl, isActive, sortOrder } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'id is required for update' }, { status: 400 });
     }
 
+    if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });
+    if (showHome && (isActive !== false) && await prisma.honourRecord.count({ where: { showHome: true, isActive: true, id: { not: id } } }) >= 6) return NextResponse.json({ error: 'Only six active profiles can be featured on the homepage.' }, { status: 400 });
     const honour = await prisma.honourRecord.update({
       where: { id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
+        ...(title !== undefined && { title: title.trim() }),
         ...(craft !== undefined && { craft: craft.trim() }),
         ...(dzongkhag !== undefined && { dzongkhag: dzongkhag.trim() }),
         ...(awardType !== undefined && { awardType: awardType.trim() }),
         ...(yearAwarded !== undefined && { yearAwarded: Number(yearAwarded) || new Date().getFullYear() }),
+        ...(practisingSince !== undefined && { practisingSince: practisingSince ? Number(practisingSince) : null }),
         ...(citation !== undefined && { citation: citation.trim() }),
+        ...(shortDescription !== undefined && { shortDescription: shortDescription?.trim() || null }),
+        ...(story !== undefined && { story: story?.trim() || null }),
+        ...(workPhotos !== undefined && { workPhotos: Array.isArray(workPhotos) ? workPhotos.slice(0, 6) : [] }),
+        ...(showHome !== undefined && { showHome: Boolean(showHome) }),
         ...(citationDz !== undefined && { citationDz: citationDz?.trim() || null }),
         ...(portraitUrl !== undefined && { portraitUrl: portraitUrl?.trim() || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),

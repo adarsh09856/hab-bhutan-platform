@@ -15,6 +15,9 @@ interface EventItem {
   category: string;
   categoryDz?: string | null;
   dateDisplay: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  shortSummary?: string | null;
   day?: string;
   mon?: string;
   time?: string;
@@ -42,6 +45,9 @@ const EMPTY_FORM = {
   category: 'Exhibition',
   categoryDz: '',
   dateDisplay: '',
+  startDate: '',
+  endDate: '',
+  shortSummary: '',
   day: '12',
   mon: 'SEP',
   time: '09:00 AM – 05:00 PM BST',
@@ -111,6 +117,9 @@ export default function AdminEventsPage() {
       category: ev.category,
       categoryDz: ev.categoryDz || '',
       dateDisplay: ev.dateDisplay,
+      startDate: ev.startDate ? new Date(ev.startDate).toISOString().slice(0, 10) : '',
+      endDate: ev.endDate ? new Date(ev.endDate).toISOString().slice(0, 10) : '',
+      shortSummary: ev.shortSummary || '',
       day: ev.day || sched.day || '12',
       mon: ev.mon || sched.mon || 'SEP',
       time: ev.time || sched.time || '09:00 AM – 05:00 PM BST',
@@ -137,6 +146,14 @@ export default function AdminEventsPage() {
     e.preventDefault();
     if (!form.key.trim() || !form.title.trim() || !form.description.trim()) {
       showFlash('error', 'Key, title, and description are required.');
+      return;
+    }
+    if (form.startDate && form.endDate && form.endDate < form.startDate) {
+      showFlash('error', 'The event end date must be on or after its start date.');
+      return;
+    }
+    if (/\d\s*[–—-]\s*\d/.test(form.dateDisplay) && (!form.startDate || !form.endDate)) {
+      showFlash('error', 'Add both start and end dates for a multi-day event.');
       return;
     }
 
@@ -384,6 +401,14 @@ export default function AdminEventsPage() {
                     </div>
                   </div>
                 )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase">Start date *<input type="date" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase">End date (multi-day)<input type="date" value={form.endDate} min={form.startDate || undefined} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Short summary (optional)</label>
+                  <textarea rows={2} maxLength={300} value={form.shortSummary} onChange={(e) => setForm({ ...form, shortSummary: e.target.value })} className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" placeholder="A short description for event cards" />
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Key / Slug *</label>

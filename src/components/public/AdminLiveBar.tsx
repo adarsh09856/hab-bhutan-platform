@@ -41,7 +41,7 @@ export default function AdminLiveBar() {
       const storedEdit = typeof localStorage !== 'undefined' && (localStorage.getItem('hab_visual_edit') === '1' || localStorage.getItem('hab_visual_edit') === 'true');
 
       try {
-        const res = await fetch('/api/admin/health', { credentials: 'include' });
+        const res = await fetch('/api/admin/session', { credentials: 'include', cache: 'no-store' });
         const data = await res.json();
         const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
         const permissions = Array.isArray(data?.user?.permissions) ? data.user.permissions : [];

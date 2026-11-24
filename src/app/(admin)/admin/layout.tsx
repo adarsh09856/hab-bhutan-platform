@@ -248,6 +248,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Dues & Renewals', href: '/admin/membership-settings', icon: CreditCard },
         { label: 'Craft Categories (13)', href: '/admin/crafts', icon: Palette },
         { label: 'Master Artisans', href: '/admin/honours', icon: Award },
+        { label: 'Accredited Traders', href: '/admin/traders', icon: Store },
       ],
     },
     {

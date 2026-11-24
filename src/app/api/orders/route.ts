@@ -11,6 +11,7 @@ import { resolveBankTransferConfig } from '@/lib/payments';
 import { isPublicCatalogProduct } from '@/lib/public-catalog-visibility';
 import { getFallbackOrders } from '@/lib/order-store';
 import { PAYMENT_PROOF_PREFIX, paymentProofExists } from '@/lib/payment-proof-storage';
+import { canPurchaseProduct, normalizeProductAvailability } from '@/lib/product-availability';
 
 export const dynamic = 'force-dynamic';
 
@@ -119,6 +120,8 @@ export async function POST(req: NextRequest) {
     const customerFullName = String(customerName || body.customerName || shippingAddress?.fullName || 'Guest Collector').trim();
     const customerPhoneNum = phone || body.customerPhone || shippingAddress?.phone || null;
     const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
+    const deliveryCountry = String(shippingAddress?.country || '').trim();
+    const isBhutanDelivery = /^(bhutan|bt)$/i.test(deliveryCountry);
 
     // Strict normalization for PaymentMethod ('CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD')
     const rawPayment = String(paymentMethod || 'CARD').trim().toUpperCase();
@@ -133,6 +136,10 @@ export async function POST(req: NextRequest) {
       normalizedPaymentMethod = 'BANK';
     } else {
       normalizedPaymentMethod = 'CARD';
+    }
+
+    if (!isBhutanDelivery && ['COD', 'MBOB'].includes(normalizedPaymentMethod)) {
+      return NextResponse.json({ success: false, error: 'Cash on delivery and mBoB are available only for Bhutan delivery addresses.' }, { status: 400 });
     }
 
     // The previous card path simulated an authorization but never contacted a
@@ -206,8 +213,9 @@ export async function POST(req: NextRequest) {
 
     if (customerFullName.length < 2 || customerFullName.length > 160 ||
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || customerEmail.length > 254 ||
-        typeof shippingAddress?.street !== 'string' || !shippingAddress.street.trim() || shippingAddress.street.length > 500) {
-      return NextResponse.json({ success: false, error: 'Enter a recipient name, valid email, and physical delivery street address.' }, { status: 400 });
+        typeof shippingAddress?.street !== 'string' || !shippingAddress.street.trim() || shippingAddress.street.length > 500 ||
+        !deliveryCountry || !String(shippingAddress?.city || '').trim() || !String(customerPhoneNum || '').trim() || !String(shippingAddress?.postalCode || '').trim()) {
+      return NextResponse.json({ success: false, error: 'Enter the recipient, email, phone, street, city, country and postcode for courier delivery.' }, { status: 400 });
     }
 
     let session: any = null;
@@ -236,14 +244,18 @@ export async function POST(req: NextRequest) {
       finalOrder = await prisma.$transaction(async (tx) => {
         const products = await tx.product.findMany({
           where: { code: { in: [...quantities.keys()] }, status: 'PUBLISHED' },
-          select: { id: true, code: true, name: true, priceUSD: true, status: true },
+          select: { id: true, code: true, name: true, priceUSD: true, status: true, availability: true, stock: true },
         });
         if (products.length !== quantities.size) throw new CheckoutValidationError('One or more products are unavailable. Refresh your basket and try again.');
         const byCode = new Map(products.map(product => [product.code.toUpperCase(), product]));
         const resolvedItems = [...quantities].map(([code, quantity]) => {
           const product = byCode.get(code);
           if (!product || !isPublicCatalogProduct(product) || !Number.isFinite(product.priceUSD) || product.priceUSD < 0) throw new CheckoutValidationError(`Product ${code} is unavailable.`);
-          return { productId: product.id, code: product.code, name: product.name, priceUSD: product.priceUSD, quantity };
+          const availability = normalizeProductAvailability(product.availability, product.stock);
+          if (!canPurchaseProduct(availability, product.stock, quantity)) {
+            throw new CheckoutValidationError(availability === 'SOLD_OUT' ? `${product.name} is sold out.` : `${product.name} no longer has enough stock. Refresh your basket.`);
+          }
+          return { productId: product.id, code: product.code, name: product.name, priceUSD: product.priceUSD, quantity, availability };
         });
         const subtotalCents = resolvedItems.reduce((sum, item) => sum + Math.round(item.priceUSD * 100) * item.quantity, 0);
         if (!Number.isSafeInteger(subtotalCents)) throw new CheckoutValidationError('Order amount exceeds the checkout limit. Contact HAB for a wholesale order.');
@@ -255,8 +267,9 @@ export async function POST(req: NextRequest) {
         totalPaidCurrency = currency === 'BTN' ? Math.round(totalUSD * rateApplied) : totalUSD;
 
         for (const item of resolvedItems) {
+          if (item.availability === 'MADE_TO_ORDER') continue;
           const reserved = await tx.product.updateMany({
-            where: { id: item.productId, status: 'PUBLISHED', stock: { gte: item.quantity } },
+            where: { id: item.productId, status: 'PUBLISHED', availability: { not: 'SOLD_OUT' }, stock: { gte: item.quantity } },
             data: { stock: { decrement: item.quantity } },
           });
           if (reserved.count !== 1) throw new CheckoutValidationError(`${item.name} no longer has enough stock. Refresh your basket.`);

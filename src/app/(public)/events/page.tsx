@@ -6,6 +6,7 @@ import Image from 'next/image';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { eventImage } from '@/lib/event-illustrations';
+import { eventIsUpcoming } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,7 @@ export default function EventsPage() {
   const [eventsList, setEventsList] = useState<any[]>([]);
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedKind, setSelectedKind] = useState<string>('');
+  const [eventPeriod, setEventPeriod] = useState<'upcoming' | 'past'>('upcoming');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -42,9 +44,12 @@ export default function EventsPage() {
   }, [eventsList, language]);
 
   const filteredEvents = useMemo(() => {
-    if (!selectedKind) return eventsList;
-    return eventsList.filter((e) => (language === 'dz' ? (e.categoryDz || e.kindDz || e.kind || e.category) : (e.kind || e.category)) === selectedKind);
-  }, [selectedKind, eventsList, language]);
+    return eventsList.filter((event) => {
+      if (eventIsUpcoming(event) !== (eventPeriod === 'upcoming')) return false;
+      if (!selectedKind) return true;
+      return (language === 'dz' ? (event.categoryDz || event.kindDz || event.kind || event.category) : (event.kind || event.category)) === selectedKind;
+    });
+  }, [selectedKind, eventsList, language, eventPeriod]);
 
   return (
     <main id="main">
@@ -76,6 +81,10 @@ export default function EventsPage() {
 
         {/* Filter Bar */}
         <div className="filterbar filterbar--slim">
+          <div role="tablist" aria-label="Event date" className="tabs">
+            <button type="button" role="tab" aria-selected={eventPeriod === 'upcoming'} className={`tab ${eventPeriod === 'upcoming' ? 'is-active' : ''}`} onClick={() => setEventPeriod('upcoming')}>Upcoming</button>
+            <button type="button" role="tab" aria-selected={eventPeriod === 'past'} className={`tab ${eventPeriod === 'past' ? 'is-active' : ''}`} onClick={() => setEventPeriod('past')}>Past events</button>
+          </div>
           <label className="visually-hidden" htmlFor="eventFilter">
             {t('events.type', 'Event type')}
           </label>
@@ -100,7 +109,7 @@ export default function EventsPage() {
         {/* Events List */}
         {eventsState === 'loading' && <p>Loading events…</p>}
         {eventsState === 'error' && <p role="alert">The event calendar is temporarily unavailable. Please try again shortly.</p>}
-        {eventsState === 'ready' && eventsList.length === 0 && <p>No events are listed yet.</p>}
+        {eventsState === 'ready' && filteredEvents.length === 0 && <p>{eventPeriod === 'upcoming' ? 'No upcoming events are listed yet.' : 'No past events are listed yet.'}</p>}
         <div className="eventlist" id="eventList" data-cms-repeat>
           {filteredEvents.map((e) => {
             const displayTitle = language === 'dz' ? (e.titleDz || e.title) : e.title;
@@ -121,7 +130,6 @@ export default function EventsPage() {
                       style={{ objectFit: 'cover' }}
                     />
                   </figure>
-                  {image.illustrative && <span className="event-photo-note">Illustrative photo</span>}
                   <span className="eventcard__cal">
                     <span className="eventcard__day">{e.day || ''}</span>
                     <span className="eventcard__mon">{e.mon || ''}</span>

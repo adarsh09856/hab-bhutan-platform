@@ -19,6 +19,12 @@ interface HonourItem {
   portraitUrl?: string | null;
   isActive: boolean;
   sortOrder: number;
+  title?: string;
+  practisingSince?: number | null;
+  shortDescription?: string | null;
+  story?: string | null;
+  workPhotos?: string[];
+  showHome?: boolean;
 }
 
 const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
@@ -32,6 +38,12 @@ const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
   portraitUrl: '',
   isActive: true,
   sortOrder: 0,
+  title: 'Master Craftsperson',
+  practisingSince: null,
+  shortDescription: '',
+  story: '',
+  workPhotos: [],
+  showHome: false,
 };
 
 const AWARD_TYPES = [
@@ -89,6 +101,12 @@ export default function AdminHonoursPage() {
       portraitUrl: h.portraitUrl || '',
       isActive: h.isActive,
       sortOrder: h.sortOrder,
+      title: h.title || 'Master Craftsperson',
+      practisingSince: h.practisingSince || null,
+      shortDescription: h.shortDescription || '',
+      story: h.story || '',
+      workPhotos: h.workPhotos || [],
+      showHome: h.showHome || false,
     });
     setEditId(h.id);
     setShowModal(true);
@@ -318,6 +336,11 @@ export default function AdminHonoursPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Public title</label><input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" placeholder="Master Craftsperson" /></div>
+                <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Practising since</label><input type="number" value={form.practisingSince || ''} onChange={(e) => setForm({ ...form, practisingSince: Number(e.target.value) || null })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" placeholder="Year" /></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Award Type *</label>
                   <select
@@ -362,6 +385,11 @@ export default function AdminHonoursPage() {
                   hint="Fifty-one years at the backstrap loom, and teacher to eleven weavers..."
                 />
               </div>
+
+              <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Two-line summary</label><textarea maxLength={500} rows={2} value={form.shortDescription || ''} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" /></div>
+              <div><RichTextEditor label="Full artisan story" value={form.story || ''} onChange={(html) => setForm({ ...form, story: html })} hint="Optional longer profile story." /></div>
+              <div className="space-y-2"><label className="block text-xs font-semibold text-slate-700 uppercase">Work photographs (up to six)</label>{(form.workPhotos || []).map((url: string, index: number) => <div key={`${index}-${url}`} className="flex gap-2 items-start"><FileUploadInput label={`Work photograph ${index + 1}`} value={url} onChange={(next) => setForm((current: any) => ({ ...current, workPhotos: current.workPhotos.map((item: string, i: number) => i === index ? next : item) }))} accept="image/*" /><button type="button" className="text-rose-600 text-sm" onClick={() => setForm((current: any) => ({ ...current, workPhotos: current.workPhotos.filter((_: string, i: number) => i !== index) }))}>Remove</button></div>)}{(form.workPhotos || []).length < 6 && <button type="button" className="text-sm underline" onClick={() => setForm((current: any) => ({ ...current, workPhotos: [...(current.workPhotos || []), ''] }))}>+ Add work photograph</button>}</div>
+              <label className="inline-flex items-center gap-2 text-sm text-slate-800"><input type="checkbox" checked={!!form.showHome} onChange={(e) => setForm({ ...form, showHome: e.target.checked })} />Feature on homepage (maximum six active profiles)</label>
 
               <div>
                 <RichTextEditor

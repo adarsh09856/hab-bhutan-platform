@@ -7,6 +7,7 @@ import prisma from '@/lib/prisma';
 import { clusterImages } from '@/lib/reference-images';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { productHref, shopCraftHref } from '@/lib/product-routes';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,13 +95,8 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
     });
   } catch {}
   try {
-    const dbMembers = await prisma.member.findMany({
-      where: { craftKey: cluster.craft_key, status: 'VERIFIED' },
-      select: { id: true, name: true, dzongkhag: true, bio: true },
-      orderBy: { name: 'asc' },
-      take: 6,
-    });
-    members = dbMembers.map((member) => ({ id: member.id, name: member.name, dzongkhag: member.dzongkhag, blurb: member.bio }));
+    const listings = await prisma.traderRecord.findMany({ where: { isVisible: true, expiresAt: { gt: new Date() } }, orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] });
+    members = listings.filter((trader) => Array.isArray(trader.craftKeys) && trader.craftKeys.some((key) => String(key).toLowerCase() === cluster.craft_key.toLowerCase())).map((trader) => ({ id: trader.id, slug: trader.slug, name: trader.shopName, dzongkhag: trader.dzongkhag, blurb: trader.shortDescription }));
   } catch {}
 
   // Compute prev/next cluster
@@ -215,7 +211,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
               <p className="eyebrow eyebrow--accent">What the cluster makes</p>
               <h2 className="display display--sub">In the HAB shop</h2>
             </div>
-            <Link className="btn btn--ink btn--sm" href={`/shop?craft=${cluster.craft_key}`}>
+            <Link className="btn btn--ink btn--sm" href={shopCraftHref(cluster.craft_key)}>
               Shop {craft.name} →
             </Link>
           </div>
@@ -223,7 +219,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
           <div className="grid grid--4" data-cms-repeat>
             {products.map((p) => (
               <article key={p.code} className="card product" data-cms-item data-code={p.code} data-hab-record-key={`product:${p.code}`}>
-                <Link className="product__shot" href={`/product/${p.code}`}>
+                <Link className="product__shot" href={productHref(p.code)}>
                   <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={p.image_path || '/assets/photos/image-unavailable.svg'}
@@ -238,14 +234,14 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{craft.name}</p>
                   <h3 className="card__title clamp-2">
-                    <Link href={`/product/${p.code}`}>{p.name}</Link>
+                    <Link href={productHref(p.code)}>{p.name}</Link>
                   </h3>
                   <p className="card__meta clamp-1">
                     {p.maker} · {p.region}
                   </p>
                   <div className="card__foot">
                     <span className="price">${p.price_usd}</span>
-                    <Link className="btn btn--outline btn--xs" href={`/product/${p.code}`}>
+                    <Link className="btn btn--outline btn--xs" href={productHref(p.code)}>
                       View
                     </Link>
                   </div>
@@ -261,17 +257,17 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
         <section className="section">
           <div className="section__head">
             <div>
-              <p className="eyebrow eyebrow--accent">Members</p>
-              <h2 className="display display--sub">Who works here</h2>
+              <p className="eyebrow eyebrow--accent">Accredited traders</p>
+              <h2 className="display display--sub">Where to find this craft</h2>
             </div>
-            <Link className="link-accent" href={`/shop?craft=${cluster.craft_key}`}>
+              <Link className="link-accent" href={shopCraftHref(cluster.craft_key)}>
               Shop this craft →
             </Link>
           </div>
 
           <div className="grid grid--3">
             {members.map((m: any, i: number) => (
-              <Link key={m.id || i} className="card" href={`/members/${encodeURIComponent(m.name)}`}>
+              <Link key={m.id || i} className="card" href={`/traders/${encodeURIComponent(m.slug)}`}>
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{m.dzongkhag}</p>
                   <h3 className="card__title">{m.name}</h3>

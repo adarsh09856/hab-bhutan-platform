@@ -137,7 +137,7 @@ export default function Footer({ initialNavigation }: { initialNavigation?: Foot
     {
       title: "Members",
       links: [
-        { label: "Directory by category", href: "/members" },
+        { label: "Accredited traders", href: "/traders" },
         { label: "Publications", href: "/publications" },
         { label: "Member shops & clusters", href: "/outlets" },
         { label: "Member login", href: "/login" },
@@ -210,7 +210,7 @@ export default function Footer({ initialNavigation }: { initialNavigation?: Foot
       if (l.includes('audited account') || h.includes('kind=audited')) return '/audited-accounts';
 
       // Directory / members / login / tenders
-      if (l.includes('directory')) return '/members';
+      if (l.includes('trader') || l.includes('directory')) return '/traders';
       if (l === 'member login') return '/login';
       if (l.includes('tender')) return '/tenders';
 

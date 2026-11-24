@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import { PUBLIC_PRODUCT_CARD_MAKER_SELECT } from '@/lib/public-product-maker';
+import { inferProductType } from '@/lib/product-type';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,10 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get('q')?.trim()?.toLowerCase();
     const sort = searchParams.get('sort');
     const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : undefined;
+    const productType = searchParams.get('type');
+    const minPrice = Number(searchParams.get('minPrice'));
+    const maxPrice = Number(searchParams.get('maxPrice'));
+    const inStock = searchParams.get('inStock') === 'true';
 
     const where: any = {
       status: 'PUBLISHED',
@@ -25,6 +30,13 @@ export async function GET(req: NextRequest) {
     if (craft && craft !== 'all') {
       where.craftKey = craft;
     }
+    if (productType) where.productType = productType;
+    if (inStock) where.AND.push({ OR: [
+      { availability: 'MADE_TO_ORDER' },
+      { AND: [{ availability: { not: 'SOLD_OUT' } }, { stock: { gt: 0 } }] },
+    ] });
+    if (Number.isFinite(minPrice) && searchParams.has('minPrice')) where.priceUSD = { ...(where.priceUSD || {}), gte: minPrice };
+    if (Number.isFinite(maxPrice) && searchParams.has('maxPrice')) where.priceUSD = { ...(where.priceUSD || {}), lte: maxPrice };
 
     if (collection === 'under50') {
       where.priceUSD = { lt: 50 };
@@ -54,6 +66,7 @@ export async function GET(req: NextRequest) {
         maker: {
           select: PUBLIC_PRODUCT_CARD_MAKER_SELECT,
         },
+        trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
       },
       orderBy,
       take: limit,
@@ -87,6 +100,7 @@ export async function GET(req: NextRequest) {
         const normalizedImages = normalizeProductImages(p.code, p.craftKey, p.images);
         return {
           ...p,
+          productType: inferProductType(p) || p.productType || null,
           image_path: normalizedImages.imageUrl,
           imageUrl: normalizedImages.imageUrl,
           images: normalizedImages.images,

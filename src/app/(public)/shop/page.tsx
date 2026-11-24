@@ -10,6 +10,8 @@ import { useCart } from '@/context/CartContext';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 import { useLanguage } from '@/context/LanguageContext';
+import { productHref } from '@/lib/product-routes';
+import { inferProductType, PRODUCT_TYPES } from '@/lib/product-type';
 
 interface ShopCraft {
   key: string;
@@ -31,6 +33,9 @@ interface ProductItem {
   priceUSD: number;
   image_path?: string;
   slot?: string;
+  productType?: string;
+  availability?: string;
+  stock: number;
 }
 
 function ShopContent() {
@@ -49,6 +54,10 @@ function ShopContent() {
   const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
   const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || '');
   const [productEditorOpen, setProductEditorOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -92,6 +101,9 @@ function ShopContent() {
                 priceUSD: Number(p.priceUSD ?? p.price ?? 0),
                 image_path: img,
                 slot: p.slot || p.code,
+                productType: inferProductType(p),
+                availability: p.availability || (Number(p.stock) > 0 ? 'IN_STOCK' : 'SOLD_OUT'),
+                stock: Number(p.stock ?? 0),
               };
             })
           );
@@ -152,6 +164,11 @@ function ShopContent() {
       );
     }
 
+    if (selectedType) result = result.filter((p) => p.productType === selectedType);
+    if (minPrice !== '') result = result.filter((p) => p.priceUSD >= Number(minPrice));
+    if (maxPrice !== '') result = result.filter((p) => p.priceUSD <= Number(maxPrice));
+    if (onlyAvailable) result = result.filter((p) => p.availability === 'MADE_TO_ORDER' || (p.availability === 'IN_STOCK' && p.stock > 0));
+
     if (sortOrder === 'low') {
       result.sort((a, b) => a.priceUSD - b.priceUSD);
     } else if (sortOrder === 'high') {
@@ -159,7 +176,7 @@ function ShopContent() {
     }
 
     return result;
-  }, [products, selectedCraft, searchQuery, sortOrder]);
+  }, [products, selectedCraft, searchQuery, sortOrder, selectedType, minPrice, maxPrice, onlyAvailable]);
 
   return (
     <main id="main">
@@ -187,7 +204,7 @@ function ShopContent() {
                 <span className="rail__n">{products.length}</span>
               </button>
 
-              {crafts.map((c) => (
+              {crafts.filter((c) => (craftCounts[c.key] || 0) > 0).map((c) => (
                 <button
                   key={c.key}
                   type="button"
@@ -255,15 +272,14 @@ function ShopContent() {
               <span className="craft__count" id="shopCount" style={{ margin: 0, alignSelf: 'center' }}>
                 {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? t('shop.product_one') : t('shop.product_many')}
               </span>
-              <button
-                type="button"
-                className="btn btn--outline btn--sm"
-                onClick={handleShuffle}
-                title="Shuffle products catalog"
-                style={{ cursor: 'pointer', marginLeft: 'auto' }}
-              >
-                🔀 {t('shop.shuffle')}
-              </button>
+            </div>
+
+            <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Filter products">
+              <label className="text-sm">Search products<input className="input mt-1 w-full" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Name, maker or craft" /></label>
+              <label className="text-sm">Product type<select className="input mt-1 w-full" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}><option value="">All types</option>{PRODUCT_TYPES.map((type) => <option key={type}>{type}</option>)}</select></label>
+              <label className="text-sm">Minimum price<input className="input mt-1 w-full" type="number" min="0" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} placeholder="Any" /></label>
+              <label className="text-sm">Maximum price<input className="input mt-1 w-full" type="number" min="0" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} placeholder="Any" /></label>
+              <label className="col-span-2 flex items-center gap-2 text-sm sm:col-span-4"><input type="checkbox" checked={onlyAvailable} onChange={(event) => setOnlyAvailable(event.target.checked)} />Available now</label>
             </div>
 
             {catalogueState === 'loading' ? (
@@ -274,7 +290,7 @@ function ShopContent() {
               <div className="grid grid--3" id="shopProducts">
                 {filteredAndSortedProducts.map((p) => (
                   <article key={p.code} data-hab-record-key={`product:${p.code}`} className="card product">
-                    <Link className="product__shot" href={`/product/${p.code}`} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
+                    <Link className="product__shot" href={productHref(p.code)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                       <figure className="frame frame--square has-image">
                         <img
                           src={p.image_path || '/assets/photos/image-unavailable.svg'}
@@ -292,18 +308,21 @@ function ShopContent() {
                     <div className="card__body">
                       <p className="eyebrow eyebrow--accent eyebrow--sm">{p.craft_name || p.craftKey}</p>
                       <h3 className="card__title clamp-2">
-                        <Link href={`/product/${p.code}`}>{p.name}</Link>
+                        <Link href={productHref(p.code)}>{p.name}</Link>
                       </h3>
                       <p className="card__meta clamp-1">{[p.maker, p.region].filter(Boolean).join(' · ')}</p>
                       <div className="card__foot">
                         <span className="price">{fmt(p.priceUSD)}</span>
+                        {p.availability === 'MADE_TO_ORDER' ? <span className="text-xs">Made to order</span> : p.stock <= 0 || p.availability === 'SOLD_OUT' ? <span className="text-xs">Sold out</span> : null}
+                        {(p.availability === 'MADE_TO_ORDER' || (p.stock > 0 && p.availability !== 'SOLD_OUT')) && (
                         <button
                           className="btn btn--outline btn--xs"
                           type="button"
                           onClick={() => addToCart(p.code)}
                         >
-                          {t('shop.add_to_cart')}
+                          {p.availability === 'MADE_TO_ORDER' ? 'Order' : t('shop.add_to_cart')}
                         </button>
+                        )}
                       </div>
                     </div>
                   </article>

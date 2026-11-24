@@ -446,6 +446,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                   ))}
                 </div>
                 <div className="menu__footer" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
+                  <Link className="menu__note" href="/traders" onClick={() => setMembersOpen(false)} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: '12px' }}>Accredited traders →</Link>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                     <Link className="btn btn--accent btn--sm" href="/register" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '5px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {t('menu.register', 'Register as member')}
@@ -875,6 +876,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                         Awards
                       </Link>
                     </div>
+                    <Link href="/traders" onClick={() => setMobileNavOpen(false)} className="block py-2 text-sm font-semibold text-[#8B2E24]">Accredited traders →</Link>
                   </div>
                 )}
               </div>

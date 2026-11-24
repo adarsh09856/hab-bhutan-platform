@@ -45,11 +45,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { key, title, titleDz, category, categoryDz, subCategory, dateDisplay, day, mon, time, imageUrl, pdfUrl, documentUrl, documentType, documentTitle, startDate, endDate, location, locationDz, venue, venueDz, craft, organiser, description, descriptionDz, schedule, speakers, registration, registrationDz, isActive, sortOrder } = body;
+    const { key, title, titleDz, category, categoryDz, subCategory, dateDisplay, shortSummary, day, mon, time, imageUrl, pdfUrl, documentUrl, documentType, documentTitle, startDate, endDate, location, locationDz, venue, venueDz, craft, organiser, description, descriptionDz, schedule, speakers, registration, registrationDz, isActive, sortOrder } = body;
 
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
+    if (startDate && Number.isNaN(new Date(startDate).getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
+    if (endDate && (!startDate || Number.isNaN(new Date(endDate).getTime()) || new Date(endDate) < new Date(startDate))) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
 
     const docUrlToSave = documentUrl || pdfUrl || null;
 
@@ -79,6 +81,7 @@ export async function POST(req: NextRequest) {
         documentTitle: documentTitle || null,
         imageUrl: imageUrl || null,
         description: description.trim(),
+        shortSummary: shortSummary?.trim() || null,
         descriptionDz: descriptionDz?.trim() || null,
         schedule: mergedSchedule,
         speakers: speakers || null,
@@ -119,6 +122,11 @@ export async function PUT(req: NextRequest) {
 
     const where = id ? { id } : { key };
     const existing = await prisma.eventRecord.findUnique({ where });
+    if (!existing) return NextResponse.json({ error: 'Event not found.' }, { status: 404 });
+    const nextStart = startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate;
+    const nextEnd = endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate;
+    if (startDate && Number.isNaN(nextStart!.getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
+    if (endDate && (!nextStart || !nextEnd || Number.isNaN(nextEnd.getTime()) || nextEnd < nextStart)) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
     const prevSchedule = (existing?.schedule && typeof existing.schedule === 'object' ? existing.schedule : {}) as any;
     const mergedSchedule = schedule !== undefined 
       ? schedule 
@@ -155,6 +163,7 @@ export async function PUT(req: NextRequest) {
         ...(body.documentTitle !== undefined && { documentTitle: body.documentTitle }),
         ...(imageUrl !== undefined && { imageUrl }),
         ...(description !== undefined && { description: description.trim() }),
+        ...(body.shortSummary !== undefined && { shortSummary: body.shortSummary?.trim() || null }),
         ...(body.descriptionDz !== undefined && { descriptionDz: body.descriptionDz?.trim() || null }),
         ...(mergedSchedule !== undefined && { schedule: mergedSchedule }),
         ...(speakers !== undefined && { speakers }),

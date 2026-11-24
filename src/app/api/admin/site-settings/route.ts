@@ -370,7 +370,7 @@ export async function PUT(req: NextRequest) {
       membershipLeftTitle: body.membershipLeftTitle || 'Find a member',
       membershipLeftText: body.membershipLeftText || 'Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan.',
       membershipLeftCtaText: body.membershipLeftCtaText || 'Search member directory →',
-      membershipLeftCtaLink: body.membershipLeftCtaLink || '/members',
+      membershipLeftCtaLink: body.membershipLeftCtaLink || '/traders',
       membershipRightTitle: body.membershipRightTitle || 'Become a member',
       membershipRightText: body.membershipRightText || 'Access product consignment in our central shop, participate in donor training programmes, and represent your craft in international trade fairs.',
       membershipRightCtaText: body.membershipRightCtaText || 'Apply for membership',

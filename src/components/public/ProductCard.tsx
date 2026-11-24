@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { productHref } from '@/lib/product-routes';
 
 export interface ProductCardProps {
   code: string;
@@ -14,6 +15,7 @@ export interface ProductCardProps {
   region: string;
   maker: string;
   stock?: number;
+  availability?: string;
   imageUrl?: string;
   images?: any;
 }
@@ -26,13 +28,15 @@ export default function ProductCard({
   region,
   maker,
   stock = 0,
+  availability = stock > 0 ? 'IN_STOCK' : 'SOLD_OUT',
   imageUrl,
   images,
 }: ProductCardProps) {
   const { fmt } = useCurrency();
   const { addToCart } = useCart();
   const { t } = useLanguage();
-  const isOutOfStock = stock <= 0;
+  const isMadeToOrder = availability === 'MADE_TO_ORDER';
+  const isOutOfStock = availability === 'SOLD_OUT' || (availability !== 'MADE_TO_ORDER' && stock <= 0);
 
   const resolvedInitialImage = 
     imageUrl || 
@@ -48,7 +52,7 @@ export default function ProductCard({
 
   return (
     <div data-hab-record-key={`product:${code}`} className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
-      <Link href={`/product/${code}`} data-cms-img data-hab-gallery="product" data-hab-gallery-id={code} data-hab-gallery-view="card" className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
+      <Link href={productHref(code)} data-cms-img data-hab-gallery="product" data-hab-gallery-id={code} data-hab-gallery-view="card" className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
         <img
           src={imgSrc}
           alt={imgSrc.includes('/assets/photos/image-unavailable.svg') ? `Photo unavailable for ${name}` : name}
@@ -61,9 +65,9 @@ export default function ProductCard({
         <span className="product__ref">
           {code}
         </span>
-        {isOutOfStock && (
+        {(isOutOfStock || isMadeToOrder) && (
           <div className="absolute top-3 right-3 z-10 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded shadow-sm">
-            {t('shop.out_of_stock', 'Out of stock')}
+            {isMadeToOrder ? 'Made to order' : t('shop.out_of_stock', 'Out of stock')}
           </div>
         )}
       </Link>
@@ -73,7 +77,7 @@ export default function ProductCard({
           {craftKey}
         </div>
         <Link
-          href={`/product/${code}`}
+          href={productHref(code)}
           className="font-figtree font-semibold text-[15.5px] text-[#33261F] hover:text-[#8B2E24] transition-colors line-clamp-2"
         >
           {name}
@@ -100,7 +104,7 @@ export default function ProductCard({
                 : 'border-[#33261F] text-[#33261F] hover:bg-[#33261F] hover:text-[#F4F0E7] cursor-pointer'
             }`}
           >
-            {isOutOfStock ? t('shop.out_of_stock', 'Out of stock') : t('shop.add_to_cart', 'Add')}
+            {isOutOfStock ? t('shop.out_of_stock', 'Out of stock') : isMadeToOrder ? 'Order' : t('shop.add_to_cart', 'Add')}
           </button>
         </div>
       </div>

@@ -118,7 +118,7 @@ export default function UniversalPageQuickEdit() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/admin/health', { credentials: 'include', cache: 'no-store' })
+    fetch('/api/admin/session', { credentials: 'include', cache: 'no-store' })
       .then((response) => response.json())
       .then((data) => {
         const permissions = Array.isArray(data?.user?.permissions) ? data.user.permissions : [];

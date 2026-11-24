@@ -15,6 +15,9 @@ export default function MastersPage() {
   const dz = language === 'dz';
   const text = (english: string, dzongkha: string) => dz ? dzongkha : english;
   const [activeTab, setActiveTab] = useState<string>('');
+  const [query, setQuery] = useState('');
+  const [region, setRegion] = useState('');
+  const [craftFilter, setCraftFilter] = useState('');
   const [allRecognised, setAllRecognised] = useState<any[]>([]);
   const [honoursStatus, setHonoursStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [activeSlide, setActiveSlide] = useState(0);
@@ -29,11 +32,15 @@ export default function MastersPage() {
       .then((d) => {
         const mapped = d.honours.map((h: any) => ({
           name: h.name,
+          slug: h.slug,
+          title: h.title,
           craft_key: h.craft,
           dzongkhag: h.dzongkhag,
           honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
           since: h.yearAwarded,
-          note: h.citation,
+          note: h.shortDescription || h.citation,
+          story: h.story || h.citation,
+          workPhotos: Array.isArray(h.workPhotos) ? h.workPhotos : [],
           noteDz: h.citationDz || '',
           image_path: h.portraitUrl || '',
           image_alt: h.name,
@@ -52,9 +59,14 @@ export default function MastersPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const filtered = !activeTab
+  const byAward = !activeTab
     ? allRecognised
     : allRecognised.filter((r) => r.honour === activeTab || r.honour_key === activeTab);
+  const filtered = byAward.filter((record) => (!region || record.dzongkhag === region)
+    && (!craftFilter || record.craft_key === craftFilter)
+    && (!query || [record.name, record.title, record.craft_key, record.dzongkhag, record.note].some((value) => String(value || '').toLowerCase().includes(query.toLowerCase()))));
+  const regions = Array.from(new Set(allRecognised.map((record) => record.dzongkhag).filter(Boolean))).sort();
+  const crafts = Array.from(new Set(allRecognised.map((record) => record.craft_key).filter(Boolean))).sort();
 
   const totalRecognised = allRecognised.length;
   const uniqueCrafts = Array.from(new Set(allRecognised.map((r) => r.craft_key))).length;
@@ -314,6 +326,11 @@ export default function MastersPage() {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+          <input aria-label={text('Search recognised members', 'ངོས་ལེན་ཐོབ་མི་འཚོལ')} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={text('Search name, craft or award…', 'མིང་ ལག་བཟོ་ ཡང་ན་གཟེངས་བསྟོད་འཚོལ…')} className="rounded-lg border border-stone-300 bg-white px-3 py-2" />
+          <select aria-label="Filter by dzongkhag" value={region} onChange={(event) => setRegion(event.target.value)} className="rounded-lg border border-stone-300 bg-white px-3 py-2"><option value="">All dzongkhags</option>{regions.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+          <select aria-label="Filter by craft" value={craftFilter} onChange={(event) => setCraftFilter(event.target.value)} className="rounded-lg border border-stone-300 bg-white px-3 py-2"><option value="">All crafts</option>{crafts.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+        </div>
         <div className="grid grid--3" id="holderGrid" data-cms-repeat>
           {filtered.map((m, i) => {
             const craft = CLIENT_DATA.crafts.find((c) => c.key === m.craft_key) || {
@@ -325,7 +342,7 @@ export default function MastersPage() {
             const hasPortrait = Boolean(imgSrc) && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(imgSrc);
 
             return (
-              <article key={i} className="card honour">
+              <article key={m.slug || i} className="card honour">
                 {hasPortrait && <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
                     src={imgSrc}
@@ -339,11 +356,11 @@ export default function MastersPage() {
                   <span className="honour__badge">{awardLabel(m.honour)}</span>
                   <h3 className="card__title">{m.name}</h3>
                   <p className="card__meta">
-                    {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag} · {text('since', 'ལོ་')} {m.since}
+                    {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag} · {text('Awarded', 'གནང་སྟེ')} {m.since}
                   </p>
                   <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />
-                  <Link className="news__more" href={`/shop?craft=${m.craft_key}`}>
-                    {text(`Shop ${craft.name} →`, `ལག་བཟོ་${craft.dzongkha && dz ? craft.dzongkha : craft.name} ཉོ →`)}
+                  <Link className="news__more" href={`/masters/${encodeURIComponent(m.slug)}`}>
+                    {text(`Read this profile →`, `ལག་བཟོ་${craft.dzongkha && dz ? craft.dzongkha : craft.name} ཉོ →`)}
                   </Link>
                 </div>
               </article>
