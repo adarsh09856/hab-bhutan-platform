@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 type TraderCard = {
   id: string; slug: string; shopName: string; dzongkhag: string; town: string;
-  shortDescription: string; craftKeys: string[]; bannerUrl: string | null; productPhotoUrls: string[];
+  shortDescription: string; craftKeys: string[]; productTypes: string[]; bannerUrl: string | null; productPhotoUrls: string[];
 };
 
 export default function TraderDirectory({ traders }: { traders: TraderCard[] }) {
@@ -20,7 +20,7 @@ export default function TraderDirectory({ traders }: { traders: TraderCard[] }) 
     const needle = query.trim().toLowerCase();
     return traders.filter((item) => (!dzongkhag || item.dzongkhag === dzongkhag)
       && (!craft || item.craftKeys.some((key) => key.toLowerCase() === craft.toLowerCase()))
-      && (!needle || [item.shopName, item.town, item.dzongkhag, item.shortDescription, ...item.craftKeys].some((value) => String(value || '').toLowerCase().includes(needle))));
+      && (!needle || [item.shopName, item.town, item.dzongkhag, item.shortDescription, ...item.craftKeys, ...(item.productTypes || [])].some((value) => String(value || '').toLowerCase().includes(needle))));
   }, [traders, query, dzongkhag, craft]);
 
   return <>
@@ -40,7 +40,7 @@ export default function TraderDirectory({ traders }: { traders: TraderCard[] }) 
           return <article key={trader.id} className="card overflow-hidden">
             <Link href={`/traders/${encodeURIComponent(trader.slug)}`} className="block h-full">
               {photo && <div className="relative aspect-[4/3] bg-stone-100"><Image src={photo} alt={trader.shopName} fill unoptimized sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" /></div>}
-              <div className="p-5"><p className="eyebrow eyebrow--accent">{trader.town}, {trader.dzongkhag}</p><h2 className="display display--panel">{trader.shopName}</h2><p className="mt-2 text-sm">{trader.shortDescription}</p><span className="link-accent mt-4 inline-block">View trader details →</span></div>
+              <div className="p-5"><div className="flex flex-wrap items-center justify-between gap-2"><p className="eyebrow eyebrow--accent">{trader.town}, {trader.dzongkhag}</p><span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">HAB Verified</span></div><h2 className="display display--panel">{trader.shopName}</h2><p className="mt-2 text-sm">{trader.shortDescription}</p>{trader.productTypes?.length > 0 && <p className="mt-3 text-xs text-[#6B5A4C]">Products: {trader.productTypes.join(', ')}</p>}<span className="link-accent mt-4 inline-block">View trader details →</span></div>
             </Link>
           </article>;
         })}

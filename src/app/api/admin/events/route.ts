@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { moveToRecycleBin } from '@/lib/recycle-bin';
+import { dateDisplayHasRange } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
     }
     if (startDate && Number.isNaN(new Date(startDate).getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
     if (endDate && (!startDate || Number.isNaN(new Date(endDate).getTime()) || new Date(endDate) < new Date(startDate))) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
+    if (dateDisplayHasRange(dateDisplay) && (!startDate || !endDate)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
 
     const docUrlToSave = documentUrl || pdfUrl || null;
 
@@ -125,8 +127,10 @@ export async function PUT(req: NextRequest) {
     if (!existing) return NextResponse.json({ error: 'Event not found.' }, { status: 404 });
     const nextStart = startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate;
     const nextEnd = endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate;
+    const nextDateDisplay = body.dateDisplay !== undefined ? body.dateDisplay : existing.dateDisplay;
     if (startDate && Number.isNaN(nextStart!.getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
     if (endDate && (!nextStart || !nextEnd || Number.isNaN(nextEnd.getTime()) || nextEnd < nextStart)) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
+    if (dateDisplayHasRange(nextDateDisplay) && (!nextStart || !nextEnd)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
     const prevSchedule = (existing?.schedule && typeof existing.schedule === 'object' ? existing.schedule : {}) as any;
     const mergedSchedule = schedule !== undefined 
       ? schedule 

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { eventDateKey, eventIsUpcoming } from '@/lib/event-dates';
 import { removeRepeatedLead } from '@/lib/display-copy';
 import { selectFeaturedProducts } from '@/lib/featured-products';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
@@ -381,18 +382,13 @@ export default function HomePage() {
         return data;
       })
       .then((d) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const upcoming = (Array.isArray(d?.events) ? d.events : [])
-          .map((event: any) => ({ event, date: event.startDate ? new Date(event.startDate) : null }))
-          .filter(({ event, date }: { event: any; date: Date | null }) =>
-            date && !Number.isNaN(date.getTime()) && date >= today && typeof event.title === 'string' && event.title.trim(),
-          )
-          .sort((a: any, b: any) => a.date.getTime() - b.date.getTime())
+          .filter((event: any) => eventDateKey(event.startDate) && eventIsUpcoming(event) && typeof event.title === 'string' && event.title.trim())
+          .sort((a: any, b: any) => String(eventDateKey(a.startDate)).localeCompare(String(eventDateKey(b.startDate))))
           .slice(0, 3)
-          .map(({ event, date }: { event: any; date: Date }) => ({
-            day: String(date.getDate()).padStart(2, '0'),
-            mon: date.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
+          .map((event: any) => ({
+            day: eventDateKey(event.startDate)!.slice(8, 10),
+            mon: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'Asia/Thimphu' }).format(new Date(`${eventDateKey(event.startDate)}T12:00:00+06:00`)).toUpperCase(),
             title: event.title,
             place: event.place || event.location || event.venue || '',
             time: event.time || '',

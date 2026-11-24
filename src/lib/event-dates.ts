@@ -1,6 +1,15 @@
 const BHUTAN_TZ = 'Asia/Thimphu';
 
-function dateKey(value?: string | Date | null): string | null {
+export function dateDisplayHasRange(value?: string | null): boolean {
+  const text = String(value || '').trim();
+  const isoDates = text.match(/\b\d{4}-\d{2}-\d{2}\b/g) || [];
+  if (isoDates.length > 1) return true;
+  const withoutIsoDates = text.replace(/\b\d{4}-\d{2}-\d{2}\b/g, ' ');
+  return /\b\d{1,2}\s*[–—-]\s*\d{1,2}\b/.test(withoutIsoDates) ||
+    /\b[A-Za-z]{3,9}\s+\d{1,2}\s*[–—-]\s*\d{1,2}\b/.test(withoutIsoDates);
+}
+
+export function eventDateKey(value?: string | Date | null): string | null {
   if (!value) return null;
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
   const date = value instanceof Date ? value : new Date(value);
@@ -11,17 +20,17 @@ function dateKey(value?: string | Date | null): string | null {
 }
 
 export function bhutanTodayKey(now = new Date()): string {
-  return dateKey(now)!;
+  return eventDateKey(now)!;
 }
 
 export function eventIsUpcoming(event: { startDate?: string | Date | null; endDate?: string | Date | null; dateDisplay?: string | null }, today = bhutanTodayKey()): boolean {
-  const end = dateKey(event.endDate) || dateKey(event.startDate) || dateKey(event.dateDisplay);
+  const end = eventDateKey(event.endDate) || eventDateKey(event.startDate) || eventDateKey(event.dateDisplay);
   return !end || end >= today;
 }
 
 export function formatEventDateRange(startValue?: string | Date | null, endValue?: string | Date | null, fallback = ''): string {
-  const start = dateKey(startValue);
-  const end = dateKey(endValue);
+  const start = eventDateKey(startValue);
+  const end = eventDateKey(endValue);
   if (!start) {
     if (/^\d{4}-\d{2}-\d{2}$/.test(fallback)) return formatEventDateRange(fallback, null, fallback);
     return fallback;

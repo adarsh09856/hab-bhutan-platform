@@ -9,6 +9,7 @@ import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { eventImage } from '@/lib/event-illustrations';
 import { eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
+import { shortenEventSummary } from '@/lib/event-summary';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,7 +114,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
     kind: rawEvent.kind || rawEvent.category || '',
     place: rawEvent.place || rawEvent.location || rawEvent.venue || '',
     time: time || rawEvent.time || sched.time || '',
-    summary: rawEvent.summary || rawEvent.description?.slice(0, 160) || '',
+    summary: shortenEventSummary(rawEvent.shortSummary || rawEvent.summary || rawEvent.description, 160),
     detail: rawEvent.detail || rawEvent.description || '',
     who: rawEvent.who || rawEvent.registration || '',
     contact: rawEvent.contact || 'officehab@gmail.com',
@@ -261,7 +262,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}
                     />
-                    {oeImage.illustrative && <span className="event-photo-note">Illustrative photo</span>}
                   </figure>
                   <div className="card__body">
                     <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>

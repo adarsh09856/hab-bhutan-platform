@@ -18,6 +18,7 @@ export default function MastersPage() {
   const [query, setQuery] = useState('');
   const [region, setRegion] = useState('');
   const [craftFilter, setCraftFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
   const [allRecognised, setAllRecognised] = useState<any[]>([]);
   const [honoursStatus, setHonoursStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [activeSlide, setActiveSlide] = useState(0);
@@ -64,9 +65,11 @@ export default function MastersPage() {
     : allRecognised.filter((r) => r.honour === activeTab || r.honour_key === activeTab);
   const filtered = byAward.filter((record) => (!region || record.dzongkhag === region)
     && (!craftFilter || record.craft_key === craftFilter)
+    && (!yearFilter || String(record.since) === yearFilter)
     && (!query || [record.name, record.title, record.craft_key, record.dzongkhag, record.note].some((value) => String(value || '').toLowerCase().includes(query.toLowerCase()))));
   const regions = Array.from(new Set(allRecognised.map((record) => record.dzongkhag).filter(Boolean))).sort();
   const crafts = Array.from(new Set(allRecognised.map((record) => record.craft_key).filter(Boolean))).sort();
+  const years = Array.from(new Set(allRecognised.map((record) => record.since).filter((year) => Number.isFinite(Number(year)) && Number(year) > 0))).sort((a, b) => Number(b) - Number(a));
 
   const totalRecognised = allRecognised.length;
   const uniqueCrafts = Array.from(new Set(allRecognised.map((r) => r.craft_key))).length;
@@ -212,7 +215,7 @@ export default function MastersPage() {
               <article key={h.key} className="award award--plain">
                 <div className="award__body">
                   <div className="award__head">
-                    <h3 className="award__title">{awardLabel(h.short)}</h3>
+                    <button type="button" className="award__title" aria-pressed={activeTab === h.key} onClick={() => { setActiveTab(activeTab === h.key ? '' : h.key); document.getElementById('holders')?.scrollIntoView({ behavior: 'smooth' }); }}>{awardLabel(h.short)}</button>
                     <span className="award__count">
                       {count} {count === 1 ? text('holder', 'ཐོབ་མི') : text('holders', 'ཐོབ་མི་ཚུ')}
                     </span>
@@ -330,6 +333,7 @@ export default function MastersPage() {
           <input aria-label={text('Search recognised members', 'ངོས་ལེན་ཐོབ་མི་འཚོལ')} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={text('Search name, craft or award…', 'མིང་ ལག་བཟོ་ ཡང་ན་གཟེངས་བསྟོད་འཚོལ…')} className="rounded-lg border border-stone-300 bg-white px-3 py-2" />
           <select aria-label="Filter by dzongkhag" value={region} onChange={(event) => setRegion(event.target.value)} className="rounded-lg border border-stone-300 bg-white px-3 py-2"><option value="">All dzongkhags</option>{regions.map((item) => <option key={item} value={item}>{item}</option>)}</select>
           <select aria-label="Filter by craft" value={craftFilter} onChange={(event) => setCraftFilter(event.target.value)} className="rounded-lg border border-stone-300 bg-white px-3 py-2"><option value="">All crafts</option>{crafts.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+          <select aria-label={text('Filter by award year', 'གཟེངས་བསྟོད་ལོ་གིས་དབྱེ་བ')} value={yearFilter} onChange={(event) => setYearFilter(event.target.value)} className="rounded-lg border border-stone-300 bg-white px-3 py-2"><option value="">{text('All years', 'ལོ་ཆ་མཉམ')}</option>{years.map((year) => <option key={String(year)} value={String(year)}>{year}</option>)}</select>
         </div>
         <div className="grid grid--3" id="holderGrid" data-cms-repeat>
           {filtered.map((m, i) => {

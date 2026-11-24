@@ -6,6 +6,7 @@ import Image from 'next/image';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath, type NewsNoticeCategory } from '@/lib/news-categories';
+import { eventDateKey, eventIsUpcoming } from '@/lib/event-dates';
 
 export default function NewsListing({ category }: { category?: NewsNoticeCategory }) {
   const { t, language } = useLanguage();
@@ -54,14 +55,9 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
         return data;
       })
       .then((d) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const upcoming = (Array.isArray(d?.events) ? d.events : [])
-          .filter((event: any) => {
-            const date = event.startDate ? new Date(event.startDate) : null;
-            return date && !Number.isNaN(date.getTime()) && date >= today;
-          })
-          .sort((a: any, b: any) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+          .filter((event: any) => !!eventDateKey(event.startDate) && eventIsUpcoming(event))
+          .sort((a: any, b: any) => String(eventDateKey(a.startDate)).localeCompare(String(eventDateKey(b.startDate))));
         setEventsList(upcoming);
         setEventsState('ready');
       })

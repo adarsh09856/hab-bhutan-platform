@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Edit2, Trash2, CheckCircle, XCircle, Search, AlertCircle } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import { dateDisplayHasRange } from '@/lib/event-dates';
 
 interface EventItem {
   id: string;
@@ -50,7 +51,7 @@ const EMPTY_FORM = {
   shortSummary: '',
   day: '12',
   mon: 'SEP',
-  time: '09:00 AM – 05:00 PM BST',
+  time: '09:00 AM – 05:00 PM',
   imageUrl: '',
   pdfUrl: '',
   location: 'Thimphu',
@@ -122,7 +123,7 @@ export default function AdminEventsPage() {
       shortSummary: ev.shortSummary || '',
       day: ev.day || sched.day || '12',
       mon: ev.mon || sched.mon || 'SEP',
-      time: ev.time || sched.time || '09:00 AM – 05:00 PM BST',
+      time: ev.time || sched.time || '09:00 AM – 05:00 PM',
       imageUrl: ev.imageUrl || sched.imageUrl || '',
       pdfUrl: ev.pdfUrl || sched.pdfUrl || '',
       location: ev.location,
@@ -152,7 +153,7 @@ export default function AdminEventsPage() {
       showFlash('error', 'The event end date must be on or after its start date.');
       return;
     }
-    if (/\d\s*[–—-]\s*\d/.test(form.dateDisplay) && (!form.startDate || !form.endDate)) {
+    if (dateDisplayHasRange(form.dateDisplay) && (!form.startDate || !form.endDate)) {
       showFlash('error', 'Add both start and end dates for a multi-day event.');
       return;
     }
@@ -473,7 +474,7 @@ export default function AdminEventsPage() {
                       type="text"
                       value={form.time || ''}
                       onChange={(e) => setForm({ ...form, time: e.target.value })}
-                      placeholder="09:00 AM – 05:00 PM BST (or All day)"
+                      placeholder="09:00 AM – 05:00 PM (or All day)"
                       className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                     />
                   </div>

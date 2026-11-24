@@ -23,6 +23,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { checkoutCopy } from '@/lib/checkout-copy';
 import { SHIPPING_COUNTRIES } from '@/lib/countries';
+import { calculateShipping } from '@/lib/shipping';
 
 export default function CheckoutPage() {
   const { language } = useLanguage();
@@ -42,6 +43,7 @@ export default function CheckoutPage() {
     clearCart 
   } = useCart();
   const { currency, fmt, alt } = useCurrency();
+  const shippingRates = calculateShipping(subtotalUSD);
 
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD'>('MBOB');
   const [gatewayMethods, setGatewayMethods] = useState<any>(null);
@@ -442,11 +444,11 @@ export default function CheckoutPage() {
                       <span>Bhutan Post EMS</span>
                     </div>
                     <p className="text-[11px] text-[#6B5A4C]">
-                      {tr("Standard airmail with tracking (10–18 days)")}
+                      {tr(shippingRates.ems.duration)}
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[#8B2E24] font-mono">
-                    {subtotalUSD >= 150 ? tr('FREE') : '$25.00'}
+                    {shippingRates.ems.isFree ? tr('FREE') : fmt(shippingRates.ems.costUSD)}
                   </span>
                 </label>
 
@@ -462,14 +464,14 @@ export default function CheckoutPage() {
                   <div className="space-y-1">
                     <div className="text-xs font-bold text-[#33261F] flex items-center gap-2">
                       <Truck className="w-4 h-4 text-amber-600" />
-                      <span>DHL Express Air</span>
+                      <span>{tr(shippingRates.express.name)}</span>
                     </div>
                     <p className="text-[11px] text-[#6B5A4C]">
-                      {tr("Priority air courier (4–7 business days)")}
+                      {tr(shippingRates.express.duration)}
                     </p>
                   </div>
                   <span className="text-xs font-bold text-[#8B2E24] font-mono">
-                    $45.00
+                    {fmt(shippingRates.express.costUSD)}
                   </span>
                 </label>
               </div>

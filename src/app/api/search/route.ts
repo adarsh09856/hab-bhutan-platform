@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
+import { productHref } from '@/lib/product-routes';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,7 +161,7 @@ export async function GET(req: NextRequest) {
         title: p.name,
         subtitle: `SKU: ${p.code} · $${p.priceUSD || p.price_usd || 0}`,
         description: p.description || '',
-        url: `/shop/${(p.code || '').toLowerCase()}`,
+        url: productHref(p.code || ''),
         imageUrl: img,
         category: 'Product',
         badge: p.region || 'Bhutan',

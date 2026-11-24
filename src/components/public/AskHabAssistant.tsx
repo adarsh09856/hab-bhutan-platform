@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { shopCraftHref } from '@/lib/product-routes';
 
 interface Message {
   id: string;
@@ -58,7 +59,7 @@ export default function AskHabAssistant() {
       reply = 'Thagzo (weaving) is Bhutan’s most celebrated living textile tradition, practiced on backstrap looms and pedal looms. Masters produce intricate Kishuthara silk kiras in Khoma, Lhuentse, and heavy woolen yathra cloths in Bumthang.';
       links = [
         { text: 'Explore Thagzo Craft', href: '/craft/thagzo' },
-        { text: 'Shop Woven Textiles', href: '/shop?craft=thagzo' },
+        { text: 'Shop Woven Textiles', href: shopCraftHref('thagzo') },
       ];
     } else if (lower.includes('wholesale') || lower.includes('trade') || lower.includes('bulk') || lower.includes('moq') || lower.includes('b2b')) {
       reply = 'HAB provides verified trade buyers with volume tier pricing, MOQs, customized made-to-order production, and export documentation directly from member artisan clusters. Registration takes about 5 minutes, with verification within 3 business days.';
@@ -89,7 +90,7 @@ export default function AskHabAssistant() {
       reply = 'Lhazo covers sacred Buddhist thangka painting, wall murals in dzongs, and pigment decoration. Master painters work with ground mineral pigments on prepared cotton or linen canvas according to the classical proportions of Buddhist iconography.';
       links = [
         { text: 'Lhazo Craft Guide', href: '/craft/lhazo' },
-        { text: 'Shop Mineral Thangkas', href: '/shop?craft=lhazo' },
+        { text: 'Shop Mineral Thangkas', href: shopCraftHref('lhazo') },
       ];
     } else if (lower.includes('cluster') || lower.includes('village')) {
       reply = 'Artisan clusters bring together rural craftspeople in specialized geographic valleys, from Khoma silk weavers in Lhuentse to Zhemgang cane and bamboo weavers and Trashiyangtse woodturners.';
