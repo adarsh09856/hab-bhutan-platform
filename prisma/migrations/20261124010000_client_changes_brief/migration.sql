@@ -38,8 +38,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS "TraderRecord_registrationNumber_key" ON "Trad
 CREATE INDEX IF NOT EXISTS "TraderRecord_dzongkhag_idx" ON "TraderRecord"("dzongkhag");
 CREATE INDEX IF NOT EXISTS "TraderRecord_expiresAt_isVisible_idx" ON "TraderRecord"("expiresAt", "isVisible");
 CREATE INDEX IF NOT EXISTS "TraderRecord_isVisible_sortOrder_idx" ON "TraderRecord"("isVisible", "sortOrder");
-ALTER TABLE "Product" ADD CONSTRAINT "Product_traderId_fkey"
-  FOREIGN KEY ("traderId") REFERENCES "TraderRecord"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'Product_traderId_fkey'
+      AND conrelid = '"Product"'::regclass
+  ) THEN
+    ALTER TABLE "Product" ADD CONSTRAINT "Product_traderId_fkey"
+      FOREIGN KEY ("traderId") REFERENCES "TraderRecord"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END
+$$;
 
 ALTER TABLE "HonourRecord"
   ADD COLUMN IF NOT EXISTS "slug" TEXT,
