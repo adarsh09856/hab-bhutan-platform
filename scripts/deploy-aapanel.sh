@@ -48,9 +48,26 @@ if ! command -v pm2 >/dev/null 2>&1; then
   echo "Error: PM2 is not in PATH; no process was stopped or started." >&2
   exit 1
 fi
-if ! pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  echo "Error: expected PM2 process '$APP_NAME' was not found; refusing to start a second service." >&2
-  exit 1
+HAB_PM2_MANAGED=0
+if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+  HAB_PM2_MANAGED=1
+else
+  # The existing aaPanel deployment may be a standalone `node server.js`
+  # process. Adopt only the unique process whose cwd is this exact checkout.
+  HAB_EXISTING_PIDS=()
+  for proc_dir in /proc/[0-9]*; do
+    [[ -r "$proc_dir/cmdline" ]] || continue
+    proc_cmd="$(tr '\0' ' ' < "$proc_dir/cmdline" 2>/dev/null || true)"
+    [[ "$proc_cmd" == *"node server.js"* ]] || continue
+    proc_cwd="$(readlink -f "$proc_dir/cwd" 2>/dev/null || true)"
+    [[ "$proc_cwd" == "$APP_ROOT" ]] && HAB_EXISTING_PIDS+=("${proc_dir##*/}")
+  done
+  if [[ "${#HAB_EXISTING_PIDS[@]}" -ne 1 ]]; then
+    echo "Error: PM2 app '$APP_NAME' is absent and the exact existing HAB server process is not uniquely identifiable; no process was stopped." >&2
+    exit 1
+  fi
+  HAB_EXISTING_PID="${HAB_EXISTING_PIDS[0]}"
+  echo "Found standalone HAB server PID $HAB_EXISTING_PID; it will be adopted by PM2 after the build succeeds."
 fi
 
 APP_PORT="${PORT:-$(awk -F= '$1 == "PORT" { gsub(/["[:space:]]/, "", $2); print $2; exit }' .env)}"
@@ -73,11 +90,27 @@ npx prisma db push --skip-generate
 echo "Building production application"
 npm run build
 
-echo "Restarting only $APP_NAME"
-pm2 restart "$APP_NAME" --update-env
+if [[ "$HAB_PM2_MANAGED" -eq 1 ]]; then
+  echo "Restarting only $APP_NAME"
+  pm2 restart "$APP_NAME" --update-env
+else
+  echo "Gracefully stopping the identified HAB process and adopting it into PM2"
+  kill -TERM "$HAB_EXISTING_PID"
+  for attempt in {1..15}; do
+    if ! kill -0 "$HAB_EXISTING_PID" 2>/dev/null; then break; fi
+    sleep 1
+  done
+  if kill -0 "$HAB_EXISTING_PID" 2>/dev/null; then
+    echo "Error: identified HAB server did not stop gracefully; no replacement was started." >&2
+    exit 1
+  fi
+  export NODE_ENV=production PORT="$APP_PORT"
+  pm2 start "$APP_ROOT/server.js" --name "$APP_NAME" --cwd "$APP_ROOT" --time
+  pm2 save
+fi
 
 echo "Waiting for database-backed public catalogue on port $APP_PORT"
-for attempt in {1..30}; do
+for attempt in {1..60}; do
   if curl --silent --fail "http://127.0.0.1:${APP_PORT}/api/products" | grep -q '"success":true'; then
     echo "Deployment healthy at commit $(git -c safe.directory="$APP_ROOT" rev-parse --short HEAD)."
     pm2 status "$APP_NAME"
