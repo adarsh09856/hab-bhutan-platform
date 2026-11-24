@@ -1,6 +1,8 @@
-import 'dotenv/config';
+import { loadEnvConfig } from '@next/env';
 import prisma from '../src/lib/prisma';
 import { sendEmail } from '../src/lib/email-service';
+
+loadEnvConfig(process.cwd());
 
 type PublicProduct = { code?: unknown; name?: unknown };
 
