@@ -38,7 +38,8 @@ export default function MastersPage() {
           craft_key: h.craft,
           dzongkhag: h.dzongkhag,
           honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
-          since: h.yearAwarded,
+          since: h.practisingSince,
+          yearAwarded: h.yearAwarded,
           note: h.shortDescription || h.citation,
           story: h.story || h.citation,
           workPhotos: Array.isArray(h.workPhotos) ? h.workPhotos : [],
@@ -65,15 +66,16 @@ export default function MastersPage() {
     : allRecognised.filter((r) => r.honour === activeTab || r.honour_key === activeTab);
   const filtered = byAward.filter((record) => (!region || record.dzongkhag === region)
     && (!craftFilter || record.craft_key === craftFilter)
-    && (!yearFilter || String(record.since) === yearFilter)
+    && (!yearFilter || String(record.yearAwarded) === yearFilter)
     && (!query || [record.name, record.title, record.craft_key, record.dzongkhag, record.note].some((value) => String(value || '').toLowerCase().includes(query.toLowerCase()))));
   const regions = Array.from(new Set(allRecognised.map((record) => record.dzongkhag).filter(Boolean))).sort();
   const crafts = Array.from(new Set(allRecognised.map((record) => record.craft_key).filter(Boolean))).sort();
-  const years = Array.from(new Set(allRecognised.map((record) => record.since).filter((year) => Number.isFinite(Number(year)) && Number(year) > 0))).sort((a, b) => Number(b) - Number(a));
+  const years = Array.from(new Set(allRecognised.map((record) => record.yearAwarded).filter((year) => Number.isFinite(Number(year)) && Number(year) > 0))).sort((a, b) => Number(b) - Number(a));
 
   const totalRecognised = allRecognised.length;
   const uniqueCrafts = Array.from(new Set(allRecognised.map((r) => r.craft_key))).length;
-  const earliestYear = allRecognised.length ? Math.min(...allRecognised.map((r) => r.since || 2026)) : null;
+  const practiceYears = allRecognised.map((r) => Number(r.since)).filter((year) => Number.isFinite(year) && year > 0);
+  const earliestYear = practiceYears.length ? Math.min(...practiceYears) : null;
 
   const slides = [
     { src: '/assets/photos/hero-1-weaving.jpg', cap: text('Bhutanese craft photograph 1', 'འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ༡') },
@@ -347,21 +349,22 @@ export default function MastersPage() {
 
             return (
               <article key={m.slug || i} className="card honour">
-                {hasPortrait && <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
-                  <Image
+                <figure className={`frame frame--square${hasPortrait ? ' has-image' : ''}`} data-cms-img style={{ position: 'relative', overflow: 'hidden', background: '#eee5d8' }}>
+                  {hasPortrait && <Image
                     src={imgSrc}
                     alt={`${m.name}, ${craft.name}`}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     style={{ objectFit: 'cover' }}
-                  />
-                </figure>}
+                  />}
+                </figure>
                 <div className="card__body">
                   <span className="honour__badge">{awardLabel(m.honour)}</span>
                   <h3 className="card__title">{m.name}</h3>
                   <p className="card__meta">
-                    {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag} · {text('Awarded', 'གནང་སྟེ')} {m.since}
+                    {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag}
                   </p>
+                  <p className="card__meta">{[m.since ? `${text('Practising since', 'ལག་ལེན་འགོ་བཙུགས')} ${m.since}` : '', m.yearAwarded ? `${text('Awarded', 'གནང་སྟེ')} ${m.yearAwarded}` : ''].filter(Boolean).join(' · ')}</p>
                   <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />
                   <Link className="news__more" href={`/masters/${encodeURIComponent(m.slug)}`}>
                     {text(`Read this profile →`, `ལག་བཟོ་${craft.dzongkha && dz ? craft.dzongkha : craft.name} ཉོ →`)}
