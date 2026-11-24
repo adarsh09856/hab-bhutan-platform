@@ -18,26 +18,23 @@ if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1 || ! co
   done
 fi
 
-# aaPanel may own the checkout as www while deployment runs as root. Keep the
-# exception scoped to this repository and this deployment process.
-export GIT_CONFIG_COUNT=1
-export GIT_CONFIG_KEY_0=safe.directory
-export GIT_CONFIG_VALUE_0="$APP_ROOT"
+# aaPanel may own the checkout as www while deployment runs as root. Scope the
+# exception to each Git command rather than changing server-wide Git config.
 
 echo "HAB deployment: validating checkout and runtime"
 
-if [[ "$(git branch --show-current)" != "main" ]]; then
+if [[ "$(git -c safe.directory="$APP_ROOT" branch --show-current)" != "main" ]]; then
   echo "Error: deploy from the main branch only; no branch checkout is performed." >&2
   exit 1
 fi
-if ! git diff --quiet || ! git diff --cached --quiet; then
+if ! git -c safe.directory="$APP_ROOT" diff --quiet || ! git -c safe.directory="$APP_ROOT" diff --cached --quiet; then
   echo "Error: tracked local changes exist. Commit or review them before deploying." >&2
   exit 1
 fi
 
-PREVIOUS_COMMIT="$(git rev-parse HEAD)"
-git fetch origin main
-git pull --ff-only origin main
+PREVIOUS_COMMIT="$(git -c safe.directory="$APP_ROOT" rev-parse HEAD)"
+git -c safe.directory="$APP_ROOT" fetch origin main
+git -c safe.directory="$APP_ROOT" pull --ff-only origin main
 
 if [[ ! -f .env ]]; then
   echo "Error: production .env is missing. Create/configure it through the server's secret manager." >&2
@@ -59,7 +56,7 @@ fi
 APP_PORT="${PORT:-$(awk -F= '$1 == "PORT" { gsub(/["[:space:]]/, "", $2); print $2; exit }' .env)}"
 APP_PORT="${APP_PORT:-3001}"
 
-if ! git diff --quiet "$PREVIOUS_COMMIT" HEAD -- package.json package-lock.json; then
+if ! git -c safe.directory="$APP_ROOT" diff --quiet "$PREVIOUS_COMMIT" HEAD -- package.json package-lock.json; then
   echo "Dependency manifests changed; installing dependencies without removing the active node_modules tree"
   npm install --legacy-peer-deps
 else
@@ -82,7 +79,7 @@ pm2 restart "$APP_NAME" --update-env
 echo "Waiting for database-backed public catalogue on port $APP_PORT"
 for attempt in {1..30}; do
   if curl --silent --fail "http://127.0.0.1:${APP_PORT}/api/products" | grep -q '"success":true'; then
-    echo "Deployment healthy at commit $(git rev-parse --short HEAD)."
+    echo "Deployment healthy at commit $(git -c safe.directory="$APP_ROOT" rev-parse --short HEAD)."
     pm2 status "$APP_NAME"
     exit 0
   fi
