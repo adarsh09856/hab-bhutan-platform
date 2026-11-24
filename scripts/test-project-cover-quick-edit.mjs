@@ -11,6 +11,7 @@ const baseUrl = process.env.QUICK_EDIT_TEST_URL || 'http://127.0.0.1:3033';
 const suffix = randomUUID();
 const original = '/assets/photos/hero-1-weaving.jpg';
 const replacement = '/assets/photos/hero-4-textiles.jpg';
+const report = '/uploads/project-evaluation-test.pdf';
 let role;
 let user;
 let project;
@@ -45,6 +46,10 @@ try {
   } }).setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('5m')
     .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
+  const noReportPage = await fetch(`${baseUrl}/projects/${project.id}`, { cache: 'no-store' });
+  const noReportHtml = await noReportPage.text();
+  assert(noReportPage.ok && noReportHtml.includes('No report file has been attached to this project yet.'), 'Missing project report did not render a clear non-blocking empty state.');
+
   const getPublic = async () => {
     const response = await fetch(`${baseUrl}/api/projects`, { cache: 'no-store' });
     assert(response.ok, `Public projects returned ${response.status}`);
@@ -72,15 +77,18 @@ try {
 
   const save = await fetch(`${baseUrl}/api/admin/projects`, {
     method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: `hab_session=${token}` },
-    body: JSON.stringify({ id: project.id, coverPhotoUrl: replacement }),
+    body: JSON.stringify({ id: project.id, coverPhotoUrl: replacement, reportPdfUrl: report }),
   });
   const saved = await save.json();
   assert(save.ok && saved.success, `Project cover save failed: ${saved.error || save.status}`);
   assert(saved.project.coverPhotoUrl === replacement, 'Admin response did not return replacement.');
+  assert(saved.project.reportPdfUrl === report, 'Admin response did not return the linked report.');
   assert((await getPublic())?.coverPhotoUrl === replacement, 'Public listing did not receive replacement.');
+  assert((await getPublic())?.reportPdfUrl === report, 'Public project API omitted the report link.');
 
   const stored = await prisma.projectRecord.findUniqueOrThrow({ where: { id: project.id } });
   assert(stored.activities?.coverPhotoUrl === replacement, 'Project record did not persist replacement.');
+  assert(stored.activities?.reportPdfUrl === report, 'Project record did not persist the report link.');
   assert(stored.activities?.list?.[0] === 'Preserve this activity', 'Project activity was overwritten.');
   assert(stored.nameDz === 'ལས་འགུལ་ཚོད་བལྟ།' && stored.activitiesDz?.[0] === 'ལས་དོན་ཚོད་བལྟ།', 'Cover-only update erased translations.');
 
@@ -88,9 +96,10 @@ try {
   const html = await detail.text();
   assert(detail.ok && html.includes('data-hab-gallery="project"'), 'Detail cover is not record-aware in Quick Edit.');
   assert(html.includes(replacement), 'Detail page did not render replacement cover.');
+  assert(html.includes(`href="${report}"`) && html.includes('Open evaluation report (PDF)'), 'Detail page did not link the matching project report.');
   assert(html.includes(`data-hab-gallery-id="${project.id}"`), 'Detail cover lacks Project ID.');
   assert(html.includes('ལས་འགུལ་ཚོད་བལྟ།'), 'Detail page did not render the saved Dzongkha field.');
-  console.log('PASS: anonymous cover save denied; isolated translations and cover persisted to Admin record, public listing, and detail page; other project fields were preserved.');
+  console.log('PASS: anonymous cover save denied; isolated translation, cover, and report file persisted to Admin record, public listing, and the matching detail page; other project fields were preserved.');
 } finally {
   if (project) await prisma.projectRecord.deleteMany({ where: { id: project.id } });
   if (user) {

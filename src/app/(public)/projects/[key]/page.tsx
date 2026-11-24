@@ -56,6 +56,13 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const storedMedia = dbProj.activities && !Array.isArray(dbProj.activities) && typeof dbProj.activities === 'object' ? dbProj.activities : {};
   const savedActivities = Array.isArray(dbProj.activities) ? dbProj.activities : Array.isArray(storedMedia.list) ? storedMedia.list : [];
   const coverPhotoUrl = getProjectCoverPhotoUrl(dbProj);
+  const rawReportUrl = typeof storedMedia.reportPdfUrl === 'string'
+    ? storedMedia.reportPdfUrl.trim()
+    : typeof dbProj.reportPdfUrl === 'string' ? dbProj.reportPdfUrl.trim() : '';
+  const reportPdfUrl = rawReportUrl.startsWith('/') && !rawReportUrl.startsWith('//')
+    || /^https:\/\//i.test(rawReportUrl)
+    ? rawReportUrl
+    : '';
 
   const project = {
     ...dbProj,
@@ -64,6 +71,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
     activities: savedActivities,
     outputs: savedActivities,
     coverPhotoUrl,
+    reportPdfUrl,
     results: Array.isArray(dbProj.results) ? dbProj.results : [],
   };
 
@@ -172,6 +180,25 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           </div>
         </section>
       )}
+
+      {/* Project files */}
+      <section className="section" aria-labelledby="project-files-title">
+        <div className="longread">
+          <div>
+            <p className="eyebrow eyebrow--accent">Project files</p>
+            <h2 id="project-files-title" className="display display--sub">Reports &amp; documents</h2>
+          </div>
+          <div>
+            {project.reportPdfUrl ? (
+              <a className="btn btn--accent" href={project.reportPdfUrl} target="_blank" rel="noopener noreferrer">
+                Open evaluation report (PDF) ↗
+              </a>
+            ) : (
+              <p className="longread__body" role="status">No report file has been attached to this project yet.</p>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Other Projects */}
       {otherProjects.length > 0 && (
