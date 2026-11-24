@@ -25,8 +25,9 @@ const dynamicRouteExamples = {
 const publicMediaApis = [
   '/api/products?limit=1000&shuffle=false', '/api/outlets?shuffle=false',
   '/api/crafts', '/api/projects', '/api/hero-slides', '/api/news',
-  '/api/events', '/api/members', '/api/publications',
+  '/api/events', '/api/publications',
 ];
+const retiredPrivateApis = ['/api/members'];
 const imageFields = new Set([
   'image', 'imageUrl', 'image_url', 'image_path', 'photoUrl', 'portraitUrl',
   'coverPhotoUrl', 'coverImageUrl', 'bannerUrl', 'thumbnailUrl', 'logoUrl',
@@ -208,6 +209,16 @@ for (const apiPath of publicMediaApis) {
   }
 }
 
+const retiredApiFailures = [];
+for (const apiPath of retiredPrivateApis) {
+  try {
+    const response = await fetch(new URL(apiPath, baseUrl), { signal: AbortSignal.timeout(20_000) });
+    if (response.status !== 410) retiredApiFailures.push(`${apiPath}: expected HTTP 410, received HTTP ${response.status}`);
+  } catch (error) {
+    retiredApiFailures.push(`${apiPath}: ${error.message || error}`);
+  }
+}
+
 for (const [stylesheetUrl, pagePath] of stylesheets) {
   try {
     const css = await fetchStylesheet(stylesheetUrl);
@@ -241,6 +252,8 @@ console.log(`Pages fetched: ${pageResults.length}; non-200 pages: ${non200Pages.
 for (const page of non200Pages) console.error(`Page request failed: ${page.status} ${page.path}`);
 console.log(`Public media APIs checked: ${publicMediaApis.length}; failed APIs: ${apiFailures.length}`);
 for (const failure of apiFailures) console.error(`API request failed: ${failure}`);
+console.log(`Retired private APIs checked: ${retiredPrivateApis.length}; unexpected responses: ${retiredApiFailures.length}`);
+for (const failure of retiredApiFailures) console.error(`Retired API check failed: ${failure}`);
 console.log(`Unique rendered and CSS image URLs: ${images.size}; same-origin checked: ${sameOrigin.length}; external URLs skipped: ${externalCount}; same-origin stylesheets scanned: ${stylesheets.size}`);
 if (failures.length) {
   console.error('Failed same-origin image/media URLs:');
@@ -252,4 +265,4 @@ if (failures.length) {
 } else {
   console.log('No broken same-origin image URLs detected in the fetched HTML, linked CSS, or public media APIs. External-host and other client-only images were not covered.');
 }
-if (non200Pages.length || apiFailures.length) process.exitCode = 1;
+if (non200Pages.length || apiFailures.length || retiredApiFailures.length) process.exitCode = 1;
