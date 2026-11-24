@@ -6,6 +6,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { productHref } from '@/lib/product-routes';
+import { productCardImageUrl } from '@/lib/product-image-fallbacks';
 
 export interface ProductCardProps {
   code: string;
@@ -38,11 +39,12 @@ export default function ProductCard({
   const isMadeToOrder = availability === 'MADE_TO_ORDER';
   const isOutOfStock = availability === 'SOLD_OUT' || (availability !== 'MADE_TO_ORDER' && stock <= 0);
 
-  const resolvedInitialImage = 
+  const resolvedImage =
     imageUrl || 
     (Array.isArray(images) && images[0]?.url) || 
     (images && typeof images === 'object' && images.url) || 
     '/assets/photos/image-unavailable.svg';
+  const resolvedInitialImage = productCardImageUrl(String(resolvedImage));
 
   const [imgSrc, setImgSrc] = React.useState(resolvedInitialImage);
 
