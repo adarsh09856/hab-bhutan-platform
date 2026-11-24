@@ -417,7 +417,7 @@ export default function ProductDetailPage() {
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              <span className="assurance__initial">E</span>
+              <span className="assurance__initial">S</span>
               <span>ecure payment</span>
             </h3>
             <p className="assurance__body">Pay by mBoB or bank transfer. HAB confirms every payment.</p>

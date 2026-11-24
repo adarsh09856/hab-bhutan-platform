@@ -78,6 +78,12 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    if (String(code).includes('/')) {
+      return NextResponse.json(
+        { success: false, error: 'Product codes cannot contain /. Existing product codes remain supported.' },
+        { status: 400 }
+      );
+    }
     if (wholesaleEnabled !== undefined && typeof wholesaleEnabled !== 'boolean') {
       return NextResponse.json({ success: false, error: 'Enable wholesale must be true or false.' }, { status: 400 });
     }

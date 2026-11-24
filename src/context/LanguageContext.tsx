@@ -124,8 +124,8 @@ export const TRANSLATIONS: Translations = {
   'shop.registered_body': { en: 'Every artisan, supplier, and input is strictly verified.', dz: 'ལག་བཟོ་པ་ མཁོ་སྤྲོད་པ་དང་རྒྱུ་ཆ་རེ་རེ་བདེན་དཔྱད་འབདཝ་ཨིན།' },
   'shop.fair_title': { en: 'Upfront & Fair', dz: 'སྔོན་ལས་གསལ་བཤད་དང་དྲང་བདེན' },
   'shop.fair_body': { en: 'Pre-paid artisan pricing cuts out unethical markups.', dz: 'ལག་བཟོ་པ་ལུ་གོང་ཚད་སྔོན་ལས་སྤྲོད་པས་ གོང་ཚད་མ་དྲང་བ་ཡར་སེང་འབད་མི་བཀག་ཚུགས།' },
-  'shop.escrow_title': { en: 'Evidence-Based Payment', dz: 'དཔང་རྟགས་གཞི་བཞག་གི་དངུལ་སྤྲོད' },
-  'shop.escrow_body': { en: 'mBoB and bank transfers are reviewed by HAB. Online card processing is not configured.', dz: 'mBoB དང་དངུལ་ཁང་བརྒྱུད་པའི་སྤྲོད་ཐབས་ཚུ་ HAB གིས་བསྐྱར་ཞིབ་འབདཝ་ཨིན། དྲ་ཐོག་གི་ཀརཊ་དངུལ་སྤྲོད་ད་ལྟོ་མ་སྒྲིག་བས།' },
+  'shop.escrow_title': { en: 'Secure payment', dz: 'ཉེན་སྲུང་ཅན་གྱི་དངུལ་སྤྲོད' },
+  'shop.escrow_body': { en: 'Pay by mBoB or bank transfer. HAB confirms every payment.', dz: 'mBoB ཡང་ན་དངུལ་ཁང་གི་སྤྲོད་ཐབས་ལག་ལེན་འཐབ། HAB གིས་དངུལ་སྤྲོད་རེ་རེ་བཞིན་ངེས་གཏན་བཟོཝ་ཨིན།' },
 
   // News and events
   'news.title': { en: 'News & events', dz: 'གནས་ཚུལ་དང་བྱུང་རིམ' },

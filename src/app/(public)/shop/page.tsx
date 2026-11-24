@@ -386,8 +386,8 @@ function ShopContent() {
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
-              {language === 'en' && <span className="assurance__initial">E</span>}
-              <span>{language === 'en' ? 'vidence-Based Payment' : t('shop.escrow_title')}</span>
+              {language === 'en' && <span className="assurance__initial">S</span>}
+              <span>{language === 'en' ? 'ecure payment' : t('shop.escrow_title')}</span>
             </h3>
             <p className="assurance__body">{t('shop.escrow_body')}</p>
           </div>
