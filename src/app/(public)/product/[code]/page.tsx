@@ -354,7 +354,7 @@ export default function ProductDetailPage() {
               {([
                 ['Dimensions', product.size],
                 ['Weight', product.weight],
-                ['Materials', product.materials],
+                ['Materials', typeof product.materials === 'string' ? product.materials.split(',').map((item: string) => item.trim()).filter(Boolean).join(', ') : product.materials],
                 ['Care instructions', product.care],
                 ['Dispatch & Lead', product.lead],
               ] as const).filter(([, value]) => value).map(([label, value]) => (
