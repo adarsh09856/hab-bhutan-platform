@@ -12,6 +12,7 @@ import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 import { useLanguage } from '@/context/LanguageContext';
 import { productHref } from '@/lib/product-routes';
 import { inferProductType, PRODUCT_TYPES } from '@/lib/product-type';
+import { productCardImageUrl } from '@/lib/product-image-fallbacks';
 
 interface ShopCraft {
   key: string;
@@ -293,7 +294,7 @@ function ShopContent() {
                     <Link className="product__shot" href={productHref(p.code)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                       <figure className="frame frame--square has-image">
                         <img
-                          src={p.image_path || '/assets/photos/image-unavailable.svg'}
+                          src={productCardImageUrl(p.image_path || '/assets/photos/image-unavailable.svg')}
                           alt={p.image_path === '/images/crafts/thagzo.jpg' ? 'Illustrative photograph of Bhutanese weaving' : p.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                           onError={(e) => {
