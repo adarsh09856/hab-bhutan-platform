@@ -6,6 +6,24 @@ APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="habbhutanplatform"
 cd "$APP_ROOT"
 
+# aaPanel installs Node/PM2 outside the non-interactive SSH PATH. Prefer the
+# installed versioned Node runtime without starting a login shell (which can
+# block on shell profile prompts or network initialization).
+if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1 || ! command -v pm2 >/dev/null 2>&1; then
+  for node_bin in /www/server/nodejs/*/bin; do
+    if [[ -x "$node_bin/node" && -x "$node_bin/npm" && -x "$node_bin/pm2" ]]; then
+      export PATH="$node_bin:$PATH"
+      break
+    fi
+  done
+fi
+
+# aaPanel may own the checkout as www while deployment runs as root. Keep the
+# exception scoped to this repository and this deployment process.
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=safe.directory
+export GIT_CONFIG_VALUE_0="$APP_ROOT"
+
 echo "HAB deployment: validating checkout and runtime"
 
 if [[ "$(git branch --show-current)" != "main" ]]; then
@@ -61,9 +79,9 @@ npm run build
 echo "Restarting only $APP_NAME"
 pm2 restart "$APP_NAME" --update-env
 
-echo "Waiting for local health endpoint on port $APP_PORT"
+echo "Waiting for database-backed public catalogue on port $APP_PORT"
 for attempt in {1..30}; do
-  if curl --silent --fail "http://127.0.0.1:${APP_PORT}/api/admin/health" >/dev/null; then
+  if curl --silent --fail "http://127.0.0.1:${APP_PORT}/api/products" | grep -q '"success":true'; then
     echo "Deployment healthy at commit $(git rev-parse --short HEAD)."
     pm2 status "$APP_NAME"
     exit 0
