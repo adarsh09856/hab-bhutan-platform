@@ -32,11 +32,14 @@ export async function GET(req: NextRequest) {
   const user = await getSessionUserForAnyPermission(req, [...permissions]);
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   try {
-    const traders = await prisma.traderRecord.findMany({ orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] });
+    const [traders, setting] = await Promise.all([
+      prisma.traderRecord.findMany({ orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] }),
+      prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { secretaryEmail: true, officialEmail: true } }),
+    ]);
     const expired = traders.filter((trader) => trader.isVisible && trader.expiresAt <= new Date() && !trader.expiryNoticeSentAt);
     if (expired.length) {
       const result = await sendEmail({
-        to: 'officehab@gmail.com', subject: `HAB trader accreditation expired (${expired.length})`,
+        to: setting?.secretaryEmail || setting?.officialEmail || 'officehab@gmail.com', subject: `HAB trader accreditation expired (${expired.length})`,
         body: `The following public trader listing(s) have expired and are now hidden from the public directory:\n\n${expired.map((trader) => `${trader.shopName} · ${trader.registrationNumber} · expired ${trader.expiresAt.toISOString().slice(0, 10)}`).join('\n')}\n\nReview the records in Admin → Accredited Traders.`,
         templateKey: 'trader_expiry_notice', auditEntityType: 'TraderRecord', auditEntityId: expired.map((trader) => trader.id).join(','),
       });

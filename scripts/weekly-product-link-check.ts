@@ -8,6 +8,7 @@ type PublicProduct = { code?: unknown; name?: unknown };
 
 const SITE_URL = (process.env.HAB_PUBLIC_URL || 'https://hab.touratbhutan.info').replace(/\/+$/, '');
 const CONCURRENCY = 4;
+const DRY_RUN = process.env.LINK_CHECK_DRY_RUN === '1';
 
 async function checkProduct(product: PublicProduct) {
   const code = String(product.code || '').trim();
@@ -22,6 +23,45 @@ async function checkProduct(product: PublicProduct) {
 }
 
 async function main() {
+  const setting = await prisma.siteSetting.findUnique({
+    where: { id: 'default' },
+    select: { secretaryEmail: true, officialEmail: true },
+  });
+  const recipient = String(setting?.secretaryEmail || setting?.officialEmail || '').trim();
+  if (!recipient) throw new Error('No Secretariat or official email address is configured in Site Settings.');
+
+  const now = new Date();
+  const expiredTraders = await prisma.traderRecord.findMany({
+    where: { isVisible: true, expiresAt: { lte: now }, expiryNoticeSentAt: null },
+    select: { id: true, shopName: true, registrationNumber: true, expiresAt: true },
+    orderBy: { expiresAt: 'asc' },
+  });
+  if (expiredTraders.length) {
+    if (DRY_RUN) {
+      console.log(JSON.stringify({ expiredTraderNotices: expiredTraders.length, dryRun: true }));
+    } else {
+      const expiryEmail = await sendEmail({
+        to: recipient,
+        subject: `HAB trader accreditation expired (${expiredTraders.length})`,
+        body: `The following trader listings have expired and are hidden from the public directory:\n\n${expiredTraders.map((trader) => `${trader.shopName} · ${trader.registrationNumber} · expired ${trader.expiresAt.toISOString().slice(0, 10)}`).join('\n')}\n\nReview the records in Admin → Accredited Traders.`,
+        templateKey: 'trader_expiry_notice',
+        auditEntityType: 'TraderRecord',
+        auditEntityId: expiredTraders.map((trader) => trader.id).join(','),
+      });
+      if (!expiryEmail.success) throw new Error(expiryEmail.error || 'Expired trader notice email was not delivered.');
+      await prisma.traderRecord.updateMany({
+        where: { id: { in: expiredTraders.map((trader) => trader.id) }, expiryNoticeSentAt: null },
+        data: { expiryNoticeSentAt: now },
+      });
+    }
+  }
+
+  const bhutanWeekday = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Asia/Thimphu' }).format(now);
+  if (bhutanWeekday !== 'Mon' && process.env.LINK_CHECK_FORCE_REPORT !== '1') {
+    console.log(JSON.stringify({ expiredTraderNotices: expiredTraders.length, linkReport: 'not scheduled today' }));
+    return;
+  }
+
   const catalogueResponse = await fetch(`${SITE_URL}/api/products`, { cache: 'no-store', signal: AbortSignal.timeout(20000) });
   if (!catalogueResponse.ok) throw new Error(`Public catalogue returned HTTP ${catalogueResponse.status}`);
   const catalogue = await catalogueResponse.json() as { success?: boolean; products?: PublicProduct[] };
@@ -41,13 +81,6 @@ async function main() {
     ? broken.map((item) => `- ${item.code}${item.name ? ` · ${item.name}` : ''}: ${item.status || 'unreachable'} · ${item.url}`).join('\n')
     : 'No broken published product links were found.';
 
-  const setting = await prisma.siteSetting.findUnique({
-    where: { id: 'default' },
-    select: { secretaryEmail: true, officialEmail: true },
-  });
-  const recipient = String(setting?.secretaryEmail || setting?.officialEmail || '').trim();
-  if (!recipient) throw new Error('No Secretariat or official email address is configured in Site Settings.');
-
   const subject = `HAB weekly product link check: ${broken.length} issue${broken.length === 1 ? '' : 's'}`;
   const body = [
     'HAB weekly published-product link check',
@@ -57,7 +90,7 @@ async function main() {
     '',
     details,
   ].join('\n');
-  if (process.env.LINK_CHECK_DRY_RUN === '1') {
+  if (DRY_RUN) {
     console.log(JSON.stringify({ checked: results.length, broken: broken.length, recipient, delivered: false, dryRun: true, report: body }));
     return;
   }
