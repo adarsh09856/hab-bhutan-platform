@@ -77,7 +77,7 @@ function ShopGridContent() {
       if (productType && p.productType !== productType) return false;
       if (minPrice && price < Number(minPrice)) return false;
       if (maxPrice && price > Number(maxPrice)) return false;
-      if (onlyAvailable && (p.stock <= 0 || p.availability === 'SOLD_OUT')) return false;
+      if (onlyAvailable && p.availability !== 'MADE_TO_ORDER' && (p.stock <= 0 || p.availability === 'SOLD_OUT')) return false;
       if (collectionParam === 'under50' && price >= 50) return false;
       if (collectionParam === 'home' && !['tsharo-zo', 'shag-zo', 'de-zo', 'tshazo', 'shagzo', 'dezo'].includes(p.craftKey)) return false;
       return true;

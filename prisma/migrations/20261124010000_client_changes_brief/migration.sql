@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS "TraderRecord" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "TraderRecord_pkey" PRIMARY KEY ("id")
 );
+ALTER TABLE "TraderRecord" ADD COLUMN IF NOT EXISTS "quote" TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS "TraderRecord_slug_key" ON "TraderRecord"("slug");
 CREATE UNIQUE INDEX IF NOT EXISTS "TraderRecord_registrationNumber_key" ON "TraderRecord"("registrationNumber");
 CREATE INDEX IF NOT EXISTS "TraderRecord_dzongkhag_idx" ON "TraderRecord"("dzongkhag");

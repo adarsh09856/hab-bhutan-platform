@@ -318,7 +318,7 @@ export default function ProductDetailPage() {
                 min="1"
                 max={product.availability === 'MADE_TO_ORDER' ? 20 : Math.max(1, Math.min(20, product.stock))}
                 value={quantity}
-                disabled={product.availability !== 'IN_STOCK' || product.stock <= 0}
+                disabled={product.availability !== 'MADE_TO_ORDER' && (product.availability === 'SOLD_OUT' || product.stock <= 0)}
                 onChange={(e) => setQuantity(Math.min(Math.max(1, product.availability === 'MADE_TO_ORDER' ? 20 : Math.min(20, product.stock)), Math.max(1, parseInt(e.target.value) || 1)))}
               />
               <button

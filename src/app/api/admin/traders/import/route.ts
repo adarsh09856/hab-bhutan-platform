@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         ownerName: cell(row, 'ownername') || null,
         dzongkhag: cell(row, 'dzongkhag'), town: cell(row, 'town'), address: cell(row, 'address'),
         mapUrl: cell(row, 'mapurl') || null, openingHours: cell(row, 'openinghours') || null,
-        shortDescription: cell(row, 'shortdescription'), description: cell(row, 'description'),
+        shortDescription: cell(row, 'shortdescription'), quote: cell(row, 'quote') || null, description: cell(row, 'description'),
         craftKeys: splitList(cell(row, 'craftkeys')), productTypes: splitList(cell(row, 'producttypes')),
         productPhotoUrls: splitList(cell(row, 'productphotourls')), bannerUrl: cell(row, 'bannerurl') || null,
         expiresAt: expiry, isVisible: !['false', '0', 'no'].includes(cell(row, 'isvisible').toLowerCase()),

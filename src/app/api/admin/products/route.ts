@@ -97,6 +97,9 @@ export async function POST(req: NextRequest) {
       imageList = [{ url: imageUrl, role: 'primary' }];
     }
 
+    const stockCount = stock !== undefined ? Math.max(0, Number(stock)) : 10;
+    const requestedAvailability = ['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability) ? availability : 'IN_STOCK';
+    const resolvedAvailability = requestedAvailability === 'IN_STOCK' && stockCount === 0 ? 'SOLD_OUT' : requestedAvailability;
     const newProduct = await prisma.product.create({
       data: {
         code: code.trim().toUpperCase(),
@@ -107,7 +110,7 @@ export async function POST(req: NextRequest) {
         makerMemberId: makerMemberId || null,
         traderId: traderId || null,
         productType: productType?.trim() || null,
-        availability: ['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability) ? availability : 'IN_STOCK',
+        availability: resolvedAvailability,
         description: description || 'Authentic artisan handicraft curated by HAB.',
         size: size?.trim() || null,
         weight: weight?.trim() || null,
@@ -115,7 +118,7 @@ export async function POST(req: NextRequest) {
         care: care?.trim() || null,
         lead: lead?.trim() || null,
         images: imageList,
-        stock: stock !== undefined ? Math.max(0, Number(stock)) : 10,
+        stock: stockCount,
         status: ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
           ? status
           : 'PUBLISHED',
@@ -244,7 +247,13 @@ export async function PATCH(req: NextRequest) {
     if (makerMemberId !== undefined) updateData.makerMemberId = makerMemberId || null;
     if (traderId !== undefined) updateData.traderId = traderId || null;
     if (productType !== undefined) updateData.productType = productType?.trim() || null;
-    if (availability !== undefined) updateData.availability = ['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability) ? availability : 'IN_STOCK';
+    if (availability !== undefined && !['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability)) {
+      return NextResponse.json({ success: false, error: 'Choose In stock, Made to order, or Sold out.' }, { status: 400 });
+    }
+    const requestedAvailability = availability ?? previous.availability;
+    const nextStock = updateData.stock ?? previous.stock;
+    const resolvedAvailability = requestedAvailability === 'IN_STOCK' && nextStock === 0 ? 'SOLD_OUT' : requestedAvailability;
+    if (availability !== undefined || stock !== undefined || inventoryCount !== undefined) updateData.availability = resolvedAvailability;
     if (description !== undefined) updateData.description = description;
     if (size !== undefined) updateData.size = size?.trim() || null;
     if (weight !== undefined) updateData.weight = weight?.trim() || null;

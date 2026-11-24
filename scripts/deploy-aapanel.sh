@@ -83,7 +83,10 @@ fi
 echo "Generating Prisma Client and applying schema without data-loss override"
 npx prisma generate
 npx prisma db execute --file prisma/migrations/20261124010000_client_changes_brief/migration.sql --schema prisma/schema.prisma
-npx prisma migrate resolve --applied 20261124010000_client_changes_brief
+MIGRATION_STATUS="$(npx prisma migrate status 2>&1)" || { printf '%s\n' "$MIGRATION_STATUS"; exit 1; }
+if grep -Fq '20261124010000_client_changes_brief' <<<"$MIGRATION_STATUS"; then
+  npx prisma migrate resolve --applied 20261124010000_client_changes_brief
+fi
 npx prisma db push --skip-generate
 
 # Deliberately do not run seed/reset-admin here: deploys must preserve all existing

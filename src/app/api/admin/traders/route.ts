@@ -20,7 +20,7 @@ function normalize(body: any) {
     ownerName: body.ownerName?.trim() || null,
     dzongkhag: String(body.dzongkhag).trim(), town: String(body.town).trim(), address: String(body.address).trim(),
     mapUrl: body.mapUrl?.trim() || null, openingHours: body.openingHours?.trim() || null,
-    shortDescription: String(body.shortDescription).trim(), description: String(body.description).trim(),
+    shortDescription: String(body.shortDescription).trim(), quote: body.quote?.trim() || null, description: String(body.description).trim(),
     craftKeys: stringList(body.craftKeys), productTypes: stringList(body.productTypes), productPhotoUrls: stringList(body.productPhotoUrls),
     bannerUrl: body.bannerUrl?.trim() || null, expiresAt,
     isVisible: body.isVisible !== false, verifiedSince: body.verifiedSince ? Number(body.verifiedSince) : null,

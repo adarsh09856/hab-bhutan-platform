@@ -886,6 +886,7 @@ model TraderRecord {
   mapUrl              String?
   openingHours        String?  @db.Text
   shortDescription    String   @db.Text
+  quote               String?  @db.Text
   description         String   @db.Text
   craftKeys           Json     @default("[]")
   productTypes        Json     @default("[]")
