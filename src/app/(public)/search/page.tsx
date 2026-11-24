@@ -208,7 +208,7 @@ function SearchContent() {
               }`}
             >
               <Users className="w-3.5 h-3.5" />
-              Artisans ({members.length})
+              Accredited traders ({members.length})
             </button>
             <button
               type="button"
@@ -325,8 +325,8 @@ function SearchContent() {
               <Link href="/crafts" className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold">
                 The 13 Traditional Crafts &rarr;
               </Link>
-              <Link href="/members" className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold">
-                Artisan Directory &rarr;
+              <Link href="/traders" className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold">
+                Trader Directory &rarr;
               </Link>
             </div>
           </div>

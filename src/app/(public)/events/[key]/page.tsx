@@ -124,6 +124,14 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
   const otherEvents = dbOtherEvents.filter((candidate) => eventIsUpcoming(candidate)).slice(0, 3);
   const displayedDate = formatEventDateRange(rawEvent.startDate, rawEvent.endDate, rawEvent.dateDisplay);
+  const calendarStart = rawEvent.startDate ? new Date(rawEvent.startDate) : null;
+  const calendarEnd = rawEvent.endDate ? new Date(rawEvent.endDate) : calendarStart;
+  const validCalendarDates = Boolean(calendarStart && calendarEnd &&
+    !Number.isNaN(calendarStart.getTime()) && !Number.isNaN(calendarEnd.getTime()) && calendarEnd >= calendarStart);
+  const calendarDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  const calendarUrl = validCalendarDates
+    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${calendarDate(calendarStart!)}%2F${calendarDate(calendarEnd!)}${event.place ? `&location=${encodeURIComponent(event.place)}` : ''}`
+    : null;
 
   return (
     <main id="main">
@@ -226,6 +234,11 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <a href={`mailto:${event.contact || 'officehab@gmail.com'}`}>{event.contact || 'officehab@gmail.com'}</a> or call +975-2-338089.
           </p>
           <div className="actions">
+            {calendarUrl && (
+              <a className="btn btn--outline" href={calendarUrl} target="_blank" rel="noopener noreferrer">
+                Add to calendar
+              </a>
+            )}
             <Link className="btn btn--accent" href={`/contact?topic=events&event=${encodeURIComponent(event.title)}`}>
               Contact the Secretariat
             </Link>

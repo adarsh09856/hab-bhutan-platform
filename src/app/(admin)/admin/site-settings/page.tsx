@@ -1194,7 +1194,7 @@ export default function AdminSiteSettingsPage() {
               {/* Left Card: Member Directory */}
               <div className="p-5 admin-panel border admin-border rounded-xl space-y-4">
                 <h3 className="text-sm font-bold admin-text uppercase tracking-wider border-b admin-border pb-2">
-                  Left Card (Directory / Find a Member)
+                  Left Card (Trader Directory)
                 </h3>
                 <div>
                   <label className="block text-xs font-semibold admin-text mb-1">Headline</label>
@@ -1202,7 +1202,7 @@ export default function AdminSiteSettingsPage() {
                     type="text"
                     value={form.membershipLeftTitle}
                     onChange={(e) => setForm({ ...form, membershipLeftTitle: e.target.value })}
-                    placeholder="Find a member"
+                    placeholder="Find a registered trader"
                     className="w-full px-3 py-2 admin-input border rounded-lg text-sm font-bold"
                   />
                 </div>
@@ -1212,7 +1212,7 @@ export default function AdminSiteSettingsPage() {
                     rows={3}
                     value={form.membershipLeftText}
                     onChange={(e) => setForm({ ...form, membershipLeftText: e.target.value })}
-                    placeholder="Connect directly with master craftspeople, verified weaving clusters, and traditional workshops across Bhutan."
+                    placeholder="Find HAB-verified shops and traders across Bhutan by craft, product or dzongkhag."
                     className="w-full px-3 py-2 admin-input border rounded-lg text-xs"
                   />
                 </div>
@@ -1223,7 +1223,7 @@ export default function AdminSiteSettingsPage() {
                       type="text"
                       value={form.membershipLeftCtaText}
                       onChange={(e) => setForm({ ...form, membershipLeftCtaText: e.target.value })}
-                      placeholder="Search member directory →"
+                    placeholder="Search traders →"
                       className="w-full px-3 py-1.5 admin-input border rounded text-xs"
                     />
                   </div>
@@ -1233,7 +1233,7 @@ export default function AdminSiteSettingsPage() {
                       type="text"
                       value={form.membershipLeftCtaLink}
                       onChange={(e) => setForm({ ...form, membershipLeftCtaLink: e.target.value })}
-                      placeholder="/members"
+                      placeholder="/traders"
                       className="w-full px-3 py-1.5 admin-input border rounded text-xs"
                     />
                   </div>
@@ -1243,7 +1243,7 @@ export default function AdminSiteSettingsPage() {
               {/* Right Card: Apply for Membership */}
               <div className="p-5 admin-panel border admin-border rounded-xl space-y-4">
                 <h3 className="text-sm font-bold admin-text uppercase tracking-wider border-b admin-border pb-2">
-                  Right Card (Apply for Membership)
+                  Right Card (Trader Registration)
                 </h3>
                 <div>
                   <label className="block text-xs font-semibold admin-text mb-1">Headline</label>
@@ -1251,7 +1251,7 @@ export default function AdminSiteSettingsPage() {
                     type="text"
                     value={form.membershipRightTitle}
                     onChange={(e) => setForm({ ...form, membershipRightTitle: e.target.value })}
-                    placeholder="Become a member"
+                    placeholder="List your shop with HAB"
                     className="w-full px-3 py-2 admin-input border rounded-lg text-sm font-bold"
                   />
                 </div>
@@ -1261,7 +1261,7 @@ export default function AdminSiteSettingsPage() {
                     rows={3}
                     value={form.membershipRightText}
                     onChange={(e) => setForm({ ...form, membershipRightText: e.target.value })}
-                    placeholder="Access product consignment in our central shop, participate in donor training programmes..."
+                    placeholder="Registered traders get a verified listing, buyer introductions and a place in HAB’s trader directory."
                     className="w-full px-3 py-2 admin-input border rounded-lg text-xs"
                   />
                 </div>
@@ -1272,7 +1272,7 @@ export default function AdminSiteSettingsPage() {
                       type="text"
                       value={form.membershipRightCtaText}
                       onChange={(e) => setForm({ ...form, membershipRightCtaText: e.target.value })}
-                      placeholder="Apply for membership"
+                      placeholder="Register as a trader"
                       className="w-full px-3 py-1.5 admin-input border rounded text-xs"
                     />
                   </div>
@@ -1282,7 +1282,7 @@ export default function AdminSiteSettingsPage() {
                       type="text"
                       value={form.membershipRightCtaLink}
                       onChange={(e) => setForm({ ...form, membershipRightCtaLink: e.target.value })}
-                      placeholder="/membership/apply"
+                      placeholder="/contact?topic=trader-registration"
                       className="w-full px-3 py-1.5 admin-input border rounded text-xs"
                     />
                   </div>

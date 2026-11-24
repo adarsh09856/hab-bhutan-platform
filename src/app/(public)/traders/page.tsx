@@ -7,7 +7,8 @@ import TraderDirectory from '@/components/public/TraderDirectory';
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Accredited Traders · HAB', description: 'Find current HAB-accredited handicraft traders by name, craft and location.' };
 
-export default async function TradersPage() {
+export default async function TradersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q = '' } = await searchParams;
   let traders: any[] = [];
   let unavailable = false;
   try {
@@ -17,6 +18,6 @@ export default async function TradersPage() {
     <SectionEditBadge label="Accredited Traders" studioHref="/admin/traders" />
     <p className="crumbs"><Link href="/">Home</Link> / Accredited traders</p>
     <div className="section__head"><div><p className="eyebrow eyebrow--accent">Find a shop</p><h1 className="display display--page">Accredited traders</h1><p className="section__lede">Current retail traders accredited by the Handicrafts Association of Bhutan.</p></div></div>
-    {unavailable ? <p role="status">The trader directory is temporarily unavailable.</p> : traders.length === 0 ? <div className="shopempty"><h2 className="shopempty__title">No trader listings are published yet</h2><p className="shopempty__body">The Secretariat manages accredited trader listings.</p></div> : <TraderDirectory traders={traders.map((trader) => ({ ...trader, craftKeys: Array.isArray(trader.craftKeys) ? trader.craftKeys.filter((item: unknown): item is string => typeof item === 'string') : [], productPhotoUrls: Array.isArray(trader.productPhotoUrls) ? trader.productPhotoUrls.filter((item: unknown): item is string => typeof item === 'string') : [] }))} />}
+    {unavailable ? <p role="status">The trader directory is temporarily unavailable.</p> : <TraderDirectory initialQuery={q} traders={traders.map((trader) => ({ ...trader, craftKeys: Array.isArray(trader.craftKeys) ? trader.craftKeys.filter((item: unknown): item is string => typeof item === 'string') : [], productTypes: Array.isArray(trader.productTypes) ? trader.productTypes.filter((item: unknown): item is string => typeof item === 'string') : [], productPhotoUrls: Array.isArray(trader.productPhotoUrls) ? trader.productPhotoUrls.filter((item: unknown): item is string => typeof item === 'string') : [] }))} />}
   </section></main>;
 }

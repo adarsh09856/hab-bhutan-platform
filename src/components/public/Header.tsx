@@ -502,9 +502,9 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
             className="search__input"
             id="searchInput"
             type="search"
-            placeholder={t('nav.search_placeholder', 'Search crafts, members, publications')}
+            placeholder={t('nav.search_placeholder', 'Search crafts, traders, publications')}
             autoComplete="off"
-            aria-label={t('nav.search_placeholder', 'Search crafts, members, publications...')}
+            aria-label={t('nav.search_placeholder', 'Search crafts, traders, publications...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setSearchOpen(true)}

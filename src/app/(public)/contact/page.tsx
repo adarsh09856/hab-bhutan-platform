@@ -58,12 +58,21 @@ function ContactContent() {
     if (searchParams.get('topic')) {
       setTopic(searchParams.get('topic') || 'membership');
     }
+    const traderSlug = searchParams.get('trader');
+    if (traderSlug) {
+      setFormData((previous) => ({
+        ...previous,
+        subject: previous.subject || `Trader listing: ${traderSlug}`,
+      }));
+    }
   }, [searchParams]);
 
   const topics = [
     { key: 'membership', label: 'Membership' },
     { key: 'order', label: 'Orders & delivery' },
     { key: 'wholesale', label: 'Wholesale & B2B' },
+    { key: 'trader-introduction', label: 'Trader introduction' },
+    { key: 'wholesale-quote', label: 'Wholesale quote request' },
     { key: 'commission', label: 'Commission a piece' },
     { key: 'events', label: 'Events & registration' },
     { key: 'awards', label: 'Awards & nominations' },

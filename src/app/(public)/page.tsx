@@ -75,22 +75,22 @@ export default function HomePage() {
     assurance4Title: 'Tracked worldwide',
     assurance4Text: 'EMS via Bhutan Post with commercial invoice and craft certificate.',
     stats: [
-      { value: '7,500', label: 'Micro & small enterprises in the network', url: '/members' },
-      { value: '5,250', label: 'Women-led enterprises', url: '/members' },
-      { value: '195', label: 'Affiliated stores across Bhutan', url: '/outlets' },
+      { value: '7,500', label: 'Micro & small enterprises in the network', url: '' },
+      { value: '5,250', label: 'Women-led enterprises', url: '' },
+      { value: '', label: 'Registered traders across Bhutan', url: '' },
       { value: '13', label: 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
     aboutBandTitle: 'A network built for artisans and everyone who brings a craft to market',
     aboutBandPara1: 'HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.',
-    aboutBandPara2: 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and 195 affiliated stores exhibiting more than 100 unique handcrafted products.',
+    aboutBandPara2: 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and a growing directory of registered traders.',
     aboutBandImageUrl: '/assets/photos/about-hab.jpg',
     aboutBandImageCaption: 'photo — HAB training workshop',
     punakhaMarketNotice: CLIENT_VERBATIM.punakhaMarket,
-    membershipLeftTitle: 'Find a member',
-    membershipLeftText: 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.',
-    membershipRightTitle: 'Become a member',
-    membershipRightText: MEMBERSHIP_PAYMENT_COPY,
-    membershipRightCtaText: 'Apply for membership',
+    membershipLeftTitle: 'Trader directory',
+    membershipLeftText: 'Find a registered trader by craft, product or location.',
+    membershipRightTitle: 'List your shop with HAB',
+    membershipRightText: 'Registered traders get a verified listing, buyer introductions and a place in HAB’s trader directory.',
+    membershipRightCtaText: 'Register as a trader',
     shopEyebrow: 'Latest arrivals',
     shopHeading: 'New in the shop',
     shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
@@ -209,9 +209,9 @@ export default function HomePage() {
               assurance4Title: /escrow|\bsecure\b|payment/i.test(d.setting.assurance4Title || '') ? prev.assurance4Title : (d.setting.assurance4Title || prev.assurance4Title),
               assurance4Text: removeUnavailableCardClaim(d.setting.assurance4Text, prev.assurance4Text),
               stats: [
-                { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '/members' },
-                { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '/members' },
-                { value: d.setting.stat3Number || '195', label: d.setting.stat3Label || 'Affiliated stores across Bhutan', url: '/outlets' },
+                { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '' },
+                { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '' },
+                { value: '', label: 'Registered traders across Bhutan', url: '' },
                 { value: d.setting.stat4Number || '13', label: d.setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
               ],
               aboutBandTitle: d.setting.aboutBandTitle || prev.aboutBandTitle,
@@ -220,11 +220,11 @@ export default function HomePage() {
               aboutBandImageUrl: d.setting.aboutBandImageUrl || prev.aboutBandImageUrl,
               aboutBandImageCaption: d.setting.aboutBandImageCaption || prev.aboutBandImageCaption,
               punakhaMarketNotice: d.setting.punakhaMarketNotice || prev.punakhaMarketNotice,
-              membershipLeftTitle: d.setting.membershipLeftTitle || prev.membershipLeftTitle,
-              membershipLeftText: d.setting.membershipLeftText || prev.membershipLeftText,
-              membershipRightTitle: d.setting.membershipRightTitle || prev.membershipRightTitle,
-              membershipRightText: removeUnavailableCardClaim(d.setting.membershipRightText, MEMBERSHIP_PAYMENT_COPY),
-              membershipRightCtaText: d.setting.membershipRightCtaText || prev.membershipRightCtaText,
+              membershipLeftTitle: /member|artisan|craft/i.test(d.setting.membershipLeftTitle || '') ? prev.membershipLeftTitle : (d.setting.membershipLeftTitle || prev.membershipLeftTitle),
+              membershipLeftText: /member|artisan|cluster|thirteen crafts/i.test(d.setting.membershipLeftText || '') ? prev.membershipLeftText : (d.setting.membershipLeftText || prev.membershipLeftText),
+              membershipRightTitle: /member/i.test(d.setting.membershipRightTitle || '') ? prev.membershipRightTitle : (d.setting.membershipRightTitle || prev.membershipRightTitle),
+              membershipRightText: /membership|mBoB|annual dues/i.test(d.setting.membershipRightText || '') ? prev.membershipRightText : (d.setting.membershipRightText || prev.membershipRightText),
+              membershipRightCtaText: /member|apply/i.test(d.setting.membershipRightCtaText || '') ? prev.membershipRightCtaText : (d.setting.membershipRightCtaText || prev.membershipRightCtaText),
               shopEyebrow: d.setting.shopEyebrow || prev.shopEyebrow,
               shopHeading: d.setting.shopHeading || prev.shopHeading,
               shopLede: d.setting.shopLede || prev.shopLede,
@@ -504,12 +504,27 @@ export default function HomePage() {
     return () => window.clearInterval(timer);
   }, [allOutletsPool, punakhaOutlet?.key]);
 
+  useEffect(() => {
+    fetch('/api/traders', { cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Trader directory unavailable')))
+      .then((data) => {
+        if (!Array.isArray(data?.traders)) return;
+        setSiteSettings((current) => ({
+          ...current,
+          stats: current.stats.map((stat, index) => index === 2
+            ? { ...stat, value: data.traders.length ? String(data.traders.length) : '', label: 'Registered traders across Bhutan', url: '' }
+            : stat),
+        }));
+      })
+      .catch(() => {});
+  }, []);
+
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (memberSearchTerm.trim()) {
-      router.push(`/members?q=${encodeURIComponent(memberSearchTerm.trim())}`);
+      router.push(`/traders?q=${encodeURIComponent(memberSearchTerm.trim())}`);
     } else {
-      router.push('/members');
+      router.push('/traders');
     }
   };
 
@@ -581,7 +596,7 @@ export default function HomePage() {
           <h1 className="display display--hero">{isDz ? t('home.hero_tagline', 'འབྲུག་གི་ལག་བཟོ་སྡེ་ཚན་གྱི་གོང་འཕེལ་དང་ཡུན་བརྟན') : siteSettings.tagline}</h1>
           <div className="lede">
             {isDz ? t('home.hero_intro', 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་པ་ཚུ་ལུ་ རྒྱལ་ཁབ་ནང་དང་ཕྱི་རྒྱལ་གྱི་ཁྲོམ་ར་ནང་ ལག་བཟོ་ཚུ་ཁྱབ་སྤེལ་གཏང་ནི་ལུ་རྒྱབ་སྐྱོར་འབདཝ་ཨིན། དེ་མ་ཚད་ ལག་བཟོ་པ་ཚུའི་རིག་རྩལ་གོང་འཕེལ་དང་ནུས་ཤུགས་ཡར་སེང་ལུ་ཡང་རྒྱབ་སྐྱོར་འབདཝ་ཨིན།') : siteSettings.heroParagraph === CLIENT_VERBATIM.heroPara ? <>
-              Handicrafts Association of Bhutan supports <Link href="/members">local artisans</Link> in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
+              Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
             </> : isPolicyHtml(siteSettings.heroParagraph) ? <div dangerouslySetInnerHTML={{ __html: preparePolicyHtml(siteSettings.heroParagraph).html }} /> : siteSettings.heroParagraph}
           </div>
           <div className="actions flex flex-wrap items-center gap-3">
@@ -591,8 +606,8 @@ export default function HomePage() {
             <Link className="btn btn--outline" href={siteSettings.heroCtaSecondaryLink || '/shop'}>
               {isDz ? 'ལག་བཟོ་ཚོང་ཉོ →' : siteSettings.heroCtaSecondaryText}
             </Link>
-            <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/members">
-              {isDz ? 'འཐུས་མི་འཚོལ' : 'Find a member'}
+            <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/traders">
+              {isDz ? 'ཚོང་པ་འཚོལ' : 'Find a trader'}
             </Link>
           </div>
         </div>
@@ -689,12 +704,15 @@ export default function HomePage() {
           {...getMoveProps('stats')}
         />
         <div className="stats">
-          {siteSettings.stats.map((st, idx) => (
-            <Link key={idx} href={st.url} className="stats__cell" style={{ color: 'inherit' }}>
+          {siteSettings.stats.map((st, idx) => st.value ? (
+            st.url ? <Link key={idx} href={st.url} className="stats__cell" style={{ color: 'inherit' }}>
               <span className="stats__num">{st.value}</span>
               <span className="stats__label">{isDz ? t(`home.stat_${idx + 1}`, st.label) : st.label}</span>
-            </Link>
-          ))}
+            </Link> : <div key={idx} className="stats__cell">
+              <span className="stats__num">{st.value}</span>
+              <span className="stats__label">{isDz ? t(`home.stat_${idx + 1}`, st.label) : st.label}</span>
+            </div>
+          ) : null)}
         </div>
       </section>
     ),
@@ -1192,26 +1210,26 @@ export default function HomePage() {
       <section className="section relative" id="membership" data-hab-section="membership">
         <SectionEditBadge
           label="Artisan Directory & Apply"
-          studioHref="/admin/members"
-          onQuickEdit={() => openQuickEdit('membership', 'Membership Callouts', '/admin/membership-categories')}
+          studioHref="/admin/site-settings"
+          onQuickEdit={() => openQuickEdit('membership', 'Trader Directory & Listing Panel', '/admin/site-settings')}
           {...getMoveProps('membership')}
         />
         <div className="duo">
           <div className="panel">
-            <p className="eyebrow eyebrow--muted">{isDz ? 'ལག་བཟོ་འཚོལ' : 'Search the crafts'}</p>
-            <h3 className="display display--panel">{isDz ? 'ལག་བཟོ་དང་ བཟོ་མི་འཚོལ' : (siteSettings.membershipLeftTitle || 'Find a craft, a maker or a piece')}</h3>
+            <p className="eyebrow eyebrow--muted">{isDz ? 'ཚོང་པའི་ཐོ་གཞུང་' : 'Trader directory'}</p>
+            <h3 className="display display--panel">{isDz ? 'ཐོ་བཀོད་ཚོང་པ་འཚོལ' : siteSettings.membershipLeftTitle}</h3>
             <p className="panel__body">
               {isDz
-                ? 'བཟོ་རིག་བཅུ་གསུམ་དང་ གཟེངས་བསྟོད་ཐོབ་མི་ལག་བཟོ་པ ལག་བཟོའི་གླིང་ཚུ་ འཚོལ་ཞིབ་འབད།'
-                : (siteSettings.membershipLeftText || 'Search the thirteen crafts, our award-winning craftspeople, the artisan clusters and everything in the shop.')}
+                ? 'ལག་བཟོ་ ཅ་ཆས་ ཡང་ན་རྫོང་ཁག་གི་ཐོག་ལས་ HAB ངོས་ལེན་ཐོབ་པའི་ཚོང་ཁང་དང་ཚོང་པ་ཚུ་འཚོལ།'
+                : siteSettings.membershipLeftText}
             </p>
             <form className="inline-form" onSubmit={handleMemberSearch}>
-              <label className="visually-hidden" htmlFor="memberSearch">{localizeHomeText('Search crafts, makers, clusters and products', 'ལག་བཟོ་ བཟོ་མི་ སྡེ་ཚན་ དང་ཅ་ཆས་ཚུ་འཚོལ།')}</label>
+              <label className="visually-hidden" htmlFor="memberSearch">{localizeHomeText('Search registered traders', 'ཐོ་བཀོད་ཚོང་པ་འཚོལ')}</label>
               <input
                 className="input"
                 id="memberSearch"
                 type="search"
-                placeholder={isDz ? 'ཐག་བཟོ ལྷུན་རྩེ་ ཕོར་པ ཁོ་མ…' : 'Try weaving, Lhuentse, bowl, Khoma…'}
+                placeholder={isDz ? 'དཔེར་ན། དཀར་མཛེས་ ཐིམ་ཕུ་ ཤིང་ཕོར་ པ་རོ…' : 'Try kira, Thimphu, wooden bowl, Paro…'}
                 autoComplete="off"
                 value={memberSearchTerm}
                 onChange={(e) => setMemberSearchTerm(e.target.value)}
@@ -1220,19 +1238,19 @@ export default function HomePage() {
             </form>
           </div>
           <div className="panel panel--accent">
-            <p className="eyebrow eyebrow--onaccent">{isDz ? 'འཐུས་མི་འགྱུར' : 'Join HAB'}</p>
-            <h3 className="display display--panel display--onaccent">{isDz ? 'འཐུས་མིའི་ཐོ་བཀོད' : (siteSettings.membershipRightTitle || 'Become a member')}</h3>
+            <p className="eyebrow eyebrow--onaccent">{isDz ? 'HAB ལུ་ཐོ་བཀོད་འབད' : 'Trader listings'}</p>
+            <h3 className="display display--panel display--onaccent">{isDz ? 'ཚོང་ཁང་HABལུ་ཐོ་བཀོད་འབད' : siteSettings.membershipRightTitle}</h3>
             <p className="panel__body panel__body--onaccent">
               {isDz
-                ? 'དྲ་ཐོག་ལས་ཞུ་བ་ཕུལ། ལོ་བསྟར་འཐུས་ mBoB ཡང་ན་དངུལ་ཁང་གི་སྤྲོད་ལམ་ཐོག་ལས་སྤྲོད། ད་ལྟོ་དྲ་ཐོག་ཀརཌི་སྤྲོད་ལམ་མི་འཐོབ།'
-              : removeUnavailableCardClaim(siteSettings.membershipRightText, MEMBERSHIP_PAYMENT_COPY)}
+                ? 'ཐོ་བཀོད་ཚོང་པ་ཚུ་ལུ་ངོས་ལེན་ཐོབ་པའི་ཐོ་གཞུང་ ཉོ་མཁན་ངོ་སྤྲོད་ དང་ HAB གི་ཚོང་པའི་ཐོ་གཞུང་ནང་ས་གོ་ཐོབ།'
+              : siteSettings.membershipRightText}
             </p>
             <div className="actions">
-              <Link className="btn btn--light" href="/register">
-                {isDz ? 'འཐུས་མིའི་ཞུ་བ་ཕུལ' : (siteSettings.membershipRightCtaText || 'Apply for membership')}
+              <Link className="btn btn--light" href="/contact?topic=trader-registration">
+                {isDz ? 'ཚོང་པ་སྦེ་ཐོ་བཀོད་འབད' : 'Register as a trader'}
               </Link>
               <Link className="btn btn--ghost" href="/login">
-                {isDz ? 'འཐུས་མི་ནང་འཛུལ' : 'Member login'}
+                {isDz ? 'ཚོང་པ་ནང་འཛུལ' : 'Trader login'}
               </Link>
             </div>
           </div>
@@ -1443,9 +1461,9 @@ export default function HomePage() {
               ...prev,
               ...updated,
               stats: [
-                { value: updated.stat1Number || prev.stats[0]?.value, label: updated.stat1Label || prev.stats[0]?.label, url: '/members' },
-                { value: updated.stat2Number || prev.stats[1]?.value, label: updated.stat2Label || prev.stats[1]?.label, url: '/members' },
-                { value: updated.stat3Number || prev.stats[2]?.value, label: updated.stat3Label || prev.stats[2]?.label, url: '/outlets' },
+                { value: updated.stat1Number || prev.stats[0]?.value, label: updated.stat1Label || prev.stats[0]?.label, url: '' },
+                { value: updated.stat2Number || prev.stats[1]?.value, label: updated.stat2Label || prev.stats[1]?.label, url: '' },
+                { value: '', label: 'Registered traders across Bhutan', url: '' },
                 { value: updated.stat4Number || prev.stats[3]?.value, label: updated.stat4Label || prev.stats[3]?.label, url: '/shop' },
               ],
             }));

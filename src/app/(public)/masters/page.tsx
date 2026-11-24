@@ -270,7 +270,7 @@ export default function MastersPage() {
               <Link className="btn btn--accent btn--sm" href="/contact?topic=awards">
                 {text('Nominate an enterprise', 'ཚོང་ལས་ཅིག་མིང་འདོན')}
               </Link>
-              <a className="btn btn--outline btn--sm" href="#holders">
+              <a className="btn btn--outline btn--sm" href="#holders" onClick={() => setActiveTab('Enterprise of the Year')}>
                 {text('See past winners', 'ཧེ་མའི་གཟེངས་བསྟོད་ཐོབ་མི་ཚུ་གཟིགས')}
               </a>
             </div>
@@ -348,8 +348,8 @@ export default function MastersPage() {
             const hasPortrait = Boolean(imgSrc) && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(imgSrc);
 
             return (
-              <article key={m.slug || i} className="card honour">
-                <figure className={`frame frame--square${hasPortrait ? ' has-image' : ''}`} data-cms-img style={{ position: 'relative', overflow: 'hidden', background: '#eee5d8' }}>
+              <Link key={m.slug || i} href={`/masters/${encodeURIComponent(m.slug)}`} className="card honour block">
+                <figure className={`frame frame--square${hasPortrait ? ' has-image' : ''}`} data-cms-img style={{ position: 'relative', overflow: 'hidden', background: '#eee5d8', aspectRatio: '4 / 5' }}>
                   {hasPortrait && <Image
                     src={imgSrc}
                     alt={`${m.name}, ${craft.name}`}
@@ -366,14 +366,21 @@ export default function MastersPage() {
                   </p>
                   <p className="card__meta">{[m.since ? `${text('Practising since', 'ལག་ལེན་འགོ་བཙུགས')} ${m.since}` : '', m.yearAwarded ? `${text('Awarded', 'གནང་སྟེ')} ${m.yearAwarded}` : ''].filter(Boolean).join(' · ')}</p>
                   <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />
-                  <Link className="news__more" href={`/masters/${encodeURIComponent(m.slug)}`}>
+                  <span className="news__more">
                     {text(`Read this profile →`, `ལག་བཟོ་${craft.dzongkha && dz ? craft.dzongkha : craft.name} ཉོ →`)}
-                  </Link>
+                  </span>
                 </div>
-              </article>
+              </Link>
             );
           })}
         </div>
+        {honoursStatus === 'ready' && filtered.length === 0 && (
+          <p className="section__lede" role="status" style={{ marginTop: 20 }}>
+            {activeTab === 'Enterprise of the Year' || activeTab === 'Young Artisan Award'
+              ? text('First award to be announced at the Annual Sector Forum', 'ལོ་བསྟར་ལས་སྡེའི་གྲོས་འཛོམས་ནང་གཟེངས་བསྟོད་དང་པ་གསལ་བསྒྲགས་འབད་ནི།')
+              : text('No awardees match these filters.', 'དབྱེ་གཞི་འདི་དང་མཐུན་པའི་གཟེངས་བསྟོད་ཐོབ་མི་མེད།')}
+          </p>
+        )}
         <p className="footnote" role="status" style={{ marginTop: 20 }}>
           {honoursStatus === 'loading' ? text('Loading recognised members…', 'ངོས་ལེན་ཐོབ་མི་འཐུས་མི་ཚུ་ཕབ་ལེན་འབད་དོ…') : honoursStatus === 'error' ? text('The honours directory is temporarily unavailable.', 'གཟེངས་བསྟོད་ཐོ་གཞུང་འདི་གནས་སྐབས་ཅིག་ལག་ལེན་མི་འཐབ།') : allRecognised.length === 0 ? text('No recognised-member profiles have been published yet.', 'ད་ལྟོ་ངོས་ལེན་ཐོབ་མིའི་གསལ་སྡུད་ཅིག་ཡང་དཔེ་སྐྲུན་མ་འབད།') : text('Profiles are managed by the HAB Secretariat.', 'གསལ་སྡུད་ཚུ་ HAB ལས་ཚོགས་ཀྱིས་འཛིན་སྐྱོང་འཐབ་ཨིན།')}
         </p>

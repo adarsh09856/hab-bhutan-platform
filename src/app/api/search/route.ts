@@ -140,7 +140,17 @@ export async function GET(req: NextRequest) {
         })
         .catch(() => []),
       prisma.traderRecord.findMany({
-        where: { isVisible: true, expiresAt: { gt: new Date() }, OR: [{ shopName: { contains: q, mode: 'insensitive' } }, { dzongkhag: { contains: q, mode: 'insensitive' } }, { town: { contains: q, mode: 'insensitive' } }, { shortDescription: { contains: q, mode: 'insensitive' } }] },
+        where: {
+          isVisible: true,
+          expiresAt: { gt: new Date() },
+          OR: [
+            { shopName: { contains: q, mode: 'insensitive' } },
+            { dzongkhag: { contains: q, mode: 'insensitive' } },
+            { town: { contains: q, mode: 'insensitive' } },
+            { shortDescription: { contains: q, mode: 'insensitive' } },
+            { craftKeys: { array_contains: [q] } },
+          ],
+        },
         take: 10,
       }).catch(() => []),
     ]);
@@ -187,16 +197,14 @@ export async function GET(req: NextRequest) {
       badge: c.key?.toUpperCase(),
     }));
 
-    // Format members
-    // Member registry records are private; the public directory uses independently
-    // accredited trader listings instead.
+    // Member registry records are private; expose only public trader directory fields.
     const members = dbTraders.map((trader) => ({
       id: trader.id,
       title: trader.shopName,
       subtitle: `${trader.town} · ${trader.dzongkhag}`,
-      description: trader.shortDescription,
+      description: trader.shortDescription || '',
       url: `/traders/${encodeURIComponent(trader.slug)}`,
-      imageUrl: trader.bannerUrl || (Array.isArray(trader.productPhotoUrls) ? trader.productPhotoUrls[0] : null) || '/assets/photos/image-unavailable.svg',
+      imageUrl: trader.bannerUrl || '/assets/photos/image-unavailable.svg',
       category: 'Accredited Trader',
       badge: 'HAB ACCREDITED',
     }));

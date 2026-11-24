@@ -6,7 +6,7 @@ import Image from 'next/image';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { eventImage } from '@/lib/event-illustrations';
-import { eventIsUpcoming } from '@/lib/event-dates';
+import { eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
 
@@ -131,9 +131,7 @@ export default function EventsPage() {
                     />
                   </figure>
                   <span className="eventcard__cal">
-                    <span className="eventcard__day">{e.day || ''}</span>
-                    <span className="eventcard__mon">{e.mon || ''}</span>
-                    <span className="eventcard__year">{e.year || e.dateDisplay || ''}</span>
+                    <span className="eventcard__date">{formatEventDateRange(e.startDate, e.endDate, e.dateDisplay) || 'Date to be announced'}</span>
                   </span>
                 </Link>
 

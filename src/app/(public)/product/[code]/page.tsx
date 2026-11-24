@@ -384,7 +384,7 @@ export default function ProductDetailPage() {
                 {(product.region || product.maker_since) && <span className="makerpanel__meta" id="prodMakerMeta">{[product.region, product.maker_since && `Member since ${product.maker_since}`].filter(Boolean).join(' · ')}</span>}
                 {product.maker_blurb && <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>}
               </span>
-              <Link className="makerpanel__go" id="prodMakerLink" href={product.traderSlug ? `/traders/${encodeURIComponent(product.traderSlug)}` : '/members'} aria-label={product.traderSlug ? `View ${product.traderName}` : 'Browse registered makers'}>→</Link>
+              <Link className="makerpanel__go" id="prodMakerLink" href={product.traderSlug ? `/traders/${encodeURIComponent(product.traderSlug)}` : '/traders'} aria-label={product.traderSlug ? `View ${product.traderName}` : 'Browse registered makers'}>→</Link>
             </div>}
 
           </div>
