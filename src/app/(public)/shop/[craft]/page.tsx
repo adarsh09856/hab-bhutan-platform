@@ -247,8 +247,8 @@ function ShopGridContent() {
                   name={p.name}
                   priceUSD={p.priceUSD ?? p.price}
                   craftKey={p.craftKey}
-                  region={p.region}
-                  maker={typeof p.maker === 'object' ? p.maker?.name : p.maker}
+                  region={p.region || p.maker?.dzongkhag || p.trader?.dzongkhag}
+                  maker={typeof p.maker === 'object' ? p.maker?.name || p.trader?.shopName : p.maker || p.trader?.shopName}
                   imageUrl={p.imageUrl || p.image_path || (p.images && p.images[0]?.url)}
                   images={p.images}
                   stock={p.stock}

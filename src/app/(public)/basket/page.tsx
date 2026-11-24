@@ -142,6 +142,7 @@ export default function BasketPage() {
                           <p className="card__meta">
                             {line.maker} · {line.region}
                           </p>
+                          {(line.availability === 'MADE_TO_ORDER' || line.lead) && <p className="card__meta">{line.availability === 'MADE_TO_ORDER' ? 'Made to order' : 'Lead time'}{line.lead ? ` · ${line.lead}` : ''}</p>}
                         </div>
 
                         <div className="qty">
@@ -156,6 +157,7 @@ export default function BasketPage() {
                           <button
                             type="button"
                             className="qty__btn"
+                            disabled={line.availability === 'SOLD_OUT' || (line.availability !== 'MADE_TO_ORDER' && line.quantity >= (line.stock || 0))}
                             onClick={() => addToCart(line.code, 1, { silent: true })}
                           >
                             +

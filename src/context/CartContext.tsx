@@ -12,6 +12,9 @@ export interface CartItem {
   maker: string;
   priceUSD: number;
   imageUrl?: string;
+  lead?: string;
+  availability?: string;
+  stock: number;
   quantity: number;
   lineTotalUSD: number;
 }
@@ -43,7 +46,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [catalogue, setCatalogue] = useState<Record<string, { code: string; name: string; priceUSD: number; craftKey: string; region: string; maker?: { name?: string }; imageUrl?: string; stock: number }>>({});
+  const [catalogue, setCatalogue] = useState<Record<string, { code: string; name: string; priceUSD: number; craftKey: string; region: string; maker?: { name?: string }; imageUrl?: string; stock: number; lead?: string; availability?: string }>>({});
   const [catalogueLoaded, setCatalogueLoaded] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<'ems' | 'express'>('ems');
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -68,7 +71,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (!data.success || data.fallback) throw new Error('Saved catalogue unavailable');
         const byCode: typeof catalogue = {};
         for (const product of data.products || []) {
-          if (product.status === 'PUBLISHED') byCode[product.code] = product;
+          if (product.status === 'PUBLISHED') byCode[product.code] = {
+            ...product,
+            maker: product.maker || (product.trader?.shopName ? { name: product.trader.shopName } : undefined),
+            region: product.region || product.maker?.dzongkhag || product.trader?.dzongkhag || '',
+          };
         }
         setCatalogue(byCode);
         setCatalogueLoaded(true);
@@ -111,7 +118,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     const currentQty = cart[code] || 0;
-    const next = { ...cart, [code]: currentQty + qty };
+    const product = catalogue[code];
+    if (product?.availability === 'SOLD_OUT' || (product?.availability !== 'MADE_TO_ORDER' && product?.stock <= 0)) {
+      if (!silent) showToast(`“${product.name}” is sold out.`, true);
+      return;
+    }
+    const maxQuantity = product?.availability === 'MADE_TO_ORDER' ? 20 : Math.max(1, Math.min(20, product?.stock || 20));
+    const nextQuantity = Math.min(maxQuantity, currentQty + qty);
+    if (nextQuantity === currentQty) {
+      if (!silent) showToast(`Only ${maxQuantity} can be added to one basket.`, true);
+      return;
+    }
+    const next = { ...cart, [code]: nextQuantity };
     saveCart(next);
 
     if (!silent) {
@@ -161,6 +179,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         maker: product.maker?.name || '',
         priceUSD: product.priceUSD,
         imageUrl,
+        lead: product.lead || '',
+        availability: product.availability || (product.stock > 0 ? 'IN_STOCK' : 'SOLD_OUT'),
+        stock: product.stock,
         quantity: qty,
         lineTotalUSD: product.priceUSD * qty,
       };

@@ -62,11 +62,13 @@ export default function ProductDetailPage() {
             priceUSD: Number(p.priceUSD ?? p.price ?? 0),
             stock: Number(p.stock ?? 0),
             availability: normalizeProductAvailability(p.availability, Number(p.stock ?? 0)),
+            traderSlug: p.trader?.slug || '',
+            traderName: p.trader?.shopName || '',
             craftKey: p.craftKey || '',
             craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
             maker: typeof p.maker === 'object' ? (p.maker?.name || '') : (p.maker || ''),
             maker_avatar: typeof p.maker === 'object' ? (p.maker?.portraitUrl || '') : '',
-            region: p.region || p.dzongkhag || '',
+            region: p.region || p.maker?.dzongkhag || p.trader?.dzongkhag || p.dzongkhag || '',
             description: p.description || p.desc || '',
             size: p.size || '',
             weight: p.weight || '',
@@ -304,7 +306,7 @@ export default function ProductDetailPage() {
                 : product.availability === 'SOLD_OUT' || product.stock <= 0
                   ? 'Sold out'
                   : 'In stock'}
-              {product.availability === 'MADE_TO_ORDER' && product.lead ? ` · ${product.lead}` : ''}
+              {product.lead ? ` · Lead time: ${product.lead}` : ''}
             </p>
 
             {product.description && <div className="prodbuy__desc" id="prodDesc" dangerouslySetInnerHTML={{ __html: preparePolicyHtml(String(product.description), { inheritTypography: true }).html }} />}
@@ -370,19 +372,19 @@ export default function ProductDetailPage() {
             )}
 
             {/* Maker Accreditation Card */}
-            {product.maker && <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
+            {(product.maker || product.traderName) && <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
               <span className="makerpanel__avatar" style={{ overflow: 'hidden' }}>
                 {product.maker_avatar
-                  ? <img src={product.maker_avatar} alt={product.maker} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : product.maker.slice(0, 1)}
+                  ? <img src={product.maker_avatar} alt={product.traderName || product.maker} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (product.traderName || product.maker).slice(0, 1)}
               </span>
               <span className="makerpanel__body">
                 <span className="eyebrow eyebrow--muted eyebrow--sm">Made by</span>
-                <span className="makerpanel__name" id="prodMaker">{product.maker}</span>
+                <span className="makerpanel__name" id="prodMaker">{product.traderName || product.maker}</span>
                 {(product.region || product.maker_since) && <span className="makerpanel__meta" id="prodMakerMeta">{[product.region, product.maker_since && `Member since ${product.maker_since}`].filter(Boolean).join(' · ')}</span>}
                 {product.maker_blurb && <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>}
               </span>
-              <span className="makerpanel__go" id="prodMakerLink">✓</span>
+              <Link className="makerpanel__go" id="prodMakerLink" href={product.traderSlug ? `/traders/${encodeURIComponent(product.traderSlug)}` : '/members'} aria-label={product.traderSlug ? `View ${product.traderName}` : 'Browse registered makers'}>→</Link>
             </div>}
 
           </div>
