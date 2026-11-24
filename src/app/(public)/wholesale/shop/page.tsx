@@ -400,7 +400,7 @@ function WholesaleShopContent() {
                     : '/assets/photos/image-unavailable.svg';
 
                   return (
-                    <article key={p.code} className="card product wscard" id={p.code}>
+                    <article key={p.code} className="card product wscard" id={p.code} data-hab-record-key={`product:${p.code}`}>
                       <Link className="product__shot" href={`/wholesale/product/${encodeURIComponent(p.code)}`}>
                         <div className="frame frame--square" style={{ position: 'relative', overflow: 'hidden' }}>
                           <Image

@@ -783,7 +783,7 @@ export default function HomePage() {
             const productImg = p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg';
             const makerName = typeof p.maker === 'object' ? p.maker?.name : p.maker;
             return (
-              <article key={`${p.code}-${pIdx}`} className="card product">
+              <article key={`${p.code}-${pIdx}`} data-hab-record-key={`product:${p.id || p.code}`} className="card product">
                 <Link className="product__shot" href={`/product/${p.code}`} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                   <figure className="frame frame--square has-image">
                     <img
@@ -1013,7 +1013,7 @@ export default function HomePage() {
             const num = String(idx + 1).padStart(2, '0');
             const craftPhoto = craft.bannerUrl || craft.image_path || null;
             return (
-              <article key={craft.key} className="card craft">
+              <article key={craft.key} data-hab-record-key={`craft:${craft.key}`} className="card craft">
                 {craftPhoto && !/(?:^|\/)image-unavailable\.svg(?:[?#].*)?$/i.test(craftPhoto) && (
                   <figure className="frame frame--wide16" style={{ position: 'relative' }} data-hab-gallery="craft" data-hab-gallery-id={craft.key}>
                     <span className="craft__num">{num} / 13</span>
@@ -1110,7 +1110,7 @@ export default function HomePage() {
 
         <div className="grid grid--3">
           {programmes.slice(0, 3).map((p, idx) => (
-            <article key={p.ref || idx} className="card programme">
+            <article key={p.ref || idx} data-hab-record-key={`programme:${p.ref || idx}`} className="card programme">
               <div className="programme__head">
                 <span className="badge badge--ref">{String(p.ref || '').toUpperCase()}</span>
                 <h3 className="card__title clamp-3">{p.title}</h3>
@@ -1261,7 +1261,7 @@ export default function HomePage() {
         <div className="newsrow">
           <div className="grid grid--2" data-home-news-posts>
             {news.map((item, idx) => (
-              <article key={item.slug || idx} className="card news">
+              <article key={item.slug || idx} data-hab-record-key={`news:${item.id || item.slug || idx}`} className="card news">
                 <figure className="frame frame--wide16" data-hab-gallery="news" data-hab-gallery-id={item.id}>
                   <img
                     src={item.image_path || '/assets/photos/image-unavailable.svg'}

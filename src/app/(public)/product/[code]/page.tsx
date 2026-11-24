@@ -396,7 +396,7 @@ export default function ProductDetailPage() {
         {related.length > 0 ? (
         <div className="grid grid--4" id="prodRelated">
           {related.slice(0, 4).map((rp: any) => (
-            <article key={rp.code} className="card product">
+            <article key={rp.code} data-hab-record-key={`product:${rp.code}`} className="card product">
               <Link className="product__shot" href={`/product/${rp.code}`}>
                 <figure className="frame frame--square">
                   <img

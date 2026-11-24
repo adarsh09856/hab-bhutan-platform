@@ -47,7 +47,7 @@ export default function ProductCard({
   }, [resolvedInitialImage]);
 
   return (
-    <div className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
+    <div data-hab-record-key={`product:${code}`} className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
       <Link href={`/product/${code}`} data-cms-img data-hab-gallery="product" data-hab-gallery-id={code} data-hab-gallery-view="card" className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
         <img
           src={imgSrc}

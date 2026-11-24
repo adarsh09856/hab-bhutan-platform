@@ -170,7 +170,7 @@ export default function WholesaleClientView({
               : '/assets/photos/image-unavailable.svg';
 
             return (
-              <article key={p.code} className="card product">
+              <article key={p.code} data-hab-record-key={`product:${p.code}`} className="card product">
                 <Link className="product__shot" href={`/wholesale/product/${encodeURIComponent(p.code)}`}>
                   <div className="frame frame--square" style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image

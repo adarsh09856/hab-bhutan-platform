@@ -16,6 +16,25 @@ const EDITABLE_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,button,a,figcaption,img,span,l
 const EXCLUDED_SELECTOR = '.hab-page-quick-editor,.hab-section-edit-badge,[data-hab-no-quick-edit],[role="dialog"],script,style,noscript';
 
 function elementKey(element: Element, root: Element): string {
+  // Repeated database records can move when their status, sort order, or
+  // publication state changes. Key edits inside a record by its stable ID so
+  // a saved edit for "card 1" cannot leak onto a different record later.
+  const record = element.closest<HTMLElement>('[data-hab-record-key]');
+  if (record && root.contains(record)) {
+    const recordKey = record.dataset.habRecordKey?.trim();
+    if (recordKey) {
+      const parts: string[] = [];
+      let current: Element | null = element;
+      while (current && current !== record && parts.length < 10) {
+        const parent: Element | null = current.parentElement;
+        if (!parent) break;
+        const siblings = Array.from(parent.children).filter((child) => child.tagName === current!.tagName);
+        parts.unshift(`${current.tagName.toLowerCase()}:${Math.max(1, siblings.indexOf(current) + 1)}`);
+        current = parent;
+      }
+      if (current === record) return `record:${encodeURIComponent(recordKey)}/${parts.join('/')}`;
+    }
+  }
   const explicit = element.getAttribute('data-hab-edit-key');
   if (explicit) return explicit;
   const zone = element.closest('.hab-public-shell, header, footer, .utility') || root;

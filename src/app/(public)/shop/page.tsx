@@ -273,7 +273,7 @@ function ShopContent() {
             ) : filteredAndSortedProducts.length > 0 ? (
               <div className="grid grid--3" id="shopProducts">
                 {filteredAndSortedProducts.map((p) => (
-                  <article key={p.code} className="card product">
+                  <article key={p.code} data-hab-record-key={`product:${p.code}`} className="card product">
                     <Link className="product__shot" href={`/product/${p.code}`} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                       <figure className="frame frame--square has-image">
                         <img

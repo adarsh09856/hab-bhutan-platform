@@ -126,7 +126,7 @@ export default function ProgrammesPage() {
 
         <div className="grid grid--3" id="programmeList">
           {programmes.map((p, idx) => (
-            <article key={p.ref || idx} className="card programme">
+            <article key={p.ref || idx} data-hab-record-key={`programme:${p.ref || idx}`} className="card programme">
               <figure className="frame frame--wide16">
                 <img
                   src={(p as any).imageUrl || p.image_path || fallbackHeroPhoto(idx)}

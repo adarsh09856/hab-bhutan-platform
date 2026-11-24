@@ -27,7 +27,7 @@ export default function CraftCard({
   const numString = ('0' + (index + 1)).slice(-2) + '/13';
 
   return (
-    <article className="card craft bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#33261F] transition-colors duration-150 group">
+    <article data-hab-record-key={`craft:${craftKey}`} className="card craft bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#33261F] transition-colors duration-150 group">
       {imageUrl && !/(?:^|\/)image-unavailable\.svg(?:[?#].*)?$/i.test(imageUrl) && (
         <Link href={`/craft/${craftKey}`} className="craft__shot block relative aspect-[16/10] bg-[#E8E1D4] border-b border-[#E4DDD1] p-3 overflow-hidden">
           <img

@@ -311,7 +311,7 @@ export default function CraftProfilePage() {
         {relatedLoading.products ? <p>Loading shop items…</p> : relatedErrors.products ? <p role="alert">The craft shop items are temporarily unavailable. Please try again shortly.</p> : products.length > 0 ? (
           <div className="grid grid--4" data-cms-repeat>
             {products.map((p) => (
-              <article key={p.code} className="card product" data-cms-item data-code={p.code}>
+              <article key={p.code} className="card product" data-cms-item data-code={p.code} data-hab-record-key={`product:${p.code}`}>
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img>
                     <img
@@ -381,7 +381,7 @@ export default function CraftProfilePage() {
           </div>
           <div className="grid grid--3">
             {clusters.map((c) => (
-              <article key={c.key} className="card cluster">
+              <article key={c.key} data-hab-record-key={`cluster:${c.key}`} className="card cluster">
                 <Link className="card__shot" href={`/clusters/${c.key}`}>
                   <figure className="frame frame--wide16 has-image" data-cms-img>
                     <img

@@ -188,7 +188,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
         {/* Outlets Grid */}
         <div className="grid grid--3">
           {visibleOutlets.map((o: any) => (
-            <article key={o.key} className="card outlet hover:shadow-md transition-shadow">
+            <article key={o.key} data-hab-record-key={`outlet:${o.id || o.key}`} className="card outlet hover:shadow-md transition-shadow">
               <Link href={`/outlets/${o.key}`}>
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
@@ -273,7 +273,7 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
 
         <div className="grid grid--3">
           {clusters.slice(0, 3).map((c: any) => (
-            <article key={c.key} className="card cluster">
+            <article key={c.key} data-hab-record-key={`cluster:${c.id || c.key}`} className="card cluster">
               <Link href={`/clusters/${c.key}`}>
                 <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image

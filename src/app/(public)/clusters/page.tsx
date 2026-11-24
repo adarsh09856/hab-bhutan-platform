@@ -87,7 +87,7 @@ export default async function ClustersPage() {
             const imgSrc = row.imageUrl || '/assets/photos/image-unavailable.svg';
 
             return (
-              <article key={row.key} id={row.key} className="clusterlist__item" data-cms-item>
+              <article key={row.key} id={row.key} className="clusterlist__item" data-cms-item data-hab-record-key={`cluster:${row.key}`}>
                 <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                   <Image
                     src={imgSrc}

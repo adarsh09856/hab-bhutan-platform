@@ -154,7 +154,7 @@ export default function MemberProfilePage() {
 
           <div className="grid grid--4" id="memberProducts" data-cms-repeat>
             {products.map((p) => (
-              <article key={p.code} className="card product" data-cms-item data-code={p.code}>
+              <article key={p.code} className="card product" data-cms-item data-code={p.code} data-hab-record-key={`product:${p.code}`}>
                 <Link className="product__shot" href={`/product/${p.code}`}>
                   <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     {p.image_path && <Image

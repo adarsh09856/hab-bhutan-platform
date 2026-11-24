@@ -110,7 +110,7 @@ export default function EventsPage() {
             const image = eventImage(e.key, e.bannerUrl || e.imageUrl || e.image_path || e.image_url);
 
             return (
-              <article key={e.key} id={e.key} className="eventcard" data-cms-item>
+              <article key={e.key} id={e.key} className="eventcard" data-cms-item data-hab-record-key={`event:${e.id || e.key}`}>
                 <Link className="eventcard__shot" href={`/events/${e.key}`}>
                   <figure className="frame frame--eventshot has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image

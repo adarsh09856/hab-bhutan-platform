@@ -119,7 +119,7 @@ export default async function MembersPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-cms-repeat>
           {registeredMembers.map((member) => (
-            <article key={member.regNumber} className="rounded-2xl border border-stone-200 bg-white p-6">
+            <article key={member.regNumber} data-hab-record-key={`member:${member.regNumber}`} className="rounded-2xl border border-stone-200 bg-white p-6">
               <h3 className="font-serif text-lg font-bold">{member.name}</h3>
               <p className="mt-2 text-sm text-stone-600">{CLIENT_DATA.crafts.find((craft) => craft.key === member.craftKey)?.name || member.craftKey || 'Craft not recorded'}</p>
               {member.dzongkhag && <p className="text-sm text-stone-600">{member.dzongkhag}</p>}
@@ -151,7 +151,7 @@ export default async function MembersPage() {
             const share = total > 0 ? Math.round((n / total) * 100) : 0;
 
             return (
-              <article key={c.key} className="countcard">
+              <article key={c.key} data-hab-record-key={`craft:${c.key}`} className="countcard">
                 <span className="countcard__n">{n.toLocaleString('en-US')}</span>
                 <div className="countcard__body">
                   <h3 className="countcard__name">{c.name}</h3>
@@ -235,7 +235,7 @@ export default async function MembersPage() {
             const hasPortrait = Boolean(imgSrc) && !isPlaceholderPortrait(imgSrc);
 
             return (
-              <article key={m.name} className="card honour">
+              <article key={m.name} data-hab-record-key={`honour:${m.name}`} className="card honour">
                 {hasPortrait && <figure className="frame frame--square has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={imgSrc}

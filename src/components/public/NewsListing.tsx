@@ -133,7 +133,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
                 const imgSrc = n.image_path || '/assets/photos/image-unavailable.svg';
 
                 return (
-                  <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item>
+                  <article key={slug} className="newsitem" id={`news-${slug}`} data-cms-item data-hab-record-key={`news:${n.id || slug}`}>
                     <Link href={`/news/${slug}`} className="block relative" style={{ minHeight: 190 }}>
                       <figure className="frame frame--wide16 has-image" data-cms-img data-hab-gallery="news" data-hab-gallery-id={n.id} style={{ position: 'relative', width: '100%', height: '100%', minHeight: 190, overflow: 'hidden' }}>
                         <Image
