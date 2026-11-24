@@ -385,7 +385,7 @@ async function runTests() {
     // Verify public /api/events normalizer extracts imageUrl and pdfUrl
     const publicEventsRoute = fs.readFileSync(path.join(rootDir, 'src/app/api/events/route.ts'), 'utf-8');
     assert(publicEventsRoute.includes('eventImg = sched.imageUrl || e.imageUrl'), 'PUBLIC /api/events extracts eventImg');
-    assert(publicEventsRoute.includes('eventPdf = sched.pdfUrl || e.pdfUrl'), 'PUBLIC /api/events extracts eventPdf');
+    assert(publicEventsRoute.includes('eventPdf = publicDocumentUrl(sched.pdfUrl || e.pdfUrl)'), 'PUBLIC /api/events extracts and normalizes eventPdf');
 
     // DELETE
     await prisma.eventRecord.delete({ where: { key: testKey } });

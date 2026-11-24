@@ -28,15 +28,15 @@ function assert(cond, msg) {
 console.log('[1/3] Verifying Sidebar Categories in admin layout...');
 
 const requiredGroups = [
-  'Website & Pages',
+  'Pages & Website Content',
   'Stories & Events',
-  'Artisans & Heritage',
-  'Commerce & Orders',
-  'Operations & Settings',
+  'Members & Heritage',
+  'Products & Sales',
+  'Settings & Staff Access',
 ];
 
 for (const group of requiredGroups) {
-  assert(layoutContent.includes(`group: '${group}'`), `Sidebar includes category: "${group}"`);
+  assert(layoutContent.includes(`group: '${group}'`), `Sidebar includes current category: "${group}"`);
 }
 
 // ----------------------------------------------------

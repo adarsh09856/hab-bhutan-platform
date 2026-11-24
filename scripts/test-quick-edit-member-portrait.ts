@@ -26,7 +26,7 @@ assert.match(publicMapper, /portraitUrl:\s*member\.portraitUrl/,
 assert.match(viewMapper, /regNumber:\s*record\.regNumber/,
   'the public member view retains the non-sensitive registration key for record matching');
 const uploadRoute = fs.readFileSync('src/app/api/admin/upload/route.ts', 'utf8');
-assert.match(uploadRoute, /purpose === 'member-portrait' \? 'members:edit' : 'content:edit'/,
+assert.match(uploadRoute, /purpose === 'member-portrait'[\s\S]*requirePermission\(req, 'members:edit'\)[\s\S]*requireAnyPermission\(req, \['content:create', 'content:edit'\]\)/,
   'portrait upload accepts member-edit permission without broadening other media uploads');
 
 console.log('PASS: Quick Edit can target an empty member portrait, upload and save to the protected member record, and render the saved portrait publicly.');
