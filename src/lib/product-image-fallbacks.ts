@@ -2,7 +2,9 @@ type ProductImage = { url: string; role: string; [key: string]: unknown };
 
 /** Use the upload pipeline's smallest standard WebP variant on catalogue cards. */
 export function productCardImageUrl(url: string): string {
-  return url.replace(/-(?:960|1600)w\.webp(?=[?#]|$)/i, '-480w.webp');
+  return url.replace(/-(\d+)w\.webp(?=[?#]|$)/i, (variant, width: string) =>
+    Number(width) > 480 ? '-480w.webp' : variant
+  );
 }
 
 const KNOWN_PRODUCT_IMAGES: Record<string, string> = {

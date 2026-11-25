@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { resolvedHonourSlug } from '@/lib/honour-slugs';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,10 +33,7 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { yearAwarded: 'desc' }, { name: 'asc' }],
     });
 
-    const withSlugs = honours.map((honour) => ({
-      ...honour,
-      slug: honour.slug || `${honour.name}-${honour.yearAwarded}`.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || honour.id,
-    }));
+    const withSlugs = honours.map((honour) => ({ ...honour, slug: resolvedHonourSlug(honour) }));
 
     const res = NextResponse.json({ success: true, honours: withSlugs, masters: withSlugs });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');

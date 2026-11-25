@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         mapUrl: cell(row, 'mapurl') || null, openingHours: cell(row, 'openinghours') || null,
         shortDescription: cell(row, 'shortdescription'), quote: cell(row, 'quote') || null, description: cell(row, 'description'),
         craftKeys: splitList(cell(row, 'craftkeys')), productTypes: splitList(cell(row, 'producttypes')),
-        productPhotoUrls: splitList(cell(row, 'productphotourls')), bannerUrl: cell(row, 'bannerurl') || null,
+        productPhotoUrls: splitList(cell(row, 'productphotourls')).slice(0, 8), bannerUrl: cell(row, 'bannerurl') || null,
         expiresAt: expiry, isVisible: !['false', '0', 'no'].includes(cell(row, 'isvisible').toLowerCase()),
         verifiedSince: Number(cell(row, 'verifiedsince')) || null, sortOrder: Number(cell(row, 'sortorder')) || 0,
       };

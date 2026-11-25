@@ -53,7 +53,8 @@ const FOOTER_TRANSLATIONS: Record<string, string> = {
   "Duty & customs": "འགག་སྒོའི་སྲིད་བྱུས",
 
   // Members links
-  "Directory by category": "འཐུས་མིའི་དཀར་ཆག",
+  "Directory by category": "ཚོང་པའི་ཐོ་གཞུང",
+  "Trader directory": "ཚོང་པའི་ཐོ་གཞུང",
   "Publications": "དཔེ་སྐྲུན",
   "Publications & downloads": "དཔེ་སྐྲུན་དང་ཕབ་ལེན",
   "Member shops & clusters": "འཐུས་མིའི་ཚོང་ཁང་དང་ལག་བཟོའི་གླིང",
@@ -137,11 +138,11 @@ export default function Footer({ initialNavigation }: { initialNavigation?: Foot
     {
       title: "Members",
       links: [
-        { label: "Accredited traders", href: "/traders" },
+        { label: "Trader directory", href: "/traders" },
         { label: "Publications", href: "/publications" },
         { label: "Member shops & clusters", href: "/outlets" },
         { label: "Member login", href: "/login" },
-        { label: "Apply to join", href: "/register" },
+        { label: "Apply to join", href: "/membership/apply" },
       ]
     },
     {
@@ -333,9 +334,12 @@ export default function Footer({ initialNavigation }: { initialNavigation?: Foot
             <nav key={col.title} className="footer__col" aria-label={colTitle}>
               <h2 className="footer__title">{colTitle}</h2>
               {col.links.map((link) => {
-                const linkText = translateText(link.label);
+                const legacyDirectory = /directory by category|find a member|members directory/i.test(link.label)
+                  || /^\/members(?:[/?#]|$)/i.test(link.href);
+                const label = legacyDirectory ? 'Trader directory' : link.label;
+                const linkText = translateText(label);
                 return (
-                  <Link key={`${link.label}-${link.href}`} href={resolveFooterHref(link.label, link.href)}>{linkText}</Link>
+                  <Link key={`${link.label}-${link.href}`} href={resolveFooterHref(label, link.href)}>{linkText}</Link>
                 );
               })}
             </nav>

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -15,6 +16,7 @@ import { useCart } from '@/context/CartContext';
 import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 import { isPolicyHtml, preparePolicyHtml } from '@/lib/policy-html';
 import { productHref } from '@/lib/product-routes';
+import { awardTypeLabel } from '@/lib/award-types';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
@@ -86,8 +88,8 @@ export default function HomePage() {
     aboutBandImageUrl: '/assets/photos/about-hab.jpg',
     aboutBandImageCaption: 'photo — HAB training workshop',
     punakhaMarketNotice: CLIENT_VERBATIM.punakhaMarket,
-    membershipLeftTitle: 'Trader directory',
-    membershipLeftText: 'Find a registered trader by craft, product or location.',
+    membershipLeftTitle: 'Find a registered trader',
+    membershipLeftText: 'Find HAB-verified shops and traders across Bhutan by craft, product or dzongkhag.',
     membershipRightTitle: 'List your shop with HAB',
     membershipRightText: 'Registered traders get a verified listing, buyer introductions and a place in HAB’s trader directory.',
     membershipRightCtaText: 'Register as a trader',
@@ -220,10 +222,10 @@ export default function HomePage() {
               aboutBandImageUrl: d.setting.aboutBandImageUrl || prev.aboutBandImageUrl,
               aboutBandImageCaption: d.setting.aboutBandImageCaption || prev.aboutBandImageCaption,
               punakhaMarketNotice: d.setting.punakhaMarketNotice || prev.punakhaMarketNotice,
-              membershipLeftTitle: /member|artisan|craft/i.test(d.setting.membershipLeftTitle || '') ? prev.membershipLeftTitle : (d.setting.membershipLeftTitle || prev.membershipLeftTitle),
-              membershipLeftText: /member|artisan|cluster|thirteen crafts/i.test(d.setting.membershipLeftText || '') ? prev.membershipLeftText : (d.setting.membershipLeftText || prev.membershipLeftText),
-              membershipRightTitle: /member/i.test(d.setting.membershipRightTitle || '') ? prev.membershipRightTitle : (d.setting.membershipRightTitle || prev.membershipRightTitle),
-              membershipRightText: /membership|mBoB|annual dues/i.test(d.setting.membershipRightText || '') ? prev.membershipRightText : (d.setting.membershipRightText || prev.membershipRightText),
+              membershipLeftTitle: /^(?:trader directory|find a member)$/i.test(d.setting.membershipLeftTitle || '') ? prev.membershipLeftTitle : (d.setting.membershipLeftTitle || prev.membershipLeftTitle),
+              membershipLeftText: /master craftspeople|member directory|verified weaving clusters|national directory/i.test(d.setting.membershipLeftText || '') ? prev.membershipLeftText : (d.setting.membershipLeftText || prev.membershipLeftText),
+              membershipRightTitle: /member|artisan|craft|directory/i.test(d.setting.membershipRightTitle || '') ? prev.membershipRightTitle : (d.setting.membershipRightTitle || prev.membershipRightTitle),
+              membershipRightText: /membership|mBoB|annual dues|vetted member directory/i.test(d.setting.membershipRightText || '') ? prev.membershipRightText : (d.setting.membershipRightText || prev.membershipRightText),
               membershipRightCtaText: /member|apply/i.test(d.setting.membershipRightCtaText || '') ? prev.membershipRightCtaText : (d.setting.membershipRightCtaText || prev.membershipRightCtaText),
               shopEyebrow: d.setting.shopEyebrow || prev.shopEyebrow,
               shopHeading: d.setting.shopHeading || prev.shopHeading,
@@ -311,10 +313,8 @@ export default function HomePage() {
             .filter((m: any) => m.showHome)
             .slice(0, 6)
             .map((m: any) => {
-            const details = [m.craft, m.dzongkhag, m.yearAwarded ? `Since ${m.yearAwarded}` : null].filter((value) => typeof value === 'string' && value.trim());
-            const awardLabel = m.awardType === 'NationalMaster' 
-              ? 'National Craft Award' 
-              : (m.awardType === 'RoyalSeal' ? 'Master Craftsperson' : (m.honour || 'Master Craftsperson'));
+            const details = [m.craft, m.dzongkhag, m.practisingSince ? `Practising since ${m.practisingSince}` : null, m.yearAwarded ? `Awarded ${m.yearAwarded}` : null].filter((value) => typeof value === 'string' && value.trim());
+            const awardLabel = awardTypeLabel(m.awardType);
             return {
               name: m.name.trim(),
               slug: m.slug,
@@ -512,7 +512,7 @@ export default function HomePage() {
         setSiteSettings((current) => ({
           ...current,
           stats: current.stats.map((stat, index) => index === 2
-            ? { ...stat, value: data.traders.length ? String(data.traders.length) : '', label: 'Registered traders across Bhutan', url: '' }
+            ? { ...stat, value: data.traders.length ? String(data.traders.length) : '', label: 'Affiliated stores across Bhutan', url: '/traders' }
             : stat),
         }));
       })
@@ -1087,14 +1087,12 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {masters.length > 0 ? <div className="grid grid--3">
+        {masters.length > 0 ? <div className="grid grid--3 masters-home-grid" aria-label={isDz ? 'མཁས་དབང་ལག་བཟོ་བ' : 'Featured master craftspeople'}>
           {masters.map((m, idx) => (
             <Link key={idx} className="card honour" href={`/masters/${encodeURIComponent(m.slug)}`} style={{ color: 'inherit' }}>
-              {m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path) && (
-                <figure className="frame frame--square has-image" style={{ position: 'relative', overflow: 'hidden' }}>
-                  <img src={m.image_path} alt={`${m.name}, master craftsperson`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </figure>
-              )}
+              <figure className={`frame frame--square${m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path) ? ' has-image' : ''} master-home-portrait`} style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4 / 5', background: '#eee5d8' }}>
+                {m.image_path && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(m.image_path) && <Image src={m.image_path} alt={`${m.name}, master craftsperson`} fill sizes="(max-width: 640px) 86vw, 33vw" style={{ objectFit: 'cover' }} />}
+              </figure>
               <div className="card__body">
                 <span className="honour__badge">{m.honour}</span>
                 <h3 className="card__title">{m.name}</h3>

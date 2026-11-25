@@ -9,6 +9,7 @@ import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { useLanguage } from '@/context/LanguageContext';
+import { awardTypeLabel } from '@/lib/award-types';
 
 export default function MastersPage() {
   const { language } = useLanguage();
@@ -37,7 +38,7 @@ export default function MastersPage() {
           title: h.title,
           craft_key: h.craft,
           dzongkhag: h.dzongkhag,
-          honour: h.awardType === 'NationalMaster' ? 'National Craft Award' : h.honour || 'Master Craftsperson',
+          honour: awardTypeLabel(h.awardType),
           since: h.practisingSince,
           yearAwarded: h.yearAwarded,
           note: h.shortDescription || h.citation,
@@ -364,7 +365,7 @@ export default function MastersPage() {
                   <p className="card__meta">
                     {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag}
                   </p>
-                  <p className="card__meta">{[m.since ? `${text('Practising since', 'ལག་ལེན་འགོ་བཙུགས')} ${m.since}` : '', m.yearAwarded ? `${text('Awarded', 'གནང་སྟེ')} ${m.yearAwarded}` : ''].filter(Boolean).join(' · ')}</p>
+                  <p className="card__meta">{`${text('Practising since', 'ལག་ལེན་འགོ་བཙུགས')} ${m.since || '—'} · ${text('Awarded', 'གནང་སྟེ')} ${m.yearAwarded || '—'}`}</p>
                   <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />
                   <span className="news__more">
                     {text(`Read this profile →`, `ལག་བཟོ་${craft.dzongkha && dz ? craft.dzongkha : craft.name} ཉོ →`)}
@@ -376,7 +377,7 @@ export default function MastersPage() {
         </div>
         {honoursStatus === 'ready' && filtered.length === 0 && (
           <p className="section__lede" role="status" style={{ marginTop: 20 }}>
-            {activeTab === 'Enterprise of the Year' || activeTab === 'Young Artisan Award'
+            {(activeTab === 'Enterprise of the Year' || activeTab === 'Young Artisan Award') && byAward.length === 0
               ? text('First award to be announced at the Annual Sector Forum', 'ལོ་བསྟར་ལས་སྡེའི་གྲོས་འཛོམས་ནང་གཟེངས་བསྟོད་དང་པ་གསལ་བསྒྲགས་འབད་ནི།')
               : text('No awardees match these filters.', 'དབྱེ་གཞི་འདི་དང་མཐུན་པའི་གཟེངས་བསྟོད་ཐོབ་མི་མེད།')}
           </p>

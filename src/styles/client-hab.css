@@ -1886,6 +1886,9 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 }
 .honour .card__title{font-family:var(--display);font-weight:400;font-size:var(--t-display-s);letter-spacing:-.008em;margin:0 0 4px}
 .honour .card__meta{margin-bottom:10px}
+.honour .card__title,
+.honour .card__text{hyphens:none;-webkit-hyphens:none;word-break:normal;overflow-wrap:break-word}
+.master-home-portrait{margin:0;aspect-ratio:4 / 5}
 
 /* ==========================================================================
    REGISTRATION
@@ -2248,6 +2251,11 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 .honour__badge{align-self:flex-start}
 .honour .card__text{margin:9px 0 0;flex:1}
 .honour .news__more{width:auto;border-top:1px solid var(--line-soft);margin-top:14px;padding-top:13px;display:block}
+
+@media (max-width: 640px){
+  .masters-home-grid{display:flex;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:2px 2px 14px}
+  .masters-home-grid>.honour{flex:0 0 min(86%, 360px);scroll-snap-align:start}
+}
 
 /* ==========================================================================
    EVENTS

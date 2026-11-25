@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Edit2, Trash2, CheckCircle, XCircle, Search, AlertCircle } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
-import { dateDisplayHasRange } from '@/lib/event-dates';
+import { formatEventDateRange, timeContainsEventDuration } from '@/lib/event-dates';
 
 interface EventItem {
   id: string;
@@ -74,6 +74,7 @@ export default function AdminEventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [requiresEndDate, setRequiresEndDate] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -105,25 +106,28 @@ export default function AdminEventsPage() {
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
+    setRequiresEndDate(false);
     setEditId(null);
     setShowModal(true);
   };
 
   const openEdit = (ev: EventItem) => {
     const sched = ev.schedule && typeof ev.schedule === 'object' ? ev.schedule : {};
+    const savedTime = ev.time || sched.time || '';
+    setRequiresEndDate(Boolean(ev.endDate) || timeContainsEventDuration(savedTime));
     setForm({
       key: ev.key,
       title: ev.title,
       titleDz: ev.titleDz || '',
       category: ev.category,
       categoryDz: ev.categoryDz || '',
-      dateDisplay: ev.dateDisplay,
+      dateDisplay: formatEventDateRange(ev.startDate, ev.endDate, ev.dateDisplay),
       startDate: ev.startDate ? new Date(ev.startDate).toISOString().slice(0, 10) : '',
       endDate: ev.endDate ? new Date(ev.endDate).toISOString().slice(0, 10) : '',
       shortSummary: ev.shortSummary || '',
       day: ev.day || sched.day || '12',
       mon: ev.mon || sched.mon || 'SEP',
-      time: ev.time || sched.time || '09:00 AM – 05:00 PM',
+      time: savedTime || '09:00 AM – 05:00 PM',
       imageUrl: ev.imageUrl || sched.imageUrl || '',
       pdfUrl: ev.pdfUrl || sched.pdfUrl || '',
       location: ev.location,
@@ -153,8 +157,18 @@ export default function AdminEventsPage() {
       showFlash('error', 'The event end date must be on or after its start date.');
       return;
     }
-    if (dateDisplayHasRange(form.dateDisplay) && (!form.startDate || !form.endDate)) {
-      showFlash('error', 'Add both start and end dates for a multi-day event.');
+    if (!form.startDate) {
+      showFlash('error', 'Add a start date before saving the event.');
+      return;
+    }
+    if (requiresEndDate && !form.endDate) {
+      showFlash('error', 'This event is multi-day. Add its end date so it remains upcoming through its final day.');
+      return;
+    }
+    if (timeContainsEventDuration(form.time)) {
+      showFlash('error', form.endDate
+        ? 'Time is for hours only. Replace the duration text with event hours.'
+        : 'Use the End date field for event duration, then enter hours in Time.');
       return;
     }
 
@@ -162,7 +176,11 @@ export default function AdminEventsPage() {
     try {
       const url = '/api/admin/events';
       const method = editId ? 'PUT' : 'POST';
-      const payload = editId ? { id: editId, ...form } : form;
+      const payload = {
+        ...(editId ? { id: editId } : {}),
+        ...form,
+        dateDisplay: formatEventDateRange(form.startDate, form.endDate, form.dateDisplay),
+      };
 
       const res = await fetch(url, {
         method,
@@ -403,8 +421,8 @@ export default function AdminEventsPage() {
                   </div>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <label className="block text-xs font-semibold text-slate-700 uppercase">Start date *<input type="date" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase">End date (multi-day)<input type="date" value={form.endDate} min={form.startDate || undefined} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase">Start date *<input type="date" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value, dateDisplay: formatEventDateRange(e.target.value, form.endDate) })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase">End date (for multi-day events)<input type="date" value={form.endDate} min={form.startDate || undefined} onChange={(e) => setForm({ ...form, endDate: e.target.value, dateDisplay: formatEventDateRange(form.startDate, e.target.value) })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Short summary (optional)</label>
@@ -458,13 +476,12 @@ export default function AdminEventsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Date Display (Public Range) *</label>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Public date (generated from start/end dates)</label>
                     <input
                       type="text"
                       value={form.dateDisplay}
-                      onChange={(e) => setForm({ ...form, dateDisplay: e.target.value })}
-                      placeholder="12–14 September 2026"
-                      required
+                      readOnly
+                      placeholder="Choose a start date"
                       className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-slate-300 text-slate-800 focus:outline-none focus:border-[#8B2E24]"
                     />
                   </div>

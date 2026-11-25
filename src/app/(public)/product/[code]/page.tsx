@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { CRAFTS } from '@/lib/data';
@@ -35,6 +35,7 @@ export default function ProductDetailPage() {
   const [activeThumb, setActiveThumb] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxScale, setLightboxScale] = useState(1);
+  const pinchStart = useRef<{ distance: number; scale: number } | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [editorOpen, setEditorOpen] = useState(false);
 
@@ -82,7 +83,9 @@ export default function ProductDetailPage() {
             maker_since: p.maker?.joinYear ? String(p.maker.joinYear) : '',
           });
 
-          const foundCraft = CRAFTS.find((c) => c.key === p.craftKey);
+          // Use the same saved craft label that the shop menu and catalogue use.
+          // The old static list could show a different spelling from the admin data.
+          const foundCraft = p.craft || CRAFTS.find((c) => c.key === p.craftKey);
           if (foundCraft) setCraft(foundCraft);
 
           if (data.related && Array.isArray(data.related) && data.related.length > 0) {
@@ -372,7 +375,8 @@ export default function ProductDetailPage() {
             )}
 
             {/* Maker Accreditation Card */}
-            {(product.maker || product.traderName) && <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
+            <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
+              {(product.maker || product.traderName) ? <>
               <span className="makerpanel__avatar" style={{ overflow: 'hidden' }}>
                 {product.maker_avatar
                   ? <img src={product.maker_avatar} alt={product.traderName || product.maker} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -385,7 +389,11 @@ export default function ProductDetailPage() {
                 {product.maker_blurb && <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>}
               </span>
               <Link className="makerpanel__go" id="prodMakerLink" href={product.traderSlug ? `/traders/${encodeURIComponent(product.traderSlug)}` : '/traders'} aria-label={product.traderSlug ? `View ${product.traderName}` : 'Browse registered makers'}>→</Link>
-            </div>}
+              </> : <span className="makerpanel__body">
+                <span className="eyebrow eyebrow--muted eyebrow--sm">Maker details</span>
+                <span className="makerpanel__blurb">HAB is confirming the maker record for this product.</span>
+              </span>}
+            </div>
 
           </div>
         </div>
@@ -399,14 +407,14 @@ export default function ProductDetailPage() {
               <span className="assurance__initial">T</span>
               <span>racked Origin</span>
             </h3>
-            <p className="assurance__body">Materials, makers, and worldwide shipping are 100% traceable.</p>
+            <p className="assurance__body">Maker details are shown when recorded in the HAB catalogue.</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
               <span className="assurance__initial">R</span>
               <span>egistered Chain</span>
             </h3>
-            <p className="assurance__body">Every artisan, supplier, and input is strictly verified.</p>
+            <p className="assurance__body">Product details are shown as recorded in the HAB catalogue.</p>
           </div>
           <div className="assurance__cell">
             <h3 className="assurance__title">
@@ -436,8 +444,12 @@ export default function ProductDetailPage() {
 
         {related.length > 0 ? (
         <div className="grid grid--4" id="prodRelated">
-          {related.slice(0, 4).map((rp: any) => (
-            <article key={rp.code} data-hab-record-key={`product:${rp.code}`} className="card product">
+          {related.slice(0, 4).map((rp: any) => {
+            const relatedAvailability = normalizeProductAvailability(rp.availability, Number(rp.stock ?? 0));
+            const relatedStock = Number(rp.stock ?? 0);
+            const relatedCanPurchase = canPurchaseProduct(relatedAvailability, relatedStock, 1);
+            return (
+              <article key={rp.code} data-hab-record-key={`product:${rp.code}`} className="card product">
               <Link className="product__shot" href={productHref(rp.code)}>
                 <figure className="frame frame--square">
                   <img
@@ -457,17 +469,21 @@ export default function ProductDetailPage() {
                 <p className="card__meta clamp-1">{typeof rp.maker === 'object' ? rp.maker?.name : rp.maker}</p>
                 <div className="card__foot">
                   <span className="price">{fmt(rp.priceUSD || rp.price || 0)}</span>
-                  <button
+                  <span className="text-xs" role="status">
+                    {relatedAvailability === 'MADE_TO_ORDER' ? 'Made to order' : relatedCanPurchase ? 'In stock' : 'Sold out'}
+                  </span>
+                  {relatedCanPurchase && <button
                     className="btn btn--outline btn--xs"
                     type="button"
                     onClick={() => addToCart(rp.code)}
                   >
-                    Add
-                  </button>
+                    {relatedAvailability === 'MADE_TO_ORDER' ? 'Order' : 'Add'}
+                  </button>}
                 </div>
               </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
         ) : (
           <p className="section__lede" id="prodRelatedEmpty">
@@ -480,7 +496,29 @@ export default function ProductDetailPage() {
         <div role="dialog" aria-modal="true" aria-label={`${product.name} photo viewer`} onClick={() => setLightboxOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(18,14,12,.94)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <button type="button" onClick={() => setLightboxOpen(false)} aria-label="Close photo viewer" style={{ position: 'absolute', right: 18, top: 14, color: 'white', fontSize: 30, background: 'transparent', border: 0, cursor: 'pointer' }}>×</button>
           {galleryImages.length > 1 && <button type="button" onClick={(event) => { event.stopPropagation(); setActiveThumb((activeThumb - 1 + galleryImages.length) % galleryImages.length); setLightboxScale(1); }} aria-label="Previous photo" style={{ position: 'absolute', left: 14, top: '50%', color: 'white', fontSize: 34, background: 'transparent', border: 0, cursor: 'pointer' }}>‹</button>}
-          <img src={galleryImages[activeThumb] || primaryImg} alt={`${product.name} enlarged view ${activeThumb + 1}`} onClick={(event) => event.stopPropagation()} onWheel={(event) => { event.preventDefault(); setLightboxScale((scale) => Math.min(4, Math.max(1, scale + (event.deltaY < 0 ? 0.2 : -0.2)))); }} style={{ maxWidth: '92vw', maxHeight: '86vh', objectFit: 'contain', transform: `scale(${lightboxScale})`, transition: 'transform .12s ease', touchAction: 'pinch-zoom' }} />
+          <img
+            src={galleryImages[activeThumb] || primaryImg}
+            alt={`${product.name} enlarged view ${activeThumb + 1}`}
+            onClick={(event) => event.stopPropagation()}
+            onWheel={(event) => { event.preventDefault(); setLightboxScale((scale) => Math.min(4, Math.max(1, scale + (event.deltaY < 0 ? 0.2 : -0.2)))); }}
+            onTouchStart={(event) => {
+              if (event.touches.length !== 2) return;
+              const dx = event.touches[0].clientX - event.touches[1].clientX;
+              const dy = event.touches[0].clientY - event.touches[1].clientY;
+              pinchStart.current = { distance: Math.hypot(dx, dy), scale: lightboxScale };
+            }}
+            onTouchMove={(event) => {
+              if (event.touches.length !== 2 || !pinchStart.current) return;
+              event.preventDefault();
+              const dx = event.touches[0].clientX - event.touches[1].clientX;
+              const dy = event.touches[0].clientY - event.touches[1].clientY;
+              const distance = Math.hypot(dx, dy);
+              setLightboxScale(Math.min(4, Math.max(1, pinchStart.current.scale * distance / pinchStart.current.distance)));
+            }}
+            onTouchEnd={(event) => { if (event.touches.length < 2) pinchStart.current = null; }}
+            onTouchCancel={() => { pinchStart.current = null; }}
+            style={{ maxWidth: '92vw', maxHeight: '86vh', objectFit: 'contain', transform: `scale(${lightboxScale})`, transition: 'transform .12s ease', touchAction: 'none' }}
+          />
           <div onClick={(event) => event.stopPropagation()} style={{ position: 'absolute', bottom: 16, display: 'flex', alignItems: 'center', gap: 12, color: 'white' }}>
             <button type="button" onClick={() => setLightboxScale((scale) => Math.max(1, scale - 0.25))} aria-label="Zoom out" style={{ color: 'white', background: '#33261F', border: '1px solid #fff8', borderRadius: 8, padding: '8px 13px' }}>−</button>
             <span>{Math.round(lightboxScale * 100)}%</span>

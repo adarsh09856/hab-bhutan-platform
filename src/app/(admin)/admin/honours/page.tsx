@@ -6,6 +6,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { Award, Plus, Edit2, Trash2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import { CRAFTS } from '@/lib/data';
 
 interface HonourItem {
   id: string;
@@ -38,7 +39,7 @@ const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
   portraitUrl: '',
   isActive: true,
   sortOrder: 0,
-  title: 'Master Craftsperson',
+  title: '',
   practisingSince: null,
   shortDescription: '',
   story: '',
@@ -47,10 +48,13 @@ const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
 };
 
 const AWARD_TYPES = [
-  { value: 'RoyalSeal', label: 'Royal Seal of Excellence' },
-  { value: 'NationalMaster', label: 'National Master Craftsperson' },
+  { value: 'RoyalSeal', label: 'Master Craftsperson' },
+  { value: 'NationalMaster', label: 'National Craft Award' },
   { value: 'Authenticity', label: 'Seal of Authenticity' },
+  { value: 'Enterprise of the Year', label: 'Enterprise of the Year' },
+  { value: 'Young Artisan Award', label: 'Young Artisan Award' },
 ];
+const TITLE_OPTIONS = ['Aum', 'Ap', 'Lopen', 'Dasho'];
 
 export default function AdminHonoursPage() {
   const [honours, setHonours] = useState<HonourItem[]>([]);
@@ -101,7 +105,7 @@ export default function AdminHonoursPage() {
       portraitUrl: h.portraitUrl || '',
       isActive: h.isActive,
       sortOrder: h.sortOrder,
-      title: h.title || 'Master Craftsperson',
+      title: h.title || '',
       practisingSince: h.practisingSince || null,
       shortDescription: h.shortDescription || '',
       story: h.story || '',
@@ -313,14 +317,10 @@ export default function AdminHonoursPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Craft Discipline *</label>
-                  <input
-                    type="text"
-                    value={form.craft}
-                    onChange={(e) => setForm({ ...form, craft: e.target.value })}
-                    placeholder="thagzo, shingzo, troezo..."
-                    required
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
-                  />
+                  <select value={form.craft} onChange={(e) => setForm({ ...form, craft: e.target.value })} required className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]">
+                    {!CRAFTS.some((craft) => craft.key === form.craft) && form.craft && <option value={form.craft}>{form.craft} (existing)</option>}
+                    {CRAFTS.map((craft) => <option key={craft.key} value={craft.key}>{craft.name}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Dzongkhag *</label>
@@ -336,7 +336,7 @@ export default function AdminHonoursPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Public title</label><input value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" placeholder="Master Craftsperson" /></div>
+                <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Title / honorific *</label><select required value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300">{!TITLE_OPTIONS.includes(form.title || '') && form.title && <option value={form.title}>{form.title} (existing)</option>}<option value="" disabled>Select a title</option>{TITLE_OPTIONS.map((title) => <option key={title} value={title}>{title}</option>)}</select></div>
                 <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Practising since</label><input type="number" value={form.practisingSince || ''} onChange={(e) => setForm({ ...form, practisingSince: Number(e.target.value) || null })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" placeholder="Year" /></div>
               </div>
 
@@ -348,6 +348,7 @@ export default function AdminHonoursPage() {
                     onChange={(e) => setForm({ ...form, awardType: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
                   >
+                    {!AWARD_TYPES.some((award) => award.value === form.awardType) && <option value={form.awardType}>{form.awardType} (existing)</option>}
                     {AWARD_TYPES.map((a) => (
                       <option key={a.value} value={a.value}>
                         {a.label}
@@ -386,7 +387,7 @@ export default function AdminHonoursPage() {
                 />
               </div>
 
-              <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Two-line summary</label><textarea maxLength={500} rows={2} value={form.shortDescription || ''} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" /></div>
+              <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Short description (two-line card summary)</label><textarea maxLength={280} rows={2} value={form.shortDescription || ''} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" /></div>
               <div><RichTextEditor label="Full artisan story" value={form.story || ''} onChange={(html) => setForm({ ...form, story: html })} hint="Optional longer profile story." /></div>
               <div className="space-y-2"><label className="block text-xs font-semibold text-slate-700 uppercase">Work photographs (up to six)</label>{(form.workPhotos || []).map((url: string, index: number) => <div key={`${index}-${url}`} className="flex gap-2 items-start"><FileUploadInput label={`Work photograph ${index + 1}`} value={url} onChange={(next) => setForm((current: any) => ({ ...current, workPhotos: current.workPhotos.map((item: string, i: number) => i === index ? next : item) }))} accept="image/*" /><button type="button" className="text-rose-600 text-sm" onClick={() => setForm((current: any) => ({ ...current, workPhotos: current.workPhotos.filter((_: string, i: number) => i !== index) }))}>Remove</button></div>)}{(form.workPhotos || []).length < 6 && <button type="button" className="text-sm underline" onClick={() => setForm((current: any) => ({ ...current, workPhotos: [...(current.workPhotos || []), ''] }))}>+ Add work photograph</button>}</div>
               <label className="inline-flex items-center gap-2 text-sm text-slate-800"><input type="checkbox" checked={!!form.showHome} onChange={(e) => setForm({ ...form, showHome: e.target.checked })} />Feature on homepage (maximum six active profiles)</label>

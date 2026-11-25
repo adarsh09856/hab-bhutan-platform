@@ -274,7 +274,7 @@ export default function PublicationsPage() {
             <Link className="btn btn--light" href="/contact">
               {t('publications.contact_secretariat', 'Contact the secretariat')}
             </Link>
-            <Link className="btn btn--ghost" href="/membership#login">
+            <Link className="btn btn--ghost" href="/login">
               {t('publications.member_login', 'Member login')}
             </Link>
           </div>

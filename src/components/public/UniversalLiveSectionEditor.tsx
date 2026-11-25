@@ -51,7 +51,7 @@ const STATIC_SYSTEM_PAGES = [
   { label: 'Accredited Traders', href: '/traders', category: 'Members & Network' },
   { label: 'Publications & Downloads', href: '/publications', category: 'Members & Network' },
   { label: 'Craft Shops & Clusters Map', href: '/outlets', category: 'Members & Network' },
-  { label: 'Apply to Join HAB', href: '/register', category: 'Members & Network' },
+  { label: 'Apply to Join HAB', href: '/membership/apply', category: 'Members & Network' },
   { label: 'Member Portal Login', href: '/login', category: 'Members & Network' },
   { label: 'Our Mandate & AoA', href: '/mandate', category: 'Governance & Policies' },
   { label: 'Code of Ethics & Fair Dealing', href: '/code-of-ethics', category: 'Governance & Policies' },
@@ -335,16 +335,16 @@ export default function UniversalLiveSectionEditor({
         assurance4Text: s.assurance4Text || 'Every purchase directly funds artisan training and tools across all 20 dzongkhags.',
 
         // Membership callouts
-        membershipLeftTitle: s.membershipLeftTitle || 'Join as a craft artisan or enterprise',
+        membershipLeftTitle: s.membershipLeftTitle || 'Find a registered trader',
         membershipLeftText:
           s.membershipLeftText ||
-          'Get access to market linkage, design workshops, subsidized stalls, export facilitation, and our national directory.',
-        membershipLeftCtaText: s.membershipLeftCtaText || 'Apply for Membership →',
-        membershipLeftCtaLink: s.membershipLeftCtaLink || '/register',
-        membershipRightTitle: s.membershipRightTitle || 'Find certified master craftspeople',
+          'Find HAB-verified shops and traders across Bhutan by craft, product or dzongkhag.',
+        membershipLeftCtaText: s.membershipLeftCtaText || 'Search traders →',
+        membershipLeftCtaLink: s.membershipLeftCtaLink || '/traders',
+        membershipRightTitle: s.membershipRightTitle || 'List your shop with HAB',
         membershipRightText:
           s.membershipRightText ||
-          'Browse our vetted member directory covering all thirteen traditional Zorig Chusum craft sectors.',
+          'Registered traders get a verified listing, buyer introductions and a place in HAB’s trader directory.',
 
         // Extended About
         aboutMandateText: s.aboutMandateText || 'HAB was established under the Civil Society Organizations Act of Bhutan 2007.',
@@ -568,7 +568,7 @@ export default function UniversalLiveSectionEditor({
             { column: 'Members', label: 'Publications', href: '/publications', sortOrder: 2, isActive: true },
             { column: 'Members', label: 'Member shops & clusters', href: '/outlets', sortOrder: 3, isActive: true },
             { column: 'Members', label: 'Member login', href: '/login', sortOrder: 4, isActive: true },
-            { column: 'Members', label: 'Apply to join', href: '/register', sortOrder: 5, isActive: true },
+            { column: 'Members', label: 'Apply to join', href: '/membership/apply', sortOrder: 5, isActive: true },
             { column: 'Governance', label: 'Board of Trustees', href: '/board-of-trustees', sortOrder: 1, isActive: true },
             { column: 'Governance', label: 'Secretariat', href: '/secretariat', sortOrder: 2, isActive: true },
             { column: 'Governance', label: 'Annual reports', href: '/annual-reports', sortOrder: 3, isActive: true },
@@ -3465,7 +3465,7 @@ export default function UniversalLiveSectionEditor({
                               type="text"
                               value={form.membershipLeftCtaLink || ''}
                               onChange={(e) => updateField('membershipLeftCtaLink', e.target.value)}
-                              placeholder="/register"
+                              placeholder="/membership/apply"
                               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                             />
                           </div>

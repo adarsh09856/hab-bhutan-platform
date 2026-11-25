@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
 import { moveToRecycleBin } from '@/lib/recycle-bin';
-import { dateDisplayHasRange } from '@/lib/event-dates';
+import { dateDisplayHasRange, formatEventDateRange, timeContainsEventDuration } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,9 +51,11 @@ export async function POST(req: NextRequest) {
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
-    if (startDate && Number.isNaN(new Date(startDate).getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
+    if (!startDate) return NextResponse.json({ error: 'A start date is required.' }, { status: 400 });
+    if (Number.isNaN(new Date(startDate).getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
     if (endDate && (!startDate || Number.isNaN(new Date(endDate).getTime()) || new Date(endDate) < new Date(startDate))) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
     if (dateDisplayHasRange(dateDisplay) && (!startDate || !endDate)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
+    if (timeContainsEventDuration(time)) return NextResponse.json({ error: 'Time is for event hours only. Use the end date for event duration.' }, { status: 400 });
 
     const docUrlToSave = documentUrl || pdfUrl || null;
 
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
         category: category?.trim() || 'Exhibition',
         categoryDz: categoryDz?.trim() || null,
         subCategory: subCategory?.trim() || null,
-        dateDisplay: dateDisplay?.trim() || '',
+        dateDisplay: formatEventDateRange(startDate, endDate, dateDisplay?.trim() || ''),
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         location: location?.trim() || '',
@@ -132,6 +134,15 @@ export async function PUT(req: NextRequest) {
     if (endDate && (!nextStart || !nextEnd || Number.isNaN(nextEnd.getTime()) || nextEnd < nextStart)) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
     if (dateDisplayHasRange(nextDateDisplay) && (!nextStart || !nextEnd)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
     const prevSchedule = (existing?.schedule && typeof existing.schedule === 'object' ? existing.schedule : {}) as any;
+    const previousTime = prevSchedule.time || (existing as any).time || '';
+    if (isActive !== false && !nextStart) return NextResponse.json({ error: 'A start date is required for a public event.' }, { status: 400 });
+    const nextTime = time !== undefined ? time : previousTime;
+    if (isActive !== false && timeContainsEventDuration(nextTime)) {
+      const error = nextEnd
+        ? 'Time is for event hours only. Replace the duration text with event hours.'
+        : 'This event has a duration in its saved Time field. Set its end date, then replace the duration text with event hours.';
+      return NextResponse.json({ error }, { status: 400 });
+    }
     const mergedSchedule = schedule !== undefined 
       ? schedule 
       : ((day !== undefined || mon !== undefined || time !== undefined || imageUrl !== undefined || pdfUrl !== undefined)
@@ -153,7 +164,9 @@ export async function PUT(req: NextRequest) {
         ...(category !== undefined && { category: category.trim() }),
         ...(body.categoryDz !== undefined && { categoryDz: body.categoryDz?.trim() || null }),
         ...(body.subCategory !== undefined && { subCategory: body.subCategory?.trim() || null }),
-        ...(dateDisplay !== undefined && { dateDisplay: dateDisplay.trim() }),
+        ...((dateDisplay !== undefined || startDate !== undefined || endDate !== undefined) && {
+          dateDisplay: formatEventDateRange(nextStart, nextEnd, typeof nextDateDisplay === 'string' ? nextDateDisplay.trim() : ''),
+        }),
         ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
         ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
         ...(location !== undefined && { location: location.trim() }),

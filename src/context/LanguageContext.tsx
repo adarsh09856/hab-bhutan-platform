@@ -29,7 +29,7 @@ export const TRANSLATIONS: Translations = {
   'nav.contact': { en: 'Contact Us', dz: 'འབྲེལ་གཏུག' },
   'nav.track_order': { en: 'Track Order', dz: 'བཀའ་རྒྱའི་རྗེས་འདེད' },
   'nav.search': { en: 'Search', dz: 'འཚོལ་ཞིབ' },
-  'nav.search_placeholder': { en: 'Search crafts, members, publications...', dz: 'ལག་བཟོ་དང་ འཐུས་མི་ དཔེ་སྐྲུན་ཚུ་འཚོལ...' },
+  'nav.search_placeholder': { en: 'Search crafts, traders, publications...', dz: 'ལག་བཟོ་དང་ ཚོང་པ་ དཔེ་སྐྲུན་ཚུ་འཚོལ...' },
   'nav.basket': { en: 'Basket', dz: 'སླེ་ཀེ' },
 
   // Projects page controls and explanatory copy

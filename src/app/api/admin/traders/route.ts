@@ -8,7 +8,7 @@ import { generateExcelCsv } from '@/lib/spreadsheet';
 export const dynamic = 'force-dynamic';
 const permissions = ['content:view', 'content:edit'] as const;
 const slugify = (value: string) => value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-const stringList = (value: unknown) => Array.isArray(value) ? value.map(String).map((item) => item.trim()).filter(Boolean).slice(0, 30) : [];
+const stringList = (value: unknown, limit = 30) => Array.isArray(value) ? value.map(String).map((item) => item.trim()).filter(Boolean).slice(0, limit) : [];
 function normalize(body: any) {
   const shopName = String(body.shopName || '').trim();
   const registrationNumber = String(body.registrationNumber || '').trim();
@@ -21,7 +21,7 @@ function normalize(body: any) {
     dzongkhag: String(body.dzongkhag).trim(), town: String(body.town).trim(), address: String(body.address).trim(),
     mapUrl: body.mapUrl?.trim() || null, openingHours: body.openingHours?.trim() || null,
     shortDescription: String(body.shortDescription).trim(), quote: body.quote?.trim() || null, description: String(body.description).trim(),
-    craftKeys: stringList(body.craftKeys), productTypes: stringList(body.productTypes), productPhotoUrls: stringList(body.productPhotoUrls),
+    craftKeys: stringList(body.craftKeys), productTypes: stringList(body.productTypes), productPhotoUrls: stringList(body.productPhotoUrls, 8),
     bannerUrl: body.bannerUrl?.trim() || null, expiresAt,
     isVisible: body.isVisible !== false, verifiedSince: body.verifiedSince ? Number(body.verifiedSince) : null,
     sortOrder: Number(body.sortOrder) || 0,

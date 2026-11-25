@@ -5,10 +5,11 @@ import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
+import EventRegistrationForm from '@/components/public/EventRegistrationForm';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { eventImage } from '@/lib/event-illustrations';
-import { eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
+import { calendarEventDateRange, eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 import { shortenEventSummary } from '@/lib/event-summary';
 
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,6 @@ export default async function EventDetailPage({ params }: EventPageProps) {
       prisma.eventRecord.findMany({
         where: { isActive: true, key: { not: key } },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-        take: 12,
       }),
     ]);
   } catch { throw new Error('Event calendar temporarily unavailable.'); }
@@ -122,15 +122,12 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
   const bannerImage = eventImage(event.key, event.bannerUrl || event.imageUrl);
 
+  const eventUpcoming = eventIsUpcoming(rawEvent);
   const otherEvents = dbOtherEvents.filter((candidate) => eventIsUpcoming(candidate)).slice(0, 3);
   const displayedDate = formatEventDateRange(rawEvent.startDate, rawEvent.endDate, rawEvent.dateDisplay);
-  const calendarStart = rawEvent.startDate ? new Date(rawEvent.startDate) : null;
-  const calendarEnd = rawEvent.endDate ? new Date(rawEvent.endDate) : calendarStart;
-  const validCalendarDates = Boolean(calendarStart && calendarEnd &&
-    !Number.isNaN(calendarStart.getTime()) && !Number.isNaN(calendarEnd.getTime()) && calendarEnd >= calendarStart);
-  const calendarDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-  const calendarUrl = validCalendarDates
-    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${calendarDate(calendarStart!)}%2F${calendarDate(calendarEnd!)}${event.place ? `&location=${encodeURIComponent(event.place)}` : ''}`
+  const calendarDates = calendarEventDateRange(rawEvent.startDate, rawEvent.endDate);
+  const calendarUrl = calendarDates
+    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${calendarDates}${event.place ? `&location=${encodeURIComponent(event.place)}` : ''}`
     : null;
 
   return (
@@ -230,9 +227,16 @@ export default async function EventDetailPage({ params }: EventPageProps) {
           <p className="eyebrow eyebrow--accent">How to attend</p>
           <h2 className="display display--panel">Register or inquire</h2>
           <p className="panel__body">
-            Places and stalls for this event are allocated through the HAB Secretariat. For questions or registration assistance, email{' '}
+            Send a registration request to the HAB Secretariat. Places are confirmed by the Secretariat. For questions, email{' '}
             <a href={`mailto:${event.contact || 'officehab@gmail.com'}`}>{event.contact || 'officehab@gmail.com'}</a> or call +975-2-338089.
           </p>
+          {eventUpcoming ? (
+            <div className="mt-6">
+              <EventRegistrationForm eventKey={event.key} eventTitle={event.title} />
+            </div>
+          ) : (
+            <p className="panel__body mt-6"><strong>Registration is closed.</strong> This event has ended.</p>
+          )}
           <div className="actions">
             {calendarUrl && (
               <a className="btn btn--outline" href={calendarUrl} target="_blank" rel="noopener noreferrer">

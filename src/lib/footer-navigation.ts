@@ -3,6 +3,15 @@ export function resolveFooterHref(label: string, href: string): string {
   const text = (label || '').trim().toLowerCase().replace(/\s+/g, ' ');
   const path = (href || '').trim().toLowerCase();
 
+  if (/^\/membership#login(?:\/)?$/i.test(path)) return '/login';
+  if (/^\/members(?:[/?#]|$)/i.test(path)) return '/traders';
+  if (/^(?:apply(?: to join(?: hab)?| for membership)|register as (?:a )?(?:member|cluster)|become a member)$/.test(text)) {
+    const query = href.includes('?') ? href.slice(href.indexOf('?')) : '';
+    return `/membership/apply${query}`;
+  }
+  if (/^(?:member login|login)$/.test(text)) return '/login';
+  if (/^(?:directory by category|find a member|members directory)$/.test(text)) return '/traders';
+
   const canonicalByLabel = [
     [/about hab|^about us$/, '/about'], [/mandate|aoa/, '/mandate'], [/ethic/, '/code-of-ethics'],
     [/strategic/, '/strategic-plan'], [/board|trustee/, '/board-of-trustees'], [/secretariat/, '/secretariat'],
@@ -10,7 +19,7 @@ export function resolveFooterHref(label: string, href: string): string {
     [/membership/, '/membership'], [/news|event/, '/news'], [/^contact us$|^contact$|^contact hab$/, '/contact'],
     [/wholesale|bulk order/, '/wholesale'], [/e-shop|^shop$|product/, '/shop'],
     [/shipping|delivery/, '/shipping-policy'], [/return|refund/, '/returns-policy'], [/custom|dut/, '/customs-policy'],
-    [/track.*order/, '/track-order'], [/directory|^members$/, '/members'], [/annual report/, '/annual-reports'],
+    [/track.*order/, '/track-order'], [/directory|^members$/, '/traders'], [/annual report/, '/annual-reports'],
     [/audited account/, '/audited-accounts'], [/publication|download|report/, '/publications'],
     [/cluster|outlet|member shop/, '/outlets'], [/member login/, '/login'], [/tender|vacanc/, '/tenders'],
     [/privacy/, '/privacy'], [/term/, '/terms'], [/^donate$|donation/, '/donate'],

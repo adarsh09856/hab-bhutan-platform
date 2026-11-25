@@ -90,7 +90,7 @@ function LoginForm() {
               Create a customer account to track orders and manage deliveries.
             </div>
             <Link 
-              href="/register" 
+              href="/membership/apply"
               className="flex-none px-3.5 py-1.5 bg-[#8B2E24] text-white rounded-[6px] font-semibold text-[13px] hover:bg-[#6D241C] transition-colors"
             >
               Register →
@@ -168,7 +168,7 @@ function LoginForm() {
           {/* Registration Prompt in Card */}
           <div className="pt-3 border-t border-[#EAE3D7] text-center font-figtree text-[13.5px] text-[#6B5A4C]">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-[#8B2E24] font-bold hover:underline">
+            <Link href="/membership/apply" className="text-[#8B2E24] font-bold hover:underline">
               Create Customer Account
             </Link>
           </div>

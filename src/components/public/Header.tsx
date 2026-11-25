@@ -448,7 +448,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                 <div className="menu__footer" style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--line)' }}>
                   <Link className="menu__note" href="/traders" onClick={() => setMembersOpen(false)} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: '12px' }}>Accredited traders →</Link>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                    <Link className="btn btn--accent btn--sm" href="/register" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '5px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Link className="btn btn--accent btn--sm" href="/membership/apply" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '5px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {t('menu.register', 'Register as member')}
                     </Link>
                     <Link className="btn btn--outline btn--sm" href="/masters" onClick={() => setMembersOpen(false)} style={{ textAlign: 'center', whiteSpace: 'nowrap', padding: '5px 6px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -456,7 +456,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                     </Link>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '2px' }}>
-                    <Link className="menu__note" href="/membership#login" onClick={() => setMembersOpen(false)} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: '11.5px' }}>
+                    <Link className="menu__note" href="/login" onClick={() => setMembersOpen(false)} style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none', fontSize: '11.5px' }}>
                       {t('menu.login', 'Member login →')}
                     </Link>
                   </div>
@@ -862,7 +862,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                     ))}
                     <div className="flex gap-2 pt-2">
                       <Link
-                        href="/register"
+                        href="/membership/apply"
                         onClick={() => setMobileNavOpen(false)}
                         className="btn btn--accent btn--xs flex-1 text-center"
                       >

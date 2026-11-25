@@ -29,11 +29,11 @@ const DEFAULT_FOOTER_COLUMNS = [
   { id: 'f-11', column: 'Shop & support', label: 'Track your order', href: '/track-order', sortOrder: 5, isActive: true },
   { id: 'f-12', column: 'Shop & support', label: 'Duty & customs', href: '/customs-policy', sortOrder: 6, isActive: true },
 
-  { id: 'f-13', column: 'Members', label: 'Accredited traders', href: '/traders', sortOrder: 1, isActive: true },
+  { id: 'f-13', column: 'Members', label: 'Trader directory', href: '/traders', sortOrder: 1, isActive: true },
   { id: 'f-14', column: 'Members', label: 'Publications', href: '/publications', sortOrder: 2, isActive: true },
   { id: 'f-15', column: 'Members', label: 'Member shops & clusters', href: '/outlets', sortOrder: 3, isActive: true },
   { id: 'f-16', column: 'Members', label: 'Member login', href: '/login', sortOrder: 4, isActive: true },
-  { id: 'f-17', column: 'Members', label: 'Apply to join', href: '/register', sortOrder: 5, isActive: true },
+  { id: 'f-17', column: 'Members', label: 'Apply to join', href: '/membership/apply', sortOrder: 5, isActive: true },
 
   { id: 'f-18', column: 'Governance', label: 'Board of Trustees', href: '/board-of-trustees', sortOrder: 1, isActive: true },
   { id: 'f-19', column: 'Governance', label: 'Secretariat', href: '/secretariat', sortOrder: 2, isActive: true },

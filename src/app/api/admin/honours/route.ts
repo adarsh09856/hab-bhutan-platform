@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSessionUserForAnyPermission, Permission } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
+import { allocateHonourSlug } from '@/lib/honour-slugs';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,14 +38,17 @@ export async function POST(req: NextRequest) {
 
     if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });
     if (showHome && await prisma.honourRecord.count({ where: { showHome: true, isActive: true } }) >= 6) return NextResponse.json({ error: 'Only six active profiles can be featured on the homepage.' }, { status: 400 });
+    const awardedYear = Number(yearAwarded) || new Date().getFullYear();
+    const existingSlugs = await prisma.honourRecord.findMany({ select: { id: true, slug: true, name: true, yearAwarded: true } });
     const honour = await prisma.honourRecord.create({
       data: {
+        slug: allocateHonourSlug(name.trim(), awardedYear, existingSlugs),
         name: name.trim(),
         title: title?.trim() || 'Master Craftsperson',
         craft: craft.trim(),
         dzongkhag: dzongkhag.trim(),
         awardType: awardType?.trim() || 'RoyalSeal',
-        yearAwarded: Number(yearAwarded) || new Date().getFullYear(),
+        yearAwarded: awardedYear,
         practisingSince: practisingSince ? Number(practisingSince) : null,
         citation: citation.trim(),
         shortDescription: shortDescription?.trim() || null,
@@ -88,9 +92,17 @@ export async function PUT(req: NextRequest) {
 
     if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });
     if (showHome && (isActive !== false) && await prisma.honourRecord.count({ where: { showHome: true, isActive: true, id: { not: id } } }) >= 6) return NextResponse.json({ error: 'Only six active profiles can be featured on the homepage.' }, { status: 400 });
+    const existing = await prisma.honourRecord.findUnique({ where: { id }, select: { id: true, slug: true, name: true, yearAwarded: true } });
+    if (!existing) return NextResponse.json({ error: 'Honour record not found' }, { status: 404 });
+    const nextName = name !== undefined ? name.trim() : existing.name;
+    const nextYear = yearAwarded !== undefined ? Number(yearAwarded) || new Date().getFullYear() : existing.yearAwarded;
+    const missingSlug = !existing.slug
+      ? allocateHonourSlug(nextName, nextYear, await prisma.honourRecord.findMany({ select: { id: true, slug: true, name: true, yearAwarded: true } }), id)
+      : undefined;
     const honour = await prisma.honourRecord.update({
       where: { id },
       data: {
+        ...(missingSlug ? { slug: missingSlug } : {}),
         ...(name !== undefined && { name: name.trim() }),
         ...(title !== undefined && { title: title.trim() }),
         ...(craft !== undefined && { craft: craft.trim() }),

@@ -9,6 +9,13 @@ export function dateDisplayHasRange(value?: string | null): boolean {
     /\b[A-Za-z]{3,9}\s+\d{1,2}\s*[–—-]\s*\d{1,2}\b/.test(withoutIsoDates);
 }
 
+const EVENT_DURATION_PATTERN = /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*[- ]?(?:day|week|month)s?\b/i;
+
+/** Duration belongs in the event's end date, never in the hours-only Time field. */
+export function timeContainsEventDuration(value?: string | null): boolean {
+  return EVENT_DURATION_PATTERN.test(String(value || ''));
+}
+
 export function eventDateKey(value?: string | Date | null): string | null {
   if (!value) return null;
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
@@ -26,6 +33,17 @@ export function bhutanTodayKey(now = new Date()): string {
 export function eventIsUpcoming(event: { startDate?: string | Date | null; endDate?: string | Date | null; dateDisplay?: string | null }, today = bhutanTodayKey()): boolean {
   const end = eventDateKey(event.endDate) || eventDateKey(event.startDate) || eventDateKey(event.dateDisplay);
   return !end || end >= today;
+}
+
+/** Google Calendar all-day dates use an exclusive end date. Return null for invalid or reversed ranges. */
+export function calendarEventDateRange(startValue?: string | Date | null, endValue?: string | Date | null): string | null {
+  const start = eventDateKey(startValue);
+  const end = eventDateKey(endValue) || start;
+  if (!start || !end || end < start) return null;
+  const exclusiveEnd = new Date(`${end}T00:00:00.000Z`);
+  exclusiveEnd.setUTCDate(exclusiveEnd.getUTCDate() + 1);
+  const endKey = exclusiveEnd.toISOString().slice(0, 10);
+  return `${start.replace(/-/g, '')}/${endKey.replace(/-/g, '')}`;
 }
 
 export function formatEventDateRange(startValue?: string | Date | null, endValue?: string | Date | null, fallback = ''): string {

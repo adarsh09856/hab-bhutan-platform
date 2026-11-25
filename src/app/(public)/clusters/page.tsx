@@ -141,7 +141,7 @@ export default async function ClustersPage() {
             </p>
           </div>
           <div className="actions">
-            <Link className="btn btn--light" href="/register?type=cluster">
+            <Link className="btn btn--light" href="/membership/apply?type=cluster">
               {display('clustersRegisterButton', 'Register as a cluster')}
             </Link>
             <Link className="btn btn--ghost" href="/membership/cluster">

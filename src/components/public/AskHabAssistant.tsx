@@ -78,7 +78,7 @@ export default function AskHabAssistant() {
       reply = 'HAB membership is open to traditional artisans, craft micro-enterprises, village clusters, and civil society bodies across 5 tiers: Individual Artisan (Nu. 500/yr), Craft Enterprise (Nu. 2,000/yr), Artisan Cluster (Nu. 3,000/yr), Affiliated Member (Nu. 5,000/yr), and Honorary.';
       links = [
         { text: 'Membership Overview', href: '/membership' },
-        { text: 'Apply for Membership', href: '/register' },
+        { text: 'Apply for Membership', href: '/membership/apply' },
       ];
     } else if (lower.includes('track') || lower.includes('delivery') || lower.includes('shipping') || lower.includes('where is my order')) {
       reply = 'Every retail order is hand-checked and packed in Kawajangsa, Thimphu, and shipped via tracked Bhutan Post International Express (EMS) or DHL Express. You can track your consignment in real time using your HAB order number.';

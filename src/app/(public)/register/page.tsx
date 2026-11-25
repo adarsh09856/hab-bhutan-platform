@@ -640,7 +640,7 @@ function RegisterContent() {
                 Your reference is <strong>{referenceNumber}</strong>, applying as {currentTypeObj.name}. The secretariat verifies documents within five working days and will contact you on {formData.phone}. Once approved you appear in the public membership database.
               </p>
               <div className="actions" style={{ justifyContent: 'center', marginTop: 24 }}>
-                <Link className="btn btn--accent" href="/membership#login">
+                <Link className="btn btn--accent" href="/login">
                   Go to the member area
                 </Link>
                 <Link className="btn btn--outline" href="/">

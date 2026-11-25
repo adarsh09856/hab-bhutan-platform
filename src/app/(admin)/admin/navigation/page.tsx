@@ -39,7 +39,7 @@ const STATIC_SYSTEM_PAGES = [
   { label: 'Customs & Duty Information', href: '/customs-policy', category: 'Shop & Support' },
   { label: 'Accredited Traders', href: '/traders', category: 'Members & Network' },
   { label: 'Publications & Downloads', href: '/publications', category: 'Members & Network' },
-  { label: 'Apply to Join HAB', href: '/register', category: 'Members & Network' },
+  { label: 'Apply to Join HAB', href: '/membership/apply', category: 'Members & Network' },
   { label: 'Member Portal Login', href: '/login', category: 'Members & Network' },
   { label: 'Our Mandate & AoA', href: '/mandate', category: 'Governance & Policies' },
   { label: 'Code of Ethics & Fair Dealing', href: '/code-of-ethics', category: 'Governance & Policies' },
