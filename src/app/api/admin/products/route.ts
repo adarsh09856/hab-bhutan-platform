@@ -19,6 +19,18 @@ function hasProductSpecificDescription(value: unknown): boolean {
     .trim().length > 0;
 }
 
+async function findProductWithName(name: string, excludingId?: string) {
+  const normalizedName = name.trim();
+  if (!normalizedName) return null;
+  return prisma.product.findFirst({
+    where: {
+      name: { equals: normalizedName, mode: 'insensitive' },
+      ...(excludingId ? { id: { not: excludingId } } : {}),
+    },
+    select: { id: true, code: true, name: true },
+  });
+}
+
 export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'products:view');
@@ -100,6 +112,10 @@ export async function POST(req: NextRequest) {
     const nextStatus = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status) ? status : 'PUBLISHED';
     if (nextStatus === 'PUBLISHED' && !hasProductSpecificDescription(description)) {
       return NextResponse.json({ success: false, error: 'Add a product-specific description before publishing this product.' }, { status: 400 });
+    }
+    const duplicateName = await findProductWithName(String(name));
+    if (duplicateName) {
+      return NextResponse.json({ success: false, error: `Use a distinct product name; ${duplicateName.code} already uses “${duplicateName.name}”.` }, { status: 409 });
     }
 
     // Check code uniqueness
@@ -219,6 +235,12 @@ export async function PATCH(req: NextRequest) {
         { success: false, error: 'Product not found.' },
         { status: 404 }
       );
+    }
+    if (name !== undefined && String(name).trim().toLocaleLowerCase() !== previous.name.trim().toLocaleLowerCase()) {
+      const duplicateName = await findProductWithName(String(name), previous.id);
+      if (duplicateName) {
+        return NextResponse.json({ success: false, error: `Use a distinct product name; ${duplicateName.code} already uses “${duplicateName.name}”.` }, { status: 409 });
+      }
     }
     if (wholesaleEnabled !== undefined && typeof wholesaleEnabled !== 'boolean') {
       return NextResponse.json({ success: false, error: 'Enable wholesale must be true or false.' }, { status: 400 });
