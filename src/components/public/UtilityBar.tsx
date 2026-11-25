@@ -18,8 +18,17 @@ const ANNOUNCEMENT_TRANSLATIONS: Record<string, string> = {
   'Track orders worldwide with authentic craft certificates': 'ངོ་མ་ཨིན་པའི་ལག་ཁྱེར་དང་བཅས་ འཛམ་གླིང་ཡོངས་ལུ་ བཀའ་རྒྱ་རྗེས་འདེད',
 };
 
-export default function UtilityBar() {
-  const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; dzText?: string; text_dz?: string; link?: string }>>([
+type UtilityBarSettings = {
+  loaded?: boolean;
+  tickerMessages?: Array<{ text: string; dzText?: string; text_dz?: string; link?: string }>;
+  secretaryPhone?: string;
+  secretaryEmail?: string;
+  topBarContactMode?: 'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF';
+  visible?: boolean;
+};
+
+export default function UtilityBar({ initialSettings }: { initialSettings?: UtilityBarSettings } = {}) {
+  const [tickerMessages, setTickerMessages] = useState<Array<{ text: string; dzText?: string; text_dz?: string; link?: string }>>(() => initialSettings?.tickerMessages?.length ? initialSettings.tickerMessages : [
     {
       text: 'CSO/2011/043 · Handicrafts Association of Bhutan',
       dzText: 'CSO/2011/043 · འབྲུག་གི་ལག་བཟོ་ཚོགས་པ',
@@ -43,10 +52,10 @@ export default function UtilityBar() {
   ]);
   const [currentTickerIdx, setCurrentTickerIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [secretaryPhone, setSecretaryPhone] = useState('+975-2-338089');
-  const [secretaryEmail, setSecretaryEmail] = useState('officehab@gmail.com');
-  const [topBarContactMode, setTopBarContactMode] = useState<'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF'>('PHONE_ONLY');
-  const [visible, setVisible] = useState(true);
+  const [secretaryPhone, setSecretaryPhone] = useState(initialSettings?.secretaryPhone || '+975-2-338089');
+  const [secretaryEmail, setSecretaryEmail] = useState(initialSettings?.secretaryEmail || 'officehab@gmail.com');
+  const [topBarContactMode, setTopBarContactMode] = useState<'PHONE_ONLY' | 'EMAIL_ONLY' | 'BOTH' | 'OFF'>(initialSettings?.topBarContactMode || 'PHONE_ONLY');
+  const [visible, setVisible] = useState(initialSettings?.visible ?? true);
   const { language, toggleLanguage, t } = useLanguage();
   const isDz = language === 'dz';
 
@@ -55,22 +64,24 @@ export default function UtilityBar() {
   const [overflowDist, setOverflowDist] = useState(0);
 
   useEffect(() => {
-    fetch('/api/site-settings')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.setting) {
-          if (data.setting.tickerMessages && Array.isArray(data.setting.tickerMessages) && data.setting.tickerMessages.length > 0) {
-            setTickerMessages(data.setting.tickerMessages);
-          } else if (data.setting.announcementText) {
-            setTickerMessages([{ text: data.setting.announcementText, link: data.setting.announcementLink || undefined }]);
+    if (!initialSettings?.loaded) {
+      fetch('/api/site-settings')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.setting) {
+            if (data.setting.tickerMessages && Array.isArray(data.setting.tickerMessages) && data.setting.tickerMessages.length > 0) {
+              setTickerMessages(data.setting.tickerMessages);
+            } else if (data.setting.announcementText) {
+              setTickerMessages([{ text: data.setting.announcementText, link: data.setting.announcementLink || undefined }]);
+            }
+            if (data.setting.secretaryPhone) setSecretaryPhone(data.setting.secretaryPhone);
+            if (data.setting.secretaryEmail) setSecretaryEmail(data.setting.secretaryEmail);
+            if (data.setting.topBarContactMode) setTopBarContactMode(data.setting.topBarContactMode);
+            if (data.setting.isAnnouncementOn !== undefined) setVisible(Boolean(data.setting.isAnnouncementOn));
           }
-          if (data.setting.secretaryPhone) setSecretaryPhone(data.setting.secretaryPhone);
-          if (data.setting.secretaryEmail) setSecretaryEmail(data.setting.secretaryEmail);
-          if (data.setting.topBarContactMode) setTopBarContactMode(data.setting.topBarContactMode);
-          if (data.setting.isAnnouncementOn !== undefined) setVisible(Boolean(data.setting.isAnnouncementOn));
-        }
-      })
-      .catch(() => {});
+        })
+        .catch(() => {});
+    }
 
     const handleUpdate = (e: any) => {
       if (e.detail?.tickerMessages && Array.isArray(e.detail.tickerMessages)) {

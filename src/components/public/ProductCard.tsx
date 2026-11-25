@@ -67,11 +67,9 @@ export default function ProductCard({
         <span className="product__ref">
           {code}
         </span>
-        {(isOutOfStock || isMadeToOrder) && (
-          <div className="absolute top-3 right-3 z-10 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded shadow-sm">
-            {isMadeToOrder ? 'Made to order' : t('shop.out_of_stock', 'Out of stock')}
-          </div>
-        )}
+        <div className="absolute top-3 right-3 z-10 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded shadow-sm">
+          {isMadeToOrder ? 'Made to order' : isOutOfStock ? t('shop.out_of_stock', 'Out of stock') : t('shop.in_stock', 'In stock')}
+        </div>
       </Link>
 
       <div className="p-[15px_16px_16px] flex flex-col gap-1 flex-1">

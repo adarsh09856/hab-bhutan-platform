@@ -17,3 +17,8 @@ export function eventImage(key: string, savedImage?: string | null) {
     ? { src: illustration, illustrative: true }
     : { src: '/assets/photos/image-unavailable.svg', illustrative: false };
 }
+
+/** Keep fallback art clearly identified without calling it a photograph of the event. */
+export function eventImageAlt(title: string, illustrative: boolean): string {
+  return illustrative ? `Craft illustration related to ${title}` : title;
+}

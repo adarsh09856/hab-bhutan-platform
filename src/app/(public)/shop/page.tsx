@@ -314,7 +314,7 @@ function ShopContent() {
                       <p className="card__meta clamp-1">{[p.maker, p.region].filter(Boolean).join(' · ')}</p>
                       <div className="card__foot">
                         <span className="price">{fmt(p.priceUSD)}</span>
-                        {p.availability === 'MADE_TO_ORDER' ? <span className="text-xs">Made to order</span> : p.stock <= 0 || p.availability === 'SOLD_OUT' ? <span className="text-xs">Sold out</span> : null}
+                        {p.availability === 'MADE_TO_ORDER' ? <span className="text-xs">Made to order</span> : p.stock <= 0 || p.availability === 'SOLD_OUT' ? <span className="text-xs">Sold out</span> : <span className="text-xs">{t('shop.in_stock', 'In stock')}</span>}
                         {(p.availability === 'MADE_TO_ORDER' || (p.stock > 0 && p.availability !== 'SOLD_OUT')) && (
                         <button
                           className="btn btn--outline btn--xs"

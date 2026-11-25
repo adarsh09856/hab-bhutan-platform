@@ -8,7 +8,7 @@ import DocumentEmbedViewer from '@/components/public/DocumentEmbedViewer';
 import EventRegistrationForm from '@/components/public/EventRegistrationForm';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
-import { eventImage } from '@/lib/event-illustrations';
+import { eventImage, eventImageAlt } from '@/lib/event-illustrations';
 import { calendarEventDateRange, eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 import { shortenEventSummary } from '@/lib/event-summary';
 
@@ -158,7 +158,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImage.src}
-            alt={bannerImage.illustrative ? `Illustrative craft photograph for ${event.title}; not a photograph of this event` : event.title}
+            alt={eventImageAlt(event.title, bannerImage.illustrative)}
             fill
             priority
             sizes="100vw"
@@ -274,7 +274,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                   <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <Image
                       src={oeImage.src}
-                      alt={oeImage.illustrative ? `Illustrative craft photograph for ${oe.title}; not a photograph of this event` : oe.title}
+                      alt={eventImageAlt(oe.title, oeImage.illustrative)}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}

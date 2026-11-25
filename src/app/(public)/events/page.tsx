@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
-import { eventImage } from '@/lib/event-illustrations';
+import { eventImage, eventImageAlt } from '@/lib/event-illustrations';
 import { eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
@@ -124,7 +124,7 @@ export default function EventsPage() {
                   <figure className="frame frame--eventshot has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={image.src}
-                      alt={image.illustrative ? `Illustrative craft photograph for ${displayTitle}; not a photograph of this event` : displayTitle}
+                      alt={eventImageAlt(displayTitle, image.illustrative)}
                       fill
                       sizes="(max-width: 768px) 100vw, 30vw"
                       style={{ objectFit: 'cover' }}
