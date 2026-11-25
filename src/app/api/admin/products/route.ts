@@ -9,6 +9,16 @@ import { normalizeWholesaleTiers } from '@/lib/wholesale-terms-normalize';
 
 export const dynamic = 'force-dynamic';
 
+function hasProductSpecificDescription(value: unknown): boolean {
+  return String(value ?? '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;|&#160;|&#x0*a0;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim().length > 0;
+}
+
 export async function GET(req: NextRequest) {
   try {
     await requirePermission(req, 'products:view');
@@ -87,6 +97,10 @@ export async function POST(req: NextRequest) {
     if (wholesaleEnabled !== undefined && typeof wholesaleEnabled !== 'boolean') {
       return NextResponse.json({ success: false, error: 'Enable wholesale must be true or false.' }, { status: 400 });
     }
+    const nextStatus = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status) ? status : 'PUBLISHED';
+    if (nextStatus === 'PUBLISHED' && !hasProductSpecificDescription(description)) {
+      return NextResponse.json({ success: false, error: 'Add a product-specific description before publishing this product.' }, { status: 400 });
+    }
 
     // Check code uniqueness
     const existing = await prisma.product.findUnique({ where: { code } });
@@ -117,7 +131,7 @@ export async function POST(req: NextRequest) {
         traderId: traderId || null,
         productType: productType?.trim() || null,
         availability: resolvedAvailability,
-        description: description || 'Authentic artisan handicraft curated by HAB.',
+        description: String(description ?? '').trim(),
         size: size?.trim() || null,
         weight: weight?.trim() || null,
         materials: materials?.trim() || null,
@@ -125,9 +139,7 @@ export async function POST(req: NextRequest) {
         lead: lead?.trim() || null,
         images: imageList,
         stock: stockCount,
-        status: ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
-          ? status
-          : 'PUBLISHED',
+        status: nextStatus,
       },
       include: { craft: true, maker: true, trader: true },
     });
@@ -211,6 +223,16 @@ export async function PATCH(req: NextRequest) {
     if (wholesaleEnabled !== undefined && typeof wholesaleEnabled !== 'boolean') {
       return NextResponse.json({ success: false, error: 'Enable wholesale must be true or false.' }, { status: 400 });
     }
+    const nextStatus = status === undefined
+      ? previous.status
+      : ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status) ? status : 'PUBLISHED';
+    const nextDescription = description === undefined ? previous.description : description;
+    if (nextStatus === 'PUBLISHED' && description !== undefined && !hasProductSpecificDescription(nextDescription)) {
+      return NextResponse.json({ success: false, error: 'A published product must keep a product-specific description.' }, { status: 400 });
+    }
+    if (status === 'PUBLISHED' && !hasProductSpecificDescription(nextDescription)) {
+      return NextResponse.json({ success: false, error: 'Add a product-specific description before publishing this product.' }, { status: 400 });
+    }
 
     let requiresWholesaleTerms = false;
     if (wholesaleEnabled !== undefined) {
@@ -260,16 +282,14 @@ export async function PATCH(req: NextRequest) {
     const nextStock = updateData.stock ?? previous.stock;
     const resolvedAvailability = requestedAvailability === 'IN_STOCK' && nextStock === 0 ? 'SOLD_OUT' : requestedAvailability;
     if (availability !== undefined || stock !== undefined || inventoryCount !== undefined) updateData.availability = resolvedAvailability;
-    if (description !== undefined) updateData.description = description;
+    if (description !== undefined) updateData.description = String(description ?? '').trim();
     if (size !== undefined) updateData.size = size?.trim() || null;
     if (weight !== undefined) updateData.weight = weight?.trim() || null;
     if (materials !== undefined) updateData.materials = materials?.trim() || null;
     if (care !== undefined) updateData.care = care?.trim() || null;
     if (lead !== undefined) updateData.lead = lead?.trim() || null;
     if (status !== undefined) {
-      updateData.status = ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status)
-        ? status
-        : 'PUBLISHED';
+      updateData.status = nextStatus;
     }
 
     if (images !== undefined) {
