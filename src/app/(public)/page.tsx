@@ -26,9 +26,27 @@ function homepageSettings(setting: any) {
   const sectionOrder = Array.isArray(setting.homepageSectionOrder)
     ? setting.homepageSectionOrder.filter((item: unknown): item is string => typeof item === 'string')
     : DEFAULT_HOMEPAGE_SECTION_ORDER;
+  const trustBadges = setting.trustBadges && typeof setting.trustBadges === 'object' && !Array.isArray(setting.trustBadges)
+    ? setting.trustBadges as Record<string, unknown>
+    : {};
+  const savedPages = trustBadges.pageOverrides && typeof trustBadges.pageOverrides === 'object' && !Array.isArray(trustBadges.pageOverrides)
+    ? trustBadges.pageOverrides as Record<string, unknown>
+    : {};
+  const homeOverrides = savedPages['/'] && typeof savedPages['/'] === 'object' && !Array.isArray(savedPages['/'])
+    ? savedPages['/'] as Record<string, unknown>
+    : {};
+  const quickEditText = (section: string, selector: string, locale: 'text' | 'textDz' = 'text') => {
+    const index = sectionOrder.indexOf(section);
+    if (index < 0) return undefined;
+    const override = homeOverrides[`main/main:1/section:${index + 1}/${selector}`];
+    if (!override || typeof override !== 'object' || Array.isArray(override)) return undefined;
+    const value = (override as Record<string, unknown>)[locale];
+    return typeof value === 'string' ? value : undefined;
+  };
 
   return {
-    tagline: fallback('tagline', CLIENT_VERBATIM.tagline),
+    tagline: quickEditText('hero', 'div:1/h1:1') ?? fallback('tagline', CLIENT_VERBATIM.tagline),
+    taglineDz: quickEditText('hero', 'div:1/h1:1', 'textDz') || '',
     heroParagraph: publishedHeroParagraph(setting.heroParagraph),
     heroEyebrow: fallback('heroEyebrow', 'Civil Society Organization · Bhutan'),
     heroCtaPrimaryText: fallback('heroCtaPrimaryText', 'Our mission'),
@@ -51,7 +69,8 @@ function homepageSettings(setting: any) {
       { value: '', label: 'Registered traders across Bhutan', url: '' },
       { value: setting.stat4Number || '13', label: setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
-    aboutBandTitle: fallback('aboutBandTitle', 'A network built for artisans and everyone who brings a craft to market'),
+    aboutBandTitle: quickEditText('about', 'div:1/div:1/h2:1') ?? fallback('aboutBandTitle', 'A network built for artisans and everyone who brings a craft to market'),
+    aboutBandTitleDz: quickEditText('about', 'div:1/div:1/h2:1', 'textDz') || '',
     aboutBandPara1: fallback('aboutBandPara1', 'HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.'),
     aboutBandPara2: fallback('aboutBandPara2', 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and a growing directory of registered traders.'),
     aboutBandImageUrl: !aboutImage || /training_workshop|placeholder/i.test(aboutImage) ? '/assets/photos/about-hab.jpg' : aboutImage,
@@ -74,7 +93,14 @@ function homepageSettings(setting: any) {
       : fallback('membershipRightCtaText', 'Register as a trader'),
     shopEyebrow: fallback('shopEyebrow', 'Latest arrivals'),
     shopHeading: fallback('shopHeading', 'New in the shop'),
-    shopLede: fallback('shopLede', 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.'),
+    shopLede: quickEditText('shop', 'div:1/div:1/p:2') ?? fallback('shopLede', 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.'),
+    shopLedeDz: quickEditText('shop', 'div:1/div:1/p:2', 'textDz') || '',
+    outletsLede: quickEditText('outlets', 'div:1/div:1/p:2') || 'Buy directly from the artisans, at the markets and clusters the association runs or validates.',
+    outletsLedeDz: quickEditText('outlets', 'div:1/div:1/p:2', 'textDz') || '',
+    homeCraftIntro: quickEditText('crafts', 'div:1/div:1/p:2') || 'First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.',
+    homeCraftIntroDz: quickEditText('crafts', 'div:1/div:1/p:2', 'textDz') || '',
+    programmesHeading: quickEditText('programmes', 'div:1/div:1/h2:1') || 'Change lives, build a better community',
+    programmesHeadingDz: quickEditText('programmes', 'div:1/div:1/h2:1', 'textDz') || '',
     shopCtaText: fallback('shopCtaText', 'Visit the shop →'),
     shopCtaLink: fallback('shopCtaLink', '/shop'),
     shopProductCodes: Array.isArray(setting.shopProductCodes) ? setting.shopProductCodes.map(String).slice(0, 8) : [],

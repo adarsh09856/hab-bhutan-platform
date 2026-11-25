@@ -70,6 +70,7 @@ export default function HomePageClient({
 
   const [siteSettings, setSiteSettings] = useState({
     tagline: CLIENT_VERBATIM.tagline,
+    taglineDz: '',
     heroParagraph: CLIENT_VERBATIM.heroPara,
     heroEyebrow: 'Civil Society Organization · Bhutan',
     heroCtaPrimaryText: 'Our mission',
@@ -91,6 +92,7 @@ export default function HomePageClient({
       { value: '13', label: 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
     aboutBandTitle: 'A network built for artisans and everyone who brings a craft to market',
+    aboutBandTitleDz: '',
     aboutBandPara1: 'HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.',
     aboutBandPara2: 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and a growing directory of registered traders.',
     aboutBandImageUrl: '/assets/photos/about-hab.jpg',
@@ -104,6 +106,13 @@ export default function HomePageClient({
     shopEyebrow: 'Latest arrivals',
     shopHeading: 'New in the shop',
     shopLede: 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.',
+    shopLedeDz: '',
+    outletsLede: 'Buy directly from the artisans, at the markets and clusters the association runs or validates.',
+    outletsLedeDz: '',
+    homeCraftIntro: 'First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.',
+    homeCraftIntroDz: '',
+    programmesHeading: 'Change lives, build a better community',
+    programmesHeadingDz: '',
     shopCtaText: 'Visit the shop →',
     shopCtaLink: '/shop',
     shopProductCodes: [] as string[],
@@ -606,7 +615,7 @@ export default function HomePageClient({
         />
         <div className="hero__copy">
           <p className="eyebrow eyebrow--accent">{isDz ? t('home.hero_eyebrow', 'འབྲུག་གི་མི་སྡེ་ཚོགས་པ') : siteSettings.heroEyebrow}</p>
-          <h1 className="display display--hero">{isDz ? t('home.hero_tagline', 'འབྲུག་གི་ལག་བཟོ་སྡེ་ཚན་གྱི་གོང་འཕེལ་དང་ཡུན་བརྟན') : siteSettings.tagline}</h1>
+          <h1 className="display display--hero">{isDz ? (siteSettings.taglineDz || t('home.hero_tagline', 'འབྲུག་གི་ལག་བཟོ་སྡེ་ཚན་གྱི་གོང་འཕེལ་དང་ཡུན་བརྟན')) : siteSettings.tagline}</h1>
           <div className="lede">
             {isDz ? t('home.hero_intro', 'འབྲུག་ལག་བཟོ་ཚོགས་པ་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་པ་ཚུ་ལུ་ རྒྱལ་ཁབ་ནང་དང་ཕྱི་རྒྱལ་གྱི་ཁྲོམ་ར་ནང་ ལག་བཟོ་ཚུ་ཁྱབ་སྤེལ་གཏང་ནི་ལུ་རྒྱབ་སྐྱོར་འབདཝ་ཨིན། དེ་མ་ཚད་ ལག་བཟོ་པ་ཚུའི་རིག་རྩལ་གོང་འཕེལ་དང་ནུས་ཤུགས་ཡར་སེང་ལུ་ཡང་རྒྱབ་སྐྱོར་འབདཝ་ཨིན།') : siteSettings.heroParagraph === CLIENT_VERBATIM.heroPara ? <>
               Handicrafts Association of Bhutan supports local artisans in promoting their handicrafts in markets both within Bhutan and internationally, and supports <Link href="/programmes">skills development and capacity building</Link> of the craftspeople.
@@ -769,7 +778,7 @@ export default function HomePageClient({
         <div className="band__inner about">
           <div>
             <p className="eyebrow eyebrow--brass">{isDz ? 'ང་བཅས་ཀྱི་སྐོར' : 'About us'}</p>
-            <h2 className="display display--band">{isDz ? 'འབྲུག་གི་ལག་བཟོ་ཚོགས་པ' : siteSettings.aboutBandTitle}</h2>
+            <h2 className="display display--band">{isDz ? (siteSettings.aboutBandTitleDz || 'འབྲུག་གི་ལག་བཟོ་ཚོགས་པ') : siteSettings.aboutBandTitle}</h2>
             <p className="band__body">{isDz ? 'འབྲུག་ལག་བཟོ་ཚོགས་པ་འདི་གིས་ ས་གནས་ཀྱི་ལག་བཟོ་བ་ཚུ་ལུ་རྒྱབ་སྐྱོར་འབད་དེ་ རྒྱལ་ཁབ་ནང་འཁོད་དང་ རྒྱལ་སྤྱིའི་ཁྲོམ་རའི་ནང་ ལག་བཟོ་གོང་འཕེལ་གཏང་ནི་དང་ ལག་རྩལ་ཡར་རྒྱས་གཏང་ནི་ལུ་ ཕྱག་ཞུ་དོ་ཡོད།' : siteSettings.aboutBandPara1}</p>
             <p className="band__body">{isDz ? 'ང་བཅས་ཀྱིས་ འབྲུག་གི་སྔར་སྲོལ་ཟོ་རིག་བཅུ་གསུམ་གྱི་རིག་གཞུང་ཉམས་པ་སོར་ཆུད་དང་ མི་རབས་གསར་པ་ཚུ་ལུ་ ལག་རྩལ་སྤྲོད་ནིའི་ལས་རིམ་ཚུ་ འགོ་འདྲེན་འཐབ་ཨིན།' : siteSettings.aboutBandPara2}</p>
             <Link className="link-brass" href="/programmes">
@@ -800,7 +809,7 @@ export default function HomePageClient({
             <p className="eyebrow eyebrow--accent">{isDz ? t('home.latest_arrivals', 'Latest arrivals') : (siteSettings.shopEyebrow || t('home.latest_arrivals', 'Latest arrivals'))}</p>
             <h2 className="display display--band">{isDz ? t('home.new_in_shop', 'New in the shop') : (siteSettings.shopHeading || t('home.new_in_shop', 'New in the shop'))}</h2>
             <p className="section__lede">
-              {isDz ? t('home.shop_intro', 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ལག་བཟོ་ཅ་ཆས་གསར་ཤོས་ཚུ་འདིར་གཟིགས། HAB གིས་འཐུས་མི་ལས་གོང་ཚད་གཏན་འཁེལ་ཐོག་ཉོ་སྟེ་ ཚོང་ཁང་བརྒྱུད་དེ་ཚོང་འབྲེལ་འཐབ་ཨིན།') : (siteSettings.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.')}
+              {isDz ? (siteSettings.shopLedeDz || t('home.shop_intro', 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ལག་བཟོ་ཅ་ཆས་གསར་ཤོས་ཚུ་འདིར་གཟིགས། HAB གིས་འཐུས་མི་ལས་གོང་ཚད་གཏན་འཁེལ་ཐོག་ཉོ་སྟེ་ ཚོང་ཁང་བརྒྱུད་དེ་ཚོང་འབྲེལ་འཐབ་ཨིན།')) : (siteSettings.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.')}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href={siteSettings.shopCtaLink || '/shop'}>
@@ -905,10 +914,7 @@ export default function HomePageClient({
             <p className="eyebrow eyebrow--accent">{localizeHomeText('Visit us in person', 'མི་ངོ་མར་ལྟ་བསྐོར་གནང་།')}</p>
             <h2 className="display display--band">{isDz ? t('home.outlets_title', 'ཚོང་ཁང་དང་ལག་བཟོའི་གླིང') : 'Our physical outlets & clusters'}</h2>
             <p className="section__lede">
-              {localizeHomeText(
-                'Buy directly from the artisans, at the markets and clusters the association runs or validates.',
-                'ལག་བཟོ་ཚོགས་པ་གིས་འཛིན་སྐྱོང་ཡང་ན་བདེན་དཔྱད་འབད་མི་ཚོང་ཁང་དང་ཁྲོམ་ར་ཚུ་ནང་ ལག་བཟོ་པ་ཚུ་ལས་ཐད་ཀར་ཉོ་གནང་།',
-              )}
+              {isDz ? (siteSettings.outletsLedeDz || 'ལག་བཟོ་ཚོགས་པ་གིས་འཛིན་སྐྱོང་ཡང་ན་བདེན་དཔྱད་འབད་མི་ཚོང་ཁང་དང་ཁྲོམ་ར་ཚུ་ནང་ ལག་བཟོ་པ་ཚུ་ལས་ཐད་ཀར་ཉོ་གནང་།') : siteSettings.outletsLede}
             </p>
           </div>
           <Link className="link-accent" href="/shop">
@@ -1029,8 +1035,8 @@ export default function HomePageClient({
             <h2 className="display display--band">{isDz ? 'འབྲུག་གི་བཟོ་རིག་བཅུ་གསུམ' : 'The 13 arts & crafts of Bhutan'}</h2>
             <p className="section__lede">
               {isDz
-                ? 'དུས་རབས་ ༡༧ པ་ལུ་ གཞུང་འབྲེལ་དབྱེ་ཁག་ཕྱེས་ཡོད་པའི་ ལག་བཟོ་བཅུ་གསུམ་གྱི་ ཐོན་སྐྱེད་ཚུ་ ཚོང་ཁང་ནང་ལས་ ཐད་ཀར་དུ་ཉོ་བཏུབ།'
-                : 'First categorised in the 17th century. Each craft is a doorway into the shop — and into the members who practise it.'}
+                ? (siteSettings.homeCraftIntroDz || 'དུས་རབས་ ༡༧ པ་ལུ་ གཞུང་འབྲེལ་དབྱེ་ཁག་ཕྱེས་ཡོད་པའི་ ལག་བཟོ་བཅུ་གསུམ་གྱི་ ཐོན་སྐྱེད་ཚུ་ ཚོང་ཁང་ནང་ལས་ ཐད་ཀར་དུ་ཉོ་བཏུབ།')
+                : siteSettings.homeCraftIntro}
             </p>
           </div>
           <Link className="btn btn--ink btn--sm" href="/shop">
@@ -1130,7 +1136,7 @@ export default function HomePageClient({
         <div className="section__head">
           <div>
             <p className="eyebrow eyebrow--accent">{isDz ? 'ལས་རིམ་དང་ལས་འགུལ' : 'Programmes & projects'}</p>
-            <h2 className="display display--band">{isDz ? 'མི་ཚེ་སོར་བསྒྱུར་དང་ མི་སྡེ་གོང་འཕེལ' : 'Change lives, build a better community'}</h2>
+            <h2 className="display display--band">{isDz ? (siteSettings.programmesHeadingDz || 'མི་ཚེ་སོར་བསྒྱུར་དང་ མི་སྡེ་གོང་འཕེལ') : siteSettings.programmesHeading}</h2>
             <p className="section__lede">
               {isDz
                 ? 'ལས་རིམ་རེ་རེ་བཞིན་དུ་ འབྲུག་ལག་བཟོ་ཚོགས་པའི་ རྩ་ཁྲིམས་དོན་ཚན་ ༣.༢ པའི་དམིགས་ཡུལ་དང་འཁྲིལ་ཏེ་ ལག་ལེན་འཐབ་ཨིན།'
