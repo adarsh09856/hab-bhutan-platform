@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,11 +11,10 @@ export async function GET(request: NextRequest) {
     const dzongkhag = searchParams.get('dzongkhag')?.trim();
     const craft = searchParams.get('craft')?.trim();
     const slug = searchParams.get('slug')?.trim();
-    const now = new Date();
     const rows = await prisma.traderRecord.findMany({
       where: {
         isVisible: true,
-        expiresAt: { gt: now },
+        expiresAt: { gte: bhutanDayStartUtc() },
         ...(slug ? { slug } : {}),
         ...(dzongkhag ? { dzongkhag: { equals: dzongkhag, mode: 'insensitive' as const } } : {}),
       },

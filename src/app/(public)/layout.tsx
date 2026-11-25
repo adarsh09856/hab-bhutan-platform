@@ -11,8 +11,14 @@ import DesignTweaks from '@/components/public/DesignTweaks';
 import PolicyModal from '@/components/public/PolicyModal';
 import UniversalPageQuickEdit from '@/components/public/UniversalPageQuickEdit';
 import PublicPageBlocks from '@/components/public/PublicPageBlocks';
+import { publicPageMetadata } from '@/lib/public-metadata';
 
 export const dynamic = 'force-dynamic';
+export const metadata = publicPageMetadata(
+  '/',
+  'Handicrafts Association of Bhutan',
+  'Discover Bhutanese crafts, artisans, programmes and the work of the Handicrafts Association of Bhutan.',
+);
 
 export default async function PublicLayout({
   children,

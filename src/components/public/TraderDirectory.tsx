@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CRAFTS } from '@/lib/data';
 
 const PRODUCT_TYPES = ['Textiles', 'Clothing & accessories', 'Home & living', 'Jewellery', 'Art & decor', 'Paper & stationery', 'Food & gifts', 'Other'] as const;
 
@@ -19,12 +20,17 @@ export default function TraderDirectory({ traders, initialQuery = '' }: { trader
   const [limit, setLimit] = useState(12);
   const dzongkhags = useMemo(() => [...new Set(traders.map((item) => item.dzongkhag).filter(Boolean))].sort(), [traders]);
   const crafts = useMemo(() => [...new Set(traders.flatMap((item) => item.craftKeys || []).filter(Boolean))].sort(), [traders]);
+  const craftLabel = (key: string) => {
+    const normalized = key.trim().toLowerCase();
+    const craft = CRAFTS.find((item) => [item.key, item.id, item.name, item.english].some((value) => value.toLowerCase() === normalized));
+    return craft ? `${craft.name} · ${craft.english}` : key;
+  };
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return traders.filter((item) => (!dzongkhag || item.dzongkhag === dzongkhag)
       && (!craft || item.craftKeys.some((key) => key.toLowerCase() === craft.toLowerCase()))
       && (!productType || (item.productTypes || []).some((type) => type.toLowerCase() === productType.toLowerCase()))
-      && (!needle || [item.shopName, item.town, item.dzongkhag, item.shortDescription, ...item.craftKeys, ...(item.productTypes || [])].some((value) => String(value || '').toLowerCase().includes(needle))));
+      && (!needle || [item.shopName, item.town, item.dzongkhag, item.shortDescription, ...item.craftKeys.flatMap((key) => [key, craftLabel(key)]), ...(item.productTypes || [])].some((value) => String(value || '').toLowerCase().includes(needle))));
   }, [traders, query, dzongkhag, craft, productType]);
 
   return <>
@@ -42,11 +48,11 @@ export default function TraderDirectory({ traders, initialQuery = '' }: { trader
     {filtered.length === 0 ? <div className="shopempty"><h2 className="shopempty__title">{traders.length ? 'No matching trader listings' : 'No trader listings are published yet'}</h2><p className="shopempty__body">{traders.length ? 'Try changing your search or filters.' : 'The Secretariat manages accredited trader listings.'}</p></div> : <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filtered.slice(0, limit).map((trader) => {
-          const photo = trader.bannerUrl || trader.productPhotoUrls?.[0];
+          const photo = trader.bannerUrl;
           return <article key={trader.id} className="card overflow-hidden">
             <Link href={`/traders/${encodeURIComponent(trader.slug)}`} className="block h-full">
-              {photo && <div className="relative aspect-[4/3] bg-stone-100"><Image src={photo} alt={trader.shopName} fill unoptimized sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" /></div>}
-              <div className="p-5"><div className="flex flex-wrap items-center justify-between gap-2"><p className="eyebrow eyebrow--accent">{trader.town}, {trader.dzongkhag}</p><span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">HAB Verified</span></div><h2 className="display display--panel">{trader.shopName}</h2><p className="mt-2 text-sm">{trader.shortDescription}</p>{trader.productTypes?.length > 0 && <p className="mt-3 text-xs text-[#6B5A4C]">Products: {trader.productTypes.join(', ')}</p>}<span className="link-accent mt-4 inline-block">View trader details →</span></div>
+              <div className="relative aspect-[4/3] bg-[#eee5d8]">{photo ? <Image src={photo} alt={`${trader.shopName} shop`} fill unoptimized sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" /> : <span className="absolute inset-0 flex items-center justify-center text-sm text-[#806d5b]">Shop photo not provided</span>}</div>
+              <div className="p-5"><div className="flex flex-wrap items-center justify-between gap-2"><p className="eyebrow eyebrow--accent">{trader.town}, {trader.dzongkhag}</p><span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">HAB Verified</span></div><h2 className="display display--panel">{trader.shopName}</h2><p className="mt-2 text-sm">{trader.shortDescription}</p>{trader.craftKeys?.length > 0 && <p className="mt-3 text-xs text-[#6B5A4C]">Crafts: {trader.craftKeys.map(craftLabel).join(', ')}</p>}{trader.productTypes?.length > 0 && <p className="mt-2 text-xs text-[#6B5A4C]">Products: {trader.productTypes.join(', ')}</p>}<span className="link-accent mt-4 inline-block">View trader details →</span></div>
             </Link>
           </article>;
         })}

@@ -23,6 +23,7 @@ const routePermissions: Record<string, string[]> = {
   '/admin/projects': ['content:view'],
   '/admin/publications': ['content:view'],
   '/admin/members': ['members:view'],
+  '/admin/traders': ['content:view', 'content:edit'],
   '/admin/applications': ['applications:view'],
   '/admin/membership-categories': ['members:view'],
   '/admin/membership-settings': ['members:view', 'dues:view', 'members:verify'],

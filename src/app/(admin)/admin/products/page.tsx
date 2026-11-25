@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import { traderIsExpired } from '@/lib/trader-expiry';
 
 const generateProductSKU = (craftKey: string = 'thagzo') => {
   const CRAFT_PREFIX: Record<string, string> = {
@@ -721,7 +722,7 @@ export default function AdminProductsPage() {
               <span className="text-[10.5px] text-slate-500 block mt-1">Price in USD (auto-converted to Nu. on website).</span>
             </div>
           </div>
-          <div><label className="block font-medium admin-text mb-1">Retail trader / shop (public listing)</label><select value={addForm.traderId || ''} onChange={(e) => setAddForm({ ...addForm, traderId: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2"><option value="">No trader linked</option>{traders.filter((trader) => trader.isVisible && new Date(trader.expiresAt) > new Date()).map((trader) => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select></div>
+          <div><label className="block font-medium admin-text mb-1">Accredited trader {addForm.status === 'PUBLISHED' ? '*' : '(optional while draft)'}</label><select required={addForm.status === 'PUBLISHED'} value={addForm.traderId || ''} onChange={(e) => setAddForm({ ...addForm, traderId: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2"><option value="">Select an active trader</option>{traders.filter((trader) => trader.isVisible && !traderIsExpired(trader.expiresAt)).map((trader) => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select>{traders.filter((trader) => trader.isVisible && !traderIsExpired(trader.expiresAt)).length === 0 && <p className="mt-1 text-xs text-amber-700">Add an active listing in Admin → Traders before publishing.</p>}</div>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block font-medium admin-text">Product type

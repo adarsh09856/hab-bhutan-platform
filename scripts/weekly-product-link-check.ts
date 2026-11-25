@@ -1,6 +1,7 @@
 import { loadEnvConfig } from '@next/env';
 import prisma from '../src/lib/prisma';
 import { sendEmail } from '../src/lib/email-service';
+import { bhutanDayStartUtc } from '../src/lib/trader-expiry';
 
 loadEnvConfig(process.cwd());
 
@@ -32,7 +33,7 @@ async function main() {
 
   const now = new Date();
   const expiredTraders = await prisma.traderRecord.findMany({
-    where: { isVisible: true, expiresAt: { lte: now }, expiryNoticeSentAt: null },
+    where: { isVisible: true, expiresAt: { lt: bhutanDayStartUtc(now) }, expiryNoticeSentAt: null },
     select: { id: true, shopName: true, registrationNumber: true, expiresAt: true },
     orderBy: { expiresAt: 'asc' },
   });

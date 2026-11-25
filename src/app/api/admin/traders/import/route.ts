@@ -31,7 +31,15 @@ export async function POST(req: NextRequest) {
       const shopName = cell(row, 'shopname');
       const registrationNumber = cell(row, 'registrationnumber');
       const expiry = new Date(cell(row, 'expiresat'));
-      if (!shopName || !registrationNumber || Number.isNaN(expiry.getTime())) { errors.push(`Row ${index + 1}: shop name, registration number and valid expiresAt are required.`); continue; }
+      const missingValues = [
+        ['shop name', shopName], ['registration number', registrationNumber], ['dzongkhag', cell(row, 'dzongkhag')],
+        ['town', cell(row, 'town')], ['address', cell(row, 'address')], ['short description', cell(row, 'shortdescription')],
+        ['description', cell(row, 'description')],
+      ].filter(([, value]) => !String(value || '').trim()).map(([label]) => label);
+      if (missingValues.length || Number.isNaN(expiry.getTime())) {
+        errors.push(`Row ${index + 1}: ${[...missingValues, ...(Number.isNaN(expiry.getTime()) ? ['valid expiresAt'] : [])].join(', ')} required.`);
+        continue;
+      }
       const slug = slugify(cell(row, 'slug') || shopName);
       const data = {
         shopName, registrationNumber, slug,

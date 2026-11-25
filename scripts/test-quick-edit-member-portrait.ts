@@ -1,32 +1,23 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+const directory = fs.readFileSync('src/app/(public)/members/page.tsx', 'utf8');
 const profile = fs.readFileSync('src/app/(public)/members/[slug]/page.tsx', 'utf8');
-const quickEdit = fs.readFileSync('src/components/public/UniversalPageQuickEdit.tsx', 'utf8');
-const adminRoute = fs.readFileSync('src/app/api/admin/members/route.ts', 'utf8');
-const publicMapper = fs.readFileSync('src/lib/public-member-profile.ts', 'utf8');
-const viewMapper = fs.readFileSync('src/lib/member-profile-view.ts', 'utf8');
+const publicApi = fs.readFileSync('src/app/api/members/route.ts', 'utf8');
+const adminPage = fs.readFileSync('src/app/(admin)/admin/members/page.tsx', 'utf8');
+const adminApi = fs.readFileSync('src/app/api/admin/members/route.ts', 'utf8');
 
-assert.match(profile, /data-hab-gallery="member"\s+data-hab-gallery-id=\{member\.regNumber\}/,
-  'member portrait uses the public registration number to identify the Admin record');
-assert.match(profile, /data-hab-media-placeholder="member-portrait"/,
-  'the initials fallback remains a selectable portrait-upload target');
-assert.match(quickEdit, /selected\.hasAttribute\('data-hab-media-placeholder'\)/,
-  'Quick Edit classifies the initials fallback as an image, not editable letter text');
-assert.match(quickEdit, /galleryType === 'member'[\s\S]*?\/api\/admin\/members'[\s\S]*?portraitUrl:\s*nextUrl/,
-  'Quick Edit writes an uploaded portrait to the member Admin record');
-assert.match(quickEdit, /purpose=member-portrait&memberRegNumber=/,
-  'member portrait uploads use the domain-specific upload permission');
-assert.match(quickEdit, /galleryType === 'member' \? \['members:view', 'members:edit'\]/,
-  'member portrait editing requires member-view and member-edit permissions');
-assert.match(adminRoute, /if \(editFields\.portraitUrl !== undefined\) updateData\.portraitUrl = editFields\.portraitUrl/,
-  'the protected Admin member update persists the portrait URL');
-assert.match(publicMapper, /portraitUrl:\s*member\.portraitUrl/,
-  'the public API exposes the saved portrait URL');
-assert.match(viewMapper, /regNumber:\s*record\.regNumber/,
-  'the public member view retains the non-sensitive registration key for record matching');
-const uploadRoute = fs.readFileSync('src/app/api/admin/upload/route.ts', 'utf8');
-assert.match(uploadRoute, /purpose === 'member-portrait'[\s\S]*requirePermission\(req, 'members:edit'\)[\s\S]*requireAnyPermission\(req, \['content:create', 'content:edit'\]\)/,
-  'portrait upload accepts member-edit permission without broadening other media uploads');
+assert.match(directory, /redirect\('\/traders'\)/,
+  'the public members directory redirects to the Trader Directory');
+assert.match(profile, /redirect\('\/traders'\)/,
+  'legacy public member-profile URLs redirect to the Trader Directory');
+assert.match(publicApi, /status:\s*410/,
+  'the former public member API does not expose private registry records');
+assert.match(adminPage, /<FileUploadInput[\s\S]*?value=\{createForm\.portraitUrl\}[\s\S]*?label="Artisan Portrait \/ Workshop Photo"/,
+  'staff can upload a member portrait from the Admin member editor');
+assert.match(adminPage, /value=\{editingMember\.portraitUrl\s*\|\|\s*''\}/,
+  'the Admin editor shows the saved portrait during member edits');
+assert.match(adminApi, /editFields\.portraitUrl !== undefined\) updateData\.portraitUrl = editFields\.portraitUrl/,
+  'the protected Admin member API persists portrait changes');
 
-console.log('PASS: Quick Edit can target an empty member portrait, upload and save to the protected member record, and render the saved portrait publicly.');
+console.log('PASS: public member records stay private; staff can upload and edit portraits in Admin.');

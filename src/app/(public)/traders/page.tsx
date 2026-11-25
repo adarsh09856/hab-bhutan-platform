@@ -3,6 +3,7 @@ import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import TraderDirectory from '@/components/public/TraderDirectory';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Accredited Traders · HAB', description: 'Find current HAB-accredited handicraft traders by name, craft and location.' };
@@ -12,7 +13,7 @@ export default async function TradersPage({ searchParams }: { searchParams: Prom
   let traders: any[] = [];
   let unavailable = false;
   try {
-    traders = await prisma.traderRecord.findMany({ where: { isVisible: true, expiresAt: { gt: new Date() } }, orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] });
+    traders = await prisma.traderRecord.findMany({ where: { isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } }, orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] });
   } catch { unavailable = true; }
   return <main id="main"><section className="section relative" data-hab-section="traders">
     <SectionEditBadge label="Accredited Traders" studioHref="/admin/traders" />

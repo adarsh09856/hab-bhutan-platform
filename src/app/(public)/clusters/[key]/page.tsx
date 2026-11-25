@@ -8,6 +8,7 @@ import { clusterImages } from '@/lib/reference-images';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { productHref, shopCraftHref } from '@/lib/product-routes';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,7 +96,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
     });
   } catch {}
   try {
-    const listings = await prisma.traderRecord.findMany({ where: { isVisible: true, expiresAt: { gt: new Date() } }, orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] });
+    const listings = await prisma.traderRecord.findMany({ where: { isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } }, orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }] });
     members = listings.filter((trader) => Array.isArray(trader.craftKeys) && trader.craftKeys.some((key) => String(key).toLowerCase() === cluster.craft_key.toLowerCase())).map((trader) => ({ id: trader.id, slug: trader.slug, name: trader.shopName, dzongkhag: trader.dzongkhag, blurb: trader.shortDescription }));
   } catch {}
 

@@ -6,12 +6,13 @@ import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductCard from '@/components/public/ProductCard';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ slug: string }> };
 async function findTrader(slug: string) {
   return prisma.traderRecord.findFirst({
-    where: { slug, isVisible: true, expiresAt: { gt: new Date() } },
+    where: { slug, isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } },
     include: { products: { where: { status: 'PUBLISHED' }, include: { maker: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 12 } },
   });
 }

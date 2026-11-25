@@ -67,9 +67,9 @@ try {
     body: JSON.stringify({
       items: [{ id: product.id, productId: product.id, code, name: product.name, quantity: 1, priceUsd: 1 }],
       currency: 'BTN', paymentMethod: 'BNB', shippingMethod: 'EMS',
-      customerName: 'Local BNB verification', email,
+      customerName: 'Local BNB verification', email, phone: '+97517123456',
       mBOBTransactionRef: `BNB-REF-${suffix}`,
-      shippingAddress: { fullName: 'Local BNB verification', email, street: 'Test only', city: 'Thimphu', country: 'Bhutan' },
+      shippingAddress: { fullName: 'Local BNB verification', email, phone: '+97517123456', street: 'Test only', city: 'Thimphu', country: 'Bhutan', postalCode: '11001' },
     }),
   });
   const result = await response.json();

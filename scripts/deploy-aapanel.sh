@@ -84,6 +84,7 @@ echo "Generating Prisma Client and applying schema without data-loss override"
 npx prisma generate
 npx prisma db execute --file prisma/migrations/20261124010000_client_changes_brief/migration.sql --schema prisma/schema.prisma
 npx prisma db execute --file prisma/migrations/20261125010000_repair_verified_catalog_and_event_fields/migration.sql --schema prisma/schema.prisma
+npx prisma db execute --file prisma/migrations/20261125020000_repair_remaining_catalog_copy/migration.sql --schema prisma/schema.prisma
 MIGRATION_STATUS="$(npx prisma migrate status 2>&1 || true)"
 if ! grep -Eq '[0-9]+ migrations found|Database schema is up to date' <<<"$MIGRATION_STATUS"; then
   printf '%s\n' "$MIGRATION_STATUS"
@@ -95,6 +96,9 @@ if grep -Fq '20261124010000_client_changes_brief' <<<"$MIGRATION_STATUS"; then
 fi
 if grep -Fq '20261125010000_repair_verified_catalog_and_event_fields' <<<"$MIGRATION_STATUS"; then
   npx prisma migrate resolve --applied 20261125010000_repair_verified_catalog_and_event_fields
+fi
+if grep -Fq '20261125020000_repair_remaining_catalog_copy' <<<"$MIGRATION_STATUS"; then
+  npx prisma migrate resolve --applied 20261125020000_repair_remaining_catalog_copy
 fi
 npx prisma db push --skip-generate
 

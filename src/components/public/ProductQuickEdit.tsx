@@ -16,6 +16,7 @@ type ProductForm = {
   craftKey: string;
   region: string;
   makerMemberId: string;
+  traderId: string;
   status: 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'ARCHIVED';
   size: string;
   weight: string;
@@ -27,7 +28,7 @@ type ProductForm = {
 
 const blankForm = (): ProductForm => ({
   code: '', name: '', description: '', priceUSD: '', stock: '0', craftKey: '', region: '',
-  makerMemberId: '', status: 'DRAFT', size: '', weight: '', materials: '', care: '', lead: '', imageUrls: [],
+  makerMemberId: '', traderId: '', status: 'DRAFT', size: '', weight: '', materials: '', care: '', lead: '', imageUrls: [],
 });
 
 function imageUrls(value: unknown): string[] {
@@ -40,7 +41,7 @@ function toProductForm(product: any): ProductForm {
     code: product.code, name: product.name || '', description: product.description || '',
     priceUSD: String(product.priceUSD ?? ''), stock: String(product.stock ?? 0),
     craftKey: product.craftKey || '', region: product.region || '',
-    makerMemberId: product.makerMemberId || '', status: product.status || 'DRAFT',
+    makerMemberId: product.makerMemberId || '', traderId: product.traderId || '', status: product.status || 'DRAFT',
     size: product.size || '', weight: product.weight || '', materials: product.materials || '',
     care: product.care || '', lead: product.lead || '',
     imageUrls: Array.isArray(product.images) && product.images.length > 0
@@ -58,6 +59,7 @@ export default function ProductQuickEdit({ isOpen, onClose, code = '' }: { isOpe
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [members, setMembers] = useState<Array<{ id: string; name: string; status: string }>>([]);
+  const [traders, setTraders] = useState<Array<{ id: string; shopName: string; town: string }>>([]);
   const [galleryUpload, setGalleryUpload] = useState('');
   const [catalogue, setCatalogue] = useState<any[]>([]);
 
@@ -99,6 +101,10 @@ export default function ProductQuickEdit({ isOpen, onClose, code = '' }: { isOpe
       .then(response => response.ok ? response.json() : null)
       .then(data => { if (data?.success && Array.isArray(data.members)) setMembers(data.members.map((member: any) => ({ id: member.id, name: member.name, status: member.status }))); })
       .catch(() => {});
+    fetch('/api/traders', { cache: 'no-store', signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => { if (data?.success && Array.isArray(data.traders)) setTraders(data.traders.map((trader: any) => ({ id: trader.id, shopName: trader.shopName, town: trader.town }))); })
+      .catch(() => {});
     return () => controller.abort();
   }, [isOpen, code]);
 
@@ -118,6 +124,10 @@ export default function ProductQuickEdit({ isOpen, onClose, code = '' }: { isOpe
       setError('Enter a valid product code, name, craft, non-negative price, and whole-number stock.');
       return;
     }
+    if (form.status === 'PUBLISHED' && (creating || originalForm.status !== 'PUBLISHED') && !form.traderId) {
+      setError('Choose an active accredited trader before publishing this product. Add the trader in Admin → Traders if needed.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -125,7 +135,7 @@ export default function ProductQuickEdit({ isOpen, onClose, code = '' }: { isOpe
         ...(creating ? {} : { code: form.code }),
         name: form.name.trim(), description: form.description.trim(), priceUSD: Number(form.priceUSD),
         stock: Number(form.stock), craftKey: form.craftKey, region: form.region.trim(),
-        makerMemberId: form.makerMemberId || null, status: form.status,
+        makerMemberId: form.makerMemberId || null, traderId: form.traderId || null, status: form.status,
         size: form.size, weight: form.weight, materials: form.materials, care: form.care, lead: form.lead,
         // Preserve any image captions, alt text, and other saved metadata when
         // the editor changes only text or pricing.
@@ -222,7 +232,8 @@ export default function ProductQuickEdit({ isOpen, onClose, code = '' }: { isOpe
               <label className="text-sm font-medium">Craft<select className={fieldClass} value={form.craftKey} disabled={saving} onChange={event => update('craftKey', event.target.value)} required><option value="">Select a craft</option>{CRAFTS.map(craft => <option key={craft.key} value={craft.key}>{craft.name} — {craft.english}</option>)}</select></label>
               <label className="text-sm font-medium">Region<input className={fieldClass} value={form.region} disabled={saving} onChange={event => update('region', event.target.value)} /></label>
             </div>
-            {members.length > 0 && <label className="block text-sm font-medium">Maker / member<select className={fieldClass} value={form.makerMemberId} disabled={saving} onChange={event => update('makerMemberId', event.target.value)}><option value="">No member linked</option>{members.map(member => <option key={member.id} value={member.id}>{member.name} ({member.status})</option>)}</select></label>}
+            <label className="block text-sm font-medium">Accredited trader {form.status === 'PUBLISHED' ? '*' : '(optional while draft)'}<select className={fieldClass} value={form.traderId} disabled={saving} required={form.status === 'PUBLISHED'} onChange={event => update('traderId', event.target.value)}><option value="">Select an active trader</option>{traders.map(trader => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select>{traders.length === 0 && <span className="mt-1 block text-xs text-amber-800">Add an accredited trader in Admin → Traders before publishing.</span>}</label>
+            {members.length > 0 && <label className="block text-sm font-medium">Maker / member (optional)<select className={fieldClass} value={form.makerMemberId} disabled={saving} onChange={event => update('makerMemberId', event.target.value)}><option value="">No member linked</option>{members.map(member => <option key={member.id} value={member.id}>{member.name} ({member.status})</option>)}</select></label>}
             <FileUploadInput value={form.imageUrls[0] || ''} onChange={url => update('imageUrls', url ? [url, ...form.imageUrls.slice(1)] : form.imageUrls.slice(1))} label="Primary product photograph" accept="image/*" hint="Upload a clear, high-resolution product photograph." disabled={saving} />
             <FileUploadInput value={galleryUpload} onChange={url => { if (url) update('imageUrls', [...form.imageUrls, url]); setGalleryUpload(''); }} label="Add another gallery photograph" accept="image/*" disabled={saving} />
             {form.imageUrls.length > 1 && <div className="space-y-1 text-sm"><p className="font-medium">Gallery photos</p>{form.imageUrls.slice(1).map((url, index) => <div key={`${url}-${index}`} className="flex items-center justify-between gap-2 rounded border border-stone-200 p-2"><span className="min-w-0 truncate">{url}</span><button type="button" onClick={() => update('imageUrls', form.imageUrls.filter((_, i) => i !== index + 1))} className="text-[#8B2E24] underline">Remove</button></div>)}</div>}

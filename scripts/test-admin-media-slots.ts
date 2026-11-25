@@ -51,7 +51,7 @@ async function main() {
     assert.deepEqual(slots.map((slot: any) => slot.key), ['hero.slide-1', 'about.band', 'craft.thagzo', 'outlet.saved-outlet', 'outlet.thimphu-outlet']);
     assert.equal(slots[0].caption, 'Saved alt');
     assert.equal(slots[3].url, '/assets/photos/image-unavailable.svg', 'unknown outlets do not get invented photos');
-    assert.equal(slots[4].url, '/assets/photos/hero-4-textiles.jpg', 'Admin gallery uses the same existing outlet fallback as the public page');
+    assert.equal(slots[4].url, '/images/outlets/thimphu.jpg', 'Admin gallery uses the outlet-specific reference image shown publicly');
 
     const unsafe = await PATCH(request('PATCH', { key: 'hero.slide-1', url: 'javascript:alert(1)' }));
     assert.equal(unsafe.status, 400);

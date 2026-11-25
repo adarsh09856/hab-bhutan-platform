@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CLIENT_DATA } from '@/lib/client-data';
+import { CRAFTS } from '@/lib/data';
 import { productHref } from '@/lib/product-routes';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,20 +142,21 @@ export async function GET(req: NextRequest) {
         })
         .catch(() => []),
       prisma.traderRecord.findMany({
-        where: {
-          isVisible: true,
-          expiresAt: { gt: new Date() },
-          OR: [
-            { shopName: { contains: q, mode: 'insensitive' } },
-            { dzongkhag: { contains: q, mode: 'insensitive' } },
-            { town: { contains: q, mode: 'insensitive' } },
-            { shortDescription: { contains: q, mode: 'insensitive' } },
-            { craftKeys: { array_contains: [q] } },
-          ],
-        },
-        take: 10,
+        where: { isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } },
+        orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }],
       }).catch(() => []),
     ]);
+
+    const matchedTraders = dbTraders.filter((trader) => {
+      const craftNames = (Array.isArray(trader.craftKeys) ? trader.craftKeys : []).flatMap((key) => {
+        const value = String(key).toLowerCase();
+        const craft = CRAFTS.find((item) => [item.key, item.id, item.name, item.english].some((label) => label.toLowerCase() === value));
+        return [value, ...(craft ? [craft.name.toLowerCase(), craft.english.toLowerCase()] : [])];
+      });
+      const searchable = [trader.shopName, trader.dzongkhag, trader.town, trader.address, trader.shortDescription, trader.description,
+        ...(Array.isArray(trader.productTypes) ? trader.productTypes : []), ...craftNames];
+      return searchable.some((value) => String(value || '').toLowerCase().includes(lowerQ));
+    }).slice(0, 10);
 
     // Format products
     const products = (dbProducts.length > 0
@@ -198,7 +201,7 @@ export async function GET(req: NextRequest) {
     }));
 
     // Member registry records are private; expose only public trader directory fields.
-    const members = dbTraders.map((trader) => ({
+    const members = matchedTraders.map((trader) => ({
       id: trader.id,
       title: trader.shopName,
       subtitle: `${trader.town} · ${trader.dzongkhag}`,

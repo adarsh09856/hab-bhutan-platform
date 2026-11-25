@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 TAG="# HAB_WEEKLY_PRODUCT_LINK_CHECK"
-CRON_ENTRY="0 9 * * 1 /bin/bash \"$APP_ROOT/scripts/run-weekly-product-link-check.sh\" >> \"$APP_ROOT/weekly-product-link-check.log\" 2>&1 $TAG"
+CRON_ENTRY="0 9 * * * /bin/bash \"$APP_ROOT/scripts/run-weekly-product-link-check.sh\" >> \"$APP_ROOT/weekly-product-link-check.log\" 2>&1 $TAG"
 
 case "${1:-}" in
   --print)
@@ -17,7 +17,7 @@ case "${1:-}" in
       printf '%s\n' "$filtered" | sed '/^[[:space:]]*$/d'
       printf '%s\n' "$CRON_ENTRY"
     } | crontab -
-    echo "Installed the HAB product-link report for Mondays at 09:00 server local time."
+    echo "Installed a daily HAB trader-expiry check; product-link reports run on Mondays."
     ;;
   --uninstall)
     command -v crontab >/dev/null 2>&1 || { echo "crontab is required to remove the weekly check." >&2; exit 1; }
