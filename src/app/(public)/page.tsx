@@ -137,6 +137,7 @@ export default function HomePage() {
   }, [allOutletsPool, outletOffset, punakhaOutlet?.key]);
 
   const [masters, setMasters] = useState<any[]>([]);
+  const [mastersState, setMastersState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const [supportPillars, setSupportPillars] = useState<any[]>([]);
   const [supportPillarsState, setSupportPillarsState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -307,8 +308,8 @@ export default function HomePage() {
         return r.json();
       })
       .then((d) => {
-        if (d?.masters && d.masters.length > 0) {
-          const formattedMasters = d.masters
+        if (!d?.success || !Array.isArray(d.masters)) throw new Error('Honours directory unavailable');
+        const formattedMasters = d.masters
             .filter((m: any) => typeof m?.name === 'string' && m.name.trim() && !/^(name to confirm|to be confirmed|undefined|null)$/i.test(m.name.trim()))
             .filter((m: any) => m.showHome)
             .slice(0, 6)
@@ -325,10 +326,13 @@ export default function HomePage() {
               slot: `photo — ${m.name}`,
             };
           });
-          setMasters(formattedMasters);
-        }
+        setMasters(formattedMasters);
+        setMastersState('ready');
       })
-      .catch(() => setMasters([]));
+      .catch(() => {
+        setMasters([]);
+        setMastersState('error');
+      });
 
     // F. Programmes from Admin (ONLY 1 row = 3 cards)
     fetch('/api/programmes', { cache: 'no-store' })
@@ -1101,7 +1105,13 @@ export default function HomePage() {
               </div>
             </Link>
           ))}
-        </div> : <p className="section__lede">{isDz ? 'ངོས་འཛིན་ཐོབ་པའི་མཁས་དབང་གི་གསལ་བཤད་ཚུ་གསར་བཅོས་འབད་དོ།' : 'Confirmed master-craftsperson profiles are being updated.'}</p>}
+        </div> : <p className="section__lede">
+          {mastersState === 'loading'
+            ? (isDz ? 'མཁས་དབང་ལག་བཟོ་བའི་གསལ་སྡུད་ཕབ་ལེན་འབད་དོ…' : 'Loading featured craftsperson profiles…')
+            : mastersState === 'error'
+              ? (isDz ? 'མཁས་དབང་གི་གསལ་སྡུད་ད་ལྟོ་ལག་ལེན་མི་ཐབ།' : 'Featured craftsperson profiles are temporarily unavailable.')
+              : (isDz ? 'ད་ལྟོ་ཁྱིམ་ཤོག་ནང་གསལ་སྟོན་འབད་བའི་གསལ་སྡུད་མེད།' : 'No profiles are featured on the home page yet.')}
+        </p>}
       </section>
     ),
     'programmes': (
