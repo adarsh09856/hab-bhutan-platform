@@ -14,7 +14,10 @@ export default function BasketPage() {
   const { fmt } = useCurrency();
   const {
     cart,
+    cartHydrated,
     catalogueLoaded,
+    catalogueLoadError,
+    retryCatalogue,
     items,
     cartCount,
     subtotalUSD,
@@ -74,6 +77,7 @@ export default function BasketPage() {
     { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
   ];
   const isBhutanDelivery = customer.country.toLowerCase() === 'bhutan';
+  const hasBasketLines = Object.values(cart).some((quantity) => quantity > 0);
   const availablePaymentOptions = payOptions.filter((option) => isBhutanDelivery || !['cod', 'mbob'].includes(option.key));
 
   React.useEffect(() => {
@@ -89,7 +93,12 @@ export default function BasketPage() {
         </p>
         <h1 className="display display--page">Your basket</h1>
 
-        {!catalogueLoaded ? <p role="status">Loading current product prices and availability…</p> : Object.keys(cart).some(code => !items.some(item => item.code === code)) ? (
+        {!cartHydrated ? <p role="status">Loading your basket…</p> : hasBasketLines && catalogueLoadError ? (
+          <div className="panel" role="alert">
+            <p>{catalogueLoadError}</p>
+            <button type="button" className="btn btn--ghost" onClick={retryCatalogue}>Retry availability check</button>
+          </div>
+        ) : hasBasketLines && !catalogueLoaded ? <p role="status">Loading current product prices and availability…</p> : hasBasketLines && Object.keys(cart).some(code => cart[code] > 0 && !items.some(item => item.code === code)) ? (
           <div className="panel" role="alert">
             <p>Some products in this basket are no longer in the catalogue. Remove them to continue.</p>
             {Object.keys(cart).filter(code => !items.some(item => item.code === code)).map(code => (

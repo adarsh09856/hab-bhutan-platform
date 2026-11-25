@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get('sort');
     const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : undefined;
     const productType = searchParams.get('type');
+    const compact = searchParams.get('compact') === 'true';
     const minPrice = Number(searchParams.get('minPrice'));
     const maxPrice = Number(searchParams.get('maxPrice'));
     const inStock = searchParams.get('inStock') === 'true';
@@ -59,18 +60,39 @@ export async function GET(req: NextRequest) {
       orderBy = { priceUSD: 'desc' };
     }
 
-    const dbProducts = await prisma.product.findMany({
-      where,
-      include: {
-        craft: true,
-        maker: {
-          select: PUBLIC_PRODUCT_CARD_MAKER_SELECT,
-        },
-        trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
-      },
-      orderBy,
-      take: limit,
-    });
+    const query = { where, orderBy, take: limit };
+    const dbProducts = compact
+      ? await prisma.product.findMany({
+          ...query,
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            priceUSD: true,
+            craftKey: true,
+            region: true,
+            productType: true,
+            materials: true,
+            availability: true,
+            stock: true,
+            lead: true,
+            images: true,
+            status: true,
+            createdAt: true,
+            maker: { select: PUBLIC_PRODUCT_CARD_MAKER_SELECT },
+            trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
+          },
+        })
+      : await prisma.product.findMany({
+          ...query,
+          include: {
+            craft: true,
+            maker: {
+              select: PUBLIC_PRODUCT_CARD_MAKER_SELECT,
+            },
+            trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
+          },
+        });
 
     const shouldShuffle = searchParams.get('shuffle') !== 'false' && !sort;
 

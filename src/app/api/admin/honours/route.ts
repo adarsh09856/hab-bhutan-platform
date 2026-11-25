@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, title, craft, dzongkhag, awardType, yearAwarded, practisingSince, citation, citationDz, shortDescription, story, workPhotos, showHome, portraitUrl, isActive, sortOrder } = body;
 
-    if (!name || !craft || !dzongkhag || !citation) {
+    if ([name, craft, dzongkhag, citation].some((value) => typeof value !== 'string' || !value.trim())) {
       return NextResponse.json({ error: 'name, craft, dzongkhag, and citation are required' }, { status: 400 });
     }
 
@@ -88,6 +88,10 @@ export async function PUT(req: NextRequest) {
 
     if (!id) {
       return NextResponse.json({ error: 'id is required for update' }, { status: 400 });
+    }
+
+    if ([name, craft, dzongkhag, citation].some((value) => value !== undefined && (typeof value !== 'string' || !value.trim()))) {
+      return NextResponse.json({ error: 'name, craft, dzongkhag, and citation must not be blank' }, { status: 400 });
     }
 
     if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });

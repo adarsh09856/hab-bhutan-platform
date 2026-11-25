@@ -26,7 +26,10 @@ interface ToastState {
 
 interface CartContextType {
   cart: Record<string, number>;
+  cartHydrated: boolean;
   catalogueLoaded: boolean;
+  catalogueLoadError: string;
+  retryCatalogue: () => void;
   items: CartItem[];
   cartCount: number;
   subtotalUSD: number;
@@ -46,8 +49,11 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [cartHydrated, setCartHydrated] = useState(false);
   const [catalogue, setCatalogue] = useState<Record<string, { code: string; name: string; priceUSD: number; craftKey: string; region: string; maker?: { name?: string }; imageUrl?: string; stock: number; lead?: string; availability?: string }>>({});
   const [catalogueLoaded, setCatalogueLoaded] = useState(false);
+  const [catalogueLoadError, setCatalogueLoadError] = useState('');
+  const [catalogueReload, setCatalogueReload] = useState(0);
   const [shippingMethod, setShippingMethod] = useState<'ems' | 'express'>('ems');
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -57,18 +63,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = localStorage.getItem('hab_cart');
       if (stored) {
-        setCart(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) setCart(parsed);
       }
     } catch {
       // Ignore
+    } finally {
+      setCartHydrated(true);
     }
   }, []);
 
   useEffect(() => {
-    fetch('/api/products?shuffle=false', { cache: 'no-store' })
+    let active = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    setCatalogueLoaded(false);
+    setCatalogueLoadError('');
+
+    fetch('/api/products?shuffle=false&compact=true', { cache: 'no-store', signal: controller.signal })
       .then(response => response.ok ? response.json() : Promise.reject(new Error('Catalogue unavailable')))
       .then(data => {
-        if (!data.success || data.fallback) throw new Error('Saved catalogue unavailable');
+        if (!data.success || data.fallback || !Array.isArray(data.products)) throw new Error('Saved catalogue unavailable');
         const byCode: typeof catalogue = {};
         for (const product of data.products || []) {
           if (product.status === 'PUBLISHED') byCode[product.code] = {
@@ -77,11 +92,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             region: product.region || product.maker?.dzongkhag || product.trader?.dzongkhag || '',
           };
         }
+        if (!active) return;
         setCatalogue(byCode);
         setCatalogueLoaded(true);
       })
-      .catch(() => setCatalogueLoaded(false));
-  }, []);
+      .catch(() => {
+        if (active) setCatalogueLoadError('We could not check current product availability. Please retry before continuing.');
+      })
+      .finally(() => clearTimeout(timeout));
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [catalogueReload]);
+
+  const retryCatalogue = () => setCatalogueReload((version) => version + 1);
 
   const saveCart = (newCart: Record<string, number>) => {
     setCart(newCart);
@@ -199,7 +226,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider
       value={{
         cart,
+        cartHydrated,
         catalogueLoaded,
+        catalogueLoadError,
+        retryCatalogue,
         items,
         cartCount,
         subtotalUSD,
