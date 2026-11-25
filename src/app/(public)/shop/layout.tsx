@@ -1,9 +1,6 @@
-import type { Metadata } from 'next';
+import { publicPageMetadata } from '@/lib/public-metadata';
 
-export const metadata: Metadata = {
-  title: 'Shop Bhutanese Handicrafts · HAB',
-  description: 'Browse authentic Bhutanese handicrafts from HAB-accredited makers by craft, product type, availability and price.',
-};
+export const metadata = publicPageMetadata('/shop', 'Shop Bhutanese handicrafts', 'Browse authentic Bhutanese handicrafts from HAB-accredited makers by craft, product type, availability and price.');
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return children;

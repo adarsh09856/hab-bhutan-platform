@@ -1,12 +1,12 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import TraderDirectory from '@/components/public/TraderDirectory';
 import { bhutanDayStartUtc } from '@/lib/trader-expiry';
+import { publicPageMetadata } from '@/lib/public-metadata';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Accredited Traders · HAB', description: 'Find current HAB-accredited handicraft traders by name, craft and location.' };
+export const metadata = publicPageMetadata('/traders', 'Accredited Traders', 'Find current HAB-accredited handicraft traders by name, craft and location.');
 
 export default async function TradersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = '' } = await searchParams;

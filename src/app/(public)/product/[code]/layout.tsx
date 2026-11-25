@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     title,
     description,
+    alternates: { canonical: `${SITE_URL}/product/${encodeURIComponent(product.code)}` },
     openGraph: { type: 'website', url: `${SITE_URL}/product/${encodeURIComponent(product.code)}`, title, description, images: [{ url: imageUrl, alt: product.name }] },
     twitter: { card: 'summary_large_image', title, description, images: [imageUrl] },
   };

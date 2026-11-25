@@ -19,7 +19,11 @@ async function findTrader(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const trader = await findTrader(slug).catch(() => null);
-  return trader ? { title: `${trader.shopName} · Accredited Traders · HAB`, description: trader.shortDescription } : { title: 'Trader not found · HAB' };
+  return trader ? {
+    title: `${trader.shopName} · Accredited Traders · HAB`,
+    description: trader.shortDescription,
+    alternates: { canonical: `https://hab.touratbhutan.info/traders/${encodeURIComponent(trader.slug)}` },
+  } : { title: 'Trader not found · HAB', robots: { index: false, follow: false } };
 }
 export default async function TraderDetailPage({ params }: Props) {
   const { slug } = await params;
