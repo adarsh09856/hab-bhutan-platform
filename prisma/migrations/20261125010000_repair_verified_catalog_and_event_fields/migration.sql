@@ -5,7 +5,7 @@ BEGIN;
 UPDATE "Product"
 SET "weight" = '1.4 kg'
 WHERE "code" = 'SAD03'
-  AND "name" = 'Yathra Saddle Bag'
+  AND "name" = 'Yathra Cover Saddle Bag'
   AND "weight" IS NULL;
 
 UPDATE "EventRecord"
