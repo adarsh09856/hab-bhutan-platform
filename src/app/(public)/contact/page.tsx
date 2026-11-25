@@ -71,6 +71,7 @@ function ContactContent() {
     { key: 'membership', label: 'Membership' },
     { key: 'order', label: 'Orders & delivery' },
     { key: 'wholesale', label: 'Wholesale & B2B' },
+    { key: 'trader-registration', label: 'Trader registration' },
     { key: 'trader-introduction', label: 'Trader introduction' },
     { key: 'wholesale-quote', label: 'Wholesale quote request' },
     { key: 'commission', label: 'Commission a piece' },
@@ -133,7 +134,7 @@ function ContactContent() {
             <p className="eyebrow eyebrow--accent">Contact us</p>
             <h1 className="display display--page">Write to the secretariat</h1>
             <p className="lede">
-              One form for every enquiry. Choose what it is about and your message reaches the right desk — membership, an order, wholesale, a commission, an event, an award nomination or the press office.
+              One form for every enquiry. Choose what it is about and your message reaches the right desk — membership, trader registration, an order, wholesale, a commission, an event, an award nomination or the press office.
             </p>
             <p className="section__lede">
               Member contact details are held securely and are not published, so enquiries to individual artisans and enterprises are routed through the office. We reply within two working days.
@@ -323,6 +324,10 @@ function ContactContent() {
                 </div>
                 <div className="contact-aside__row">
                   <span className="contact-aside__k">Wholesale &amp; export</span>
+                  <span className="contact-aside__v">Trade desk</span>
+                </div>
+                <div className="contact-aside__row">
+                  <span className="contact-aside__k">Trader registration &amp; listings</span>
                   <span className="contact-aside__v">Trade desk</span>
                 </div>
                 <div className="contact-aside__row">
