@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
         continue;
       }
       const slug = slugify(cell(row, 'slug') || shopName);
-      const registrationNumber = cell(row, 'registrationnumber');
       const existing = await prisma.traderRecord.findUnique({ where: { registrationNumber } });
       const importedPhotos = splitList(cell(row, 'productphotourls')).slice(0, 8);
       const existingPhotos = Array.isArray(existing?.productPhotoUrls)
