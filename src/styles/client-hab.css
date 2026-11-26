@@ -1152,6 +1152,8 @@ a.card:hover{color:inherit;border-color:var(--ink)}
 .craftfacts__val{font-family:var(--ui);font-weight:600;font-size:15px;line-height:1.4;color:var(--ink)}
 
 .longread{display:grid;grid-template-columns:.32fr .68fr;gap:52px;align-items:start}
+.longread--document{grid-template-columns:minmax(330px,.44fr) minmax(0,.56fr);gap:40px}
+.longread--document > *{min-width:0}
 .longread__body{font-size:18px;line-height:1.72;color:var(--ink-2);margin:0;text-wrap:pretty}
 
 .triptych{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -2629,6 +2631,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
   .logingrid{grid-template-columns:1fr;gap:30px}
   .outlet-deep{grid-template-columns:1fr;gap:28px}
   .longread{grid-template-columns:1fr;gap:26px}
+  .longread--document{grid-template-columns:minmax(0,1fr)}
   .craftpage-hero{grid-template-columns:1fr;gap:34px}
   .craftfacts{grid-template-columns:repeat(2,1fr)}
   .newsrow{grid-template-columns:1fr}
