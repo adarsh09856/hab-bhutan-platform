@@ -494,8 +494,8 @@ export default function ProductDetailPage() {
       
       {lightboxOpen && (
         <div role="dialog" aria-modal="true" aria-label={`${product.name} photo viewer`} onClick={() => setLightboxOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(18,14,12,.94)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <button type="button" onClick={() => setLightboxOpen(false)} aria-label="Close photo viewer" style={{ position: 'absolute', right: 18, top: 14, color: 'white', fontSize: 30, background: 'transparent', border: 0, cursor: 'pointer' }}>×</button>
-          {galleryImages.length > 1 && <button type="button" onClick={(event) => { event.stopPropagation(); setActiveThumb((activeThumb - 1 + galleryImages.length) % galleryImages.length); setLightboxScale(1); }} aria-label="Previous photo" style={{ position: 'absolute', left: 14, top: '50%', color: 'white', fontSize: 34, background: 'transparent', border: 0, cursor: 'pointer' }}>‹</button>}
+          <button type="button" onClick={() => setLightboxOpen(false)} aria-label="Close photo viewer" style={{ position: 'absolute', zIndex: 1, right: 18, top: 14, minWidth: 44, minHeight: 44, color: 'white', fontSize: 30, background: 'rgba(18,14,12,.75)', border: 0, borderRadius: 8, cursor: 'pointer' }}>×</button>
+          {galleryImages.length > 1 && <button type="button" onClick={(event) => { event.stopPropagation(); setActiveThumb((activeThumb - 1 + galleryImages.length) % galleryImages.length); setLightboxScale(1); }} aria-label="Previous photo" style={{ position: 'absolute', zIndex: 1, left: 14, top: '50%', minWidth: 44, minHeight: 44, color: 'white', fontSize: 34, background: 'rgba(18,14,12,.75)', border: 0, borderRadius: 8, cursor: 'pointer' }}>‹</button>}
           <img
             src={galleryImages[activeThumb] || primaryImg}
             alt={`${product.name} enlarged view ${activeThumb + 1}`}
@@ -519,13 +519,13 @@ export default function ProductDetailPage() {
             onTouchCancel={() => { pinchStart.current = null; }}
             style={{ maxWidth: '92vw', maxHeight: '86vh', objectFit: 'contain', transform: `scale(${lightboxScale})`, transition: 'transform .12s ease', touchAction: 'none' }}
           />
-          <div onClick={(event) => event.stopPropagation()} style={{ position: 'absolute', bottom: 16, display: 'flex', alignItems: 'center', gap: 12, color: 'white' }}>
+          <div onClick={(event) => event.stopPropagation()} style={{ position: 'absolute', zIndex: 1, bottom: 16, display: 'flex', alignItems: 'center', gap: 12, padding: 6, borderRadius: 8, background: 'rgba(18,14,12,.75)', color: 'white' }}>
             <button type="button" onClick={() => setLightboxScale((scale) => Math.max(1, scale - 0.25))} aria-label="Zoom out" style={{ color: 'white', background: '#33261F', border: '1px solid #fff8', borderRadius: 8, padding: '8px 13px' }}>−</button>
             <span>{Math.round(lightboxScale * 100)}%</span>
             <button type="button" onClick={() => setLightboxScale((scale) => Math.min(4, scale + 0.25))} aria-label="Zoom in" style={{ color: 'white', background: '#33261F', border: '1px solid #fff8', borderRadius: 8, padding: '8px 13px' }}>+</button>
             {galleryImages.length > 1 && <span>{activeThumb + 1} / {galleryImages.length}</span>}
           </div>
-          {galleryImages.length > 1 && <button type="button" onClick={(event) => { event.stopPropagation(); setActiveThumb((activeThumb + 1) % galleryImages.length); setLightboxScale(1); }} aria-label="Next photo" style={{ position: 'absolute', right: 14, top: '50%', color: 'white', fontSize: 34, background: 'transparent', border: 0, cursor: 'pointer' }}>›</button>}
+          {galleryImages.length > 1 && <button type="button" onClick={(event) => { event.stopPropagation(); setActiveThumb((activeThumb + 1) % galleryImages.length); setLightboxScale(1); }} aria-label="Next photo" style={{ position: 'absolute', zIndex: 1, right: 14, top: '50%', minWidth: 44, minHeight: 44, color: 'white', fontSize: 34, background: 'rgba(18,14,12,.75)', border: 0, borderRadius: 8, cursor: 'pointer' }}>›</button>}
         </div>
       )}
 
