@@ -16,8 +16,18 @@ async function checkProduct(product: PublicProduct) {
   if (!code) return { code: '(missing SKU)', name: String(product.name || ''), status: 0, url: SITE_URL };
   const url = `${SITE_URL}/product/${encodeURIComponent(code)}`;
   try {
-    const response = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(20000) });
-    return { code, name: String(product.name || ''), status: response.status, url };
+    // Product routes render their shell client-side and may return HTTP 200
+    // even when the SKU lookup later fails. Check the public detail endpoint
+    // so the scheduled report reflects the same lookup the page depends on.
+    const response = await fetch(`${SITE_URL}/api/products/${encodeURIComponent(code)}`, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(20000),
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) return { code, name: String(product.name || ''), status: response.status, url };
+    const payload = await response.json() as { success?: boolean; product?: { code?: string } };
+    const matchesProduct = payload.success === true && String(payload.product?.code || '').toLowerCase() === code.toLowerCase();
+    return { code, name: String(product.name || ''), status: matchesProduct ? response.status : 502, url };
   } catch {
     return { code, name: String(product.name || ''), status: 0, url };
   }

@@ -246,7 +246,7 @@ export const TRANSLATIONS: Translations = {
   'assurance.tracked': { en: 'Tracked Origin', dz: 'འབྱུང་ཁུངས་རྗེས་འདེད' },
   'assurance.registered': { en: 'Registered Chain', dz: 'ཐོ་བཀོད་འབྲེལ་མཐུད' },
   'assurance.fair': { en: 'Upfront & Fair', dz: 'དྲང་བདེན་རིན་གོང' },
-  'assurance.secure': { en: 'Encrypted Escrow', dz: 'ཉེན་སྲུང་ལྡན་པའི་དངུལ་སྤྲོད' },
+  'assurance.secure': { en: 'Secure payment', dz: 'ཉེན་སྲུང་ཅན་གྱི་དངུལ་སྤྲོད' },
   
   // Secretary Desk & Contact
   'contact.secretary_desk': { en: 'Secretary Desk', dz: 'དྲུང་ཆེའི་ཡིག་ཚང' },

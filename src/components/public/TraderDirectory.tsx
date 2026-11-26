@@ -9,7 +9,7 @@ const PRODUCT_TYPES = ['Textiles', 'Clothing & accessories', 'Home & living', 'J
 
 type TraderCard = {
   id: string; slug: string; shopName: string; dzongkhag: string; town: string;
-  shortDescription: string; craftKeys: string[]; productTypes: string[]; bannerUrl: string | null; productPhotoUrls: string[];
+  shortDescription: string; craftKeys: string[]; productTypes: string[]; bannerUrl: string | null; productPhotoUrls?: string[];
 };
 
 export default function TraderDirectory({ traders, initialQuery = '' }: { traders: TraderCard[]; initialQuery?: string }) {

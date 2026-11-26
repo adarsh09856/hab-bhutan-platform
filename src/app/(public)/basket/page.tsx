@@ -7,7 +7,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
-import { SHIPPING_COUNTRIES } from '@/lib/countries';
+import { isBhutanDeliveryCountry, SHIPPING_COUNTRIES } from '@/lib/countries';
 
 export default function BasketPage() {
   const router = useRouter();
@@ -76,7 +76,7 @@ export default function BasketPage() {
     { key: 'mbob', name: 'Bhutan mobile pay', note: 'mBoB / RMA-approved wallets, in Nu.' },
     { key: 'bank', name: 'Bank transfer', note: 'BNB / BOB account, invoice issued on order' },
   ];
-  const isBhutanDelivery = customer.country.toLowerCase() === 'bhutan';
+  const isBhutanDelivery = isBhutanDeliveryCountry(customer.country);
   const hasBasketLines = Object.values(cart).some((quantity) => quantity > 0);
   const availablePaymentOptions = payOptions.filter((option) => isBhutanDelivery || !['cod', 'mbob'].includes(option.key));
 

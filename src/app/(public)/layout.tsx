@@ -45,7 +45,7 @@ export default async function PublicLayout({
     });
     initialHeader = navigation
       .filter((item) => item.menuType === 'HEADER' && !item.parent)
-      .map((item) => ({ label: item.label, href: item.href }));
+      .map((item) => ({ label: item.label, href: resolveFooterHref(item.label, item.href) }));
 
     const footerColumns = new Map<string, { label: string; href: string }[]>();
     for (const item of navigation.filter((entry) => entry.menuType === 'FOOTER')) {

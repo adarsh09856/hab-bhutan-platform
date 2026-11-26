@@ -13,7 +13,9 @@ import { CARD_PAYMENT_UNAVAILABLE_COPY, MEMBERSHIP_PAYMENT_COPY, removeUnavailab
 import { useCart } from '@/context/CartContext';
 import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 import { isPolicyHtml, preparePolicyHtml } from '@/lib/policy-html';
-import { productHref } from '@/lib/product-routes';
+import { productHref, shopCraftHref } from '@/lib/product-routes';
+import { productCardImageUrl } from '@/lib/product-image-fallbacks';
+import { normalizeProductAvailability } from '@/lib/product-availability';
 import { awardTypeLabel } from '@/lib/award-types';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
@@ -232,7 +234,7 @@ export default function HomePageClient({
               stats: [
                 { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '' },
                 { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '' },
-                { value: '', label: 'Registered traders across Bhutan', url: '' },
+                prev.stats[2] || { value: '', label: 'Affiliated stores across Bhutan', url: '/traders' },
                 { value: d.setting.stat4Number || '13', label: d.setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
               ],
               aboutBandTitle: d.setting.aboutBandTitle || prev.aboutBandTitle,
@@ -526,21 +528,6 @@ export default function HomePageClient({
     return () => window.clearInterval(timer);
   }, [allOutletsPool, punakhaOutlet?.key]);
 
-  useEffect(() => {
-    fetch('/api/traders', { cache: 'no-store' })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Trader directory unavailable')))
-      .then((data) => {
-        if (!Array.isArray(data?.traders)) return;
-        setSiteSettings((current) => ({
-          ...current,
-          stats: current.stats.map((stat, index) => index === 2
-            ? { ...stat, value: data.traders.length ? String(data.traders.length) : '', label: 'Affiliated stores across Bhutan', url: '/traders' }
-            : stat),
-        }));
-      })
-      .catch(() => {});
-  }, []);
-
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (memberSearchTerm.trim()) {
@@ -819,6 +806,8 @@ export default function HomePageClient({
         <div className="grid grid--4">
           {displayedProducts.map((p, pIdx) => {
             const displayPrice = p.priceUSD || p.price || 0;
+            const availability = normalizeProductAvailability(p.availability, Number(p.stock ?? 0));
+            const isPurchasable = availability === 'MADE_TO_ORDER' || (availability === 'IN_STOCK' && Number(p.stock ?? 0) > 0);
             const productImg = p.image_path || p.imageUrl || p.images?.[0]?.url || '/assets/photos/image-unavailable.svg';
             const makerName = typeof p.maker === 'object' ? p.maker?.name : p.maker;
             return (
@@ -826,7 +815,7 @@ export default function HomePageClient({
                 <Link className="product__shot" href={productHref(p.code)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                   <figure className="frame frame--square has-image">
                     <img
-                      src={productImg}
+                      src={productCardImageUrl(productImg)}
                       alt={productImg === '/images/crafts/thagzo.jpg' ? 'Illustrative photograph of Bhutanese weaving' : p.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
@@ -843,13 +832,16 @@ export default function HomePageClient({
                   {makerName && <p className="card__meta clamp-1">{makerName}</p>}
                   <div className="card__foot">
                     <span className="price">{fmt(displayPrice)}</span>
-                    <button
+                    <span className="text-xs" role="status">
+                      {availability === 'MADE_TO_ORDER' ? 'Made to order' : isPurchasable ? t('shop.in_stock', 'In stock') : t('shop.out_of_stock', 'Sold out')}
+                    </span>
+                    {isPurchasable && <button
                       className="btn btn--outline btn--xs"
                       type="button"
                       onClick={() => addToCart(p.code)}
                     >
-                      {t('home.add_to_cart', 'Add')}
-                    </button>
+                      {availability === 'MADE_TO_ORDER' ? 'Order' : t('home.add_to_cart', 'Add')}
+                    </button>}
                   </div>
                 </div>
               </article>
@@ -1070,7 +1062,7 @@ export default function HomePageClient({
                     <Link className="craft__about" href={`/craft/${craft.key}`}>
                       About this craft →
                     </Link>
-                    <Link className="craft__shop" href={`/shop/${craft.key}`}>
+                    <Link className="craft__shop" href={shopCraftHref(craft.key)}>
                       Shop {craft.name}
                     </Link>
                   </div>
@@ -1269,7 +1261,7 @@ export default function HomePageClient({
               : siteSettings.membershipRightText}
             </p>
             <div className="actions">
-              <Link className="btn btn--light" href="/contact?topic=trader-registration">
+              <Link className="btn btn--light" href="/membership/apply">
                 {isDz ? 'ཚོང་པ་སྦེ་ཐོ་བཀོད་འབད' : 'Register as a trader'}
               </Link>
               <Link className="btn btn--ghost" href="/login">

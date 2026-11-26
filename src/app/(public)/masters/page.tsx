@@ -366,7 +366,7 @@ export default function MastersPage() {
                     {craft.dzongkha && dz ? craft.dzongkha : craft.name} · {m.dzongkhag}
                   </p>
                   <p className="card__meta">{[
-                    m.since ? `${text('Practising since', 'ལག་ལེན་འགོ་བཙུགས')} ${m.since}` : null,
+                    m.since ? `${text('Practising since', 'ལག་ལེན་འགོ་བཙུགས')} ${m.since}` : text('Practising-since year not recorded', 'ལག་ལེན་འགོ་བཙུགས་ལོ་ཐོ་བཀོད་མེད'),
                     m.yearAwarded ? `${text('Awarded', 'གནང་སྟེ')} ${m.yearAwarded}` : null,
                   ].filter(Boolean).join(' · ')}</p>
                   <LocalizedRecordField as="p" className="card__text" english={m.note} dzongkha={m.noteDz} />

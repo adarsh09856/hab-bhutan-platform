@@ -22,7 +22,7 @@ import {
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { checkoutCopy } from '@/lib/checkout-copy';
-import { SHIPPING_COUNTRIES } from '@/lib/countries';
+import { isBhutanDeliveryCountry, SHIPPING_COUNTRIES } from '@/lib/countries';
 import { calculateShipping } from '@/lib/shipping';
 
 export default function CheckoutPage() {
@@ -95,7 +95,7 @@ export default function CheckoutPage() {
     country: 'Bhutan',
     postalCode: '',
   });
-  const isBhutanDelivery = customer.country.toLowerCase() === 'bhutan';
+  const isBhutanDelivery = isBhutanDeliveryCountry(customer.country);
 
   useEffect(() => {
     if (!isBhutanDelivery && (paymentMethod === 'COD' || paymentMethod === 'MBOB')) setPaymentMethod('BANK');

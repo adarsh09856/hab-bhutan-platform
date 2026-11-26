@@ -122,7 +122,6 @@ export default function AdminHonoursPage() {
       showFlash('error', 'Name and citation are required.');
       return;
     }
-
     setSaving(true);
     try {
       const url = '/api/admin/honours';
@@ -337,7 +336,7 @@ export default function AdminHonoursPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Title / honorific *</label><select required value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300">{!TITLE_OPTIONS.includes(form.title || '') && form.title && <option value={form.title}>{form.title} (existing)</option>}<option value="" disabled>Select a title</option>{TITLE_OPTIONS.map((title) => <option key={title} value={title}>{title}</option>)}</select></div>
-                <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Practising since</label><input type="number" value={form.practisingSince || ''} onChange={(e) => setForm({ ...form, practisingSince: Number(e.target.value) || null })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" placeholder="Year" /></div>
+                <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Practising since</label><input type="number" min="1" max={new Date().getFullYear()} step="1" value={form.practisingSince ?? ''} onChange={(e) => setForm({ ...form, practisingSince: e.target.value === '' ? null : Number(e.target.value) })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" placeholder="Year" /><p className="mt-1 text-xs text-slate-500">Add only a confirmed year; leave blank if it is not recorded.</p></div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

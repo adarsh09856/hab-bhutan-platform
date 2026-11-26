@@ -52,7 +52,10 @@ export async function GET() {
     });
 
     const customHeader = items.filter((i) => i.menuType === 'HEADER');
-    const header: any[] = customHeader;
+    const header: any[] = customHeader.map((item) => ({
+      ...item,
+      href: resolveFooterHref(item.label, item.href),
+    }));
 
     const footerItems = items.filter((i) => i.menuType === 'FOOTER');
     const footer: Record<string, any[]> = {};

@@ -10,6 +10,18 @@ async function verifyAdmin(req: NextRequest, permissions: Permission[]) {
   return getSessionUserForAnyPermission(req, permissions);
 }
 
+function parsePractisingSince(value: unknown): { valid: boolean; year: number | null } {
+  if (value === undefined || value === null || (typeof value === 'string' && value.trim() === '')) {
+    return { valid: true, year: null };
+  }
+  const year = Number(value);
+  const currentYear = new Date().getFullYear();
+  return {
+    valid: Number.isInteger(year) && year >= 1 && year <= currentYear,
+    year: Number.isInteger(year) && year >= 1 && year <= currentYear ? year : null,
+  };
+}
+
 export async function GET(req: NextRequest) {
   const user = await verifyAdmin(req, ['content:view', 'content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -36,6 +48,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'name, craft, dzongkhag, and citation are required' }, { status: 400 });
     }
 
+    const practisingYear = parsePractisingSince(practisingSince);
+    if (!practisingYear.valid) {
+      return NextResponse.json({ error: `Enter a whole practising-since year between 1 and ${new Date().getFullYear()}, or leave it blank if it is not confirmed.` }, { status: 400 });
+    }
+
     if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });
     if (showHome && await prisma.honourRecord.count({ where: { showHome: true, isActive: true } }) >= 6) return NextResponse.json({ error: 'Only six active profiles can be featured on the homepage.' }, { status: 400 });
     const awardedYear = Number(yearAwarded) || new Date().getFullYear();
@@ -49,7 +66,7 @@ export async function POST(req: NextRequest) {
         dzongkhag: dzongkhag.trim(),
         awardType: awardType?.trim() || 'RoyalSeal',
         yearAwarded: awardedYear,
-        practisingSince: practisingSince ? Number(practisingSince) : null,
+        practisingSince: practisingYear.year,
         citation: citation.trim(),
         shortDescription: shortDescription?.trim() || null,
         story: story?.trim() || null,
@@ -94,6 +111,11 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'name, craft, dzongkhag, and citation must not be blank' }, { status: 400 });
     }
 
+    const practisingYear = parsePractisingSince(practisingSince);
+    if (practisingSince !== undefined && !practisingYear.valid) {
+      return NextResponse.json({ error: `Enter a whole practising-since year between 1 and ${new Date().getFullYear()}, or leave it blank if it is not confirmed.` }, { status: 400 });
+    }
+
     if (Array.isArray(workPhotos) && workPhotos.length > 6) return NextResponse.json({ error: 'A maximum of six work photographs is allowed.' }, { status: 400 });
     if (showHome && (isActive !== false) && await prisma.honourRecord.count({ where: { showHome: true, isActive: true, id: { not: id } } }) >= 6) return NextResponse.json({ error: 'Only six active profiles can be featured on the homepage.' }, { status: 400 });
     const existing = await prisma.honourRecord.findUnique({ where: { id }, select: { id: true, slug: true, name: true, yearAwarded: true } });
@@ -113,7 +135,7 @@ export async function PUT(req: NextRequest) {
         ...(dzongkhag !== undefined && { dzongkhag: dzongkhag.trim() }),
         ...(awardType !== undefined && { awardType: awardType.trim() }),
         ...(yearAwarded !== undefined && { yearAwarded: Number(yearAwarded) || new Date().getFullYear() }),
-        ...(practisingSince !== undefined && { practisingSince: practisingSince ? Number(practisingSince) : null }),
+        ...(practisingSince !== undefined && { practisingSince: practisingYear.year }),
         ...(citation !== undefined && { citation: citation.trim() }),
         ...(shortDescription !== undefined && { shortDescription: shortDescription?.trim() || null }),
         ...(story !== undefined && { story: story?.trim() || null }),

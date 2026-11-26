@@ -8,6 +8,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useCart } from '@/context/CartContext';
+import { shopCraftHref } from '@/lib/product-routes';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import HeaderLiveEditor from '@/components/public/HeaderLiveEditor';
@@ -724,7 +725,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                     <Link
                       key={c.key}
                       className="menu__craft group flex items-center gap-2.5"
-                      href={`/shop/${c.key}`}
+                      href={shopCraftHref(c.key)}
                       onClick={() => setShopOpen(false)}
                     >
                       {CRAFT_THUMBNAIL_MAP[c.key] && (
@@ -897,7 +898,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
                       {crafts.map((c) => (
                         <Link
                           key={c.key}
-                          href={`/shop/${c.key}`}
+                          href={shopCraftHref(c.key)}
                           onClick={() => setMobileNavOpen(false)}
                           className="flex items-center gap-2 p-1.5 rounded-lg bg-stone-50 hover:bg-stone-100 border border-[#E4DDD1]/60 transition-colors"
                         >

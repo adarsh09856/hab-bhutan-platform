@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma';
 import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 import HomePageClient from './HomePageClient';
 
 export const dynamic = 'force-dynamic';
@@ -10,8 +11,8 @@ const DEFAULT_HOMEPAGE_SECTION_ORDER = [
   'masters', 'programmes', 'support', 'membership', 'news', 'publications', 'partners',
 ];
 
-function homepageSettings(setting: any) {
-  if (!setting) return {};
+function homepageSettings(setting: any, publicTraderCount: number | null) {
+  setting = setting || {};
   const fallback = (key: string, value: string) => setting[key] || value;
   const aboutImage = String(setting.aboutBandImageUrl || '');
   const aboutCaption = String(setting.aboutBandImageCaption || '');
@@ -66,7 +67,7 @@ function homepageSettings(setting: any) {
     stats: [
       { value: setting.stat1Number || '7,500', label: setting.stat1Label || 'Micro & small enterprises in the network', url: '' },
       { value: setting.stat2Number || '5,250', label: setting.stat2Label || 'Women-led enterprises', url: '' },
-      { value: '', label: 'Registered traders across Bhutan', url: '' },
+      { value: publicTraderCount === null ? '' : String(publicTraderCount), label: 'Affiliated stores across Bhutan', url: publicTraderCount === null ? '' : '/traders' },
       { value: setting.stat4Number || '13', label: setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
     aboutBandTitle: quickEditText('about', 'div:1/div:1/h2:1') ?? fallback('aboutBandTitle', 'A network built for artisans and everyone who brings a craft to market'),
@@ -111,6 +112,7 @@ function homepageSettings(setting: any) {
 
 export default async function HomePage() {
   let initialSettings = {};
+  let initialSetting: any = null;
   let initialHeroSlides: Array<{ id: string; imageUrl: string; caption: string; altText?: string; linkUrl?: string | null }> = [];
   let initialSettingsLoaded = false;
   let initialHeroSlidesLoaded = false;
@@ -124,7 +126,7 @@ export default async function HomePage() {
         select: { id: true, imageUrl: true, caption: true, altText: true, linkUrl: true },
       }),
     ]);
-    initialSettings = homepageSettings(setting);
+    initialSetting = setting;
     // A successful query is enough to render the canonical defaults when the
     // row is absent; do not fetch and replace those values after hydration.
     initialSettingsLoaded = true;
@@ -139,6 +141,19 @@ export default async function HomePage() {
     initialHeroSlidesLoaded = true;
   } catch (error) {
     console.error('Could not preload homepage content:', error);
+  }
+
+  // The public directory count is computed on the server using the same
+  // visibility and Bhutan-day expiry rules as /traders, so no stale CMS
+  // number is rendered while the client hydrates.
+  try {
+    const publicTraderCount = await prisma.traderRecord.count({
+      where: { isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } },
+    });
+    initialSettings = homepageSettings(initialSetting, publicTraderCount);
+  } catch {
+    // Leave the count blank if its authoritative data source is unavailable.
+    initialSettings = homepageSettings(initialSetting, null);
   }
 
   return (

@@ -7,6 +7,19 @@ import { dateDisplayHasRange, formatEventDateRange, timeContainsEventDuration } 
 
 export const dynamic = 'force-dynamic';
 
+function parseRequestDate(value: unknown): { valid: boolean; date: Date | null } {
+  if (value === undefined || value === null || value === '') return { valid: true, date: null };
+  if (typeof value !== 'string') return { valid: false, date: null };
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    return { valid: !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value, date };
+  }
+
+  const date = new Date(value);
+  return { valid: !Number.isNaN(date.getTime()), date: Number.isNaN(date.getTime()) ? null : date };
+}
+
 async function verifyAdmin(req: NextRequest, permissions: Permission[]) {
   return getSessionUserForAnyPermission(req, permissions);
 }
@@ -51,10 +64,17 @@ export async function POST(req: NextRequest) {
     if (!key || !title || !description) {
       return NextResponse.json({ error: 'key, title, and description are required' }, { status: 400 });
     }
-    if (!startDate) return NextResponse.json({ error: 'A start date is required.' }, { status: 400 });
-    if (Number.isNaN(new Date(startDate).getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
-    if (endDate && (!startDate || Number.isNaN(new Date(endDate).getTime()) || new Date(endDate) < new Date(startDate))) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
-    if (dateDisplayHasRange(dateDisplay) && (!startDate || !endDate)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
+    if (body.isMultiDay !== undefined && typeof body.isMultiDay !== 'boolean') return NextResponse.json({ error: 'isMultiDay must be a boolean.' }, { status: 400 });
+    const multiDaySelected = body.isMultiDay === true || (body.isMultiDay === undefined && dateDisplayHasRange(dateDisplay));
+    const parsedStart = parseRequestDate(startDate);
+    const parsedEnd = parseRequestDate(endDate);
+    if (!parsedStart.date) return NextResponse.json({ error: 'A valid start date is required.' }, { status: 400 });
+    if (!parsedStart.valid) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
+    if (multiDaySelected && !parsedEnd.date) return NextResponse.json({ error: 'Multi-day events require a valid end date.' }, { status: 400 });
+    if (endDate && !parsedEnd.valid) return NextResponse.json({ error: 'End date is invalid.' }, { status: 400 });
+    if (parsedEnd.date && parsedEnd.date < parsedStart.date) return NextResponse.json({ error: 'End date must be on or after the start date.' }, { status: 400 });
+    if (body.isMultiDay === true && parsedEnd.date && parsedEnd.date <= parsedStart.date) return NextResponse.json({ error: 'A multi-day event end date must be after its start date.' }, { status: 400 });
+    if (body.isMultiDay === false && parsedEnd.date) return NextResponse.json({ error: 'A single-day event cannot include an end date.' }, { status: 400 });
     if (timeContainsEventDuration(time)) return NextResponse.json({ error: 'Time is for event hours only. Use the end date for event duration.' }, { status: 400 });
 
     const docUrlToSave = documentUrl || pdfUrl || null;
@@ -71,9 +91,9 @@ export async function POST(req: NextRequest) {
         category: category?.trim() || 'Exhibition',
         categoryDz: categoryDz?.trim() || null,
         subCategory: subCategory?.trim() || null,
-        dateDisplay: formatEventDateRange(startDate, endDate, dateDisplay?.trim() || ''),
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
+        dateDisplay: formatEventDateRange(parsedStart.date, parsedEnd.date, dateDisplay?.trim() || ''),
+        startDate: parsedStart.date,
+        endDate: body.isMultiDay === false ? null : parsedEnd.date,
         location: location?.trim() || '',
         locationDz: locationDz?.trim() || null,
         venue: venue?.trim() || null,
@@ -127,12 +147,19 @@ export async function PUT(req: NextRequest) {
     const where = id ? { id } : { key };
     const existing = await prisma.eventRecord.findUnique({ where });
     if (!existing) return NextResponse.json({ error: 'Event not found.' }, { status: 404 });
-    const nextStart = startDate !== undefined ? (startDate ? new Date(startDate) : null) : existing.startDate;
-    const nextEnd = endDate !== undefined ? (endDate ? new Date(endDate) : null) : existing.endDate;
+    if (body.isMultiDay !== undefined && typeof body.isMultiDay !== 'boolean') return NextResponse.json({ error: 'isMultiDay must be a boolean.' }, { status: 400 });
+    const parsedStart = parseRequestDate(startDate);
+    const parsedEnd = parseRequestDate(endDate);
+    if (startDate !== undefined && !parsedStart.valid) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
+    if (endDate !== undefined && !parsedEnd.valid) return NextResponse.json({ error: 'End date is invalid.' }, { status: 400 });
+    const nextStart = startDate !== undefined ? parsedStart.date : existing.startDate;
+    const nextEnd = body.isMultiDay === false ? null : endDate !== undefined ? parsedEnd.date : existing.endDate;
     const nextDateDisplay = body.dateDisplay !== undefined ? body.dateDisplay : existing.dateDisplay;
-    if (startDate && Number.isNaN(nextStart!.getTime())) return NextResponse.json({ error: 'Start date is invalid.' }, { status: 400 });
-    if (endDate && (!nextStart || !nextEnd || Number.isNaN(nextEnd.getTime()) || nextEnd < nextStart)) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
-    if (dateDisplayHasRange(nextDateDisplay) && (!nextStart || !nextEnd)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
+    if (body.isMultiDay === true && (!parsedEnd.date || endDate === undefined)) return NextResponse.json({ error: 'Multi-day events require a valid end date.' }, { status: 400 });
+    const legacyMultiDay = body.isMultiDay === undefined && dateDisplayHasRange(nextDateDisplay);
+    if (legacyMultiDay && (!nextStart || !nextEnd)) return NextResponse.json({ error: 'Multi-day events require start and end dates.' }, { status: 400 });
+    if (nextEnd && (!nextStart || nextEnd < nextStart)) return NextResponse.json({ error: 'End date must be valid and on or after the start date.' }, { status: 400 });
+    if (body.isMultiDay === true && nextStart && nextEnd && nextEnd <= nextStart) return NextResponse.json({ error: 'A multi-day event end date must be after its start date.' }, { status: 400 });
     const prevSchedule = (existing?.schedule && typeof existing.schedule === 'object' ? existing.schedule : {}) as any;
     const previousTime = prevSchedule.time || (existing as any).time || '';
     if (isActive !== false && !nextStart) return NextResponse.json({ error: 'A start date is required for a public event.' }, { status: 400 });
@@ -164,11 +191,11 @@ export async function PUT(req: NextRequest) {
         ...(category !== undefined && { category: category.trim() }),
         ...(body.categoryDz !== undefined && { categoryDz: body.categoryDz?.trim() || null }),
         ...(body.subCategory !== undefined && { subCategory: body.subCategory?.trim() || null }),
-        ...((dateDisplay !== undefined || startDate !== undefined || endDate !== undefined) && {
+        ...((dateDisplay !== undefined || startDate !== undefined || endDate !== undefined || body.isMultiDay !== undefined) && {
           dateDisplay: formatEventDateRange(nextStart, nextEnd, typeof nextDateDisplay === 'string' ? nextDateDisplay.trim() : ''),
         }),
         ...(startDate !== undefined && { startDate: startDate ? new Date(startDate) : null }),
-        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
+        ...((endDate !== undefined || body.isMultiDay === false) && { endDate: body.isMultiDay === false ? null : parsedEnd.date }),
         ...(location !== undefined && { location: location.trim() }),
         ...(body.locationDz !== undefined && { locationDz: body.locationDz?.trim() || null }),
         ...(venue !== undefined && { venue: venue?.trim() || null }),

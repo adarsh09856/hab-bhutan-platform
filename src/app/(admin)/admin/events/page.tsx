@@ -74,7 +74,7 @@ export default function AdminEventsPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [requiresEndDate, setRequiresEndDate] = useState(false);
+  const [isMultiDay, setIsMultiDay] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -106,7 +106,7 @@ export default function AdminEventsPage() {
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
-    setRequiresEndDate(false);
+    setIsMultiDay(false);
     setEditId(null);
     setShowModal(true);
   };
@@ -114,7 +114,7 @@ export default function AdminEventsPage() {
   const openEdit = (ev: EventItem) => {
     const sched = ev.schedule && typeof ev.schedule === 'object' ? ev.schedule : {};
     const savedTime = ev.time || sched.time || '';
-    setRequiresEndDate(Boolean(ev.endDate) || timeContainsEventDuration(savedTime));
+    setIsMultiDay(Boolean(ev.endDate) || timeContainsEventDuration(savedTime));
     setForm({
       key: ev.key,
       title: ev.title,
@@ -161,7 +161,7 @@ export default function AdminEventsPage() {
       showFlash('error', 'Add a start date before saving the event.');
       return;
     }
-    if (requiresEndDate && !form.endDate) {
+    if (isMultiDay && !form.endDate) {
       showFlash('error', 'This event is multi-day. Add its end date so it remains upcoming through its final day.');
       return;
     }
@@ -179,6 +179,7 @@ export default function AdminEventsPage() {
       const payload = {
         ...(editId ? { id: editId } : {}),
         ...form,
+        isMultiDay,
         dateDisplay: formatEventDateRange(form.startDate, form.endDate, form.dateDisplay),
       };
 
@@ -422,7 +423,24 @@ export default function AdminEventsPage() {
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <label className="block text-xs font-semibold text-slate-700 uppercase">Start date *<input type="date" required value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value, dateDisplay: formatEventDateRange(e.target.value, form.endDate) })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase">End date (for multi-day events)<input type="date" value={form.endDate} min={form.startDate || undefined} onChange={(e) => setForm({ ...form, endDate: e.target.value, dateDisplay: formatEventDateRange(form.startDate, e.target.value) })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" /></label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={isMultiDay}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setIsMultiDay(checked);
+                          if (!checked) setForm((current) => ({ ...current, endDate: '', dateDisplay: formatEventDateRange(current.startDate, '') }));
+                        }}
+                        className="h-4 w-4 rounded border-slate-300 text-[#8B2E24] focus:ring-[#8B2E24]"
+                      />
+                      This event runs for multiple days
+                    </label>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase">End date{isMultiDay ? ' *' : ' (optional)'}
+                      <input type="date" required={isMultiDay} value={form.endDate} min={form.startDate || undefined} onChange={(e) => setForm({ ...form, endDate: e.target.value, dateDisplay: formatEventDateRange(form.startDate, e.target.value) })} className="mt-1 w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-800" />
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Short summary (optional)</label>

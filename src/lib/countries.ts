@@ -2,3 +2,15 @@ const ISO_CODES = `AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE B
 const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
 export const SHIPPING_COUNTRIES = ISO_CODES.map((code) => ({ code, name: displayNames.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name));
 export const DOMESTIC_COUNTRY = 'BT';
+
+const SHIPPING_COUNTRY_VALUES = new Set(
+  SHIPPING_COUNTRIES.flatMap(({ code, name }) => [code.toLowerCase(), name.trim().toLowerCase()])
+);
+
+export function isSupportedShippingCountry(value: unknown): boolean {
+  return typeof value === 'string' && SHIPPING_COUNTRY_VALUES.has(value.trim().toLowerCase());
+}
+
+export function isBhutanDeliveryCountry(value: unknown): boolean {
+  return typeof value === 'string' && ['bt', 'bhutan'].includes(value.trim().toLowerCase());
+}

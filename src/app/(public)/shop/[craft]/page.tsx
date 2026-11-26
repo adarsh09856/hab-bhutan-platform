@@ -9,6 +9,7 @@ import ProductCard from '@/components/public/ProductCard';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 import { useLanguage } from '@/context/LanguageContext';
+import { shopCraftHref } from '@/lib/product-routes';
 
 interface ShopCraft {
   key: string;
@@ -140,7 +141,7 @@ function ShopGridContent() {
                 return (
                   <Link
                     key={c.key}
-                    href={`/shop/${c.key}`}
+                    href={shopCraftHref(c.key)}
                     className={`p-2 sm:p-[10px_14px] flex-none lg:flex-initial flex items-center justify-between gap-3 rounded-lg lg:rounded-none transition-colors ${
                       isActive
                         ? 'bg-[#F1E9DB] text-[#8B2E24]'

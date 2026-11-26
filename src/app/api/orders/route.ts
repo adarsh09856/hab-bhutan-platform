@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { calculateShipping } from '@/lib/shipping';
+import { isBhutanDeliveryCountry, isSupportedShippingCountry } from '@/lib/countries';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { logAudit } from '@/lib/audit';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
@@ -121,7 +122,7 @@ export async function POST(req: NextRequest) {
     const customerPhoneNum = phone || body.customerPhone || shippingAddress?.phone || null;
     const isExpress = shippingMethod === 'express' || shippingMethod === 'EXPRESS' || shippingMethod === 'Express Courier';
     const deliveryCountry = String(shippingAddress?.country || '').trim();
-    const isBhutanDelivery = /^(bhutan|bt)$/i.test(deliveryCountry);
+    const isBhutanDelivery = isBhutanDeliveryCountry(deliveryCountry);
 
     // Strict normalization for PaymentMethod ('CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD')
     const rawPayment = String(paymentMethod || 'CARD').trim().toUpperCase();
@@ -214,7 +215,10 @@ export async function POST(req: NextRequest) {
     if (customerFullName.length < 2 || customerFullName.length > 160 ||
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || customerEmail.length > 254 ||
         typeof shippingAddress?.street !== 'string' || !shippingAddress.street.trim() || shippingAddress.street.length > 500 ||
-        !deliveryCountry || !String(shippingAddress?.city || '').trim() || !String(customerPhoneNum || '').trim() || !String(shippingAddress?.postalCode || '').trim()) {
+        !isSupportedShippingCountry(deliveryCountry) ||
+        typeof shippingAddress?.city !== 'string' || !shippingAddress.city.trim() || shippingAddress.city.length > 160 ||
+        typeof customerPhoneNum !== 'string' || !customerPhoneNum.trim() || customerPhoneNum.length > 80 ||
+        typeof shippingAddress?.postalCode !== 'string' || !shippingAddress.postalCode.trim() || shippingAddress.postalCode.length > 32) {
       return NextResponse.json({ success: false, error: 'Enter the recipient, email, phone, street, city, country and postcode for courier delivery.' }, { status: 400 });
     }
 

@@ -5,11 +5,13 @@ export function resolveFooterHref(label: string, href: string): string {
 
   if (/^\/membership#login(?:\/)?$/i.test(path)) return '/login';
   if (/^\/members(?:[/?#]|$)/i.test(path)) return '/traders';
-  if (/^(?:apply(?: to join(?: hab)?| for membership)|register as (?:a )?(?:member|cluster)|become a member)$/.test(text)) {
-    const query = href.includes('?') ? href.slice(href.indexOf('?')) : '';
+  if (/^(?:apply(?: to join(?: hab)?| for (?:membership|a trader|trader accreditation))?|register(?: as (?:a )?(?:member|cluster|trader))?|become a member|trader application)$/.test(text)) {
+    const query = /^\/membership\/apply(?:\/)?(?:\?|$)/i.test(path) && href.includes('?')
+      ? href.slice(href.indexOf('?'))
+      : '';
     return `/membership/apply${query}`;
   }
-  if (/^(?:member login|login)$/.test(text)) return '/login';
+  if (/^(?:member|trader)?\s*login$/.test(text) || /^sign in(?: to (?:your )?(?:member|trader) account)?$/.test(text)) return '/login';
   if (/^(?:directory by category|find a member|members directory)$/.test(text)) return '/traders';
 
   const canonicalByLabel = [

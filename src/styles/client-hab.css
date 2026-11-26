@@ -1887,7 +1887,13 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 .honour .card__title{font-family:var(--display);font-weight:400;font-size:var(--t-display-s);letter-spacing:-.008em;margin:0 0 4px}
 .honour .card__meta{margin-bottom:10px}
 .honour .card__title,
-.honour .card__text{hyphens:none;-webkit-hyphens:none;word-break:normal;overflow-wrap:break-word}
+.honour,
+.honour :where(*){
+  -webkit-hyphens:none !important;
+  hyphens:none !important;
+  word-break:normal !important;
+  overflow-wrap:normal !important;
+}
 .master-home-portrait{margin:0;aspect-ratio:4 / 5}
 
 /* ==========================================================================
