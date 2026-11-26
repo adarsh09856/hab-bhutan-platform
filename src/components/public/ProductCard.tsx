@@ -61,7 +61,9 @@ export default function ProductCard({
           loading="lazy"
           className="transition-transform duration-500 ease-out group-hover:scale-105 w-full h-full object-cover object-center"
           onError={() => {
-            if (!imgSrc.includes('/assets/photos/image-unavailable.svg')) setImgSrc('/assets/photos/image-unavailable.svg');
+            const placeholder = '/assets/photos/image-unavailable.svg';
+            if (imgSrc === placeholder) return;
+            setImgSrc(imgSrc === resolvedInitialImage && imgSrc !== resolvedImage ? resolvedImage : placeholder);
           }}
         />
         <span className="product__ref">
