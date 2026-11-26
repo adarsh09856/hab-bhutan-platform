@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { NEWS_CATEGORIES, NEWS_SUBCATEGORIES, mergeNewsOptions, normalizeNewsCategory } from '@/lib/news-categories';
 import prisma from '@/lib/prisma';
-import { referenceNewsImage } from '@/lib/reference-images';
+import { publicNewsArticles } from '@/lib/public-news-articles';
 import { publicDocumentUrl } from '@/lib/public-documents';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const [dbArticles, dbEventRecords, dbCalendarEvents, siteSettings] = await Promise.all([
       prisma.newsArticle.findMany({
         where: { isPublished: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       }),
       prisma.eventRecord.findMany({
         where: { isActive: true },
@@ -24,42 +24,7 @@ export async function GET(req: NextRequest) {
       prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } }),
     ]);
 
-    const seenArticleCopies = new Set<string>();
-    const uniqueArticles = dbArticles.filter((article: any) => {
-      const title = String(article.title || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
-      const summary = String(article.blurb || article.summary || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
-      const identity = title && summary ? `${normalizeNewsCategory(article.kind)}\n${title}\n${summary}` : String(article.slug || article.id);
-      if (seenArticleCopies.has(identity)) return false;
-      seenArticleCopies.add(identity);
-      return true;
-    });
-
-    const articles = uniqueArticles.filter((article) => !category || normalizeNewsCategory(article.kind) === category).map((a: any) => {
-      let image_path = '';
-      let cleanContent = a.content || '';
-      if (cleanContent.includes('<!-- HAB_COVER_IMAGE:')) {
-        const match = cleanContent.match(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->/);
-        if (match) {
-          image_path = match[1];
-          cleanContent = cleanContent.replace(/<!-- HAB_COVER_IMAGE:\s*(.*?)\s*-->\s*/, '');
-        }
-      }
-
-      const finalImage = image_path || a.imageUrl || a.image_url || a.image_path || referenceNewsImage(a.slug) || null;
-
-      return {
-        ...a,
-        kind: normalizeNewsCategory(a.kind),
-        documentUrl: publicDocumentUrl(a.documentUrl || a.pdfUrl),
-        pdfUrl: publicDocumentUrl(a.pdfUrl),
-        date: a.dateString || a.date || a.published_at || '',
-        published_at: a.dateString || a.published_at || '',
-        slug: a.slug || a.id,
-        image_path: finalImage,
-        imageUrl: finalImage,
-        content: cleanContent,
-      };
-    });
+    const articles = publicNewsArticles(dbArticles, category);
 
     const taxonomy = siteSettings?.trustBadges && !Array.isArray(siteSettings.trustBadges) && typeof siteSettings.trustBadges === 'object'
       ? (siteSettings.trustBadges as any).newsTaxonomy || {}

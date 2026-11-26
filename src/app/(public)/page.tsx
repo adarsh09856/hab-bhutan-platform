@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
 import { bhutanDayStartUtc } from '@/lib/trader-expiry';
+import { publicNewsArticles } from '@/lib/public-news-articles';
 import HomePageClient from './HomePageClient';
 
 export const dynamic = 'force-dynamic';
@@ -138,7 +139,11 @@ function homepageSettings(setting: any, publicTraderCount: number | null) {
 }
 
 export default async function HomePage() {
-  let initialSettings = {};
+  const newsQuery = prisma.newsArticle.findMany({
+    where: { isPublished: true },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+  }).then(articles => publicNewsArticles(articles).slice(0, 4)).catch(() => null);
+  let initialSettings: Partial<ReturnType<typeof homepageSettings>> = {};
   let initialSetting: any = null;
   let initialHeroSlides: Array<{ id: string; imageUrl: string; caption: string; altText?: string; linkUrl?: string | null }> = [];
   let initialSettingsLoaded = false;
@@ -185,10 +190,22 @@ export default async function HomePage() {
     initialSettings = homepageSettings(initialSetting, null);
   }
 
+  const latestNews = await newsQuery;
+  const initialNews = latestNews?.map((article, index) => ({
+    id: article.id,
+    slug: article.slug,
+    title: article.title,
+    kind: article.kind || 'Notice',
+    blurb: article.blurb,
+    date: article.date,
+    image_path: article.image_path || (index === 2 ? initialSettings.homeNewsThirdImage : '') || '',
+  })) ?? null;
+
   return (
     <HomePageClient
       initialSettings={initialSettings}
       initialHeroSlides={initialHeroSlides}
+      initialNews={initialNews}
       initialSettingsLoaded={initialSettingsLoaded}
       initialHeroSlidesLoaded={initialHeroSlidesLoaded}
     />

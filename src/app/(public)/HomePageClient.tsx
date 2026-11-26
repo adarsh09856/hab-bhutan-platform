@@ -51,11 +51,13 @@ const DEFAULT_HOMEPAGE_SECTION_ORDER: string[] = [
 export default function HomePageClient({
   initialSettings = {},
   initialHeroSlides = [],
+  initialNews = null,
   initialSettingsLoaded = false,
   initialHeroSlidesLoaded = false,
 }: {
   initialSettings?: Record<string, any>;
   initialHeroSlides?: HeroSlide[];
+  initialNews?: Array<{ id: string; slug: string; title: string; kind: string; blurb: string; date: string; image_path: string }> | null;
   initialSettingsLoaded?: boolean;
   initialHeroSlidesLoaded?: boolean;
 }) {
@@ -175,8 +177,8 @@ export default function HomePageClient({
   const [programmes, setProgrammes] = useState<any[]>([]);
   const [programmesState, setProgrammesState] = useState<'loading' | 'ready' | 'error'>('loading');
 
-  const [news, setNews] = useState<any[]>([]);
-  const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [news, setNews] = useState<any[]>(initialNews ?? []);
+  const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>(initialNews ? 'ready' : 'loading');
 
   const [events, setEvents] = useState<any[]>([]);
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -381,7 +383,7 @@ export default function HomePageClient({
       .catch(() => setProgrammesState('error'));
 
     // G. News from Admin
-    fetch('/api/news', { cache: 'no-store' })
+    if (!initialNews) fetch('/api/news', { cache: 'no-store' })
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok || data?.success === false) throw new Error('News unavailable');
@@ -397,7 +399,7 @@ export default function HomePageClient({
             blurb: a.blurb || a.summary || '',
             date: a.dateString || a.date || a.published_at || '',
             published_at: a.dateString || a.published_at || '',
-            image_path: (index === 2 && initialSettings.homeNewsThirdImage) || a.image_path || a.imageUrl || '',
+            image_path: a.image_path || a.imageUrl || (index === 2 ? initialSettings.homeNewsThirdImage : '') || '',
           }));
           setNews(mappedNews);
         }
