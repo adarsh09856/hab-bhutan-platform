@@ -1171,6 +1171,19 @@ a.card:hover{color:inherit;border-color:var(--ink)}
    ========================================================================== */
 
 .shopgrid{display:grid;grid-template-columns:246px 1fr;gap:44px;align-items:start}
+.shopgrid > aside{
+  --shop-filter-top:calc(var(--utility-h) + var(--header-h) + 8px);
+  position:sticky;
+  top:var(--shop-filter-top);
+  max-height:calc(100dvh - var(--shop-filter-top) - 8px);
+  overflow-y:auto;
+  background:var(--bg);
+  z-index:20;
+}
+body.has-admin-live-bar .shopgrid > aside{
+  --shop-filter-top:calc(36px + var(--utility-h) + var(--header-h) + 8px);
+}
+.shopgrid > aside .rail{position:static}
 .railtitle{font-family:var(--ui);font-weight:700;font-size:15px;margin:0 0 12px}
 .rail{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;position:sticky;top:100px}
 .rail__row{
@@ -2519,6 +2532,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
 
 @media (max-width:1191px){
   .shopgrid{grid-template-columns:1fr;gap:26px}
+  .shopgrid > aside{max-height:min(32dvh, calc(100dvh - var(--shop-filter-top) - 8px))}
   .rail{position:static}
   .triptych{grid-template-columns:1fr 1fr}
   .triptych__cell:first-child{grid-row:auto}
