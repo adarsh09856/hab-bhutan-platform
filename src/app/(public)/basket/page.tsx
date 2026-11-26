@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { CLIENT_DATA } from '@/lib/client-data';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { isBhutanDeliveryCountry, SHIPPING_COUNTRIES } from '@/lib/countries';
+import type { ShippingOption } from '@/lib/shipping';
 
 export default function BasketPage() {
   const router = useRouter();
@@ -23,8 +24,6 @@ export default function BasketPage() {
     subtotalUSD,
     shippingMethod,
     setShippingMethod,
-    shippingFeeUSD,
-    totalUSD,
     addToCart,
     decrementCart,
     removeFromCart,
@@ -41,9 +40,37 @@ export default function BasketPage() {
     city: 'Thimphu',
     postalCode: '',
   });
+  const quoteItemsKey = JSON.stringify(items.map(({ code, quantity }) => ({ code, quantity })));
+  const quoteKey = `${customer.country}:${quoteItemsKey}`;
+  const [quote, setQuote] = useState<{ key: string; rates: { ems: ShippingOption; express: ShippingOption } } | null>(null);
+  const [quoteError, setQuoteError] = useState('');
+  const [quoteRetry, setQuoteRetry] = useState(0);
+  const quoteReady = quote?.key === quoteKey;
+  const shippingRates = quoteReady ? quote.rates : null;
+  const shippingFeeUSD = shippingRates?.[shippingMethod].costUSD || 0;
+  const totalUSD = subtotalUSD + shippingFeeUSD;
+
+  React.useEffect(() => {
+    if (!catalogueLoaded || !items.length || !customer.country) return;
+    const controller = new AbortController();
+    setQuoteError('');
+    fetch('/api/shipping/quote', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, cache: 'no-store', signal: controller.signal,
+      body: JSON.stringify({ country: customer.country, items: JSON.parse(quoteItemsKey) }),
+    }).then(async response => {
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.rates) throw new Error('Could not calculate delivery. Please retry.');
+      if (!controller.signal.aborted) setQuote({ key: quoteKey, rates: data.rates });
+    }).catch(error => { if (!controller.signal.aborted) setQuoteError(error.message || 'Could not calculate delivery. Please retry.'); });
+    return () => controller.abort();
+  }, [catalogueLoaded, customer.country, quoteItemsKey, quoteKey, quoteRetry]);
 
   const handlePlaceOrder = async () => {
     setFormError('');
+    if (!quoteReady) {
+      setFormError('Please wait for delivery costs to update before continuing.');
+      return;
+    }
 
     if (!customer.fullName.trim()) {
       setFormError('Please enter your full name.');
@@ -194,6 +221,8 @@ export default function BasketPage() {
               {/* Shipping Method */}
               <div className="panel" style={{ marginBottom: 22 }}>
                 <h2 className="newsaside__title">Shipping</h2>
+                {!quoteReady && !quoteError && <p role="status">Calculating delivery for your destination and basket…</p>}
+                {quoteError && <p role="alert">{quoteError} <button type="button" className="btn btn--outline btn--sm" onClick={() => setQuoteRetry(version => version + 1)}>Retry delivery quote</button></p>}
                 <div id="shipList">
                   <div
                     className={`payopt ${shippingMethod === 'ems' ? 'is-active' : ''}`}
@@ -206,7 +235,7 @@ export default function BasketPage() {
                       <span className="payopt__note">Tracked air parcel, 7–14 working days worldwide</span>
                     </span>
                     <span className="payopt__price">
-                      {subtotalUSD >= 200 ? 'Free' : fmt(24)}
+                      {shippingRates ? shippingRates.ems.costUSD === 0 ? 'Free' : fmt(shippingRates.ems.costUSD) : '—'}
                     </span>
                   </div>
 
@@ -220,7 +249,7 @@ export default function BasketPage() {
                       <span className="payopt__name">DHL Express</span>
                       <span className="payopt__note">Courier delivery, 3–5 working days</span>
                     </span>
-                    <span className="payopt__price">{fmt(62)}</span>
+                    <span className="payopt__price">{shippingRates ? shippingRates.express.costUSD === 0 ? 'Free' : fmt(shippingRates.express.costUSD) : '—'}</span>
                   </div>
                 </div>
                 <p className="shopnote" style={{ margin: '6px 0 0' }}>
@@ -339,7 +368,7 @@ export default function BasketPage() {
               <div className="summary__row">
                 <span>Shipping</span>
                 <span id="sumShip">
-                  {shippingFeeUSD === 0 ? 'Free (EMS)' : fmt(shippingFeeUSD)}
+                  {!quoteReady ? 'Calculating…' : shippingFeeUSD === 0 ? 'Free' : fmt(shippingFeeUSD)}
                 </span>
               </div>
               <div className="summary__row">
@@ -354,14 +383,14 @@ export default function BasketPage() {
               </div>
               <div className="summary__total">
                 <span>Total</span>
-                <span id="sumTotal">{fmt(totalUSD)}</span>
+                <span id="sumTotal">{quoteReady ? fmt(totalUSD) : 'Calculating…'}</span>
               </div>
               <button
                 className="btn btn--light btn--full"
                 type="button"
                 id="placeOrder"
                 onClick={handlePlaceOrder}
-                disabled={!catalogueLoaded}
+                disabled={!catalogueLoaded || !quoteReady}
               >
                 Continue to payment
               </button>
