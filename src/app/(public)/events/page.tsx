@@ -125,7 +125,7 @@ export default function EventsPage() {
                   <figure className="frame frame--eventshot has-image" data-cms-img style={{ position: 'relative', overflow: 'hidden' }}>
                     <Image
                       src={image.src}
-                      alt={eventImageAlt(displayTitle, image.illustrative)}
+                      alt={eventImageAlt(displayTitle, image)}
                       fill
                       sizes="(max-width: 768px) 100vw, 30vw"
                       style={{ objectFit: 'cover' }}

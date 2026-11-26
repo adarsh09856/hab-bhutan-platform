@@ -159,7 +159,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
         <figure className="frame frame--banner has-image" data-cms-img style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
           <Image
             src={bannerImage.src}
-            alt={eventImageAlt(event.title, bannerImage.illustrative)}
+            alt={eventImageAlt(event.title, bannerImage)}
             fill
             priority
             sizes="100vw"
@@ -277,7 +277,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                   <figure className="frame frame--wide16 has-image" data-cms-img style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden' }}>
                     <Image
                       src={oeImage.src}
-                      alt={eventImageAlt(oe.title, oeImage.illustrative)}
+                      alt={eventImageAlt(oe.title, oeImage)}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
                       style={{ objectFit: 'cover' }}
