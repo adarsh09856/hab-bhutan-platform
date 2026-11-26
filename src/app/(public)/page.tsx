@@ -75,7 +75,7 @@ function homepageSettings(setting: any, publicTraderCount: number | null) {
     stats: [
       { value: setting.stat1Number || '7,500', label: setting.stat1Label || 'Micro & small enterprises in the network', url: '' },
       { value: setting.stat2Number || '5,250', label: setting.stat2Label || 'Women-led enterprises', url: '' },
-      { value: publicTraderCount === null ? '' : String(publicTraderCount), label: 'Affiliated stores across Bhutan', url: publicTraderCount === null ? '' : '/traders' },
+      { value: publicTraderCount && publicTraderCount > 0 ? String(publicTraderCount) : '', label: 'Affiliated stores across Bhutan', url: publicTraderCount && publicTraderCount > 0 ? '/traders' : '' },
       { value: setting.stat4Number || '13', label: setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
     aboutBandTitle: quickEditText('about', 'div:1/div:1/h2:1') ?? fallback('aboutBandTitle', 'A network built for artisans and everyone who brings a craft to market'),

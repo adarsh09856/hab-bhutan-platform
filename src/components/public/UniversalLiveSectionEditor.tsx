@@ -299,7 +299,7 @@ export default function UniversalLiveSectionEditor({
         stat1Label: s.stat1Label || 'Micro & small enterprises in the network',
         stat2Number: s.stat2Number || '5,250',
         stat2Label: s.stat2Label || 'Women-led enterprises',
-        stat3Number: s.stat3Number || '195',
+        stat3Number: String(s.stat3Number || '').trim() === '195' ? '' : (s.stat3Number || ''),
         stat3Label: s.stat3Label || 'Affiliated stores across Bhutan',
         stat4Number: s.stat4Number || '13',
         stat4Label: s.stat4Label || 'Arts & crafts of Zorig Chusum',
@@ -433,7 +433,10 @@ export default function UniversalLiveSectionEditor({
         fact3Key: s.aboutStats?.[2]?.label || 'Member enterprises',
         fact3Val: s.aboutStats?.[2]?.number || s.stat1Number || '7,500',
         fact4Key: s.aboutStats?.[3]?.label || 'Affiliated stores',
-        fact4Val: s.aboutStats?.[3]?.number || s.stat3Number || '195',
+        fact4Val: (() => {
+          const savedValue = s.aboutStats?.[3]?.number || s.stat3Number || '';
+          return String(savedValue).trim() === '195' ? '' : savedValue;
+        })(),
 
         // Contact
         officeAddress: s.officeAddress || 'Metog Lam, Thimphu, Bhutan',
@@ -850,7 +853,7 @@ export default function UniversalLiveSectionEditor({
         { label: form.fact1Key || 'Established', number: form.fact1Val || '2005' },
         { label: form.fact2Key || 'Registered CSO', number: form.fact2Val || '2011 · CSO/2011/043' },
         { label: form.fact3Key || 'Member enterprises', number: form.fact3Val || '7,500' },
-        { label: form.fact4Key || 'Affiliated stores', number: form.fact4Val || '195' },
+        { label: form.fact4Key || 'Affiliated stores', number: form.fact4Val || '' },
       ].filter((st) => st.label);
 
       // Wholesale arrays

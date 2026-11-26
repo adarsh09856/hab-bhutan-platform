@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
         kind: e.kind || e.category || '',
         place: e.place || e.location || e.venue || '',
         dateDisplay: formatEventDateRange(e.startDate, e.endDate, e.dateDisplay),
-        summary: e.shortSummary || e.summary || shortenEventSummary(e.description),
+        summary: shortenEventSummary(e.shortSummary || e.summary || e.description, 160),
         summaryDz: e.summaryDz || shortenEventSummary(e.descriptionDz),
         url: e.url || `/events/${e.key || e.id}`,
         imageUrl: eventImg,

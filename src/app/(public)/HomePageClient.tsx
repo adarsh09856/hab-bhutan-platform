@@ -1268,11 +1268,11 @@ export default function HomePageClient({
               : siteSettings.membershipRightText}
             </p>
             <div className="actions">
-              <Link className="btn btn--light" href="/membership/apply">
-                {isDz ? 'ཚོང་པ་སྦེ་ཐོ་བཀོད་འབད' : 'Register as a trader'}
+              <Link className="btn btn--light" href="/contact?topic=trader-registration">
+                {isDz ? 'ཚོང་པའི་ཐོ་བཀོད་སྐོར་ལས་འབྲེལ་བ་འཐབ' : 'Enquire about trader registration'}
               </Link>
-              <Link className="btn btn--ghost" href="/login">
-                {isDz ? 'ཚོང་པ་ནང་འཛུལ' : 'Trader login'}
+              <Link className="btn btn--ghost" href="/traders">
+                {isDz ? 'ཚོང་པའི་ཐོ་གཞུང་ལྟ' : 'Browse trader directory'}
               </Link>
             </div>
           </div>
