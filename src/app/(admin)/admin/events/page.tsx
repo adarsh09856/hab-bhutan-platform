@@ -583,7 +583,7 @@ export default function AdminEventsPage() {
                 {/* Direct Image and Document Uploads */}
                 <div className="space-y-3 pt-2">
                   <FileUploadInput
-                    label="Event Banner / Promotional Poster"
+                    label="Event photo / promotional poster"
                     value={form.imageUrl || ''}
                     onChange={(url) => setForm({ ...form, imageUrl: url })}
                     accept="image/*"
