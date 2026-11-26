@@ -7,6 +7,7 @@ export default function ProductCraftManager({ crafts, selected, onSaved }: { cra
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [confirmArchive, setConfirmArchive] = useState(false);
 
   async function save(archive = false) {
     setBusy(true);
@@ -20,6 +21,7 @@ export default function ProductCraftManager({ crafts, selected, onSaved }: { cra
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not save craft.');
       setMessage(archive ? 'Craft archived.' : 'Craft saved. Select it from Craft Tradition.');
+      setConfirmArchive(false);
       onSaved();
     } catch (error: any) { setMessage(error.message); }
     finally { setBusy(false); }
@@ -38,8 +40,9 @@ export default function ProductCraftManager({ crafts, selected, onSaved }: { cra
       </label>)}
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={busy || !form.key.trim() || !form.name.trim() || !form.english.trim()} onClick={() => save()} className="admin-button-primary px-3 py-2 rounded-lg">Save craft</button>
-        <button type="button" disabled={busy || !selected} onClick={() => save(true)} className="admin-button-secondary px-3 py-2 rounded-lg">Archive selected craft</button>
+        <button type="button" disabled={busy || !selected} onClick={() => setConfirmArchive(true)} className="admin-button-secondary px-3 py-2 rounded-lg">Archive selected craft</button>
       </div>
+      {confirmArchive && <div role="alert"><p>Archive {crafts.find(c => c.key === selected)?.name || selected}? Existing product assignments will remain.</p><button type="button" disabled={busy} onClick={() => save(true)} className="admin-button-secondary px-3 py-2 rounded-lg">Confirm archive</button><button type="button" onClick={() => setConfirmArchive(false)} className="px-3 py-2">Cancel</button></div>}
       <p className="admin-muted">Archiving keeps existing product assignments and removes the craft from active public categories.</p>
       {message && <p role="status">{message}</p>}
     </div>

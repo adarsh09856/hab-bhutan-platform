@@ -1017,6 +1017,7 @@ export default function AdminProductsPage() {
                     <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
                   ))}
                 </select>
+                <ProductCraftManager crafts={crafts} selected={editForm.craftKey} onSaved={loadData} />
               </div>
               <div>
                 <label className="block font-medium admin-text mb-1">Stock Count</label>
@@ -1038,7 +1039,6 @@ export default function AdminProductsPage() {
               </select>
               <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#8B2E24]">
                 <ProductMakerManager members={members} crafts={crafts} selected={editForm.makerMemberId || ''} onSaved={loadData} />
-                <ProductCraftManager crafts={crafts} selected={editForm.craftKey} onSaved={loadData} />
                 <button type="button" onClick={loadData} className="underline">Refresh saved options</button>
               </div>
             </div>
