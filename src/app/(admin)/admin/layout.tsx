@@ -177,31 +177,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    web: false,
-    stories: false,
-    heritage: false,
-    store: false,
-    settings: false,
+    publishing: false,
+    community: false,
+    commerce: false,
+    administration: false,
   });
-
-  const allCollapsed = Object.values(openGroups).every((val) => !val);
 
   const toggleCollapseAll = () => {
     if (allCollapsed) {
       setOpenGroups({
-        web: true,
-        stories: true,
-        heritage: true,
-        store: true,
-        settings: true,
+        publishing: true,
+        community: true,
+        commerce: true,
+        administration: true,
       });
     } else {
       setOpenGroups({
-        web: false,
-        stories: false,
-        heritage: false,
-        store: false,
-        settings: false,
+        publishing: activeNavGroupKey === 'publishing',
+        community: activeNavGroupKey === 'community',
+        commerce: activeNavGroupKey === 'commerce',
+        administration: activeNavGroupKey === 'administration',
       });
     }
   };
@@ -212,8 +207,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: 'Pages & Website Content',
-      key: 'web',
+      group: 'Website & Publishing',
+      key: 'publishing',
       items: [
         { label: 'Website Pages', href: '/admin/pages', icon: Layers, badge: 'Pages' },
         { label: '+ Create New Page', href: '/admin/pages?new=1', icon: Plus, badge: 'New' },
@@ -222,12 +217,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Header & Footer Menus', href: '/admin/navigation', icon: Navigation },
         { label: 'Hero Slides', href: '/admin/hero', icon: Layers },
         { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
-      ],
-    },
-    {
-      group: 'Stories & Events',
-      key: 'stories',
-      items: [
         { label: 'News & Articles', href: '/admin/content', icon: FileText },
         { label: 'Vacancies', href: '/admin/content?category=Vacancies', icon: FileText },
         { label: 'Announcements', href: '/admin/content?category=Announcements', icon: FileText },
@@ -239,8 +228,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: 'Members & Heritage',
-      key: 'heritage',
+      group: 'Members & Directory',
+      key: 'community',
       items: [
         { label: 'Members', href: '/admin/members', icon: Users },
         { label: 'Applications to Review', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
@@ -252,8 +241,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      group: 'Products & Sales',
-      key: 'store',
+      group: 'Orders & Sales',
+      key: 'commerce',
       items: [
         { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
         { label: 'Retail Shops & Outlets', href: '/admin/clusters-outlets', icon: Store },
@@ -263,17 +252,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Wholesale Prices & Quotes', href: '/admin/trade', icon: BadgePercent, badge: 'B2B' },
         { label: 'Payment Reviews', href: '/admin/payments', icon: CreditCard, badge: 'Pay' },
         { label: 'Sales Reports', href: '/admin/reports', icon: BarChart3 },
+        { label: 'Customer Messages', href: '/admin/inquiries', icon: Mail },
       ],
     },
     {
-      group: 'Settings & Staff Access',
-      key: 'settings',
+      group: 'Site & Staff Settings',
+      key: 'administration',
       items: [
         { label: 'Site Details & Contact', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
         { label: 'Language & Currency', href: '/admin/localization', icon: Globe },
         { label: 'Typography & Styling', href: '/admin/styling', icon: Palette },
         { label: 'Legal Policies', href: '/admin/policies', icon: ShieldCheck },
-        { label: 'Customer Messages', href: '/admin/inquiries', icon: Mail },
         { label: 'Donation Appeals', href: '/admin/donate-settings', icon: Heart },
         { label: 'Staff Accounts & Permissions', href: '/admin/users', icon: ShieldCheck, badge: 'Access' },
         { label: 'Recycle Bin', href: '/admin/recycle-bin', icon: Trash2, badge: 'Trash' },
@@ -295,6 +284,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const activeNavGroupKey = activeNavItem
     ? navGroups.find((group) => group.items.includes(activeNavItem))?.key
     : undefined;
+  const allCollapsed = Object.entries(openGroups).every(([key, isOpen]) =>
+    key === activeNavGroupKey || !isOpen
+  );
 
   useEffect(() => {
     if (pathname === '/admin') return;
@@ -500,12 +492,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Navigation Items */}
           <nav className="p-3 flex-1 min-h-0 overflow-y-auto space-y-2 custom-scrollbar">
-            {/* Quick Collapse / Expand All Controller */}
+            {/* Compact navigation controls */}
             <div className="flex items-center justify-between px-2.5 py-1.5 bg-slate-100/70 rounded-xl border border-slate-200/80 shadow-2xs">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Navigation Menu</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Staff tasks</span>
               <button
                 type="button"
                 onClick={toggleCollapseAll}
+                aria-label={allCollapsed ? 'Expand all staff task sections' : 'Collapse all staff task sections'}
                 className="px-2 py-0.5 rounded bg-white hover:bg-slate-50 text-[#8B2E24] hover:text-[#6e221a] border border-slate-200 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
                 title={allCollapsed ? 'Expand all navigation categories' : 'Collapse all navigation categories'}
               >
@@ -550,14 +543,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               if (visibleItems.length === 0) return null;
 
-              const isOpen = quickSearch ? true : (openGroups[group.key] ?? false);
+              const isOpen = quickSearch || group.key === activeNavGroupKey
+                ? true
+                : (openGroups[group.key] ?? false);
 
               return (
                 <div key={group.group} className="pt-1">
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.key)}
-                  aria-expanded={isOpen}
+                    aria-expanded={isOpen}
+                    aria-controls={`admin-nav-${group.key}`}
                     className="w-full px-2.5 py-1.5 mb-1 rounded-lg flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                   >
                     <div className="flex items-center gap-1.5">
@@ -574,7 +570,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </button>
 
                   {isOpen && (
-                    <div className="space-y-0.5 pl-1.5 border-l-2 border-slate-100 ml-2 animate-in fade-in duration-150">
+                    <div id={`admin-nav-${group.key}`} className="space-y-0.5 pl-1.5 border-l-2 border-slate-100 ml-2 animate-in fade-in duration-150">
                       {visibleItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = item === activeNavItem;

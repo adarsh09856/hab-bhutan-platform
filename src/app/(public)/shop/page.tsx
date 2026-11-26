@@ -270,7 +270,7 @@ function ShopContent() {
 
             <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Filter products">
               <label className="text-sm">Search products<input className="input mt-1 w-full" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Name, maker or craft" /></label>
-              <label className="text-sm">Product type<select className="input mt-1 w-full" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}><option value="">All types</option>{PRODUCT_TYPES.map((type) => <option key={type}>{type}</option>)}</select></label>
+              <label className="text-sm">Product type<select className="input mt-1 w-full" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}><option value="">All types</option>{Array.from(new Set([...PRODUCT_TYPES, ...products.map(inferProductType).filter(Boolean)])).sort().map((type) => <option key={type}>{type}</option>)}</select></label>
               <label className="text-sm">Minimum price<input className="input mt-1 w-full" type="number" min="0" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} placeholder="Any" /></label>
               <label className="text-sm">Maximum price<input className="input mt-1 w-full" type="number" min="0" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} placeholder="Any" /></label>
               <label className="col-span-2 flex items-center gap-2 text-sm sm:col-span-4"><input type="checkbox" checked={onlyAvailable} onChange={(event) => setOnlyAvailable(event.target.checked)} />{t('shop.in_stock', 'In stock')}</label>

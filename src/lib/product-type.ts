@@ -1,9 +1,10 @@
 export const PRODUCT_TYPES = ['Bags', 'Cushions', 'Textiles', 'Home décor'] as const;
-export type ProductType = typeof PRODUCT_TYPES[number];
+export type ProductType = string;
 
 export function inferProductType(product: { productType?: string | null; name?: string; craftKey?: string; materials?: string | null }): ProductType | '' {
   const saved = PRODUCT_TYPES.find((type) => type.toLowerCase() === product.productType?.toLowerCase());
   if (saved) return saved;
+  if (product.productType?.trim()) return product.productType.trim();
   const text = `${product.name || ''} ${product.materials || ''}`.toLowerCase();
   if (/cushion|pillow/.test(text)) return 'Cushions';
   if (/bag|pouch|clutch|purse|sling|saddle|wallet/.test(text)) return 'Bags';
