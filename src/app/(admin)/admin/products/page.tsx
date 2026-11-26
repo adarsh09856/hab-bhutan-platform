@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination } from '@/components/admin/AdminUI';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
+import ProductCraftManager from '@/components/admin/ProductCraftManager';
 import ProductTypeOptions from '@/components/admin/ProductTypeOptions';
 import { traderIsExpired } from '@/lib/trader-expiry';
 
@@ -772,7 +773,7 @@ export default function AdminProductsPage() {
                   <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
                 ))}
               </select>
-              <Link href="/admin/crafts" target="_blank" className="block text-sm text-[#8B2E24] mt-2">Manage craft traditions ↗</Link><button type="button" onClick={loadData} className="text-sm underline mt-1">Refresh saved options</button>
+              <ProductCraftManager crafts={crafts} selected={addForm.craftKey} onSaved={loadData} /><button type="button" onClick={loadData} className="text-sm underline mt-1">Refresh saved options</button>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Origin Dzongkhag</label>
@@ -1036,7 +1037,7 @@ export default function AdminProductsPage() {
               </select>
               <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#8B2E24]">
                 <Link href="/admin/members" target="_blank">Manage makers ↗</Link>
-                <Link href="/admin/crafts" target="_blank">Manage craft traditions ↗</Link>
+                <ProductCraftManager crafts={crafts} selected={editForm.craftKey} onSaved={loadData} />
                 <button type="button" onClick={loadData} className="underline">Refresh saved options</button>
               </div>
             </div>
