@@ -5,6 +5,8 @@ export function resolveFooterHref(label: string, href: string): string {
 
   if (/^\/membership#login(?:\/)?$/i.test(path)) return '/login';
   if (/^\/members(?:[/?#]|$)/i.test(path)) return '/traders';
+  // Trader-specific links can point to an enquiry or a dedicated account flow.
+  if (/\btrader\b/.test(text) && /\b(?:apply|application|register|login|sign in)\b/.test(text)) return href;
   if (/^(?:apply(?: to join(?: hab)?| for (?:membership|a trader|trader accreditation))?|register(?: as (?:a )?(?:member|cluster|trader))?|become a member|trader application)$/.test(text)) {
     const query = /^\/membership\/apply(?:\/)?(?:\?|$)/i.test(path) && href.includes('?')
       ? href.slice(href.indexOf('?'))
