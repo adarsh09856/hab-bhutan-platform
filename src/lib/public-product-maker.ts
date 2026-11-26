@@ -1,4 +1,5 @@
 export const PUBLIC_PRODUCT_MAKER_SELECT = {
+  status: true,
   name: true,
   bio: true,
   joinYear: true,
@@ -8,12 +9,13 @@ export const PUBLIC_PRODUCT_MAKER_SELECT = {
 } as const;
 
 export const PUBLIC_PRODUCT_CARD_MAKER_SELECT = {
+  status: true,
   name: true,
   dzongkhag: true,
 } as const;
 
 export function toPublicProductMaker(maker: any) {
-  if (!maker) return null;
+  if (!maker || maker.status !== 'VERIFIED') return null;
   return {
     name: maker.name,
     bio: maker.bio,
@@ -24,4 +26,9 @@ export function toPublicProductMaker(maker: any) {
       ? { key: maker.craft.key, name: maker.craft.name, english: maker.craft.english }
       : null,
   };
+}
+
+export function toPublicProductCardMaker(maker: any) {
+  if (!maker || maker.status !== 'VERIFIED') return null;
+  return { name: maker.name, dzongkhag: maker.dzongkhag };
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
-import { PUBLIC_PRODUCT_CARD_MAKER_SELECT } from '@/lib/public-product-maker';
+import { PUBLIC_PRODUCT_CARD_MAKER_SELECT, toPublicProductCardMaker } from '@/lib/public-product-maker';
+import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 import { inferProductType } from '@/lib/product-type';
 
 export const dynamic = 'force-dynamic';
@@ -80,7 +81,7 @@ export async function GET(req: NextRequest) {
             status: true,
             createdAt: true,
             maker: { select: PUBLIC_PRODUCT_CARD_MAKER_SELECT },
-            trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
+            trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true, isVisible: true, expiresAt: true } },
           },
         })
       : await prisma.product.findMany({
@@ -90,7 +91,7 @@ export async function GET(req: NextRequest) {
             maker: {
               select: PUBLIC_PRODUCT_CARD_MAKER_SELECT,
             },
-            trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true } },
+            trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true, isVisible: true, expiresAt: true } },
           },
         });
 
@@ -120,8 +121,13 @@ export async function GET(req: NextRequest) {
 
       const mapped = sortedList.map((p) => {
         const normalizedImages = normalizeProductImages(p.code, p.craftKey, p.images);
+        const currentTrader = p.trader?.isVisible && p.trader.expiresAt >= bhutanDayStartUtc()
+          ? { shopName: p.trader.shopName, slug: p.trader.slug, dzongkhag: p.trader.dzongkhag, town: p.trader.town }
+          : null;
         return {
           ...p,
+          maker: toPublicProductCardMaker(p.maker),
+          trader: currentTrader,
           productType: inferProductType(p) || p.productType || null,
           image_path: normalizedImages.imageUrl,
           imageUrl: normalizedImages.imageUrl,

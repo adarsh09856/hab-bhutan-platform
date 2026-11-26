@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const required = ['shopname', 'registrationnumber', 'dzongkhag', 'town', 'address', 'shortdescription', 'description', 'expiresat'];
     const missing = required.filter((key) => !headers.includes(key));
     if (missing.length) return NextResponse.json({ success: false, error: `Missing columns: ${missing.join(', ')}` }, { status: 400 });
-    let created = 0, updated = 0;
+    let created = 0, updated = 0, hiddenForPhotos = 0;
     const errors: string[] = [];
     for (let index = 1; index < rows.length; index++) {
       const row = rows[index];
@@ -41,6 +41,25 @@ export async function POST(req: NextRequest) {
         continue;
       }
       const slug = slugify(cell(row, 'slug') || shopName);
+      const registrationNumber = cell(row, 'registrationnumber');
+      const existing = await prisma.traderRecord.findUnique({ where: { registrationNumber } });
+      const importedPhotos = splitList(cell(row, 'productphotourls')).slice(0, 8);
+      const existingPhotos = Array.isArray(existing?.productPhotoUrls)
+        ? existing.productPhotoUrls.filter((photo): photo is string => typeof photo === 'string' && Boolean(photo.trim()))
+        : [];
+      // Never reduce a saved gallery through a partial spreadsheet photo list.
+      const productPhotoUrls = importedPhotos.length >= existingPhotos.length && importedPhotos.length > 0
+        ? importedPhotos
+        : existingPhotos;
+      const visibilityCell = cell(row, 'isvisible').toLowerCase();
+      const requestedVisible = visibilityCell
+        ? !['false', '0', 'no'].includes(visibilityCell)
+        : existing?.isVisible ?? productPhotoUrls.length >= 4;
+      if (requestedVisible && productPhotoUrls.length < 4 && !existing?.isVisible) {
+        errors.push(`Row ${index + 1}: at least 4 product photos are required to publish this trader.`);
+        continue;
+      }
+      const autoHiddenForPhotos = !existing && !visibilityCell && importedPhotos.length < 4;
       const data = {
         shopName, registrationNumber, slug,
         ownerName: cell(row, 'ownername') || null,
@@ -48,17 +67,19 @@ export async function POST(req: NextRequest) {
         mapUrl: cell(row, 'mapurl') || null, openingHours: cell(row, 'openinghours') || null,
         shortDescription: cell(row, 'shortdescription'), quote: cell(row, 'quote') || null, description: cell(row, 'description'),
         craftKeys: splitList(cell(row, 'craftkeys')), productTypes: splitList(cell(row, 'producttypes')),
-        productPhotoUrls: splitList(cell(row, 'productphotourls')).slice(0, 8), bannerUrl: cell(row, 'bannerurl') || null,
-        expiresAt: expiry, isVisible: !['false', '0', 'no'].includes(cell(row, 'isvisible').toLowerCase()),
+        // Blank spreadsheet photo cells mean “add later”; they must not erase
+        // photos already uploaded in the admin editor.
+        productPhotoUrls,
+        bannerUrl: cell(row, 'bannerurl') || existing?.bannerUrl || null,
+        expiresAt: expiry, isVisible: requestedVisible,
         verifiedSince: Number(cell(row, 'verifiedsince')) || null, sortOrder: Number(cell(row, 'sortorder')) || 0,
       };
       try {
-        const existing = await prisma.traderRecord.findUnique({ where: { registrationNumber } });
         if (existing) { await prisma.traderRecord.update({ where: { id: existing.id }, data }); updated++; }
-        else { await prisma.traderRecord.create({ data }); created++; }
+        else { await prisma.traderRecord.create({ data }); created++; if (autoHiddenForPhotos) hiddenForPhotos++; }
       } catch (error: any) { errors.push(`Row ${index + 1}: ${error.message || 'could not save'}`); }
     }
     await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'TRADERS_SPREADSHEET_IMPORTED', entityType: 'TraderRecord', entityId: 'bulk', details: { created, updated, failed: errors.length, sourceFormat: file.name.toLowerCase().endsWith('.xlsx') ? 'xlsx' : 'csv' } });
-    return NextResponse.json({ success: true, created, updated, errors });
+    return NextResponse.json({ success: true, created, updated, hiddenForPhotos, errors });
   } catch (error: any) { return NextResponse.json({ success: false, error: error.message || 'Spreadsheet import failed.' }, { status: 400 }); }
 }

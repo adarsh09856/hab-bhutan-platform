@@ -8,11 +8,14 @@ export const dynamic = 'force-dynamic';
 const permissions = ['content:view', 'content:edit'] as const;
 const slugify = (value: string) => value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const stringList = (value: unknown, limit = 30) => Array.isArray(value) ? value.map(String).map((item) => item.trim()).filter(Boolean).slice(0, limit) : [];
-function normalize(body: any) {
+function normalize(body: any, allowExistingVisibleWithoutGallery = false) {
   const shopName = String(body.shopName || '').trim();
   const registrationNumber = String(body.registrationNumber || '').trim();
   const expiresAt = new Date(body.expiresAt);
+  const productPhotoUrls = stringList(body.productPhotoUrls, 8);
+  const isVisible = body.isVisible !== false;
   if (!shopName || !registrationNumber || !body.dzongkhag || !body.town || !body.address || !body.shortDescription || !body.description || Number.isNaN(expiresAt.getTime())) throw new Error('Shop name, registration number, location, descriptions and a valid expiry date are required.');
+  if (isVisible && productPhotoUrls.length < 4 && !allowExistingVisibleWithoutGallery) throw new Error('Add at least 4 product photos before publishing. Save as hidden to finish the listing later.');
   return {
     shopName, registrationNumber,
     slug: slugify(String(body.slug || shopName)),
@@ -20,9 +23,9 @@ function normalize(body: any) {
     dzongkhag: String(body.dzongkhag).trim(), town: String(body.town).trim(), address: String(body.address).trim(),
     mapUrl: body.mapUrl?.trim() || null, openingHours: body.openingHours?.trim() || null,
     shortDescription: String(body.shortDescription).trim(), quote: body.quote?.trim() || null, description: String(body.description).trim(),
-    craftKeys: stringList(body.craftKeys), productTypes: stringList(body.productTypes), productPhotoUrls: stringList(body.productPhotoUrls, 8),
+    craftKeys: stringList(body.craftKeys), productTypes: stringList(body.productTypes), productPhotoUrls,
     bannerUrl: body.bannerUrl?.trim() || null, expiresAt,
-    isVisible: body.isVisible !== false, verifiedSince: body.verifiedSince ? Number(body.verifiedSince) : null,
+    isVisible, verifiedSince: body.verifiedSince ? Number(body.verifiedSince) : null,
     sortOrder: Number(body.sortOrder) || 0,
   };
 }
@@ -53,7 +56,16 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
     if (!body.id) return NextResponse.json({ success: false, error: 'Trader id is required.' }, { status: 400 });
-    const data = normalize(body);
+    const existing = await prisma.traderRecord.findUnique({ where: { id: String(body.id) }, select: { isVisible: true, productPhotoUrls: true } });
+    if (!existing) return NextResponse.json({ success: false, error: 'Trader listing not found.' }, { status: 404 });
+    // Keep legacy visible records editable without changing their current status;
+    // newly published and re-published listings must meet the gallery minimum.
+    const existingPhotoCount = Array.isArray(existing.productPhotoUrls)
+      ? existing.productPhotoUrls.filter((photo): photo is string => typeof photo === 'string' && Boolean(photo.trim())).length
+      : 0;
+    const requestedPhotoCount = stringList(body.productPhotoUrls, 8).length;
+    const allowLegacyGallery = existing.isVisible && existingPhotoCount < 4 && requestedPhotoCount >= existingPhotoCount && requestedPhotoCount < 4;
+    const data = normalize(body, allowLegacyGallery);
     const trader = await prisma.traderRecord.update({ where: { id: String(body.id) }, data });
     await logAudit({ actorType: 'STAFF', actorId: user.id, actorIdentifier: user.email, action: 'TRADER_UPDATED', entityType: 'TraderRecord', entityId: trader.id, details: { shopName: trader.shopName } });
     return NextResponse.json({ success: true, trader });

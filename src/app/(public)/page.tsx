@@ -44,6 +44,14 @@ function homepageSettings(setting: any, publicTraderCount: number | null) {
     const value = (override as Record<string, unknown>)[locale];
     return typeof value === 'string' ? value : undefined;
   };
+  const quickEditField = (section: string, selector: string, field: string) => {
+    const index = sectionOrder.indexOf(section);
+    if (index < 0) return undefined;
+    const override = homeOverrides[`main/main:1/section:${index + 1}/${selector}`];
+    if (!override || typeof override !== 'object' || Array.isArray(override)) return undefined;
+    const value = (override as Record<string, unknown>)[field];
+    return typeof value === 'string' ? value : undefined;
+  };
 
   return {
     tagline: quickEditText('hero', 'div:1/h1:1') ?? fallback('tagline', CLIENT_VERBATIM.tagline),
@@ -74,9 +82,28 @@ function homepageSettings(setting: any, publicTraderCount: number | null) {
     aboutBandTitleDz: quickEditText('about', 'div:1/div:1/h2:1', 'textDz') || '',
     aboutBandPara1: fallback('aboutBandPara1', 'HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.'),
     aboutBandPara2: fallback('aboutBandPara2', 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and a growing directory of registered traders.'),
-    aboutBandImageUrl: !aboutImage || /training_workshop|placeholder/i.test(aboutImage) ? '/assets/photos/about-hab.jpg' : aboutImage,
+    aboutBandImageUrl: quickEditField('about', 'div:1/figure:1/img:1', 'src') || (!aboutImage || /training_workshop|placeholder/i.test(aboutImage) ? '/assets/photos/about-hab.jpg' : aboutImage),
+    aboutBandImageAlt: quickEditField('about', 'div:1/figure:1/img:1', 'alt') || '',
     aboutBandImageCaption: !aboutCaption || /training_workshop/i.test(aboutCaption) ? 'photo — HAB training workshop' : aboutCaption,
-    punakhaMarketNotice: fallback('punakhaMarketNotice', CLIENT_VERBATIM.punakhaMarket),
+    punakhaMarketTitle: quickEditText('outlets', 'article:1/div:2/h3:1') || '',
+    punakhaMarketNotice: quickEditText('outlets', 'article:1/div:2/p:3') || fallback('punakhaMarketNotice', CLIENT_VERBATIM.punakhaMarket),
+    outletCardImageOverrides: {
+      'thimphu-outlet': quickEditField('outlets', 'div:2/a:1/figure:1/img:1', 'src') || '',
+    },
+    clusterCardImageOverrides: {
+      khoma: quickEditField('outlets', 'div:4/a:1/figure:1/img:1', 'src') || '',
+      trashiyangtse: quickEditField('outlets', 'div:4/a:3/figure:1/img:1', 'src') || '',
+    },
+    homeNewsThirdImage: quickEditField('news', 'div:3/div:1/article:3/figure:1/img:1', 'src') || '',
+    publicationCategoryOverrides: [1, 2, 3, 4].map((index) => ({
+      text: quickEditField('publications', `div:1/div:1/div:2/a:${index}/span:1`, 'text') || '',
+      href: quickEditField('publications', `div:1/div:1/div:2/a:${index}/span:1`, 'href') || '',
+    })),
+    partnerLogoOverrides: [1, 2, 3].map((index) => ({
+      src: quickEditField('partners', `div:1/a:${index}/div:1/img:1`, 'src') || '',
+      alt: quickEditField('partners', `div:1/a:${index}/div:1/img:1`, 'alt') || '',
+      href: quickEditField('partners', `div:1/a:${index}/div:1/img:1`, 'href') || '',
+    })),
     membershipLeftTitle: /^(?:trader directory|find a member)$/i.test(membershipLeftTitle)
       ? 'Find a registered trader'
       : fallback('membershipLeftTitle', 'Find a registered trader'),
@@ -118,18 +145,20 @@ export default async function HomePage() {
   let initialHeroSlidesLoaded = false;
 
   try {
-    const [setting, slides] = await Promise.all([
-      prisma.siteSetting.findUnique({ where: { id: 'default' } }),
-      prisma.heroSlide.findMany({
-        where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
-        select: { id: true, imageUrl: true, caption: true, altText: true, linkUrl: true },
-      }),
-    ]);
-    initialSetting = setting;
-    // A successful query is enough to render the canonical defaults when the
-    // row is absent; do not fetch and replace those values after hydration.
+    initialSetting = await prisma.siteSetting.findUnique({ where: { id: 'default' } });
+    // Treat homepage settings independently from hero media. A slide-query
+    // failure must not make the client replace server-rendered copy later.
     initialSettingsLoaded = true;
+  } catch (error) {
+    console.error('Could not preload homepage settings:', error);
+  }
+
+  try {
+    const slides = await prisma.heroSlide.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, imageUrl: true, caption: true, altText: true, linkUrl: true },
+    });
     initialHeroSlides = slides.map((slide) => ({
       ...slide,
       imageUrl: slide.imageUrl && !/placeholder/i.test(slide.imageUrl)
@@ -140,7 +169,7 @@ export default async function HomePage() {
     }));
     initialHeroSlidesLoaded = true;
   } catch (error) {
-    console.error('Could not preload homepage content:', error);
+    console.error('Could not preload homepage slides:', error);
   }
 
   // The public directory count is computed on the server using the same

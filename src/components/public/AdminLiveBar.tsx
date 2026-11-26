@@ -37,6 +37,9 @@ export default function AdminLiveBar() {
 
   useEffect(() => {
     async function checkAuth() {
+      // Never let a stale same-tab edit flag decorate public content while the
+      // session is being checked. Re-enable it below only for authorized staff.
+      document.body.classList.remove('hab-visual-edit-on');
       const urlHasEdit = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('edit') === 'true';
       const storedEdit = typeof localStorage !== 'undefined' && (localStorage.getItem('hab_visual_edit') === '1' || localStorage.getItem('hab_visual_edit') === 'true');
 
@@ -50,6 +53,10 @@ export default function AdminLiveBar() {
         setIsAdmin(staff);
         setCanVisualEdit(canEdit);
         setEditMode(canEdit && (urlHasEdit || storedEdit));
+        if (!canEdit) {
+          document.body.classList.remove('hab-visual-edit-on');
+          window.dispatchEvent(new CustomEvent('hab:visual-edit-toggled', { detail: { active: false } }));
+        }
         if (staff) {
           setAdminName(data.user.name || data.user.email || 'Staff Admin');
         }
@@ -57,6 +64,8 @@ export default function AdminLiveBar() {
         setIsAdmin(false);
         setCanVisualEdit(false);
         setEditMode(false);
+        document.body.classList.remove('hab-visual-edit-on');
+        window.dispatchEvent(new CustomEvent('hab:visual-edit-toggled', { detail: { active: false } }));
       } finally {
         setLoading(false);
       }

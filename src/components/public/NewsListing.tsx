@@ -5,12 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
-import { NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath, type NewsNoticeCategory } from '@/lib/news-categories';
+import { NEWS_CATEGORIES, NEWS_NOTICE_CATEGORIES, NEWS_SUBCATEGORIES, normalizeNewsCategory, newsCategoryPath, type NewsNoticeCategory } from '@/lib/news-categories';
 import { eventDateKey, eventIsUpcoming } from '@/lib/event-dates';
 
 export default function NewsListing({ category }: { category?: NewsNoticeCategory }) {
   const { t, language } = useLanguage();
   const [newsList, setNewsList] = useState<any[]>([]);
+  const [savedCategories, setSavedCategories] = useState<string[]>([...NEWS_CATEGORIES]);
+  const [savedSubCategories, setSavedSubCategories] = useState<string[]>([...NEWS_SUBCATEGORIES]);
   const [eventsList, setEventsList] = useState<any[]>([]);
   const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -29,6 +31,8 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
         return data;
       })
       .then((d) => {
+        if (Array.isArray(d?.categories)) setSavedCategories(d.categories);
+        if (Array.isArray(d?.subCategories)) setSavedSubCategories(d.subCategories);
         if (Array.isArray(d?.articles)) {
           setNewsList(d.articles.map((a: any) => ({
               id: a.id,
@@ -67,12 +71,12 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
   const displayKind = (n: any) => language === 'dz' ? (n.kindDz || n.kind) : n.kind;
   const displayTitle = (n: any) => language === 'dz' ? (n.titleDz || n.title) : n.title;
   const displayBlurb = (n: any) => language === 'dz' ? (n.blurbDz || n.blurb) : n.blurb;
-  const kinds = Array.from(new Set([...newsList.map((n) => n.kind), ...NEWS_NOTICE_CATEGORIES])).filter(Boolean);
+  const kinds = Array.from(new Set([...savedCategories, ...newsList.map((n) => n.kind)])).filter(Boolean);
 
   const categoryArticles = category || !selectedKind
     ? newsList
     : newsList.filter((n) => n.kind === selectedKind);
-  const subCategories = Array.from(new Set(categoryArticles.map((n) => n.subCategory))).filter(Boolean);
+  const subCategories = Array.from(new Set([...savedSubCategories, ...categoryArticles.map((n) => n.subCategory)])).filter(Boolean);
   const filtered = selectedSubCategory ? categoryArticles.filter((n) => n.subCategory === selectedSubCategory) : categoryArticles;
 
   return (
@@ -87,7 +91,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
 
         <nav aria-label="News & Events categories" className="flex flex-wrap gap-3 mt-6">
           <Link className="btn btn--outline" href="/news" aria-current={!category ? 'page' : undefined}>All news</Link>
-          {NEWS_NOTICE_CATEGORIES.map((name) => <Link key={name} className="btn btn--outline" href={newsCategoryPath(name)} aria-current={category === name ? 'page' : undefined}>{name}</Link>)}
+          {NEWS_NOTICE_CATEGORIES.filter((name) => kinds.some((kind) => kind.toLocaleLowerCase() === name.toLocaleLowerCase())).map((name) => <Link key={name} className="btn btn--outline" href={newsCategoryPath(name)} aria-current={category === name ? 'page' : undefined}>{name}</Link>)}
           <Link className="btn btn--outline" href="/events">Events</Link>
         </nav>
 

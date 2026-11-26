@@ -38,16 +38,17 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   let allProjects: any[] = [];
   try {
     const legacyName = CLIENT_DATA.projects.find((p) => p.key === key)?.name;
-    [dbProj, allProjects] = await Promise.all([
-      (async () => {
-        const byId = await prisma.projectRecord.findUnique({ where: { id: key } });
-        return byId || (legacyName ? prisma.projectRecord.findFirst({ where: { name: legacyName } }) : null);
-      })(),
-      prisma.projectRecord.findMany({
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, name: true, nameDz: true, status: true, period: true, periodDz: true, budget: true, budgetDz: true, partner: true, partnerDz: true, summary: true, summaryDz: true, activities: true },
-      }),
-    ]);
+    allProjects = await prisma.projectRecord.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, status: true, name: true, nameDz: true,
+        partner: true, partnerDz: true, period: true, periodDz: true,
+        budget: true, budgetDz: true, summary: true, summaryDz: true,
+        activities: true, activitiesDz: true, results: true, resultsDz: true,
+      },
+    });
+    dbProj = allProjects.find((project) => project.id === key)
+      || (legacyName ? allProjects.find((project) => project.name === legacyName) : null);
   } catch {}
   if (!dbProj) {
     notFound();
@@ -88,7 +89,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   const bannerImg = project.coverPhotoUrl;
 
   return (
-    <main id="main">
+    <main id="main" data-hab-record-key={`project:${project.id}`}>
       <section className="section relative" data-hab-section="project-detail">
         <SectionEditBadge label="Projects Studio" studioHref="/admin/projects" />
         
@@ -214,8 +215,7 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           </div>
           <div className="grid grid--3">
             {otherProjects.map((r) => {
-              const rMedia = r.activities && !Array.isArray(r.activities) && typeof r.activities === 'object' ? r.activities : {};
-              const rImg = typeof rMedia.coverPhotoUrl === 'string' ? rMedia.coverPhotoUrl : '';
+              const rImg = getProjectCoverPhotoUrl(r);
               const rTitle = r.name;
 
               return (

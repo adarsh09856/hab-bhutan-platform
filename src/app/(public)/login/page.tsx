@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ShoppingBag, ShieldCheck, Truck, ArrowRight, UserPlus, Package } from 'lucide-react';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
+import { safeInternalRedirect } from '@/lib/safe-internal-redirect';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get('redirect') || '';
+  const safeRedirectParam = safeInternalRedirect(redirectParam);
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -40,13 +42,13 @@ function LoginForm() {
         body: JSON.stringify({ 
           email: identifier.trim(), 
           password,
-          redirectUrl: redirectParam || undefined,
+          redirectUrl: safeRedirectParam || undefined,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        const target = redirectParam || data.redirectUrl || '/account';
+        const target = safeRedirectParam || safeInternalRedirect(data.redirectUrl) || '/account';
         window.location.href = target;
       } else {
         const err = await res.json();

@@ -1,10 +1,10 @@
 export const CARD_CHECKOUT_AVAILABLE = false;
 
 export const CARD_PAYMENT_UNAVAILABLE_COPY =
-  'mBoB, BNB and bank transfers are reviewed by HAB. Online card processing is not configured.';
+  'Pay by mBoB, BNB or bank transfer. HAB verifies every payment reference before dispatch.';
 
 export const MEMBERSHIP_PAYMENT_COPY =
-  'Apply online, pay annual dues by mBoB or bank transfer, and get listed once approved. Online card payments are not configured.';
+  'Apply online, pay annual dues by mBoB or bank transfer, and get listed once approved. HAB verifies dues payments before listing.';
 
 const unsupportedCardClaim = /\b(?:cards?|credit|debit|visa|mastercard|amex|stripe)\b|3\s*[-–]?\s*d\s*secure/i;
 

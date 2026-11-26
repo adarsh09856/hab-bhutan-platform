@@ -6,6 +6,7 @@ import { logAudit } from '@/lib/audit';
 import { createSessionToken, SessionUser } from '@/lib/rbac';
 import { checkDurableRateLimit } from '@/lib/rate-limit';
 import { verifyTotpCode, verifyAndConsumeBackupCode } from '@/lib/totp';
+import { safeInternalRedirect } from '@/lib/safe-internal-redirect';
 
 export const dynamic = 'force-dynamic';
 
@@ -231,15 +232,15 @@ export async function POST(req: NextRequest) {
     const token = await createSessionToken(sessionUser);
 
     let redirectUrl = '/account';
-    if (body.redirectUrl && typeof body.redirectUrl === 'string' && body.redirectUrl.startsWith('/')) {
-      redirectUrl = body.redirectUrl;
+    const requestedRedirect = safeInternalRedirect(body.redirectUrl);
+    if (requestedRedirect) {
+      redirectUrl = requestedRedirect;
     } else if (isStaffRole && targetPortal !== 'member') {
       redirectUrl = '/admin';
     } else if (user.memberProfile) {
-      const slug = encodeURIComponent(user.memberProfile.regNumber || user.memberProfile.name);
-      redirectUrl = `/members/${slug}`;
+      redirectUrl = '/portal';
     } else if (user.role.slug === 'member' || user.role.slug === 'artisan') {
-      redirectUrl = '/members';
+      redirectUrl = '/account';
     } else {
       redirectUrl = '/account';
     }

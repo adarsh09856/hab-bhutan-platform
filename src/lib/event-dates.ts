@@ -30,9 +30,13 @@ export function bhutanTodayKey(now = new Date()): string {
   return eventDateKey(now)!;
 }
 
+export function eventHasDate(event: { startDate?: string | Date | null; endDate?: string | Date | null; dateDisplay?: string | null }): boolean {
+  return Boolean(eventDateKey(event.endDate) || eventDateKey(event.startDate) || eventDateKey(event.dateDisplay));
+}
+
 export function eventIsUpcoming(event: { startDate?: string | Date | null; endDate?: string | Date | null; dateDisplay?: string | null }, today = bhutanTodayKey()): boolean {
   const end = eventDateKey(event.endDate) || eventDateKey(event.startDate) || eventDateKey(event.dateDisplay);
-  return !end || end >= today;
+  return Boolean(end && end >= today);
 }
 
 /** Google Calendar all-day dates use an exclusive end date. Return null for invalid or reversed ranges. */

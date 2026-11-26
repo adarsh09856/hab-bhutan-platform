@@ -9,7 +9,7 @@ import EventRegistrationForm from '@/components/public/EventRegistrationForm';
 import { publicDocumentUrl } from '@/lib/public-documents';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { eventImage, eventImageAlt } from '@/lib/event-illustrations';
-import { calendarEventDateRange, eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
+import { calendarEventDateRange, eventHasDate, eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 import { shortenEventSummary } from '@/lib/event-summary';
 
 export const dynamic = 'force-dynamic';
@@ -122,8 +122,9 @@ export default async function EventDetailPage({ params }: EventPageProps) {
 
   const bannerImage = eventImage(event.key, event.bannerUrl || event.imageUrl);
 
-  const eventUpcoming = eventIsUpcoming(rawEvent);
-  const otherEvents = dbOtherEvents.filter((candidate) => eventIsUpcoming(candidate)).slice(0, 3);
+  const eventHasScheduledDate = eventHasDate(rawEvent);
+  const eventUpcoming = eventHasScheduledDate && eventIsUpcoming(rawEvent);
+  const otherEvents = dbOtherEvents.filter((candidate) => eventHasDate(candidate) && eventIsUpcoming(candidate)).slice(0, 3);
   const displayedDate = formatEventDateRange(rawEvent.startDate, rawEvent.endDate, rawEvent.dateDisplay);
   const calendarDates = calendarEventDateRange(rawEvent.startDate, rawEvent.endDate);
   const calendarUrl = calendarDates
@@ -234,8 +235,10 @@ export default async function EventDetailPage({ params }: EventPageProps) {
             <div className="mt-6">
               <EventRegistrationForm eventKey={event.key} eventTitle={event.title} />
             </div>
-          ) : (
+          ) : eventHasScheduledDate ? (
             <p className="panel__body mt-6"><strong>Registration is closed.</strong> This event has ended.</p>
+          ) : (
+            <p className="panel__body mt-6">Event dates have not been announced yet. Contact the Secretariat to ask about registration.</p>
           )}
           <div className="actions">
             {calendarUrl && (
@@ -282,7 +285,7 @@ export default async function EventDetailPage({ params }: EventPageProps) {
                   </figure>
                   <div className="card__body">
                     <p className="eyebrow eyebrow--accent eyebrow--sm" style={{ marginBottom: 4 }}>
-                      {oe.dateDisplay} · {oe.category}
+                      {formatEventDateRange(oe.startDate, oe.endDate, oe.dateDisplay)} · {oe.category}
                     </p>
                     <LocalizedRecordField as="h3" className="card__title clamp-2" style={{ marginBottom: 4 }} english={oe.title} dzongkha={oe.titleDz} />
                     <LocalizedRecordField as="p" className="card__text clamp-2" english={oe.place || oe.location || oe.venue} dzongkha={oe.locationDz || oe.venueDz} />

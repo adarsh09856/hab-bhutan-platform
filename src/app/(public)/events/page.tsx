@@ -6,7 +6,7 @@ import Image from 'next/image';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import { useLanguage } from '@/context/LanguageContext';
 import { eventImage, eventImageAlt } from '@/lib/event-illustrations';
-import { eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
+import { eventHasDate, eventIsUpcoming, formatEventDateRange } from '@/lib/event-dates';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +45,7 @@ export default function EventsPage() {
 
   const filteredEvents = useMemo(() => {
     return eventsList.filter((event) => {
+      if (!eventHasDate(event)) return false;
       if (eventIsUpcoming(event) !== (eventPeriod === 'upcoming')) return false;
       if (!selectedKind) return true;
       return (language === 'dz' ? (event.categoryDz || event.kindDz || event.kind || event.category) : (event.kind || event.category)) === selectedKind;

@@ -7,13 +7,14 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductCard from '@/components/public/ProductCard';
 import { normalizeProductImages } from '@/lib/product-image-fallbacks';
 import { bhutanDayStartUtc } from '@/lib/trader-expiry';
+import { PUBLIC_PRODUCT_CARD_MAKER_SELECT, toPublicProductCardMaker } from '@/lib/public-product-maker';
 
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ slug: string }> };
 async function findTrader(slug: string) {
   return prisma.traderRecord.findFirst({
     where: { slug, isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } },
-    include: { products: { where: { status: 'PUBLISHED' }, include: { maker: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 12 } },
+    include: { products: { where: { status: 'PUBLISHED' }, include: { maker: { select: PUBLIC_PRODUCT_CARD_MAKER_SELECT } }, orderBy: { createdAt: 'desc' }, take: 12 } },
   });
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -46,7 +47,7 @@ export default async function TraderDetailPage({ params }: Props) {
           <Link className="btn btn--outline" href="/shop">Browse HAB crafts</Link>
         </div></div>
     </div>
-    {trader.products.length > 0 && <section className="mt-12"><div className="section__head"><div><p className="eyebrow eyebrow--accent">From this trader</p><h2 className="display display--sub">Available products</h2></div></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">{trader.products.map((product) => { const images = normalizeProductImages(product.code, product.craftKey, product.images); return <ProductCard key={product.id} code={product.code} name={product.name} priceUSD={product.priceUSD} craftKey={product.craftKey} region={product.region} maker={product.maker?.name || trader.shopName} stock={product.stock} availability={product.availability} imageUrl={images.imageUrl} images={images.images} />; })}</div></section>}
+    {trader.products.length > 0 && <section className="mt-12"><div className="section__head"><div><p className="eyebrow eyebrow--accent">From this trader</p><h2 className="display display--sub">Available products</h2></div></div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">{trader.products.map((product) => { const images = normalizeProductImages(product.code, product.craftKey, product.images); const maker = toPublicProductCardMaker(product.maker); return <ProductCard key={product.id} code={product.code} name={product.name} priceUSD={product.priceUSD} craftKey={product.craftKey} region={product.region} maker={maker?.name || trader.shopName} stock={product.stock} availability={product.availability} imageUrl={images.imageUrl} images={images.images} />; })}</div></section>}
     <p className="mt-10"><Link href="/traders" className="link-accent">← Back to accredited traders</Link></p>
   </section></main>;
 }

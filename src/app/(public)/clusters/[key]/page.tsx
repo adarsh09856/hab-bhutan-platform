@@ -78,7 +78,7 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
           { name: { contains: 'Automated Test', mode: 'insensitive' } },
         ],
       },
-      include: { maker: { select: { name: true, dzongkhag: true } } },
+      include: { maker: { select: { name: true, dzongkhag: true, status: true } } },
       orderBy: { createdAt: 'desc' },
       take: 4,
     });
@@ -88,8 +88,8 @@ export default async function ClusterDetailPage({ params }: ClusterPageProps) {
         code: product.code,
         name: product.name,
         craft_key: product.craftKey,
-        maker: product.maker?.name || '',
-        region: product.maker?.dzongkhag || product.region,
+        maker: product.maker?.status === 'VERIFIED' ? product.maker.name : '',
+        region: (product.maker?.status === 'VERIFIED' ? product.maker.dzongkhag : '') || product.region,
         price_usd: product.priceUSD,
         image_path: normalized.imageUrl,
       };

@@ -32,6 +32,35 @@ interface Project {
   id?: string;
 }
 
+function deduplicateProjectRecords(projects: Project[]): Project[] {
+  const uniqueProjects: Project[] = [];
+  const indexByIdentity = new Map<string, number>();
+
+  for (const project of projects) {
+    // Incomplete records cannot establish a safe duplicate identity.
+    if (!project.name || !project.period || !project.summary) {
+      uniqueProjects.push(project);
+      continue;
+    }
+
+    const identity = JSON.stringify([project.name, project.period, project.summary]);
+    const existingIndex = indexByIdentity.get(identity);
+    if (existingIndex === undefined) {
+      indexByIdentity.set(identity, uniqueProjects.length);
+      uniqueProjects.push(project);
+      continue;
+    }
+
+    // Keep the completed record for an exact match. Its ID also ensures
+    // “Read more” opens that completed project's own detail route.
+    if (uniqueProjects[existingIndex].status !== 'past' && project.status === 'past') {
+      uniqueProjects[existingIndex] = project;
+    }
+  }
+
+  return uniqueProjects;
+}
+
 export default function ProjectsPage() {
   const { language, t } = useLanguage();
   const local = (english: string, dzongkha?: string | null) => language === 'dz' && dzongkha?.trim() ? dzongkha : english;
@@ -74,14 +103,15 @@ export default function ProjectsPage() {
           coverPhotoUrl: p.coverPhotoUrl || '',
           reportPdfUrl: p.reportPdfUrl || '',
         }));
-        setProjects(mappedProjects);
+        const publicProjects = deduplicateProjectRecords(mappedProjects);
+        setProjects(publicProjects);
         const configuredSlides: ProjectsBannerSlide[] = Array.isArray(data.projectBannerSlides)
           ? data.projectBannerSlides.filter((slide: any) => typeof slide?.imageUrl === 'string' && slide.imageUrl.trim()).map((slide: any) => ({
             id: String(slide.id), imageUrl: slide.imageUrl, altText: slide.altText || slide.caption || 'Featured HAB project',
             caption: slide.caption || '', linkUrl: slide.linkUrl || null, source: 'project-banner' as const,
           }))
           : [];
-        const fallbackSlides: ProjectsBannerSlide[] = mappedProjects
+        const fallbackSlides: ProjectsBannerSlide[] = publicProjects
           .filter((project) => Boolean(project.image_path || project.coverPhotoUrl))
           .map((project) => ({
             id: project.id || project.key,

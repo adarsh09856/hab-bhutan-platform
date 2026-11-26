@@ -243,7 +243,7 @@ export default function AdminContentPage() {
     loadContent();
     fetch('/api/admin/news-taxonomy', { credentials: 'include', cache: 'no-store' })
       .then(async (response) => { if (!response.ok) throw new Error('Unable to load saved categories.'); return response.json(); })
-      .then((data) => { if (data.success) setTaxonomy({ categories: data.categories, subCategories: data.subCategories }); })
+      .then((data) => { if (data.success) { setTaxonomy({ categories: data.categories, subCategories: data.subCategories }); setNewsForm((current) => data.categories.includes(current.kind) ? current : { ...current, kind: data.categories[0] || '' }); } })
       .catch((error) => setFeedback({ type: 'error', message: error.message }));
   }, []);
 
@@ -1113,8 +1113,8 @@ export default function AdminContentPage() {
                   </div>
                   <div><label className="block font-medium admin-text mb-1">Summary / Blurb (Dzongkha)</label><textarea rows={3} value={editingItem.data.blurbDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurbDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
                   <div className="grid grid-cols-2 gap-3">
-                    <NewsCategorySelect type="category" value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'} options={taxonomy.categories} onChange={(kind) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind } })} onOptions={setTaxonomy} />
-                    <NewsCategorySelect type="subCategory" value={editingItem.data.subCategory || ''} options={taxonomy.subCategories} onChange={(subCategory) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory } })} onOptions={setTaxonomy} />
+                    <NewsCategorySelect type="category" value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'} options={taxonomy.categories} onChange={(kind) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind } })} onOptions={setTaxonomy} preserveValueOnManage />
+                    <NewsCategorySelect type="subCategory" value={editingItem.data.subCategory || ''} options={taxonomy.subCategories} onChange={(subCategory) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory } })} onOptions={setTaxonomy} preserveValueOnManage />
                   </div>
 
                   <div><label className="block font-medium admin-text mb-1">Primary Category (Dzongkha)</label><input type="text" value={editingItem.data.kindDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kindDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>

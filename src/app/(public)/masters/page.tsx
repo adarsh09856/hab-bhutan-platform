@@ -213,12 +213,29 @@ export default function MastersPage() {
             const count = allRecognised.filter(
               (m) => m.honour === h.key || m.honour === h.short
             ).length;
+            const toggleAwardFilter = () => {
+              setActiveTab(activeTab === h.key ? '' : h.key);
+              document.getElementById('holders')?.scrollIntoView({ behavior: 'smooth' });
+            };
 
             return (
-              <article key={h.key} className="award award--plain">
+              <article
+                key={h.key}
+                className="award award--plain"
+                role="button"
+                tabIndex={0}
+                aria-pressed={activeTab === h.key}
+                onClick={toggleAwardFilter}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggleAwardFilter();
+                  }
+                }}
+              >
                 <div className="award__body">
                   <div className="award__head">
-                    <button type="button" className="award__title" aria-pressed={activeTab === h.key} onClick={() => { setActiveTab(activeTab === h.key ? '' : h.key); document.getElementById('holders')?.scrollIntoView({ behavior: 'smooth' }); }}>{awardLabel(h.short)}</button>
+                    <h3 className="award__title">{awardLabel(h.short)}</h3>
                     <span className="award__count">
                       {count} {count === 1 ? text('holder', 'ཐོབ་མི') : text('holders', 'ཐོབ་མི་ཚུ')}
                     </span>

@@ -295,7 +295,7 @@ export default function HomePageClient({
         if (!d?.success || !Array.isArray(d.outlets)) throw new Error('Outlet directory unavailable');
         const mappedOutlets = d.outlets.map((outlet: any) => ({
           ...outlet,
-          image_path: outlet.imageUrl || '/assets/photos/image-unavailable.svg',
+          image_path: initialSettings.outletCardImageOverrides?.[outlet.key] || outlet.imageUrl || '/assets/photos/image-unavailable.svg',
           galleryImages: outlet.galleryImages || [],
         }));
         setAllOutletsPool(mappedOutlets);
@@ -314,7 +314,7 @@ export default function HomePageClient({
         if (!d?.success || !Array.isArray(d.clusters)) throw new Error('Cluster directory unavailable');
         setClusters(d.clusters.slice(0, 3).map((cluster: any) => ({
           ...cluster,
-          image_path: cluster.imageUrl || '/assets/photos/image-unavailable.svg',
+          image_path: initialSettings.clusterCardImageOverrides?.[cluster.key] || cluster.imageUrl || '/assets/photos/image-unavailable.svg',
           meta: Number(cluster.members) > 0 ? `${cluster.members} members` : '',
         })));
         setClustersState('ready');
@@ -382,7 +382,7 @@ export default function HomePageClient({
       })
       .then((d) => {
         if (Array.isArray(d?.articles)) {
-          const mappedNews = d.articles.slice(0, 4).map((a: any) => ({
+          const mappedNews = d.articles.slice(0, 4).map((a: any, index: number) => ({
             id: a.id,
             slug: a.slug || a.id,
             kind: a.kind || 'Notice',
@@ -390,7 +390,7 @@ export default function HomePageClient({
             blurb: a.blurb || a.summary || '',
             date: a.dateString || a.date || a.published_at || '',
             published_at: a.dateString || a.published_at || '',
-            image_path: a.image_path || a.imageUrl || '',
+            image_path: (index === 2 && initialSettings.homeNewsThirdImage) || a.image_path || a.imageUrl || '',
           }));
           setNews(mappedNews);
         }
@@ -432,11 +432,11 @@ export default function HomePageClient({
         })
         .then((d) => {
           if (!d?.success || !Array.isArray(d.publications)) throw new Error('Publications unavailable');
-          const mapped = d.publications.filter((p: any) => p.isFeatured !== false).slice(0, 4).map((p: any) => ({
+          const mapped = d.publications.filter((p: any) => p.isFeatured !== false).slice(0, 4).map((p: any, index: number) => ({
             ...p,
-            kind: p.kind || 'Publication',
+            kind: initialSettings.publicationCategoryOverrides?.[index]?.text || p.kind || 'Publication',
             meta: p.metaDetails || p.meta || '',
-            file_url: p.fileUrl || p.file_url || '',
+            file_url: initialSettings.publicationCategoryOverrides?.[index]?.href || p.fileUrl || p.file_url || '',
           }));
           setPublications(mapped);
           setPublicationsState('ready');
@@ -609,7 +609,7 @@ export default function HomePageClient({
             </> : isPolicyHtml(siteSettings.heroParagraph) ? <div dangerouslySetInnerHTML={{ __html: preparePolicyHtml(siteSettings.heroParagraph).html }} /> : siteSettings.heroParagraph}
           </div>
           <div className="actions flex flex-wrap items-center gap-3">
-            <Link className="btn btn--ink" href={siteSettings.heroCtaPrimaryLink || '/about'}>
+            <Link className="btn btn--accent" href={siteSettings.heroCtaPrimaryLink || '/about'}>
               {isDz ? 'ང་བཅས་ཀྱི་དམིགས་ཡུལ' : (siteSettings.heroCtaPrimaryText || 'Our mission')}
             </Link>
             <Link className="btn btn--outline" href={siteSettings.heroCtaSecondaryLink || '/shop'}>
@@ -775,7 +775,7 @@ export default function HomePageClient({
           <figure className="frame frame--square frame--dark">
             <img
               src={siteSettings.aboutBandImageUrl?.includes('training_workshop') ? '/assets/photos/about-hab.jpg' : (siteSettings.aboutBandImageUrl || '/assets/photos/about-hab.jpg')}
-              alt={siteSettings.aboutBandImageCaption}
+              alt={siteSettings.aboutBandImageAlt || siteSettings.aboutBandImageCaption}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => { (e.target as HTMLImageElement).src = '/assets/photos/about-hab.jpg'; }}
             />
@@ -919,10 +919,10 @@ export default function HomePageClient({
             <OutletGallery image={punakhaOutlet.image_path} galleryImages={punakhaOutlet.galleryImages} name={punakhaOutlet.name} outletKey={punakhaOutlet.key} />
             <div className="outlet-lead__body">
               <p className="badge badge--ink">{punakhaOutlet.type || 'Outlet'}</p>
-              <h3 className="display display--panel">{isDz && punakhaOutlet.nameDz?.trim() ? punakhaOutlet.nameDz : punakhaOutlet.name}</h3>
+              <h3 className="display display--panel">{isDz && punakhaOutlet.nameDz?.trim() ? punakhaOutlet.nameDz : (siteSettings.punakhaMarketTitle || punakhaOutlet.name)}</h3>
               {punakhaOutlet.place && <p className="outlet-lead__place">{isDz && punakhaOutlet.placeDz?.trim() ? punakhaOutlet.placeDz : punakhaOutlet.place}</p>}
-              {(punakhaOutlet.description || punakhaOutlet.note) && (
-                <p className="outlet-lead__desc">{isDz && (punakhaOutlet.descriptionDz || punakhaOutlet.noteDz)?.trim() ? (punakhaOutlet.descriptionDz || punakhaOutlet.noteDz) : (punakhaOutlet.description || punakhaOutlet.note)}</p>
+              {(siteSettings.punakhaMarketNotice || punakhaOutlet.description || punakhaOutlet.note) && (
+                <p className="outlet-lead__desc">{isDz && (punakhaOutlet.descriptionDz || punakhaOutlet.noteDz)?.trim() ? (punakhaOutlet.descriptionDz || punakhaOutlet.noteDz) : (siteSettings.punakhaMarketNotice || punakhaOutlet.description || punakhaOutlet.note)}</p>
               )}
               {(punakhaOutlet.hours || punakhaOutlet.stalls || punakhaOutlet.craftsOnSite || punakhaOutlet.payment) && (
                 <div className="factgrid">
@@ -1414,15 +1414,16 @@ export default function HomePageClient({
         <div className="partners">
           {siteSettings.partnersList.map((partner: any, idx: number) => {
             const name = typeof partner === 'string' ? partner : partner.name;
-            const logoUrl = typeof partner === 'object' ? (partner.logoUrl || partner.logo_path) : null;
-            const websiteUrl = typeof partner === 'object' ? (partner.websiteUrl || partner.url) : null;
+            const savedLogo = siteSettings.partnerLogoOverrides?.[idx];
+            const logoUrl = savedLogo?.src || (typeof partner === 'object' ? (partner.logoUrl || partner.logo_path) : null);
+            const websiteUrl = savedLogo?.href || (typeof partner === 'object' ? (partner.websiteUrl || partner.url) : null);
 
             const cell = (
               <div key={idx} className="partners__cell" title={name}>
                 {logoUrl ? (
                   <img
                     src={logoUrl}
-                    alt={name}
+                    alt={savedLogo?.alt || name}
                     className="partners__logo"
                   />
                 ) : (

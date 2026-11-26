@@ -20,6 +20,17 @@ export function getProjectCoverPhotoUrl(project: ProjectWithMedia): string {
   const savedCover = [storedMedia?.coverPhotoUrl, project.coverPhotoUrl, project.image_path]
     .find((value): value is string => typeof value === 'string' && value.trim().length > 0);
 
+  // This legacy Admin record carries a photo uploaded from the COVID
+  // re-skilling project. Use the matching existing reference photo for the
+  // Innovation Lab record until its cover is replaced in Admin. The database
+  // value remains untouched, and any other newly selected cover is respected.
+  if (
+    project.name === 'Craft Product Innovation Lab' &&
+    savedCover && /reskilling-artisans-covid19/i.test(savedCover)
+  ) {
+    return CLIENT_DATA.projects.find((item) => item.key === 'innovation-lab')?.image_path || '';
+  }
+
   if (savedCover) return savedCover.trim();
   if (hasExplicitCover) return '';
 

@@ -37,13 +37,9 @@ export default function CheckoutPage() {
     subtotalUSD, 
     shippingMethod, 
     setShippingMethod, 
-    shippingOption, 
-    shippingFeeUSD, 
-    totalUSD, 
     clearCart 
   } = useCart();
   const { currency, fmt, alt } = useCurrency();
-  const shippingRates = calculateShipping(subtotalUSD);
 
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MBOB' | 'BNB' | 'BANK' | 'COD'>('MBOB');
   const [gatewayMethods, setGatewayMethods] = useState<any>(null);
@@ -96,6 +92,56 @@ export default function CheckoutPage() {
     postalCode: '',
   });
   const isBhutanDelivery = isBhutanDeliveryCountry(customer.country);
+  const quoteItemsKey = items.map((item) => `${item.code}:${item.quantity}`).join('|');
+  const [shippingQuote, setShippingQuote] = useState<{
+    country: string;
+    itemsKey: string;
+    rates: ReturnType<typeof calculateShipping>;
+    message: string;
+  } | null>(null);
+  const [shippingQuoteLoading, setShippingQuoteLoading] = useState(true);
+  const [shippingQuoteError, setShippingQuoteError] = useState<{ country: string; itemsKey: string; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!customer.country || items.length === 0) return;
+    const controller = new AbortController();
+    const country = customer.country;
+    const currentItemsKey = quoteItemsKey;
+    setShippingQuote(null);
+    setShippingQuoteError(null);
+    setShippingQuoteLoading(true);
+    fetch('/api/shipping/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      signal: controller.signal,
+      body: JSON.stringify({ country, items: items.map(({ code, quantity }) => ({ code, quantity })) }),
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data?.success || !data?.rates) throw new Error(data?.error || 'Could not update the delivery estimate.');
+        setShippingQuote({ country, itemsKey: currentItemsKey, rates: data.rates, message: data.message || '' });
+      })
+      .catch((error) => {
+        if (error?.name !== 'AbortError') setShippingQuoteError({
+          country,
+          itemsKey: currentItemsKey,
+          message: error?.message || 'Could not update the delivery estimate.',
+        });
+      })
+      .finally(() => { if (!controller.signal.aborted) setShippingQuoteLoading(false); });
+    return () => controller.abort();
+  }, [customer.country, quoteItemsKey, subtotalUSD]);
+
+  const hasCurrentShippingQuote = shippingQuote?.country === customer.country && shippingQuote.itemsKey === quoteItemsKey;
+  const currentShippingQuoteError = shippingQuoteError?.country === customer.country && shippingQuoteError.itemsKey === quoteItemsKey
+    ? shippingQuoteError.message
+    : '';
+  const shippingQuoteReady = hasCurrentShippingQuote || Boolean(currentShippingQuoteError);
+  const shippingRates = hasCurrentShippingQuote ? shippingQuote.rates : calculateShipping(subtotalUSD);
+  const shippingOption = shippingMethod === 'ems' ? shippingRates.ems : shippingRates.express;
+  const shippingFeeUSD = shippingOption.costUSD;
+  const totalUSD = subtotalUSD + shippingFeeUSD;
 
   useEffect(() => {
     if (!isBhutanDelivery && (paymentMethod === 'COD' || paymentMethod === 'MBOB')) setPaymentMethod('BANK');
@@ -189,6 +235,11 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (shippingQuoteLoading || !shippingQuoteReady) {
+      setError('Wait for the destination shipping estimate to finish before placing the order.');
+      return;
+    }
 
     if (!customer.fullName.trim()) {
       setError('Please provide recipient full name.');
@@ -366,7 +417,7 @@ export default function CheckoutPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#33261F] uppercase tracking-wider mb-1.5">
-                    {tr('Mobile Phone Number')}
+                    {tr('Mobile Phone Number *')}
                   </label>
                   <input
                     type="tel"
@@ -446,6 +497,9 @@ export default function CheckoutPage() {
                     <p className="text-[11px] text-[#6B5A4C]">
                       {tr(shippingRates.ems.duration)}
                     </p>
+                    <p className={`text-[10px] ${shippingRates.ems.rateSource === 'configured' ? 'text-emerald-700' : 'text-amber-800'}`}>
+                      {tr(shippingRates.ems.description)}
+                    </p>
                   </div>
                   <span className="text-xs font-bold text-[#8B2E24] font-mono">
                     {shippingRates.ems.isFree ? tr('FREE') : fmt(shippingRates.ems.costUSD)}
@@ -469,12 +523,21 @@ export default function CheckoutPage() {
                     <p className="text-[11px] text-[#6B5A4C]">
                       {tr(shippingRates.express.duration)}
                     </p>
+                    <p className={`text-[10px] ${shippingRates.express.rateSource === 'configured' ? 'text-emerald-700' : 'text-amber-800'}`}>
+                      {tr(shippingRates.express.description)}
+                    </p>
                   </div>
                   <span className="text-xs font-bold text-[#8B2E24] font-mono">
                     {fmt(shippingRates.express.costUSD)}
                   </span>
                 </label>
               </div>
+              {shippingQuoteLoading && <p className="text-xs text-[#6B5A4C]" role="status">Updating delivery costs for this country and basket… The displayed amount is currently the legacy flat fallback until the quote finishes.</p>}
+              {shippingOption.rateSource === 'legacy-fallback' && !shippingQuoteLoading && (
+                <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
+                  {currentShippingQuoteError || (hasCurrentShippingQuote ? shippingQuote?.message : '') || 'Legacy flat fallback: $24 EMS / $62 Express remains until HAB enters carrier-approved destination and weight rates.'}
+                </p>
+              )}
             </div>
 
             {/* Step 3: Payment Method */}
@@ -542,7 +605,7 @@ export default function CheckoutPage() {
               {/* Card is intentionally unavailable until a server-side payment processor is configured. */}
               {paymentMethod === 'CARD' && (
                 <div role="status" className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-900">
-                  {tr("Online card payment is not available yet. Choose mBoB, BNB, bank transfer, or cash on delivery. No card details are collected here.")}
+                  {tr("Pay by mBoB, BNB, bank transfer or Bhutan cash on delivery. HAB verifies transfer references before dispatch; no card details are collected.")}
                 </div>
               )}
 
@@ -814,7 +877,7 @@ export default function CheckoutPage() {
               {/* Place Order CTA */}
               <button
                 type="submit"
-                disabled={loading || uploadingSlip}
+                disabled={loading || uploadingSlip || shippingQuoteLoading || !shippingQuoteReady}
                 className="w-full py-3.5 px-4 rounded-xl bg-[#8B2E24] hover:bg-[#72251D] text-white text-sm font-semibold shadow-sm transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (

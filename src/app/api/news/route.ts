@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { normalizeNewsCategory } from '@/lib/news-categories';
+import { NEWS_CATEGORIES, NEWS_SUBCATEGORIES, mergeNewsOptions, normalizeNewsCategory } from '@/lib/news-categories';
 import prisma from '@/lib/prisma';
 import { referenceNewsImage } from '@/lib/reference-images';
 import { publicDocumentUrl } from '@/lib/public-documents';
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const category = normalizeNewsCategory(req.nextUrl.searchParams.get('category'));
   try {
-    const [dbArticles, dbEventRecords, dbCalendarEvents] = await Promise.all([
+    const [dbArticles, dbEventRecords, dbCalendarEvents, siteSettings] = await Promise.all([
       prisma.newsArticle.findMany({
         where: { isPublished: true },
         orderBy: { createdAt: 'desc' },
@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       prisma.calendarEvent.findMany({
         orderBy: { createdAt: 'asc' },
       }),
+      prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } }),
     ]);
 
     const seenArticleCopies = new Set<string>();
@@ -59,6 +60,18 @@ export async function GET(req: NextRequest) {
         content: cleanContent,
       };
     });
+
+    const taxonomy = siteSettings?.trustBadges && !Array.isArray(siteSettings.trustBadges) && typeof siteSettings.trustBadges === 'object'
+      ? (siteSettings.trustBadges as any).newsTaxonomy || {}
+      : {};
+    const retiredCategories = new Set(Array.isArray(taxonomy.retiredCategories) ? taxonomy.retiredCategories.map((value: unknown) => String(value).toLocaleLowerCase()) : []);
+    const retiredSubCategories = new Set(Array.isArray(taxonomy.retiredSubCategories) ? taxonomy.retiredSubCategories.map((value: unknown) => String(value).toLocaleLowerCase()) : []);
+    const articleCategories = dbArticles.map((article) => normalizeNewsCategory(article.kind));
+    const articleSubCategories = dbArticles.map((article) => article.subCategory);
+    const categories = mergeNewsOptions([...NEWS_CATEGORIES], Array.isArray(taxonomy.categories) ? taxonomy.categories : [], articleCategories)
+      .filter((name) => !retiredCategories.has(name.toLocaleLowerCase()) || articleCategories.some((saved) => saved.toLocaleLowerCase() === name.toLocaleLowerCase()));
+    const subCategories = mergeNewsOptions([...NEWS_SUBCATEGORIES], Array.isArray(taxonomy.subCategories) ? taxonomy.subCategories : [], articleSubCategories)
+      .filter((name) => !retiredSubCategories.has(name.toLocaleLowerCase()) || articleSubCategories.some((saved) => String(saved || '').toLocaleLowerCase() === name.toLocaleLowerCase()));
 
     let rawEvents: any[] = [];
     if (dbEventRecords.length > 0) {
@@ -143,6 +156,8 @@ export async function GET(req: NextRequest) {
       articles,
       news: articles,
       events,
+      categories,
+      subCategories,
     });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');

@@ -4,17 +4,18 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save, Globe } from 'lucide-react';
+import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save, Globe, Truck } from 'lucide-react';
 import { PERMISSION_CATEGORIES, Permission } from '@/lib/permissions';
 import { smtpConnectionOptions } from '@/lib/smtp-options';
+import ShippingRatesPanel from '@/components/admin/ShippingRatesPanel';
 
 function AdminSettingsContent() {
-  const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'GATEWAYS' | 'AUDIT'>('FX');
+  const [activeTab, setActiveTab] = useState<'FX' | 'USERS' | 'RBAC' | 'GATEWAYS' | 'SHIPPING' | 'AUDIT'>('FX');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search).get('tab');
-      if (p === 'RBAC' || p === 'USERS' || p === 'GATEWAYS' || p === 'AUDIT') {
+      if (p === 'RBAC' || p === 'USERS' || p === 'GATEWAYS' || p === 'SHIPPING' || p === 'AUDIT') {
         setActiveTab(p as any);
       }
     }
@@ -584,6 +585,15 @@ function AdminSettingsContent() {
           }`}
         >
           <CreditCard className="w-4 h-4 text-[#8B2E24]" /> Gateways &amp; Notifications
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('SHIPPING')}
+          className={`px-4 py-2.5 flex items-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            activeTab === 'SHIPPING' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
+          }`}
+        >
+          <Truck className="w-4 h-4 text-[#8B2E24]" /> Shipping Rates
         </button>
         <button
           type="button"
@@ -1365,6 +1375,8 @@ function AdminSettingsContent() {
           </form>
         </div>
       )}
+
+      {activeTab === 'SHIPPING' && <ShippingRatesPanel />}
 
       {/* Tab: Cryptographic Audit Trail */}
       {activeTab === 'AUDIT' && (

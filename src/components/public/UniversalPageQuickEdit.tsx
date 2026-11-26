@@ -249,7 +249,11 @@ export default function UniversalPageQuickEdit() {
     shell.addEventListener('click', onClick, true);
     return () => {
       shell.removeEventListener('click', onClick, true);
-      for (const element of elements) element.classList.remove('hab-universal-editable');
+      // Remove decorations from the live DOM too: React can replace nodes while
+      // edit mode is active, leaving a detached node in this original snapshot.
+      shell.querySelectorAll('.hab-universal-editable').forEach((element) => {
+        element.classList.remove('hab-universal-editable');
+      });
     };
   }, [active, isStaff, pathname]);
 

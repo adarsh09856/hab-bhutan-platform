@@ -374,21 +374,21 @@ export default function ProductDetailPage() {
               </Link>
             )}
 
-            {/* Maker Accreditation Card */}
+            {/* Public maker attribution stays separate from the accredited trader listing. */}
             <div className="makerpanel" id="prodMakerPanel" style={{ marginTop: '24px' }}>
               {(product.maker || product.traderName) ? <>
               <span className="makerpanel__avatar" style={{ overflow: 'hidden' }}>
                 {product.maker_avatar
-                  ? <img src={product.maker_avatar} alt={product.traderName || product.maker} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : (product.traderName || product.maker).slice(0, 1)}
+                  ? <img src={product.maker_avatar} alt={product.maker || product.traderName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (product.maker || product.traderName).slice(0, 1)}
               </span>
               <span className="makerpanel__body">
-                <span className="eyebrow eyebrow--muted eyebrow--sm">Made by</span>
-                <span className="makerpanel__name" id="prodMaker">{product.traderName || product.maker}</span>
+                <span className="eyebrow eyebrow--muted eyebrow--sm">{product.maker ? 'Made by' : 'Accredited trader'}</span>
+                <span className="makerpanel__name" id="prodMaker">{product.maker || product.traderName}</span>
                 {(product.region || product.maker_since) && <span className="makerpanel__meta" id="prodMakerMeta">{[product.region, product.maker_since && `Member since ${product.maker_since}`].filter(Boolean).join(' · ')}</span>}
                 {product.maker_blurb && <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>}
               </span>
-              <Link className="makerpanel__go" id="prodMakerLink" href={product.traderSlug ? `/traders/${encodeURIComponent(product.traderSlug)}` : '/traders'} aria-label={product.traderSlug ? `View ${product.traderName}` : 'Browse registered makers'}>→</Link>
+              {product.traderSlug && <Link className="makerpanel__go" id="prodMakerLink" href={`/traders/${encodeURIComponent(product.traderSlug)}`} aria-label={`View accredited trader ${product.traderName}`}>View trader →</Link>}
               </> : <span className="makerpanel__body">
                 <span className="eyebrow eyebrow--muted eyebrow--sm">Maker details</span>
                 <span className="makerpanel__blurb">HAB is confirming the maker record for this product.</span>

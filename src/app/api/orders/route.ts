@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { calculateShipping } from '@/lib/shipping';
+import { aggregateOrderWeightKg, calculateShipping, calculateShippingForDestination, EMPTY_SHIPPING_RATE_TABLE, validateShippingRateTable } from '@/lib/shipping';
 import { isBhutanDeliveryCountry, isSupportedShippingCountry } from '@/lib/countries';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { logAudit } from '@/lib/audit';
@@ -244,11 +244,12 @@ export async function POST(req: NextRequest) {
     let totalUSD = 0;
     let totalPaidCurrency = 0;
     let selectedOption = calculateShipping(0).ems;
+    let orderWeightKg: number | null = null;
     try {
       finalOrder = await prisma.$transaction(async (tx) => {
         const products = await tx.product.findMany({
           where: { code: { in: [...quantities.keys()] }, status: 'PUBLISHED' },
-          select: { id: true, code: true, name: true, priceUSD: true, status: true, availability: true, stock: true },
+          select: { id: true, code: true, name: true, priceUSD: true, status: true, availability: true, stock: true, weight: true },
         });
         if (products.length !== quantities.size) throw new CheckoutValidationError('One or more products are unavailable. Refresh your basket and try again.');
         const byCode = new Map(products.map(product => [product.code.toUpperCase(), product]));
@@ -264,11 +265,28 @@ export async function POST(req: NextRequest) {
         const subtotalCents = resolvedItems.reduce((sum, item) => sum + Math.round(item.priceUSD * 100) * item.quantity, 0);
         if (!Number.isSafeInteger(subtotalCents)) throw new CheckoutValidationError('Order amount exceeds the checkout limit. Contact HAB for a wholesale order.');
         subtotalUSD = subtotalCents / 100;
-        const shippingCalc = calculateShipping(subtotalUSD);
+        orderWeightKg = aggregateOrderWeightKg(resolvedItems.map((item) => ({
+          weight: byCode.get(item.code.toUpperCase())?.weight,
+          quantity: item.quantity,
+        })));
+        const setting = await tx.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } });
+        const trust = setting?.trustBadges && typeof setting.trustBadges === 'object' && !Array.isArray(setting.trustBadges)
+          ? setting.trustBadges as Record<string, unknown>
+          : {};
+        const rateTable = validateShippingRateTable(trust.shippingRates).value || EMPTY_SHIPPING_RATE_TABLE;
+        const shippingCalc = calculateShippingForDestination(
+          subtotalUSD,
+          deliveryCountry,
+          orderWeightKg,
+          rateTable,
+          resolvedItems.every((item) => item.availability !== 'MADE_TO_ORDER'),
+        );
         selectedOption = isExpress ? shippingCalc.express : shippingCalc.ems;
         shippingCostUSD = selectedOption.costUSD;
         totalUSD = subtotalUSD + shippingCostUSD;
         totalPaidCurrency = currency === 'BTN' ? Math.round(totalUSD * rateApplied) : totalUSD;
+        const shippingNote = `[SHIPPING_RATE_SOURCE:${selectedOption.rateSource}; ORDER_WEIGHT_KG:${orderWeightKg === null ? 'unknown' : orderWeightKg}]`;
+        internalNotes = internalNotes ? `${internalNotes}\n${shippingNote}` : shippingNote;
 
         for (const item of resolvedItems) {
           if (item.availability === 'MADE_TO_ORDER') continue;
@@ -341,6 +359,8 @@ export async function POST(req: NextRequest) {
         currency: finalOrder.currencyUsed,
         itemsCount: items.length,
         shippingCarrier: selectedOption.name,
+        shippingRateSource: selectedOption.rateSource,
+        orderWeightKg,
       },
     }).catch(() => {});
 
@@ -348,6 +368,8 @@ export async function POST(req: NextRequest) {
       order: {
         ...finalOrder,
         carrier: selectedOption.name,
+        shippingRateSource: selectedOption.rateSource,
+        orderWeightKg,
         trackingNumber: finalOrder.trackingNumber || systemTrackingNumber,
       },
       customerEmail,
