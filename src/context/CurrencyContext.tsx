@@ -19,7 +19,7 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>('USD');
+  const [currency, setCurrencyState] = useState<Currency>('BTN');
   const [fxRate, setFxRate] = useState<number>(84.0);
   const [fxStatus, setFxStatus] = useState<'FRESH' | 'STALE' | 'MANUAL_OVERRIDE'>('FRESH');
   const [fxBlocked, setFxBlocked] = useState<boolean>(false);
