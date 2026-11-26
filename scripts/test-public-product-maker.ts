@@ -3,6 +3,7 @@ import { PUBLIC_PRODUCT_CARD_MAKER_SELECT, PUBLIC_PRODUCT_MAKER_SELECT, toPublic
 import { PUBLIC_MEMBER_PROFILE_SELECT, toPublicMemberProfile } from '../src/lib/public-member-profile';
 
 const maker = toPublicProductMaker({
+  status: 'VERIFIED',
   id: 'private-id',
   name: 'Local Artisan',
   bio: 'Weaves traditional cloth.',
@@ -26,8 +27,9 @@ assert.deepEqual(maker, {
   dzongkhag: 'Bumthang',
   craft: { key: 'thagzo', name: 'Thagzo', english: 'Weaving' },
 });
-assert.deepEqual(Object.keys(PUBLIC_PRODUCT_MAKER_SELECT).sort(), ['bio', 'craft', 'dzongkhag', 'joinYear', 'name', 'portraitUrl'].sort());
-assert.deepEqual(Object.keys(PUBLIC_PRODUCT_CARD_MAKER_SELECT).sort(), ['dzongkhag', 'name']);
+assert.deepEqual(Object.keys(PUBLIC_PRODUCT_MAKER_SELECT).sort(), ['bio', 'craft', 'dzongkhag', 'joinYear', 'name', 'portraitUrl', 'status']);
+assert.deepEqual(Object.keys(PUBLIC_PRODUCT_CARD_MAKER_SELECT).sort(), ['dzongkhag', 'name', 'status']);
+assert.equal(toPublicProductMaker({ name: 'Unverified artisan' }), null);
 assert.equal(toPublicProductMaker(null), null);
 
 const publicMember = toPublicMemberProfile({
