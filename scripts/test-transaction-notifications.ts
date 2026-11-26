@@ -187,7 +187,7 @@ async function main() {
       if (failDatabase) throw new Error('Test database unavailable');
       return operation({
         product: {
-          findMany: async () => available ? [{ id: 'product-local', code: 'LOCAL-01', name: 'Actual catalogue item', priceUSD: 38, status: 'PUBLISHED' }] : [],
+          findMany: async () => available ? [{ id: 'product-local', code: 'LOCAL-01', name: 'Actual catalogue item', priceUSD: 38, status: 'PUBLISHED', availability: 'IN_STOCK', stock: inventory }] : [],
           updateMany: async ({ where }: any) => {
             if (inventory < where.stock.gte) return { count: 0 };
             inventory -= where.stock.gte;
@@ -195,6 +195,7 @@ async function main() {
             return { count: 1 };
           },
         },
+        siteSetting: { findUnique: async () => null },
         order: { create: async ({ data }: any) => {
           savedOrder = { ...data, id: 'order-local', createdAt: new Date() };
           return savedOrder;
@@ -202,7 +203,9 @@ async function main() {
       });
     };
     const attempt = (items: any[]) => submitOrder(new NextRequest('http://localhost/api/orders', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
-      items, paymentMethod: 'COD', currency: 'USD', customerName: 'Local Buyer', email: 'buyer@example.invalid', shippingAddress: { street: 'Local test only' },
+      items, paymentMethod: 'COD', currency: 'USD', customerName: 'Local Buyer', email: 'buyer@example.invalid',
+      phone: '+975 17000000',
+      shippingAddress: { street: 'Local test only', city: 'Thimphu', country: 'Bhutan', postalCode: '11001' },
     }) }));
     try {
       const original = [{ code: 'LOCAL-01', name: 'Forged name', priceUsd: 0.01, quantity: 1 }];
