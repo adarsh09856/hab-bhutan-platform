@@ -295,11 +295,17 @@ function ShopContent() {
                       <figure className="frame frame--square has-image">
                         <img
                           src={productCardImageUrl(p.image_path || '/assets/photos/image-unavailable.svg')}
+                          loading="lazy"
+                          decoding="async"
                           alt={p.image_path === '/images/crafts/thagzo.jpg' ? 'Illustrative photograph of Bhutanese weaving' : p.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                           onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (!target.src.includes('/assets/photos/image-unavailable.svg')) target.src = '/assets/photos/image-unavailable.svg';
+                            const target = e.currentTarget;
+                            const currentSource = target.getAttribute('src');
+                            if (currentSource === '/assets/photos/image-unavailable.svg') return;
+                            target.src = p.image_path && currentSource !== p.image_path
+                              ? p.image_path
+                              : '/assets/photos/image-unavailable.svg';
                           }}
                         />
                       </figure>
