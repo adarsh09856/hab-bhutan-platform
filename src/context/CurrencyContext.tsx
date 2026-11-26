@@ -106,7 +106,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   const fmt = (usdAmount: number): string => {
     if (currency === 'USD') {
-      return '$' + Math.round(usdAmount).toLocaleString();
+      return '$' + usdAmount.toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(usdAmount) ? 0 : 2, maximumFractionDigits: 2 });
     }
     return 'Nu. ' + Math.round(usdAmount * fxRate).toLocaleString();
   };
@@ -115,7 +115,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     if (currency === 'USD') {
       return 'Nu. ' + Math.round(usdAmount * fxRate).toLocaleString();
     }
-    return '$' + Math.round(usdAmount).toLocaleString();
+    return '$' + usdAmount.toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(usdAmount) ? 0 : 2, maximumFractionDigits: 2 });
   };
 
   return (

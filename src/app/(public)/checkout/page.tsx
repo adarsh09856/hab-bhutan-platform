@@ -100,6 +100,7 @@ export default function CheckoutPage() {
     message: string;
   } | null>(null);
   const [shippingQuoteLoading, setShippingQuoteLoading] = useState(true);
+  const [shippingQuoteRetry, setShippingQuoteRetry] = useState(0);
   const [shippingQuoteError, setShippingQuoteError] = useState<{ country: string; itemsKey: string; message: string } | null>(null);
 
   useEffect(() => {
@@ -131,13 +132,13 @@ export default function CheckoutPage() {
       })
       .finally(() => { if (!controller.signal.aborted) setShippingQuoteLoading(false); });
     return () => controller.abort();
-  }, [customer.country, quoteItemsKey, subtotalUSD]);
+  }, [customer.country, quoteItemsKey, subtotalUSD, shippingQuoteRetry]);
 
   const hasCurrentShippingQuote = shippingQuote?.country === customer.country && shippingQuote.itemsKey === quoteItemsKey;
   const currentShippingQuoteError = shippingQuoteError?.country === customer.country && shippingQuoteError.itemsKey === quoteItemsKey
     ? shippingQuoteError.message
     : '';
-  const shippingQuoteReady = hasCurrentShippingQuote || Boolean(currentShippingQuoteError);
+  const shippingQuoteReady = hasCurrentShippingQuote;
   const shippingRates = hasCurrentShippingQuote ? shippingQuote.rates : calculateShipping(subtotalUSD);
   const shippingOption = shippingMethod === 'ems' ? shippingRates.ems : shippingRates.express;
   const shippingFeeUSD = shippingOption.costUSD;
@@ -533,6 +534,7 @@ export default function CheckoutPage() {
                 </label>
               </div>
               {shippingQuoteLoading && <p className="text-xs text-[#6B5A4C]" role="status">Updating delivery costs for this country and basket…</p>}
+              {currentShippingQuoteError && <button type="button" className="btn btn--outline btn--sm" onClick={() => setShippingQuoteRetry(version => version + 1)}>Retry delivery quote</button>}
               {shippingOption.rateSource === 'legacy-fallback' && !shippingQuoteLoading && (
                 <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
                   {currentShippingQuoteError || (hasCurrentShippingQuote ? shippingQuote?.message : '') || 'The default delivery charge applies where no destination rate is saved.'}

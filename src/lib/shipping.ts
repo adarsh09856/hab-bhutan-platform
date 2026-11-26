@@ -124,12 +124,12 @@ export function aggregateOrderWeightKg(items: Array<{ weight?: unknown; quantity
   return total > 0 ? Math.round(total * 10000) / 10000 : null;
 }
 
-export function calculateShipping(subtotalUSD: number, defaults?: ShippingDefaults): {
+export function calculateShipping(subtotalUSD: number, defaults?: ShippingDefaults, freeEmsAllowed = true): {
   ems: ShippingOption;
   express: ShippingOption;
   options: ShippingOption[];
 } {
-  const isEmsFree = subtotalUSD >= FREE_EMS_MINIMUM_USD;
+  const isEmsFree = freeEmsAllowed && subtotalUSD >= FREE_EMS_MINIMUM_USD;
   const emsCost = isEmsFree ? 0 : defaults?.emsUsd ?? 24;
   const expressCost = defaults?.expressUsd ?? 62;
 
@@ -163,7 +163,7 @@ export function calculateShippingForDestination(
   table: ShippingRateTable,
   eligibleForFreeEms = true,
 ) {
-  const fallback = calculateShipping(subtotalUSD, table.defaults);
+  const fallback = calculateShipping(subtotalUSD, table.defaults, eligibleForFreeEms && orderWeightKg !== null && orderWeightKg <= FREE_EMS_MAX_WEIGHT_KG);
   const countryCode = normalizeShippingCountry(country);
   if (!countryCode || orderWeightKg === null || !Number.isFinite(orderWeightKg) || orderWeightKg <= 0) return fallback;
   const zone = table.zones.find((candidate) => candidate.countries.includes(countryCode));
