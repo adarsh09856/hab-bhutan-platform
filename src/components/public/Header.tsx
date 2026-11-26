@@ -687,14 +687,14 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
             className="menu"
             data-menu
             ref={shopRef}
-            onMouseEnter={() => {
-              if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+            onPointerEnter={(event) => {
+              if (event.pointerType === 'mouse') {
                 setShopOpen(true);
                 setMembersOpen(false);
               }
             }}
-            onMouseLeave={() => {
-              if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+            onPointerLeave={(event) => {
+              if (event.pointerType === 'mouse') {
                 setShopOpen(false);
               }
             }}
