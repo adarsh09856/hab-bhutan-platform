@@ -190,7 +190,9 @@ export default function UniversalPageQuickEdit() {
     if (!shell) return;
     const elements = editableElements();
     for (const element of elements) {
-      element.classList.add('hab-universal-editable');
+      if (!element.closest('#logoLockup')) {
+        element.classList.add('hab-universal-editable');
+      }
       element.dataset.habEditKey = elementKey(element, shell);
     }
     const onClick = (event: Event) => {
