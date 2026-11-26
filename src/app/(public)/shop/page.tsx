@@ -168,7 +168,7 @@ function ShopContent() {
     if (selectedType) result = result.filter((p) => p.productType === selectedType);
     if (minPrice !== '') result = result.filter((p) => p.priceUSD >= Number(minPrice));
     if (maxPrice !== '') result = result.filter((p) => p.priceUSD <= Number(maxPrice));
-    if (onlyAvailable) result = result.filter((p) => p.availability === 'MADE_TO_ORDER' || (p.availability === 'IN_STOCK' && p.stock > 0));
+    if (onlyAvailable) result = result.filter((p) => p.availability === 'IN_STOCK' && p.stock > 0);
 
     if (sortOrder === 'low') {
       result.sort((a, b) => a.priceUSD - b.priceUSD);
@@ -280,7 +280,7 @@ function ShopContent() {
               <label className="text-sm">Product type<select className="input mt-1 w-full" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}><option value="">All types</option>{PRODUCT_TYPES.map((type) => <option key={type}>{type}</option>)}</select></label>
               <label className="text-sm">Minimum price<input className="input mt-1 w-full" type="number" min="0" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} placeholder="Any" /></label>
               <label className="text-sm">Maximum price<input className="input mt-1 w-full" type="number" min="0" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} placeholder="Any" /></label>
-              <label className="col-span-2 flex items-center gap-2 text-sm sm:col-span-4"><input type="checkbox" checked={onlyAvailable} onChange={(event) => setOnlyAvailable(event.target.checked)} />Available now</label>
+              <label className="col-span-2 flex items-center gap-2 text-sm sm:col-span-4"><input type="checkbox" checked={onlyAvailable} onChange={(event) => setOnlyAvailable(event.target.checked)} />{t('shop.in_stock', 'In stock')}</label>
             </div>
 
             {catalogueState === 'loading' ? (
