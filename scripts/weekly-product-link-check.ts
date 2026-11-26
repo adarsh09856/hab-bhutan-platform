@@ -105,6 +105,10 @@ async function checkProduct(product: PublicProduct) {
   if (!code) return { code: '(missing SKU)', name: String(product.name || ''), status: 0, url: SITE_URL };
   const url = `${SITE_URL}/product/${encodeURIComponent(code)}`;
   try {
+    const page = await checkPublicLink(url);
+    if (page.check.status < 200 || page.check.status >= 300) {
+      return { code, name: String(product.name || ''), status: page.check.status, url };
+    }
     // Product routes render their shell client-side and may return HTTP 200
     // even when the SKU lookup later fails. Check the public detail endpoint
     // so the scheduled report reflects the same lookup the page depends on.
