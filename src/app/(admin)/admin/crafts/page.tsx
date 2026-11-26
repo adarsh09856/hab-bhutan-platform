@@ -90,9 +90,9 @@ export default function AdminCraftsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="border-b border-slate-200 pb-5">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">13 Zorig Chusum Traditional Crafts CMS</h1>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Craft traditions</h1>
         <p className="text-sm text-slate-600 mt-1">
-          Manage classical Dzongkha names, English translations, cultural descriptions, banner imagery, and display order for Bhutan’s 13 traditional arts.
+          Manage the 13 craft categories, their names, descriptions, images and display order. Product craft assignments are managed from Products.
         </p>
       </div>
 

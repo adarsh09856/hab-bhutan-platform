@@ -199,10 +199,10 @@ export default function AdminReportsPage() {
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-indigo-300" />
-            Financial Reports, Consignment Payouts &amp; Donor Audits
+            Sales, member payouts &amp; project reports
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Reconciliation of e-commerce consignment sales, 80/20 artisan split disbursements, and bilateral project grants.
+            Review shop sales, member payouts and donor project funding reports.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

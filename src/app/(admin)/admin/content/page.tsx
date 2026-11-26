@@ -256,7 +256,12 @@ export default function AdminContentPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(editingPolicy),
+        body: JSON.stringify({
+          slug: editingPolicy.slug,
+          title: editingPolicy.title,
+          content: editingPolicy.content,
+          isActive: editingPolicy.isActive,
+        }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -388,10 +393,10 @@ export default function AdminContentPage() {
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <FileEdit className="w-5 h-5 text-indigo-300" />
-            Content Management &amp; Public Disclosures
+            Website content &amp; public notices
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Author and publish newsroom releases, statutory reports, and governance chapter structures.
+            Create and update news, announcements, vacancies, reports, publications and governance content.
           </p>
         </div>
         <div className="flex items-center gap-2">

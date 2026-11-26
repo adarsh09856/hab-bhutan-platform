@@ -26,6 +26,7 @@ export default function ShippingRatesPanel() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [zoneCountrySearch, setZoneCountrySearch] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -145,7 +146,7 @@ export default function ShippingRatesPanel() {
       {rateTable.zones.map((zone, zoneIndex) => (
         <article key={zone.id} className="admin-card rounded-xl border admin-border p-5 space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="admin-title text-sm font-semibold">Zone {zoneIndex + 1}</h3>
+            <h3 className="admin-title text-sm font-semibold">{zone.name || `New destination zone ${zoneIndex + 1}`}</h3>
             <button type="button" onClick={() => setRateTable((current) => ({ ...current, zones: current.zones.filter((item) => item.id !== zone.id) }))} className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50">
               <Trash2 size={14} /> Remove zone
             </button>
@@ -155,13 +156,39 @@ export default function ShippingRatesPanel() {
               Zone name
               <input value={zone.name} onChange={(event) => updateZone(zone.id, { name: event.target.value })} className={fieldClass} maxLength={100} placeholder="For example, Bhutan or South Asia" />
             </label>
-            <label className="admin-text block text-sm font-medium">
-              Countries
-              <select multiple value={zone.countries} onChange={(event) => updateZone(zone.id, { countries: Array.from(event.currentTarget.selectedOptions, (option) => option.value) })} className={`${fieldClass} min-h-36`} aria-label={`Countries for ${zone.name || `zone ${zoneIndex + 1}`}`}>
-                {SHIPPING_COUNTRIES.map((country) => <option key={country.code} value={country.code}>{country.name}</option>)}
-              </select>
-              <span className="admin-muted mt-1 block text-xs">Use Ctrl or Command to select multiple countries. Each country can belong to one zone.</span>
-            </label>
+            <fieldset className="admin-text min-w-0 text-sm">
+              <legend className="font-medium">Countries in this zone ({zone.countries.length} selected)</legend>
+              <input
+                type="search"
+                value={zoneCountrySearch[zone.id] ?? ''}
+                onChange={(event) => setZoneCountrySearch((current) => ({ ...current, [zone.id]: event.target.value }))}
+                className={fieldClass}
+                placeholder="Find a country"
+                aria-label={`Find a country for ${zone.name || `zone ${zoneIndex + 1}`}`}
+              />
+              <div className="mt-2 grid max-h-52 grid-cols-1 gap-1 overflow-y-auto rounded-lg border border-slate-300 bg-white p-2 sm:grid-cols-2">
+                {SHIPPING_COUNTRIES.filter((country) => country.name.toLowerCase().includes((zoneCountrySearch[zone.id] ?? '').trim().toLowerCase())).map((country) => {
+                  const assignedElsewhere = rateTable.zones.some((otherZone) => otherZone.id !== zone.id && otherZone.countries.includes(country.code));
+                  const checked = zone.countries.includes(country.code);
+                  return (
+                    <label key={country.code} className={`flex min-h-9 items-center gap-2 rounded-md px-2 text-xs ${assignedElsewhere ? 'cursor-not-allowed text-slate-400' : 'cursor-pointer text-slate-700 hover:bg-slate-50'}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={assignedElsewhere}
+                        onChange={(event) => updateZone(zone.id, { countries: event.target.checked ? [...zone.countries, country.code] : zone.countries.filter((code) => code !== country.code) })}
+                        className="h-4 w-4 accent-[#8B2E24]"
+                      />
+                      <span>{country.name}{assignedElsewhere ? ' · in another zone' : ''}</span>
+                    </label>
+                  );
+                })}
+                {SHIPPING_COUNTRIES.every((country) => !country.name.toLowerCase().includes((zoneCountrySearch[zone.id] ?? '').trim().toLowerCase())) && (
+                  <p className="admin-muted col-span-full px-2 py-3 text-xs">No countries match that search.</p>
+                )}
+              </div>
+              <p className="admin-muted mt-1 text-xs">Tick the countries for this zone. Each country can belong to one zone only.</p>
+            </fieldset>
           </div>
 
           <div className="space-y-3">

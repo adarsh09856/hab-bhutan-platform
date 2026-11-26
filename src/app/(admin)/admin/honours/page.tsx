@@ -184,10 +184,10 @@ export default function AdminHonoursPage() {
         <div>
           <h1 className="text-2xl font-bold admin-title flex items-center gap-2">
             <Award className="w-6 h-6 text-amber-500" />
-            Master Artisans & Honours CMS
+            Awardees &amp; master artisans
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Recognize and document national living treasures, royal seals of excellence, and master citations.
+            Add and update awardee profiles, portraits, awards, craft details and homepage features.
           </p>
         </div>
         <button

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       const policy = await prisma.policyPage.findUnique({
         where: { slug },
       });
-      if (!policy) {
+      if (!policy || !policy.isActive) {
         return NextResponse.json({ success: false, error: 'Policy not found.' }, { status: 404 });
       }
       const res = NextResponse.json({ success: true, policy });

@@ -496,10 +496,10 @@ function AdminSettingsContent() {
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#8B2E24]" />
-            System Settings &amp; Staff Access
+            Settings &amp; staff access
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Manage exchange rates, staff access, email, shipping prices, and change history.
+            Manage currency, staff permissions, email notifications, delivery prices, and the admin change history.
           </p>
         </div>
       </div>
@@ -578,11 +578,11 @@ function AdminSettingsContent() {
             activeTab === 'AUDIT' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <History className="w-4 h-4 text-[#8B2E24]" /> Admin Activity History ({auditLogs.length})
+          <History className="w-4 h-4 text-[#8B2E24]" /> Admin change history ({auditLogs.length})
         </button>
       </div>
 
-      {/* Tab 1: RMA FX Engine */}
+      {/* Tab 1: Exchange rates */}
       {activeTab === 'FX' && (
         <div className="space-y-6">
           {/* Prominent Currency & Language Callout Banner */}
@@ -658,9 +658,9 @@ function AdminSettingsContent() {
           <div className="admin-card p-6 rounded-lg border admin-border shadow-sm space-y-4">
             <div className="flex justify-between items-center border-b admin-border pb-3">
               <div>
-                <h3 className="font-bold admin-title text-sm">Administrative FX Manual Override</h3>
+                <h3 className="font-bold admin-title text-sm">Set the exchange rate manually</h3>
                 <p className="text-xs admin-muted">
-                  Override the RMA exchange rate in event of communication outage or extraordinary monetary directive.
+                  Use this only when the automatic Royal Monetary Authority rate is unavailable or needs an approved correction.
                 </p>
               </div>
               {fxData?.isManualOverride && (
@@ -717,7 +717,7 @@ function AdminSettingsContent() {
         <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden space-y-4">
           <div className="p-4 border-b admin-border flex justify-between items-center">
             <div>
-              <h3 className="font-bold admin-title text-sm">Staff Operator Accounts</h3>
+              <h3 className="font-bold admin-title text-sm">Staff accounts</h3>
               <p className="text-xs admin-muted">Back-office staff authorized to manage members, products, and dispatches.</p>
             </div>
             <button
@@ -813,9 +813,9 @@ function AdminSettingsContent() {
         <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden space-y-4">
           <div className="p-4 border-b admin-border flex justify-between items-center flex-wrap gap-2">
             <div>
-              <h3 className="font-bold admin-title text-sm">Immutable Roles &amp; Version History</h3>
+              <h3 className="font-bold admin-title text-sm">Staff roles &amp; change history</h3>
               <p className="text-xs admin-muted">
-                Roles are create-only and never mutated in place. Upgrading permissions increments role version and records an immutable audit ledger entry.
+                Changing a role creates a new saved version. This keeps a record of which permissions changed and when.
               </p>
             </div>
             <button
@@ -823,7 +823,7 @@ function AdminSettingsContent() {
               className="px-3.5 py-1.5 admin-button-primary text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Create Role Revision</span>
+              <span>Add or update a role</span>
             </button>
           </div>
 
@@ -1246,8 +1246,8 @@ function AdminSettingsContent() {
         <div className="admin-card border admin-border rounded-lg shadow-sm overflow-hidden space-y-4">
           <div className="p-4 border-b admin-border flex justify-between items-center flex-wrap gap-3">
             <div>
-              <h3 className="font-bold admin-title text-sm">Polymorphic Cryptographic Audit Trail</h3>
-              <p className="text-xs admin-muted">Immutable ledger recording all administrative mutations and order events.</p>
+              <h3 className="font-bold admin-title text-sm">Admin change history</h3>
+              <p className="text-xs admin-muted">A record of important changes made by staff and changes to orders.</p>
             </div>
             <div className="flex items-center gap-1.5">
               {(['ALL', 'STAFF', 'MEMBER', 'GUEST', 'SYSTEM'] as const).map((filter) => (
@@ -1324,7 +1324,7 @@ function AdminSettingsContent() {
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 overflow-y-auto">
           <div className="admin-modal rounded-xl max-w-md w-full p-6 shadow-2xl border admin-border space-y-4 my-8">
             <div className="flex justify-between items-center border-b admin-border pb-3">
-              <h3 className="font-bold admin-title text-base">Create Staff Operator Account</h3>
+              <h3 className="font-bold admin-title text-base">Add a staff account</h3>
               <button onClick={() => setShowCreateUserModal(false)} className="text-slate-400 hover:text-slate-700 font-bold text-base">✕</button>
             </div>
 
@@ -1530,8 +1530,8 @@ function AdminSettingsContent() {
           <div className="admin-modal rounded-xl max-w-3xl w-full p-6 shadow-2xl border admin-border space-y-4 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b admin-border pb-3">
               <div>
-                <h3 className="font-bold admin-title text-base">Publish New Role Revision</h3>
-                <p className="text-xs admin-muted">Immutable revision matrix covering all granular permissions.</p>
+                <h3 className="font-bold admin-title text-base">Add or update a staff role</h3>
+                <p className="text-xs admin-muted">Choose which areas this role can view, add, edit or remove.</p>
               </div>
               <button onClick={() => setShowCreateRoleModal(false)} className="text-slate-400 hover:text-slate-700 font-bold text-base">✕</button>
             </div>
@@ -1651,7 +1651,7 @@ function AdminSettingsContent() {
                   disabled={submitting}
                   className="px-4 py-1.5 admin-button-primary rounded font-semibold disabled:opacity-50"
                 >
-                  {submitting ? 'Publishing...' : 'Publish Immutable Revision'}
+                  {submitting ? 'Saving...' : 'Save role version'}
                 </button>
               </div>
             </form>

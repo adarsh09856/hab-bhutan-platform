@@ -424,10 +424,10 @@ export default function AdminProductsPage() {
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <Package className="w-5 h-5 text-[#8B2E24]" />
-            Products &amp; Catalog Management
+            Products &amp; stock
           </h1>
           <p className="text-xs sm:text-sm admin-muted mt-0.5">
-            Manage authenticated artisan inventory, canonical USD retail prices, and craft categories.
+            Add or update products, stock, prices, maker, craft and product type. Save as a draft or publish to the shop.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

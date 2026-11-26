@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
 
             <AdminRouteLink href="/admin/users">
               <GlassButton variant="secondary" size="md" icon={ShieldCheck}>
-                Manage Users
+                Manage staff
               </GlassButton>
             </AdminRouteLink>
           </div>
@@ -246,11 +246,10 @@ export default function AdminDashboardPage() {
           subtitle={`Nu. ${m?.sales?.today?.btn != null ? m.sales.today.btn.toLocaleString() : '0'} BTN`}
           icon={CreditCard}
           glow="amber"
-          trendLabel="Card checkout unavailable"
         />
 
         <GlassStatWidget
-          title="Weekly Volume"
+          title="Sales this week"
           value={loading ? '...' : `$${m?.sales?.thisWeek?.usd != null ? m.sales.thisWeek.usd.toLocaleString() : '0'}`}
           subtitle={`Nu. ${m?.sales?.thisWeek?.btn != null ? m.sales.thisWeek.btn.toLocaleString() : '0'} BTN`}
           icon={TrendingUp}
@@ -259,21 +258,19 @@ export default function AdminDashboardPage() {
         />
 
         <GlassStatWidget
-          title="Orders Pending"
+          title="Orders to prepare"
           value={loading ? '...' : (m?.orders?.pendingFulfillment ?? 0)}
           subtitle={`${m?.orders?.attentionRequired ?? 0} require courier dispatch`}
           icon={Package}
           glow="rose"
-          trendLabel="EMS & DHL queue"
         />
 
         <GlassStatWidget
-          title="Artisan Guild"
+          title="Active members"
           value={loading ? '...' : (m?.members?.totalActive ?? 0)}
           subtitle={`${m?.members?.pendingApplications ?? 0} applications in review`}
           icon={Users}
           glow="indigo"
-          trendLabel="Active members"
         />
       </div>
 
@@ -286,10 +283,10 @@ export default function AdminDashboardPage() {
               <div>
                 <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <PackageCheck className="w-4 h-4 text-[#8B2E24]" />
-                  Public Store &amp; User Activity
+                  Recent activity
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Real-time checkouts, visitor inquiries, applications &amp; contributions
+                  Recent orders, enquiries, membership applications and contributions
                 </p>
               </div>
 
@@ -320,7 +317,7 @@ export default function AdminDashboardPage() {
                     activityTab === 'applications' ? 'bg-[#8B2E24] text-white font-bold shadow-xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  Artisans ({data?.recentApplications?.length ?? 0})
+                  Applications ({data?.recentApplications?.length ?? 0})
                 </button>
                 <button
                   type="button"
@@ -564,7 +561,7 @@ export default function AdminDashboardPage() {
           <GlassCard glow="indigo" className="p-6">
             <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 mb-3">
               <Layers className="w-4 h-4 text-[#8B2E24]" />
-              Quick Administrative Actions
+              Common staff tasks
             </h3>
             <div className="space-y-2">
               <AdminRouteLink

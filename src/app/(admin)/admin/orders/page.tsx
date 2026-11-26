@@ -541,10 +541,10 @@ export default function AdminOrdersPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Package className="w-6 h-6 text-slate-800" />
-            Orders &amp; Consignment Dispatch
+            Orders &amp; delivery
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Real-world fulfillment tracking, recipient delivery address inspection, carrier synchronization, and packing slips.
+            Review payments, prepare parcels, save tracking numbers and update order status.
           </p>
         </div>
         <div className="flex items-center gap-3">

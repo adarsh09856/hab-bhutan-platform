@@ -45,7 +45,6 @@ import {
   CreditCard,
   ChevronDown,
   ChevronsUpDown,
-  Plus,
   Building2,
   Trash2,
   Edit3
@@ -177,26 +176,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    website: false,
     publishing: false,
-    community: false,
-    commerce: false,
-    administration: false,
+    programmes: false,
+    people: false,
+    shop: false,
+    settings: false,
   });
 
   const toggleCollapseAll = () => {
     if (allCollapsed) {
       setOpenGroups({
+        website: true,
         publishing: true,
-        community: true,
-        commerce: true,
-        administration: true,
+        programmes: true,
+        people: true,
+        shop: true,
+        settings: true,
       });
     } else {
       setOpenGroups({
+        website: activeNavGroupKey === 'website',
         publishing: activeNavGroupKey === 'publishing',
-        community: activeNavGroupKey === 'community',
-        commerce: activeNavGroupKey === 'commerce',
-        administration: activeNavGroupKey === 'administration',
+        programmes: activeNavGroupKey === 'programmes',
+        people: activeNavGroupKey === 'people',
+        shop: activeNavGroupKey === 'shop',
+        settings: activeNavGroupKey === 'settings',
       });
     }
   };
@@ -207,29 +212,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navGroups: NavGroup[] = [
     {
-      group: 'Website & Content',
-      key: 'publishing',
+      group: 'Website & Pages',
+      key: 'website',
       items: [
-        { label: 'Pages & Sections', href: '/admin/pages', icon: Layers, badge: 'Pages' },
-        { label: 'Create a Page', href: '/admin/pages?new=1', icon: Plus, badge: 'New' },
+        { label: 'Website Pages & Sections', href: '/admin/pages', icon: Layers, badge: 'Pages' },
         { label: 'Homepage Content', href: '/admin/pages/home', icon: LayoutDashboard },
         { label: 'About HAB', href: '/admin/pages/about', icon: BookOpen },
         { label: 'Menus & Navigation', href: '/admin/navigation', icon: Navigation },
         { label: 'Homepage Slides', href: '/admin/hero', icon: Layers },
         { label: 'Photos & Files', href: '/admin/media', icon: ImageIcon },
+      ],
+    },
+    {
+      group: 'News & Events',
+      key: 'publishing',
+      items: [
         { label: 'News & Notices', href: '/admin/content', icon: FileText },
         { label: 'Vacancies', href: '/admin/content?category=Vacancies', icon: FileText },
         { label: 'Announcements', href: '/admin/content?category=Announcements', icon: FileText },
         { label: 'Events', href: '/admin/events', icon: Calendar },
         { label: 'Tenders', href: '/admin/tenders', icon: Building2, badge: 'New' },
+      ],
+    },
+    {
+      group: 'Programmes & Projects',
+      key: 'programmes',
+      items: [
         { label: 'Programmes', href: '/admin/programmes', icon: BookOpen },
         { label: 'Projects', href: '/admin/projects', icon: FolderKanban },
         { label: 'Reports & Downloads', href: '/admin/publications', icon: FileText, badge: 'PDFs' },
       ],
     },
     {
-      group: 'People & Crafts',
-      key: 'community',
+      group: 'People & Directory',
+      key: 'people',
       items: [
         { label: 'Members', href: '/admin/members', icon: Users },
         { label: 'Membership Applications', href: '/admin/applications', icon: ClipboardList, badge: 'Queue' },
@@ -238,14 +254,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Craft Traditions (13)', href: '/admin/crafts', icon: Palette },
         { label: 'Artisans & Awards', href: '/admin/honours', icon: Award },
         { label: 'Traders & Shops', href: '/admin/traders', icon: Store },
+        { label: 'Outlets & Artisan Clusters', href: '/admin/clusters-outlets', icon: Store },
       ],
     },
     {
       group: 'Shop & Orders',
-      key: 'commerce',
+      key: 'shop',
       items: [
         { label: 'Products & Stock', href: '/admin/products', icon: ShoppingBag, badge: 'Catalog' },
-        { label: 'Outlets & Artisan Clusters', href: '/admin/clusters-outlets', icon: Store },
         { label: 'Orders & Delivery', href: '/admin/orders', icon: Package, badge: 'Track' },
         { label: 'In-person Sales (POS)', href: '/admin/pos', icon: Store, badge: 'Live' },
         { label: 'Wholesale Accounts', href: '/admin/wholesale', icon: Building2, badge: 'B2B' },
@@ -257,7 +273,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       group: 'Settings & Staff',
-      key: 'administration',
+      key: 'settings',
       items: [
         { label: 'Website Details & Contact', href: '/admin/site-settings', icon: LayoutDashboard, badge: 'Sync' },
         { label: 'Language & Currency', href: '/admin/localization', icon: Globe },

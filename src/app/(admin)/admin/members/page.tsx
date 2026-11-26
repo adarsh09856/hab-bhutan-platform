@@ -365,9 +365,9 @@ export default function AdminMembersPage() {
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Member CRM &amp; Artisans Registry</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Member records</h1>
           <p className="text-sm text-slate-600 mt-1">
-            Complete management of certified Bhutanese handicraft enterprises, artisans, and guild members.
+            Search and manage private member records, applications, contact details and membership status.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">

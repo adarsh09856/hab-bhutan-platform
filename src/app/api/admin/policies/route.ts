@@ -69,9 +69,10 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
           id: found.id,
           title: found.title || dp.title,
           content: found.content || dp.content,
+          isActive: found.isActive,
         };
       }
-      return dp;
+      return { ...dp, isActive: true };
     })];
 
     // Include any custom policies added directly in database
@@ -84,6 +85,7 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
           lastUpdated: new Date(p.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
           publicUrl: `/policies/${p.slug}`,
           content: p.content,
+          isActive: p.isActive,
           isCustom: true,
         });
       }

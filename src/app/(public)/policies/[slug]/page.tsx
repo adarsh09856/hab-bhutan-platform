@@ -71,12 +71,12 @@ async function getPolicy(slug: string) {
     });
 
     if (dbPolicy) {
-      if (!dbPolicy.isActive) return null;
       return {
         slug: dbPolicy.slug,
         title: dbPolicy.title,
         content: dbPolicy.content,
         updatedAt: dbPolicy.updatedAt,
+        isActive: dbPolicy.isActive,
         isCustom: true,
       };
     }
@@ -93,6 +93,7 @@ async function getPolicy(slug: string) {
       content: def.content,
       lede: def.lede,
       updatedAt: new Date(),
+      isActive: true,
       isCustom: false,
     };
   }
@@ -106,6 +107,7 @@ async function getPolicy(slug: string) {
       content: def.content,
       lede: def.lede,
       updatedAt: new Date(),
+      isActive: true,
       isCustom: false,
     };
   }
@@ -117,7 +119,7 @@ export async function generateMetadata({ params }: PolicyRouteProps): Promise<Me
   const resolved = await Promise.resolve(params);
   const policy = await getPolicy(resolved.slug);
 
-  if (!policy) {
+  if (!policy || !policy.isActive) {
     return { title: 'Policy Not Found · HAB' };
   }
 
@@ -137,7 +139,7 @@ export default async function DynamicPolicyPage({ params }: PolicyRouteProps) {
 
   const policy = await getPolicy(slug);
 
-  if (!policy) {
+  if (!policy || !policy.isActive) {
     notFound();
   }
 
