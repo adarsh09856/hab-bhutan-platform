@@ -98,6 +98,7 @@ export default function HomePageClient({
     aboutBandPara1: 'HAB is dedicated to establishing a strong network for Bhutanese artisans that guarantees fair compensation for their handcrafted products and improved market accessibility. The organization not only invests in training and resources to enhance the quality of handmade crafts, but also advocates for the sector through dialogue with policymakers.',
     aboutBandPara2: 'HAB plays a critical role in the Bhutanese handicraft industry, with a network of 7,500 micro and small enterprises across the country — women-led (5,250) and men-led (2,250), formal and informal — and a growing directory of registered traders.',
     aboutBandImageUrl: '/assets/photos/about-hab.jpg',
+    aboutBandImageAlt: '',
     aboutBandImageCaption: 'photo — HAB training workshop',
     punakhaMarketNotice: CLIENT_VERBATIM.punakhaMarket,
     membershipLeftTitle: 'Find a registered trader',
