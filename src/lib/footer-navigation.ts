@@ -2,18 +2,21 @@
 export function resolveFooterHref(label: string, href: string): string {
   const text = (label || '').trim().toLowerCase().replace(/\s+/g, ' ');
   const path = (href || '').trim().toLowerCase();
+  const query = href.includes('?') ? href.slice(href.indexOf('?')).split('#')[0] : '';
+  const loginQuery = /^\/(?:login|membership#login)(?:\/|\?)/i.test(path) ? query : '';
+  const applyQuery = /^\/(?:register|membership\/apply)(?:\/|\?)/i.test(path) ? query : '';
 
-  if (/^\/membership#login(?:\/)?$/i.test(path)) return '/login';
-  if (/^\/members(?:[/?#]|$)/i.test(path)) return '/traders';
+  if (/^\/membership#login(?:\/|\?|$)/i.test(path)) return `/login${loginQuery}`;
   // Trader-specific links can point to an enquiry or a dedicated account flow.
-  if (/\btrader\b/.test(text) && /\b(?:apply|application|register|login|sign in)\b/.test(text)) return href;
-  if (/^(?:apply(?: to join(?: hab)?| for (?:membership|a trader|trader accreditation))?|register(?: as (?:a )?(?:member|cluster|trader))?|become a member|trader application)$/.test(text)) {
-    const query = /^\/membership\/apply(?:\/)?(?:\?|$)/i.test(path) && href.includes('?')
-      ? href.slice(href.indexOf('?'))
-      : '';
-    return `/membership/apply${query}`;
+  if (/\btrader\b/.test(text) && /\b(?:apply|application|register|registration|login|sign in)\b/.test(text)) return href;
+  if (/^(?:apply(?: to join(?: hab)?| for (?:membership|a member))?|register(?: as (?:a )?member)?|become a member|membership application)$/.test(text)) {
+    return `/membership/apply${applyQuery}`;
   }
-  if (/^(?:member|trader)?\s*login$/.test(text) || /^sign in(?: to (?:your )?(?:member|trader) account)?$/.test(text)) return '/login';
+  if (/^(?:member)?\s*login$/.test(text) || /^sign in(?: to (?:your )?member account)?$/.test(text)) {
+    return `/login${loginQuery}`;
+  }
+  if (/^\/login(?:\/|\?|$)/i.test(path)) return `/login${loginQuery}`;
+  if (/^\/members(?:[/?#]|$)/i.test(path)) return '/traders';
   if (/^(?:directory by category|find a member|members directory)$/.test(text)) return '/traders';
 
   const canonicalByLabel = [

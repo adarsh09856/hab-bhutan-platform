@@ -46,7 +46,8 @@ const nextConfig = {
       // Membership Aliases
       { source: '/membership-categories', destination: '/membership', permanent: true },
       { source: '/membership-category', destination: '/membership', permanent: true },
-      { source: '/join', destination: '/register', permanent: true },
+      { source: '/join', destination: '/membership/apply', permanent: true },
+      { source: '/register', destination: '/membership/apply', permanent: true },
       { source: '/apply', destination: '/membership/apply', permanent: true },
 
       // Shop & Catalog Aliases
