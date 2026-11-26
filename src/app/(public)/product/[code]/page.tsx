@@ -314,6 +314,7 @@ export default function ProductDetailPage() {
 
             {product.description && <div className="prodbuy__desc" id="prodDesc" dangerouslySetInnerHTML={{ __html: preparePolicyHtml(String(product.description), { inheritTypography: true }).html }} />}
 
+            {canPurchaseProduct(product.availability, product.stock, 1) && (
             <div className="prodbuy__actions">
               <label className="visually-hidden" htmlFor="prodQty">Quantity</label>
               <input
@@ -323,7 +324,6 @@ export default function ProductDetailPage() {
                 min="1"
                 max={product.availability === 'MADE_TO_ORDER' ? 20 : Math.max(1, Math.min(20, product.stock))}
                 value={quantity}
-                disabled={product.availability !== 'MADE_TO_ORDER' && (product.availability === 'SOLD_OUT' || product.stock <= 0)}
                 onChange={(e) => setQuantity(Math.min(Math.max(1, product.availability === 'MADE_TO_ORDER' ? 20 : Math.min(20, product.stock)), Math.max(1, parseInt(e.target.value) || 1)))}
               />
               <button
@@ -333,7 +333,7 @@ export default function ProductDetailPage() {
                 onClick={handleAddToCart}
                 disabled={!canPurchaseProduct(product.availability, product.stock, quantity)}
               >
-                {product.availability === 'MADE_TO_ORDER' ? 'Add made-to-order to basket' : product.availability === 'SOLD_OUT' || product.stock <= 0 ? 'Sold out' : 'Add to basket'}
+                {product.availability === 'MADE_TO_ORDER' ? 'Add made-to-order to basket' : 'Add to basket'}
               </button>
               <button
                 className="btn btn--outline"
@@ -345,6 +345,7 @@ export default function ProductDetailPage() {
                 Buy now
               </button>
             </div>
+            )}
 
             <p className="eyebrow eyebrow--muted eyebrow--sm" style={{ marginTop: '30px' }}>
               Specifications
