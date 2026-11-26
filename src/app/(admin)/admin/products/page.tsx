@@ -703,10 +703,10 @@ export default function AdminProductsPage() {
                 required
                 placeholder="e.g. HAB-THA-26-8492"
                 value={addForm.code}
-                onChange={(e) => setAddForm({ ...addForm, code: e.target.value.replace(/\//g, '').toUpperCase() })}
+                onChange={(e) => setAddForm({ ...addForm, code: e.target.value.toUpperCase() })}
                 className="w-full admin-input border rounded-lg px-3 py-2 font-mono uppercase outline-none"
               />
-              <span className="text-[10.5px] text-slate-500 block mt-1">Unique tracking code for inventory. Do not use /; existing product codes remain supported.</span>
+              <span className="text-[10.5px] text-slate-500 block mt-1">Unique tracking code for inventory. Public product URLs are generated from the product name.</span>
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">USD Price ($) *</label>

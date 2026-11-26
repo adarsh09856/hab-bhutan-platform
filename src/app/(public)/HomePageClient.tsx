@@ -1270,11 +1270,11 @@ export default function HomePageClient({
               : siteSettings.membershipRightText}
             </p>
             <div className="actions">
-              <Link className="btn btn--light" href="/contact?topic=trader-registration">
-                {isDz ? 'ཚོང་པའི་ཐོ་བཀོད་སྐོར་ལས་འབྲེལ་བ་འཐབ' : 'Enquire about trader registration'}
+              <Link className="btn btn--light" href={siteSettings.membershipRightCtaLink || '/contact?topic=trader-registration'}>
+                {isDz ? 'ཚོང་པའི་ཐོ་བཀོད' : (siteSettings.membershipRightCtaText || 'Register as a trader')}
               </Link>
-              <Link className="btn btn--ghost" href="/traders">
-                {isDz ? 'ཚོང་པའི་ཐོ་གཞུང་ལྟ' : 'Browse trader directory'}
+              <Link className="btn btn--ghost" href="/login">
+                {isDz ? 'ཚོང་པའི་ནང་འཛུལ' : 'Trader login'}
               </Link>
             </div>
           </div>

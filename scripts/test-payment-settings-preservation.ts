@@ -27,7 +27,7 @@ async function main() {
     (prisma.user as any).findUnique = async () => ({
       id: 'payment-test-user', email: 'payment-test@example.invalid', name: 'Payment test',
       status: 'ACTIVE', sessionVersion: 1,
-      role: { id: 'payment-test-role', slug: 'super_admin', status: 'ACTIVE', version: 1, permissions: ['orders:edit', 'orders:view'] },
+      role: { id: 'payment-test-role', slug: 'super_admin', status: 'ACTIVE', version: 1, permissions: ['orders:edit', 'orders:view', 'content:edit'] },
     });
     (prisma.siteSetting as any).findUnique = async () => ({ paymentGateways: saved || existingGateways });
     (prisma.siteSetting as any).upsert = async (args: any) => {
