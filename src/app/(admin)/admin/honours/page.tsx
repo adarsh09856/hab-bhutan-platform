@@ -26,6 +26,8 @@ interface HonourItem {
   story?: string | null;
   workPhotos?: string[];
   showHome?: boolean;
+  makerRegistrationNumber?: string;
+  makerMember?: { regNumber: string } | null;
 }
 
 const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
@@ -45,6 +47,7 @@ const EMPTY_HONOUR: Omit<HonourItem, 'id'> = {
   story: '',
   workPhotos: [],
   showHome: false,
+  makerRegistrationNumber: '',
 };
 
 const AWARD_TYPES = [
@@ -111,6 +114,7 @@ export default function AdminHonoursPage() {
       story: h.story || '',
       workPhotos: h.workPhotos || [],
       showHome: h.showHome || false,
+      makerRegistrationNumber: h.makerMember?.regNumber ?? '',
     });
     setEditId(h.id);
     setShowModal(true);
@@ -389,6 +393,9 @@ export default function AdminHonoursPage() {
               <div><label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Short description (two-line card summary)</label><textarea maxLength={280} rows={2} value={form.shortDescription || ''} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} className="w-full px-3 py-2 text-sm rounded-lg bg-white text-slate-900 border border-slate-300" /></div>
               <div><RichTextEditor label="Full artisan story" value={form.story || ''} onChange={(html) => setForm({ ...form, story: html })} hint="Optional longer profile story." /></div>
               <div className="space-y-2"><label className="block text-xs font-semibold text-slate-700 uppercase">Work photographs (up to six)</label>{(form.workPhotos || []).map((url: string, index: number) => <div key={`${index}-${url}`} className="flex gap-2 items-start"><FileUploadInput label={`Work photograph ${index + 1}`} value={url} onChange={(next) => setForm((current: any) => ({ ...current, workPhotos: current.workPhotos.map((item: string, i: number) => i === index ? next : item) }))} accept="image/*" /><button type="button" className="text-rose-600 text-sm" onClick={() => setForm((current: any) => ({ ...current, workPhotos: current.workPhotos.filter((_: string, i: number) => i !== index) }))}>Remove</button></div>)}{(form.workPhotos || []).length < 6 && <button type="button" className="text-sm underline" onClick={() => setForm((current: any) => ({ ...current, workPhotos: [...(current.workPhotos || []), ''] }))}>+ Add work photograph</button>}</div>
+              <label className="block text-sm text-slate-800">Maker registration number (optional)
+                <input className="admin-input mt-1 w-full rounded border px-3 py-2" value={form.makerRegistrationNumber ?? ''} onChange={(e) => setForm({ ...form, makerRegistrationNumber: e.target.value })} />
+              </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-800"><input type="checkbox" checked={!!form.showHome} onChange={(e) => setForm({ ...form, showHome: e.target.checked })} />Feature on homepage (maximum six active profiles)</label>
 
               <div>

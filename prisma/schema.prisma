@@ -131,6 +131,7 @@ model Member {
   email           String?
   duesExpiryDate  DateTime
   products        Product[]
+  honours         HonourRecord[]
   orders          Order[]
   userId          String?        @unique
   user            User?          @relation(fields: [userId], references: [id])
@@ -861,6 +862,8 @@ model HonourRecord {
   shortDescription String? @db.Text
   story       String?  @db.Text
   workPhotos  Json     @default("[]")
+  makerMemberId String?
+  makerMember Member? @relation(fields: [makerMemberId], references: [id], onDelete: SetNull)
   showHome    Boolean  @default(false)
   citationDz  String?  @db.Text
   portraitUrl String?
@@ -871,6 +874,7 @@ model HonourRecord {
 
   @@index([awardType])
   @@index([craft])
+  @@index([makerMemberId])
 }
 
 // HAB-verified retail traders, kept separate from private membership-registry records.

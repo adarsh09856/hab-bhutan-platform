@@ -33,7 +33,10 @@ export async function GET(req: NextRequest) {
       orderBy: [{ sortOrder: 'asc' }, { yearAwarded: 'desc' }, { name: 'asc' }],
     });
 
-    const withSlugs = honours.map((honour) => ({ ...honour, slug: resolvedHonourSlug(honour) }));
+    const withSlugs = honours.map(({ makerMemberId: _privateMemberId, ...honour }) => ({
+      ...honour,
+      slug: resolvedHonourSlug(honour),
+    }));
 
     const res = NextResponse.json({ success: true, honours: withSlugs, masters: withSlugs });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
