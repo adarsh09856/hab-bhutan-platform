@@ -147,6 +147,7 @@ model Member {
 model Product {
   id            String        @id @default(uuid())
   code          String        @unique // e.g. MAS01
+  slug          String        @unique @default("")
   name          String
   priceUSD      Float         // Canonical price
   craftKey      String

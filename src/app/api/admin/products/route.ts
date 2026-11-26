@@ -7,6 +7,7 @@ import { SERVER_WHOLESALE_TERMS } from '@/lib/wholesale-terms.server';
 import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 import { normalizeWholesaleTiers } from '@/lib/wholesale-terms-normalize';
 import { bhutanDayStartUtc } from '@/lib/trader-expiry';
+import { uniqueProductSlug } from '@/lib/product-slugs';
 
 export const dynamic = 'force-dynamic';
 
@@ -144,9 +145,13 @@ export async function POST(req: NextRequest) {
     const stockCount = stock !== undefined ? Math.max(0, Number(stock)) : 10;
     const requestedAvailability = ['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability) ? availability : 'IN_STOCK';
     const resolvedAvailability = requestedAvailability === 'IN_STOCK' && stockCount === 0 ? 'SOLD_OUT' : requestedAvailability;
+    const slug = await uniqueProductSlug(String(name), String(code).trim().toUpperCase(), (candidate) =>
+      prisma.product.findUnique({ where: { slug: candidate }, select: { id: true } })
+    );
     const newProduct = await prisma.product.create({
       data: {
         code: code.trim().toUpperCase(),
+        slug,
         name: name.trim(),
         priceUSD: Math.max(0, Number(priceUSD)),
         craftKey,

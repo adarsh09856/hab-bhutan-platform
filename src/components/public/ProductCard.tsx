@@ -10,6 +10,7 @@ import { productCardImageUrl } from '@/lib/product-image-fallbacks';
 
 export interface ProductCardProps {
   code: string;
+  slug?: string | null;
   name: string;
   priceUSD: number;
   craftKey: string;
@@ -23,6 +24,7 @@ export interface ProductCardProps {
 
 export default function ProductCard({
   code,
+  slug,
   name,
   priceUSD,
   craftKey,
@@ -54,7 +56,7 @@ export default function ProductCard({
 
   return (
     <div data-hab-record-key={`product:${code}`} className="bg-[#FFFCF8] border border-[#E4DDD1] rounded-[12px] overflow-hidden flex flex-col hover:border-[#CFC0AC] transition-all duration-200 group shadow-xs hover:shadow-md">
-      <Link href={productHref(code)} data-cms-img data-hab-gallery="product" data-hab-gallery-id={code} data-hab-gallery-view="card" className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
+      <Link href={productHref(code, slug)} data-cms-img data-hab-gallery="product" data-hab-gallery-id={code} data-hab-gallery-view="card" className="block relative aspect-square bg-[#F5EFE6] border-b border-[#E4DDD1] overflow-hidden">
         <img
           src={imgSrc}
           alt={imgSrc.includes('/assets/photos/image-unavailable.svg') ? `Photo unavailable for ${name}` : name}
@@ -66,9 +68,6 @@ export default function ProductCard({
             setImgSrc(imgSrc === resolvedInitialImage && imgSrc !== resolvedImage ? resolvedImage : placeholder);
           }}
         />
-        <span className="product__ref">
-          {code}
-        </span>
         <div className="absolute top-3 right-3 z-10 bg-[#33261F] text-white font-mono text-[10px] uppercase px-2 py-1 rounded shadow-sm">
           {isMadeToOrder ? 'Made to order' : isOutOfStock ? t('shop.out_of_stock', 'Out of stock') : t('shop.in_stock', 'In stock')}
         </div>
@@ -78,8 +77,9 @@ export default function ProductCard({
         <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8B2E24]">
           {craftKey}
         </div>
+        <div className="break-all font-mono text-[10px] text-[#6B5A4C]">{code}</div>
         <Link
-          href={productHref(code)}
+          href={productHref(code, slug)}
           className="font-figtree font-semibold text-[15.5px] text-[#33261F] hover:text-[#8B2E24] transition-colors line-clamp-2"
         >
           {name}

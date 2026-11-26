@@ -24,7 +24,7 @@ export default async function HonourDetailPage({ params }: Props) {
   const works = Array.isArray(honour.workPhotos) ? honour.workPhotos.filter((item): item is string => typeof item === 'string').slice(0, 6) : [];
   const products = honour.makerMemberId ? await prisma.product.findMany({
     where: { makerMemberId: honour.makerMemberId, status: 'PUBLISHED' },
-    select: { code: true, name: true },
+    select: { code: true, name: true, slug: true },
     orderBy: [{ name: 'asc' }, { code: 'asc' }],
   }) : [];
 
@@ -39,7 +39,7 @@ export default async function HonourDetailPage({ params }: Props) {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {products.map(product => (
             <li key={product.code}>
-              <Link className="link-accent" href={productHref(product.code)}>{product.name}</Link>
+              <Link className="link-accent" href={productHref(product.code, product.slug)}>{product.name}</Link>
             </li>
           ))}
         </ul>

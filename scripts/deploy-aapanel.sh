@@ -100,6 +100,10 @@ fi
 if grep -Fq '20261125020000_repair_remaining_catalog_copy' <<<"$MIGRATION_STATUS"; then
   npx prisma migrate resolve --applied 20261125020000_repair_remaining_catalog_copy
 fi
+if grep -Fq '20261126010000_add_product_slugs' <<<"$MIGRATION_STATUS"; then
+  npx prisma db execute --file prisma/migrations/20261126010000_add_product_slugs/migration.sql --schema prisma/schema.prisma
+  npx prisma migrate resolve --applied 20261126010000_add_product_slugs
+fi
 npx prisma db push --skip-generate
 
 # Deliberately do not run seed/reset-admin here: deploys must preserve all existing

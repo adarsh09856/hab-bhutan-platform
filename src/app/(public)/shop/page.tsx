@@ -25,6 +25,7 @@ interface ShopCraft {
 
 interface ProductItem {
   code: string;
+  slug?: string | null;
   name: string;
   craftKey: string;
   craft_name?: string;
@@ -283,7 +284,7 @@ function ShopContent() {
               <div className="grid grid--3" id="shopProducts">
                 {filteredAndSortedProducts.map((p) => (
                   <article key={p.code} data-hab-record-key={`product:${p.code}`} className="card product">
-                    <Link className="product__shot" href={productHref(p.code)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
+                    <Link className="product__shot" href={productHref(p.code, p.slug)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                       <figure className="frame frame--square has-image">
                         <img
                           src={productCardImageUrl(p.image_path || '/assets/photos/image-unavailable.svg')}
@@ -307,7 +308,7 @@ function ShopContent() {
                     <div className="card__body">
                       <p className="eyebrow eyebrow--accent eyebrow--sm">{p.craft_name || p.craftKey}</p>
                       <h3 className="card__title clamp-2">
-                        <Link href={productHref(p.code)}>{p.name}</Link>
+                        <Link href={productHref(p.code, p.slug)}>{p.name}</Link>
                       </h3>
                       <p className="card__meta clamp-1">{[p.maker, p.region].filter(Boolean).join(' · ')}</p>
                       <div className="card__foot">

@@ -174,7 +174,7 @@ export async function GET(req: NextRequest) {
         title: p.name,
         subtitle: `SKU: ${p.code} · $${p.priceUSD || p.price_usd || 0}`,
         description: p.description || '',
-        url: productHref(p.code || ''),
+        url: productHref(p.code || '', p.slug),
         imageUrl: img,
         category: 'Product',
         badge: p.region || 'Bhutan',

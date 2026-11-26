@@ -1,6 +1,6 @@
-/** Canonical public product URL. Legacy HAB SKUs may contain `/`. */
-export function productHref(code: string): string {
-  return `/product/${encodeURIComponent(code.trim())}`;
+/** Prefer the saved product slug while retaining a URL for legacy records. */
+export function productHref(code: string, slug?: string | null): string {
+  return `/product/${encodeURIComponent(slug?.trim() || code.trim())}`;
 }
 
 export function shopCraftHref(craftKey: string): string {

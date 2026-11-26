@@ -245,7 +245,7 @@ function ShopGridContent() {
               {filteredProducts.map((p) => (
                 <ProductCard
                   key={p.code}
-                  code={p.code}
+                  code={p.code} slug={p.slug}
                   name={p.name}
                   priceUSD={p.priceUSD ?? p.price}
                   craftKey={p.craftKey}

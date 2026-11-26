@@ -313,7 +313,7 @@ export default function CraftProfilePage() {
           <div className="grid grid--4" data-cms-repeat>
             {products.map((p) => (
               <article key={p.code} className="card product" data-cms-item data-code={p.code} data-hab-record-key={`product:${p.code}`}>
-                <Link className="product__shot" href={productHref(p.code)}>
+                <Link className="product__shot" href={productHref(p.code, p.slug)}>
                   <figure className="frame frame--square has-image" data-cms-img>
                     <img
                       src={p.image_path || '/assets/photos/image-unavailable.svg'}
@@ -331,7 +331,7 @@ export default function CraftProfilePage() {
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{craft.name}</p>
                   <h3 className="card__title clamp-2">
-                    <Link href={productHref(p.code)}>{p.name}</Link>
+                    <Link href={productHref(p.code, p.slug)}>{p.name}</Link>
                   </h3>
                   <p className="card__meta clamp-1">
                     {[p.maker, p.region].filter(Boolean).join(' · ')}

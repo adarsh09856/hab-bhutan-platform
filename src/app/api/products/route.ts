@@ -68,6 +68,7 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             code: true,
+            slug: true,
             name: true,
             priceUSD: true,
             craftKey: true,

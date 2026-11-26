@@ -450,7 +450,7 @@ export default function ProductDetailPage() {
             const relatedCanPurchase = canPurchaseProduct(relatedAvailability, relatedStock, 1);
             return (
               <article key={rp.code} data-hab-record-key={`product:${rp.code}`} className="card product">
-              <Link className="product__shot" href={productHref(rp.code)}>
+              <Link className="product__shot" href={productHref(rp.code, rp.slug)}>
                 <figure className="frame frame--square">
                   <img
                     src={rp.image_path || rp.imageUrl || '/assets/photos/image-unavailable.svg'}
@@ -464,7 +464,7 @@ export default function ProductDetailPage() {
               <div className="card__body">
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{rp.craft_name || rp.craftKey}</p>
                 <h3 className="card__title clamp-2">
-                  <Link href={productHref(rp.code)}>{rp.name}</Link>
+                  <Link href={productHref(rp.code, rp.slug)}>{rp.name}</Link>
                 </h3>
                 <p className="card__meta clamp-1">{typeof rp.maker === 'object' ? rp.maker?.name : rp.maker}</p>
                 <div className="card__foot">

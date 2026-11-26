@@ -13,12 +13,21 @@ export async function GET(
 ) {
   try {
     const { code: rawCode } = await params;
-    const code = rawCode?.toUpperCase();
+    let decodedCode = rawCode || '';
+    try { decodedCode = decodeURIComponent(decodedCode); } catch { /* Keep malformed paths as an unmatched identifier. */ }
+    const identifier = (rawCode || '').trim();
 
     const product = await prisma.product.findFirst({
-      where: {
-        code: { equals: code, mode: 'insensitive' },
+      where: { slug: { equals: identifier, mode: 'insensitive' } },
+      include: {
+        craft: true,
+        maker: {
+          select: PUBLIC_PRODUCT_MAKER_SELECT,
+        },
+        trader: { select: { shopName: true, slug: true, dzongkhag: true, town: true, isVisible: true, expiresAt: true } },
       },
+    }) || await prisma.product.findFirst({
+      where: { code: { equals: decodedCode, mode: 'insensitive' } },
       include: {
         craft: true,
         maker: {

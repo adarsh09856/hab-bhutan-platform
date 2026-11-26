@@ -821,7 +821,7 @@ export default function HomePageClient({
             const makerName = typeof p.maker === 'object' ? p.maker?.name : p.maker;
             return (
               <article key={`${p.code}-${pIdx}`} data-hab-record-key={`product:${p.id || p.code}`} className="card product">
-                <Link className="product__shot" href={productHref(p.code)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
+                <Link className="product__shot" href={productHref(p.code, p.slug)} data-hab-gallery="product" data-hab-gallery-id={p.code} data-hab-gallery-view="card">
                   <figure className="frame frame--square has-image">
                     <img
                       src={productCardImageUrl(productImg)}
@@ -835,7 +835,7 @@ export default function HomePageClient({
                 <div className="card__body">
                   <p className="eyebrow eyebrow--accent eyebrow--sm">{p.craft_name || p.craftKey}</p>
                   <h3 className="card__title clamp-2">
-                    <Link href={productHref(p.code)}>{p.name}</Link>
+                    <Link href={productHref(p.code, p.slug)}>{p.name}</Link>
                   </h3>
 
                   {makerName && <p className="card__meta clamp-1">{makerName}</p>}

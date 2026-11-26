@@ -571,7 +571,7 @@ export default function AdminProductsPage() {
                           </div>
                           <div>
                             <Link
-                              href={productHref(p.code)}
+                              href={productHref(p.code, p.slug)}
                               target="_blank"
                               className="font-medium admin-title hover:text-amber-200 flex items-center gap-1"
                             >
