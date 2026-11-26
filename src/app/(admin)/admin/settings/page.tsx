@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, CreditCard, ExternalLink, Save, Globe, Truck } from 'lucide-react';
+import { Settings, Shield, RefreshCw, AlertTriangle, CheckCircle, Clock, Key, Users, History, AlertOctagon, Plus, Edit, Trash2, Mail, ExternalLink, Save, Globe, Truck } from 'lucide-react';
 import { PERMISSION_CATEGORIES, Permission } from '@/lib/permissions';
 import { smtpConnectionOptions } from '@/lib/smtp-options';
 import ShippingRatesPanel from '@/components/admin/ShippingRatesPanel';
@@ -58,19 +58,7 @@ function AdminSettingsContent() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [actorFilter, setActorFilter] = useState<'ALL' | 'STAFF' | 'MEMBER' | 'GUEST' | 'SYSTEM'>('ALL');
 
-  // 5. GATEWAYS & NOTIFICATIONS STATE
-  const [gatewayConfig, setGatewayConfig] = useState({
-    mode: 'test',
-    stripePublishableKey: 'pk_test_hab_bhutan_live_key_9824',
-    stripeSecretKey: '••••••••••••••••••••••••••••••••',
-    rmaMerchantId: 'RMA-MERCHANT-HAB-0941',
-    rmaApiSecret: '••••••••••••••••••••••••',
-  });
-  const [isUpdatingStripeSecret, setIsUpdatingStripeSecret] = useState(false);
-  const [newStripeSecret, setNewStripeSecret] = useState('');
-  const [isUpdatingRmaSecret, setIsUpdatingRmaSecret] = useState(false);
-  const [newRmaSecret, setNewRmaSecret] = useState('');
-
+  // Email notification settings
   const [activeEmailTab, setActiveEmailTab] = useState<'order_confirmation' | 'order_shipped' | 'application_approved' | 'application_rejected'>('order_confirmation');
   const [emailTemplates, setEmailTemplates] = useState<Record<string, { subject: string; body: string }>>({
     order_confirmation: {
@@ -104,14 +92,11 @@ function AdminSettingsContent() {
   const [testingEmail, setTestingEmail] = useState(false);
   const [testEmailFeedback, setTestEmailFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
-  const loadGatewaysAndEmails = async () => {
+  const loadEmailSettings = async () => {
     try {
       const res = await fetch('/api/admin/site-settings', { credentials: 'include', cache: 'no-store' });
       if (res.ok) {
         const d = await res.json();
-        if (d?.setting?.paymentGateways) {
-          setGatewayConfig((prev) => ({ ...prev, ...d.setting.paymentGateways }));
-        }
         if (d?.setting?.emailTemplates) {
           setEmailTemplates((prev) => ({ ...prev, ...d.setting.emailTemplates }));
         }
@@ -123,22 +108,17 @@ function AdminSettingsContent() {
         }
       }
     } catch (err) {
-      console.error('Error fetching gateways & templates:', err);
+      console.error('Error fetching email settings:', err);
     }
   };
 
-  const handleSaveGatewaysAndEmails = async (e: React.FormEvent) => {
+  const handleSaveEmailSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setActionError('');
     setActionSuccess('');
     try {
       const payload: any = {
-        paymentGateways: {
-          ...gatewayConfig,
-          stripeSecretKey: isUpdatingStripeSecret && newStripeSecret ? newStripeSecret : gatewayConfig.stripeSecretKey,
-          rmaApiSecret: isUpdatingRmaSecret && newRmaSecret ? newRmaSecret : gatewayConfig.rmaApiSecret,
-        },
         emailTemplates,
         emailSettings: smtpSettings,
       };
@@ -152,13 +132,9 @@ function AdminSettingsContent() {
 
       const d = await res.json();
       if (res.ok && d.success) {
-        setActionSuccess('✓ Outbound SMTP settings, gateways, and email templates saved successfully.');
-        setIsUpdatingStripeSecret(false);
-        setIsUpdatingRmaSecret(false);
-        setNewStripeSecret('');
-        setNewRmaSecret('');
+        setActionSuccess('Email settings and notification templates saved successfully.');
       } else {
-        setActionError(d.error || 'Failed to save gateway settings.');
+        setActionError(d.error || 'Failed to save email settings.');
       }
     } catch (err: any) {
       setActionError(err.message || 'Network error saving settings.');
@@ -250,7 +226,7 @@ function AdminSettingsContent() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([loadFX(), loadUsers(), loadRoles(), loadAuditLogs(), loadGatewaysAndEmails()]).finally(() => setLoading(false));
+    Promise.all([loadFX(), loadUsers(), loadRoles(), loadAuditLogs(), loadEmailSettings()]).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -520,10 +496,10 @@ function AdminSettingsContent() {
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#8B2E24]" />
-            System Administration, RMA FX Engine &amp; RBAC
+            System Settings &amp; Staff Access
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Royal Monetary Authority exchange rates, staff operators, immutable role lifecycle, and cryptographic audit trail.
+            Manage exchange rates, staff access, email, shipping prices, and change history.
           </p>
         </div>
       </div>
@@ -543,12 +519,12 @@ function AdminSettingsContent() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-slate-200 flex gap-2 text-xs font-medium text-slate-700 overflow-x-auto scrollbar-none whitespace-nowrap pb-px">
+      <div className="border-b border-slate-200 flex flex-wrap gap-2 text-xs font-medium text-slate-700 pb-2">
         <Link
           href="/admin/localization"
           className="px-4 py-2.5 flex items-center gap-1.5 border-b-2 border-transparent text-[#8B2E24] hover:bg-slate-100 rounded-t-xl font-bold transition-all"
         >
-          <Globe className="w-4 h-4 text-[#8B2E24]" /> Currency &amp; Language Settings →
+          <Globe className="w-4 h-4 text-[#8B2E24]" /> Currency &amp; Language
         </Link>
         <button
           type="button"
@@ -557,7 +533,7 @@ function AdminSettingsContent() {
             activeTab === 'FX' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <RefreshCw className="w-4 h-4 text-[#8B2E24]" /> Royal Monetary Authority (RMA) FX Engine
+          <RefreshCw className="w-4 h-4 text-[#8B2E24]" /> Exchange Rates
         </button>
         <button
           type="button"
@@ -566,7 +542,7 @@ function AdminSettingsContent() {
             activeTab === 'USERS' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Users className="w-4 h-4 text-[#8B2E24]" /> Staff Operator Accounts ({users.length})
+          <Users className="w-4 h-4 text-[#8B2E24]" /> Staff Accounts ({users.length})
         </button>
         <button
           type="button"
@@ -575,7 +551,7 @@ function AdminSettingsContent() {
             activeTab === 'RBAC' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <Key className="w-4 h-4 text-[#8B2E24]" /> Immutable RBAC Roles &amp; Revisions ({roles.length})
+          <Key className="w-4 h-4 text-[#8B2E24]" /> Roles &amp; Permissions ({roles.length})
         </button>
         <button
           type="button"
@@ -584,7 +560,7 @@ function AdminSettingsContent() {
             activeTab === 'GATEWAYS' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <CreditCard className="w-4 h-4 text-[#8B2E24]" /> Gateways &amp; Notifications
+          <Mail className="w-4 h-4 text-[#8B2E24]" /> Email &amp; Notifications
         </button>
         <button
           type="button"
@@ -602,7 +578,7 @@ function AdminSettingsContent() {
             activeTab === 'AUDIT' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <History className="w-4 h-4 text-[#8B2E24]" /> Cryptographic Audit Trail ({auditLogs.length})
+          <History className="w-4 h-4 text-[#8B2E24]" /> Admin Activity History ({auditLogs.length})
         </button>
       </div>
 
@@ -930,152 +906,39 @@ function AdminSettingsContent() {
           {/* Org Info Banner */}
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
             <div>
-              <div className="font-bold text-slate-900 text-sm">Civil Society Organization Info &amp; Contact Registry</div>
+              <div className="font-bold text-slate-900 text-sm">Website contact details</div>
               <p className="text-slate-600 mt-0.5">
-                Official CSO registration (CSO/2011/043), head office address, official phones, and contact emails are canonically maintained under Website &amp; Global CMS.
+                  Edit the public organization name, address, phone numbers, and email on the Website Details page.
               </p>
             </div>
             <a
               href="/admin/site-settings"
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#8B2E24] hover:bg-[#72241C] text-white rounded-lg font-semibold shrink-0 transition-colors shadow-xs"
             >
-              <ExternalLink className="w-3.5 h-3.5" /> Manage Org Info
+              <ExternalLink className="w-3.5 h-3.5" /> Edit website details
             </a>
           </div>
 
-          <form onSubmit={handleSaveGatewaysAndEmails} className="space-y-6">
-            {/* Payment Gateway Configuration */}
-            <div className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5">
-              <div className="flex justify-between items-center border-b admin-border pb-3">
-                <div>
-                  <h3 className="font-bold admin-title text-sm flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-[#8B2E24]" />
-                    Payment Gateways Configuration (Masked Credentials)
-                  </h3>
-                  <p className="text-xs admin-muted mt-0.5">
-                    Configure international card acquiring (Stripe 3-D Secure) and domestic RMA mBoB banking endpoints.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium admin-text">Gateway Mode:</span>
-                  <select
-                    value={gatewayConfig.mode}
-                    onChange={(e) => setGatewayConfig({ ...gatewayConfig, mode: e.target.value })}
-                    className="admin-input text-xs border rounded px-2 py-1 font-semibold"
-                  >
-                    <option value="test">Sandbox / Test Mode</option>
-                    <option value="live">Production / Live Mode</option>
-                  </select>
-                </div>
+          <div className="flex flex-wrap gap-2" aria-label="Related settings">
+            <Link href="/admin/payments" className="admin-button-secondary px-3 py-2 rounded-lg text-xs">Manage payment methods</Link>
+            <a href="#email-templates" className="admin-button-secondary px-3 py-2 rounded-lg text-xs">Edit email messages</a>
+            <a href="#mail-server" className="admin-button-secondary px-3 py-2 rounded-lg text-xs">Configure mail server</a>
+          </div>
+
+          <form onSubmit={handleSaveEmailSettings} className="space-y-6">
+            <div className="admin-card border admin-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-bold admin-title text-sm">Payment methods are managed separately</h3>
+                <p className="text-xs admin-muted mt-1">Update manual bank, mBoB, BNB and cash-on-delivery instructions from the Payments page. Card payments stay unavailable until a provider is connected and verified.</p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <label className="block font-semibold admin-text mb-1">Stripe Publishable Key</label>
-                  <input
-                    type="text"
-                    value={gatewayConfig.stripePublishableKey}
-                    onChange={(e) => setGatewayConfig({ ...gatewayConfig, stripePublishableKey: e.target.value })}
-                    placeholder="pk_test_..."
-                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold admin-text mb-1">Stripe Secret API Key (Masked)</label>
-                  {isUpdatingStripeSecret ? (
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        value={newStripeSecret}
-                        onChange={(e) => setNewStripeSecret(e.target.value)}
-                        placeholder="sk_test_..."
-                        className="admin-input flex-1 border rounded-lg px-3 py-2 font-mono text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => { setIsUpdatingStripeSecret(false); setNewStripeSecret(''); }}
-                        className="px-2.5 py-1 admin-button-secondary border rounded"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        disabled
-                        value={gatewayConfig.stripeSecretKey}
-                        className="admin-input flex-1 border rounded-lg px-3 py-2 font-mono text-xs disabled:opacity-60"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setIsUpdatingStripeSecret(true)}
-                        className="px-3 py-2 admin-button-secondary rounded-lg font-medium text-xs whitespace-nowrap"
-                      >
-                        Update Secret
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block font-semibold admin-text mb-1">RMA Merchant ID</label>
-                  <input
-                    type="text"
-                    value={gatewayConfig.rmaMerchantId}
-                    onChange={(e) => setGatewayConfig({ ...gatewayConfig, rmaMerchantId: e.target.value })}
-                    placeholder="RMA-MERCHANT-..."
-                    className="admin-input w-full border rounded-lg px-3 py-2 font-mono text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold admin-text mb-1">RMA Gateway Secret (Masked)</label>
-                  {isUpdatingRmaSecret ? (
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        value={newRmaSecret}
-                        onChange={(e) => setNewRmaSecret(e.target.value)}
-                        placeholder="New RMA secret..."
-                        className="admin-input flex-1 border rounded-lg px-3 py-2 font-mono text-xs"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => { setIsUpdatingRmaSecret(false); setNewRmaSecret(''); }}
-                        className="px-2.5 py-1 admin-button-secondary border rounded"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        disabled
-                        value={gatewayConfig.rmaApiSecret}
-                        className="admin-input flex-1 border rounded-lg px-3 py-2 font-mono text-xs disabled:opacity-60"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setIsUpdatingRmaSecret(true)}
-                        className="px-3 py-2 admin-button-secondary rounded-lg font-medium text-xs whitespace-nowrap"
-                      >
-                        Update Secret
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <Link href="/admin/payments" className="admin-button-primary shrink-0 px-3 py-2 rounded-lg text-xs font-semibold">Open payment methods</Link>
             </div>
-
             {/* Email Notification Templates */}
-            <div className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5">
+            <div id="email-templates" className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5 scroll-mt-4">
               <div className="border-b admin-border pb-3">
                 <h3 className="font-bold admin-title text-sm flex items-center gap-2">
                   <Mail className="w-4 h-4 text-[#8B2E24]" />
-                  Email Notification Templates (Customizable Subjects &amp; Bodies)
+                  Customer &amp; staff email messages
                 </h3>
                 <p className="text-xs admin-muted mt-0.5">
                   Manage automated transaction and onboarding notifications dispatched to customers and artisan applicants.
@@ -1204,7 +1067,7 @@ function AdminSettingsContent() {
             </div>
 
             {/* Outbound SMTP Server & Live Test Engine */}
-            <div className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5">
+            <div id="mail-server" className="admin-card border admin-border rounded-xl p-6 shadow-sm space-y-5 scroll-mt-4">
               <div className="flex justify-between items-center border-b admin-border pb-3 flex-wrap gap-2">
                 <div>
                   <h3 className="font-bold admin-title text-sm flex items-center gap-2">
@@ -1309,7 +1172,7 @@ function AdminSettingsContent() {
               <div className="pt-3 border-t admin-border mt-3 bg-slate-50/60 dark:bg-slate-900/30 p-4 rounded-lg">
                 <h4 className="font-bold admin-title text-xs mb-1 flex items-center gap-1.5">
                   <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
-                  Live Dispatch Verification Tool
+                    Send a test email
                 </h4>
                 <p className="text-[11px] admin-muted mb-3">
                   Send a live diagnostic test message to verify outbound credentials, TLS handshakes, and mailbox deliverability.
@@ -1369,7 +1232,7 @@ function AdminSettingsContent() {
                 className="inline-flex items-center gap-2 admin-button-primary px-6 py-2.5 rounded-lg text-xs font-semibold shadow-sm transition-colors disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                {submitting ? 'Saving Gateways & Templates...' : 'Save Gateways & Templates'}
+                {submitting ? 'Saving email settings...' : 'Save email settings'}
               </button>
             </div>
           </form>

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { NEWS_CATEGORIES, NEWS_SUBCATEGORIES, NEWS_NOTICE_CATEGORIES, normalizeNewsCategory, newsCategoryPath } from '@/lib/news-categories';
 import NewsCategorySelect from '@/components/admin/NewsCategorySelect';
-import { FileEdit, Plus, BookOpen, Newspaper, Shield, Layers, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X, AlertCircle } from 'lucide-react';
+import { FileEdit, Plus, BookOpen, Newspaper, Shield, Edit, Trash2, FileText, Upload, Image as ImageIcon, ExternalLink, X, AlertCircle } from 'lucide-react';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 
@@ -55,11 +55,7 @@ export default function AdminContentPage() {
   const searchParams = useSearchParams();
   const newsCategory = normalizeNewsCategory(searchParams.get('category'));
   const [taxonomy, setTaxonomy] = useState<{ categories: string[]; subCategories: string[] }>({ categories: [...NEWS_CATEGORIES], subCategories: [...NEWS_SUBCATEGORIES] });
-  const [activeTab, setActiveTab] = useState<'NEWS' | 'PUBLICATIONS' | 'GOVERNANCE' | 'POLICIES' | 'CLAMP_LAB'>('NEWS');
-  const [clampLevel, setClampLevel] = useState<number>(3);
-  const [sampleText, setSampleText] = useState<string>(
-    'The Handicrafts Association of Bhutan (HAB) stands as the apex civil society organization dedicated to the preservation, development, and promotion of Bhutan’s traditional Thirteen Arts and Crafts (Zorig Chusum). Founded to empower local artisans across all twenty dzongkhags, HAB facilitates market access, provides masterclass training in indigenous techniques, ensures fair trade pricing, and establishes rigorous quality certification protocols to safeguard Bhutanese cultural heritage in the global economy.'
-  );
+  const [activeTab, setActiveTab] = useState<'NEWS' | 'PUBLICATIONS' | 'GOVERNANCE' | 'POLICIES'>('NEWS');
 
   const [news, setNews] = useState<NewsItem[]>([]);
   const [publications, setPublications] = useState<PublicationItem[]>([]);
@@ -489,7 +485,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Shield className="w-4 h-4" />
-          <span>Governance &amp; Chapters ({governance.length})</span>
+          <span>Board &amp; Secretariat ({governance.length})</span>
         </button>
 
         <button
@@ -501,19 +497,7 @@ export default function AdminContentPage() {
           }`}
         >
           <FileEdit className="w-4 h-4" />
-          <span>Statutory Policies ({policies.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('CLAMP_LAB')}
-          className={`pb-3 text-xs font-semibold flex items-center gap-1.5 border-b-2 transition ${
-            activeTab === 'CLAMP_LAB'
-              ? 'border-indigo-400 text-indigo-300'
-              : 'border-transparent admin-muted admin-hover'
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          <span>Typography &amp; Clamping Lab</span>
+          <span>Website Policies ({policies.length})</span>
         </button>
       </div>
 
@@ -771,45 +755,14 @@ export default function AdminContentPage() {
         </div>
       )}
 
-      {/* Tab 4: Clamping Lab */}
-      {activeTab === 'CLAMP_LAB' && (
-        <div className="admin-card border admin-border rounded-lg p-6 shadow-sm space-y-4">
-          <div>
-            <h3 className="text-sm font-bold admin-title">Line-Clamp &amp; Typographic Density Inspector</h3>
-            <p className="text-xs admin-muted">Simulate catalog excerpts and descriptions under various clamp rules.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            {[1, 2, 3, 4, 5].map((lvl) => (
-              <button
-                key={lvl}
-                onClick={() => setClampLevel(lvl)}
-                className={`px-3 py-1 rounded text-xs font-mono font-bold ${
-                  clampLevel === lvl ? 'admin-button-primary' : 'admin-button-secondary'
-                }`}
-              >
-                clamp-{lvl}
-              </button>
-            ))}
-          </div>
-          <div
-            className="p-4 admin-panel rounded border admin-border admin-text text-sm leading-relaxed overflow-hidden"
-            style={{
-              display: '-webkit-box',
-              WebkitLineClamp: clampLevel,
-              WebkitBoxOrient: 'vertical',
-            }}
-          >
-            {sampleText}
-          </div>
-        </div>
-      )}
-
       {/* Create Modal */}
       {createModalType && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
           <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-              <h3 className="font-bold text-slate-900 text-base">Create {createModalType} Record</h3>
+              <h3 className="font-bold text-slate-900 text-base">
+                {createModalType === 'NEWS' ? 'Create news article' : createModalType === 'PUBLICATION' ? 'Add report or publication' : 'Add board or Secretariat record'}
+              </h3>
               <button onClick={() => setCreateModalType(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">✕</button>
             </div>
 
@@ -1069,7 +1022,9 @@ export default function AdminContentPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
           <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-              <h3 className="font-bold text-slate-900 text-base">Edit {editingItem.type} Record</h3>
+              <h3 className="font-bold text-slate-900 text-base">
+                {editingItem.type === 'NEWS' ? 'Edit news article' : editingItem.type === 'PUBLICATION' ? 'Edit report or publication' : 'Edit board or Secretariat record'}
+              </h3>
               <button onClick={() => setEditingItem(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">✕</button>
             </div>
 

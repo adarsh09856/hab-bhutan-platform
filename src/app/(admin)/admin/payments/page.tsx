@@ -99,7 +99,7 @@ export default function AdminPaymentsPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setSuccessMsg('✓ Payment gateway configurations saved successfully. Checkout options updated.');
+        setSuccessMsg('Payment methods saved. Checkout instructions are updated.');
         setTimeout(() => setSuccessMsg(''), 4000);
         await loadSettings();
       } else {
@@ -116,7 +116,7 @@ export default function AdminPaymentsPage() {
     return (
       <div className="py-24 text-center text-slate-500 text-xs font-mono flex flex-col items-center justify-center gap-3">
         <div className="w-8 h-8 border-2 border-[#8b2e24] border-t-transparent rounded-full animate-spin" />
-        <span>Loading payment gateway configurations...</span>
+        <span>Loading payment settings...</span>
       </div>
     );
   }
@@ -128,10 +128,10 @@ export default function AdminPaymentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
             <CreditCard className="w-6 h-6 text-[#8b2e24]" />
-            Payment Gateways &amp; Methods Control Center
+            Payment methods &amp; instructions
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Configure live payment gateways, Cash on Delivery (COD), Bhutan mBoB QR details, and international Bank Wire settlement instructions.
+            Set up the manual payment methods customers can use, update the instructions they see, and review payment references. Online card payments cannot be enabled here.
           </p>
         </div>
         <div className="flex items-center gap-3">

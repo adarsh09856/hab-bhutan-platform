@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Edit3, ExternalLink, ArrowUp, ArrowDown } from 'lucide-react';
 import { canAccessAdminPortal } from '@/lib/permissions';
+import { canOpenAdminRoute, type AdminAccessUser } from '@/lib/admin-navigation-access';
 import type { SectionType } from '@/components/public/UniversalLiveSectionEditor';
 
 interface SectionEditBadgeProps {
@@ -22,7 +23,7 @@ interface SectionEditBadgeProps {
 
 // A page can contain many badges. Share one session check instead of making
 // a health/database request for every section.
-type StaffAccess = { canAccessAdmin: boolean; permissions: string[] };
+type StaffAccess = { canAccessAdmin: boolean; user: AdminAccessUser | null };
 let staffCheck: Promise<StaffAccess> | null = null;
 
 function checkStaffSession(): Promise<StaffAccess> {
@@ -32,9 +33,10 @@ function checkStaffSession(): Promise<StaffAccess> {
       .then((data) => {
         const role = String(data?.user?.roleSlug || data?.user?.role || '').toLowerCase();
         const permissions = Array.isArray(data?.user?.permissions) ? data.user.permissions : [];
-        return { canAccessAdmin: canAccessAdminPortal(role, permissions), permissions };
+        const user = { roleSlug: role, permissions };
+        return { canAccessAdmin: canAccessAdminPortal(role, permissions), user };
       })
-      .catch(() => ({ canAccessAdmin: false, permissions: [] }))
+      .catch(() => ({ canAccessAdmin: false, user: null }))
       .finally(() => { staffCheck = null; });
   }
   return staffCheck;
@@ -53,6 +55,7 @@ export default function SectionEditBadge({
   const [visible, setVisible] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [staffPermissions, setStaffPermissions] = useState<string[]>([]);
+  const [staffUser, setStaffUser] = useState<AdminAccessUser | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,10 +63,11 @@ export default function SectionEditBadge({
       .then((staff) => {
         if (!cancelled) {
           setIsStaff(staff.canAccessAdmin);
-          setStaffPermissions(staff.permissions);
+          setStaffPermissions(staff.user?.permissions || []);
+          setStaffUser(staff.user);
         }
       })
-      .catch(() => { if (!cancelled) { setIsStaff(false); setStaffPermissions([]); } });
+      .catch(() => { if (!cancelled) { setIsStaff(false); setStaffPermissions([]); setStaffUser(null); } });
     return () => { cancelled = true; };
   }, []);
 
@@ -93,7 +97,9 @@ export default function SectionEditBadge({
     };
   }, []);
 
-  if (!visible || !isStaff) return null;
+  // Only show an editor shortcut when this staff account can open its target.
+  // This avoids sending staff into an access-denied page from public Quick Edit.
+  if (!visible || !isStaff || !canOpenAdminRoute(staffUser, studioHref)) return null;
 
   const isExtraSectionsManager = studioHref.startsWith('/admin/pages/sections');
   const canUseCompactAction = Boolean(compactAction && (compactAction.requiredPermissions || []).every((permission) =>

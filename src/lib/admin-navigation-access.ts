@@ -55,8 +55,14 @@ export function hasAdminPermission(user: AdminAccessUser | null, permission: str
 
 export function canOpenAdminRoute(user: AdminAccessUser | null, href: string): boolean {
   if (!user) return false;
-  const [path, query] = href.split('?');
-  if (path === '/admin/pages' && new URLSearchParams(query).get('new') === '1') {
+  let destination: URL;
+  try {
+    destination = new URL(href, 'https://hab.local');
+  } catch {
+    return false;
+  }
+  const path = destination.pathname;
+  if (path === '/admin/pages' && destination.searchParams.get('new') === '1') {
     return hasAdminPermission(user, 'content:create');
   }
   const route = Object.keys(routePermissions)

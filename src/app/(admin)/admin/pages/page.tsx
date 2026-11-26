@@ -302,6 +302,7 @@ const CORE_WEBSITE_PAGES: WebPageItem[] = [
 export default function AdminPagesHub() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [selectedGroup, setSelectedGroup] = useState('all');
   const [customPages, setCustomPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageListError, setPageListError] = useState('');
@@ -769,27 +770,49 @@ export default function AdminPagesHub() {
     ].filter(Boolean))
   );
 
+  const pageGroupFor = (page: WebPageItem) => {
+    if (page.isCustom) return 'created';
+    if (['Core Pages', 'Governance', 'Heritage Taxonomy'].includes(page.category)) return 'core';
+    if (page.category === 'Communications') return 'communications';
+    if (['Artisans', 'Field & Retail'].includes(page.category)) return 'directory';
+    return 'operations';
+  };
+
+  const pageGroups = [
+    { id: 'core', title: 'Core pages', description: 'Homepage, About, contact, policies and the information that explains HAB.' },
+    { id: 'communications', title: 'Communications', description: 'News, events and publications shared with the public.' },
+    { id: 'directory', title: 'Directory', description: 'Members, artisans, outlets, clusters and craft listings.' },
+    { id: 'operations', title: 'Programmes & operations', description: 'Projects, commerce, donations and other service pages.' },
+    { id: 'created', title: 'Created pages', description: 'Pages staff have added with the page editor.' },
+  ];
+
   const filteredPages = orderedAllPages.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.summary.toLowerCase().includes(search.toLowerCase()) ||
       p.crudFeatures.some((f) => f.toLowerCase().includes(search.toLowerCase()));
 
-    if (selectedCategory === 'ALL') return matchesSearch;
-    if (selectedCategory === 'Created pages') return matchesSearch && p.isCustom;
-    return matchesSearch && p.category === selectedCategory;
+    const matchesGroup = selectedGroup === 'all' || pageGroupFor(p) === selectedGroup;
+    const matchesCategory = selectedCategory === 'ALL'
+      || (selectedCategory === 'Created pages' ? p.isCustom : p.category === selectedCategory);
+    return matchesSearch && matchesGroup && matchesCategory;
   });
+
+  const visiblePageGroups = pageGroups
+    .filter((group) => selectedGroup === 'all' || group.id === selectedGroup)
+    .map((group) => ({ ...group, pages: filteredPages.filter((page) => pageGroupFor(page) === group.id) }))
+    .filter((group) => group.pages.length > 0);
 
   return (
     <div className="space-y-6 pb-12 font-figtree">
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center gap-2.5 animate-bounce ${
-            toast.type === 'success'
+          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center gap-2.5 ${
+          toast.type === 'success'
               ? 'bg-emerald-600 text-white'
               : 'bg-rose-600 text-white'
-          }`}
+          } animate-in fade-in slide-in-from-bottom-2 duration-200`}
         >
           {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           <span>{toast.message}</span>
@@ -817,10 +840,10 @@ export default function AdminPagesHub() {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mt-1">
-            Website Pages Directory
+            Website pages
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Find pages already on your site or create a new page. Open a page to edit its content, preview it, or manage its menu settings.
+            Choose a work area, find the page, then open its editor. Public pages stay grouped by what staff use them for.
           </p>
         </div>
 
@@ -840,7 +863,7 @@ export default function AdminPagesHub() {
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-xs font-semibold text-slate-700 shadow-xs transition-colors"
           >
             <Edit3 className="w-3.5 h-3.5 text-slate-500" />
-            <span>Manage Homepage (A–Z)</span>
+            <span>Homepage content</span>
           </Link>
 
           {/* Primary "+ Create Page" Button */}
@@ -865,53 +888,62 @@ export default function AdminPagesHub() {
         </div>
       )}
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
+      {/* Work areas and page search */}
+      <section aria-label="Website page work areas" className="space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {[{ id: 'all', label: 'All pages', count: allPages.length }, ...pageGroups.map((group) => ({ id: group.id, label: group.title, count: allPages.filter((page) => pageGroupFor(page) === group.id).length }))].map((group) => (
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => {
+                setSelectedGroup(group.id);
+                setSelectedCategory('ALL');
+              }}
+              aria-pressed={selectedGroup === group.id}
+              className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B2E24] ${selectedGroup === group.id ? 'bg-[#8B2E24] text-white' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+            >
+              {group.label}<span className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] ${selectedGroup === group.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}`}>{group.count}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3">
+          <div className="relative w-full sm:w-80">
           <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
           <input
             type="text"
-            placeholder="Search all pages or features..."
+            aria-label="Search website pages"
+            placeholder="Search by page name or task…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#8B2E24] focus:ring-1 focus:ring-[#8B2E24]"
           />
         </div>
-
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 custom-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
-              }`}
+          <label className="flex w-full items-center gap-2 text-xs font-medium text-slate-600 sm:w-auto">
+            <span className="shrink-0">Filter by type</span>
+            <select
+              value={selectedCategory}
+              onChange={(event) => setSelectedCategory(event.target.value)}
+              className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#8B2E24] sm:w-56"
             >
-              {cat}
-              {cat === 'Created pages' && (
-                <span className="ml-1.5 px-1.5 py-0.2 rounded-full bg-amber-400/30 text-amber-800 font-mono text-[10px] font-bold">
-                  {customPages.length}
-                </span>
-              )}
-            </button>
-          ))}
+              {categories.map((category) => <option key={category} value={category}>{category === 'ALL' ? 'All types' : category}</option>)}
+            </select>
+          </label>
         </div>
-      </div>
+      </section>
 
       {/* Sorting & Order Controls Bar */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <ListOrdered className="w-4 h-4 text-[#8B2E24]" />
-          <span className="text-xs font-semibold text-slate-700">Sort & Sequence:</span>
+          <label htmlFor="page-sort" className="text-xs font-semibold text-slate-700">Sort pages</label>
           <select
+            id="page-sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 font-medium focus:ring-1 focus:ring-[#8B2E24] focus:outline-hidden"
           >
-            <option value="custom">Custom Sequence (Reorder with ↑ / ↓)</option>
+            <option value="custom">Saved order (use arrows to reorder)</option>
             <option value="title-asc">Title: A to Z</option>
             <option value="title-desc">Title: Z to A</option>
             <option value="category">Category</option>
@@ -931,14 +963,25 @@ export default function AdminPagesHub() {
           )}
         </div>
         <div className="text-[11px] text-slate-500 font-medium">
-          Showing <span className="font-bold text-slate-800">{filteredPages.length}</span> pages. Use <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">↑</span> and <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-slate-700">↓</span> to reorder pages.
+          Showing <span className="font-bold text-slate-800">{filteredPages.length}</span> pages. Reorder with the arrows on each page.
         </div>
       </div>
 
-      {/* Pages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading && allPages.length === 0 && <div className="col-span-full rounded-xl border bg-white p-6 text-sm text-slate-600">Loading your pages…</div>}
-        {filteredPages.map((page, pageIdx) => {
+      {/* Pages grouped by the work staff need to do */}
+      <div className="space-y-8">
+        {loading && allPages.length === 0 && <div className="rounded-xl border bg-white p-6 text-sm text-slate-600">Loading your pages…</div>}
+        {visiblePageGroups.map((group) => (
+          <section key={group.id} id={`page-group-${group.id}`} aria-labelledby={`heading-${group.id}`} className="space-y-3">
+            <div className="flex flex-col gap-1 border-b border-slate-200 pb-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 id={`heading-${group.id}`} className="text-base font-bold text-slate-900">{group.title}</h2>
+                <p className="mt-0.5 text-xs text-slate-500">{group.description}</p>
+              </div>
+              <span className="text-xs font-medium text-slate-500">{group.pages.length} {group.pages.length === 1 ? 'page' : 'pages'}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {group.pages.map((page) => {
+          const pageIdx = filteredPages.findIndex((item) => item.id === page.id);
           const Icon = page.icon || FileText;
           return (
             <div
@@ -1095,6 +1138,9 @@ export default function AdminPagesHub() {
             </div>
           );
         })}
+            </div>
+          </section>
+        ))}
       </div>
 
       {filteredPages.length === 0 && (
