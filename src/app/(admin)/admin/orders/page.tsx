@@ -1955,7 +1955,7 @@ export default function AdminOrdersPage() {
             totalUSD: invoiceModalOrder.totalUSD,
             totalPaidCurrency: invoiceModalOrder.totalPaidCurrency,
             currencyUsed: invoiceModalOrder.currencyUsed,
-            items: invoiceModalOrder.orderItems || invoiceModalOrder.items,
+            items: getOrderLineItems(invoiceModalOrder),
           }}
         />
       )}

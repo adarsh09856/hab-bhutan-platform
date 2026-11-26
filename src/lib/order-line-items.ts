@@ -42,7 +42,7 @@ export function getOrderLineItems(order: { items?: unknown; orderItems?: unknown
       code: String(item.code || relation.code || product.code || item.productCode || '—'),
       name: String(item.name || item.title || relation.name || product.name || 'Product'),
       quantity: Number(item.quantity ?? item.qty ?? relation.quantity ?? 0),
-      priceUSD: Number(item.priceUSD ?? item.unitPrice ?? relation.priceUSD ?? product.priceUSD ?? 0),
+      priceUSD: Number(item.priceUSD ?? item.priceUsd ?? item.unitPrice ?? relation.priceUSD ?? product.priceUSD ?? 0),
     };
   });
 }
