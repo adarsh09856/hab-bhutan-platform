@@ -10,6 +10,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import ProductQuickEdit from '@/components/public/ProductQuickEdit';
 import { useLanguage } from '@/context/LanguageContext';
 import { shopCraftHref } from '@/lib/product-routes';
+import { inferProductType } from '@/lib/product-type';
 
 interface ShopCraft {
   key: string;
@@ -75,7 +76,7 @@ function ShopGridContent() {
       const price = p.priceUSD || p.price || 0;
       if (!isAll && p.craftKey !== craftParam) return false;
       if (search && ![p.name, p.code, p.description, p.maker?.name, p.trader?.shopName].some((value) => String(value || '').toLowerCase().includes(search.toLowerCase()))) return false;
-      if (productType && p.productType !== productType) return false;
+      if (productType && inferProductType(p) !== productType) return false;
       if (minPrice && price < Number(minPrice)) return false;
       if (maxPrice && price > Number(maxPrice)) return false;
       if (onlyAvailable && (p.availability !== 'IN_STOCK' || p.stock <= 0)) return false;
