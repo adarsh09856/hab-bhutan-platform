@@ -10,6 +10,7 @@ import SectionEditBadge from '@/components/public/SectionEditBadge';
 import LocalizedRecordField from '@/components/public/LocalizedRecordField';
 import { useLanguage } from '@/context/LanguageContext';
 import { awardTypeLabel } from '@/lib/award-types';
+import { awardeePortrait } from '@/lib/awardee-portrait';
 
 export default function MastersPage() {
   const { language } = useLanguage();
@@ -362,8 +363,8 @@ export default function MastersPage() {
               english: '',
               dzongkha: '',
             };
-            const imgSrc = m.image_path || '';
-            const hasPortrait = Boolean(imgSrc) && !/\/assets\/photos\/(?:hero-[^/]+|about-hab\.jpg)(?:[?#].*)?$/i.test(imgSrc);
+            const imgSrc = awardeePortrait(m.image_path);
+            const hasPortrait = Boolean(imgSrc);
 
             return (
               <Link key={m.slug || i} href={`/masters/${encodeURIComponent(m.slug)}`} className="card honour block">

@@ -17,6 +17,7 @@ import { productHref, shopCraftHref } from '@/lib/product-routes';
 import { productCardImageUrl } from '@/lib/product-image-fallbacks';
 import { normalizeProductAvailability } from '@/lib/product-availability';
 import { awardTypeLabel } from '@/lib/award-types';
+import { awardeePortrait } from '@/lib/awardee-portrait';
 import SectionEditBadge from '@/components/public/SectionEditBadge';
 import OutletGallery from '@/components/public/OutletGallery';
 import UniversalLiveSectionEditor, { SectionType } from '@/components/public/UniversalLiveSectionEditor';
@@ -353,7 +354,7 @@ export default function HomePageClient({
               honour: awardLabel,
               meta: details.join(' · '),
               note: m.citation || m.note || '',
-              image_path: m.portraitUrl || '',
+              image_path: awardeePortrait(m.portraitUrl),
               slot: `photo — ${m.name}`,
             };
           });
