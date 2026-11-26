@@ -24,7 +24,8 @@ export type ShippingRateZone = {
   bands: ShippingRateBand[];
 };
 
-export type ShippingRateTable = { version: 1; zones: ShippingRateZone[] };
+export type ShippingDefaults = { emsUsd: number; expressUsd: number };
+export type ShippingRateTable = { version: 1; zones: ShippingRateZone[]; defaults?: ShippingDefaults };
 
 export const EMPTY_SHIPPING_RATE_TABLE: ShippingRateTable = { version: 1, zones: [] };
 export const FREE_EMS_MINIMUM_USD = 200;
@@ -40,6 +41,13 @@ export function normalizeShippingCountry(value: unknown): string | null {
 export function validateShippingRateTable(input: unknown): { value?: ShippingRateTable; error?: string } {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return { error: 'Shipping rates must be an object.' };
   const raw = input as Record<string, unknown>;
+  let defaults: ShippingDefaults | undefined;
+  if (raw.defaults !== undefined) {
+    if (!raw.defaults || typeof raw.defaults !== 'object' || Array.isArray(raw.defaults)) return { error: 'Default shipping charges must include EMS and Express prices.' };
+    const values = raw.defaults as Record<string, unknown>;
+    if (['emsUsd', 'expressUsd'].some(key => typeof values[key] !== 'number' || !Number.isFinite(values[key]) || Number(values[key]) < 0 || Number(values[key]) > 100000)) return { error: 'Enter default EMS and Express charges between 0 and 100,000 USD.' };
+    defaults = { emsUsd: Math.round(Number(values.emsUsd) * 100) / 100, expressUsd: Math.round(Number(values.expressUsd) * 100) / 100 };
+  }
   if (Array.isArray(raw.zones) === false || raw.zones.length > 100) return { error: 'Add no more than 100 shipping zones.' };
   const usedCountries = new Set<string>();
   const ids = new Set<string>();
@@ -91,7 +99,7 @@ export function validateShippingRateTable(input: unknown): { value?: ShippingRat
     }
     zones.push({ id, name, countries, bands });
   }
-  return { value: { version: 1, zones } };
+  return { value: { version: 1, zones, ...(defaults ? { defaults } : {}) } };
 }
 
 /** Parse only an explicit numeric value with a supported unit; never infer a unit. */
@@ -116,20 +124,20 @@ export function aggregateOrderWeightKg(items: Array<{ weight?: unknown; quantity
   return total > 0 ? Math.round(total * 10000) / 10000 : null;
 }
 
-export function calculateShipping(subtotalUSD: number): {
+export function calculateShipping(subtotalUSD: number, defaults?: ShippingDefaults): {
   ems: ShippingOption;
   express: ShippingOption;
   options: ShippingOption[];
 } {
   const isEmsFree = subtotalUSD >= FREE_EMS_MINIMUM_USD;
-  const emsCost = isEmsFree ? 0 : 24;
-  const expressCost = 62;
+  const emsCost = isEmsFree ? 0 : defaults?.emsUsd ?? 24;
+  const expressCost = defaults?.expressUsd ?? 62;
 
   const ems: ShippingOption = {
     key: 'ems',
     name: 'EMS / Bhutan Post',
     duration: '7–14 days, tracked',
-    description: isEmsFree ? 'Legacy flat fallback: free EMS on orders over $200' : 'Legacy flat fallback: $24 worldwide tracked shipping',
+    description: isEmsFree ? 'Free EMS on eligible orders over $200' : 'Default tracked shipping charge',
     costUSD: emsCost,
     isFree: isEmsFree,
     rateSource: 'legacy-fallback',
@@ -139,7 +147,7 @@ export function calculateShipping(subtotalUSD: number): {
     key: 'express',
     name: 'Express Courier',
     duration: '3–5 days, tracked and insured',
-    description: 'Legacy flat fallback: $62 worldwide express shipping',
+    description: 'Default express shipping charge',
     costUSD: expressCost,
     isFree: false,
     rateSource: 'legacy-fallback',
@@ -155,7 +163,7 @@ export function calculateShippingForDestination(
   table: ShippingRateTable,
   eligibleForFreeEms = true,
 ) {
-  const fallback = calculateShipping(subtotalUSD);
+  const fallback = calculateShipping(subtotalUSD, table.defaults);
   const countryCode = normalizeShippingCountry(country);
   if (!countryCode || orderWeightKg === null || !Number.isFinite(orderWeightKg) || orderWeightKg <= 0) return fallback;
   const zone = table.zones.find((candidate) => candidate.countries.includes(countryCode));

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requirePermission, getClientIp } from '@/lib/rbac';
 import { logAudit } from '@/lib/audit';
-import { calculateShipping } from '@/lib/shipping';
+import { aggregateOrderWeightKg, calculateShippingForDestination, EMPTY_SHIPPING_RATE_TABLE, validateShippingRateTable } from '@/lib/shipping';
 import { getEffectiveFxRate } from '@/lib/fx';
 import { sendOrderShippedEmail, sendOrderConfirmationEmail } from '@/lib/email-service';
 import { notifyOrderUpdate } from '@/lib/transaction-notifications';
@@ -251,7 +251,15 @@ export async function POST(req: NextRequest) {
         shippingFeeUSD = 0;
         effectiveShippingMethod = 'EMS';
       } else {
-        const shippingCalc = calculateShipping(subtotalUSD);
+        const setting = await tx.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } });
+        const trust = setting?.trustBadges && typeof setting.trustBadges === 'object' && !Array.isArray(setting.trustBadges)
+          ? setting.trustBadges as Record<string, unknown> : {};
+        const table = validateShippingRateTable(trust.shippingRates).value || EMPTY_SHIPPING_RATE_TABLE;
+        const shippingCalc = calculateShippingForDestination(
+          subtotalUSD, shippingAddress?.country || 'Bhutan',
+          aggregateOrderWeightKg(resolvedItems.map(item => ({ weight: item.product.weight, quantity: item.quantity }))),
+          table, resolvedItems.every(item => item.product.availability !== 'MADE_TO_ORDER'),
+        );
         const isExpress = shippingMethod === 'EXPRESS';
         shippingFeeUSD = isExpress ? shippingCalc.express.costUSD : shippingCalc.ems.costUSD;
         effectiveShippingMethod = isExpress ? 'EXPRESS' : 'EMS';

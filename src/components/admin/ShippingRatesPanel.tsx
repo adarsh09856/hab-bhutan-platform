@@ -5,6 +5,10 @@ import { Plus, Save, Trash2 } from 'lucide-react';
 import { SHIPPING_COUNTRIES } from '@/lib/countries';
 import { EMPTY_SHIPPING_RATE_TABLE, type ShippingRateTable, type ShippingRateZone } from '@/lib/shipping';
 
+type ShippingRateTableWithDefaults = ShippingRateTable & {
+  defaults?: { emsUsd: number; expressUsd: number };
+};
+
 const fieldClass = 'mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm admin-text';
 const blankZone = (index: number): ShippingRateZone => ({
   id: `shipping-zone-${Date.now()}-${index}`,
@@ -14,7 +18,10 @@ const blankZone = (index: number): ShippingRateZone => ({
 });
 
 export default function ShippingRatesPanel() {
-  const [rateTable, setRateTable] = useState<ShippingRateTable>(EMPTY_SHIPPING_RATE_TABLE);
+  const [rateTable, setRateTable] = useState<ShippingRateTableWithDefaults>({
+    ...EMPTY_SHIPPING_RATE_TABLE,
+    defaults: { emsUsd: 24, expressUsd: 62 },
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -27,7 +34,11 @@ export default function ShippingRatesPanel() {
       const response = await fetch('/api/admin/shipping-rates', { credentials: 'include', cache: 'no-store' });
       const data = await response.json();
       if (!response.ok || !data?.success) throw new Error(data?.error || 'Could not load shipping rates.');
-      setRateTable(data.rateTable || EMPTY_SHIPPING_RATE_TABLE);
+      const loaded = data.rateTable || EMPTY_SHIPPING_RATE_TABLE;
+      setRateTable({
+        ...loaded,
+        defaults: loaded.defaults ?? { emsUsd: 24, expressUsd: 62 },
+      });
     } catch (reason: any) {
       setError(reason?.message || 'Could not load shipping rates.');
     } finally {
@@ -43,6 +54,21 @@ export default function ShippingRatesPanel() {
 
   const addZone = () => setRateTable((current) => ({ ...current, zones: [...current.zones, blankZone(current.zones.length)] }));
 
+  const updateDefault = (key: 'emsUsd' | 'expressUsd', value: number) => {
+    setRateTable((current) => ({
+      ...current,
+      defaults: { ...(current.defaults ?? { emsUsd: 24, expressUsd: 62 }), [key]: value },
+    }));
+  };
+
+  const defaultValidation = (['emsUsd', 'expressUsd'] as const).flatMap((key) => {
+    const label = key === 'emsUsd' ? 'Default EMS charge' : 'Default DHL Express charge';
+    const value = rateTable.defaults?.[key];
+    if (value === undefined || !Number.isFinite(value)) return [`${label} is required.`];
+    if (value < 0 || value > 100000) return [`${label} must be between 0 and 100,000 USD.`];
+    return [];
+  });
+
   const addBand = (zone: ShippingRateZone) => {
     const bands = [...zone.bands];
     const last = bands[bands.length - 1];
@@ -57,6 +83,11 @@ export default function ShippingRatesPanel() {
   };
 
   const save = async () => {
+    if (defaultValidation.length) {
+      setError(defaultValidation.join(' '));
+      setMessage('');
+      return;
+    }
     setSaving(true);
     setMessage('');
     setError('');
@@ -70,7 +101,7 @@ export default function ShippingRatesPanel() {
       const data = await response.json();
       if (!response.ok || !data?.success) throw new Error(data?.error || 'Could not save shipping rates.');
       setRateTable(data.rateTable);
-      setMessage('Destination and weight rates saved. Checkout will use configured bands where a tariff is entered.');
+      setMessage('Default shipping charges and destination/weight rates saved.');
     } catch (reason: any) {
       setError(reason?.message || 'Could not save shipping rates.');
     } finally {
@@ -84,13 +115,31 @@ export default function ShippingRatesPanel() {
     <section className="space-y-5">
       <div className="admin-card rounded-xl border admin-border p-5 space-y-3">
         <div>
+          <h2 className="admin-title text-base font-semibold">Default shipping charges</h2>
+          <p className="admin-muted mt-1 text-sm">These saved charges apply when no destination and weight tariff matches the order.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="admin-text block text-sm font-medium">
+            EMS (USD)
+            <input type="number" min="0" max="100000" step="0.01" value={Number.isFinite(rateTable.defaults?.emsUsd) ? rateTable.defaults!.emsUsd : ''} onChange={(event) => updateDefault('emsUsd', event.target.value === '' ? Number.NaN : Number(event.target.value))} className={fieldClass} aria-label="Default EMS charge in USD" aria-invalid={defaultValidation.some((item) => item.startsWith('Default EMS'))} />
+          </label>
+          <label className="admin-text block text-sm font-medium">
+            DHL Express (USD)
+            <input type="number" min="0" max="100000" step="0.01" value={Number.isFinite(rateTable.defaults?.expressUsd) ? rateTable.defaults!.expressUsd : ''} onChange={(event) => updateDefault('expressUsd', event.target.value === '' ? Number.NaN : Number(event.target.value))} className={fieldClass} aria-label="Default DHL Express charge in USD" aria-invalid={defaultValidation.some((item) => item.startsWith('Default DHL Express'))} />
+          </label>
+        </div>
+        {defaultValidation.length > 0 && <p className="text-sm text-rose-700" role="alert">{defaultValidation.join(' ')}</p>}
+      </div>
+
+      <div className="admin-card rounded-xl border admin-border p-5 space-y-3">
+        <div>
           <h2 className="admin-title text-base font-semibold">Destination and weight shipping rates</h2>
           <p className="admin-muted mt-1 text-sm">Create a destination zone, select its countries, then enter the official EMS and Express prices for each order-weight band. Prices are USD. Blank tariffs remain unset.</p>
         </div>
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          <strong>Legacy fallback:</strong> until HAB enters a matching carrier tariff, checkout continues to use the existing flat $24 EMS / $62 Express values (and its existing $200 EMS free-shipping threshold). No carrier prices are prefilled here.
+          <strong>Fallback behavior:</strong> saved default shipping charges apply when no destination and weight tariff matches. The existing $200 EMS free-shipping threshold remains in effect. No destination tariffs are prefilled here.
         </div>
-        <p className="admin-muted text-xs">Order weight is summed from product records. A product weight must include a clear unit, such as “250 g” or “1.2 kg”; an unknown weight uses the marked legacy fallback. EMS is free on eligible retail orders of USD 200 or more up to 10 kg.</p>
+        <p className="admin-muted text-xs">Order weight is summed from product records. A product weight must include a clear unit, such as “250 g” or “1.2 kg”; when the weight is unknown or no destination/weight tariff matches, saved default charges apply. EMS is free on eligible retail orders of USD 200 or more up to 10 kg.</p>
       </div>
 
       {rateTable.zones.map((zone, zoneIndex) => (
@@ -140,11 +189,11 @@ export default function ShippingRatesPanel() {
         </article>
       ))}
 
-      {rateTable.zones.length === 0 && <div className="admin-card rounded-xl border admin-border p-8 text-center"><p className="admin-title font-semibold">No carrier rate zones configured</p><p className="admin-muted mt-1 text-sm">Checkout remains on the marked legacy flat fallback until a rate zone and tariff values are saved.</p></div>}
+      {rateTable.zones.length === 0 && <div className="admin-card rounded-xl border admin-border p-8 text-center"><p className="admin-title font-semibold">No carrier rate zones configured</p><p className="admin-muted mt-1 text-sm">Saved default shipping charges are used when no destination and weight tariff matches.</p></div>}
 
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={addZone} className="inline-flex items-center gap-2 rounded-lg border admin-border px-4 py-2.5 text-sm font-semibold admin-text hover:bg-slate-50"><Plus size={16} /> Add destination zone</button>
-        <button type="button" onClick={() => void save()} disabled={saving} className="inline-flex items-center gap-2 rounded-lg admin-button-primary px-5 py-2.5 text-sm font-semibold disabled:opacity-50"><Save size={16} /> {saving ? 'Saving rates…' : 'Save shipping rates'}</button>
+        <button type="button" onClick={() => void save()} disabled={saving || defaultValidation.length > 0} className="inline-flex items-center gap-2 rounded-lg admin-button-primary px-5 py-2.5 text-sm font-semibold disabled:opacity-50"><Save size={16} /> {saving ? 'Saving rates…' : 'Save shipping rates'}</button>
         {message && <span className="text-sm text-emerald-700" role="status">{message}</span>}
         {error && <span className="text-sm text-rose-700" role="alert">{error}</span>}
       </div>

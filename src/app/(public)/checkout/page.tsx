@@ -532,10 +532,10 @@ export default function CheckoutPage() {
                   </span>
                 </label>
               </div>
-              {shippingQuoteLoading && <p className="text-xs text-[#6B5A4C]" role="status">Updating delivery costs for this country and basket… The displayed amount is currently the legacy flat fallback until the quote finishes.</p>}
+              {shippingQuoteLoading && <p className="text-xs text-[#6B5A4C]" role="status">Updating delivery costs for this country and basket…</p>}
               {shippingOption.rateSource === 'legacy-fallback' && !shippingQuoteLoading && (
                 <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
-                  {currentShippingQuoteError || (hasCurrentShippingQuote ? shippingQuote?.message : '') || 'Legacy flat fallback: $24 EMS / $62 Express remains until HAB enters carrier-approved destination and weight rates.'}
+                  {currentShippingQuoteError || (hasCurrentShippingQuote ? shippingQuote?.message : '') || 'The default delivery charge applies where no destination rate is saved.'}
                 </p>
               )}
             </div>

@@ -53,9 +53,9 @@ export async function POST(req: NextRequest) {
       orderWeightKg,
       usesLegacyFallback,
       message: weightMissing
-        ? 'A product weight is missing or is not written with an explicit g/kg unit. The existing $24 EMS / $62 Express flat fallback is being used.'
+        ? 'The default delivery charge applies because a product weight is not available.'
         : usesLegacyFallback
-          ? 'A destination and weight tariff is not configured for every selected service or weight band. The existing $24 EMS / $62 Express flat fallback remains in use until HAB enters carrier-approved rates.'
+          ? 'The default delivery charge applies where no destination and weight rate is saved.'
           : '',
     }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
