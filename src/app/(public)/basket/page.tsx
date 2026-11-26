@@ -96,14 +96,17 @@ export default function BasketPage() {
         {!cartHydrated ? <p role="status">Loading your basket…</p> : hasBasketLines && catalogueLoadError ? (
           <div className="panel" role="alert">
             <p>{catalogueLoadError}</p>
-            <button type="button" className="btn btn--ghost" onClick={retryCatalogue}>Retry availability check</button>
+            <button type="button" className="btn btn--outline" onClick={retryCatalogue}>Retry availability check</button>
           </div>
         ) : hasBasketLines && !catalogueLoaded ? <p role="status">Loading current product prices and availability…</p> : hasBasketLines && Object.keys(cart).some(code => cart[code] > 0 && !items.some(item => item.code === code)) ? (
           <div className="panel" role="alert">
             <p>Some products in this basket are no longer in the catalogue. Remove them to continue.</p>
-            {Object.keys(cart).filter(code => !items.some(item => item.code === code)).map(code => (
-              <button key={code} type="button" className="btn btn--ghost" onClick={() => removeFromCart(code)}>Remove unavailable product {code}</button>
-            ))}
+            <div className="actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 20 }}>
+              <button type="button" className="btn btn--accent" onClick={() => {
+                Object.keys(cart).filter(code => cart[code] > 0 && !items.some(item => item.code === code)).forEach(removeFromCart);
+              }}>Remove unavailable items</button>
+              <Link href="/shop" className="btn btn--outline">Continue shopping</Link>
+            </div>
           </div>
         ) : cartCount === 0 ? (
           /* State 2: Basket empty */
