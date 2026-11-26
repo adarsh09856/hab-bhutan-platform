@@ -102,9 +102,9 @@ export default function BasketPage() {
           <div className="panel" role="alert">
             <p>Some products in this basket are no longer in the catalogue. Remove them to continue.</p>
             <div className="actions" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 20 }}>
-              <button type="button" className="btn btn--accent" onClick={() => {
-                Object.keys(cart).filter(code => cart[code] > 0 && !items.some(item => item.code === code)).forEach(removeFromCart);
-              }}>Remove unavailable items</button>
+              {Object.keys(cart).filter(code => cart[code] > 0 && !items.some(item => item.code === code)).map(code => (
+                <button key={code} type="button" className="btn btn--outline" onClick={() => removeFromCart(code)}>Remove unavailable item {code}</button>
+              ))}
               <Link href="/shop" className="btn btn--outline">Continue shopping</Link>
             </div>
           </div>
