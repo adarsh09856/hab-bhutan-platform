@@ -91,7 +91,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
 
         <nav aria-label="News & Events categories" className="flex flex-wrap gap-3 mt-6">
           <Link className="btn btn--outline" href="/news" aria-current={!category ? 'page' : undefined}>All news</Link>
-          {NEWS_NOTICE_CATEGORIES.filter((name) => kinds.some((kind) => kind.toLocaleLowerCase() === name.toLocaleLowerCase())).map((name) => <Link key={name} className="btn btn--outline" href={newsCategoryPath(name)} aria-current={category === name ? 'page' : undefined}>{name}</Link>)}
+          {NEWS_NOTICE_CATEGORIES.map((name) => <Link key={name} className="btn btn--outline" href={newsCategoryPath(name)} aria-current={category === name ? 'page' : undefined}>{name}</Link>)}
           <Link className="btn btn--outline" href="/events">Events</Link>
         </nav>
 
@@ -164,13 +164,22 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
                 );
               })}
               {filtered.length === 0 && (
-                <p className="panel__body">
-                  {newsState === 'loading'
-                    ? (language === 'dz' ? 'གསར་འགྱུར་འཚོལ་བཞིན་ཡོད།' : 'Loading updates…')
-                    : newsState === 'error'
-                      ? (language === 'dz' ? 'གསར་འགྱུར་ད་ལྟ་ལྟ་མི་ཚུགས།' : 'News is temporarily unavailable.')
-                      : category ? `No published ${category.toLowerCase()} yet.` : (language === 'dz' ? 'གསར་འགྱུར་ད་ལྟ་མེད།' : 'No published updates yet.')}
-                </p>
+                <div className="panel" role={newsState === 'error' ? 'alert' : 'status'}>
+                  <p className="panel__body">
+                    {newsState === 'loading'
+                      ? (language === 'dz' ? 'གསར་འགྱུར་འཚོལ་བཞིན་ཡོད།' : 'Loading updates…')
+                      : newsState === 'error'
+                        ? (language === 'dz' ? 'གསར་འགྱུར་ད་ལྟ་ལྟ་མི་ཚུགས།' : 'News is temporarily unavailable.')
+                        : category === 'Vacancies'
+                          ? 'There are no published vacancy notices yet. Please check back for future opportunities.'
+                          : category === 'Announcements'
+                            ? 'There are no published announcements yet. Please check back for future updates.'
+                            : (language === 'dz' ? 'གསར་འགྱུར་ད་ལྟ་མེད།' : 'No published updates yet.')}
+                  </p>
+                  {newsState === 'ready' && category && (
+                    <Link className="link-accent" href="/news">Browse all News & Events →</Link>
+                  )}
+                </div>
               )}
             </div>
           </div>
