@@ -7,7 +7,6 @@ import UtilityBar from '@/components/public/UtilityBar';
 import Header from '@/components/public/Header';
 import Footer from '@/components/public/Footer';
 import AskHabAssistant from '@/components/public/AskHabAssistant';
-import DesignTweaks from '@/components/public/DesignTweaks';
 import PolicyModal from '@/components/public/PolicyModal';
 import UniversalPageQuickEdit from '@/components/public/UniversalPageQuickEdit';
 import PublicPageBlocks from '@/components/public/PublicPageBlocks';
@@ -116,7 +115,6 @@ export default async function PublicLayout({
       <div className="hab-public-shell flex-1 w-full overflow-x-clip">{children}<PublicPageBlocks /></div>
       <Footer initialNavigation={initialFooter} />
       <AskHabAssistant />
-      <DesignTweaks />
       <PolicyModal />
       <UniversalPageQuickEdit />
     </div>
