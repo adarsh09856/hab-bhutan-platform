@@ -43,7 +43,15 @@ function deduplicateProjectRecords(projects: Project[]): Project[] {
       continue;
     }
 
-    const identity = JSON.stringify([project.name, project.period, project.summary]);
+    // A duplicate legacy import was saved with a trailing " 1" on its title.
+    // Treat that import suffix as presentation noise only when period and
+    // summary also match; the underlying records remain unchanged.
+    const identityName = project.name.trim().replace(/\s+1$/, '').toLocaleLowerCase();
+    const identity = JSON.stringify([
+      identityName,
+      project.period.trim().replace(/\s+/g, ' ').toLocaleLowerCase(),
+      project.summary.trim().replace(/\s+/g, ' ').toLocaleLowerCase(),
+    ]);
     const existingIndex = indexByIdentity.get(identity);
     if (existingIndex === undefined) {
       indexByIdentity.set(identity, uniqueProjects.length);
