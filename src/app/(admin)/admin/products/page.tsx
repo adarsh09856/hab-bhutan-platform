@@ -27,6 +27,7 @@ import { AdminBadge, AdminModal, AdminEmptyState, AdminSkeleton, AdminPagination
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import FileUploadInput from '@/components/admin/FileUploadInput';
 import ProductCraftManager from '@/components/admin/ProductCraftManager';
+import ProductMakerManager from '@/components/admin/ProductMakerManager';
 import ProductTypeOptions from '@/components/admin/ProductTypeOptions';
 import { traderIsExpired } from '@/lib/trader-expiry';
 
@@ -803,7 +804,7 @@ export default function AdminProductsPage() {
                   </option>
                 ))}
               </select>
-              <Link href="/admin/members" target="_blank" className="block text-sm text-[#8B2E24] mt-2">Manage makers and accredited members ↗</Link><button type="button" onClick={loadData} className="text-sm underline mt-1">Refresh saved options</button>
+              <ProductMakerManager members={members} crafts={crafts} selected={addForm.makerMemberId || ''} onSaved={loadData} />
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Initial Stock Count</label>
@@ -1036,7 +1037,7 @@ export default function AdminProductsPage() {
                 {members.map(member => <option key={member.id} value={member.id}>{member.name} ({member.dzongkhag})</option>)}
               </select>
               <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#8B2E24]">
-                <Link href="/admin/members" target="_blank">Manage makers ↗</Link>
+                <ProductMakerManager members={members} crafts={crafts} selected={editForm.makerMemberId || ''} onSaved={loadData} />
                 <ProductCraftManager crafts={crafts} selected={editForm.craftKey} onSaved={loadData} />
                 <button type="button" onClick={loadData} className="underline">Refresh saved options</button>
               </div>
