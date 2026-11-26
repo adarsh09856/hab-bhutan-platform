@@ -139,16 +139,17 @@ export async function PATCH(request: NextRequest) {
   if (!(await staff(request, ['content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
-    const { slug, title, content } = body;
+    const { slug, title, content, isActive } = body;
 
     if (typeof slug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || typeof title !== 'string' || !title.trim() || typeof content !== 'string') {
       return NextResponse.json({ success: false, error: 'Valid slug, title and policy content are required.' }, { status: 400 });
     }
+    if (isActive !== undefined && typeof isActive !== 'boolean') return NextResponse.json({ success: false, error: 'Invalid publication status.' }, { status: 400 });
 
     await prisma.policyPage.upsert({
         where: { slug },
-        create: { slug, title: title.trim(), content, isActive: true },
-        update: { title: title.trim(), content, isActive: true },
+        create: { slug, title: title.trim(), content, isActive: isActive ?? true },
+        update: { title: title.trim(), content, ...(isActive !== undefined && { isActive }) },
       });
 
     return NextResponse.json({ success: true, message: `Policy ${slug} saved.` });

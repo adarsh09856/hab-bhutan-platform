@@ -71,6 +71,7 @@ async function getPolicy(slug: string) {
     });
 
     if (dbPolicy) {
+      if (!dbPolicy.isActive) return null;
       return {
         slug: dbPolicy.slug,
         title: dbPolicy.title,

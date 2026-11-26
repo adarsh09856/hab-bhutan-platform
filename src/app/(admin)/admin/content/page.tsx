@@ -257,7 +257,7 @@ export default function AdminContentPage() {
     setFeedback(null);
     try {
       const res = await fetch('/api/admin/policies', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(editingPolicy),

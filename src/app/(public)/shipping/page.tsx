@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
 import { PolicyNavigation } from '@/components/policy/PolicyNavigation';
@@ -25,6 +26,7 @@ async function getShippingPolicy() {
 
 export default async function ShippingPolicyPage() {
   const policy = await getShippingPolicy();
+  if (policy && !policy.isActive) notFound();
   const pageTitle = policy?.title || 'Shipping & delivery policy';
   const lastReviewed = policy?.updatedAt
     ? new Date(policy.updatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })

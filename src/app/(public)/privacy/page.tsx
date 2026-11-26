@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { PolicyContentRenderer } from '@/components/policy/PolicyContentRenderer';
 import { PolicyNavigation } from '@/components/policy/PolicyNavigation';
@@ -24,6 +25,7 @@ async function getPrivacyPolicy() {
 
 export default async function PrivacyPolicyPage() {
   const policy = await getPrivacyPolicy();
+  if (policy && !policy.isActive) notFound();
   const pageTitle = policy?.title || 'Privacy policy';
   const lastReviewed = policy?.updatedAt
     ? new Date(policy.updatedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
