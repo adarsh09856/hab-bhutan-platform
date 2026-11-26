@@ -7,9 +7,98 @@ loadEnvConfig(process.cwd());
 
 type PublicProduct = { code?: unknown; name?: unknown };
 
-const SITE_URL = (process.env.HAB_PUBLIC_URL || 'https://hab.touratbhutan.info').replace(/\/+$/, '');
+const SITE_URL = (process.env.HAB_PUBLIC_URL || 'https://handicraftsbhutan.org').replace(/\/+$/, '');
 const CONCURRENCY = 4;
+const MAX_PUBLIC_PAGES = 500;
 const DRY_RUN = process.env.LINK_CHECK_DRY_RUN === '1';
+
+type LinkCheck = { url: string; status: number; kind: 'page' | 'file' };
+
+function normalizePublicLink(href: string, fromUrl: string): string | null {
+  try {
+    const target = new URL(href.replace(/&amp;/g, '&'), fromUrl);
+    const base = new URL(SITE_URL);
+    if (!['http:', 'https:'].includes(target.protocol) || target.origin !== base.origin) return null;
+    if (/^\/(?:api|admin|_next)(?:\/|$)/i.test(target.pathname) || target.pathname === '/cdn-cgi/l/email-protection') return null;
+    target.search = '';
+    target.hash = '';
+    if (target.pathname.length > 1) target.pathname = target.pathname.replace(/\/+$/, '');
+    return target.toString();
+  } catch {
+    return null;
+  }
+}
+
+function extractPublicLinks(html: string, pageUrl: string): string[] {
+  const links = new Set<string>();
+  const hrefPattern = /\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+  for (const match of html.matchAll(hrefPattern)) {
+    const href = match[1] || match[2] || match[3] || '';
+    const normalized = normalizePublicLink(href, pageUrl);
+    if (normalized) links.add(normalized);
+  }
+  return [...links];
+}
+
+async function checkPublicLink(url: string): Promise<{ check: LinkCheck; links: string[] }> {
+  const path = new URL(url).pathname;
+  const isFile = /\.(?:pdf|docx?|xlsx?|zip)$/i.test(path);
+  try {
+    const response = await fetch(url, {
+      method: isFile ? 'HEAD' : 'GET',
+      redirect: 'follow',
+      signal: AbortSignal.timeout(20000),
+      headers: { Accept: isFile ? '*/*' : 'text/html,application/xhtml+xml' },
+    });
+    if (isFile && [405, 501].includes(response.status)) {
+      const retry = await fetch(url, {
+        method: 'GET',
+        redirect: 'follow',
+        signal: AbortSignal.timeout(20000),
+        headers: { Accept: '*/*', Range: 'bytes=0-0' },
+      });
+      return { check: { url, status: retry.status, kind: 'file' }, links: [] };
+    }
+    const kind = isFile ? 'file' : 'page';
+    if (!response.ok || isFile || !response.headers.get('content-type')?.toLowerCase().includes('html')) {
+      return { check: { url, status: response.status, kind }, links: [] };
+    }
+    const html = await response.text();
+    return { check: { url, status: response.status, kind }, links: extractPublicLinks(html, response.url || url) };
+  } catch {
+    return { check: { url, status: 0, kind: isFile ? 'file' : 'page' }, links: [] };
+  }
+}
+
+async function checkPublicSite(): Promise<{ results: LinkCheck[]; limitReached: boolean }> {
+  const start = new URL('/', SITE_URL).toString();
+  const queued = new Set([start]);
+  const checked = new Set<string>();
+  const queue = [start];
+  const results: LinkCheck[] = [];
+  let limitReached = false;
+
+  while (queue.length && checked.size < MAX_PUBLIC_PAGES) {
+    const batch = queue.splice(0, Math.min(CONCURRENCY, MAX_PUBLIC_PAGES - checked.size));
+    const batchResults = await Promise.all(batch.map((url) => checkPublicLink(url)));
+    for (let index = 0; index < batch.length; index++) {
+      checked.add(batch[index]);
+      const result = batchResults[index];
+      results.push(result.check);
+      for (const link of result.links) {
+        if (queued.has(link)) continue;
+        if (queued.size >= MAX_PUBLIC_PAGES) {
+          limitReached = true;
+        } else {
+          queued.add(link);
+          queue.push(link);
+        }
+      }
+    }
+  }
+
+  return { results, limitReached };
+}
 
 async function checkProduct(product: PublicProduct) {
   const code = String(product.code || '').trim();
@@ -84,33 +173,38 @@ async function main() {
     results.push(...await Promise.all(group.map(checkProduct)));
   }
 
-  const broken = results.filter((item) => item.status < 200 || item.status >= 300);
+  const publicSite = await checkPublicSite();
+  const brokenProducts = results.filter((item) => item.status < 200 || item.status >= 300);
+  const brokenPages = publicSite.results.filter((item) => item.status < 200 || item.status >= 300);
+  const brokenCount = brokenProducts.length + brokenPages.length;
   const checkedAt = new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Thimphu',
   }).format(new Date());
-  const details = broken.length
-    ? broken.map((item) => `- ${item.code}${item.name ? ` · ${item.name}` : ''}: ${item.status || 'unreachable'} · ${item.url}`).join('\n')
-    : 'No broken published product links were found.';
+  const details = [
+    ...brokenProducts.map((item) => `- Product ${item.code}${item.name ? ` · ${item.name}` : ''}: ${item.status || 'unreachable'} · ${item.url}`),
+    ...brokenPages.map((item) => `- Public ${item.kind}: ${item.status || 'unreachable'} · ${item.url}`),
+  ].join('\n') || 'No broken same-origin public links or published product links were found.';
 
-  const subject = `HAB weekly product link check: ${broken.length} issue${broken.length === 1 ? '' : 's'}`;
+  const subject = `HAB weekly website link check: ${brokenCount} issue${brokenCount === 1 ? '' : 's'}`;
   const body = [
-    'HAB weekly published-product link check',
+    'HAB weekly public website link check',
     `Checked: ${checkedAt} (Bhutan time)`,
-    `Working links: ${results.length - broken.length}`,
-    `Broken or unreachable links: ${broken.length}`,
+    `Public pages/files checked: ${publicSite.results.length}${publicSite.limitReached ? ` (crawl limit ${MAX_PUBLIC_PAGES} reached)` : ''}`,
+    `Published products checked: ${results.length}`,
+    `Broken or unreachable public links: ${brokenCount}`,
     '',
     details,
   ].join('\n');
   if (DRY_RUN) {
-    console.log(JSON.stringify({ checked: results.length, broken: broken.length, recipient, delivered: false, dryRun: true, report: body }));
+    console.log(JSON.stringify({ publicLinksChecked: publicSite.results.length, productsChecked: results.length, broken: brokenCount, recipient, delivered: false, dryRun: true, report: body }));
     return;
   }
 
   const email = await sendEmail({ to: recipient, subject, body, templateKey: 'weekly_product_link_check' });
   if (!email.success) throw new Error(email.error || 'Weekly report email was not delivered.');
 
-  console.log(JSON.stringify({ checked: results.length, broken: broken.length, recipient, delivered: true }));
-  if (broken.length) process.exitCode = 1;
+  console.log(JSON.stringify({ publicLinksChecked: publicSite.results.length, productsChecked: results.length, broken: brokenCount, recipient, delivered: true }));
+  if (brokenCount) process.exitCode = 1;
 }
 
 main().catch((error) => {
