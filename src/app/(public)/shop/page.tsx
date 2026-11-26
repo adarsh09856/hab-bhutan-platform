@@ -52,7 +52,7 @@ function ShopContent() {
   const [craftsState, setCraftsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [catalogueState, setCatalogueState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedCraft, setSelectedCraft] = useState<string>(initialCraft);
-  const [sortOrder, setSortOrder] = useState<'new' | 'low' | 'high'>('new');
+  const [sortOrder, setSortOrder] = useState<'shuffle' | 'new' | 'low' | 'high'>('shuffle');
   const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || '');
   const [productEditorOpen, setProductEditorOpen] = useState(false);
   const [selectedType, setSelectedType] = useState('');
@@ -116,25 +116,14 @@ function ShopContent() {
       .catch(() => setCatalogueState('error'));
   }, []);
 
-  const handleShuffle = () => {
-    setProducts((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    });
-  };
-
-  // Continuous 6-second auto-shuffle of catalog products (Item: auto 5-7s)
+  const [shuffleOrder, setShuffleOrder] = useState<Map<string, number>>(new Map());
   useEffect(() => {
-    if (products.length <= 1) return;
+    if (sortOrder !== 'shuffle' || products.length <= 1) return;
     const interval = setInterval(() => {
-      handleShuffle();
+      setShuffleOrder(new Map(products.map((product) => [product.code, Math.random()])));
     }, 6000);
     return () => clearInterval(interval);
-  }, [products.length]);
+  }, [products, sortOrder]);
 
   const craftCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -174,10 +163,12 @@ function ShopContent() {
       result.sort((a, b) => a.priceUSD - b.priceUSD);
     } else if (sortOrder === 'high') {
       result.sort((a, b) => b.priceUSD - a.priceUSD);
+    } else if (sortOrder === 'shuffle') {
+      result.sort((a, b) => (shuffleOrder.get(a.code) ?? 0) - (shuffleOrder.get(b.code) ?? 0));
     }
 
     return result;
-  }, [products, selectedCraft, searchQuery, sortOrder, selectedType, minPrice, maxPrice, onlyAvailable]);
+  }, [products, selectedCraft, searchQuery, sortOrder, selectedType, minPrice, maxPrice, onlyAvailable, shuffleOrder]);
 
   return (
     <main id="main">
@@ -232,6 +223,7 @@ function ShopContent() {
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as any)}
               >
+                <option value="shuffle">{t('shop.sort_shuffle', 'Rotating selection')}</option>
                 <option value="new">{t('shop.sort_new')}</option>
                 <option value="low">{t('shop.sort_low')}</option>
                 <option value="high">{t('shop.sort_high')}</option>
