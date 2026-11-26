@@ -15,16 +15,19 @@ import HeaderLiveEditor from '@/components/public/HeaderLiveEditor';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const CRAFT_THUMBNAIL_MAP: Record<string, string> = {
+  shingzo: '/images/crafts/shingzo.jpg',
+  lugzo: '/images/crafts/lugzo.jpg',
+  garzo: '/images/crafts/garzo.jpg',
   thagzo: '/images/crafts/thagzo.jpg',
   tshazo: '/images/crafts/tshazo.jpg',
   parzo: '/images/crafts/parzo.jpg',
   troezo: '/images/crafts/troezo.jpg',
-  dozo: '/assets/photos/hero-2-punakha.jpg',
-  lhazo: '/assets/photos/product-lha01.jpg',
-  tshemzo: '/assets/photos/product-cus02.jpg',
-  shagzo: '/assets/photos/product-dap02.jpg',
-  dezo: '/assets/photos/hero-5-desho.jpg',
-  jinzo: '/assets/photos/hero-3-clay.jpg',
+  dozo: '/images/crafts/dozo.jpg',
+  lhazo: '/images/crafts/lhazo.jpg',
+  tshemzo: '/images/crafts/tshemzo.jpg',
+  shagzo: '/images/crafts/shagzo.jpg',
+  dezo: '/images/crafts/dezo.jpg',
+  jinzo: '/images/crafts/jinzo.jpg',
 };
 
 export default function Header({ initialNavigation }: { initialNavigation?: { label: string; href: string }[] | null }) {
