@@ -69,6 +69,7 @@ export default function ProductDetailPage() {
             craft_name: p.craft?.name ? `${p.craft.name} · ${p.craft.english}` : p.craftKey,
             maker: typeof p.maker === 'object' ? (p.maker?.name || '') : (p.maker || ''),
             maker_avatar: typeof p.maker === 'object' ? (p.maker?.portraitUrl || '') : '',
+            attributionDistrict: p.maker?.name ? p.maker.dzongkhag || '' : p.trader?.dzongkhag || '',
             region: p.region || p.maker?.dzongkhag || p.trader?.dzongkhag || p.dzongkhag || '',
             description: p.description || p.desc || '',
             size: p.size || '',
@@ -386,7 +387,7 @@ export default function ProductDetailPage() {
               <span className="makerpanel__body">
                 <span className="eyebrow eyebrow--muted eyebrow--sm">{product.maker ? 'Made by' : 'Accredited trader'}</span>
                 <span className="makerpanel__name" id="prodMaker">{product.maker || product.traderName}</span>
-                {(product.region || product.maker_since) && <span className="makerpanel__meta" id="prodMakerMeta">{[product.region, product.maker_since && `Member since ${product.maker_since}`].filter(Boolean).join(' · ')}</span>}
+                {(product.attributionDistrict || product.maker_since) && <span className="makerpanel__meta" id="prodMakerMeta">{[product.attributionDistrict, product.maker_since && `Member since ${product.maker_since}`].filter(Boolean).join(' · ')}</span>}
                 {product.maker_blurb && <span className="makerpanel__blurb clamp-2" id="prodMakerBlurb">{product.maker_blurb}</span>}
               </span>
               {product.traderSlug && <Link className="makerpanel__go" id="prodMakerLink" href={`/traders/${encodeURIComponent(product.traderSlug)}`} aria-label={`View accredited trader ${product.traderName}`}>View trader →</Link>}
