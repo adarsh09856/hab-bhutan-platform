@@ -341,7 +341,7 @@ export default function Header({ initialNavigation }: { initialNavigation?: { la
         className="top-2 left-6 z-50"
       />
       <div className="header__inner">
-        <Link className="logo" href="/" id="logoLockup" aria-label="Handicrafts Association of Bhutan — home">
+        <Link className="logo" href="/" id="logoLockup" data-hab-no-quick-edit aria-label="Handicrafts Association of Bhutan — home">
           <img
             className="logo__img"
             src="/assets/hab-logo.png"
