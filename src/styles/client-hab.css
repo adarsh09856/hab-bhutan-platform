@@ -2015,7 +2015,7 @@ a.card.cluster:hover .cluster__read{color:var(--accent-hover)}
 }
 /* wider ratios where the slider stands in for a banner frame */
 .carousel--banner{aspect-ratio:24/9;border-radius:16px}
-.carousel--outlet{width:100%;height:100%;aspect-ratio:auto;min-height:340px;border:0;border-radius:0}
+.carousel--outlet{width:100%;height:100%;aspect-ratio:auto;min-height:280px;border:0;border-radius:0}
 
 .carousel__track{position:absolute;inset:0}
 .carousel__slide{
@@ -2634,7 +2634,7 @@ a.eventrow:hover .eventrow__title{color:var(--accent)}
 .outlet__hours:empty{display:none}
 
 .outlet-lead{grid-template-columns:minmax(0,1fr)}
-.outlet-lead .carousel--outlet{height:auto;aspect-ratio:16/11}
+.outlet-lead .carousel--outlet{height:auto;min-height:0;aspect-ratio:16/11}
   .frame--wide{min-height:260px}
   .assurance{grid-template-columns:repeat(2,1fr)}
   .assurance__cell:nth-child(2n){border-right:0}
