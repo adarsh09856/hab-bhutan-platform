@@ -808,7 +808,7 @@ export default function HomePageClient({
               {isDz ? (siteSettings.shopLedeDz || t('home.shop_intro', 'ཟོ་རིག་བཅུ་གསུམ་གྱི་ལག་བཟོ་ཅ་ཆས་གསར་ཤོས་ཚུ་འདིར་གཟིགས། HAB གིས་འཐུས་མི་ལས་གོང་ཚད་གཏན་འཁེལ་ཐོག་ཉོ་སྟེ་ ཚོང་ཁང་བརྒྱུད་དེ་ཚོང་འབྲེལ་འཐབ་ཨིན།')) : (siteSettings.shopLede || 'A working mix across the thirteen crafts, newest first — bought from the member at an agreed price and sold centrally by HAB.')}
             </p>
           </div>
-          <Link className="btn btn--ink btn--sm" href={siteSettings.shopCtaLink || '/shop'}>
+          <Link className="btn btn--accent btn--sm" href={siteSettings.shopCtaLink || '/shop'}>
             {isDz ? t('home.visit_shop', 'Visit the shop →') : (siteSettings.shopCtaText || t('home.visit_shop', 'Visit the shop →'))}
           </Link>
         </div>
@@ -1040,7 +1040,7 @@ export default function HomePageClient({
                 : siteSettings.homeCraftIntro}
             </p>
           </div>
-          <Link className="btn btn--ink btn--sm" href="/shop">
+          <Link className="btn btn--accent btn--sm" href="/shop">
             {isDz ? 'ལག་བཟོ་ཆ་མཉམ་གཟིགས →' : 'Shop all crafts →'}
           </Link>
         </div>
@@ -1102,7 +1102,7 @@ export default function HomePageClient({
                 : 'Members honoured for mastery of a Zorig Chusum craft, for national craft awards, and for the standards they set for everyone else working in it.'}
             </p>
           </div>
-          <Link className="btn btn--ink btn--sm" href="/masters">
+          <Link className="btn btn--accent btn--sm" href="/masters">
             {isDz ? 'མཁས་དབང་ཆ་མཉམ་གཟིགས →' : 'All recognised members →'}
           </Link>
         </div>
@@ -1144,7 +1144,7 @@ export default function HomePageClient({
                 : 'Every programme runs against one or more of the objects set out in Article 3.2 of the Articles of Association.'}
             </p>
           </div>
-          <Link className="btn btn--ink btn--sm" href="/programmes">
+          <Link className="btn btn--accent btn--sm" href="/programmes">
             {isDz ? 'ལས་རིམ་ ༡༡ ཆ་མཉམ་གཟིགས →' : 'All eleven programme areas →'}
           </Link>
         </div>
@@ -1258,7 +1258,7 @@ export default function HomePageClient({
                 value={memberSearchTerm}
                 onChange={(e) => setMemberSearchTerm(e.target.value)}
               />
-              <button className="btn btn--ink" type="submit">{isDz ? 'འཚོལ་ཞིབ' : 'Search'}</button>
+              <button className="btn btn--accent" type="submit">{isDz ? 'འཚོལ་ཞིབ' : 'Search'}</button>
             </form>
           </div>
           <div className="panel panel--accent">
@@ -1294,7 +1294,7 @@ export default function HomePageClient({
                 : 'Dispatches from programmes, announcements of upcoming markets and trainings, and sector policy updates.'}
             </p>
           </div>
-          <Link className="btn btn--ink btn--sm" href="/news">
+          <Link className="btn btn--accent btn--sm" href="/news">
             {isDz ? 'གནས་ཚུལ་ཆ་མཉམ་གཟིགས →' : 'All news & events →'}
           </Link>
         </div>
