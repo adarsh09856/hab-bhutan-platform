@@ -110,6 +110,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const retryCatalogue = () => setCatalogueReload((version) => version + 1);
 
+  // Reconcile persisted baskets only after a successful authoritative read.
+  // Old/unpublished codes must not block a newly added, published product.
+  useEffect(() => {
+    if (!cartHydrated || !catalogueLoaded) return;
+    const obsoleteCodes = Object.keys(cart).filter(code => cart[code] > 0 && !catalogue[code]);
+    if (!obsoleteCodes.length) return;
+    const next = { ...cart };
+    for (const code of obsoleteCodes) delete next[code];
+    setCart(next);
+    try { localStorage.setItem('hab_cart', JSON.stringify(next)); } catch { /* Storage may be disabled. */ }
+    setToast({ message: 'Older items that are no longer published were removed from your basket. Your available items are unchanged.' });
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 6000);
+  }, [cartHydrated, catalogueLoaded, catalogue, cart]);
+
   const saveCart = (newCart: Record<string, number>) => {
     setCart(newCart);
     try {
