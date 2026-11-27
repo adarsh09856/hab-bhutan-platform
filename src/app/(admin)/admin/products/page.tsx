@@ -29,7 +29,6 @@ import FileUploadInput from '@/components/admin/FileUploadInput';
 import ProductCraftManager from '@/components/admin/ProductCraftManager';
 import ProductMakerManager from '@/components/admin/ProductMakerManager';
 import ProductTypeOptions from '@/components/admin/ProductTypeOptions';
-import { traderIsExpired } from '@/lib/trader-expiry';
 
 const generateProductSKU = (craftKey: string = 'thagzo') => {
   const CRAFT_PREFIX: Record<string, string> = {
@@ -57,7 +56,6 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [crafts, setCrafts] = useState<any[]>([]);
-  const [traders, setTraders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [craftFilter, setCraftFilter] = useState('ALL');
@@ -78,7 +76,6 @@ export default function AdminProductsPage() {
     craftKey: CRAFTS[0].key,
     region: 'Thimphu',
     makerMemberId: '',
-    traderId: '',
     productType: '',
     availability: 'IN_STOCK',
     stock: 10,
@@ -109,10 +106,9 @@ export default function AdminProductsPage() {
     setLoading(true);
     setActionError('');
     try {
-      const [prodRes, memRes, traderRes, craftRes] = await Promise.all([
+      const [prodRes, memRes, craftRes] = await Promise.all([
         fetch('/api/admin/products', { credentials: 'include', cache: 'no-store' }),
         fetch('/api/admin/members', { credentials: 'include', cache: 'no-store' }).catch(() => null),
-        fetch('/api/admin/traders', { credentials: 'include', cache: 'no-store' }).catch(() => null),
         fetch('/api/admin/crafts', { cache: 'no-store' }).catch(() => null),
       ]);
 
@@ -129,7 +125,6 @@ export default function AdminProductsPage() {
         const memData = await memRes.json();
         setMembers(memData.members || []);
       }
-      if (traderRes && traderRes.ok) { const traderData = await traderRes.json(); setTraders(traderData.traders || []); }
     } catch (err: any) {
       setActionError(err.message || 'Network error fetching catalog.');
     } finally {
@@ -184,7 +179,7 @@ export default function AdminProductsPage() {
           craftKey: CRAFTS[0].key,
           region: 'Thimphu',
           makerMemberId: '',
-          traderId: '', productType: '', availability: 'IN_STOCK',
+          productType: '', availability: 'IN_STOCK',
           stock: 10,
           status: 'PUBLISHED',
           description: '',
@@ -239,7 +234,6 @@ export default function AdminProductsPage() {
       craftKey: p.craftKey,
       region: p.region,
       makerMemberId: p.makerMemberId || '',
-      traderId: p.traderId || '',
       productType: p.productType || '',
       availability: p.availability || (Number(p.stock) > 0 ? 'IN_STOCK' : 'SOLD_OUT'),
       stock: p.stock ?? 0,
@@ -691,6 +685,10 @@ export default function AdminProductsPage() {
               </div>
             </div>
           )}
+          <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+            <p className="font-semibold admin-text">1. Product code and price</p>
+            <p className="admin-muted mt-0.5">Set the inventory code and retail price. Prices are entered in USD and displayed in Nu. on the site.</p>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -728,7 +726,10 @@ export default function AdminProductsPage() {
               <span className="text-[10.5px] text-slate-500 block mt-1">Price in USD (auto-converted to Nu. on website).</span>
             </div>
           </div>
-          <div><label className="block font-medium admin-text mb-1">Accredited trader {addForm.status === 'PUBLISHED' ? '*' : '(optional while draft)'}</label><select required={addForm.status === 'PUBLISHED'} value={addForm.traderId || ''} onChange={(e) => setAddForm({ ...addForm, traderId: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2"><option value="">Select an active trader</option>{traders.filter((trader) => trader.isVisible && !traderIsExpired(trader.expiresAt)).map((trader) => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select>{traders.filter((trader) => trader.isVisible && !traderIsExpired(trader.expiresAt)).length === 0 && <p className="mt-1 text-xs text-amber-700">Add an active listing in Admin → Traders before publishing.</p>}</div>
+          <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+            <p className="font-semibold admin-text">2. Category and maker</p>
+            <p className="admin-muted mt-0.5">Choose the craft, product type and maker for this item.</p>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <ProductTypeOptions value={addForm.productType} onChange={(productType) => setAddForm({ ...addForm, productType })} />
@@ -739,6 +740,10 @@ export default function AdminProductsPage() {
             </label>
           </div>
 
+          <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+            <p className="font-semibold admin-text">3. Public title and photographs</p>
+            <p className="admin-muted mt-0.5">Write the title shown in the shop, then add the main photo and any extra views.</p>
+          </div>
           <div>
             <label className="block font-medium admin-text mb-1">Product Title *</label>
             <input
@@ -824,7 +829,7 @@ export default function AdminProductsPage() {
             <div className="flex items-center justify-between">
               <label className="font-semibold admin-text text-xs flex items-center gap-1.5">
                 <ImageIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                Product Photography &amp; Auto-Crop Gallery
+                Product photographs
               </label>
               <span className="text-[10.5px] text-slate-500">Auto-crops smoothly to maintain uniform square catalog layout</span>
             </div>
@@ -890,6 +895,10 @@ export default function AdminProductsPage() {
             </button>
           </div>
 
+          <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+            <p className="font-semibold admin-text">4. Product details and care</p>
+            <p className="admin-muted mt-0.5">Add measurements, materials, dispatch time, care instructions and the product story.</p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {(['size', 'weight', 'lead'] as const).map((key) => <label key={key} className="block text-xs font-semibold admin-text">
               {key === 'size' ? 'Dimensions / size' : key === 'weight' ? 'Weight' : 'Lead time'}
@@ -903,13 +912,17 @@ export default function AdminProductsPage() {
 
           <div>
             <RichTextEditor
-              label="Curatorial Provenance, Materials & Cultural Context"
+              label="Product description and cultural context"
               value={addForm.description}
               onChange={(html) => setAddForm({ ...addForm, description: html })}
               hint="Story, materials used, techniques, and cultural symbolism."
             />
           </div>
 
+          <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+            <p className="font-semibold admin-text">5. Wholesale</p>
+            <p className="admin-muted mt-0.5">Turn on wholesale ordering here; add wholesale prices and terms in Wholesale Trade.</p>
+          </div>
           <label className="flex items-center gap-2 rounded-lg border admin-border p-3">
             <input type="checkbox" checked={Boolean(addForm.wholesaleEnabled)} onChange={(e) => setAddForm({ ...addForm, wholesaleEnabled: e.target.checked })} />
             <span>Enable wholesale <span className="font-normal opacity-70">— set prices and terms in Wholesale Trade Desk after creating.</span></span>
@@ -958,6 +971,10 @@ export default function AdminProductsPage() {
                 </div>
               </div>
             )}
+            <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+              <p className="font-semibold admin-text">1. Product name, price and visibility</p>
+              <p className="admin-muted mt-0.5">These fields control the public listing and retail price.</p>
+            </div>
             <div>
               <label className="block font-medium admin-text mb-1">Product Title</label>
               <input
@@ -994,7 +1011,10 @@ export default function AdminProductsPage() {
                 </select>
               </div>
             </div>
-            <div><label className="block font-medium admin-text mb-1">Retail trader / shop (public listing)</label><select value={editForm.traderId || ''} onChange={(e) => setEditForm({ ...editForm, traderId: e.target.value })} className="w-full admin-input border rounded-lg px-3 py-2"><option value="">No trader linked</option>{traders.map((trader) => <option key={trader.id} value={trader.id}>{trader.shopName} · {trader.town}</option>)}</select></div>
+            <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+              <p className="font-semibold admin-text">2. Category and maker</p>
+              <p className="admin-muted mt-0.5">Manage the product type, craft tradition and maker connected to this item.</p>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <ProductTypeOptions value={editForm.productType || ''} onChange={(productType) => setEditForm({ ...editForm, productType })} />
@@ -1047,7 +1067,7 @@ export default function AdminProductsPage() {
               <div className="flex items-center justify-between">
                 <label className="font-semibold admin-text text-xs flex items-center gap-1.5">
                   <ImageIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  Product Photography &amp; Auto-Crop Gallery
+                  Product photographs
                 </label>
                 <span className="text-[10.5px] text-slate-500">Auto-crops smoothly for catalog and detail presentation</span>
               </div>
@@ -1113,6 +1133,10 @@ export default function AdminProductsPage() {
               </button>
             </div>
 
+            <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+              <p className="font-semibold admin-text">3. Product details and care</p>
+              <p className="admin-muted mt-0.5">Review measurements, materials, lead time, care instructions and the product story.</p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {(['size', 'weight', 'lead'] as const).map((key) => <label key={key} className="block text-xs font-semibold admin-text">
                 {key === 'size' ? 'Dimensions / size' : key === 'weight' ? 'Weight' : 'Lead time'}
@@ -1126,13 +1150,17 @@ export default function AdminProductsPage() {
 
             <div>
               <RichTextEditor
-                label="Description & Cultural Context"
+                label="Product description and cultural context"
                 value={editForm.description}
                 onChange={(html) => setEditForm({ ...editForm, description: html })}
                 hint="Story, materials used, techniques, and cultural symbolism."
               />
             </div>
 
+            <div className="rounded-lg border admin-border bg-slate-50 px-3 py-2">
+              <p className="font-semibold admin-text">4. Wholesale</p>
+              <p className="admin-muted mt-0.5">Wholesale prices and terms are managed in Wholesale Trade.</p>
+            </div>
             <label className="flex items-center gap-2 rounded-lg border admin-border p-3">
               <input type="checkbox" checked={Boolean(editForm.wholesaleEnabled)} onChange={(e) => setEditForm({ ...editForm, wholesaleEnabled: e.target.checked })} />
               <span>Enable wholesale <span className="font-normal opacity-70">— prices and terms are managed in Wholesale Trade Desk.</span></span>

@@ -109,9 +109,6 @@ export async function POST(req: NextRequest) {
     if (nextStatus === 'PUBLISHED' && !hasProductSpecificDescription(description)) {
       return NextResponse.json({ success: false, error: 'Add a product-specific description before publishing this product.' }, { status: 400 });
     }
-    if (nextStatus === 'PUBLISHED' && !traderId) {
-      return NextResponse.json({ success: false, error: 'Link an active accredited trader before publishing this product.' }, { status: 400 });
-    }
     if (nextStatus === 'PUBLISHED' && traderId) {
       const trader = await prisma.traderRecord.findFirst({ where: { id: String(traderId), isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } }, select: { id: true } });
       if (!trader) return NextResponse.json({ success: false, error: 'Choose a currently accredited trader listing before publishing this product.' }, { status: 400 });
@@ -262,12 +259,8 @@ export async function PATCH(req: NextRequest) {
     if (status === 'PUBLISHED' && !hasProductSpecificDescription(nextDescription)) {
       return NextResponse.json({ success: false, error: 'Add a product-specific description before publishing this product.' }, { status: 400 });
     }
-    const nextTraderId = traderId === undefined ? previous.traderId : traderId;
-    if (status === 'PUBLISHED' && previous.status !== 'PUBLISHED' && !nextTraderId) {
-      return NextResponse.json({ success: false, error: 'Link an active accredited trader before publishing this product.' }, { status: 400 });
-    }
-    if (status === 'PUBLISHED' && previous.status !== 'PUBLISHED' && nextTraderId) {
-      const trader = await prisma.traderRecord.findFirst({ where: { id: String(nextTraderId), isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } }, select: { id: true } });
+    if (status === 'PUBLISHED' && traderId) {
+      const trader = await prisma.traderRecord.findFirst({ where: { id: String(traderId), isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } }, select: { id: true } });
       if (!trader) return NextResponse.json({ success: false, error: 'Choose a currently accredited trader listing before publishing this product.' }, { status: 400 });
     }
 

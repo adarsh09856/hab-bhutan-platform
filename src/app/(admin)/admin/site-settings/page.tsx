@@ -29,6 +29,22 @@ const normalizePartner = (p: any): PartnerItem => {
 
 export default function AdminSiteSettingsPage() {
   const [tab, setTab] = useState<'HOMEPAGE' | 'LOCALIZATION' | 'ASSURANCES' | 'ABOUT_BAND' | 'MEMBERSHIP' | 'ANNOUNCEMENT' | 'CONTACT' | 'FOOTER' | 'PARTNERS' | 'ABOUT_PAGE' | 'WHOLESALE' | 'CHECKOUT' | 'DONATE' | 'TRUST'>('HOMEPAGE');
+  const [pendingSectionId, setPendingSectionId] = useState<string | null>(null);
+
+  const navigateToSection = (nextTab: typeof tab, sectionId: string) => {
+    setPendingSectionId(sectionId);
+    setTab(nextTab);
+  };
+
+  useEffect(() => {
+    if (!pendingSectionId) return;
+    const heading = document.getElementById(pendingSectionId);
+    if (heading) {
+      heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      heading.focus({ preventScroll: true });
+      setPendingSectionId(null);
+    }
+  }, [tab, pendingSectionId]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -418,7 +434,70 @@ export default function AdminSiteSettingsPage() {
         </div>
       )}
 
-      {/* Tabs */}
+      <nav
+        aria-label="Find a website setting"
+        className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
+      >
+        <div className="mb-3">
+          <h2 className="text-sm font-bold text-slate-900">What do you want to update?</h2>
+          <p className="mt-1 text-xs text-slate-600">Choose a task to open the matching controls. Use “Save and publish” after editing.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {[
+            {
+              title: 'Homepage',
+              links: [
+                ['Edit homepage headline and buttons', 'HOMEPAGE', 'settings-homepage'],
+                ['Edit homepage impact numbers', 'HOMEPAGE', 'settings-home-impact'],
+                ['Edit homepage trust points', 'ASSURANCES', 'settings-assurances'],
+                ['Edit the HAB story band', 'ABOUT_BAND', 'settings-about-band'],
+                ['Edit membership callouts', 'MEMBERSHIP', 'settings-membership'],
+              ],
+            },
+            {
+              title: 'Contact and public information',
+              links: [
+                ['Edit header notice and ticker', 'ANNOUNCEMENT', 'settings-announcement'],
+                ['Edit contact details', 'CONTACT', 'settings-contact'],
+                ['Edit footer and legal text', 'FOOTER', 'settings-footer'],
+                ['Edit partner and donor logos', 'PARTNERS', 'settings-partners'],
+                ['Edit About page content', 'ABOUT_PAGE', 'settings-about-page'],
+                ['Edit language and currency defaults', 'LOCALIZATION', 'settings-localization'],
+              ],
+            },
+            {
+              title: 'Shop, checkout, and donations',
+              links: [
+                ['Edit wholesale order rules', 'WHOLESALE', 'settings-wholesale'],
+                ['Edit bank and order confirmation details', 'CHECKOUT', 'settings-checkout'],
+                ['Edit shipping information shown to customers', 'CHECKOUT', 'settings-shipping-display'],
+                ['Edit order confirmation messages', 'CHECKOUT', 'settings-order-confirmation'],
+                ['Edit donation page notices', 'DONATE', 'settings-donate'],
+              ],
+            },
+          ].map((group) => (
+            <section key={group.title} aria-label={group.title}>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">{group.title}</h3>
+              <ul className="space-y-1.5">
+                {group.links.map(([label, destinationTab, sectionId]) => (
+                  <li key={sectionId}>
+                    <button
+                      type="button"
+                      aria-controls="site-settings-form"
+                      onClick={() => navigateToSection(destinationTab as typeof tab, sectionId)}
+                      className="w-full rounded-lg px-2.5 py-2 text-left text-xs font-medium text-[#8B2E24] hover:bg-white hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8B2E24]"
+                    >
+                      {label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </nav>
+
+      {/* Existing tab navigation remains available */}
       <div className="flex border-b border-slate-200 gap-2 overflow-x-auto custom-scrollbar pb-1">
         <button
           type="button"
@@ -552,13 +631,13 @@ export default function AdminSiteSettingsPage() {
         </button>
       </div>
 
-      <form onSubmit={handleSave} className="admin-card border admin-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
+      <form id="site-settings-form" onSubmit={handleSave} className="admin-card border admin-border rounded-xl p-6 sm:p-8 space-y-6 shadow-sm">
         {/* LOCALIZATION & CURRENCY TAB */}
         {tab === 'LOCALIZATION' && (
           <div className="space-y-8">
             <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <h2 id="settings-localization" tabIndex={-1} className="scroll-mt-6 text-base font-bold text-slate-900 flex items-center gap-2">
                   <Globe className="w-5 h-5 text-amber-600" />
                   Global Currency &amp; Language Controller
                 </h2>
@@ -802,7 +881,7 @@ export default function AdminSiteSettingsPage() {
         {/* HOMEPAGE TAB */}
         {tab === 'HOMEPAGE' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Homepage Hero Copy</h2>
+            <h2 id="settings-homepage" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Homepage Hero Copy</h2>
             <div>
               <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
                 Main Tagline / Headline
@@ -880,7 +959,7 @@ export default function AdminSiteSettingsPage() {
             </div>
 
             <div className="pt-6 border-t admin-border">
-              <h2 className="text-base font-bold admin-title mb-4">4 Live Impact Statistics</h2>
+              <h2 id="settings-home-impact" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title mb-4">4 Live Impact Statistics</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 admin-panel border admin-border rounded-lg space-y-2">
                   <div className="text-xs font-bold admin-text">Stat 1</div>
@@ -962,7 +1041,7 @@ export default function AdminSiteSettingsPage() {
         {tab === 'ASSURANCES' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-base font-bold admin-title">Homepage Assurances Band (4 Value Propositions)</h2>
+              <h2 id="settings-assurances" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Homepage Assurances Band (4 Value Propositions)</h2>
               <p className="text-xs admin-muted mt-1">
                 These four trust badges appear directly under the main hero slider on the homepage to assure international and local buyers.
               </p>
@@ -1088,7 +1167,7 @@ export default function AdminSiteSettingsPage() {
         {tab === 'ABOUT_BAND' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-base font-bold admin-title">Homepage About HAB Story Band</h2>
+              <h2 id="settings-about-band" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Homepage About HAB Story Band</h2>
               <p className="text-xs admin-muted mt-1">
                 Configure the institutional story band on the homepage showcasing HAB&apos;s mission, training workshops, and impact.
               </p>
@@ -1184,7 +1263,7 @@ export default function AdminSiteSettingsPage() {
         {tab === 'MEMBERSHIP' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-base font-bold admin-title">Homepage Membership Callouts</h2>
+              <h2 id="settings-membership" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Homepage Membership Callouts</h2>
               <p className="text-xs admin-muted mt-1">
                 Configure the side-by-side cards inviting artisans to apply and buyers to search the member directory.
               </p>
@@ -1297,7 +1376,7 @@ export default function AdminSiteSettingsPage() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
               <div>
-                <h2 className="text-base font-bold admin-title">Header Announcement &amp; Rolling Ticker</h2>
+                <h2 id="settings-announcement" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Header Announcement &amp; Rolling Ticker</h2>
                 <p className="text-xs admin-muted mt-0.5">
                   Manage the scrolling top banner messages across the public site. Messages rotate automatically every 5 seconds.
                 </p>
@@ -1629,7 +1708,7 @@ export default function AdminSiteSettingsPage() {
         {/* CONTACT TAB */}
         {tab === 'CONTACT' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Secretariat Operational Directory</h2>
+            <h2 id="settings-contact" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Secretariat Operational Directory</h2>
             <div>
               <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
                 Physical Secretariat Address
@@ -1732,7 +1811,7 @@ export default function AdminSiteSettingsPage() {
         {/* FOOTER TAB */}
         {tab === 'FOOTER' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Footer Disclaimers &amp; Accreditations</h2>
+            <h2 id="settings-footer" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Footer Disclaimers &amp; Accreditations</h2>
             <div>
               <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
                 Footer About Blurb
@@ -1905,7 +1984,7 @@ export default function AdminSiteSettingsPage() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
               <div>
-                <h2 className="text-base font-bold admin-title">Partner &amp; Donor Organizations</h2>
+                <h2 id="settings-partners" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Partner &amp; Donor Organizations</h2>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Manage institutional partners, development funders, and ministries displayed on the homepage.
                 </p>
@@ -1999,7 +2078,7 @@ export default function AdminSiteSettingsPage() {
         {/* ABOUT PAGE CMS TAB */}
         {tab === 'ABOUT_PAGE' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">About Page Mandate &amp; Heritage</h2>
+            <h2 id="settings-about-page" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">About Page Mandate &amp; Heritage</h2>
             <div>
               <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
                 Statutory Mandate (Opening Narrative)
@@ -2042,7 +2121,7 @@ export default function AdminSiteSettingsPage() {
         {/* WHOLESALE TAB */}
         {tab === 'WHOLESALE' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Wholesale &amp; Trade Sourcing Rules</h2>
+            <h2 id="settings-wholesale" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Wholesale &amp; Trade Sourcing Rules</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
@@ -2074,7 +2153,7 @@ export default function AdminSiteSettingsPage() {
         {/* CHECKOUT & SHIPPING TAB */}
         {tab === 'CHECKOUT' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Bank Wire Details (Direct Transfer)</h2>
+            <h2 id="settings-checkout" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Bank Wire Details (Direct Transfer)</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
@@ -2126,7 +2205,7 @@ export default function AdminSiteSettingsPage() {
               </div>
             </div>
 
-            <h2 className="text-base font-bold admin-title pt-4 border-t admin-border">
+            <h2 id="settings-shipping-display" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title pt-4 border-t admin-border">
               International Dispatch &amp; Logistics Display
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2169,7 +2248,7 @@ export default function AdminSiteSettingsPage() {
               />
             </div>
 
-            <h2 className="text-base font-bold admin-title pt-4 border-t admin-border">
+            <h2 id="settings-order-confirmation" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title pt-4 border-t admin-border">
               Post-Purchase Order Confirmation
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2216,7 +2295,7 @@ export default function AdminSiteSettingsPage() {
         {/* DONATE TAB */}
         {tab === 'DONATE' && (
           <div className="space-y-6">
-            <h2 className="text-base font-bold admin-title">Donate Page Header &amp; CSO Disclosures</h2>
+            <h2 id="settings-donate" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Donate Page Header &amp; CSO Disclosures</h2>
             <div>
               <label className="block text-xs font-semibold admin-text uppercase tracking-wider mb-1.5">
                 Donate Hero Title

@@ -115,8 +115,8 @@ export default function HeroSlidesAdminPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold admin-title">Hero Slides</h1>
-          <p className="text-sm admin-muted mt-1">Manage the homepage hero image slider. Active slides auto-advance every 5 seconds.</p>
+          <h1 className="text-2xl font-bold admin-title">Homepage Slides</h1>
+          <p className="text-sm admin-muted mt-1">Add, edit, reorder or hide the photos shown in the homepage slider.</p>
         </div>
         <button
           onClick={openAdd}

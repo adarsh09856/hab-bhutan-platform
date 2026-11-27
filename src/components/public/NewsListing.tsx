@@ -13,6 +13,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
   const [newsList, setNewsList] = useState<any[]>([]);
   const [savedCategories, setSavedCategories] = useState<string[]>([...NEWS_CATEGORIES]);
   const [savedSubCategories, setSavedSubCategories] = useState<string[]>([...NEWS_SUBCATEGORIES]);
+  const [categoryIntros, setCategoryIntros] = useState<Record<string, string>>({});
   const [eventsList, setEventsList] = useState<any[]>([]);
   const [newsState, setNewsState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [eventsState, setEventsState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -33,6 +34,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
       .then((d) => {
         if (Array.isArray(d?.categories)) setSavedCategories(d.categories);
         if (Array.isArray(d?.subCategories)) setSavedSubCategories(d.subCategories);
+        if (d?.categoryIntros && typeof d.categoryIntros === 'object' && !Array.isArray(d.categoryIntros)) setCategoryIntros(d.categoryIntros);
         if (Array.isArray(d?.articles)) {
           setNewsList(d.articles.map((a: any) => ({
               id: a.id,
@@ -71,6 +73,12 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
   const displayKind = (n: any) => language === 'dz' ? (n.kindDz || n.kind) : n.kind;
   const displayTitle = (n: any) => language === 'dz' ? (n.titleDz || n.title) : n.title;
   const displayBlurb = (n: any) => language === 'dz' ? (n.blurbDz || n.blurb) : n.blurb;
+  const savedCategoryIntro = category ? categoryIntros[category]?.trim() : '';
+  const defaultCategoryIntro = category === 'Vacancies'
+    ? 'Vacancy notices and opportunities at HAB.'
+    : category === 'Announcements'
+      ? 'Official notices and announcements from HAB.'
+      : '';
   const kinds = Array.from(new Set([...savedCategories, ...newsList.map((n) => n.kind)])).filter(Boolean);
 
   const categoryArticles = category || !selectedKind
@@ -87,7 +95,7 @@ export default function NewsListing({ category }: { category?: NewsNoticeCategor
           <Link href="/">{t('nav.home', 'Home')}</Link> / <Link href="/news">{t('news.title', 'News & events')}</Link>{category && ` / ${category}`}
         </p>
         <h1 className="display display--page">{category || t('news.title', 'News & events')}</h1>
-        <p className="lede">{category === 'Vacancies' ? 'Vacancy notices and opportunities at HAB.' : category === 'Announcements' ? 'Official notices and announcements from HAB.' : t('news.subtitle', 'Stay informed, stay empowered.')}</p>
+        <p className="lede">{savedCategoryIntro || defaultCategoryIntro || t('news.subtitle', 'Stay informed, stay empowered.')}</p>
 
         <nav aria-label="News & Events categories" className="flex flex-wrap gap-3 mt-6">
           <Link className="btn btn--outline" href="/news" aria-current={!category ? 'page' : undefined}>All news</Link>

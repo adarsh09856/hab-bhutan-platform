@@ -43,6 +43,8 @@ export default function AdminPoliciesPage() {
 
   // Form states
   const [editTitle, setEditTitle] = useState('');
+  const [editSummary, setEditSummary] = useState('');
+  const [editIntro, setEditIntro] = useState('');
   const [editContent, setEditContent] = useState('');
 
   const showToast = (msg: string) => {
@@ -62,6 +64,8 @@ export default function AdminPoliciesPage() {
           if (current) {
             setSelectedSlug(current.slug);
             setEditTitle(current.title || '');
+            setEditSummary(current.summary || '');
+            setEditIntro(current.intro || '');
             setEditContent(current.content || '');
           }
         }
@@ -82,6 +86,8 @@ export default function AdminPoliciesPage() {
     const p = policies.find((item) => item.slug === slug);
     if (p) {
       setEditTitle(p.title);
+      setEditSummary(p.summary || '');
+      setEditIntro(p.intro || '');
       setEditContent(p.content);
     }
   };
@@ -95,6 +101,8 @@ export default function AdminPoliciesPage() {
         body: JSON.stringify({
           slug: selectedSlug,
           title: editTitle,
+          summary: editSummary,
+          intro: editIntro,
           content: editContent,
         }),
       });
@@ -115,6 +123,8 @@ export default function AdminPoliciesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSlug, setNewSlug] = useState('');
   const [newTitle, setNewTitle] = useState('');
+  const [newSummary, setNewSummary] = useState('');
+  const [newIntro, setNewIntro] = useState('');
   const [newContent, setNewContent] = useState('');
   const [creatingPolicy, setCreatingPolicy] = useState(false);
   const [deletingPolicy, setDeletingPolicy] = useState(false);
@@ -134,6 +144,8 @@ export default function AdminPoliciesPage() {
         body: JSON.stringify({
           slug: newSlug,
           title: newTitle,
+          summary: newSummary,
+          intro: newIntro,
           content: newContent,
         }),
       });
@@ -144,6 +156,8 @@ export default function AdminPoliciesPage() {
         setShowAddModal(false);
         setNewSlug('');
         setNewTitle('');
+        setNewSummary('');
+        setNewIntro('');
         setNewContent('');
         loadPolicies();
         setSelectedSlug(newSlug);
@@ -335,6 +349,28 @@ export default function AdminPoliciesPage() {
             </div>
 
             <div>
+              <label className="block text-xs text-slate-700 mb-1 font-semibold">Policy summary (shown on the Policies page)</label>
+              <textarea
+                rows={3}
+                value={editSummary}
+                onChange={(e) => setEditSummary(e.target.value)}
+                placeholder="Short description shown on the policy card"
+                className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-[#8b2e24] shadow-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-slate-700 mb-1 font-semibold">Policy page introduction</label>
+              <textarea
+                rows={3}
+                value={editIntro}
+                onChange={(e) => setEditIntro(e.target.value)}
+                placeholder="Short introduction shown below the policy title"
+                className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-[#8b2e24] shadow-sm"
+              />
+            </div>
+
+            <div>
               <RichTextEditor
                 label="Policy Document Clauses & Body"
                 value={editContent}
@@ -403,6 +439,28 @@ export default function AdminPoliciesPage() {
                 <p className="text-[11px] text-slate-500 mt-1">
                   This forms the public permanent URL: /policies/{newSlug || 'example-slug'}
                 </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Policy summary</label>
+                <textarea
+                  rows={2}
+                  placeholder="Short description shown on the Policies page"
+                  value={newSummary}
+                  onChange={(e) => setNewSummary(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Policy page introduction</label>
+                <textarea
+                  rows={2}
+                  placeholder="Short introduction shown below the policy title"
+                  value={newIntro}
+                  onChange={(e) => setNewIntro(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-[#8b2e24] shadow-xs"
+                />
               </div>
 
               <div>

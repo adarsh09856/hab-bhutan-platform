@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
     shopCtaText: tb.shopCtaText || 'Visit the shop →',
     shopCtaLink: tb.shopCtaLink || '/shop',
     shopProductCodes: Array.isArray(tb.shopProductCodes) ? tb.shopProductCodes.map(String).slice(0, 8) : [],
+    mastersAwards: tb.mastersAwards && typeof tb.mastersAwards === 'object' && !Array.isArray(tb.mastersAwards) ? tb.mastersAwards : null,
     clustersHeroTitle: tb.clustersHeroTitle || 'Artisan clusters',
     clustersHeroLede: tb.clustersHeroLede || 'A cluster is a village or valley where one craft is concentrated. Members hold a common price, buy materials together, and receive visitors who want to see the work being done. Each has a story.',
     clustersCountText: tb.clustersCountText || '{count} clusters listed',
@@ -122,6 +123,59 @@ export async function PUT(req: NextRequest) {
   const user = await verifyAdmin(req, ['content:edit']);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json();
+
+  // Save the Awards/Masters public content as one namespaced JSON value. The
+  // JSONB merge preserves every unrelated trustBadges key (including
+  // newsTaxonomy) and avoids replacing the settings blob from a stale editor.
+  if (body.mastersAwards !== undefined) {
+    const submitted = body.mastersAwards;
+    const categoryKeys = ['Master Craftsperson', 'National Craft Award', 'Enterprise of the Year', 'Young Artisan Award'];
+    if (!submitted || typeof submitted !== 'object' || Array.isArray(submitted) || !Array.isArray(submitted.categories) || !Array.isArray(submitted.carouselPhotos)) {
+      return NextResponse.json({ success: false, error: 'Awards content must include four categories and five carousel photos.' }, { status: 400 });
+    }
+    if (submitted.categories.length !== categoryKeys.length || submitted.carouselPhotos.length !== 5) {
+      return NextResponse.json({ success: false, error: 'Awards content must include four categories and five carousel photos.' }, { status: 400 });
+    }
+
+    const categories = categoryKeys.map((key, index) => {
+      const category = submitted.categories[index];
+      if (!category || category.key !== key || typeof category.title !== 'string' || typeof category.description !== 'string' || typeof category.criteria !== 'string') return null;
+      const title = category.title.trim();
+      const description = category.description.trim();
+      const criteria = category.criteria.trim();
+      if (title.length > 120 || description.length > 1600 || criteria.length > 2000) return null;
+      return { key, title, description, criteria };
+    });
+    const validImageUrl = (value: unknown) => typeof value === 'string'
+      && value.length <= 1000
+      && (!value || (value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')) || /^https:\/\//i.test(value));
+    if (categories.some((category) => !category) || !submitted.carouselPhotos.every(validImageUrl)) {
+      return NextResponse.json({ success: false, error: 'Check category text and use valid image URLs or uploaded image paths.' }, { status: 400 });
+    }
+
+    const mastersAwards = {
+      categories,
+      carouselPhotos: submitted.carouselPhotos.map((url: string) => url.trim()),
+    };
+    const updated = await prisma.$executeRaw`
+      UPDATE "SiteSetting"
+      SET "trustBadges" = COALESCE("trustBadges", '{}'::jsonb) || jsonb_build_object('mastersAwards', ${JSON.stringify(mastersAwards)}::jsonb),
+          "updatedAt" = CURRENT_TIMESTAMP
+      WHERE "id" = 'default'
+    `;
+    if (updated !== 1) return NextResponse.json({ success: false, error: 'Site settings are not initialized.' }, { status: 503 });
+
+    await logAudit({
+      actorType: 'STAFF',
+      actorId: user.id,
+      actorIdentifier: user.email,
+      action: 'SITE_SETTINGS_UPDATED',
+      entityType: 'SiteSetting',
+      entityId: 'default',
+      details: { section: 'mastersAwards' },
+    });
+    return NextResponse.json({ success: true, mastersAwards });
+  }
 
   try {
     const updatePayload: Record<string, any> = {

@@ -409,7 +409,7 @@ export default function AdminMembersPage() {
             }}
             className="px-4 py-2 border border-slate-300 text-xs font-semibold rounded-lg"
           >
-            Start with editable example
+            Load example draft
           </button>
         </div>
       </div>
@@ -550,8 +550,8 @@ export default function AdminMembersPage() {
             {/* Sticky Header */}
             <div className="flex-shrink-0 px-6 py-4.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-900 text-base">Register New Member Artisan</h3>
-                <p className="text-xs text-slate-500">Directly accredit an artisan enterprise into the national registry.</p>
+                <h3 className="font-bold text-slate-900 text-base">Add a member record</h3>
+                <p className="text-xs text-slate-500">Enter the member’s details, then set the correct verification status.</p>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
@@ -565,6 +565,10 @@ export default function AdminMembersPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleCreateSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="font-semibold text-slate-800">1. Contact details</p>
+                  <p className="mt-0.5 text-slate-500">Add the member’s village and the best phone or email for Secretariat follow-up.</p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(['village', 'phone', 'email'] as const).map(field => <label key={field} className="space-y-1 block"><span className="font-semibold">{field === 'village' ? 'Village / Gewog' : field === 'phone' ? 'Contact phone' : 'Contact email'}</span><input type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} value={createForm[field]} onChange={e => setCreateForm({ ...createForm, [field]: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white" /></label>)}
                 </div>
@@ -582,6 +586,10 @@ export default function AdminMembersPage() {
                     </div>
                   </div>
                 )}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="font-semibold text-slate-800">2. Member and craft details</p>
+                  <p className="mt-0.5 text-slate-500">Enter identity, craft, location and any trade registration details.</p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="col-span-2">
                     <label className="block text-slate-700 font-semibold mb-1">Artisan / Enterprise Name *</label>
@@ -647,6 +655,11 @@ export default function AdminMembersPage() {
                     />
                   </div>
 
+                  <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <p className="font-semibold text-slate-800">3. Membership and renewal</p>
+                    <p className="mt-0.5 text-slate-500">Set the membership tier, verification status, join year and dues expiry.</p>
+                  </div>
+
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Membership Tier</label>
                     <select
@@ -691,6 +704,11 @@ export default function AdminMembersPage() {
                       onChange={(e) => setCreateForm({ ...createForm, duesExpiryDate: e.target.value })}
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
                     />
+                  </div>
+
+                  <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <p className="font-semibold text-slate-800">4. Public profile</p>
+                    <p className="mt-0.5 text-slate-500">Add a portrait and biography for the member profile.</p>
                   </div>
 
                   <div className="col-span-2">
@@ -759,6 +777,10 @@ export default function AdminMembersPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="font-semibold text-slate-800">1. Contact details</p>
+                  <p className="mt-0.5 text-slate-500">Update the member’s village and Secretariat contact information.</p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(['village', 'phone', 'email'] as const).map(field => <label key={field} className="space-y-1 block"><span className="font-semibold">{field === 'village' ? 'Village / Gewog' : field === 'phone' ? 'Contact phone' : 'Contact email'}</span><input type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} value={editingMember[field] || ''} onChange={e => setEditingMember({ ...editingMember, [field]: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white" /></label>)}
                 </div>
@@ -776,6 +798,10 @@ export default function AdminMembersPage() {
                     </div>
                   </div>
                 )}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <p className="font-semibold text-slate-800">2. Member and craft details</p>
+                  <p className="mt-0.5 text-slate-500">Update identity, craft, location or trade registration details.</p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="col-span-2">
                     <label className="block text-slate-700 font-semibold mb-1">Artisan / Enterprise Name *</label>
@@ -838,6 +864,11 @@ export default function AdminMembersPage() {
                     />
                   </div>
 
+                  <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <p className="font-semibold text-slate-800">3. Membership and renewal</p>
+                    <p className="mt-0.5 text-slate-500">Review the membership tier, verification status and renewal date.</p>
+                  </div>
+
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Membership Tier</label>
                     <select
@@ -872,6 +903,11 @@ export default function AdminMembersPage() {
                       onChange={(e) => setEditingMember({ ...editingMember, duesExpiryDate: e.target.value })}
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 font-mono"
                     />
+                  </div>
+
+                  <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <p className="font-semibold text-slate-800">4. Public profile</p>
+                    <p className="mt-0.5 text-slate-500">Update the portrait and biography shown on the member profile.</p>
                   </div>
 
                   <div className="col-span-2">

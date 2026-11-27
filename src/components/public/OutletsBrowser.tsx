@@ -16,16 +16,18 @@ interface OutletsBrowserProps {
   initialOutlets: Array<OutletData & { galleryImages?: string[]; isFeatured?: boolean; craftsOnSite?: string }>;
   clusters: any[];
   unavailable?: boolean;
+  initialQuery?: string;
+  searchResultsOnly?: boolean;
 }
 
-export default function OutletsBrowser({ initialOutlets, clusters, unavailable = false }: OutletsBrowserProps) {
+export default function OutletsBrowser({ initialOutlets, clusters, unavailable = false, initialQuery = '', searchResultsOnly = false }: OutletsBrowserProps) {
   const { language, t } = useLanguage();
   const isDz = language === 'dz';
   const outletText = (outlet: OutletData, key: 'name' | 'place' | 'note' | 'description' | 'hours' | 'stalls' | 'payment') => resolveOutletText(outlet, language, key);
 
   const [showAllOutlets, setShowAllOutlets] = useState(false);
   const [filterType, setFilterType] = useState('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [shuffleOffset, setShuffleOffset] = useState(0);
 
   // Featured outlet
@@ -34,12 +36,12 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
   const rotationSize = remainingOutlets.length;
 
   useEffect(() => {
-    if (rotationSize <= 1) return;
+    if (searchResultsOnly || rotationSize <= 1) return;
     const timer = window.setInterval(() => {
       setShuffleOffset((offset) => (offset + 1) % rotationSize);
     }, 5000);
     return () => window.clearInterval(timer);
-  }, [rotationSize]);
+  }, [rotationSize, searchResultsOnly]);
 
   const primaryOutlets = useMemo(() => {
     if (rotationSize <= 1) return remainingOutlets;
@@ -49,21 +51,62 @@ export default function OutletsBrowser({ initialOutlets, clusters, unavailable =
 
   // Filtered outlets based on type and search query
   const filteredOutlets = useMemo(() => {
-    return primaryOutlets.filter((o) => {
+    const searchableOutlets = searchResultsOnly ? initialOutlets : primaryOutlets;
+    return searchableOutlets.filter((o) => {
       if (filterType !== 'ALL' && o.type !== filterType) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = `${o.name || ''} ${o.name_dz || ''}`.toLowerCase().includes(q);
         const matchesPlace = `${o.place || ''} ${o.place_dz || ''}`.toLowerCase().includes(q);
         const matchesCrafts = `${o.crafts_on_site || o.craftsOnSite || ''} ${o.crafts_on_site_dz || ''}`.toLowerCase().includes(q);
-        if (!matchesName && !matchesPlace && !matchesCrafts) return false;
+        const matchesDetails = `${o.note || ''} ${o.description || ''} ${o.type || ''}`.toLowerCase().includes(q);
+        if (!matchesName && !matchesPlace && !matchesCrafts && !matchesDetails) return false;
       }
       return true;
     });
-  }, [primaryOutlets, filterType, searchQuery]);
+  }, [initialOutlets, primaryOutlets, filterType, searchQuery, searchResultsOnly]);
 
   // How many outlets to show initially before clicking "View More"
   const visibleOutlets = showAllOutlets ? filteredOutlets : filteredOutlets.slice(0, 3);
+
+  if (searchResultsOnly) {
+    return (
+      <main id="main">
+        <section className="section" data-hab-section="outlet-search">
+          <p className="crumbs"><Link href="/">{t('nav.home', 'Home')}</Link> / {isDz ? 'ཚོང་ཁང་' : 'Outlets'}</p>
+          <div className="section__head">
+            <div>
+              <h1 className="display display--page">{isDz ? 'HAB གི་ཚོང་ཁང' : 'HAB outlets'}</h1>
+              {searchQuery.trim() && <p className="section__lede">{isDz ? 'འཚོལ་ཞིབ་གྲུབ་འབྲས' : 'Results matching'} “{searchQuery.trim()}”</p>}
+            </div>
+          </div>
+          {unavailable ? <p role="alert">The outlet directory is temporarily unavailable. Please try again shortly.</p> : filteredOutlets.length ? (
+            <>
+              <p className="footnote" style={{ marginBottom: 18 }}>{filteredOutlets.length} {isDz ? 'ཚོང་ཁང་ཐོ་བཀོད།' : filteredOutlets.length === 1 ? 'outlet found' : 'outlets found'}</p>
+              <div className="grid grid--3">
+                {filteredOutlets.map((outlet: any) => (
+                  <article key={outlet.key} data-hab-record-key={`outlet:${outlet.id || outlet.key}`} className="card outlet hover:shadow-md transition-shadow">
+                    <Link href={`/outlets/${outlet.key}`}>
+                      <div className="frame frame--wide16" style={{ position: 'relative', overflow: 'hidden' }}>
+                        <Image src={outlet.imageUrl || NO_IMAGE} alt={outletText(outlet, 'name')} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: 'cover' }} loading="lazy" />
+                      </div>
+                    </Link>
+                    <div className="card__body">
+                      <span className="tag">{outlet.type}</span>
+                      <h2 className="card__title clamp-2"><Link href={`/outlets/${outlet.key}`}>{outletText(outlet, 'name')}</Link></h2>
+                      <p className="card__meta clamp-1 flex items-center gap-1"><MapPin className="w-3 h-3 text-[#8B2E24] flex-shrink-0" />{outletText(outlet, 'place')}</p>
+                      <p className="card__text clamp-3">{outletText(outlet, 'note') || outletText(outlet, 'description')}</p>
+                      {outlet.hours && <p className="outlet__hours flex items-center gap-1 text-xs text-[#6B5A4C] mt-2"><Clock className="w-3 h-3 text-slate-400" />{outletText(outlet, 'hours')}</p>}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
+          ) : <div className="card" role="status" style={{ padding: 28 }}>{searchQuery.trim() ? `No outlets match “${searchQuery.trim()}”.` : 'No outlets have been listed yet.'}</div>}
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main id="main">

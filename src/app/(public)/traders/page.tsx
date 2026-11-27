@@ -1,40 +1,6 @@
-import Link from 'next/link';
-import prisma from '@/lib/prisma';
-import SectionEditBadge from '@/components/public/SectionEditBadge';
-import TraderDirectory from '@/components/public/TraderDirectory';
-import { bhutanDayStartUtc } from '@/lib/trader-expiry';
-import { publicPageMetadata } from '@/lib/public-metadata';
-
-export const dynamic = 'force-dynamic';
-export const metadata = publicPageMetadata('/traders', 'Accredited Traders', 'Find current HAB-accredited handicraft traders by name, craft and location.');
+import { redirect } from 'next/navigation';
 
 export default async function TradersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = '' } = await searchParams;
-  let traders: any[] = [];
-  let unavailable = false;
-  try {
-    traders = await prisma.traderRecord.findMany({
-      where: { isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } },
-      orderBy: [{ sortOrder: 'asc' }, { shopName: 'asc' }],
-      // Keep server-to-client props limited to fields rendered by public cards.
-      // In particular, never serialize ownerName or other admin-only fields.
-      select: {
-        id: true,
-        slug: true,
-        shopName: true,
-        dzongkhag: true,
-        town: true,
-        shortDescription: true,
-        craftKeys: true,
-        productTypes: true,
-        bannerUrl: true,
-      },
-    });
-  } catch { unavailable = true; }
-  return <main id="main"><section className="section relative" data-hab-section="traders">
-    <SectionEditBadge label="Accredited Traders" studioHref="/admin/traders" />
-    <p className="crumbs"><Link href="/">Home</Link> / Accredited traders</p>
-    <div className="section__head"><div><p className="eyebrow eyebrow--accent">Find a shop</p><h1 className="display display--page">Accredited traders</h1><p className="section__lede">Current retail traders accredited by the Handicrafts Association of Bhutan.</p></div></div>
-    {unavailable ? <p role="status">The trader directory is temporarily unavailable.</p> : <TraderDirectory initialQuery={q} traders={traders.map((trader) => ({ ...trader, craftKeys: Array.isArray(trader.craftKeys) ? trader.craftKeys.filter((item: unknown): item is string => typeof item === 'string') : [], productTypes: Array.isArray(trader.productTypes) ? trader.productTypes.filter((item: unknown): item is string => typeof item === 'string') : [] }))} />}
-  </section></main>;
+  redirect(q ? `/outlets?directory=1&q=${encodeURIComponent(q)}` : '/outlets?directory=1');
 }

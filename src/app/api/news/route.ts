@@ -37,6 +37,13 @@ export async function GET(req: NextRequest) {
       .filter((name) => !retiredCategories.has(name.toLocaleLowerCase()) || articleCategories.some((saved) => saved.toLocaleLowerCase() === name.toLocaleLowerCase()));
     const subCategories = mergeNewsOptions([...NEWS_SUBCATEGORIES], Array.isArray(taxonomy.subCategories) ? taxonomy.subCategories : [], articleSubCategories)
       .filter((name) => !retiredSubCategories.has(name.toLocaleLowerCase()) || articleSubCategories.some((saved) => String(saved || '').toLocaleLowerCase() === name.toLocaleLowerCase()));
+    const rawCategoryIntros = taxonomy.categoryIntros && typeof taxonomy.categoryIntros === 'object' && !Array.isArray(taxonomy.categoryIntros)
+      ? taxonomy.categoryIntros
+      : {};
+    const categoryIntros = Object.entries(rawCategoryIntros).reduce<Record<string, string>>((result, [name, intro]) => {
+      if (typeof intro === 'string' && intro.trim()) result[name] = intro.trim().slice(0, 1000);
+      return result;
+    }, {});
 
     let rawEvents: any[] = [];
     if (dbEventRecords.length > 0) {
@@ -123,6 +130,7 @@ export async function GET(req: NextRequest) {
       events,
       categories,
       subCategories,
+      categoryIntros,
     });
     res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     res.headers.set('Pragma', 'no-cache');

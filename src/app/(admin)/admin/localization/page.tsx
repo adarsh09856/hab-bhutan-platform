@@ -198,7 +198,7 @@ export default function AdminLocalizationPage() {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Currency &amp; Language Settings</h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            Centrally manage baseline store currency ($ USD / Nu. BTN), primary language (English / རྫོང་ཁ Dzongkha), and conversion exchange rates.
+            Primary page for the storefront’s default currency, default language, and public header switcher options.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -220,6 +220,18 @@ export default function AdminLocalizationPage() {
             {saving ? 'Saving changes...' : 'Save & Publish Live'}
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-slate-700">
+        <p>
+          <strong>What changes here:</strong> the default storefront currency, default language, public currency/language options, and the saved USD–BTN conversion rate. Saving the conversion rate here records a manual FX override.
+        </p>
+        <p className="mt-1">
+          For the RMA rate feed status, override reason, or restoring the automatic feed, use{' '}
+          <Link href="/admin/settings?tab=FX" className="font-semibold text-[#8b2e24] underline underline-offset-2">
+            System Settings → Exchange Rates
+          </Link>.
+        </p>
       </div>
 
       {feedback && (

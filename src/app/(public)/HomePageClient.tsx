@@ -245,7 +245,7 @@ export default function HomePageClient({
               stats: [
                 { value: d.setting.stat1Number || '7,500', label: d.setting.stat1Label || 'Micro & small enterprises in the network', url: '' },
                 { value: d.setting.stat2Number || '5,250', label: d.setting.stat2Label || 'Women-led enterprises', url: '' },
-                prev.stats[2] || { value: '', label: 'Affiliated stores across Bhutan', url: '/traders' },
+                prev.stats[2] || { value: '', label: 'Affiliated stores across Bhutan', url: '/outlets' },
                 { value: d.setting.stat4Number || '13', label: d.setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
               ],
               aboutBandTitle: d.setting.aboutBandTitle || prev.aboutBandTitle,
@@ -543,9 +543,9 @@ export default function HomePageClient({
   const handleMemberSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (memberSearchTerm.trim()) {
-      router.push(`/traders?q=${encodeURIComponent(memberSearchTerm.trim())}`);
+      router.push(`/outlets?directory=1&q=${encodeURIComponent(memberSearchTerm.trim())}`);
     } else {
-      router.push('/traders');
+      router.push('/outlets?directory=1');
     }
   };
 
@@ -627,7 +627,7 @@ export default function HomePageClient({
             <Link className="btn btn--outline" href={siteSettings.heroCtaSecondaryLink || '/shop'}>
               {isDz ? 'ལག་བཟོ་ཚོང་ཉོ →' : siteSettings.heroCtaSecondaryText}
             </Link>
-            <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/traders">
+            <Link className="font-semibold text-[#8B2E24] hover:underline px-2 text-sm sm:text-base cursor-pointer" href="/outlets?directory=1">
               {isDz ? 'ཚོང་པ་འཚོལ' : 'Find a trader'}
             </Link>
           </div>

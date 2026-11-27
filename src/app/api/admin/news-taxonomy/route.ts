@@ -8,11 +8,20 @@ export const dynamic = 'force-dynamic';
 
 function taxonomyConfig(settings: any) {
   const stored = settings?.trustBadges?.newsTaxonomy || {};
+  const rawIntros = stored.categoryIntros && typeof stored.categoryIntros === 'object' && !Array.isArray(stored.categoryIntros)
+    ? stored.categoryIntros
+    : {};
+  const categoryIntros = Object.entries(rawIntros).reduce<Record<string, string>>((result, [key, value]) => {
+    if (typeof value === 'string') result[key] = value.slice(0, 1000);
+    return result;
+  }, {});
   return {
+    ...stored,
     categories: Array.isArray(stored.categories) ? stored.categories : [],
     subCategories: Array.isArray(stored.subCategories) ? stored.subCategories : [],
     retiredCategories: Array.isArray(stored.retiredCategories) ? stored.retiredCategories : [],
     retiredSubCategories: Array.isArray(stored.retiredSubCategories) ? stored.retiredSubCategories : [],
+    categoryIntros,
   };
 }
 
@@ -42,7 +51,8 @@ export async function GET(req: NextRequest) {
       prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } }),
       prisma.newsArticle.findMany({ select: { kind: true, subCategory: true } }),
     ]);
-    return NextResponse.json({ success: true, ...options(settings, articles) }, { headers: { 'Cache-Control': 'no-store' } });
+    const taxonomy = taxonomyConfig(settings);
+    return NextResponse.json({ success: true, ...options(settings, articles), categoryIntros: taxonomy.categoryIntros }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Unable to load news categories.' }, { status: error.statusCode || 500 });
   }
@@ -87,6 +97,38 @@ export async function PATCH(req: NextRequest) {
   try {
     const actor = await requirePermission(req, 'content:edit');
     const body = await req.json();
+    if (body.action === 'setIntro') {
+      if (body.type !== 'category' || typeof body.name !== 'string' || typeof body.intro !== 'string') {
+        return NextResponse.json({ success: false, error: 'Choose a primary category and enter its plain-text introduction.' }, { status: 400 });
+      }
+      const name = cleanName('category', body.name);
+      const intro = body.intro.trim();
+      if (intro.length > 1000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(intro)) {
+        return NextResponse.json({ success: false, error: 'The introduction must be plain text with at most 1,000 characters.' }, { status: 400 });
+      }
+      const result = await prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "SiteSetting" WHERE id = 'default' FOR UPDATE`;
+        const settings = await tx.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } });
+        if (!settings) throw Object.assign(new Error('Website settings are not available.'), { statusCode: 409 });
+        const saved = taxonomyConfig(settings);
+        const existing = saved.categories.find((label: string) => label.toLocaleLowerCase() === name.toLocaleLowerCase())
+          || NEWS_CATEGORIES.find((label) => label.toLocaleLowerCase() === name.toLocaleLowerCase());
+        if (!existing) throw Object.assign(new Error('That primary category was not found.'), { statusCode: 404 });
+        const categoryIntros = { ...saved.categoryIntros };
+        if (intro) categoryIntros[existing] = intro;
+        else delete categoryIntros[existing];
+        const taxonomy = { ...saved, categoryIntros };
+        const badges = settings.trustBadges && !Array.isArray(settings.trustBadges) && typeof settings.trustBadges === 'object' ? settings.trustBadges : {};
+        await tx.siteSetting.update({ where: { id: 'default' }, data: { trustBadges: { ...badges, newsTaxonomy: taxonomy } } });
+        return { categoryIntros };
+      });
+      await logAudit({
+        actorType: 'STAFF', actorId: actor.id, actorIdentifier: actor.email,
+        action: 'NEWS_CATEGORY_INTRO_UPDATED', entityType: 'NewsTaxonomy', entityId: name,
+        details: { introLength: intro.length, cleared: !intro },
+      });
+      return NextResponse.json({ success: true, ...result });
+    }
     if (!['category', 'subCategory'].includes(body.type) || !['rename', 'retire'].includes(body.action)) {
       return NextResponse.json({ success: false, error: 'Choose a category action and category or sub-category.' }, { status: 400 });
     }
@@ -122,7 +164,7 @@ export async function PATCH(req: NextRequest) {
       };
       await tx.siteSetting.update({ where: { id: 'default' }, data: { trustBadges: { ...badges, newsTaxonomy: taxonomy } } });
       const updatedSettings = { ...settings, trustBadges: { ...badges, newsTaxonomy: taxonomy } };
-      return { ...options(updatedSettings, articles), oldName: existing, newName, action: body.action };
+      return { ...options(updatedSettings, articles), categoryIntros: taxonomy.categoryIntros, oldName: existing, newName, action: body.action };
     });
 
     await logAudit({

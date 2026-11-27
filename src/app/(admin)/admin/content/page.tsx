@@ -393,10 +393,10 @@ export default function AdminContentPage() {
         <div>
           <h1 className="text-xl font-bold admin-title flex items-center gap-2">
             <FileEdit className="w-5 h-5 text-indigo-300" />
-            Website content &amp; public notices
+            News &amp; Notices
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Create and update news, announcements, vacancies, reports, publications and governance content.
+            Publish news, vacancies and announcements. Use the tabs below for publications, governance records and website policies.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -466,7 +466,7 @@ export default function AdminContentPage() {
           }`}
         >
           <Newspaper className="w-4 h-4" />
-          <span>News &amp; Events ({news.length})</span>
+          <span>News &amp; Notices ({news.length})</span>
         </button>
 
         <button
@@ -788,104 +788,98 @@ export default function AdminContentPage() {
                 </div>
               )}
               {createModalType === 'NEWS' && (
-                <>
-                  <div>
-                    <label className="block font-medium admin-text mb-1">Article Headline *</label>
-                    <input
-                      type="text"
-                      required
-                      value={newsForm.title}
-                      onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
-                      className="w-full admin-input border rounded px-2.5 py-1.5"
-                    />
-                  </div>
-                  <div><label className="block font-medium admin-text mb-1">Article Headline (Dzongkha)</label><input type="text" value={newsForm.titleDz} onChange={(e) => setNewsForm({ ...newsForm, titleDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <NewsCategorySelect type="category" value={newsForm.kind} options={taxonomy.categories} onChange={(kind) => setNewsForm({ ...newsForm, kind })} onOptions={setTaxonomy} />
-                    <NewsCategorySelect type="subCategory" value={newsForm.subCategory} options={taxonomy.subCategories} onChange={(subCategory) => setNewsForm({ ...newsForm, subCategory })} onOptions={setTaxonomy} />
+                <div className="space-y-5">
+                  <section className="space-y-3">
                     <div>
-                      <label className="block font-medium admin-text mb-1">Publication Date String</label>
-                      <input
-                        type="text"
-                        value={newsForm.dateString}
-                        onChange={(e) => setNewsForm({ ...newsForm, dateString: e.target.value })}
-                        className="w-full admin-input border rounded px-2.5 py-1.5 font-mono"
-                      />
+                      <h4 className="text-sm font-semibold admin-title">Headline</h4>
+                      <p className="mt-1 text-xs admin-muted">Add the title readers will see. The English headline is required.</p>
                     </div>
-                  </div>
-                  <div><label className="block font-medium admin-text mb-1">Primary Category (Dzongkha)</label><input type="text" value={newsForm.kindDz} onChange={(e) => setNewsForm({ ...newsForm, kindDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
-                  <div>
-                    <label className="block font-medium admin-text mb-1">Summary / Blurb</label>
-                    <textarea
-                      rows={3}
-                      value={newsForm.blurb}
-                      onChange={(e) => setNewsForm({ ...newsForm, blurb: e.target.value })}
-                      className="w-full admin-input border rounded px-2.5 py-1.5"
-                    />
-                  </div>
-                  <div><label className="block font-medium admin-text mb-1">Summary / Blurb (Dzongkha)</label><textarea rows={3} value={newsForm.blurbDz} onChange={(e) => setNewsForm({ ...newsForm, blurbDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
-                  <div>
-                    <FileUploadInput
-                      label="Article Cover Photograph"
-                      value={newsForm.image_path}
-                      onChange={(url) => setNewsForm({ ...newsForm, image_path: url })}
-                      accept="image/*"
-                      hint="Upload cover photo for the article (JPG, PNG, WebP)."
-                    />
-                  </div>
-
-                  {/* Supporting Document / PDF / Flipbook Embed (Feedback Item 4) */}
-                  <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-3">
-                    <div className="font-semibold text-amber-900 flex items-center justify-between">
-                      <span>Supporting Document / PDF / Flipbook (Item 4)</span>
-                      <span className="text-[10px] font-normal text-amber-700">Embedded in designated space on detail page</span>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Headline (English) *</label>
+                      <input type="text" required value={newsForm.title} onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
                     </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Headline (Dzongkha)</label>
+                      <input type="text" value={newsForm.titleDz} onChange={(e) => setNewsForm({ ...newsForm, titleDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                  </section>
 
-                    <div className="grid grid-cols-2 gap-3">
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Category and date</h4>
+                      <p className="mt-1 text-xs admin-muted">Choose where this item belongs and enter the date as it should appear to readers.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <NewsCategorySelect type="category" value={newsForm.kind} options={taxonomy.categories} onChange={(kind) => setNewsForm({ ...newsForm, kind })} onOptions={setTaxonomy} />
+                      <NewsCategorySelect type="subCategory" value={newsForm.subCategory} options={taxonomy.subCategories} onChange={(subCategory) => setNewsForm({ ...newsForm, subCategory })} onOptions={setTaxonomy} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block font-medium text-amber-950 mb-1">Document Format</label>
-                        <select
-                          value={newsForm.documentType}
-                          onChange={(e) => setNewsForm({ ...newsForm, documentType: e.target.value })}
-                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
-                        >
+                        <label className="block font-medium admin-text mb-1">Category (Dzongkha)</label>
+                        <input type="text" value={newsForm.kindDz} onChange={(e) => setNewsForm({ ...newsForm, kindDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                      </div>
+                      <div>
+                        <label className="block font-medium admin-text mb-1">Date shown to readers</label>
+                        <input type="text" value={newsForm.dateString} onChange={(e) => setNewsForm({ ...newsForm, dateString: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Short summary and cover photo</h4>
+                      <p className="mt-1 text-xs admin-muted">A short summary helps readers decide whether to open the full article.</p>
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Short summary (English)</label>
+                      <textarea rows={3} value={newsForm.blurb} onChange={(e) => setNewsForm({ ...newsForm, blurb: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Short summary (Dzongkha)</label>
+                      <textarea rows={3} value={newsForm.blurbDz} onChange={(e) => setNewsForm({ ...newsForm, blurbDz: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                    <FileUploadInput label="Article cover photo" value={newsForm.image_path} onChange={(url) => setNewsForm({ ...newsForm, image_path: url })} accept="image/*" hint="Choose a JPG, PNG, or WebP image to represent this article." />
+                  </section>
+
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Full article</h4>
+                      <p className="mt-1 text-xs admin-muted">Write the complete story. Add the Dzongkha version if available.</p>
+                    </div>
+                    <RichTextEditor label="Full article (English)" value={newsForm.content} onChange={(html) => setNewsForm({ ...newsForm, content: html })} hint="Add the full article, including details, quotes, or report text." />
+                    <RichTextEditor label="Full article (Dzongkha)" value={newsForm.contentDz} onChange={(html) => setNewsForm({ ...newsForm, contentDz: html })} hint="Optional Dzongkha translation of the full story." />
+                  </section>
+
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Optional supporting document</h4>
+                      <p className="mt-1 text-xs admin-muted">Attach a PDF, Word document, or flipbook for readers to view with this article.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-medium admin-text mb-1">Document format</label>
+                        <select value={newsForm.documentType} onChange={(e) => setNewsForm({ ...newsForm, documentType: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5">
                           <option value="PDF">PDF Document (Embedded Viewer)</option>
                           <option value="FLIPBOOK">Interactive Flipbook (Iframe / URL)</option>
                           <option value="DOC">Word / Supporting Paper</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block font-medium text-amber-950 mb-1">Document Display Title</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Official Training Guidelines (PDF)"
-                          value={newsForm.documentTitle}
-                          onChange={(e) => setNewsForm({ ...newsForm, documentTitle: e.target.value })}
-                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
-                        />
+                        <label className="block font-medium admin-text mb-1">Title shown for the document</label>
+                        <input type="text" placeholder="e.g. Official Training Guidelines (PDF)" value={newsForm.documentTitle} onChange={(e) => setNewsForm({ ...newsForm, documentTitle: e.target.value })} className="w-full admin-input border rounded px-2.5 py-1.5" />
                       </div>
                     </div>
+                    <FileUploadInput label="Upload or link the supporting document" value={newsForm.documentUrl} onChange={(url) => setNewsForm({ ...newsForm, documentUrl: url })} accept=".pdf,.doc,.docx,application/pdf" hint="Upload a file or provide its URL. PDFs can be previewed on the article page." />
+                  </section>
 
-                    <FileUploadInput
-                      label="Upload Document (PDF, Word, or Flipbook asset)"
-                      value={newsForm.documentUrl}
-                      onChange={(url) => setNewsForm({ ...newsForm, documentUrl: url })}
-                      accept=".pdf,.doc,.docx,application/pdf"
-                      hint="Upload PDF to embed directly on news article page, or paste external flipbook URL."
-                    />
-                  </div>
-
-                  <div>
-                    <RichTextEditor
-                      label="Full Article Story / Content"
-                      value={newsForm.content}
-                      onChange={(html) => setNewsForm({ ...newsForm, content: html })}
-                      hint="Detailed article narrative, quotes, and reports."
-                    />
-                  </div>
-                  <div><RichTextEditor label="Full Article Story / Content (Dzongkha)" value={newsForm.contentDz} onChange={(html) => setNewsForm({ ...newsForm, contentDz: html })} hint="Optional full story translation." /></div>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={newsForm.isPublished} onChange={(e) => setNewsForm({ ...newsForm, isPublished: e.target.checked })} />Publish on website (uncheck to save a draft)</label>
-                </>
+                  <section className="border-t border-slate-200 pt-4 space-y-2">
+                    <h4 className="text-sm font-semibold admin-title">Publishing</h4>
+                    <label className="flex items-start gap-2 text-xs admin-text">
+                      <input type="checkbox" checked={newsForm.isPublished} onChange={(e) => setNewsForm({ ...newsForm, isPublished: e.target.checked })} className="mt-0.5" />
+                      <span><span className="font-medium">Publish this article on the website</span><span className="block admin-muted">Turn this off to save it as a draft.</span></span>
+                    </label>
+                  </section>
+                </div>
               )}
 
               {createModalType === 'PUBLICATION' && (
@@ -1050,97 +1044,92 @@ export default function AdminContentPage() {
                 </div>
               )}
               {editingItem.type === 'NEWS' && (
-                <>
-                  <div>
-                    <label className="block font-medium admin-text mb-1">Headline</label>
-                    <input
-                      type="text"
-                      required
-                      value={editingItem.data.title}
-                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })}
-                      className="w-full admin-input border rounded px-2.5 py-1.5"
-                    />
-                  </div>
-                  <div><label className="block font-medium admin-text mb-1">Headline (Dzongkha)</label><input type="text" value={editingItem.data.titleDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, titleDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
-                  <div>
-                    <label className="block font-medium admin-text mb-1">Summary / Blurb</label>
-                    <textarea
-                      rows={3}
-                      value={editingItem.data.blurb || editingItem.data.excerpt || ''}
-                      onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurb: e.target.value } })}
-                      className="w-full admin-input border rounded px-2.5 py-1.5"
-                    />
-                  </div>
-                  <div><label className="block font-medium admin-text mb-1">Summary / Blurb (Dzongkha)</label><textarea rows={3} value={editingItem.data.blurbDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurbDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <NewsCategorySelect type="category" value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'} options={taxonomy.categories} onChange={(kind) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind } })} onOptions={setTaxonomy} preserveValueOnManage />
-                    <NewsCategorySelect type="subCategory" value={editingItem.data.subCategory || ''} options={taxonomy.subCategories} onChange={(subCategory) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory } })} onOptions={setTaxonomy} preserveValueOnManage />
-                  </div>
-
-                  <div><label className="block font-medium admin-text mb-1">Primary Category (Dzongkha)</label><input type="text" value={editingItem.data.kindDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kindDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" /></div>
-
-                  <div>
-                    <FileUploadInput
-                      label="Article Cover Photograph"
-                      value={editingItem.data.image_path || ''}
-                      onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, image_path: url } })}
-                      accept="image/*"
-                      hint="Upload cover photo for the article (JPG, PNG, WebP)."
-                    />
-                  </div>
-
-                  {/* Supporting Document / PDF / Flipbook Embed (Feedback Item 4) */}
-                  <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 space-y-3">
-                    <div className="font-semibold text-amber-900 flex items-center justify-between">
-                      <span>Supporting Document / PDF / Flipbook (Item 4)</span>
-                      <span className="text-[10px] font-normal text-amber-700">Embedded in designated space on detail page</span>
+                <div className="space-y-5">
+                  <section className="space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Headline</h4>
+                      <p className="mt-1 text-xs admin-muted">Update the title readers will see. The English headline is required.</p>
                     </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Headline (English) *</label>
+                      <input type="text" required value={editingItem.data.title} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, title: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Headline (Dzongkha)</label>
+                      <input type="text" value={editingItem.data.titleDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, titleDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                  </section>
 
-                    <div className="grid grid-cols-2 gap-3">
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Category and translation</h4>
+                      <p className="mt-1 text-xs admin-muted">Choose the category and optional sub-category used to organize this article.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <NewsCategorySelect type="category" value={normalizeNewsCategory(editingItem.data.kind || editingItem.data.category) || 'Programs'} options={taxonomy.categories} onChange={(kind) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kind } })} onOptions={setTaxonomy} preserveValueOnManage />
+                      <NewsCategorySelect type="subCategory" value={editingItem.data.subCategory || ''} options={taxonomy.subCategories} onChange={(subCategory) => setEditingItem({ ...editingItem, data: { ...editingItem.data, subCategory } })} onOptions={setTaxonomy} preserveValueOnManage />
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Category (Dzongkha)</label>
+                      <input type="text" value={editingItem.data.kindDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, kindDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                  </section>
+
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Short summary and cover photo</h4>
+                      <p className="mt-1 text-xs admin-muted">A short summary helps readers decide whether to open the full article.</p>
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Short summary (English)</label>
+                      <textarea rows={3} value={editingItem.data.blurb || editingItem.data.excerpt || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurb: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                    <div>
+                      <label className="block font-medium admin-text mb-1">Short summary (Dzongkha)</label>
+                      <textarea rows={3} value={editingItem.data.blurbDz || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, blurbDz: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" />
+                    </div>
+                    <FileUploadInput label="Article cover photo" value={editingItem.data.image_path || ''} onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, image_path: url } })} accept="image/*" hint="Choose a JPG, PNG, or WebP image to represent this article." />
+                  </section>
+
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Full article</h4>
+                      <p className="mt-1 text-xs admin-muted">Edit the complete story. Add the Dzongkha version if available.</p>
+                    </div>
+                    <RichTextEditor label="Full article (English)" value={editingItem.data.content || ''} onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, content: html } })} hint="Add the full article, including details, quotes, or report text." />
+                    <RichTextEditor label="Full article (Dzongkha)" value={editingItem.data.contentDz || ''} onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, contentDz: html } })} hint="Optional Dzongkha translation of the full story." />
+                  </section>
+
+                  <section className="border-t border-slate-200 pt-4 space-y-3">
+                    <div>
+                      <h4 className="text-sm font-semibold admin-title">Optional supporting document</h4>
+                      <p className="mt-1 text-xs admin-muted">Attach a PDF, Word document, or flipbook for readers to view with this article.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block font-medium text-amber-950 mb-1">Document Format</label>
-                        <select
-                          value={editingItem.data.documentType || 'PDF'}
-                          onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentType: e.target.value } })}
-                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
-                        >
+                        <label className="block font-medium admin-text mb-1">Document format</label>
+                        <select value={editingItem.data.documentType || 'PDF'} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentType: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5">
                           <option value="PDF">PDF Document (Embedded Viewer)</option>
                           <option value="FLIPBOOK">Interactive Flipbook (Iframe / URL)</option>
                           <option value="DOC">Word / Supporting Paper</option>
                         </select>
                       </div>
                       <div>
-                        <label className="block font-medium text-amber-950 mb-1">Document Display Title</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Official Training Guidelines (PDF)"
-                          value={editingItem.data.documentTitle || ''}
-                          onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentTitle: e.target.value } })}
-                          className="w-full bg-white border border-amber-200 rounded px-2.5 py-1.5"
-                        />
+                        <label className="block font-medium admin-text mb-1">Title shown for the document</label>
+                        <input type="text" placeholder="e.g. Official Training Guidelines (PDF)" value={editingItem.data.documentTitle || ''} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentTitle: e.target.value } })} className="w-full admin-input border rounded px-2.5 py-1.5" />
                       </div>
                     </div>
+                    <FileUploadInput label="Upload or link the supporting document" value={editingItem.data.documentUrl || ''} onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentUrl: url } })} accept=".pdf,.doc,.docx,application/pdf" hint="Upload a file or provide its URL. PDFs can be previewed on the article page." />
+                  </section>
 
-                    <FileUploadInput
-                      label="Upload Document (PDF, Word, or Flipbook asset)"
-                      value={editingItem.data.documentUrl || ''}
-                      onChange={(url) => setEditingItem({ ...editingItem, data: { ...editingItem.data, documentUrl: url } })}
-                      accept=".pdf,.doc,.docx,application/pdf"
-                      hint="Upload PDF to embed directly on news article page, or paste external flipbook URL."
-                    />
-                  </div>
-
-                  <div>
-                    <RichTextEditor
-                      label="Full Article Story / Content"
-                      value={editingItem.data.content || ''}
-                      onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, content: html } })}
-                      hint="Detailed article narrative, quotes, and reports."
-                    />
-                  </div>
-                  <div><RichTextEditor label="Full Article Story / Content (Dzongkha)" value={editingItem.data.contentDz || ''} onChange={(html) => setEditingItem({ ...editingItem, data: { ...editingItem.data, contentDz: html } })} /></div>
-                  <label className="flex items-center gap-2"><input type="checkbox" checked={editingItem.data.isPublished !== false} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, isPublished: e.target.checked } })} />Publish on website (uncheck to hide as draft)</label>
-                </>
+                  <section className="border-t border-slate-200 pt-4 space-y-2">
+                    <h4 className="text-sm font-semibold admin-title">Publishing</h4>
+                    <label className="flex items-start gap-2 text-xs admin-text">
+                      <input type="checkbox" checked={editingItem.data.isPublished !== false} onChange={(e) => setEditingItem({ ...editingItem, data: { ...editingItem.data, isPublished: e.target.checked } })} className="mt-0.5" />
+                      <span><span className="font-medium">Publish this article on the website</span><span className="block admin-muted">Turn this off to keep it hidden as a draft.</span></span>
+                    </label>
+                  </section>
+                </div>
               )}
 
               {editingItem.type === 'PUBLICATION' && (

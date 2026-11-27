@@ -499,7 +499,7 @@ function AdminSettingsContent() {
             Settings &amp; staff access
           </h1>
           <p className="text-sm admin-muted mt-1">
-            Manage currency, staff permissions, email notifications, delivery prices, and the admin change history.
+            Manage staff access, email notifications, shipping rates, the RMA exchange-rate override, and admin change history.
           </p>
         </div>
       </div>
@@ -533,7 +533,7 @@ function AdminSettingsContent() {
             activeTab === 'FX' ? 'border-[#8B2E24] text-[#8B2E24] font-bold bg-white rounded-t-xl shadow-xs' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-t-xl'
           }`}
         >
-          <RefreshCw className="w-4 h-4 text-[#8B2E24]" /> Exchange Rates
+          <RefreshCw className="w-4 h-4 text-[#8B2E24]" /> Exchange Rates (RMA)
         </button>
         <button
           type="button"
@@ -585,7 +585,7 @@ function AdminSettingsContent() {
       {/* Tab 1: Exchange rates */}
       {activeTab === 'FX' && (
         <div className="space-y-6">
-          {/* Prominent Currency & Language Callout Banner */}
+          {/* Store display preferences are managed on the primary Localization page. */}
           <div className="p-5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 flex-none">
@@ -593,11 +593,11 @@ function AdminSettingsContent() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  Global Store Currency &amp; Language Settings
-                  <span className="px-2 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px] font-mono font-bold">CONTROL</span>
+                  Store display currency &amp; language
+                  <span className="px-2 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px] font-mono font-bold">PRIMARY SETTINGS PAGE</span>
                 </h3>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  Set baseline display currency (USD $ / BTN Nu.), default language (English / རྫོང་ཁ Dzongkha), and enabled public customer switchers.
+                  This tab does not change the visitor’s default currency, default language, or header switcher options. Those are managed on the primary Currency &amp; Language page.
                 </p>
               </div>
             </div>
@@ -605,9 +605,12 @@ function AdminSettingsContent() {
               href="/admin/localization"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#8B2E24] hover:bg-[#72241C] text-white text-xs font-bold transition-all shadow-xs flex-none self-start sm:self-auto"
             >
-              Open Currency &amp; Language Settings →
+              Open primary Currency &amp; Language settings →
             </Link>
           </div>
+          <p className="text-sm admin-muted">
+            <strong className="admin-title">What changes in this tab:</strong> the effective USD–BTN rate can come from the RMA feed or an administrator override. Enter an override here with its justification, or clear it to restore the automatic feed.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="admin-card p-5 rounded-lg border admin-border shadow-sm space-y-2">
               <span className="text-[11px] font-medium admin-muted uppercase">Effective Exchange Rate</span>

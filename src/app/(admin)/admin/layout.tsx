@@ -253,7 +253,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: 'Dues & Renewals', href: '/admin/membership-settings', icon: CreditCard },
         { label: 'Craft Traditions (13)', href: '/admin/crafts', icon: Palette },
         { label: 'Artisans & Awards', href: '/admin/honours', icon: Award },
-        { label: 'Traders & Shops', href: '/admin/traders', icon: Store },
+        // Temporarily hidden from navigation at HAB's request. Keep the route,
+        // API and saved trader records intact for a future re-enable.
+        // { label: 'Traders & Shops', href: '/admin/traders', icon: Store },
         { label: 'Outlets & Artisan Clusters', href: '/admin/clusters-outlets', icon: Store },
       ],
     },
@@ -313,8 +315,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Helper to generate dynamic breadcrumbs
   const getBreadcrumbs = () => {
     if (pathname === '/admin') return [{ label: 'Dashboard', href: '/admin' }];
-    const crumbs = [{ label: 'Admin', href: '/admin' }];
-    
+    const crumbs: { label: string; href?: string }[] = [{ label: 'Admin', href: '/admin' }];
+    const activeGroup = availableGroups.find((group) => group.key === activeNavGroupKey);
+    if (activeGroup) crumbs.push({ label: activeGroup.group });
     if (activeNavItem) crumbs.push({ label: activeNavItem.label, href: activeNavItem.href });
     return crumbs;
   };
@@ -344,12 +347,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
 
           {/* Breadcrumbs */}
-          <nav className="hidden sm:flex items-center gap-1.5 text-xs">
+          <nav aria-label="Admin breadcrumb" className="hidden sm:flex items-center gap-1.5 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1" />
             {breadcrumbs.map((crumb, idx) => (
-              <React.Fragment key={crumb.href}>
+              <React.Fragment key={`${crumb.href || crumb.label}-${idx}`}>
                 {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
-                <Link
+                {crumb.href ? <Link
                   href={crumb.href}
                   className={`transition-colors ${
                     idx === breadcrumbs.length - 1
@@ -358,10 +361,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   }`}
                 >
                   {crumb.label}
-                </Link>
+                </Link> : <span className="text-slate-500">{crumb.label}</span>}
               </React.Fragment>
             ))}
           </nav>
+          <span className="sm:hidden max-w-[42vw] truncate text-xs font-semibold text-slate-800" aria-current="page">
+            {activeNavItem?.label || 'Admin'}
+          </span>
         </div>
 
         {/* Center: Command Palette Trigger */}

@@ -700,6 +700,8 @@ model PolicyPage {
   id        String   @id @default(uuid())
   slug      String   @unique // "terms" | "privacy" | "shipping" | "conduct"
   title     String
+  summary   String?  @db.Text
+  intro     String?  @db.Text
   content   String   @db.Text
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

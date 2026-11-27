@@ -237,9 +237,9 @@ export default function AdminProjectsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b admin-border pb-5">
         <div>
-          <h1 className="text-2xl font-bold admin-title tracking-tight">Donor &amp; Institutional Projects</h1>
+          <h1 className="text-2xl font-bold admin-title tracking-tight">Projects</h1>
           <p className="text-sm admin-muted mt-1">
-            Manage donor-funded initiatives, capacity-building grants, progress metrics, and key deliverables published on the public Projects portal.
+            Add and update the current and completed projects shown on the public Projects page.
           </p>
         </div>
         <button

@@ -252,9 +252,9 @@ export default function AdminClustersOutletsPage() {
       {/* Header */}
       <div className="border-b admin-border pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold admin-title tracking-tight">Clusters &amp; Outlets Management</h1>
+          <h1 className="text-2xl font-bold admin-title tracking-tight">Clusters &amp; outlets</h1>
           <p className="text-sm admin-muted mt-1">
-            Dynamic control over Bhutan’s verified artisan clusters and official craft market outlets.
+            Add and update artisan clusters, craft outlets, and markets shown on the public website.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -281,7 +281,7 @@ export default function AdminClustersOutletsPage() {
               }}
               className="admin-button-primary flex items-center gap-1.5 text-xs py-2 px-3 rounded-lg"
             >
-              <Plus className="w-4 h-4" /> Add Artisan Cluster
+              <Plus className="w-4 h-4" /> Add cluster
             </button>
           ) : (
             <button
@@ -322,7 +322,7 @@ export default function AdminClustersOutletsPage() {
               }}
               className="admin-button-primary flex items-center gap-1.5 text-xs py-2 px-3 rounded-lg"
             >
-              <Plus className="w-4 h-4" /> Add Outlet / Market
+              <Plus className="w-4 h-4" /> Add outlet or market
             </button>
           )}
         </div>
@@ -340,7 +340,7 @@ export default function AdminClustersOutletsPage() {
           }`}
         >
           <MapPin className="w-4 h-4" />
-          Artisan Clusters ({clusters.length})
+          Clusters ({clusters.length})
         </button>
         <button
           type="button"
@@ -352,7 +352,7 @@ export default function AdminClustersOutletsPage() {
           }`}
         >
           <Store className="w-4 h-4" />
-          Outlets &amp; Markets ({outlets.length})
+          Outlets &amp; markets ({outlets.length})
         </button>
       </div>
 
@@ -416,7 +416,7 @@ export default function AdminClustersOutletsPage() {
                       className="p-1.5 rounded admin-hover text-slate-300 hover:text-white"
                       title="Edit cluster"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      <Edit2 className="w-3.5 h-3.5" /> <span>Edit</span>
                     </button>
                     <button
                       type="button"
@@ -424,7 +424,7 @@ export default function AdminClustersOutletsPage() {
                       className="p-1.5 rounded admin-hover text-rose-400 hover:text-rose-200"
                       title="Delete cluster"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" /> <span>Delete</span>
                     </button>
                   </div>
                 </div>
@@ -434,14 +434,14 @@ export default function AdminClustersOutletsPage() {
 
               <div className="pt-3 border-t admin-border flex items-center justify-between text-xs admin-muted">
                 <span>
-                  Craft: <strong className="text-slate-200 font-mono">{c.craftKey}</strong> · {c.members} artisans
+                  Craft tradition: <strong className="text-slate-200 font-mono">{c.craftKey}</strong> · {c.members} artisans
                 </span>
                 <Link
                   href={`/clusters/${c.key}`}
                   target="_blank"
                   className="text-amber-400 hover:underline flex items-center gap-1 font-mono text-[11px]"
                 >
-                  View live <Eye className="w-3.5 h-3.5" />
+                  Open public page <Eye className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
@@ -461,7 +461,7 @@ export default function AdminClustersOutletsPage() {
                       </span>
                       {o.isFeatured && (
                         <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1 font-mono">
-                          <Star className="w-3 h-3 fill-amber-300" /> Featured Market
+                          <Star className="w-3 h-3 fill-amber-300" /> Featured on homepage
                         </span>
                       )}
                     </div>
@@ -508,7 +508,7 @@ export default function AdminClustersOutletsPage() {
                       className="p-1.5 rounded admin-hover text-slate-300 hover:text-white"
                       title="Edit outlet"
                     >
-                      <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-3.5 h-3.5" /> <span>Edit</span>
                     </button>
                     <button
                       type="button"
@@ -516,7 +516,7 @@ export default function AdminClustersOutletsPage() {
                       className="p-1.5 rounded admin-hover text-rose-400 hover:text-rose-200"
                       title="Delete outlet"
                     >
-                      <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" /> <span>Delete</span>
                     </button>
                   </div>
                 </div>
@@ -531,7 +531,7 @@ export default function AdminClustersOutletsPage() {
                   target="_blank"
                   className="text-amber-400 hover:underline flex items-center gap-1 font-mono text-[11px]"
                 >
-                  View live <Eye className="w-3.5 h-3.5" />
+                  Open public page <Eye className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
@@ -547,9 +547,9 @@ export default function AdminClustersOutletsPage() {
             <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
-                  {isNewCluster ? 'Add New Artisan Cluster' : `Edit Cluster: ${editingCluster.name}`}
+                  {isNewCluster ? 'Add artisan cluster' : `Edit cluster: ${editingCluster.name}`}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Regional artisan collective & geographical indication</p>
+                <p className="text-xs text-slate-500 mt-0.5">Enter the cluster details visitors will see on its public page.</p>
               </div>
               <button
                 type="button"
@@ -577,9 +577,14 @@ export default function AdminClustersOutletsPage() {
                   </div>
                 </div>
               )}
+              <section aria-labelledby="cluster-details-heading" className="space-y-3">
+                <div className="border-b border-slate-200 pb-2">
+                  <h3 id="cluster-details-heading" className="text-sm font-semibold text-slate-900">Cluster details</h3>
+                  <p className="mt-0.5 text-xs text-slate-500">Name, page address, craft, location, and size.</p>
+                </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Cluster Key (URL slug)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Page address key</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.key}
@@ -598,7 +603,7 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Primary Craft Key</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Craft tradition key</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24]"
                     value={clusterForm.craftKey}
@@ -616,7 +621,7 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Artisan Members Count</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Number of artisan members</label>
                   <input
                     type="number"
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 font-mono focus:outline-hidden focus:border-[#8B2E24]"
@@ -635,6 +640,12 @@ export default function AdminClustersOutletsPage() {
                 </div>
               </div>
 
+              </section>
+              <section aria-labelledby="cluster-story-heading" className="space-y-4">
+                <div className="border-b border-slate-200 pb-2">
+                  <h3 id="cluster-story-heading" className="text-sm font-semibold text-slate-900">Public story and visitor information</h3>
+                  <p className="mt-0.5 text-xs text-slate-500">Write the short introduction, full heritage story, and visit guidance.</p>
+                </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Short Summary</label>
                 <textarea
@@ -656,16 +667,6 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div>
-                <FileUploadInput
-                  label="Cluster Landscape Photograph"
-                  value={clusterForm.imageUrl}
-                  onChange={(url) => setClusterForm({ ...clusterForm, imageUrl: url })}
-                  accept="image/*"
-                  hint="Scenic village or workshop photograph representing this cluster."
-                />
-              </div>
-
-              <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Visitor Note</label>
                 <input
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
@@ -674,7 +675,22 @@ export default function AdminClustersOutletsPage() {
                   placeholder="e.g. Best visited between October and May"
                 />
               </div>
+              </section>
 
+              <section aria-labelledby="cluster-photo-heading" className="space-y-3">
+                <div className="border-b border-slate-200 pb-2">
+                  <h3 id="cluster-photo-heading" className="text-sm font-semibold text-slate-900">Photo and homepage display</h3>
+                  <p className="mt-0.5 text-xs text-slate-500">Choose the cluster photo and whether it is highlighted.</p>
+                </div>
+              <div>
+                <FileUploadInput
+                  label="Cluster landscape or workshop photo"
+                  value={clusterForm.imageUrl}
+                  onChange={(url) => setClusterForm({ ...clusterForm, imageUrl: url })}
+                  accept="image/*"
+                  hint="Choose an image that represents this cluster."
+                />
+              </div>
               <div className="flex items-center gap-4 pt-1">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -683,9 +699,10 @@ export default function AdminClustersOutletsPage() {
                     onChange={(e) => setClusterForm({ ...clusterForm, isFeatured: e.target.checked })}
                     className="w-4 h-4 accent-[#8B2E24] rounded"
                   />
-                  <span className="text-xs font-medium text-slate-700">Featured Cluster</span>
+                  <span className="text-xs font-medium text-slate-700">Feature this cluster on the homepage</span>
                 </label>
               </div>
+              </section>
             </form>
 
             {/* Sticky Footer */}
@@ -703,7 +720,7 @@ export default function AdminClustersOutletsPage() {
                 disabled={submitting}
                 className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-xs transition-colors"
               >
-                {submitting ? 'Saving...' : 'Save Cluster'}
+                {submitting ? 'Saving…' : isNewCluster ? 'Add cluster' : 'Save changes'}
               </button>
             </div>
           </div>
@@ -718,9 +735,9 @@ export default function AdminClustersOutletsPage() {
             <div className="flex-shrink-0 p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
-                  {isNewOutlet ? 'Add New Outlet / Market' : `Edit Outlet: ${editingOutlet.name}`}
+                  {isNewOutlet ? 'Add outlet or market' : `Edit outlet: ${editingOutlet.name}`}
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Physical craft shops, airport counters & weekend market</p>
+                <p className="text-xs text-slate-500 mt-0.5">Enter the details visitors will see on this public outlet page.</p>
               </div>
               <button
                 type="button"
@@ -748,9 +765,14 @@ export default function AdminClustersOutletsPage() {
                   </div>
                 </div>
               )}
+              <section aria-labelledby="outlet-details-heading" className="space-y-3">
+                <div className="border-b border-slate-200 pb-2">
+                  <h3 id="outlet-details-heading" className="text-sm font-semibold text-slate-900">Outlet details</h3>
+                  <p className="mt-0.5 text-xs text-slate-500">Name, page address, outlet type, location, and opening hours.</p>
+                </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Outlet Key (URL slug)</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Page address key</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.key}
@@ -769,19 +791,19 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Type</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Outlet type</label>
                   <select
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.type}
                     onChange={(e) => setOutletForm({ ...outletForm, type: e.target.value })}
                   >
-                    <option value="MARKET">MARKET</option>
-                    <option value="OUTLET">OUTLET</option>
-                    <option value="COUNTER">COUNTER</option>
+                    <option value="MARKET">Market</option>
+                    <option value="OUTLET">Outlet or shop</option>
+                    <option value="COUNTER">Visitor counter</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Location / Place</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Location</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.place}
@@ -798,7 +820,7 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Stalls</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Stalls or market size</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.stalls}
@@ -807,7 +829,13 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
               </div>
+              </section>
 
+              <section aria-labelledby="outlet-visitor-heading" className="space-y-4">
+                <div className="border-b border-slate-200 pb-2">
+                  <h3 id="outlet-visitor-heading" className="text-sm font-semibold text-slate-900">Visitor information</h3>
+                  <p className="mt-0.5 text-xs text-slate-500">Describe the outlet, available crafts, payment methods, and visitor guidance.</p>
+                </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Short Description</label>
                 <textarea
@@ -821,7 +849,7 @@ export default function AdminClustersOutletsPage() {
 
               <div>
                 <RichTextEditor
-                  label="Long Editorial Description *"
+                  label="Full description *"
                   value={outletForm.longDescription}
                   onChange={(html) => setOutletForm({ ...outletForm, longDescription: html })}
                   hint="Detailed visitor overview, atmosphere, and craft products offered."
@@ -830,7 +858,7 @@ export default function AdminClustersOutletsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Crafts on Site</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Crafts available here</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.craftsOnSite}
@@ -838,7 +866,7 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Payment Accepted</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Payment methods accepted</label>
                   <input
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-slate-900 focus:outline-hidden focus:border-[#8B2E24]"
                     value={outletForm.payment}
@@ -846,9 +874,11 @@ export default function AdminClustersOutletsPage() {
                   />
                 </div>
               </div>
+              </section>
 
+              <section aria-labelledby="outlet-translation-heading">
               <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <summary className="cursor-pointer text-sm font-semibold text-slate-800">Optional Dzongkha translations</summary>
+                <summary id="outlet-translation-heading" className="cursor-pointer text-sm font-semibold text-slate-800">Optional: Dzongkha translations</summary>
                 <p className="mt-2 text-xs text-slate-600">Add HAB-reviewed translations here. Visitors who choose Dzongkha will see these values; if a translation is blank, the English value remains visible.</p>
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -896,10 +926,16 @@ export default function AdminClustersOutletsPage() {
                   </div>
                 </div>
               </details>
+              </section>
 
+              <section aria-labelledby="outlet-photos-heading" className="space-y-4">
+                <div className="border-b border-slate-200 pb-2">
+                  <h3 id="outlet-photos-heading" className="text-sm font-semibold text-slate-900">Photos and homepage display</h3>
+                  <p className="mt-0.5 text-xs text-slate-500">Set the main photo, manage slider images, and choose homepage highlighting.</p>
+                </div>
               <div>
                 <FileUploadInput
-                  label="Outlet Storefront / Counter Photograph"
+                  label="Main outlet photo"
                   value={outletForm.imageUrl}
                   onChange={(url) => setOutletForm({ ...outletForm, imageUrl: url })}
                   accept="image/*"
@@ -908,11 +944,11 @@ export default function AdminClustersOutletsPage() {
               </div>
 
               <div className="space-y-3 rounded-xl border border-slate-200 p-4">
-                <p className="font-semibold text-slate-900">Outlet slider photographs</p>
-                <p className="text-slate-500">Add photographs after the cover photo. They appear on the homepage, outlets page and outlet detail page.</p>
+                <p className="font-semibold text-slate-900">Slider and gallery photos</p>
+                <p className="text-slate-500">These photos appear after the main photo in the outlet sliders and gallery.</p>
                 {outletForm.galleryImages.map((url, index) => <div key={index} className="flex items-end gap-2">
                   <div className="min-w-0 flex-1"><FileUploadInput
-                    label={`Additional slider photograph ${index + 1}`}
+                    label={`Slider photo ${index + 1}`}
                     value={url}
                     onChange={next => setOutletForm(current => ({ ...current, galleryImages: current.galleryImages.map((value, slot) => slot === index ? next : value) }))}
                     accept="image/*"
@@ -920,7 +956,7 @@ export default function AdminClustersOutletsPage() {
                   /></div>
                   <button type="button" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" onClick={() => setOutletForm(current => ({ ...current, galleryImages: current.galleryImages.filter((_, slot) => slot !== index) }))}>Remove</button>
                 </div>)}
-                <button type="button" disabled={outletForm.galleryImages.length >= 24} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold" onClick={() => setOutletForm(current => ({ ...current, galleryImages: [...current.galleryImages, ''] }))}>+ Add another slide</button>
+                <button type="button" disabled={outletForm.galleryImages.length >= 24} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold" onClick={() => setOutletForm(current => ({ ...current, galleryImages: [...current.galleryImages, ''] }))}>+ Add slider photo</button>
               </div>
 
               <div className="flex items-center gap-4 pt-1">
@@ -931,9 +967,10 @@ export default function AdminClustersOutletsPage() {
                     onChange={(e) => setOutletForm({ ...outletForm, isFeatured: e.target.checked })}
                     className="w-4 h-4 accent-[#8B2E24] rounded"
                   />
-                  <span className="text-xs font-medium text-slate-700">Featured Market (Highlights banner)</span>
+                  <span className="text-xs font-medium text-slate-700">Feature this outlet on the homepage</span>
                 </label>
               </div>
+              </section>
             </form>
 
             {/* Sticky Footer */}
@@ -951,7 +988,7 @@ export default function AdminClustersOutletsPage() {
                 disabled={submitting}
                 className="px-5 py-2 bg-[#8B2E24] hover:bg-[#73241c] text-white rounded-xl text-xs sm:text-sm font-semibold disabled:opacity-50 cursor-pointer shadow-xs transition-colors"
               >
-                {submitting ? 'Saving...' : 'Save Outlet'}
+                {submitting ? 'Saving…' : isNewOutlet ? 'Add outlet' : 'Save changes'}
               </button>
             </div>
           </div>
@@ -962,9 +999,9 @@ export default function AdminClustersOutletsPage() {
       {deleting && (
         <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
           <div className="admin-modal w-full max-w-md rounded-xl p-6 space-y-4">
-            <h2 className="text-base font-bold text-rose-300">Confirm Deletion</h2>
+            <h2 className="text-base font-bold text-rose-300">Delete {deleting.type === 'CLUSTER' ? 'cluster' : 'outlet'}?</h2>
             <p className="text-xs admin-text">
-              Are you sure you want to permanently delete <strong>{deleting.name}</strong>? This action cannot be undone.
+              This will permanently remove <strong>{deleting.name}</strong>. This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2 pt-3 border-t admin-border">
               <button
@@ -980,7 +1017,7 @@ export default function AdminClustersOutletsPage() {
                 disabled={submitting}
                 className="bg-rose-600 hover:bg-rose-700 text-white font-semibold py-1.5 px-3 rounded text-xs"
               >
-                {submitting ? 'Deleting...' : 'Delete Permanently'}
+                {submitting ? 'Deleting…' : `Delete ${deleting.type === 'CLUSTER' ? 'cluster' : 'outlet'}`}
               </button>
             </div>
           </div>

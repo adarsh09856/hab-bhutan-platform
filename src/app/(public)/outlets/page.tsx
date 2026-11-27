@@ -94,12 +94,13 @@ async function getOutletsData() {
   }
 }
 
-export default async function OutletsPage() {
+export default async function OutletsPage({ searchParams }: { searchParams: Promise<{ q?: string; directory?: string }> }) {
+  const { q = '', directory = '' } = await searchParams;
   const { outlets, clusters, unavailable } = await getOutletsData();
   return (
     <div className="relative">
       <SectionEditBadge label="Markets & Outlets" studioHref="/admin/clusters-outlets" sectionType="outlets" />
-      <OutletsBrowser initialOutlets={outlets} clusters={clusters} unavailable={unavailable} />
+      <OutletsBrowser initialOutlets={outlets} clusters={clusters} unavailable={unavailable} initialQuery={q} searchResultsOnly={directory === '1'} />
     </div>
   );
 }

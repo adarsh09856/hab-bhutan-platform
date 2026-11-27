@@ -14,6 +14,8 @@ interface PolicyRouteProps {
   params: Promise<{ slug: string }>;
 }
 
+const DEFAULT_POLICY_INTRO = 'Official statutory charter and policy governed under the Civil Society Organizations Act of Bhutan 2007.';
+
 const DEFAULT_POLICIES: Record<string, { title: string; lede: string; content: string }> = {
   'shipping-policy': {
     title: 'Shipping, Tracking & Heritage Certification Policy',
@@ -74,6 +76,7 @@ async function getPolicy(slug: string) {
       return {
         slug: dbPolicy.slug,
         title: dbPolicy.title,
+        intro: dbPolicy.intro || DEFAULT_POLICIES[dbPolicy.slug]?.lede || DEFAULT_POLICIES[cleanSlug]?.lede || DEFAULT_POLICY_INTRO,
         content: dbPolicy.content,
         updatedAt: dbPolicy.updatedAt,
         isActive: dbPolicy.isActive,
@@ -165,7 +168,7 @@ export default async function DynamicPolicyPage({ params }: PolicyRouteProps) {
 
         <h1 className="display display--page">{policy.title}</h1>
         <p className="lede">
-          Official statutory charter and policy governed under the Civil Society Organizations Act of Bhutan 2007.
+          {policy.intro || DEFAULT_POLICIES[policy.slug]?.lede || DEFAULT_POLICY_INTRO}{' '}
           Last reviewed {lastReviewed}.
         </p>
       </section>

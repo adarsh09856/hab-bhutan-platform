@@ -820,15 +820,28 @@ export default function AdminPagesHub() {
       )}
 
       {/* Page Header with Action Bar & "+ Create Page" Button */}
-      <details className="rounded-xl border border-slate-200 bg-white p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-700">Advanced website tools</summary>
-        <p className="mt-2 text-xs text-slate-500">Optional tools for restoring direct edits, adding extra sections, and managing strategy, mandate and ethics cards.</p>
-        <div className="mt-3 flex flex-wrap gap-3 text-sm text-[#8B2E24]">
-          <Link href="/admin/pages/live-content" className="underline">Edit history &amp; restore</Link>
-          <Link href="/admin/pages/sections" className="underline">Additional page sections</Link>
-          <Link href="/admin/pages/governance-cards" className="underline">Strategy, mandate &amp; ethics cards</Link>
-        </div>
-      </details>
+      <section aria-label="Website page tools" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Link href="/admin/hero" className="group rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-[#8B2E24]/40 hover:bg-rose-50/30">
+          <span className="text-sm font-semibold text-slate-900 group-hover:text-[#8B2E24]">Homepage Slides</span>
+          <span className="mt-1 block text-xs text-slate-500">Main editor for adding, arranging and publishing homepage slides.</span>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#8B2E24]">Open slide editor <ExternalLink className="h-3.5 w-3.5" /></span>
+        </Link>
+        <Link href="/admin/pages/live-content" className="group rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-[#8B2E24]/40 hover:bg-rose-50/30">
+          <span className="text-sm font-semibold text-slate-900 group-hover:text-[#8B2E24]">Edit history &amp; restore</span>
+          <span className="mt-1 block text-xs text-slate-500">Review earlier live edits and restore a previous version.</span>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#8B2E24]">Open edit history <ExternalLink className="h-3.5 w-3.5" /></span>
+        </Link>
+        <Link href="/admin/pages/sections" className="group rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-[#8B2E24]/40 hover:bg-rose-50/30">
+          <span className="text-sm font-semibold text-slate-900 group-hover:text-[#8B2E24]">Additional page sections</span>
+          <span className="mt-1 block text-xs text-slate-500">Manage optional sections shown on public pages.</span>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#8B2E24]">Manage page sections <ExternalLink className="h-3.5 w-3.5" /></span>
+        </Link>
+        <Link href="/admin/pages/governance-cards" className="group rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-[#8B2E24]/40 hover:bg-rose-50/30">
+          <span className="text-sm font-semibold text-slate-900 group-hover:text-[#8B2E24]">Governance page cards</span>
+          <span className="mt-1 block text-xs text-slate-500">Edit the strategy, mandate and ethics cards.</span>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#8B2E24]">Manage governance cards <ExternalLink className="h-3.5 w-3.5" /></span>
+        </Link>
+      </section>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">

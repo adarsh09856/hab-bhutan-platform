@@ -94,6 +94,7 @@ export async function GET() {
       shopCtaText: tb.shopCtaText || 'Visit the shop →',
       shopCtaLink: tb.shopCtaLink || '/shop',
       shopProductCodes: Array.isArray(tb.shopProductCodes) ? tb.shopProductCodes.map(String).slice(0, 8) : [],
+      mastersAwards: tb.mastersAwards && typeof tb.mastersAwards === 'object' && !Array.isArray(tb.mastersAwards) ? tb.mastersAwards : null,
     };
 
     const response = NextResponse.json({ success: true, setting: enriched, settings: enriched });

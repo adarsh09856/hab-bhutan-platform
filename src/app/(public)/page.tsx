@@ -1,7 +1,6 @@
 import prisma from '@/lib/prisma';
 import { CLIENT_VERBATIM, publishedHeroParagraph, publishedHeroSecondaryText } from '@/lib/data';
 import { CARD_PAYMENT_UNAVAILABLE_COPY, removeUnavailableCardClaim } from '@/lib/payment-display';
-import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 import { publicNewsArticles } from '@/lib/public-news-articles';
 import HomePageClient from './HomePageClient';
 
@@ -12,7 +11,7 @@ const DEFAULT_HOMEPAGE_SECTION_ORDER = [
   'masters', 'programmes', 'support', 'membership', 'news', 'publications', 'partners',
 ];
 
-function homepageSettings(setting: any, publicTraderCount: number | null) {
+function homepageSettings(setting: any, publicOutletCount: number | null) {
   setting = setting || {};
   const fallback = (key: string, value: string) => setting[key] || value;
   const aboutImage = String(setting.aboutBandImageUrl || '');
@@ -76,7 +75,7 @@ function homepageSettings(setting: any, publicTraderCount: number | null) {
     stats: [
       { value: setting.stat1Number || '7,500', label: setting.stat1Label || 'Micro & small enterprises in the network', url: '' },
       { value: setting.stat2Number || '5,250', label: setting.stat2Label || 'Women-led enterprises', url: '' },
-      { value: publicTraderCount && publicTraderCount > 0 ? String(publicTraderCount) : '', label: 'Affiliated stores across Bhutan', url: publicTraderCount && publicTraderCount > 0 ? '/traders' : '' },
+      { value: publicOutletCount && publicOutletCount > 0 ? String(publicOutletCount) : '', label: 'Affiliated stores across Bhutan', url: publicOutletCount && publicOutletCount > 0 ? '/outlets' : '' },
       { value: setting.stat4Number || '13', label: setting.stat4Label || 'Arts & crafts of Zorig Chusum', url: '/shop' },
     ],
     aboutBandTitle: quickEditText('about', 'div:1/div:1/h2:1') ?? fallback('aboutBandTitle', 'A network built for artisans and everyone who brings a craft to market'),
@@ -177,14 +176,10 @@ export default async function HomePage() {
     console.error('Could not preload homepage slides:', error);
   }
 
-  // The public directory count is computed on the server using the same
-  // visibility and Bhutan-day expiry rules as /traders, so no stale CMS
-  // number is rendered while the client hydrates.
+  // Count the physical outlet records that the homepage directory now opens.
   try {
-    const publicTraderCount = await prisma.traderRecord.count({
-      where: { isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } },
-    });
-    initialSettings = homepageSettings(initialSetting, publicTraderCount);
+    const publicOutletCount = await prisma.outletRecord.count();
+    initialSettings = homepageSettings(initialSetting, publicOutletCount);
   } catch {
     // Leave the count blank if its authoritative data source is unavailable.
     initialSettings = homepageSettings(initialSetting, null);

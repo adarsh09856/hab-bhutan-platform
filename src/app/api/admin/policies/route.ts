@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
       {
         slug: 'shipping-policy',
         title: 'Shipping, Tracking & Heritage Certification Policy',
+        summary: 'International EMS & DHL dispatch, origin certification seals, customs declarations, and returns protocol.',
+        intro: 'How orders placed with the Handicrafts Association of Bhutan are packed, shipped, charged, duty-cleared and returned.',
         lastUpdated: '12 September 2026',
         publicUrl: '/shipping-policy',
         content: `Every physical piece ordered through the Handicrafts Association of Bhutan central shop is dispatched directly from our Secretariat Quality & Assurance Hub at Kawajangsa, Thimphu, Kingdom of Bhutan.
@@ -34,6 +36,8 @@ Upon dispatch, a live tracking code (e.g. BP-BT-892144) is generated and emailed
       {
         slug: 'terms',
         title: 'Terms of Service & Artisan Buy-Out Charter',
+        summary: 'The statutory terms governing website operations, outright upfront artisan purchases, and membership.',
+        intro: 'The statutory terms on which the Handicrafts Association of Bhutan provides this website, sells craft works, and admits member artisans.',
         lastUpdated: '01 September 2026',
         publicUrl: '/terms',
         content: `1. Apex CSO Mandate
@@ -48,6 +52,8 @@ Handcrafted pieces inherently possess organic variations in dye, texture, and we
       {
         slug: 'privacy',
         title: 'Privacy Policy & Member Data Protection',
+        summary: 'Protection of member records, purchase history, and zero commercial monetization of artisan information.',
+        intro: 'How member records, donor receipts, purchaser details, and personal communications are protected under Bhutanese data governance standards.',
         lastUpdated: '28 August 2026',
         publicUrl: '/privacy',
         content: `1. Data Collection & Purpose
@@ -68,6 +74,8 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
           ...dp,
           id: found.id,
           title: found.title || dp.title,
+          summary: found.summary ?? dp.summary,
+          intro: found.intro ?? dp.intro,
           content: found.content || dp.content,
           isActive: found.isActive,
         };
@@ -82,6 +90,8 @@ We never sell, rent, or monetize personal information. Data is shared strictly w
           id: p.id,
           slug: p.slug,
           title: p.title,
+          summary: p.summary,
+          intro: p.intro,
           lastUpdated: new Date(p.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
           publicUrl: `/policies/${p.slug}`,
           content: p.content,
@@ -101,7 +111,7 @@ export async function POST(request: NextRequest) {
   if (!(await staff(request, ['content:create', 'content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
-    const { slug: rawSlug, title, content } = body;
+    const { slug: rawSlug, title, content, summary, intro } = body;
 
     if (!title?.trim()) {
       return NextResponse.json({ success: false, error: 'Policy title is required' }, { status: 400 });
@@ -126,6 +136,8 @@ export async function POST(request: NextRequest) {
       data: {
         slug: cleanSlug,
         title: title.trim(),
+        summary: typeof summary === 'string' ? summary.trim() : null,
+        intro: typeof intro === 'string' ? intro.trim() : null,
         content: content?.trim() || '',
         isActive: true,
       },
@@ -141,18 +153,33 @@ export async function PATCH(request: NextRequest) {
   if (!(await staff(request, ['content:edit']))) return NextResponse.json({ success: false, error: 'Staff login required.' }, { status: 401 });
   try {
     const body = await request.json();
-    const { slug, title, content, isActive } = body;
+    const { slug, title, summary, intro, content, isActive } = body;
 
     if (typeof slug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || typeof title !== 'string' || !title.trim() || typeof content !== 'string') {
       return NextResponse.json({ success: false, error: 'Valid slug, title and policy content are required.' }, { status: 400 });
     }
     if (isActive !== undefined && typeof isActive !== 'boolean') return NextResponse.json({ success: false, error: 'Invalid publication status.' }, { status: 400 });
+    if (summary !== undefined && typeof summary !== 'string') return NextResponse.json({ success: false, error: 'Policy summary must be text.' }, { status: 400 });
+    if (intro !== undefined && typeof intro !== 'string') return NextResponse.json({ success: false, error: 'Policy introduction must be text.' }, { status: 400 });
 
     await prisma.policyPage.upsert({
-        where: { slug },
-        create: { slug, title: title.trim(), content, isActive: isActive ?? true },
-        update: { title: title.trim(), content, ...(isActive !== undefined && { isActive }) },
-      });
+      where: { slug },
+      create: {
+        slug,
+        title: title.trim(),
+        summary: typeof summary === 'string' ? summary.trim() || null : null,
+        intro: typeof intro === 'string' ? intro.trim() || null : null,
+        content,
+        isActive: isActive ?? true,
+      },
+      update: {
+        title: title.trim(),
+        content,
+        ...(summary !== undefined && { summary: summary.trim() || null }),
+        ...(intro !== undefined && { intro: intro.trim() || null }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    });
 
     return NextResponse.json({ success: true, message: `Policy ${slug} saved.` });
   } catch (err: any) {

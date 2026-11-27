@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { mergeNewsOptions } from '@/lib/news-categories';
 import { useAdminAccess } from './AdminAccessContext';
 import { hasAdminPermission } from '@/lib/admin-navigation-access';
@@ -14,11 +14,32 @@ export default function NewsCategorySelect({ type, value, options, onChange, onO
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [categoryIntros, setCategoryIntros] = useState<Record<string, string>>({});
+  const [introDrafts, setIntroDrafts] = useState<Record<string, string>>({});
+  const [introError, setIntroError] = useState('');
+  const [loadingIntros, setLoadingIntros] = useState(false);
   const { user } = useAdminAccess();
   const label = type === 'category' ? 'category' : 'sub-category';
   const id = `news-${type}`;
   const activeOptions = useMemo(() => mergeNewsOptions(options), [options]);
   const listedOptions = useMemo(() => mergeNewsOptions(options, [value]), [options, value]);
+  useEffect(() => {
+    if (type !== 'category' || !hasAdminPermission(user, 'content:edit')) return;
+    let active = true;
+    setLoadingIntros(true);
+    fetch('/api/admin/news-taxonomy', { credentials: 'include', cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.error || 'Unable to load category introductions.');
+        if (active && data.categoryIntros && typeof data.categoryIntros === 'object') {
+          setCategoryIntros(data.categoryIntros);
+          setIntroDrafts(data.categoryIntros);
+        }
+      })
+      .catch((err: any) => { if (active) setIntroError(err.message || 'Unable to load category introductions.'); })
+      .finally(() => { if (active) setLoadingIntros(false); });
+    return () => { active = false; };
+  }, [type, user]);
   async function save() {
     setSaving(true); setError('');
     try {
@@ -45,6 +66,21 @@ export default function NewsCategorySelect({ type, value, options, onChange, onO
       if (!preserveValueOnManage && value.toLocaleLowerCase() === oldName.toLocaleLowerCase()) onChange(action === 'rename' ? data.newName : '');
     } catch (err: any) { setError(err.message); } finally { setSaving(false); }
   }
+  async function saveIntro(category: string) {
+    setSaving(true); setIntroError('');
+    try {
+      const response = await fetch('/api/admin/news-taxonomy', {
+        method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'setIntro', type: 'category', name: category, intro: introDrafts[category] || '' }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Unable to save the category introduction.');
+      const saved = data.categoryIntros && typeof data.categoryIntros === 'object' ? data.categoryIntros : {};
+      setCategoryIntros(saved);
+      setIntroDrafts(saved);
+    } catch (err: any) { setIntroError(err.message || 'Unable to save the category introduction.'); }
+    finally { setSaving(false); }
+  }
   return <div>
     <label htmlFor={id} className="block font-medium admin-text mb-1">{type === 'category' ? 'Primary Category' : 'Sub-Category'}</label>
     <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="w-full admin-input border rounded px-2.5 py-1.5">
@@ -61,14 +97,36 @@ export default function NewsCategorySelect({ type, value, options, onChange, onO
       <summary className="cursor-pointer font-semibold text-slate-600">Manage {type === 'category' ? 'categories' : 'sub-categories'}</summary>
       <p className="mt-1 text-slate-500">Rename changes future choices only. Existing articles keep their saved labels. Retire removes a choice from new entries without deleting articles.</p>
       <ul className="mt-2 space-y-1 rounded-lg border border-slate-200 bg-white p-2">
-        {activeOptions.map((option) => <li key={option} className="flex items-center justify-between gap-2">
-          <span className="min-w-0 truncate">{option}{option.toLocaleLowerCase() === value.toLocaleLowerCase() ? ' · selected' : ''}</span>
-          <span className="flex shrink-0 gap-2">
-            <button type="button" disabled={saving} onClick={() => void manage('rename', option)} className="font-semibold text-[#8B2E24] underline disabled:opacity-50">Rename</button>
-            <button type="button" disabled={saving} onClick={() => void manage('retire', option)} className="font-semibold text-slate-600 underline disabled:opacity-50">Retire</button>
-          </span>
+        {activeOptions.map((option) => <li key={option} className="space-y-2 border-b border-slate-100 py-2 last:border-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="min-w-0 truncate font-medium">{option}{option.toLocaleLowerCase() === value.toLocaleLowerCase() ? ' · selected' : ''}</span>
+            <span className="flex shrink-0 gap-2">
+              <button type="button" disabled={saving} onClick={() => void manage('rename', option)} className="font-semibold text-[#8B2E24] underline disabled:opacity-50">Rename</button>
+              <button type="button" disabled={saving} onClick={() => void manage('retire', option)} className="font-semibold text-slate-600 underline disabled:opacity-50">Retire</button>
+            </span>
+          </div>
+          {type === 'category' && <div className="space-y-1">
+            <label className="block text-slate-600" htmlFor={`${id}-intro-${activeOptions.indexOf(option)}`}>Public page introduction</label>
+            <textarea
+              id={`${id}-intro-${activeOptions.indexOf(option)}`}
+              rows={2}
+              maxLength={1000}
+              value={introDrafts[option] ?? categoryIntros[option] ?? ''}
+              onChange={(event) => setIntroDrafts((current) => ({ ...current, [option]: event.target.value }))}
+              placeholder={`Optional introduction shown on the ${option} page`}
+              className="w-full admin-input border rounded px-2 py-1.5"
+              disabled={loadingIntros || saving}
+            />
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-slate-500">Plain text · leave blank to use the default.</span>
+              <button type="button" disabled={saving || loadingIntros || (introDrafts[option] ?? '') === (categoryIntros[option] ?? '')} onClick={() => void saveIntro(option)} className="font-semibold text-[#8B2E24] underline disabled:opacity-50">
+                {saving ? 'Saving…' : 'Save intro'}
+              </button>
+            </div>
+          </div>}
         </li>)}
       </ul>
+      {type === 'category' && introError && <p role="alert" className="mt-2 text-xs text-red-700">{introError}</p>}
     </details>}
     {error && !adding && <p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
   </div>;

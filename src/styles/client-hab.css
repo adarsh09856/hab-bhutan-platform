@@ -3035,6 +3035,14 @@ html[data-rhythm="catalogue"] .frame--wide{min-height:280px}
   .tweaks{transition:none}
 }
 
+/* About leadership and team portraits share one compact rectangular frame. */
+.about-profile-portrait{
+  width:96px;height:120px;flex:none;aspect-ratio:auto;
+  margin:0 auto 12px;padding:0;border-radius:8px;overflow:hidden;
+}
+.about-profile-portrait__fallback{width:100%;min-height:0}
+.teamrow__avatar.about-profile-portrait{display:flex;align-items:center;justify-content:center}
+
 /* ==========================================================================
    2026 revision — flexible people grids, whole-card links, checkout payment,
    award list without numbering.

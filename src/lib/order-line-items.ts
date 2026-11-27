@@ -6,34 +6,42 @@ type OrderLineItem = {
   [key: string]: unknown;
 };
 
-function asItemArray(value: unknown): any[] {
-  if (Array.isArray(value)) return value;
+type ParsedItems = { items: any[]; malformed: boolean };
+
+function asItemArray(value: unknown): ParsedItems {
+  if (Array.isArray(value)) return { items: value, malformed: false };
   if (typeof value === 'string') {
     try {
       return asItemArray(JSON.parse(value));
     } catch {
-      return [];
+      return { items: [], malformed: true };
     }
   }
   if (value && typeof value === 'object') {
     const record = value as Record<string, unknown>;
-    if (Array.isArray(record.items)) return record.items;
-    if (Array.isArray(record.list)) return record.list;
+    if ('items' in record) return asItemArray(record.items);
+    if ('list' in record) return asItemArray(record.list);
+    return { items: [], malformed: true };
   }
-  return [];
+  return { items: [], malformed: value != null };
 }
 
+export type OrderLineItemsResult = {
+  items: OrderLineItem[];
+  state: 'ready' | 'empty' | 'invalid-snapshot';
+};
+
 /** Prefer the immutable checkout snapshot, with normalized order rows as fallback. */
-export function getOrderLineItems(order: { items?: unknown; orderItems?: unknown } | null | undefined): OrderLineItem[] {
-  if (!order) return [];
+export function getOrderLineItemsResult(order: { items?: unknown; orderItems?: unknown } | null | undefined): OrderLineItemsResult {
+  if (!order) return { items: [], state: 'empty' };
 
   const snapshot = asItemArray(order.items);
   const relations = asItemArray(order.orderItems);
-  const source = snapshot.length ? snapshot : relations;
+  const source = snapshot.items.length ? snapshot.items : relations.items;
 
-  return source.map((raw, index) => {
+  const items = source.map((raw, index) => {
     const item = raw && typeof raw === 'object' ? raw as Record<string, any> : {};
-    const relation = relations.find((candidate) => candidate?.code && candidate.code === item.code) || relations[index] || {};
+    const relation = relations.items.find((candidate) => candidate?.code && candidate.code === item.code) || relations.items[index] || {};
     const product = item.product || relation.product || {};
 
     return {
@@ -45,4 +53,13 @@ export function getOrderLineItems(order: { items?: unknown; orderItems?: unknown
       priceUSD: Number(item.priceUSD ?? item.priceUsd ?? item.unitPrice ?? relation.priceUSD ?? product.priceUSD ?? 0),
     };
   });
+
+  return {
+    items,
+    state: items.length ? 'ready' : snapshot.malformed || relations.malformed ? 'invalid-snapshot' : 'empty',
+  };
+}
+
+export function getOrderLineItems(order: { items?: unknown; orderItems?: unknown } | null | undefined): OrderLineItem[] {
+  return getOrderLineItemsResult(order).items;
 }

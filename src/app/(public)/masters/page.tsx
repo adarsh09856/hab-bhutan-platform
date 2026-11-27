@@ -12,6 +12,16 @@ import { useLanguage } from '@/context/LanguageContext';
 import { awardTypeLabel } from '@/lib/award-types';
 import { awardeePortrait } from '@/lib/awardee-portrait';
 
+type PublicAwardCategory = { key: string; title: string; description: string; criteria: string };
+type MastersAwardsSettings = { categories?: PublicAwardCategory[]; carouselPhotos?: string[] };
+const DEFAULT_MASTER_CAROUSEL_PHOTOS = [
+  '/assets/photos/hero-1-weaving.jpg',
+  '/assets/photos/hero-4-textiles.jpg',
+  '/assets/photos/hero-5-desho.jpg',
+  '/assets/photos/hero-3-clay.jpg',
+  '/assets/photos/hero-2-punakha.jpg',
+];
+
 export default function MastersPage() {
   const { language } = useLanguage();
   const dz = language === 'dz';
@@ -24,6 +34,7 @@ export default function MastersPage() {
   const [allRecognised, setAllRecognised] = useState<any[]>([]);
   const [honoursStatus, setHonoursStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [activeSlide, setActiveSlide] = useState(0);
+  const [awardPageSettings, setAwardPageSettings] = useState<MastersAwardsSettings | null>(null);
 
   useEffect(() => {
     fetch('/api/honours', { cache: 'no-store' })
@@ -55,10 +66,25 @@ export default function MastersPage() {
       .catch(() => setHonoursStatus('error'));
   }, []);
 
+  useEffect(() => {
+    fetch('/api/site-settings', { cache: 'no-store' })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Site settings unavailable');
+        return response.json();
+      })
+      .then((data) => {
+        const saved = data?.setting?.mastersAwards;
+        if (saved && typeof saved === 'object') setAwardPageSettings(saved);
+      })
+      .catch(() => {
+        // Built-in award content and carousel photographs remain the fallback.
+      });
+  }, []);
+
   // Carousel auto-rotate
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 5);
+      setActiveSlide((prev) => (prev + 1) % DEFAULT_MASTER_CAROUSEL_PHOTOS.length);
     }, 4500);
     return () => clearInterval(timer);
   }, []);
@@ -79,13 +105,25 @@ export default function MastersPage() {
   const practiceYears = allRecognised.map((r) => Number(r.since)).filter((year) => Number.isFinite(year) && year > 0);
   const earliestYear = practiceYears.length ? Math.min(...practiceYears) : null;
 
-  const slides = [
-    { src: '/assets/photos/hero-1-weaving.jpg', cap: text('Bhutanese craft photograph 1', 'འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ༡') },
-    { src: '/assets/photos/hero-4-textiles.jpg', cap: text('Bhutanese craft photograph 2', 'འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ༢') },
-    { src: '/assets/photos/hero-5-desho.jpg', cap: text('Bhutanese craft photograph 3', 'འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ༣') },
-    { src: '/assets/photos/hero-3-clay.jpg', cap: text('Bhutanese craft photograph 4', 'འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ༤') },
-    { src: '/assets/photos/hero-2-punakha.jpg', cap: text('Bhutanese craft photograph 5', 'འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ༥') },
-  ];
+  const slides = DEFAULT_MASTER_CAROUSEL_PHOTOS.map((fallback, index) => ({
+    src: typeof awardPageSettings?.carouselPhotos?.[index] === 'string' ? (awardPageSettings.carouselPhotos[index].trim() || fallback) : fallback,
+    cap: text(`Bhutanese craft photograph ${index + 1}`, `འབྲུག་གི་ལག་བཟོའི་པར་རིས་ ${['༡', '༢', '༣', '༤', '༥'][index]}`),
+  }));
+  const awardCategories = CLIENT_DATA.honours.map((fallback) => {
+    const saved = awardPageSettings?.categories?.find((category) => category.key === fallback.key);
+    const savedTitle = typeof saved?.title === 'string' ? saved.title.trim() : '';
+    const savedDescription = typeof saved?.description === 'string' ? saved.description.trim() : '';
+    const savedCriteria = typeof saved?.criteria === 'string' ? saved.criteria.trim() : '';
+    return {
+      key: fallback.key,
+      title: savedTitle || fallback.short,
+      description: savedDescription || fallback.what,
+      criteria: savedCriteria || fallback.criteria,
+      hasCustomTitle: Boolean(savedTitle && savedTitle !== fallback.short),
+      hasCustomDescription: Boolean(savedDescription),
+      fallback,
+    };
+  });
   const awardLabel = (name: string) => dz ? ({
     'Master Craftsperson': 'ལག་བཟོ་མཁས་པ',
     'National Craft Award': 'རྒྱལ་ཡོངས་ལག་བཟོའི་གཟེངས་རྟགས',
@@ -138,6 +176,7 @@ export default function MastersPage() {
                     src={s.src}
                     alt={s.cap}
                     fill
+                    unoptimized={/^https?:\/\//i.test(s.src)}
                     sizes="(max-width: 768px) 100vw, 45vw"
                     style={{ objectFit: 'cover' }}
                   />
@@ -184,7 +223,7 @@ export default function MastersPage() {
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">{text('Honours categories', 'གཟེངས་བསྟོད་དབྱེ་ཁག')}</span>
-            <span className="craftfacts__val">{CLIENT_DATA.honours.length}</span>
+            <span className="craftfacts__val">{awardCategories.length}</span>
           </div>
           <div className="craftfacts__cell">
             <span className="craftfacts__key">{text('Crafts represented', 'ལག་བཟོའི་དབྱེ་ཁག')}</span>
@@ -210,9 +249,9 @@ export default function MastersPage() {
         </div>
 
         <div className="awardlist" id="awardList">
-          {CLIENT_DATA.honours.map((h) => {
+          {awardCategories.map((h) => {
             const count = allRecognised.filter(
-              (m) => m.honour === h.key || m.honour === h.short
+              (m) => m.honour === h.key || m.honour === h.fallback.short
             ).length;
             const toggleAwardFilter = () => {
               setActiveTab(activeTab === h.key ? '' : h.key);
@@ -236,21 +275,25 @@ export default function MastersPage() {
               >
                 <div className="award__body">
                   <div className="award__head">
-                    <h3 className="award__title">{awardLabel(h.short)}</h3>
+                    <h3 className="award__title">{h.hasCustomTitle ? h.title : awardLabel(h.title)}</h3>
                     <span className="award__count">
                       {count} {count === 1 ? text('holder', 'ཐོབ་མི') : text('holders', 'ཐོབ་མི་ཚུ')}
                     </span>
                   </div>
-                  <p className="award__what">{text(h.what, ({
+                  <p className="award__what">{h.hasCustomDescription ? h.description : text(h.description, ({
                     'Master Craftsperson': 'ཚོགས་པའི་གནས་ཚད་མཐོ་ཤོས་ཨིན། མཁས་པ་ཚུ་གིས་སློབ་མ་བཞེས་དགོཔ་དང་ ལག་བཟོའི་རྒྱུན་འཛིན་ལས་རིམ་གྱི་ས་གོ་ཚུ་ནང་གདམ་ཁ་ཐོག་མ་འཐོབ་ཨིན།',
                     'National Craft Award': 'གཟེངས་བསྟོད་ལག་ཁྱེར་དང་ HAB ཐོ་དེབ་ནང་ས་གོ་ དེ་ལས་ཚོང་སྟོན་དང་ཉོ་མཁན་ངོ་སྤྲོད་ནང་གདམ་ཁ་ཐོག་མ་འཐོབ་ཨིན།',
                     'Enterprise of the Year': 'མི་ངོ་རྐྱང་པ་ལུ་མེན་པར་ཚོང་ལས་ལུ་ངོས་ལེན་འབདཝ་ཨིན། གཟེངས་བསྟོད་ལག་ཁྱེར་དང་ HAB གིས་དཔེ་སྟོན་གནས་ཚུལ་དཔེ་སྐྲུན་འབདཝ་ཨིན།',
                     'Young Artisan Award': 'གཟེངས་བསྟོད་ལག་ཁྱེར་ ཐོན་སྐྱེད་གོང་འཕེལ་མ་དངུལ་དང་སློབ་སྟོན་པ་མཉམ་སྦྲགས་འབདཝ་ཨིན།',
-                  } as Record<string, string>)[h.short] || h.what)}</p>
+                  } as Record<string, string>)[h.fallback.short] || h.description)}</p>
                   <dl className="deeplist award__meta">
                     <div className="deeplist__row">
+                      <dt className="deeplist__key">{text('Criteria', 'ཚད་གཞི')}</dt>
+                      <dd className="deeplist__val">{h.criteria}</dd>
+                    </div>
+                    <div className="deeplist__row">
                       <dt className="deeplist__key">{text('Awarded', 'གནང་སྟེ')}</dt>
-                      <dd className="deeplist__val">{text(h.cadence, h.cadence === 'Awarded annually' ? 'ལོ་བསྟར་གནངམ་ཨིན།' : 'ལོ་བསྟར་ཞིབ་འཇུག་འབད་དེ་ ལོ་བསྟར་སྡེ་ཚན་ཚོགས་འདུ་ནང་གསལ་བསྒྲགས་འབདཝ་ཨིན།')}</dd>
+                      <dd className="deeplist__val">{text(h.fallback.cadence, h.fallback.cadence === 'Awarded annually' ? 'ལོ་བསྟར་གནངམ་ཨིན།' : 'ལོ་བསྟར་ཞིབ་འཇུག་འབད་དེ་ ལོ་བསྟར་སྡེ་ཚན་ཚོགས་འདུ་ནང་གསལ་བསྒྲགས་འབདཝ་ཨིན།')}</dd>
                     </div>
                   </dl>
                 </div>
@@ -331,9 +374,9 @@ export default function MastersPage() {
             >
               {text('All', 'ཆ་མཉམ')} <span className="tab__n">{allRecognised.length}</span>
             </button>
-            {CLIENT_DATA.honours.map((h) => {
+            {awardCategories.map((h) => {
               const n = allRecognised.filter(
-                (m) => m.honour === h.key || m.honour === h.short
+                (m) => m.honour === h.key || m.honour === h.fallback.short
               ).length;
               return (
                 <button
@@ -343,7 +386,7 @@ export default function MastersPage() {
                   role="tab"
                   onClick={() => setActiveTab(h.key)}
                 >
-                  {awardLabel(h.short)} <span className="tab__n">{n}</span>
+                  {h.hasCustomTitle ? h.title : awardLabel(h.title)} <span className="tab__n">{n}</span>
                 </button>
               );
             })}

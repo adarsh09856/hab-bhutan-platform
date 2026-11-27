@@ -73,13 +73,14 @@ export default async function PoliciesIndexPage() {
       allPolicies[existingIdx] = {
         ...allPolicies[existingIdx],
         title: dbp.title || allPolicies[existingIdx].title,
+        description: dbp.summary || allPolicies[existingIdx].description,
         updatedAt: dateFormatted,
       };
     } else {
       allPolicies.push({
         slug: dbp.slug,
         title: dbp.title,
-        description: dbp.content ? dbp.content.slice(0, 160).replace(/[#*_-]/g, '').trim() + '...' : 'Official statutory policy.',
+        description: dbp.summary || (dbp.content ? dbp.content.slice(0, 160).replace(/[#*_-]/g, '').trim() + '...' : 'Official statutory policy.'),
         category: 'Statutory Charter',
         href: `/policies/${dbp.slug}`,
         updatedAt: dateFormatted,

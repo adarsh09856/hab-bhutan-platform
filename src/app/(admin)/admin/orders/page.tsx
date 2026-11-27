@@ -26,7 +26,7 @@ import {
   FileText
 } from 'lucide-react';
 import OrderInvoiceModal from '@/components/public/OrderInvoiceModal';
-import { getOrderLineItems } from '@/lib/order-line-items';
+import { getOrderLineItems, getOrderLineItemsResult } from '@/lib/order-line-items';
 
 function parseShippingAddress(addr: any) {
   if (!addr) {
@@ -89,6 +89,7 @@ export default function AdminOrdersPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [copyFeedback, setCopyFeedback] = useState<{ [key: string]: boolean }>({});
   const inspectedLineItems = getOrderLineItems(inspectingOrder);
+  const inspectedLineItemsState = getOrderLineItemsResult(inspectingOrder).state;
 
   // Manual order form state
   const [orderForm, setOrderForm] = useState({
@@ -1087,7 +1088,17 @@ export default function AdminOrdersPage() {
                 </span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                {inspectedLineItemsState !== 'ready' && (
+                  <div
+                    role={inspectedLineItemsState === 'invalid-snapshot' ? 'alert' : 'status'}
+                    className={`px-3 py-3 text-xs ${inspectedLineItemsState === 'invalid-snapshot' ? 'bg-rose-50 text-rose-800 border-b border-rose-200' : 'bg-amber-50 text-amber-900 border-b border-amber-200'}`}
+                  >
+                    {inspectedLineItemsState === 'invalid-snapshot'
+                      ? 'Order item data could not be read. The saved order has not been changed; contact an administrator to review this order.'
+                      : 'No line items are recorded for this order.'}
+                  </div>
+                )}
+                <table className="w-full min-w-[680px] text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-100 text-slate-600 font-semibold uppercase text-[10px] print:bg-white print:text-black print:border-gray-300">
                       <th className="py-2.5 px-3">Item Code</th>
@@ -1121,7 +1132,9 @@ export default function AdminOrdersPage() {
                     ) : (
                       <tr>
                         <td colSpan={5} className="py-4 text-center text-slate-400">
-                          No line items recorded in order snapshot.
+                          {inspectedLineItemsState === 'invalid-snapshot'
+                            ? 'Saved item data is unreadable.'
+                            : 'No line items recorded.'}
                         </td>
                       </tr>
                     )}

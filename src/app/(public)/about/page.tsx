@@ -364,12 +364,12 @@ export default function AboutPage() {
         {boardList.length > 0 ? <div className="grid grid--people">
           {boardList.map((b, idx) => (
             <article key={idx} className="card">
-              <figure className="frame frame--square">
+              <figure className="frame frame--square about-profile-portrait">
                 {b.photo ? <img
                   src={b.photo}
                   alt={b.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                /> : <div className="flex h-full min-h-32 items-center justify-center bg-stone-100 text-3xl text-stone-600" aria-label="Portrait not supplied">{b.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2)}</div>}
+                /> : <div className="about-profile-portrait__fallback flex h-full items-center justify-center bg-stone-100 text-3xl text-stone-600" aria-label="Portrait not supplied">{b.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2)}</div>}
               </figure>
               <div className="card__body">
                 <p className="eyebrow eyebrow--accent eyebrow--sm">{b.role}</p>
@@ -402,7 +402,7 @@ export default function AboutPage() {
         {teamList.length > 0 ? <div className="grid grid--team">
           {teamList.map((t, idx) => (
             <div key={idx} className="teamrow">
-              <div className="teamrow__avatar" style={{ overflow: 'hidden' }}>
+              <div className="teamrow__avatar about-profile-portrait">
                 {t.photo ? <img
                   src={t.photo}
                   alt={t.name}
