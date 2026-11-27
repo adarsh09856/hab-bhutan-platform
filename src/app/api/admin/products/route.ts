@@ -8,6 +8,7 @@ import { resolveWholesaleOffer } from '@/lib/wholesale-offer';
 import { normalizeWholesaleTiers } from '@/lib/wholesale-terms-normalize';
 import { bhutanDayStartUtc } from '@/lib/trader-expiry';
 import { uniqueProductSlug } from '@/lib/product-slugs';
+import { PRODUCT_TYPES } from '@/lib/product-type';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,36 @@ async function findProductWithName(name: string, excludingId?: string) {
     },
     select: { id: true, code: true, name: true },
   });
+}
+
+function configuredProductTypes(value: unknown): string[] {
+  const configured = (value as { productTypes?: unknown } | null)?.productTypes;
+  if (!Array.isArray(configured)) return [...PRODUCT_TYPES];
+  return configured.filter((item): item is string => typeof item === 'string' && Boolean(item.trim()));
+}
+
+async function getConfiguredProductTypes(): Promise<string[]> {
+  const setting = await prisma.siteSetting.findUnique({ where: { id: 'default' }, select: { trustBadges: true } });
+  return configuredProductTypes(setting?.trustBadges);
+}
+
+async function validateProductType(value: unknown, unchangedLegacyType?: string | null): Promise<string | null> {
+  const productType = typeof value === 'string' ? value.trim() : '';
+  if (!productType) return null;
+  if (unchangedLegacyType && productType.toLowerCase() === unchangedLegacyType.trim().toLowerCase()) return productType;
+  const options = await getConfiguredProductTypes();
+  return options.some(option => option.trim().toLowerCase() === productType.toLowerCase()) ? productType : null;
+}
+
+async function hasActiveCraft(craftKey: unknown): Promise<boolean> {
+  if (typeof craftKey !== 'string' || !craftKey.trim()) return false;
+  return Boolean(await prisma.craft.findFirst({ where: { key: craftKey, isActive: true }, select: { key: true } }));
+}
+
+async function getMakerStatus(makerMemberId: unknown): Promise<string | null> {
+  if (typeof makerMemberId !== 'string' || !makerMemberId.trim()) return null;
+  const maker = await prisma.member.findUnique({ where: { id: makerMemberId }, select: { status: true } });
+  return maker?.status ?? null;
 }
 
 export async function GET(req: NextRequest) {
@@ -109,6 +140,22 @@ export async function POST(req: NextRequest) {
     if (nextStatus === 'PUBLISHED' && !hasProductSpecificDescription(description)) {
       return NextResponse.json({ success: false, error: 'Add a product-specific description before publishing this product.' }, { status: 400 });
     }
+    if (!await hasActiveCraft(craftKey)) {
+      return NextResponse.json({ success: false, error: 'Choose an active craft tradition for this product.' }, { status: 400 });
+    }
+    const normalizedProductType = await validateProductType(productType);
+    if (productType != null && String(productType).trim() && !normalizedProductType) {
+      return NextResponse.json({ success: false, error: 'Choose a product type configured in Admin.' }, { status: 400 });
+    }
+    if (makerMemberId) {
+      const makerStatus = await getMakerStatus(makerMemberId);
+      if (!makerStatus) {
+        return NextResponse.json({ success: false, error: 'Choose an existing maker.' }, { status: 400 });
+      }
+      if (nextStatus === 'PUBLISHED' && makerStatus !== 'VERIFIED') {
+        return NextResponse.json({ success: false, error: 'Verify the maker in Members before assigning them to a published product.' }, { status: 400 });
+      }
+    }
     if (nextStatus === 'PUBLISHED' && traderId) {
       const trader = await prisma.traderRecord.findFirst({ where: { id: String(traderId), isVisible: true, expiresAt: { gte: bhutanDayStartUtc() } }, select: { id: true } });
       if (!trader) return NextResponse.json({ success: false, error: 'Choose a currently accredited trader listing before publishing this product.' }, { status: 400 });
@@ -149,7 +196,7 @@ export async function POST(req: NextRequest) {
         region: region || 'Bhutan',
         makerMemberId: makerMemberId || null,
         traderId: traderId || null,
-        productType: productType?.trim() || null,
+        productType: normalizedProductType,
         availability: resolvedAvailability,
         description: String(description ?? '').trim(),
         size: size?.trim() || null,
@@ -252,6 +299,29 @@ export async function PATCH(req: NextRequest) {
     const nextStatus = status === undefined
       ? previous.status
       : ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'ARCHIVED'].includes(status) ? status : 'PUBLISHED';
+    const craftAssignmentChanged = craftKey !== undefined && craftKey !== previous.craftKey;
+    if (craftAssignmentChanged && !await hasActiveCraft(craftKey)) {
+      return NextResponse.json({ success: false, error: 'Choose an active craft tradition for a new or changed assignment.' }, { status: 400 });
+    }
+    const makerAssignmentChanged = makerMemberId !== undefined && (makerMemberId || null) !== previous.makerMemberId;
+    const nextMakerId = makerMemberId === undefined ? previous.makerMemberId : (makerMemberId || null);
+    const productIsBeingPublished = nextStatus === 'PUBLISHED' && previous.status !== 'PUBLISHED';
+    const makerNeedsVerification = Boolean(nextMakerId) && (makerAssignmentChanged || productIsBeingPublished);
+    if (makerNeedsVerification && nextMakerId) {
+      const makerStatus = await getMakerStatus(nextMakerId);
+      if (!makerStatus) {
+        return NextResponse.json({ success: false, error: 'Choose an existing maker.' }, { status: 400 });
+      }
+      if ((makerAssignmentChanged || productIsBeingPublished) && nextStatus === 'PUBLISHED' && makerStatus !== 'VERIFIED') {
+        return NextResponse.json({ success: false, error: 'Verify the maker in Members before assigning them to a published product.' }, { status: 400 });
+      }
+    }
+    const normalizedProductType = productType === undefined
+      ? previous.productType
+      : await validateProductType(productType, productType === previous.productType ? previous.productType : null);
+    if (productType !== undefined && productType != null && String(productType).trim() && !normalizedProductType) {
+      return NextResponse.json({ success: false, error: 'Choose a product type configured in Admin. The existing legacy type can remain unchanged.' }, { status: 400 });
+    }
     const nextDescription = description === undefined ? previous.description : description;
     if (nextStatus === 'PUBLISHED' && description !== undefined && !hasProductSpecificDescription(nextDescription)) {
       return NextResponse.json({ success: false, error: 'A published product must keep a product-specific description.' }, { status: 400 });
@@ -304,7 +374,7 @@ export async function PATCH(req: NextRequest) {
     if (region !== undefined) updateData.region = region;
     if (makerMemberId !== undefined) updateData.makerMemberId = makerMemberId || null;
     if (traderId !== undefined) updateData.traderId = traderId || null;
-    if (productType !== undefined) updateData.productType = productType?.trim() || null;
+    if (productType !== undefined) updateData.productType = normalizedProductType;
     if (availability !== undefined && !['IN_STOCK', 'MADE_TO_ORDER', 'SOLD_OUT'].includes(availability)) {
       return NextResponse.json({ success: false, error: 'Choose In stock, Made to order, or Sold out.' }, { status: 400 });
     }

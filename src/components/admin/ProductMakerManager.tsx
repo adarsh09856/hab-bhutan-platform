@@ -2,10 +2,11 @@
 import { useState } from 'react';
 
 type Maker = { id: string; name: string; craftKey: string; dzongkhag: string; cidNumber?: string; bio?: string; status?: string };
-type Craft = { key: string; name: string };
+type Craft = { key: string; name: string; isActive?: boolean };
 const empty = { name: '', craftKey: '', dzongkhag: '', cidNumber: '', bio: '' };
 
-export default function ProductMakerManager({ members, crafts, selected, onSaved }: { members: Maker[]; crafts: Craft[]; selected: string; onSaved: () => void }) {
+export default function ProductMakerManager({ members, crafts, onSaved }: { members: Maker[]; crafts: Craft[]; onSaved: () => void }) {
+  const activeCrafts = crafts.filter(craft => craft.isActive !== false);
   const [form, setForm] = useState(empty);
   const [editingId, setEditingId] = useState('');
   const [busy, setBusy] = useState(false);
@@ -38,7 +39,14 @@ export default function ProductMakerManager({ members, crafts, selected, onSaved
         throw new Error(data.error || 'Could not save maker.');
       }
       setConfirmDelete(false);
-      setMessage(action === 'delete' ? 'Maker deleted.' : action === 'suspend' ? 'Maker suspended. Existing product assignments are preserved.' : 'Maker saved. Choose the maker in the selector above to assign this product.');
+      const savedStatus = String(data.member?.status || '').toUpperCase();
+      setMessage(action === 'delete'
+        ? 'Maker deleted.'
+        : action === 'suspend'
+          ? 'Maker suspended. Existing product assignments are preserved.'
+          : !editingId && savedStatus === 'PENDING'
+            ? 'Maker saved as pending. Verify the member in Members before assigning them to a product.'
+            : 'Maker details saved.');
       if (action === 'delete') { setEditingId(''); setForm(empty); }
       else if (data.member) setEditingId(data.member.id);
       onSaved();
@@ -50,14 +58,18 @@ export default function ProductMakerManager({ members, crafts, selected, onSaved
     <summary className="cursor-pointer text-[#8B2E24]">Manage makers here</summary>
     <div className="mt-3 space-y-3">
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={busy} className="admin-button-secondary px-3 py-2 rounded-lg" onClick={() => { setEditingId(''); setForm({ ...empty, craftKey: crafts[0]?.key || '' }); setMessage(''); setConfirmDelete(false); }}>New maker</button>
-        <button type="button" disabled={busy || !selected} className="admin-button-secondary px-3 py-2 rounded-lg" onClick={() => {
-          const maker = members.find(member => member.id === selected);
-          if (maker) { setEditingId(maker.id); setForm({ name: maker.name, craftKey: maker.craftKey, dzongkhag: maker.dzongkhag, cidNumber: maker.cidNumber || '', bio: maker.bio || '' }); setMessage(''); setConfirmDelete(false); }
-        }}>Edit selected maker</button>
+        <button type="button" disabled={busy} className="admin-button-secondary px-3 py-2 rounded-lg" onClick={() => { setEditingId(''); setForm({ ...empty, craftKey: activeCrafts[0]?.key || '' }); setMessage(''); setConfirmDelete(false); }}>New maker</button>
       </div>
+      <label className="block">Manage an existing member<select value={editingId} onChange={event => {
+        const id = event.target.value;
+        const maker = members.find(member => member.id === id);
+        setEditingId(id);
+        setForm(maker ? { name: maker.name, craftKey: maker.craftKey, dzongkhag: maker.dzongkhag, cidNumber: maker.cidNumber || '', bio: maker.bio || '' } : { ...empty, craftKey: activeCrafts[0]?.key || '' });
+        setMessage('');
+        setConfirmDelete(false);
+      }} className="w-full admin-input border rounded-lg px-3 py-2 mt-1"><option value="">Choose a member to edit or manage</option>{members.map(maker => <option key={maker.id} value={maker.id}>{maker.name} · {maker.status || 'status unknown'}</option>)}</select></label>
       <label className="block">Full name<input value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1" /></label>
-      <label className="block">Craft tradition<select value={form.craftKey} onChange={event => setForm({ ...form, craftKey: event.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1"><option value="">Choose craft</option>{crafts.map(craft => <option key={craft.key} value={craft.key}>{craft.name}</option>)}</select></label>
+      <label className="block">Craft tradition<select value={form.craftKey} onChange={event => setForm({ ...form, craftKey: event.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1"><option value="">Choose craft</option>{activeCrafts.map(craft => <option key={craft.key} value={craft.key}>{craft.name}</option>)}{editingId && form.craftKey && !activeCrafts.some(craft => craft.key === form.craftKey) && <option value={form.craftKey} disabled>{crafts.find(craft => craft.key === form.craftKey)?.name || form.craftKey} (archived · existing maker)</option>}</select></label>
       <label className="block">Dzongkhag<input value={form.dzongkhag} onChange={event => setForm({ ...form, dzongkhag: event.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1" /></label>
       <label className="block">CID number (private, 11 digits{editingId ? '; leave blank to keep the saved value' : ' · required for a new member'})<input inputMode="numeric" maxLength={11} value={form.cidNumber} onChange={event => setForm({ ...form, cidNumber: event.target.value.replace(/\D/g, '') })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1" /></label>
       <label className="block">About the maker<textarea value={form.bio} onChange={event => setForm({ ...form, bio: event.target.value })} className="w-full admin-input border rounded-lg px-3 py-2 mt-1" /></label>

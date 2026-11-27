@@ -1,91 +1,10 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Building2, Plus, Pencil, Trash2, Upload, RefreshCw, Download } from 'lucide-react';
-import { CRAFTS } from '@/lib/data';
-import FileUploadInput from '@/components/admin/FileUploadInput';
-import { formatTraderExpiryDate, traderIsExpired } from '@/lib/trader-expiry';
-
-const PRODUCT_TYPES = ['Textiles', 'Clothing & accessories', 'Home & living', 'Jewellery', 'Art & decor', 'Paper & stationery', 'Food & gifts', 'Other'] as const;
-
-type Trader = { id: string; slug: string; shopName: string; ownerName: string | null; registrationNumber: string; dzongkhag: string; town: string; address: string; mapUrl: string | null; openingHours: string | null; shortDescription: string; quote: string | null; description: string; craftKeys: string[]; productTypes: string[]; productPhotoUrls: string[]; bannerUrl: string | null; expiresAt: string; isVisible: boolean; verifiedSince: number | null; sortOrder: number };
-const blank = () => ({ slug: '', shopName: '', ownerName: '', registrationNumber: '', dzongkhag: '', town: '', address: '', mapUrl: '', openingHours: '', shortDescription: '', quote: '', description: '', craftKeys: [] as string[], productTypes: [] as string[], productPhotoUrls: [] as string[], bannerUrl: '', expiresAt: '', isVisible: true, verifiedSince: '', sortOrder: 0 });
-const formOf = (t?: Trader | null) => t ? ({ ...t, craftKeys: t.craftKeys, productTypes: t.productTypes, productPhotoUrls: t.productPhotoUrls.slice(0, 8), expiresAt: new Date(t.expiresAt).toISOString().slice(0, 10), verifiedSince: t.verifiedSince || '' }) : blank();
-const payloadOf = (form: any) => ({ ...form, craftKeys: form.craftKeys, productTypes: form.productTypes, productPhotoUrls: form.productPhotoUrls });
-
-export default function AdminTradersPage() {
-  const [traders, setTraders] = useState<Trader[]>([]);
-  const [form, setForm] = useState<any>(blank());
-  const [editing, setEditing] = useState<string | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-  const load = useCallback(async () => { setBusy(true); try { const r = await fetch('/api/admin/traders', { cache: 'no-store' }); const d = await r.json(); if (!r.ok) throw new Error(d.error); setTraders(d.traders || []); } catch (e: any) { setMessage(e.message || 'Could not load traders.'); } finally { setBusy(false); } }, []);
-  useEffect(() => { void load(); }, [load]);
-  const set = (key: string, value: any) => setForm((old: any) => ({ ...old, [key]: value }));
-  const clear = () => { setEditing(null); setForm(blank()); setFormOpen(false); };
-  const save = async (e: React.FormEvent) => { e.preventDefault(); const savedTrader = editing ? traders.find((trader) => trader.id === editing) : null; const photoCount = form.productPhotoUrls.filter((url: string) => Boolean(url?.trim())).length; const savedPhotoCount = savedTrader?.productPhotoUrls.filter((url) => Boolean(url?.trim())).length || 0; const isLegacyVisibleWithoutGallery = Boolean(savedTrader?.isVisible && savedPhotoCount < 4 && photoCount >= savedPhotoCount && photoCount < 4); if (form.isVisible && photoCount < 4 && !isLegacyVisibleWithoutGallery) { setMessage('Add at least 4 product photos before publishing this trader. You can save it as hidden and add photos later.'); return; } setBusy(true); setMessage(''); try { const r = await fetch('/api/admin/traders', { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payloadOf(form), ...(editing ? { id: editing } : {}) }) }); const d = await r.json(); if (!r.ok) throw new Error(d.error); setMessage(editing ? 'Trader updated.' : 'Trader created.'); clear(); await load(); } catch (err: any) { setMessage(err.message || 'Save failed.'); } finally { setBusy(false); } };
-  const remove = async (t: Trader) => { if (!confirm(`Delete “${t.shopName}”? This affects only the trader listing.`)) return; const r = await fetch(`/api/admin/traders?id=${encodeURIComponent(t.id)}`, { method: 'DELETE' }); const d = await r.json(); setMessage(r.ok ? 'Trader listing deleted.' : d.error || 'Delete failed.'); if (r.ok) await load(); };
-  const importFile = async (file?: File) => { if (!file) return; const body = new FormData(); body.set('file', file); setBusy(true); try { const r = await fetch('/api/admin/traders/import', { method: 'POST', body }); const d = await r.json(); if (!r.ok) throw new Error(d.error); setMessage(`Spreadsheet import: ${d.created} created, ${d.updated} updated, ${d.errors?.length || 0} rejected, ${d.hiddenForPhotos || 0} hidden until photos are added.`); await load(); } catch (e: any) { setMessage(e.message || 'Spreadsheet import failed.'); } finally { setBusy(false); } };
-  const exportFile = (format: 'csv' | 'xlsx') => { window.location.assign(`/api/admin/traders/export?format=${format}`); };
-  const input = (key: string, label: string, required = false, type = 'text') => <label className="block text-sm font-medium text-slate-700">{label}{required ? ' *' : ''}<input type={type} required={required} value={form[key] ?? ''} onChange={(e) => set(key, e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" /></label>;
-  return <div className="space-y-6">
-    <header className="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-bold admin-title flex gap-2 items-center"><Building2 /> Traders &amp; Shops</h1>
-        <p className="admin-muted mt-1">Add and update public trader listings. Member registry records remain private; expired listings are hidden automatically.</p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="admin-button-secondary rounded-lg px-3 py-2 text-sm inline-flex gap-2" onClick={() => exportFile('csv')}><Download size={16} /> Export CSV</button>
-        <button type="button" className="admin-button-secondary rounded-lg px-3 py-2 text-sm inline-flex gap-2" onClick={() => exportFile('xlsx')}><Download size={16} /> Export Excel</button>
-        <label className="admin-button-secondary rounded-lg px-3 py-2 text-sm cursor-pointer inline-flex gap-2"><Upload size={16} /> Import CSV / Excel<input className="hidden" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(e) => { void importFile(e.target.files?.[0]); e.currentTarget.value = ''; }} /></label>
-        <button type="button" disabled={formOpen} className="admin-button-primary rounded-lg px-3 py-2 text-sm inline-flex gap-2 disabled:opacity-50" onClick={() => { setMessage(''); setEditing(null); setForm(blank()); setFormOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Plus size={16} /> Add trader</button>
-      </div>
-    </header>
-    {message && <p role="status" className="rounded-lg border bg-white p-3 text-sm">{message}</p>}
-    {formOpen && <form onSubmit={save} className="admin-card rounded-xl border admin-border p-5 space-y-5">
-      <header className="flex items-start justify-between gap-3 border-b admin-border pb-3">
-        <div>
-          <h2 className="font-semibold admin-title">{editing ? 'Edit trader listing' : 'Add a trader listing'}</h2>
-          <p className="admin-muted mt-1 text-sm">Complete each section below. An active public listing needs a banner and at least four product photos.</p>
-        </div>
-        <button type="button" onClick={clear} className="admin-button-secondary rounded-lg px-3 py-2 text-sm">Close</button>
-      </header>
-
-      <section className="space-y-3">
-        <div><h3 className="font-semibold admin-title">1. Shop details and accreditation</h3><p className="admin-muted text-xs mt-0.5">The owner name stays in Admin and is not shown to the public.</p></div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {input('shopName', 'Shop name', true)}{input('registrationNumber', 'HAB registration number', true)}{input('ownerName', 'Owner (Admin only)')}{input('slug', 'Public page address (optional)')}{input('verifiedSince', 'Accredited since year', false, 'number')}{input('expiresAt', 'Accreditation expires', true, 'date')}{input('sortOrder', 'Display order', false, 'number')}
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <div><h3 className="font-semibold admin-title">2. Location and opening information</h3><p className="admin-muted text-xs mt-0.5">Add the place shoppers can visit and an optional map or schedule.</p></div>
-        <div className="grid md:grid-cols-2 gap-4">{input('dzongkhag', 'Dzongkhag', true)}{input('town', 'Town / city', true)}{input('mapUrl', 'Map URL')}{input('openingHours', 'Opening hours')}</div>
-        <label className="block text-sm">Address *<textarea required value={form.address} onChange={(e) => set('address', e.target.value)} className="mt-1 w-full rounded-lg border p-2" rows={2} /></label>
-      </section>
-
-      <section className="space-y-3">
-        <div><h3 className="font-semibold admin-title">3. Photos, crafts and products</h3><p className="admin-muted text-xs mt-0.5">Choose the matching crafts and product types so buyers can find this shop.</p></div>
-        <FileUploadInput value={form.bannerUrl || ''} onChange={(url) => set('bannerUrl', url)} label="Shop banner photo" accept="image/*" maxSizeMB={20} />
-        <fieldset className="rounded-lg border p-3"><legend className="px-1 text-sm font-medium">Craft traditions</legend><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">{CRAFTS.map((craft) => <label key={craft.key} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.craftKeys.includes(craft.key)} onChange={(e) => set('craftKeys', e.target.checked ? [...form.craftKeys, craft.key] : form.craftKeys.filter((key: string) => key !== craft.key))} />{craft.name} <span className="admin-muted">{craft.english}</span></label>)}</div></fieldset>
-        <fieldset className="rounded-lg border p-3"><legend className="px-1 text-sm font-medium">Product types</legend><div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">{PRODUCT_TYPES.map((type) => <label key={type} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.productTypes.includes(type)} onChange={(e) => set('productTypes', e.target.checked ? [...form.productTypes, type] : form.productTypes.filter((value: string) => value !== type))} />{type}</label>)}</div></fieldset>
-        <fieldset className="rounded-lg border p-3"><legend className="px-1 text-sm font-medium">Product photos (4–8 to publish)</legend><p className="mb-3 text-xs admin-muted">Add at least four photos before publishing. You may save this listing as hidden and add photos later. {form.productPhotoUrls.filter((url: string) => Boolean(url?.trim())).length} of 8 added.</p><div className="grid sm:grid-cols-2 gap-3">{Array.from({ length: 8 }, (_, index) => <FileUploadInput key={index} value={form.productPhotoUrls[index] || ''} onChange={(url) => { const urls = [...form.productPhotoUrls]; urls[index] = url; set('productPhotoUrls', urls.slice(0, 8)); }} label={`Photo ${index + 1}`} accept="image/*" maxSizeMB={20} />)}</div></fieldset>
-      </section>
-
-      <section className="space-y-3">
-        <div><h3 className="font-semibold admin-title">4. Public description</h3><p className="admin-muted text-xs mt-0.5">Write the short card text first, then add the full trader story.</p></div>
-        <label className="block text-sm">Short introduction *<textarea required maxLength={300} value={form.shortDescription} onChange={(e) => set('shortDescription', e.target.value)} className="mt-1 w-full rounded-lg border p-2" rows={2} /></label>
-        <label className="block text-sm">Trader quote (optional)<textarea value={form.quote} onChange={(e) => set('quote', e.target.value)} className="mt-1 w-full rounded-lg border p-2" rows={2} /></label>
-        <label className="block text-sm">Full description *<textarea required value={form.description} onChange={(e) => set('description', e.target.value)} className="mt-1 w-full rounded-lg border p-2" rows={4} /></label>
-      </section>
-
-      <section className="space-y-3 border-t admin-border pt-4">
-        <h3 className="font-semibold admin-title">5. Publish listing</h3>
-        <label className="inline-flex gap-2 text-sm"><input type="checkbox" checked={!!form.isVisible} onChange={(e) => set('isVisible', e.target.checked)} /> Show this listing on the website (expired records are hidden automatically)</label>
-        <div><button disabled={busy} className="admin-button-primary rounded-lg px-4 py-2 text-sm">{busy ? 'Saving…' : editing ? 'Save trader' : 'Create trader'}</button></div>
-      </section>
-    </form>}
-    <section className="admin-card rounded-xl border admin-border overflow-x-auto"><div className="p-4 flex justify-between"><h2 className="font-semibold">Trader listings ({traders.length})</h2><button type="button" onClick={() => void load()} className="inline-flex gap-2 text-sm"><RefreshCw size={15} /> Refresh</button></div><table className="w-full text-sm"><thead><tr className="text-left border-y"><th className="p-3">Trader</th><th className="p-3">Registration</th><th className="p-3">Location</th><th className="p-3">Expiry</th><th className="p-3">Status</th><th className="p-3">Actions</th></tr></thead><tbody>{traders.map((t) => <tr key={t.id} className="border-b"><td className="p-3"><a className="underline font-semibold" href={`/traders/${encodeURIComponent(t.slug)}`} target="_blank" rel="noreferrer">{t.shopName}</a></td><td className="p-3">{t.registrationNumber}</td><td className="p-3">{t.town}, {t.dzongkhag}</td><td className="p-3">{formatTraderExpiryDate(t.expiresAt)}</td><td className="p-3">{traderIsExpired(t.expiresAt) ? 'Expired · hidden' : t.isVisible ? 'Published' : 'Hidden'}</td><td className="p-3"><div className="flex gap-3"><button type="button" aria-label={`Edit ${t.shopName}`} onClick={() => { setMessage(''); setEditing(t.id); setForm(formOf(t)); setFormOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Pencil size={16} /></button><button type="button" aria-label={`Delete ${t.shopName}`} onClick={() => void remove(t)}><Trash2 size={16} /></button></div></td></tr>)}{!busy && traders.length === 0 && <tr><td colSpan={6} className="p-8 text-center admin-muted">No trader listings yet.</td></tr>}</tbody></table></section>
-  </div>;
+/**
+ * Trader management is hidden for now. Public directory searches use Outlets,
+ * so route staff to the existing outlet and artisan-cluster manager instead.
+ * Trader APIs and saved records remain available for a future re-enable.
+ */
+export default function AdminTradersPage(): never {
+  redirect('/admin/clusters-outlets');
 }

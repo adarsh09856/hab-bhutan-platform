@@ -49,7 +49,10 @@ export default function ProductTypeOptions({ value, onChange }: { value: string;
       // Removing a list option does not rewrite existing product records. Keep
       // the current form value too, so a later product save cannot accidentally
       // erase that assignment merely because its option was removed.
-      if (action !== 'remove') onChange(name.trim());
+      // Adding an option should not silently assign it to the product being
+      // edited. A rename must update the current form value to match its new
+      // option; removal intentionally preserves existing product assignments.
+      if (action === 'rename') onChange(name.trim().replace(/\s+/g, ' '));
       setName('');
     } catch (error: any) {
       setError(error.message);

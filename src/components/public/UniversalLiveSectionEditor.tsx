@@ -48,7 +48,6 @@ const STATIC_SYSTEM_PAGES = [
   { label: 'Returns & Refunds Policy', href: '/returns-policy', category: 'Shop & Support' },
   { label: 'Track Order', href: '/track-order', category: 'Shop & Support' },
   { label: 'Customs & Duty Information', href: '/customs-policy', category: 'Shop & Support' },
-  { label: 'Accredited Traders', href: '/traders', category: 'Members & Network' },
   { label: 'Publications & Downloads', href: '/publications', category: 'Members & Network' },
   { label: 'Craft Shops & Clusters Map', href: '/outlets', category: 'Members & Network' },
   { label: 'Apply to Join HAB', href: '/membership/apply', category: 'Members & Network' },
@@ -339,8 +338,8 @@ export default function UniversalLiveSectionEditor({
         membershipLeftText:
           s.membershipLeftText ||
           'Find HAB-verified shops and traders across Bhutan by craft, product or dzongkhag.',
-        membershipLeftCtaText: s.membershipLeftCtaText || 'Search traders →',
-        membershipLeftCtaLink: s.membershipLeftCtaLink || '/traders',
+        membershipLeftCtaText: s.membershipLeftCtaText || 'Search',
+        membershipLeftCtaLink: s.membershipLeftCtaLink || '/outlets?directory=1',
         membershipRightTitle: s.membershipRightTitle || 'List your shop with HAB',
         membershipRightText:
           s.membershipRightText ||
@@ -3441,34 +3440,6 @@ export default function UniversalLiveSectionEditor({
                               value={form.aboutBandCtaLink || ''}
                               onChange={(e) => updateField('aboutBandCtaLink', e.target.value)}
                               placeholder="/programmes"
-                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {sectionType === 'membership' && (
-                      <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                        <span className="text-xs font-bold text-slate-800">Apply Membership Button</span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <div>
-                            <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Button Text</label>
-                            <input
-                              type="text"
-                              value={form.membershipLeftCtaText || ''}
-                              onChange={(e) => updateField('membershipLeftCtaText', e.target.value)}
-                              placeholder="Apply for Membership →"
-                              className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-medium"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Destination URL</label>
-                            <input
-                              type="text"
-                              value={form.membershipLeftCtaLink || ''}
-                              onChange={(e) => updateField('membershipLeftCtaLink', e.target.value)}
-                              placeholder="/membership/apply"
                               className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs"
                             />
                           </div>

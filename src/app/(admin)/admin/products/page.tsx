@@ -101,6 +101,8 @@ export default function AdminProductsPage() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+  const activeCrafts = crafts.filter((craft) => craft.isActive !== false);
+  const verifiedMembers = members.filter((member) => String(member.status || '').toUpperCase() === 'VERIFIED');
 
   const loadData = async () => {
     setLoading(true);
@@ -120,7 +122,14 @@ export default function AdminProductsPage() {
         setActionError(errData.error || 'Failed to load catalog products.');
       }
 
-      if (craftRes?.ok) { const data = await craftRes.json(); setCrafts(data.crafts || []); }
+      if (craftRes?.ok) {
+        const data = await craftRes.json();
+        const savedCrafts = data.crafts || [];
+        setCrafts(savedCrafts);
+        setAddForm((current) => savedCrafts.some((craft: any) => craft.key === current.craftKey && craft.isActive !== false)
+          ? current
+          : { ...current, craftKey: savedCrafts.find((craft: any) => craft.isActive !== false)?.key || '' });
+      }
       if (memRes && memRes.ok) {
         const memData = await memRes.json();
         setMembers(memData.members || []);
@@ -176,7 +185,7 @@ export default function AdminProductsPage() {
           code: generateProductSKU(CRAFTS[0].key),
           name: '',
           priceUSD: '',
-          craftKey: CRAFTS[0].key,
+          craftKey: activeCrafts[0]?.key || '',
           region: 'Thimphu',
           makerMemberId: '',
           productType: '', availability: 'IN_STOCK',
@@ -775,7 +784,7 @@ export default function AdminProductsPage() {
                 }}
                 className="w-full admin-input border rounded-lg px-3 py-2 cursor-pointer"
               >
-                {crafts.map((c) => (
+                {activeCrafts.map((c) => (
                   <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
                 ))}
               </select>
@@ -803,13 +812,14 @@ export default function AdminProductsPage() {
                 className="w-full admin-input border rounded-lg px-3 py-2 cursor-pointer"
               >
                 <option value="">HAB Guild Artisans (General)</option>
-                {members.map((m) => (
+                {verifiedMembers.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name} ({m.dzongkhag})
                   </option>
                 ))}
               </select>
-              <ProductMakerManager members={members} crafts={crafts} selected={addForm.makerMemberId || ''} onSaved={loadData} />
+              <p className="mt-1 text-xs admin-muted">Only verified members can be assigned as product makers. New maker records must be verified in Members first.</p>
+              <ProductMakerManager members={members} crafts={crafts} onSaved={loadData} />
             </div>
             <div>
               <label className="block font-medium admin-text mb-1">Initial Stock Count</label>
@@ -1033,9 +1043,10 @@ export default function AdminProductsPage() {
                   onChange={(e) => setEditForm({ ...editForm, craftKey: e.target.value })}
                   className="w-full admin-input border rounded-lg px-3 py-2"
                 >
-                  {crafts.map((c) => (
+                  {activeCrafts.map((c) => (
                     <option key={c.key} value={c.key}>{c.name} ({c.english})</option>
                   ))}
+                  {editForm.craftKey && !activeCrafts.some((craft) => craft.key === editForm.craftKey) && <option value={editForm.craftKey} disabled>{editingProduct?.craft?.name || editForm.craftKey} (archived · existing product)</option>}
                 </select>
                 <ProductCraftManager crafts={crafts} selected={editForm.craftKey} onSaved={loadData} />
               </div>
@@ -1055,10 +1066,12 @@ export default function AdminProductsPage() {
               <label className="block font-medium admin-text mb-1">Maker / Accredited Member</label>
               <select value={editForm.makerMemberId || ''} onChange={event => setEditForm({ ...editForm, makerMemberId: event.target.value })} className="w-full admin-input border rounded-lg px-3 py-2">
                 <option value="">No maker assigned</option>
-                {members.map(member => <option key={member.id} value={member.id}>{member.name} ({member.dzongkhag})</option>)}
+                {verifiedMembers.map(member => <option key={member.id} value={member.id}>{member.name} ({member.dzongkhag})</option>)}
+                {editForm.makerMemberId && !verifiedMembers.some((member) => member.id === editForm.makerMemberId) && <option value={editForm.makerMemberId} disabled>{editingProduct?.maker?.name || 'Saved maker'} (not verified · existing assignment)</option>}
               </select>
+              <p className="mt-1 text-xs admin-muted">Only verified members can be newly assigned. An existing assignment is kept when saving other product details.</p>
               <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#8B2E24]">
-                <ProductMakerManager members={members} crafts={crafts} selected={editForm.makerMemberId || ''} onSaved={loadData} />
+                <ProductMakerManager members={members} crafts={crafts} onSaved={loadData} />
                 <button type="button" onClick={loadData} className="underline">Refresh saved options</button>
               </div>
             </div>

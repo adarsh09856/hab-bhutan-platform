@@ -134,13 +134,13 @@ export default function HomePageStudio() {
     assurance4Title: 'Worldwide Insured Shipping',
     assurance4Text: 'Safe international dispatch with tracking from Thimphu to your doorstep globally.',
 
-    // Membership Callouts
-    membershipLeftTitle: 'For Master Artisans & Guilds',
-    membershipLeftText: 'Join the national handicraft association for market access, raw material grants, and master awards.',
-    membershipLeftCtaText: 'Artisan Membership',
-    membershipLeftCtaLink: '/members',
-    membershipRightTitle: 'For Institutional & Trade Buyers',
-    membershipRightText: 'Wholesale sourcing, institutional gifts, and custom architectural commissions directly with certified clusters.',
+    // Homepage outlet search and trader listing panels
+    membershipLeftTitle: 'Find a registered trader',
+    membershipLeftText: 'Find HAB-verified shops and traders across Bhutan by craft, product or dzongkhag.',
+    membershipLeftCtaText: 'Search',
+    membershipLeftCtaLink: '/outlets?directory=1',
+    membershipRightTitle: 'List your shop with HAB',
+    membershipRightText: 'Registered traders get a verified listing, buyer introductions and a place in HAB’s trader directory.',
 
     // Partners
     partnersList: [] as PartnerItem[],
@@ -1068,11 +1068,11 @@ export default function HomePageStudio() {
 
             {/* Dual Membership Callout Banners */}
             <div className="pt-4 border-t border-slate-200">
-              <h3 className="text-sm font-bold text-slate-900 mb-3">Dual Membership Callout Banners</h3>
+              <h3 className="text-sm font-bold text-slate-900 mb-3">Homepage Directory &amp; Shop Listing Panels</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#8B2E24]">
-                    Left Banner: For Artisans &amp; Guilds
+                    Outlet Search Panel
                   </label>
                   <input
                     type="text"
@@ -1088,27 +1088,11 @@ export default function HomePageStudio() {
                     placeholder="Join the national handicraft association..."
                     className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg text-slate-700"
                   />
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <input
-                      type="text"
-                      value={settings.membershipLeftCtaText}
-                      onChange={(e) => setSettings((s) => ({ ...s, membershipLeftCtaText: e.target.value }))}
-                      placeholder="Button Label"
-                      className="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg text-slate-800"
-                    />
-                    <input
-                      type="text"
-                      value={settings.membershipLeftCtaLink}
-                      onChange={(e) => setSettings((s) => ({ ...s, membershipLeftCtaLink: e.target.value }))}
-                      placeholder="Button Link (e.g. /members)"
-                      className="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg text-slate-800"
-                    />
-                  </div>
                 </div>
 
                 <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#8B2E24]">
-                    Right Banner: For Institutional &amp; Trade Buyers
+                    Trader Listing Panel
                   </label>
                   <input
                     type="text"

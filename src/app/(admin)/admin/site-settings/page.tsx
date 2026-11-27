@@ -1263,9 +1263,9 @@ export default function AdminSiteSettingsPage() {
         {tab === 'MEMBERSHIP' && (
           <div className="space-y-6">
             <div>
-              <h2 id="settings-membership" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Homepage Membership Callouts</h2>
+              <h2 id="settings-membership" tabIndex={-1} className="scroll-mt-6 text-base font-bold admin-title">Homepage Directory &amp; Shop Listing</h2>
               <p className="text-xs admin-muted mt-1">
-                Configure the side-by-side cards inviting artisans to apply and buyers to search the member directory.
+                Edit the outlet-search card and the shop-listing card shown together on the homepage.
               </p>
             </div>
 
@@ -1273,7 +1273,7 @@ export default function AdminSiteSettingsPage() {
               {/* Left Card: Member Directory */}
               <div className="p-5 admin-panel border admin-border rounded-xl space-y-4">
                 <h3 className="text-sm font-bold admin-text uppercase tracking-wider border-b admin-border pb-2">
-                  Left Card (Trader Directory)
+                  Outlet Search Card
                 </h3>
                 <div>
                   <label className="block text-xs font-semibold admin-text mb-1">Headline</label>
@@ -1295,34 +1295,13 @@ export default function AdminSiteSettingsPage() {
                     className="w-full px-3 py-2 admin-input border rounded-lg text-xs"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-semibold admin-text mb-1">Button Text</label>
-                    <input
-                      type="text"
-                      value={form.membershipLeftCtaText}
-                      onChange={(e) => setForm({ ...form, membershipLeftCtaText: e.target.value })}
-                    placeholder="Search traders →"
-                      className="w-full px-3 py-1.5 admin-input border rounded text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold admin-text mb-1">Button Link</label>
-                    <input
-                      type="text"
-                      value={form.membershipLeftCtaLink}
-                      onChange={(e) => setForm({ ...form, membershipLeftCtaLink: e.target.value })}
-                      placeholder="/traders"
-                      className="w-full px-3 py-1.5 admin-input border rounded text-xs"
-                    />
-                  </div>
-                </div>
+                <p className="text-xs admin-muted">The Search button always searches the saved outlet records.</p>
               </div>
 
               {/* Right Card: Apply for Membership */}
               <div className="p-5 admin-panel border admin-border rounded-xl space-y-4">
                 <h3 className="text-sm font-bold admin-text uppercase tracking-wider border-b admin-border pb-2">
-                  Right Card (Trader Registration)
+                  Shop Listing Card
                 </h3>
                 <div>
                   <label className="block text-xs font-semibold admin-text mb-1">Headline</label>

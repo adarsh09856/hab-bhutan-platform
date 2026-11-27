@@ -635,13 +635,31 @@ export default function HomePageClient({
 
         <div className="hero__visual">
           <figure className="frame frame--hero has-image relative overflow-hidden rounded-[16px] shadow-sm group" data-hab-gallery="hero">
-            <img
-              data-hab-gallery-slide-id={heroSlides[currentHero]?.id || ''}
-              src={heroSlides[currentHero]?.imageUrl || '/assets/photos/image-unavailable.svg'}
-              alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || ''}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={(event) => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
-            />
+            {heroSlides[currentHero]?.linkUrl ? (
+              <a
+                href={heroSlides[currentHero].linkUrl!}
+                className="absolute inset-0 z-0"
+                target={/^https:\/\//i.test(heroSlides[currentHero].linkUrl!) ? '_blank' : undefined}
+                rel={/^https:\/\//i.test(heroSlides[currentHero].linkUrl!) ? 'noopener noreferrer' : undefined}
+                aria-label={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || 'Open featured page'}
+              >
+                <img
+                  data-hab-gallery-slide-id={heroSlides[currentHero]?.id || ''}
+                  src={heroSlides[currentHero]?.imageUrl || '/assets/photos/image-unavailable.svg'}
+                  alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || ''}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(event) => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
+                />
+              </a>
+            ) : (
+              <img
+                data-hab-gallery-slide-id={heroSlides[currentHero]?.id || ''}
+                src={heroSlides[currentHero]?.imageUrl || '/assets/photos/image-unavailable.svg'}
+                alt={heroSlides[currentHero]?.altText || heroSlides[currentHero]?.caption || ''}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(event) => { (event.currentTarget as HTMLImageElement).src = '/assets/photos/image-unavailable.svg'; }}
+              />
+            )}
 
             {heroSlides.length === 0 && (
               <p className="absolute inset-x-4 bottom-4 z-10 rounded-lg bg-black/60 px-3 py-2 text-sm text-white" role={heroSlidesState === 'error' ? 'alert' : 'status'}>
