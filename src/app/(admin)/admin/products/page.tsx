@@ -126,7 +126,7 @@ export default function AdminProductsPage() {
         const data = await craftRes.json();
         const savedCrafts = data.crafts || [];
         setCrafts(savedCrafts);
-        setAddForm((current) => savedCrafts.some((craft: any) => craft.key === current.craftKey && craft.isActive !== false)
+        setAddForm((current: any) => savedCrafts.some((craft: any) => craft.key === current.craftKey && craft.isActive !== false)
           ? current
           : { ...current, craftKey: savedCrafts.find((craft: any) => craft.isActive !== false)?.key || '' });
       }
